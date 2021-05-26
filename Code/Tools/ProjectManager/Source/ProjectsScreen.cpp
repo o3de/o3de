@@ -32,6 +32,9 @@
 #include <QFrame>
 #include <QIcon>
 #include <QPixmap>
+#include <QSettings>
+
+#define DISPLAY_PROJECT_DEV_DATA true 
 
 namespace O3DE::ProjectManager
 {
@@ -40,20 +43,34 @@ namespace O3DE::ProjectManager
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setAlignment(Qt::AlignTop);
-        setLayout(vLayout);
         vLayout->setContentsMargins(s_contentMargins, 0, s_contentMargins, 0);
+        setLayout(vLayout);
 
         m_background.load(":/Backgrounds/FirstTimeBackgroundImage.jpg");
 
         m_stack = new QStackedWidget(this);
 
-        m_firstTimeContent = new QFrame(this);
-        m_firstTimeContent->setObjectName("firstTimeContent");
+        m_firstTimeContent = CreateFirstTimeContent();
+        m_stack->addWidget(m_firstTimeContent);
+
+        m_projectsContent = CreateProjectsContent();
+        m_stack->addWidget(m_projectsContent);
+
+        vLayout->addWidget(m_stack);
+
+        connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
+        connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
+    }
+
+    QFrame* ProjectsScreen::CreateFirstTimeContent()
+    {
+        QFrame* frame = new QFrame(this);
+        frame->setObjectName("firstTimeContent");
         {
             QVBoxLayout* layout = new QVBoxLayout(this);
             layout->setContentsMargins(0, 0, 0, 0);
             layout->setAlignment(Qt::AlignTop);
-            m_firstTimeContent->setLayout(layout);
+            frame->setLayout(layout);
 
             QLabel* titleLabel = new QLabel(tr("Ready. Set. Create."), this);
             titleLabel->setObjectName("titleLabel");
@@ -83,15 +100,19 @@ namespace O3DE::ProjectManager
 
             layout->addLayout(buttonLayout);
         }
-        m_stack->addWidget(m_firstTimeContent);
 
-        m_projectsContent = new QFrame(this);
-        m_projectsContent->setObjectName("projectsContent");
+        return frame;
+    }
+
+    QFrame* ProjectsScreen::CreateProjectsContent()
+    {
+        QFrame* frame = new QFrame(this);
+        frame->setObjectName("projectsContent");
         {
             QVBoxLayout* layout = new QVBoxLayout();
             layout->setAlignment(Qt::AlignTop);
             layout->setContentsMargins(0, 0, 0, 0);
-            m_projectsContent->setLayout(layout);
+            frame->setLayout(layout);
 
             QFrame* header = new QFrame(this);
             QHBoxLayout* headerLayout = new QHBoxLayout();
@@ -130,9 +151,12 @@ namespace O3DE::ProjectManager
                 projectsScrollArea->setWidget(scrollWidget);
                 projectsScrollArea->setWidgetResizable(true);
 
+#ifndef DISPLAY_PROJECT_DEV_DATA
                 for (auto project : projectsResult.GetValue())
-                //ProjectInfo project = projectsResult.GetValue().at(0);
-                //for (int i = 0; i < 15; i++)
+#else
+                ProjectInfo project = projectsResult.GetValue().at(0);
+                for (int i = 0; i < 15; i++)
+#endif
                 {
                     ProjectButton* projectButton;
                     QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
@@ -151,7 +175,7 @@ namespace O3DE::ProjectManager
                     connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
                     connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
 
-    #ifdef SHOW_ALL_PROJECT_ACTIONS
+    #ifdef DISPLAY_PROJECT_DEV_DATA
                     connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
                     connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
                     connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
@@ -162,14 +186,8 @@ namespace O3DE::ProjectManager
                 layout->addWidget(projectsScrollArea);
             }
         }
-        m_stack->addWidget(m_projectsContent);
-        m_stack->setCurrentWidget(m_firstTimeContent);
-        m_stack->setCurrentWidget(m_projectsContent);
 
-        vLayout->addWidget(m_stack);
-
-        connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
-        connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
+        return frame;
     }
 
     ProjectManagerScreen ProjectsScreen::GetScreenEnum()
@@ -246,6 +264,36 @@ namespace O3DE::ProjectManager
     {
         // Remove project from 03DE and delete from disk
         ProjectsScreen::HandleRemoveProject(projectPath);
+    }
+
+    void ProjectsScreen::NotifyCurrentScreen()
+    {
+        if (ShouldDisplayFirstTimeContent())
+        {
+            m_stack->setCurrentWidget(m_firstTimeContent);
+        }
+        else
+        {
+            m_stack->setCurrentWidget(m_projectsContent);
+        }
+    }
+
+    bool ProjectsScreen::ShouldDisplayFirstTimeContent()
+    {
+        auto projectsResult = PythonBindingsInterface::Get()->GetProjects();
+        if (!projectsResult.IsSuccess() || projectsResult.GetValue().isEmpty())
+        {
+            return true;
+        }
+
+        QSettings settings;
+        bool displayFirstTimeContent = settings.value("displayFirstTimeContent", true).toBool();
+        if (displayFirstTimeContent)
+        {
+            settings.setValue("displayFirstTimeContent", false);
+        }
+
+        return displayFirstTimeContent;
     }
 
 } // namespace O3DE::ProjectManager

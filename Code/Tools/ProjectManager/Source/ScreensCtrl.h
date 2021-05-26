@@ -48,6 +48,7 @@ namespace O3DE::ProjectManager
         void ResetAllScreens();
         void DeleteScreen(ProjectManagerScreen screen);
         void DeleteAllScreens();
+        void TabChanged(int index);
 
     private:
         QStackedWidget* m_screenStack;

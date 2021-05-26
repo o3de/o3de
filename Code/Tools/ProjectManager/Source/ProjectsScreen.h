@@ -33,6 +33,9 @@ namespace O3DE::ProjectManager
         QString GetTabText() override;
         bool IsTab() override;
 
+    protected:
+        void NotifyCurrentScreen() override;
+
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
@@ -46,13 +49,13 @@ namespace O3DE::ProjectManager
         void paintEvent(QPaintEvent* event) override;
 
     private:
+        QFrame* CreateFirstTimeContent();
+        QFrame* CreateProjectsContent();
+        bool ShouldDisplayFirstTimeContent();
+
         QAction* m_createNewProjectAction;
         QAction* m_addExistingProjectAction;
-
-
-    private:
         QPixmap m_background;
-
         QFrame* m_firstTimeContent;
         QFrame* m_projectsContent;
         QStackedWidget* m_stack;

@@ -34,6 +34,7 @@ namespace O3DE::ProjectManager
         // add a tab widget at the bottom of the stack
         m_tabWidget = new QTabWidget();
         m_screenStack->addWidget(m_tabWidget);
+        connect(m_tabWidget, &QTabWidget::currentChanged, this, &ScreensCtrl::TabChanged);
     }
 
     void ScreensCtrl::BuildScreens(QVector<ProjectManagerScreen> screens)
@@ -107,6 +108,9 @@ namespace O3DE::ProjectManager
                 {
                     m_screenStack->setCurrentWidget(newScreen);
                 }
+
+                newScreen->NotifyCurrentScreen();
+
                 return true;
             }
         }
@@ -207,4 +211,12 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void ScreensCtrl::TabChanged([[maybe_unused]] int index)
+    {
+        ScreenWidget* screen = reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        if (screen)
+        {
+            screen->NotifyCurrentScreen();
+        }
+    }
 } // namespace O3DE::ProjectManager
