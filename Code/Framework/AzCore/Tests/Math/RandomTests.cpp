@@ -103,7 +103,7 @@ namespace UnitTest
         AZStd::array<Point, 5> ownedContainer;
         sequence.FillHaltonSequence(ownedContainer.begin(), ownedContainer.end());
 
-        for (uint32_t i = 0; i < regularSequence.size(); ++i)
+        for (size_t i = 0; i < regularSequence.size(); ++i)
         {
             EXPECT_FLOAT_EQ(regularSequence[i][0], ownedContainer[i].x);
             EXPECT_FLOAT_EQ(regularSequence[i][1], ownedContainer[i].y);
