@@ -172,9 +172,6 @@ namespace AZ::SettingsRegistryMergeUtils
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings);
 
-    //! Loads bootstrap.cfg into the Settings Registry. This file does not support specializations.
-    void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry);
-
     //! Extracts file path information from the environment and bootstrap to calculate the various file paths and adds those
     //! to the Settings Registry under the FilePathsRootKey.
     void MergeSettingsToRegistry_AddRuntimeFilePaths(SettingsRegistryInterface& registry);

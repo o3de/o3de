@@ -23,7 +23,7 @@ namespace AzToolsFramework
     inline AZ::Transform TransformNormalizedScale(const AZ::Transform& transform)
     {
         AZ::Transform transformNormalizedScale = transform;
-        transformNormalizedScale.SetScale(AZ::Vector3::CreateOne());
+        transformNormalizedScale.SetUniformScale(1.0f);
         return transformNormalizedScale;
     }
 
