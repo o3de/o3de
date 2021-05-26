@@ -65,9 +65,19 @@ namespace AZ
 
     AZ_MATH_INLINE Transform Transform::CreateScale(const Vector3& scale)
     {
+        AZ_WarningOnce("Transform", false, "CreateScale is deprecated, please use CreateUniformScale instead.");
         Transform result;
         result.m_rotation = Quaternion::CreateIdentity();
         result.m_scale = scale;
+        result.m_translation = Vector3::CreateZero();
+        return result;
+    }
+
+    AZ_MATH_INLINE Transform Transform::CreateUniformScale(float scale)
+    {
+        Transform result;
+        result.m_rotation = Quaternion::CreateIdentity();
+        result.m_scale = Vector3(scale);
         result.m_translation = Vector3::CreateZero();
         return result;
     }
@@ -150,24 +160,50 @@ namespace AZ
         m_rotation = rotation;
     }
 
-    AZ_MATH_INLINE const Vector3& Transform::GetScale() const
+    AZ_MATH_INLINE Vector3 Transform::GetScale() const
     {
+        AZ_WarningOnce("Transform", false, "GetScale is deprecated, please use GetUniformScale instead.");
         return m_scale;
+    }
+
+    AZ_MATH_INLINE float Transform::GetUniformScale() const
+    {
+        return m_scale.GetMaxElement();
     }
 
     AZ_MATH_INLINE void Transform::SetScale(const Vector3& scale)
     {
+        AZ_WarningOnce("Transform", false, "SetScale is deprecated, please use SetUniformScale instead.");
         m_scale = scale;
+    }
+
+    AZ_MATH_INLINE void Transform::SetUniformScale(const float scale)
+    {
+        m_scale = Vector3(scale);
     }
 
     AZ_MATH_INLINE Vector3 Transform::ExtractScale()
     {
+        AZ_WarningOnce("Transform", false, "ExtractScale is deprecated, please use ExtractUniformScale instead.");
         const Vector3 scale = m_scale;
         m_scale = Vector3::CreateOne();
         return scale;
     }
 
+    AZ_MATH_INLINE float Transform::ExtractUniformScale()
+    {
+        const float scale = m_scale.GetMaxElement();
+        m_scale = Vector3::CreateOne();
+        return scale;
+    }
+
     AZ_MATH_INLINE void Transform::MultiplyByScale(const Vector3& scale)
+    {
+        AZ_WarningOnce("Transform", false, "MultiplyByScale is deprecated, please use MultiplyByUniformScale instead.");
+        m_scale *= scale;
+    }
+
+    AZ_MATH_INLINE void Transform::MultiplyByUniformScale(float scale)
     {
         m_scale *= scale;
     }
@@ -233,7 +269,7 @@ namespace AZ
 
     AZ_MATH_INLINE void Transform::Orthogonalize()
     {
-        *this = GetOrthogonalized();
+        m_scale = Vector3::CreateOne();
     }
 
     AZ_MATH_INLINE bool Transform::IsClose(const Transform& rhs, float tolerance) const

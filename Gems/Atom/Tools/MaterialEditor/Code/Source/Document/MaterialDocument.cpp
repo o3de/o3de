@@ -798,7 +798,8 @@ namespace MaterialEditor
                 propertyConfig.m_showThumbnail = true;
                 propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                 propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
-                propertyConfig.m_groupName = m_materialTypeSourceData.FindGroup(groupNameId)->m_displayName;
+                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupNameId);
+                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupNameId;
                 m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
             }
             return true;

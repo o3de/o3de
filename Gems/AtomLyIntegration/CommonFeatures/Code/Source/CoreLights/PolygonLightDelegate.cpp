@@ -50,7 +50,7 @@ namespace AZ
                 AZStd::vector<Vector2> vertices = m_shapeBus->GetPolygonPrism()->m_vertexContainer.GetVertices();
 
                 Transform transform = GetTransform();
-                transform.SetScale(Vector3(transform.GetScale().GetMaxElement())); // Poly Prism only supports uniform scale, so use max element.
+                transform.SetUniformScale(transform.GetUniformScale()); // Poly Prism only supports uniform scale.
 
                 AZStd::vector<Vector3> transformedVertices;
                 transformedVertices.reserve(vertices.size());
@@ -73,7 +73,7 @@ namespace AZ
                 twiceArea += vertices.at(i).GetX() * vertices.at(j).GetY();
                 twiceArea -= vertices.at(i).GetY() * vertices.at(j).GetX();
             }
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             return GetAbs(twiceArea * 0.5f * scale * scale);
         }
 

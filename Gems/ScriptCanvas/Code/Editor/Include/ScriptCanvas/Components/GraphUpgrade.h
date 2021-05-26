@@ -159,7 +159,7 @@ namespace ScriptCanvasEditor
 
         AZStd::unordered_set<AZ::EntityId> m_deletedNodes;
         AZStd::unordered_set<AZ::EntityId> m_assetSanitizationSet;
-        ScriptCanvas::ReplacementConnectionMap m_replacementConnections;
+        ScriptCanvas::GraphUpdateSlotReport m_updateReport;
 
         AZStd::unordered_map< AZ::EntityId, AZ::EntityId > m_scriptCanvasToGraphCanvasMapping;
 

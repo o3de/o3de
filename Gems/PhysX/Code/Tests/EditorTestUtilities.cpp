@@ -93,39 +93,43 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
-        
+
         {
-            UnitTest::ErrorHandler warningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
             LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
                 &LmbrCentral::CylinderShapeComponentRequests::SetRadius, radius);
         
             // expect 2 warnings
                 //1 if the radius is invalid
                 //2 when re-creating the underlying simulated body
-            int expectedWarningCount = radius <= 0.f ? 2 : 0;
-            EXPECT_EQ(warningHandler.GetWarningCount(), expectedWarningCount);
+            int expectedWarningCount = radius <= 0.f ? 1 : 0;
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
         }
-        
+
         {
-            UnitTest::ErrorHandler warningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
             LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
                 &LmbrCentral::CylinderShapeComponentRequests::SetHeight, height);
         
             // expect 2 warnings
                 //1 if the radius or height is invalid
                 //2 when re-creating the underlying simulated body
-            int expectedWarningCount = radius <= 0.f || height <= 0.f ? 2 : 0;
-            EXPECT_EQ(warningHandler.GetWarningCount(), expectedWarningCount);
+            int expectedWarningCount = radius <= 0.f || height <= 0.f ? 1 : 0;
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), expectedWarningCount);
         }
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
-        
+
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
         const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
         const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(staticBody->GetNativePointer());
-        
+
         PHYSX_SCENE_READ_LOCK(pxRigidStatic->getScene());
-        
+
         // there should be no shapes on the rigid body because the cylinder radius and/or height is invalid
         EXPECT_EQ(pxRigidStatic->getNbShapes(), 0);
     }
