@@ -49,6 +49,14 @@ ly_add_target(
             Gem::ScriptEvents.Static
 )
 
+# the script canvas debugger is an optional gem module
+# To Enable it: ly_enable_gems( ... TARGETS xxxyyzzz GEMS ScriptCanvasDebugger ...)
+# in any particular target.
+ly_create_alias(NAME ScriptCanvasDebugger.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
+ly_create_alias(NAME ScriptCanvasDebugger.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
+ly_create_alias(NAME ScriptCanvasDebugger.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
+ly_create_alias(NAME ScriptCanvasDebugger.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
+
 ly_add_target(
     NAME ScriptCanvas.Static STATIC
     NAMESPACE Gem
@@ -110,6 +118,10 @@ ly_add_target(
         Gem::ScriptEvents
         Gem::ExpressionEvaluation
 )
+
+# the "ScriptCanvas" target is active in Clients and Servers
+ly_create_alias(NAME ScriptCanvas.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvas)
+ly_create_alias(NAME ScriptCanvas.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvas)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -208,6 +220,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::ScriptEvents.Editor
             Gem::ExpressionEvaluation
     )
+
+    # the "ScriptCanvas.Editor" target is active in all dev tools:
+    ly_create_alias(NAME ScriptCanvas.Builders NAMESPACE Gem TARGETS Gem::ScriptCanvas.Editor)
+    ly_create_alias(NAME ScriptCanvas.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvas.Editor)
+
+
 endif()
 
 ################################################################################

@@ -42,6 +42,10 @@ ly_add_target(
         Gem::GradientSignal
 )
 
+# Clients and Servers use the above module
+ly_create_alias(NAME FastNoise.Clients  NAMESPACE Gem TARGETS FastNoise)
+ly_create_alias(NAME FastNoise.Servers  NAMESPACE Gem TARGETS FastNoise)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME FastNoise.Editor.Static STATIC
@@ -81,6 +85,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::LmbrCentral.Editor
             Gem::SurfaceData.Editor
     )
+
+    # builders and tools load the above tool module.
+    ly_create_alias(NAME FastNoise.Builders NAMESPACE Gem TARGETS FastNoise.Editor)
+    ly_create_alias(NAME FastNoise.Tools    NAMESPACE Gem TARGETS FastNoise.Editor)
+
+
 endif()
 
 ################################################################################

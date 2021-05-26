@@ -76,6 +76,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::SurfaceData.Editor
             Gem::Vegetation.Editor
     )
+
+    # by default, load the above "Gem::LandscapeCanvas.Editor" module in dev applications
+    ly_create_alias(NAME LandscapeCanvas.Builders NAMESPACE Gem TARGETS Gem::LandscapeCanvas.Editor)
+    ly_create_alias(NAME LandscapeCanvas.Tools    NAMESPACE Gem TARGETS Gem::LandscapeCanvas.Editor)
+
 endif()
 
 ################################################################################

@@ -42,3 +42,8 @@ ly_add_target(
         PRIVATE
             Gem::RADTelemetry.Static
 )
+
+# the RADTelemetry module above can be used in all kinds of applications, but we don't enable it in asset builders
+ly_create_alias(NAME RADTelemetry.Clients NAMESPACE Gem TARGETS Gem::RADTelemetry)
+ly_create_alias(NAME RADTelemetry.Tools   NAMESPACE Gem TARGETS Gem::RADTelemetry)
+ly_create_alias(NAME RADTelemetry.Servers NAMESPACE Gem TARGETS Gem::RADTelemetry)

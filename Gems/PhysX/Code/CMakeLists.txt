@@ -70,6 +70,10 @@ ly_add_target(
         Gem::LmbrCentral
 )
 
+# use the PhysX module in clients and servers:
+ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
+ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
      ly_associate_package(PACKAGE_NAME poly2tri-0.3.3-rev2-multiplatform TARGETS poly2tri PACKAGE_HASH 04092d06716f59b936b61906eaf3647db23b685d81d8b66131eb53e0aeaa1a38) 
@@ -135,6 +139,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # use the PhysX.Editor module in dev tools:
+    ly_create_alias(NAME PhysX.Builders NAMESPACE Gem TARGETS Gem::PhysX.Editor)
+    ly_create_alias(NAME PhysX.Tools    NAMESPACE Gem TARGETS Gem::PhysX.Editor)
 
 endif()
 

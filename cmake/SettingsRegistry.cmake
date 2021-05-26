@@ -67,6 +67,7 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
             # Skip wrapping produced when targets are not created in the same directory 
             if(NOT ${load_dependency} MATCHES "^::@")
                 get_property(dependency_type TARGET ${load_dependency} PROPERTY TYPE)
+
                 get_property(is_gem_target TARGET ${load_dependency} PROPERTY GEM_MODULE SET)
                 # If the dependency is a "gem module" then add it as a load dependencies
                 # and recurse into its manually added dependencies
@@ -121,12 +122,10 @@ endfunction()
 #  This can be used for example to determine which list of gems to load with an application
 function(ly_delayed_generate_settings_registry)
     get_property(ly_delayed_load_targets GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
-
     foreach(prefix_target ${ly_delayed_load_targets})
         string(REPLACE "," ";" prefix_target_list "${prefix_target}")
         list(LENGTH prefix_target_list prefix_target_length)
         if(prefix_target_length EQUAL 0)
-            message(SEND_ERROR "Delayed load target is missing target name")
             continue()
         endif()
 
@@ -146,6 +145,14 @@ function(ly_delayed_generate_settings_registry)
         endforeach()
         list(REMOVE_DUPLICATES all_gem_dependencies)
 
+        # de-namespace them
+        foreach(gem_target ${all_gem_dependencies})
+            ly_de_alias_target(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
+            list(APPEND new_gem_dependencies ${stripped_gem_target})
+        endforeach()
+        set(all_gem_dependencies ${new_gem_dependencies})
+        list(REMOVE_DUPLICATES all_gem_dependencies)
+
         unset(target_gem_dependencies_names)
         foreach(gem_target ${all_gem_dependencies})
             unset(gem_relative_source_dir)
@@ -154,11 +161,19 @@ function(ly_delayed_generate_settings_registry)
                 message(FATAL_ERROR "Dependency ${gem_target} from ${target} does not exist")
             endif()
 
+            get_target_property(target_type ${gem_target} TYPE)
+            if (target_type STREQUAL "INTERFACE_LIBRARY")
+                # don't use interface libraries here, we only want ones which produce actual binaries.
+                # we have still already recursed into their dependencies - they'll show up later.
+                continue()
+            endif()
+
+
             ly_get_gem_module_root(gem_module_root ${gem_target})
             file(RELATIVE_PATH gem_module_root_relative_to_engine_root ${LY_ROOT_FOLDER} ${gem_module_root})
 
-            # Strip target namespace from gem targets before configuring them into the json template
-            ly_strip_target_namespace(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
+            # De-alias namespace from gem targets before configuring them into the json template
+            ly_de_alias_target(TARGET ${gem_target} OUTPUT_VARIABLE stripped_gem_target)
             string(CONFIGURE ${gem_module_template} gem_module_json @ONLY)
             list(APPEND target_gem_dependencies_names ${gem_module_json})
         endforeach()

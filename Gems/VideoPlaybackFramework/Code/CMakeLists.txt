@@ -42,6 +42,11 @@ ly_add_target(
             Gem::VideoPlaybackFramework.Static
 )
 
+# the video playback framework makes sense in everything but servers:
+ly_create_alias(NAME VideoPlaybackFramework.Clients  NAMESPACE Gem TARGETS Gem::VideoPlaybackFramework)
+ly_create_alias(NAME VideoPlaybackFramework.Tools    NAMESPACE Gem TARGETS Gem::VideoPlaybackFramework)
+ly_create_alias(NAME VideoPlaybackFramework.Builders NAMESPACE Gem TARGETS Gem::VideoPlaybackFramework)
+
 ################################################################################
 # Tests
 ################################################################################

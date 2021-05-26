@@ -40,3 +40,7 @@ ly_add_target(
         PRIVATE
             Gem::SceneLoggingExample.Static
 )
+
+# the SceneLoggingExample module above is only used in Builders and Tools by default.
+ly_create_alias(NAME SceneLoggingExample.Builders NAMESPACE Gem TARGETS Gem::SceneLoggingExample)
+ly_create_alias(NAME SceneLoggingExample.Tools    NAMESPACE Gem TARGETS Gem::SceneLoggingExample)
