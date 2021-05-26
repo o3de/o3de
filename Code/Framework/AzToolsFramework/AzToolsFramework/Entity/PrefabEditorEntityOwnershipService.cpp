@@ -237,7 +237,7 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
                 return false;
             }
-            templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(dom));
+            templateId = m_prefabSystemComponent->AddTemplate(relativePath, AZStd::move(dom));
 
             if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
             {
@@ -294,7 +294,7 @@ namespace AzToolsFramework
             Prefab::PrefabDomPath sourcePath("/Source");
             sourcePath.Set(levelDefaultDom, assetInfo.m_relativePath.c_str());
 
-            templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(levelDefaultDom));
+            templateId = m_prefabSystemComponent->AddTemplate(relativePath, AZStd::move(levelDefaultDom));
         }
         else
         {
