@@ -138,7 +138,7 @@ namespace UnitTest
             { AZ::Transform::CreateTranslation(AZ::Vector3(-14.0f, -14.0f, -1.0f)) *
                     AZ::Transform::CreateRotationY(AZ::Constants::HalfPi) *
                     AZ::Transform::CreateRotationZ(AZ::Constants::HalfPi) *
-                    AZ::Transform::CreateScale(AZ::Vector3(4.0f)),
+                    AZ::Transform::CreateUniformScale(4.0f),
                     1.0f, 1.25f },
             // Result: hit, distance, epsilon
             { true, 2.5f, 1e-2f }
@@ -203,7 +203,7 @@ namespace UnitTest
         // Test case 2
         {   // Cylinder: transform, radius, height
             { AZ::Transform::CreateTranslation(AZ::Vector3(-10.0f, -10.0f, 10.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(3.5f)),
+            AZ::Transform::CreateUniformScale(3.5f),
             1.0f, 5.0f },
             // AABB: min, max
             { AZ::Vector3(-13.5f, -13.5f, 1.25f), AZ::Vector3(-6.5f, -6.5f, 18.75f) }   },
@@ -236,7 +236,7 @@ namespace UnitTest
             { AZ::Vector3(-5.0f, -5.0f, -0.5f), AZ::Vector3(5.0f, 5.0f, 0.5f) } },
         // Test case 1
         {   // Cylinder: transform, radius, height
-            { AZ::Transform::CreateTranslation(AZ::Vector3(-10.0f, -10.0f, 10.0f)) * AZ::Transform::CreateScale(AZ::Vector3(3.5f)),
+            { AZ::Transform::CreateTranslation(AZ::Vector3(-10.0f, -10.0f, 10.0f)) * AZ::Transform::CreateUniformScale(3.5f),
             5.0f, 5.0f },
             // Local bounds: min, max
             { AZ::Vector3(-5.0f, -5.0f, -2.5f), AZ::Vector3(5.0f, 5.0f, 2.5f) } },
@@ -264,7 +264,7 @@ namespace UnitTest
         // Test case 0
         {   // Cylinder: transform, radius, height
             {AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f, 1.0f, 1.0f)), // test max scale
+            AZ::Transform::CreateUniformScale(2.5f),
             0.5f, 2.0f},
             // Point
             AZ::Vector3(27.0f, 28.5f, 40.0f),
@@ -275,7 +275,7 @@ namespace UnitTest
             {AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(0.5f)),
+            AZ::Transform::CreateUniformScale(0.5f),
             0.5f, 2.0f},
             // Point
             AZ::Vector3(27.0f, 28.155f, 37.82f),
@@ -316,7 +316,7 @@ namespace UnitTest
             { AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             0.5f, 4.0f },
             // Point
             AZ::Vector3(27.0f, 28.0f, 41.0f),
@@ -327,7 +327,7 @@ namespace UnitTest
             { AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             0.5f, 4.0f },
             // Point
             AZ::Vector3(22.757f, 32.243f, 38.0f),

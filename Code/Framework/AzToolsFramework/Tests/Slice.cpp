@@ -483,6 +483,9 @@ namespace UnitTest
     {
         AUTO_RESULT_IF_SETTING_TRUE(UnitTest::prefabSystemSetting, true)
 
+        // Swallow deprecation warnings from the Transform component as they are not relevant to this test
+        UnitTest::ErrorHandler errorHandler("GetScale is deprecated");
+
         // Create a parent entity with a transform component
         AZ::Entity* parentEntity = aznew AZ::Entity("TestParentEntity");
         parentEntity->CreateComponent<AzToolsFramework::Components::TransformComponent>();

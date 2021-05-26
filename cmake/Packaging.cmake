@@ -29,15 +29,15 @@ string(TOLOWER ${PROJECT_NAME} _project_name_lower)
 set(CPACK_PACKAGE_FILE_NAME "${_project_name_lower}_${LY_VERSION_STRING}_installer")
 
 set(DEFAULT_LICENSE_NAME "Apache-2.0")
-set(DEFAULT_LICENSE_FILE "${CMAKE_SOURCE_DIR}/LICENSE.txt")
+set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
 set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
 
-# CMAKE_SOURCE_DIR doesn't equate to anything during execution of pre/post build scripts
-set(CPACK_SOURCE_DIR ${CMAKE_SOURCE_DIR}/cmake)
+# neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
+set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # attempt to apply platform specific settings
 ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})

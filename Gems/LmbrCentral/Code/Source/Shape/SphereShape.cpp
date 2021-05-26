@@ -136,7 +136,7 @@ namespace LmbrCentral
         [[maybe_unused]] const AZ::Vector3& currentNonUniformScale)
     {
         m_position = currentTransform.GetTranslation();
-        m_radius = configuration.m_radius * currentTransform.GetScale().GetMaxElement();
+        m_radius = configuration.m_radius * currentTransform.GetUniformScale();
     }
 
     void DrawSphereShape(

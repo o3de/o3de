@@ -41,20 +41,25 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
-    Source/ProjectSettingsCtrl.h
-    Source/ProjectSettingsCtrl.cpp
+    Source/CreateProjectCtrl.h
+    Source/CreateProjectCtrl.cpp
+    Source/UpdateProjectCtrl.h
+    Source/UpdateProjectCtrl.cpp
     Source/ProjectsHomeScreen.h
     Source/ProjectsHomeScreen.cpp
-    Source/ProjectsHomeScreen.ui
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
     Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
+    Source/ProjectButtonWidget.h
+    Source/ProjectButtonWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
+    Source/GemCatalog/GemCatalogHeaderWidget.h
+    Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
     Source/GemCatalog/GemCatalogScreen.cpp
     Source/GemCatalog/GemFilterWidget.h
@@ -67,6 +72,8 @@ set(FILES
     Source/GemCatalog/GemItemDelegate.cpp
     Source/GemCatalog/GemListView.h
     Source/GemCatalog/GemListView.cpp
+    Source/GemCatalog/GemListHeaderWidget.h
+    Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
     Source/GemCatalog/GemSortFilterProxyModel.h

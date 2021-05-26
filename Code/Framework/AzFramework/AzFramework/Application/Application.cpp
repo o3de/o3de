@@ -679,8 +679,6 @@ namespace AzFramework
         {
             auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@assets@", "");
-            fileIoBase->SetAlias("@root@", GetEngineRoot());
             fileIoBase->SetAlias("@engroot@", GetEngineRoot());
             fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
             fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
@@ -694,8 +692,8 @@ namespace AzFramework
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@assets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
                 }
                 pathAliases.clear();
