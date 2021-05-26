@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
         {
             m_projectName = new FormLineEditWidget(tr("Project name"), tr("New Project"), this);
             m_projectName->setErrorLabelText(
-                tr("A project with this name already exists at this location.  Please choose a new name or location."));
+                tr("A project with this name already exists at this location. Please choose a new name or location."));
             vLayout->addWidget(m_projectName);
 
             m_projectPath =
