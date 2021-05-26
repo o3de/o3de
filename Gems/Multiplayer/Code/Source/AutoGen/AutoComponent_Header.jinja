@@ -365,6 +365,8 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Client', true)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
         {{ DeclareNetworkPropertyAccessors(Component, 'Authority', 'Autonomous', true)|indent(8) -}}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyAccessors(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}
@@ -438,7 +440,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endif %}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', false)|indent(8) -}}
-        {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
+        {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ DeclareArchetypePropertyGetters(Component)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', false)|indent(8) -}}
@@ -463,7 +465,6 @@ namespace {{ Component.attrib['Namespace'] }}
         //! @}
 
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Server', true)|indent(8) -}}
-        {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Autonomous', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Autonomous', 'Authority', true)|indent(8) -}}
         {{ DeclareNetworkPropertyGetters(Component, 'Authority', 'Client', true)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Server', 'Authority', true)|indent(8) -}}

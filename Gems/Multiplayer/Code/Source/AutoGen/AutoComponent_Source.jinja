@@ -767,18 +767,33 @@ enum class NetworkProperties
             return {{ Property.attrib['Type'] }}();
         }
 
-        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
+        {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();        
         if (!networkComponent)
         {
             AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
             return {{ Property.attrib['Type'] }}();
         }
+{%    if ReplicateTo == 'Autonomous' %}
 
+        // {{ UpperFirst(Property.attrib['Name']) }} is replicated to Automonous; we must go through the controller in order to get this property
+        {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
+        if (!controller)
+        {
+            AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This property is replicated to autonomous network entities, because this entity doesn't have a controller, it must not be automonous. Please check your network context before attempting to get {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
+            return {{ Property.attrib['Type'] }}();
+        }
+{%      if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' %}
+        return controller->Get{{ UpperFirst(Property.attrib['Name']) }}(index);
+{%      else %}
+        return controller->Get{{ UpperFirst(Property.attrib['Name']) }}();
+{%      endif %}
+{%    else %}
 {%      if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' %}
         return networkComponent->Get{{ UpperFirst(Property.attrib['Name']) }}(index);
 {%      else %}
         return networkComponent->Get{{ UpperFirst(Property.attrib['Name']) }}();
 {%      endif %}
+{%    endif %}
     })
 {%  if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' %}
     ->Method("Set{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, int32_t index, const {{ Property.attrib['Type'] }}& value) -> void
@@ -1457,11 +1472,9 @@ namespace {{ Component.attrib['Namespace'] }}
     }
 
     {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', false, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', false, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Server', true, ComponentBaseName)|indent(4) -}}
-{{ DefineNetworkPropertyGets(Component, 'Authority', 'Autonomous', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) -}}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', true, ComponentBaseName)|indent(4) }}
 {{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
