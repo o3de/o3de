@@ -146,6 +146,7 @@ function(ly_delayed_generate_settings_registry)
         list(REMOVE_DUPLICATES all_gem_dependencies)
 
         # de-namespace them
+        unset(new_gem_dependencies)
         foreach(gem_target ${all_gem_dependencies})
             ly_de_alias_target(${gem_target} stripped_gem_target)
             list(APPEND new_gem_dependencies ${stripped_gem_target})
