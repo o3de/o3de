@@ -278,7 +278,7 @@ namespace UnitTest
     }; // class SupervariantCmdArgumentTests
 
 
-    TEST_F(SupervariantCmdArgumentTests, ShaderCompilerArguments_ValidateHelperFunctions)
+    TEST_F(SupervariantCmdArgumentTests, CommandLineArgumentUtils_ValidateHelperFunctions)
     {
         // In this test the idea is to validate the static helper functions in AZ::RHI::ShaderCompilerArguments class
         // that are useful for command line argument manipulation, etc.
@@ -287,7 +287,7 @@ namespace UnitTest
         };
 
         auto argumentsAsString = CreateCmdLineStringFromListOfKeyValues(argumentList);
-        auto listOfArgumentNames = AZ::RHI::ShaderCompilerArguments::GetListOfArgumentNames(argumentsAsString);
+        auto listOfArgumentNames = AZ::RHI::CommandLineArgumentUtils::GetListOfArgumentNames(argumentsAsString);
 
         EXPECT_TRUE(AZStd::all_of(AZ_BEGIN_END(argumentList), [&](const KeyValueView& needle) -> bool {
             return (AZStd::find(AZ_BEGIN_END(listOfArgumentNames), needle.m_key) != listOfArgumentNames.end()) &&
@@ -296,7 +296,8 @@ namespace UnitTest
         }));
 
         AZStd::vector<AZStd::string> listOfArgumentsToRemove = { AZSLC_ARG4, AZSLC_ARG2 };
-        auto stringWithRemovedArguments =AZ::RHI::ShaderCompilerArguments::RemoveArgumentsFromCommandLineString(listOfArgumentsToRemove, argumentsAsString);
+        auto stringWithRemovedArguments =
+            AZ::RHI::CommandLineArgumentUtils::RemoveArgumentsFromCommandLineString(listOfArgumentsToRemove, argumentsAsString);
         EXPECT_TRUE(AZStd::all_of(AZ_BEGIN_END(listOfArgumentsToRemove), [&](const AZStd::string& needle) -> bool {
             return stringWithRemovedArguments.find(needle) == AZStd::string::npos;
         }));
@@ -306,20 +307,22 @@ namespace UnitTest
             return stringWithRemovedArguments.find(needle) != AZStd::string::npos;
         }));
 
-        auto stringWithoutExtraSpaces = AZ::RHI::ShaderCompilerArguments::RemoveExtraSpaces("  --arg1   -arg2     --arg3=foo --arg4=bar  ");
+        auto stringWithoutExtraSpaces =
+            AZ::RHI::CommandLineArgumentUtils::RemoveExtraSpaces("  --arg1   -arg2     --arg3=foo --arg4=bar  ");
         EXPECT_EQ(stringWithoutExtraSpaces, AZStd::string("--arg1 -arg2 --arg3=foo --arg4=bar"));
 
-        auto stringAsMergedArguments = AZ::RHI::ShaderCompilerArguments::MergeCommandLineArguments("--arg1 -arg2 --arg3=foo", "--arg3=bar --arg4");
+        auto stringAsMergedArguments =
+            AZ::RHI::CommandLineArgumentUtils::MergeCommandLineArguments("--arg1 -arg2 --arg3=foo", "--arg3=bar --arg4");
         EXPECT_EQ(stringAsMergedArguments, AZStd::string("--arg1 -arg2 --arg3=bar --arg4"));
 
-        EXPECT_TRUE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("-DMACRO"));
-        EXPECT_TRUE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("-D MACRO"));
-        EXPECT_TRUE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("--help -D MACRO"));
-        EXPECT_TRUE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("--help -p -DMACRO --more"));
-        EXPECT_TRUE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("--help -p -D MACRO=VALUE --more"));
-        EXPECT_FALSE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("--help -p --more"));
-        EXPECT_FALSE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("--help -p --more --DFAKE"));
-        EXPECT_FALSE(AZ::RHI::ShaderCompilerArguments::HasMacroDefinitions("--DFAKE1 --help -p --more --D FAKE2"));
+        EXPECT_TRUE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("-DMACRO"));
+        EXPECT_TRUE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("-D MACRO"));
+        EXPECT_TRUE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("--help -D MACRO"));
+        EXPECT_TRUE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("--help -p -DMACRO --more"));
+        EXPECT_TRUE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("--help -p -D MACRO=VALUE --more"));
+        EXPECT_FALSE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("--help -p --more"));
+        EXPECT_FALSE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("--help -p --more --DFAKE"));
+        EXPECT_FALSE(AZ::RHI::CommandLineArgumentUtils::HasMacroDefinitions("--DFAKE1 --help -p --more --D FAKE2"));
     }
 
     TEST_F(SupervariantCmdArgumentTests, ShaderCompilerArguments_ValidateCommandLineArgumentsMerge)

@@ -14,6 +14,8 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/std/string/regex.h>
 
+#include <Atom/RHI.Edit/Utils.h>
+
 namespace AZ
 {
     namespace RHI
@@ -50,64 +52,10 @@ namespace AZ
             }
         }
 
-        AZStd::vector<AZStd::string> ShaderCompilerArguments::GetListOfArgumentNames(AZStd::string_view commandLineString)
-        {
-            AZStd::vector<AZStd::string> listOfTokens;
-            AzFramework::StringFunc::Tokenize(commandLineString, listOfTokens, " \t\n");
-            AZStd::vector<AZStd::string> listOfArguments;
-            for (const AZStd::string& token : listOfTokens)
-            {
-                AZStd::vector<AZStd::string> splitArguments;
-                AzFramework::StringFunc::Tokenize(token, splitArguments, "=");
-                listOfArguments.push_back(splitArguments[0]);
-            }
-            return listOfArguments;
-        }
-
-        AZStd::string ShaderCompilerArguments::RemoveArgumentsFromCommandLineString(AZStd::array_view<AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
-        {
-            AZStd::string customizedArguments = commandLineString;
-            for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)
-            {
-                AZStd::string regexStr = AZStd::string::format("%s(=\\S+)?", azslcArgumentName.c_str());
-                AZStd::regex replaceRegex(regexStr, AZStd::regex::ECMAScript);
-                customizedArguments = AZStd::regex_replace(customizedArguments, replaceRegex, "");
-            }
-            return customizedArguments;
-        }
-
-        AZStd::string ShaderCompilerArguments::RemoveExtraSpaces(AZStd::string_view commandLineString)
-        {
-            AZStd::vector<AZStd::string> argumentList;
-            AzFramework::StringFunc::Tokenize(commandLineString, argumentList, " \t\n");
-            AZStd::string cleanStringWithArguments;
-            AzFramework::StringFunc::Join(cleanStringWithArguments, argumentList.begin(), argumentList.end(), " ");
-            return cleanStringWithArguments;
-        }
-
-        AZStd::string ShaderCompilerArguments::MergeCommandLineArguments(AZStd::string_view left, AZStd::string_view right)
-        {
-            auto listOfArgumentNamesFromRight = ShaderCompilerArguments::GetListOfArgumentNames(right);
-            auto leftWithRightArgumentsRemoved = RemoveArgumentsFromCommandLineString(listOfArgumentNamesFromRight, left);
-            AZStd::string combinedArguments = AZStd::string::format("%s %s", leftWithRightArgumentsRemoved.c_str(), right.data());
-            return RemoveExtraSpaces(combinedArguments);
-        }
-
-        bool ShaderCompilerArguments::HasMacroDefinitions(AZStd::string_view commandLineString)
-        {
-            const AZStd::regex macroRegex(R"((^-D\s*(\w+))|(\s+-D\s*(\w+)))", AZStd::regex::ECMAScript);
-
-            AZStd::smatch match;
-            if (AZStd::regex_search(commandLineString.data(), match, macroRegex))
-            {
-                return (match.size() >= 1);
-            }
-            return false;
-        }
-
         bool ShaderCompilerArguments::HasMacroDefinitionsInCommandLineArguments()
         {
-            return HasMacroDefinitions(m_azslcAdditionalFreeArguments) || HasMacroDefinitions(m_dxcAdditionalFreeArguments);
+            return CommandLineArgumentUtils::HasMacroDefinitions(m_azslcAdditionalFreeArguments) ||
+                CommandLineArgumentUtils::HasMacroDefinitions(m_dxcAdditionalFreeArguments);
         }
 
         void ShaderCompilerArguments::Merge(const ShaderCompilerArguments& right)
@@ -117,7 +65,7 @@ namespace AZ
                 m_azslcWarningLevel = right.m_azslcWarningLevel;
             }
             m_azslcWarningAsError = m_azslcWarningAsError || right.m_azslcWarningAsError;
-            m_azslcAdditionalFreeArguments = MergeCommandLineArguments(m_azslcAdditionalFreeArguments, right.m_azslcAdditionalFreeArguments);
+            m_azslcAdditionalFreeArguments = CommandLineArgumentUtils::MergeCommandLineArguments(m_azslcAdditionalFreeArguments, right.m_azslcAdditionalFreeArguments);
             m_dxcDisableWarnings = m_dxcDisableWarnings || right.m_dxcDisableWarnings;
             m_dxcWarningAsError = m_dxcWarningAsError || right.m_dxcWarningAsError;
             m_dxcDisableOptimizations = m_dxcDisableOptimizations || right.m_dxcDisableOptimizations;
@@ -126,7 +74,7 @@ namespace AZ
             {
                 m_dxcOptimizationLevel = right.m_dxcOptimizationLevel;
             }
-            m_dxcAdditionalFreeArguments = MergeCommandLineArguments(m_dxcAdditionalFreeArguments, right.m_dxcAdditionalFreeArguments);
+            m_dxcAdditionalFreeArguments = CommandLineArgumentUtils::MergeCommandLineArguments(m_dxcAdditionalFreeArguments, right.m_dxcAdditionalFreeArguments);
             if (right.m_defaultMatrixOrder != MatrixOrder::Default)
             {
                 m_defaultMatrixOrder = right.m_defaultMatrixOrder;

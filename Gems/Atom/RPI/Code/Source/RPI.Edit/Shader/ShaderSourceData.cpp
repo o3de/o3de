@@ -154,16 +154,17 @@ namespace AZ
             const AZStd::string minusArguments = AZStd::regex_replace(m_minusArguments, macroRegex, "");
             const AZStd::string plusArguments = AZStd::regex_replace(m_plusArguments, macroRegex, "");
             AZStd::string azslcArgumentsToRemove = minusArguments + " " + plusArguments;
-            AZStd::vector<AZStd::string> azslcArgumentNamesToRemove = RHI::ShaderCompilerArguments::GetListOfArgumentNames(azslcArgumentsToRemove);
+            AZStd::vector<AZStd::string> azslcArgumentNamesToRemove = RHI::CommandLineArgumentUtils::GetListOfArgumentNames(azslcArgumentsToRemove);
 
             // At this moment @azslcArgumentsToRemove contains arguments for AZSLc that can be of the form:
             // -<arg>
             // --<arg>[=<value>]
             // We need to remove those from @initialAzslcCompilerArguments.
-            AZStd::string customizedArguments = RHI::ShaderCompilerArguments::RemoveArgumentsFromCommandLineString(azslcArgumentNamesToRemove, initialAzslcCompilerArguments);
+            AZStd::string customizedArguments = RHI::CommandLineArgumentUtils::RemoveArgumentsFromCommandLineString(
+                azslcArgumentNamesToRemove, initialAzslcCompilerArguments);
             customizedArguments += " " + plusArguments;
 
-            return RHI::ShaderCompilerArguments::RemoveExtraSpaces(customizedArguments);
+            return RHI::CommandLineArgumentUtils::RemoveExtraSpaces(customizedArguments);
         }
 
 
