@@ -17,7 +17,7 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     bool RewindableArray<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer)
     {
-        for (uint32_t i = 0; i < size(); ++i)
+        for (uint32_t i = 0; i < SIZE; ++i)
         {
             if(!this[i].Serialize(serializer))
             {
@@ -31,7 +31,7 @@ namespace Multiplayer
     template <typename TYPE, uint32_t SIZE>
     bool RewindableArray<TYPE, SIZE>::Serialize(AzNetworking::ISerializer& serializer, AzNetworking::IBitset& deltaRecord)
     {
-        for (uint32_t i = 0; i < size(); ++i)
+        for (uint32_t i = 0; i < SIZE; ++i)
         {
             if (deltaRecord.GetBit(i))
             {

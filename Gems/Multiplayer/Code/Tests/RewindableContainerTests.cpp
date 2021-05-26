@@ -58,6 +58,7 @@ namespace UnitTest
         EXPECT_EQ(RewindableContainerSize - 1, test.size());
         Multiplayer::GetNetworkTime()->IncrementHostFrameId();
 
+        // Test iterator
         uint32_t iterCount = 0;
         auto iter = test.begin();
         while (iter != test.end())
