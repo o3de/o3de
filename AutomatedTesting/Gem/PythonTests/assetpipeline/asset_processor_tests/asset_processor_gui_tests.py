@@ -144,7 +144,7 @@ class TestsAssetProcessorGUI_Windows(object):
         4. Delete the source test asset directory
         5. Verify assets are deleted from the cache
         """
-        
+
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists
