@@ -27,7 +27,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
                 "Name": "Opacity",
                 "SourceColor": "Linear",
@@ -73,7 +73,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
                 "Name": "Opacity",
                 "SourceColor": "Linear",

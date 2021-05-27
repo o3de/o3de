@@ -53,6 +53,7 @@
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 
 // CryCommon
 #include <CryCommon/HMDBus.h>
@@ -75,7 +76,6 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
-#include "ModernViewportCameraController.h"
 #include "EditorViewportSettings.h"
 
 #include "ViewPane.h"
@@ -455,15 +455,6 @@ void EditorViewportWidget::Update()
     if (!isVisible())
     {
         return;
-    }
-
-    static bool sentOnWindowCreated = false;
-    if (!sentOnWindowCreated && windowHandle()->isActive())
-    {
-        sentOnWindowCreated = true;
-        AzFramework::WindowSystemNotificationBus::Broadcast(
-            &AzFramework::WindowSystemNotificationBus::Handler::OnWindowCreated,
-            reinterpret_cast<AzFramework::NativeWindowHandle>(winId()));
     }
 
     m_updatingCameraPosition = true;
@@ -1229,7 +1220,7 @@ void EditorViewportWidget::SetViewportId(int id)
     {
         AzFramework::ReloadCameraKeyBindings();
 
-        auto controller = AZStd::make_shared<SandboxEditor::ModernViewportCameraController>();
+        auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
         controller->SetCameraListBuilderCallback([](AzFramework::Cameras& cameras)
         {
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);

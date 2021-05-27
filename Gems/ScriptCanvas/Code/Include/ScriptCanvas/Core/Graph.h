@@ -87,6 +87,7 @@ namespace ScriptCanvas
         Slot* FindSlot(const Endpoint& endpoint) const override;
 
         bool AddConnection(const AZ::EntityId&) override;
+        void RemoveAllConnections();
         bool RemoveConnection(const AZ::EntityId& connectionId) override;
         AZStd::vector<AZ::EntityId> GetConnections() const override;
         AZStd::vector<Endpoint> GetConnectedEndpoints(const Endpoint& firstEndpoint) const override;

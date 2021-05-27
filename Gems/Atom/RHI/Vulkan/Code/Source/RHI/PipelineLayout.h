@@ -85,7 +85,7 @@ namespace AZ
             RHI::ResultCode BuildMergedShaderResourceGroupPools();
 
             // Creates a merged SRG layout from a list of SRG layouts.
-            RHI::ConstPtr<RHI::ShaderResourceGroupLayout> MergeShaderResourceGroupLayouts(const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayouts) const;
+            RHI::ConstPtr<RHI::ShaderResourceGroupLayout> MergeShaderResourceGroupLayouts(const AZStd::vector<const RHI::ShaderResourceGroupLayout*>& srgLayoutList) const;
 
             VkPipelineLayout m_nativePipelineLayout = VK_NULL_HANDLE;
 

@@ -39,8 +39,8 @@ class TestDocking(object):
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C6376081")
-    @pytest.mark.SUITE_periodic
-    def test_basic_docked_tools(self, request, editor, level, launcher_platform):
+    @pytest.mark.SUITE_sandbox
+    def test_Docking_BasicDockedTools(self, request, editor, level, launcher_platform):
         expected_lines = [
             "The tools are all docked together in a tabbed widget",
             "Entity Outliner works when docked, can select an Entity",

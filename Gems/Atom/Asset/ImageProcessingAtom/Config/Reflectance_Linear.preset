@@ -18,7 +18,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{9B2114F5-118A-4B3A-9CFE-97FA01EC8CFE}",
                 "Name": "Reflectance_Linear",
                 "DestColor": "Linear",
@@ -46,7 +46,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{9B2114F5-118A-4B3A-9CFE-97FA01EC8CFE}",
                 "Name": "Reflectance_Linear",
                 "DestColor": "Linear",

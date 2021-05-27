@@ -39,7 +39,7 @@ class TestMenus(object):
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C16780783", "C2174438")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
     def test_Menus_EditMenuOptions_Work(self, request, editor, level, launcher_platform):
         expected_lines = [
             "Undo Action triggered",
@@ -59,8 +59,6 @@ class TestMenus(object):
             "Move Action triggered",
             "Rotate Action triggered",
             "Scale Action triggered",
-            "Lock Selection Action triggered",
-            "Unlock All Entities Action triggered",
             "Global Preferences Action triggered",
             "Graphics Settings Action triggered",
             "Editor Settings Manager Action triggered",
@@ -93,7 +91,6 @@ class TestMenus(object):
             "Center on Selection Action triggered",
             "Show Quick Access Bar Action triggered",
             "Wireframe Action triggered",
-            "Grid Settings Action triggered",
             "Go to Position Action triggered",
             "Center on Selection Action triggered",
             "Go to Location Action triggered",
@@ -116,7 +113,7 @@ class TestMenus(object):
         )
 
     @pytest.mark.test_case_id("C16780778")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
     def test_Menus_FileMenuOptions_Work(self, request, editor, level, launcher_platform):
         expected_lines = [
             "New Level Action triggered",

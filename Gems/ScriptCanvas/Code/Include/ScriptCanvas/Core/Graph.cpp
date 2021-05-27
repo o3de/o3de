@@ -616,6 +616,34 @@ namespace ScriptCanvas
         return false;
     }
 
+
+    void Graph::RemoveAllConnections()
+    {
+        for (auto connectionEntity : m_graphData.m_connections)
+        {
+            if (auto connection = connectionEntity ? AZ::EntityUtils::FindFirstDerivedComponent<Connection>(connectionEntity) : nullptr)
+            {
+                if (connection->GetSourceEndpoint().IsValid())
+                {
+                    EndpointNotificationBus::Event(connection->GetSourceEndpoint(), &EndpointNotifications::OnEndpointDisconnected, connection->GetTargetEndpoint());
+                }
+                if (connection->GetTargetEndpoint().IsValid())
+                {
+                    EndpointNotificationBus::Event(connection->GetTargetEndpoint(), &EndpointNotifications::OnEndpointDisconnected, connection->GetSourceEndpoint());
+                }
+            }
+
+            GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnConnectionRemoved, connectionEntity->GetId());
+        }
+
+        for (auto& connectionRef : m_graphData.m_connections)
+        {
+            delete connectionRef;
+        }
+
+        m_graphData.m_connections.clear();
+    }
+
     bool Graph::RemoveConnection(const AZ::EntityId& connectionId)
     {
         if (connectionId.IsValid())
@@ -751,7 +779,6 @@ namespace ScriptCanvas
         {
             auto* connectionEntity = aznew AZ::Entity("Connection");
             connectionEntity->CreateComponent<Connection>(sourceEndpoint, targetEndpoint);
-
 
             AZ::Entity* nodeEntity{};
             AZ::ComponentApplicationBus::BroadcastResult(nodeEntity, &AZ::ComponentApplicationRequests::FindEntity, sourceEndpoint.GetNodeId());

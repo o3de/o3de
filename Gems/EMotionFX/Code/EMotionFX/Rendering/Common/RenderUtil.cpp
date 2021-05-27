@@ -1157,7 +1157,7 @@ namespace MCommon
     void RenderUtil::RenderSphere(const AZ::Vector3& position, float radius, const MCore::RGBAColor& color)
     {
         // setup the world space matrix of the sphere
-        AZ::Transform sphereTransform = AZ::Transform::CreateScale(AZ::Vector3(radius, radius, radius));
+        AZ::Transform sphereTransform = AZ::Transform::CreateUniformScale(radius);
         sphereTransform.SetTranslation(position);
 
         // render the sphere

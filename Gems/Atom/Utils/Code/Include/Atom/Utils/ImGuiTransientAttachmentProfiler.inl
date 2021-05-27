@@ -269,13 +269,13 @@ namespace AZ
                     {
                         ImGui::BeginChild(heapMemoryId.c_str());
                         ImGui::SetScrollY(scrollingY);
-                        ImGui::End();
+                        ImGui::EndChild();
                     }
                     {
 
                         ImGui::BeginChild(scopesId.c_str());
                         ImGui::SetScrollX(scrollingX);
-                        ImGui::End();
+                        ImGui::EndChild();
                     }
 
                     ImGui::PopStyleVar(3);

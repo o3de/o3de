@@ -124,13 +124,17 @@ foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
     string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
     # Use the last directory as the suffix path to use for the Binary Directory
     get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
+    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
 endforeach()
 
 # The following steps have to be done after all targets are registered:
+# Defer generation of the StaticModules.inl file which is needed to create the AZ::Module derived class in monolithic
+# builds until after all the targets are known
+ly_delayed_generate_static_modules_inl()
+
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
-#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
+#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
 # 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
