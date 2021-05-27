@@ -39,7 +39,7 @@ class _WindowsResourceLocator(AbstractResourceLocator):
     def platform_config_file(self):
         """
         Return the path to the platform config file.
-        ex. engine_root/dev/system_osx_osx_gl.cfg
+        ex. engine_root/dev/system_osx_mac.cfg
         :return: path to the platform config file
         """
         return os.path.join(self.engine_root(), CONFIG_FILE)
