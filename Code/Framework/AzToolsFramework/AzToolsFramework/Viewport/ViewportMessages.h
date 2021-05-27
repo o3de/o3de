@@ -168,7 +168,7 @@ namespace AzToolsFramework
             /// Transform a point in world space to screen space coordinates in Qt Widget space.
             /// Multiply by DeviceScalingFactor to get the position in viewport pixel space.
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
-            /// Transform a point in screen space coordinates in Qt Widget space to a vector in world space based on clip space depth.
+            /// Transform a point from Qt widget screen space to world space based on the given clip space depth.
             /// Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             /// Returns the world space position if successful.
             virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;

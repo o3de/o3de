@@ -41,6 +41,7 @@ namespace AzManipulatorTestFramework
         AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
         AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
+        float DeviceScalingFactor() override;
     private:
         // ViewportInteractionRequestBus ...
         bool GridSnappingEnabled();
