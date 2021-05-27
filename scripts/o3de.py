@@ -32,7 +32,7 @@ def add_args(parser, subparsers) -> None:
     # add the scripts/o3de directory to the front of the sys.path
     sys.path.insert(0, str(o3de_package_dir))
     from o3de import engine_template, global_project, register, print_registration, get_registration, download, \
-        add_gem_project, remove_gem_project, sha256
+        enable_gem, disable_gem, sha256
     # Remove the temporarily added path
     sys.path = sys.path[1:]
 
@@ -54,10 +54,10 @@ def add_args(parser, subparsers) -> None:
     download.add_args(subparsers)
 
     # add a gem to a project
-    add_gem_project.add_args(subparsers)
+    enable_gem.add_args(subparsers)
 
     # remove a gem from a project
-    remove_gem_project.add_args(subparsers)
+    disable_gem.add_args(subparsers)
 
     # sha256
     sha256.add_args(subparsers)
