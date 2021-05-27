@@ -106,6 +106,17 @@ namespace AzToolsFramework
         World, //!< World space (space aligned to world axes - identity).
     };
 
+    struct SpaceCluster
+    {
+        ViewportUi::ClusterId m_spaceClusterId;
+        ViewportUi::ButtonId m_localButtonId;
+        ViewportUi::ButtonId m_parentButtonId;
+        ViewportUi::ButtonId m_worldButtonId;
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler;
+        ReferenceFrame m_currentSpace = ReferenceFrame::Parent;
+        bool m_spaceLock = false;
+    };
+
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
@@ -160,6 +171,7 @@ namespace AzToolsFramework
         void RegenerateManipulators();
 
         void CreateTransformModeSelectionCluster();
+        void CreateSpaceSelectionCluster();
 
         void ClearManipulatorTranslationOverride();
         void ClearManipulatorOrientationOverride();
@@ -214,8 +226,8 @@ namespace AzToolsFramework
         void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation);
         void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation);
         void ResetOrientationForSelectedEntitiesLocal();
-        void CopyScaleToSelectedEntitiesIndividualLocal(const AZ::Vector3& scale);
-        void CopyScaleToSelectedEntitiesIndividualWorld(const AZ::Vector3& scale);
+        void CopyScaleToSelectedEntitiesIndividualLocal(float scale);
+        void CopyScaleToSelectedEntitiesIndividualWorld(float scale);
 
         // EditorManipulatorCommandUndoRedoRequestBus ...
         void UndoRedoEntityManipulatorCommand(
@@ -250,7 +262,7 @@ namespace AzToolsFramework
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
-        void SetEntityLocalScale(AZ::EntityId entityId, const AZ::Vector3& localScale);
+        void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
@@ -285,6 +297,9 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
+
+        SpaceCluster m_spaceCluster;
+        void UpdateSpaceCluster(ReferenceFrame referenceFrame);
     };
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
@@ -320,7 +335,7 @@ namespace AzToolsFramework
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform, bool& internal);
-        void SetEntityLocalScale(AZ::EntityId entityId, const AZ::Vector3& localScale, bool& internal);
+        void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
     } // namespace ETCS
 } // namespace AzToolsFramework

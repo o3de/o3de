@@ -10,6 +10,8 @@
 *
 */
 
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
 #include <AzFramework/Asset/AssetRegistry.h>
@@ -49,6 +51,14 @@ namespace UnitTest
             using namespace AZ::Data;
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager"); // Shorter name because Setting Registry
                                                                                       // specialization are 32 characters max.
+
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_application->Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

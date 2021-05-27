@@ -685,7 +685,7 @@ namespace PhysX
             // Let each collider decide how to scale itself, so extract the scale here.
             AZ::Transform entityWorldTransformWithoutScale = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(entityWorldTransformWithoutScale, m_entityId, &AZ::TransformInterface::GetWorldTM);
-            entityWorldTransformWithoutScale.ExtractScale();
+            entityWorldTransformWithoutScale.ExtractUniformScale();
 
             auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get();
             if (physXDebug == nullptr)

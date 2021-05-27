@@ -864,7 +864,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
         if (drawFrame)
         {
             ColorB tempColor(255, 255, 255, 255);
-            uint32_t frameColor = tempColor.pack_abgr8888();        //note: this ends up in r,g,b,a order on little-endian machines
+            uint32_t frameColor = tempColor.pack_argb8888();        //note: this ends up in r,g,b,a order on little-endian machines
 
             Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 
@@ -1122,7 +1122,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             {
                 ColorB tempColor = color;
                 tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
-                packedColor = tempColor.pack_abgr8888();                    //note: this ends up in r,g,b,a order on little-endian machines
+                packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)

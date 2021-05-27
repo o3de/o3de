@@ -33,11 +33,18 @@ namespace O3DE::ProjectManager
         explicit LabelButton(QWidget* parent = nullptr);
         ~LabelButton() = default;
 
+        void SetEnabled(bool enabled);
+        void SetOverlayText(const QString& text);
+
     signals:
         void triggered();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
+
+    private:
+        QLabel* m_overlayLabel;
+        bool m_enabled = true;
     };
 
     class ProjectButton
@@ -48,6 +55,9 @@ namespace O3DE::ProjectManager
     public :
         explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
+
+        void SetButtonEnabled(bool enabled);
+        void SetButtonOverlayText(const QString& text);
 
     signals:
         void OpenProject(const QString& projectName);
