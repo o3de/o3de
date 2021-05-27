@@ -520,89 +520,11 @@ namespace AzToolsFramework
             return m_editorTransform.m_translate.GetZ();
         }
 
-        void TransformComponent::SetRotation(const AZ::Vector3& eulerAnglesRadians)
+        void TransformComponent::SetWorldRotationQuaternion(const AZ::Quaternion& quaternion)
         {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotation is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::ConvertEulerRadiansToQuaternion(eulerAnglesRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationQuaternion(const AZ::Quaternion& quaternion)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationQuaternion is deprecated, please use SetLocalRotation");
             AZ::Transform newWorldTransform = GetWorldTM();
             newWorldTransform.SetRotation(quaternion);
             SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationX(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationX is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationX(eulerAngleRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationY(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationY is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationY(eulerAngleRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationZ(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationZ is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationZ(eulerAngleRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::RotateByX(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "RotateByX is deprecated, please use RotateAroundLocalX");
-            SetWorldTM(GetWorldTM() * AZ::Transform::CreateRotationX(eulerAngleRadians));
-        }
-
-        void TransformComponent::RotateByY(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "RotateByY is deprecated, please use RotateAroundLocalY");
-            SetWorldTM(GetWorldTM() * AZ::Transform::CreateRotationY(eulerAngleRadians));
-        }
-
-        void TransformComponent::RotateByZ(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "RotateByZ is deprecated, please use RotateAroundLocalZ");
-            SetWorldTM(GetWorldTM() * AZ::Transform::CreateRotationZ(eulerAngleRadians));
-        }
-
-        AZ::Vector3 TransformComponent::GetRotationEulerRadians()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetRotationEulerRadians is deprecated, please use GetWorldRotation");
-            return GetWorldTM().GetRotation().GetEulerRadians();
-        }
-
-        AZ::Quaternion TransformComponent::GetRotationQuaternion()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetRotationQuaternion is deprecated, please use GetWorldRotationQuaternion");
-            return GetWorldTM().GetRotation();
-        }
-
-        float TransformComponent::GetRotationX()
-        {
-            return GetRotationEulerRadians().GetX();
-        }
-
-        float TransformComponent::GetRotationY()
-        {
-            return GetRotationEulerRadians().GetY();
-        }
-
-        float TransformComponent::GetRotationZ()
-        {
-            return GetRotationEulerRadians().GetZ();
         }
 
         AZ::Vector3 TransformComponent::GetWorldRotation()
