@@ -14,35 +14,42 @@ include_guard()
 set(LY_EXTERNAL_SUBDIRS "" CACHE STRING "List of subdirectories to recurse into when running cmake against the engine's CMakeLists.txt")
 
 #! read_json_external_subdirs
-# Read the "external_subdirectories" array from a *.json file
-# External subdirectories are any folders with CMakeLists.txt in them
-# This could be regular subdirectories, Gems(contains an additional gem.json),
-# Restricted folders(contains an additional restricted.json), etc...
-#
-# \arg:output_external_subdirs name of output variable to store external subdirectories into
-# \arg:input_json_path path to the *.json file to load and read the external subdirectories from
-# \return: external subdirectories as is from the json file.
+#  Read the "external_subdirectories" array from a *.json file
+#  External subdirectories are any folders with CMakeLists.txt in them
+#  This could be regular subdirectories, Gems(contains an additional gem.json),
+#  Restricted folders(contains an additional restricted.json), etc...
+#  
+#  \arg:output_external_subdirs name of output variable to store external subdirectories into
+#  \arg:input_json_path path to the *.json file to load and read the external subdirectories from
+#  \return: external subdirectories as is from the json file.
 function(read_json_external_subdirs output_external_subdirs input_json_path)
+    o3de_read_json_array(json_array ${input_json_path} "external_subdirectories")
+    set(${output_external_subdirs} ${json_array} PARENT_SCOPE)
+endfunction()
+
+#! read_json_array
+#  Reads the a json array field into a cmake list variable
+function(o3de_read_json_array read_output_array input_json_path array_key)
     file(READ ${input_json_path} manifest_json_data)
-    string(JSON external_subdirs_count ERROR_VARIABLE manifest_json_error
-        LENGTH ${manifest_json_data} "external_subdirectories")
+    string(JSON array_count ERROR_VARIABLE manifest_json_error
+        LENGTH ${manifest_json_data} ${array_key})
     if(manifest_json_error)
-        # There is "external_subdirectories" key, so theire are no subdirectories to read
+        # There is no key, return
         return()
     endif()
 
-    if(external_subdirs_count GREATER 0)
-        math(EXPR external_subdir_range "${external_subdirs_count}-1")
-        foreach(external_subdir_index RANGE ${external_subdir_range})
-            string(JSON external_subdir ERROR_VARIABLE manifest_json_error
-                GET ${manifest_json_data} "external_subdirectories" "${external_subdir_index}")
+    if(array_count GREATER 0)
+        math(EXPR array_range "${array_count}-1")
+        foreach(array_index RANGE ${array_range})
+            string(JSON array_element ERROR_VARIABLE manifest_json_error
+                GET ${manifest_json_data} ${array_key} "${array_index}")
             if(manifest_json_error)
-                message(FATAL_ERROR "Error reading field at index ${external_subdir_index} in \"external_subdirectories\" JSON array: ${manifest_json_error}")
+                message(FATAL_ERROR "Error reading field at index ${array_index} in \"${array_key}\" JSON array: ${manifest_json_error}")
             endif()
-            list(APPEND external_subdirs ${external_subdir})
+            list(APPEND array_elements ${array_element})
         endforeach()
     endif()
-    set(${output_external_subdirs} ${external_subdirs} PARENT_SCOPE)
+    set(${read_output_array} ${array_elements} PARENT_SCOPE)
 endfunction()
 
 function(o3de_read_json_key output_value input_json_path key)

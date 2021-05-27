@@ -5,7 +5,7 @@
     "O3DEVersion": "@LY_VERSION_STRING@",
     "O3DECopyrightYear": @LY_VERSION_COPYRIGHT_YEAR@,
     "O3DEBuildNumber": @LY_VERSION_BUILD_NUMBER@,
-    "external_subdirectories": @LY_INSTALL_EXTERNAL_SUBDIRS@,
+    "external_subdirectories": [@LY_INSTALL_EXTERNAL_SUBDIRS@],
     "projects": [@LY_INSTALL_PROJECTS@],
     "templates": [@LY_INSTALL_TEMPLATES@]
 }
