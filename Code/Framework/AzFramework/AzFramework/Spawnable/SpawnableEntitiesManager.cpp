@@ -38,6 +38,10 @@ namespace AzFramework
 
     SpawnableEntitiesManager::SpawnableEntitiesManager()
     {
+        AZ::ComponentApplicationBus::BroadcastResult(m_defaultSerializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Assert(
+            m_defaultSerializeContext, "Failed to retrieve serialization context during construction of the Spawnable Entities Manager.");
+
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
             AZ::u64 value = aznumeric_caster(m_highPriorityThreshold);
@@ -47,53 +51,57 @@ namespace AzFramework
     }
 
     void SpawnableEntitiesManager::SpawnAllEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, EntityPreInsertionCallback preInsertionCallback,
-        EntitySpawnCallback completionCallback)
+        EntitySpawnTicket& ticket, SpawnablePriority priority, SpawnEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnAllEntities hasn't been initialized.");
 
         SpawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
-        queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        queueEntry.m_preInsertionCallback = AZStd::move(preInsertionCallback);
+        queueEntry.m_serializeContext =
+            optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
+        queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
+        queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
         QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::SpawnEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices,
-        EntityPreInsertionCallback preInsertionCallback, EntitySpawnCallback completionCallback)
+        EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnEntities hasn't been initialized.");
 
         SpawnEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_entityIndices = AZStd::move(entityIndices);
-        queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        queueEntry.m_preInsertionCallback = AZStd::move(preInsertionCallback);
+        queueEntry.m_serializeContext =
+            optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
+        queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
+        queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
         QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::DespawnAllEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, EntityDespawnCallback completionCallback)
+        EntitySpawnTicket& ticket, SpawnablePriority priority, DespawnAllEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to DespawnAllEntities hasn't been initialized.");
 
         DespawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
-        queueEntry.m_completionCallback = AZStd::move(completionCallback);
+        queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ReloadSpawnable(
         EntitySpawnTicket& ticket, SpawnablePriority priority, AZ::Data::Asset<Spawnable> spawnable,
-        ReloadSpawnableCallback completionCallback)
+        ReloadSpawnableOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to ReloadSpawnable hasn't been initialized.");
 
         ReloadSpawnableCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_spawnable = AZStd::move(spawnable);
-        queueEntry.m_completionCallback = AZStd::move(completionCallback);
+        queueEntry.m_serializeContext =
+            optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
+        queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         QueueRequest(ticket, priority, AZStd::move(queueEntry));
     }
 
@@ -174,58 +182,57 @@ namespace AzFramework
 
     auto SpawnableEntitiesManager::ProcessQueue(Queue& queue) -> CommandQueueStatus
     {
-        AZStd::queue<Requests> pendingRequestQueue;
+        // Process delayed requests first.
+        // Only process the requests that are currently in this queue, not the ones that could be re-added if they still can't complete.
+        size_t delayedSize = queue.m_delayed.size();
+        for (size_t i = 0; i < delayedSize; ++i)
         {
-            AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
-            queue.m_pendingRequest.swap(pendingRequestQueue);
+            Requests& request = queue.m_delayed.front();
+            bool result = AZStd::visit(
+                [this](auto&& args) -> bool
+                {
+                    return ProcessRequest(args);
+                },
+                request);
+            if (!result)
+            {
+                queue.m_delayed.emplace_back(AZStd::move(request));
+            }
+            queue.m_delayed.pop_front();
         }
 
-        if (!pendingRequestQueue.empty() || !queue.m_delayed.empty())
+        // Process newly added requests.
+        while (true)
         {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            AZ_Assert(serializeContext, "Failed to retrieve serialization context.");
-
-            // Only process the requests that are currently in this queue, not the ones that could be re-added if they still can't complete.
-            size_t delayedSize = queue.m_delayed.size();
-            for (size_t i = 0; i < delayedSize; ++i)
+            AZStd::queue<Requests> pendingRequestQueue;
             {
-                Requests& request = queue.m_delayed.front();
-                bool result = AZStd::visit([this, serializeContext](auto&& args) -> bool
-                    {
-                        return ProcessRequest(args, *serializeContext);
-                    }, request);
-                if (!result)
-                {
-                    queue.m_delayed.emplace_back(AZStd::move(request));
-                }
-                queue.m_delayed.pop_front();
+                AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
+                queue.m_pendingRequest.swap(pendingRequestQueue);
             }
 
-            do
+            if (!pendingRequestQueue.empty())
             {
                 while (!pendingRequestQueue.empty())
                 {
                     Requests& request = pendingRequestQueue.front();
-                    bool result = AZStd::visit([this, serializeContext](auto&& args) -> bool
+                    bool result = AZStd::visit(
+                        [this](auto&& args) -> bool
                         {
-                            return ProcessRequest(args, *serializeContext);
-                        }, request);
+                            return ProcessRequest(args);
+                        },
+                        request);
                     if (!result)
                     {
                         queue.m_delayed.emplace_back(AZStd::move(request));
                     }
                     pendingRequestQueue.pop();
                 }
-
-                // Spawning entities can result in more entities being queued to spawn. Repeat spawning until the queue is
-                // empty to avoid a chain of entity spawning getting dragged out over multiple frames.
-                {
-                    AZStd::scoped_lock queueLock(queue.m_pendingRequestMutex);
-                    queue.m_pendingRequest.swap(pendingRequestQueue);
-                }
-            } while (!pendingRequestQueue.empty());
-        }
+            }
+            else
+            {
+                break;
+            }
+        };
 
         return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
@@ -267,7 +274,7 @@ namespace AzFramework
                 &entityTemplate, templateToCloneEntityIdMap, &serializeContext);
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(SpawnAllEntitiesCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
@@ -296,7 +303,7 @@ namespace AzFramework
             {
                 const AZ::Entity& entityTemplate = *entitiesToSpawn[i];
 
-                AZ::Entity* clone = CloneSingleEntity(entityTemplate, templateToCloneEntityIdMap, serializeContext);
+                AZ::Entity* clone = CloneSingleEntity(entityTemplate, templateToCloneEntityIdMap, *request.m_serializeContext);
 
                 AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
 
@@ -347,7 +354,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(SpawnEntitiesCommand& request, AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(SpawnEntitiesCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
@@ -371,7 +378,7 @@ namespace AzFramework
                 {
                     const AZ::Entity& entityTemplate = *entitiesToSpawn[index];
 
-                    AZ::Entity* clone = serializeContext.CloneObject(&entityTemplate);
+                    AZ::Entity* clone = request.m_serializeContext->CloneObject(&entityTemplate);
                     AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
                     clone->SetId(AZ::Entity::MakeId());
 
@@ -413,8 +420,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(DespawnAllEntitiesCommand& request,
-        [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(DespawnAllEntitiesCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (request.m_requestId == ticket.m_currentRequestId)
@@ -447,7 +453,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(ReloadSpawnableCommand& request, AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(ReloadSpawnableCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         AZ_Assert(ticket.m_spawnable.GetId() == request.m_spawnable.GetId(),
@@ -488,7 +494,7 @@ namespace AzFramework
                 {
                     const AZ::Entity& entityTemplate = *entities[i];
 
-                    AZ::Entity* clone = CloneSingleEntity(entityTemplate, templateToCloneEntityIdMap, serializeContext);
+                    AZ::Entity* clone = CloneSingleEntity(entityTemplate, templateToCloneEntityIdMap, *request.m_serializeContext);
 
                     AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
 
@@ -502,7 +508,7 @@ namespace AzFramework
                 for (size_t index : ticket.m_spawnedEntityIndices)
                 {
                     ticket.m_spawnedEntities.push_back(
-                        index < entitiesSize ? SpawnSingleEntity(*entities[index], serializeContext) : nullptr);
+                        index < entitiesSize ? SpawnSingleEntity(*entities[index], *request.m_serializeContext) : nullptr);
                 }
             }
             ticket.m_spawnable = AZStd::move(request.m_spawnable);
@@ -525,7 +531,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(ListEntitiesCommand& request, [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(ListEntitiesCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (request.m_requestId == ticket.m_currentRequestId)
@@ -541,7 +547,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(ListIndicesEntitiesCommand& request, [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(ListIndicesEntitiesCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (request.m_requestId == ticket.m_currentRequestId)
@@ -560,7 +566,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(ClaimEntitiesCommand& request, [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(ClaimEntitiesCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (request.m_requestId == ticket.m_currentRequestId)
@@ -580,7 +586,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(BarrierCommand& request, [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(BarrierCommand& request)
     {
         Ticket& ticket = *request.m_ticket;
         if (request.m_requestId == ticket.m_currentRequestId)
@@ -599,7 +605,7 @@ namespace AzFramework
         }
     }
 
-    bool SpawnableEntitiesManager::ProcessRequest(DestroyTicketCommand& request, [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    bool SpawnableEntitiesManager::ProcessRequest(DestroyTicketCommand& request)
     {
         if (request.m_requestId == request.m_ticket->m_currentRequestId)
         {

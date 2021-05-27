@@ -21,6 +21,7 @@
 namespace AZ
 {
     class Entity;
+    class SerializeContext;
 }
 
 namespace AzFramework
@@ -171,6 +172,34 @@ namespace AzFramework
     using ClaimEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using BarrierCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
 
+    struct SpawnEntitiesOptionalArgs
+    {
+        //! Callback that's called after instances of entities have been created, but before they're spawned into the world. This
+        //!     gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.
+        EntityPreInsertionCallback m_preInsertionCallback;
+        //! Callback that's called when spawning entities has completed. This can be called from a different thread than the one that
+        //!     made the function call. The returned list of entities contains all the newly created entities.
+        EntitySpawnCallback m_completionCallback;
+        //! The Serialize Context used to clone entities with. If this is not provided the global Serialize Contetx will be used.
+        AZ::SerializeContext* m_serializeContext { nullptr };
+    };
+
+    struct DespawnAllEntitiesOptionalArgs
+    {
+        //! Callback that's called when spawning entities has completed. This can be called from a different thread than the one that
+        //!     made the function call. The returned list of entities contains all the newly created entities.
+        EntityDespawnCallback m_completionCallback;
+    };
+
+    struct ReloadSpawnableOptionalArgs
+    {
+        //! Callback that's called when spawning entities has completed. This can be called from a different thread than the one that
+        //!     made the function call. The returned list of entities contains all the newly created entities.
+        ReloadSpawnableCallback m_completionCallback;
+        //! The Serialize Context used to clone entities with. If this is not provided the global Serialize Contetx will be used.
+        AZ::SerializeContext* m_serializeContext { nullptr };
+    };
+
     //! Interface definition to (de)spawn entities from a spawnable into the game world.
     //! 
     //! While the callbacks of the individual calls are being processed they will block processing any other request. Callbacks can be
@@ -197,40 +226,31 @@ namespace AzFramework
         //! Spawn instances of all entities in the spawnable.
         //! @param ticket Stores the results of the call. Use this ticket to spawn additional entities or to despawn them.
         //! @param priority The priority at which this call will be executed.
-        //! @param completionCallback Optional callback that's called when spawning entities has completed. This can be called from
-        //!     a different thread than the one that made the function call. The returned list of entities contains all the newly
-        //!     created entities.
+        //! @param optionalArgs Optional additional arguments, see SpawnAllEntitiesOptionalArgs
         virtual void SpawnAllEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, EntityPreInsertionCallback preInsertionCallback = {},
-            EntitySpawnCallback completionCallback = {}) = 0;
+            EntitySpawnTicket& ticket, SpawnablePriority priority, SpawnEntitiesOptionalArgs optionalArgs = {}) = 0;
         //! Spawn instances of some entities in the spawnable.
         //! @param ticket Stores the results of the call. Use this ticket to spawn additional entities or to despawn them.
         //! @param priority The priority at which this call will be executed.
         //! @param entityIndices The indices into the template entities stored in the spawnable that will be used to spawn entities from.
-        //! @param completionCallback Optional callback that's called when spawning entities has completed. This can be called from
-        //!     a different thread than the one that made this function call. The returned list of entities contains all the newly
-        //!     created entities.
+        //! @param optionalArgs Optional additional arguments, see SpawnAllEntitiesOptionalArgs
         virtual void SpawnEntities(
             EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices,
-            EntityPreInsertionCallback preInsertionCallback = {}, EntitySpawnCallback completionCallback = {}) = 0;
+            SpawnEntitiesOptionalArgs optionalArgs = {}) = 0;
         //! Removes all entities in the provided list from the environment.
         //! @param ticket The ticket previously used to spawn entities with.
         //! @param priority The priority at which this call will be executed.
-        //! @param completionCallback Optional callback that's called when despawning entities has completed. This can be called from
-        //!     a different thread than the one that made this function call.
+        //! @param optionalArgs Optional additional arguments, see SpawnAllEntitiesOptionalArgs
         virtual void DespawnAllEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, EntityDespawnCallback completionCallback = {}) = 0;
-
+            EntitySpawnTicket& ticket, SpawnablePriority priority, DespawnAllEntitiesOptionalArgs optionalArgs = {}) = 0;
         //! Removes all entities in the provided list from the environment and reconstructs the entities from the provided spawnable.
         //! @param ticket Holds the information on the entities to reload.
         //! @param priority The priority at which this call will be executed.
         //! @param spawnable The spawnable that will replace the existing spawnable. Both need to have the same asset id.
-        //! @param completionCallback Optional callback that's called when the entities have been reloaded. This can be called from
-        //!     a different thread than the one that made this function call. The returned list of entities contains all the replacement
-        //!     entities.
+        //! @param optionalArgs Optional additional arguments, see SpawnAllEntitiesOptionalArgs
         virtual void ReloadSpawnable(
             EntitySpawnTicket& ticket, SpawnablePriority priority, AZ::Data::Asset<Spawnable> spawnable,
-            ReloadSpawnableCallback completionCallback = {}) = 0;
+            ReloadSpawnableOptionalArgs optionalArgs = {}) = 0;
 
         //! List all entities that are spawned using this ticket.
         //! @param ticket Only the entities associated with this ticket will be listed.
