@@ -72,7 +72,8 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ImGui.ImGuiLYUtils
-            Gem::LmbrCentral.Static
+        PRIVATE
+            Gem::LmbrCentral
 )
 
 ly_add_target(

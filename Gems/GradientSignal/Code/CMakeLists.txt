@@ -22,9 +22,10 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral.Static
             Gem::SurfaceData
             Gem::ImageProcessingAtom.Headers
+        PRIVATE
+            Gem::LmbrCentral
 )
 
 ly_add_target(
@@ -40,6 +41,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::GradientSignal.Static
+            Gem::LmbrCentral
         PUBLIC
             Gem::ImageProcessingAtom.Headers # Atom/ImageProcessing/PixelFormats.h is part of a header in Includes
     RUNTIME_DEPENDENCIES
@@ -66,6 +68,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 GRADIENTSIGNAL_EDITOR
         BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::LmbrCentral.Editor
             PUBLIC
                 3rdParty::Qt::Widgets
                 Legacy::CryCommon
@@ -79,7 +83,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME GradientSignal.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             gradientsignal_editor_shared_files.cmake
@@ -91,6 +94,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::GradientSignal.Editor.Static
+                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
@@ -120,6 +124,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Gem::GradientSignal.Static
+                Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests
@@ -140,6 +145,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Gem::GradientSignal.Static
                     Gem::GradientSignal.Editor.Static
+                    Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
             NAME Gem::GradientSignal.Editor.Tests

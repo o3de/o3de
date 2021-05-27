@@ -23,7 +23,8 @@ ly_add_target(
         PUBLIC
             Legacy::CryCommon
             Gem::GradientSignal
-            Gem::LmbrCentral.Static
+        PRIVATE
+            Gem::LmbrCentral
 )
 
 ly_add_target(
@@ -61,6 +62,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::LmbrCentral.Editor
             PUBLIC
                 Gem::FastNoise.Static
                 AZ::AzToolsFramework
@@ -69,7 +72,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME FastNoise.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             fastnoise_editor_shared_files.cmake
@@ -80,7 +82,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                FastNoise.Editor.Static
+                Gem::FastNoise.Editor.Static
+                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
             Gem::SurfaceData.Editor
@@ -113,6 +116,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     FastNoise.Editor.Static
+                    Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
             NAME Gem::FastNoise.Editor.Tests

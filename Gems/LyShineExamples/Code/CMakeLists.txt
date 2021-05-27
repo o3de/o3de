@@ -22,7 +22,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral.Static
+            Gem::LmbrCentral
             Gem::LyShine.Static
 )
 

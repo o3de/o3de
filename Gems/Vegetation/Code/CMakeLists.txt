@@ -24,10 +24,11 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::LmbrCentral
+            Gem::SurfaceData
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral.Static
-            Gem::SurfaceData.Static
             Gem::AtomLyIntegration_CommonFeatures.Static
     RUNTIME_DEPENDENCIES
         Gem::GradientSignal

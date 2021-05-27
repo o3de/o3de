@@ -36,10 +36,10 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
-            Gem::LmbrCentral.Static
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::LmbrCentral
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
