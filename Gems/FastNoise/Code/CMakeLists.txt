@@ -134,6 +134,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     Gem::FastNoise.Static
+                    Gem::LmbrCentral
         )
         ly_add_googletest(
             NAME Gem::FastNoise.Tests
