@@ -189,12 +189,12 @@ class TestsAssetProcessorGUI_Windows(object):
         Test Steps:
         1. Create temporary test environment with test assets
         2. Open Asset Processor GUI with set to stay open after idle and verify it does not fail
-        3. Verify contents of source asset
-        4. Verify contetns of product asset
+        3. Verify contents of source asset for later comparison
+        4. Verify contents of product asset for later comparison
         5. Modify contents of source asset
         6. Wait for Asset Processor to go back to idle state
-        7. Verify contents of source asset
-        8. Verify contents of product asset
+        7. Verify contents of source asset are the modified version
+        8. Verify contents of product asset are the modified version
         """
 
         env = ap_setup_fixture
@@ -210,7 +210,7 @@ class TestsAssetProcessorGUI_Windows(object):
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
 
-        # Verify contents of test asset in project folder before modication
+        # Verify contents of test asset in project folder before modification
         with open(project_asset_path, "r") as project_asset_file:
             assert project_asset_file.read() == "before_state"
 
@@ -387,7 +387,7 @@ class TestsAssetProcessorGUI_Windows(object):
         1. Create a temporary testing environment
         2. Start the Asset Processor
         3. Copy in assets to the test environment
-        4. Try to stop the Asset Processor with a timeout of 1 second
+        4. Try to stop the Asset Processor with a timeout of 1 second (This cannot be done manually).
         5. Verify that Asset Processor times out and returns the expected error
         """
 

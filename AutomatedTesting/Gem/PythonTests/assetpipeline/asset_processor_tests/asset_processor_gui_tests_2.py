@@ -183,7 +183,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         Deleting slices and uicanvases while AP is running
 
         Test Steps:
-        1. Create temporary testing environment with  test assets
+        1. Create temporary testing environment with test assets
         2. Launch Asset Processor and wait for it to go idle
         3. Verify product assets were created in the cache
         4. Delete test assets from the cache
@@ -284,7 +284,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         Assets should process regardless of the new address
 
         Test Steps:
-        1. Create a temporary testing enviornment
+        1. Create a temporary testing environment
         2. Set an invalid ip address in Asset Processor settings file
         3. Launch Asset Processor GUI
         4. Verify that it processes assets and exits cleanly even though it has an invalid IP.

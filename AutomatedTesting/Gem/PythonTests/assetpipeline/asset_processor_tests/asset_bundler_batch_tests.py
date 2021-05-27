@@ -617,7 +617,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         6. Verify that seed only has PC as a platform flag
         7. Attempt to add a platform without using the --platform argument
         8. Verify that asset bundler returns False and file contents did not change
-        9. Add MAC platform via --addPlatformToSeeds
+        9. Add Mac platform via --addPlatformToSeeds
         10. Validate that seed has both Mac & PC platform flags
         11. Attempt to remove platform without specifying a platform
         12. Validate that seed has both Mac & PC platform flags
@@ -1176,9 +1176,10 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
 
         Test Steps:
         1. Make asset list file (used for bundle creation)
-        2. Make bundle in <project_folder>/Bundles
-        3. Validate file was created
-        4. Make sure bundle now exists in cache
+        2. Start Asset Processor GUI
+        3. Make bundle in <project_folder>/Bundles
+        4. Validate file was created in Bundles folder
+        5. Make sure bundle now exists in cache
         """
         # Set up helpers and variables
         helper = bundler_batch_helper

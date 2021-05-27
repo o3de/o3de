@@ -1095,7 +1095,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         C21968375 AllowBrokenDependencies with delete
 
         Test Steps:
-        1. Create temporary testing evnironment
+        1. Create temporary testing environment
         2. Run Asset Processor to Process Assets
         3. Build primary AP Batch parameter value and destination paths
         4. Validate resulting file paths in source and output directories
@@ -1323,7 +1323,7 @@ class TestsAssetRelocator_WindowsAndMac(object):
         Test Steps:
         1. Create temporary testing environment
         2. Determine if using wildcards on paths or not
-        3. Determine if exluudeMetaDataFiles is set or not
+        3. Determine if excludeMetaDataFiles is set or not
         4. Build primary AP Batch parameter value and destination paths
         5. Build and run the AP Batch command with parameters
         6. Validate resulting file paths in source and output directories
@@ -3798,7 +3798,7 @@ class TestsAssetProcessorMove_WindowsAndMac:
 
         Test Steps:
         1. Create temporary testing environment based on test data
-        2. Validate that temporary testing enviornment was created succesfully
+        2. Validate that temporary testing environment was created successfully
         3. Execute the move command based upon the test data
         4. Validate that files are where they're expected according to the test data
         5. Validate unexpected files are not found according to the test data

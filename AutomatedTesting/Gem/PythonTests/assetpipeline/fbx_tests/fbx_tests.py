@@ -534,6 +534,8 @@ class TestsFBX_AllPlatforms(object):
                                                                             ap_setup_fixture, asset_processor, project,
                                                                             blackbox_param):
         """
+        Please see run_fbx_test(...) for details
+
         Test Steps:
         1. Determine if blackbox is set to none
         2. Run FBX Test
@@ -551,6 +553,8 @@ class TestsFBX_AllPlatforms(object):
                                                                                          asset_processor, project,
                                                                                          blackbox_param):
         """
+        Please see run_fbx_test(...) for details
+
         Test Steps:
         1. Determine if blackbox is set to none
         2. Run FBX Test
@@ -581,6 +585,10 @@ class TestsFBX_AllPlatforms(object):
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset = False):
         """
+        These tests work by having the test case ingest the test data and determine the run pattern.
+        Tests will process scene settings files and will additionally do a verification against a provided debug file
+        Additionally, if an override is passed, the output is checked against the override.
+
         Test Steps:
         1. Create temporary test environment
         2. Process Assets
