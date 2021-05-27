@@ -34,7 +34,7 @@ namespace ScriptCanvas
             {
                 SCRIPTCANVAS_NODE(SpawnNodeable);
             public:
-                SpawnNodeable();
+                SpawnNodeable() = default;
                 SpawnNodeable(const SpawnNodeable& rhs);
 
                 void OnInitializeExecutionState() override;
@@ -50,7 +50,7 @@ namespace ScriptCanvas
 
                 AZStd::vector<Data::EntityIDType> m_spawnedEntityList;
                 AZStd::vector<size_t> m_spawnBatchSizes;
-                AZStd::recursive_mutex m_recursiveMutex;
+                AZStd::recursive_mutex m_idBatchMutex;
             };
         }
     }

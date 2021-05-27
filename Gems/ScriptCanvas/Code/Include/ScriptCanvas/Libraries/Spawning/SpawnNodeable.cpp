@@ -22,10 +22,6 @@ namespace ScriptCanvas
     {
         namespace Spawning
         {
-            SpawnNodeable::SpawnNodeable()
-            {
-            }
-
             SpawnNodeable::SpawnNodeable(const SpawnNodeable& rhs)
             {
                 m_spawnableAsset = rhs.m_spawnableAsset;
@@ -38,7 +34,6 @@ namespace ScriptCanvas
                     AZ::TickBus::Handler::BusConnect();
                 }
 
-                m_spawnTicket.IsValid();
                 m_spawnTicket = AzFramework::EntitySpawnTicket(m_spawnableAsset);
             }
 
@@ -57,7 +52,7 @@ namespace ScriptCanvas
                 AZStd::vector<Data::EntityIDType> swappedSpawnedEntityList;
                 AZStd::vector<size_t> swappedSpawnBatchSizes;
                 {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_recursiveMutex);
+                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_idBatchMutex);
 
                     swappedSpawnedEntityList.swap(m_spawnedEntityList);
                     swappedSpawnBatchSizes.swap(m_spawnBatchSizes);
@@ -99,6 +94,8 @@ namespace ScriptCanvas
                         m_spawnableAsset = AZ::Data::AssetManager::Instance().
                             FindOrCreateAsset<AzFramework::Spawnable>(rootAssetId, AZ::Data::AssetLoadBehavior::Default);
                     }
+
+                    m_spawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                 }
             }
 
@@ -129,7 +126,7 @@ namespace ScriptCanvas
                 auto spawnCompleteCB = [this]([[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
                     AzFramework::SpawnableConstEntityContainerView view)
                 {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_recursiveMutex);
+                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_idBatchMutex);
                     m_spawnedEntityList.reserve(m_spawnedEntityList.size() + view.size());
                     for (const AZ::Entity* entity : view)
                     {
