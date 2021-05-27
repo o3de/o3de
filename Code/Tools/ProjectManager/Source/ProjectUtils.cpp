@@ -87,8 +87,11 @@ namespace O3DE::ProjectManager
         bool CopyProjectDialog(const QString& origPath, QWidget* parent)
         {
             bool copyResult = false;
-            QString newPath =
-                QDir::toNativeSeparators(QFileDialog::getExistingDirectory(parent, QObject::tr("Select New Project Directory"), origPath));
+
+            QDir parentOrigDir(origPath);
+            parentOrigDir.cdUp();
+            QString newPath = QDir::toNativeSeparators(
+                QFileDialog::getExistingDirectory(parent, QObject::tr("Select New Project Directory"), parentOrigDir.path()));
             if (!newPath.isEmpty())
             {
                 if (!WarnDirectoryOverwrite(newPath, parent))
