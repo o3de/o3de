@@ -388,7 +388,7 @@ namespace AzFramework
         const auto inv = [](const bool invert)
         {
             constexpr float Dir[] = { 1.0f, -1.0f };
-            return Dir[static_cast<int>(invert)];
+            return Dir[aznumeric_cast<int>(invert)];
         };
 
         nextCamera.m_lookAt += deltaPanX * inv(ed_cameraSystemPanInvertX);
@@ -754,11 +754,11 @@ namespace AzFramework
 
         if (inputChannelId == InputDeviceMouse::Movement::X)
         {
-            return HorizontalMotionEvent{ (int)inputChannel.GetValue() };
+            return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Y)
         {
-            return VerticalMotionEvent{ (int)inputChannel.GetValue() };
+            return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)
         {
