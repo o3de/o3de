@@ -78,12 +78,20 @@ namespace AZ
         void AtomActorInstance::UpdateBounds()
         {
             // Update RenderActorInstance world bounding box
-            // The bounding box is moving with the actor instance. It is static in the way that it does not change shape.
+            // The bounding box is moving with the actor instance.
             // The entity and actor transforms are kept in sync already.
             m_worldAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetAABB().GetMin(), m_actorInstance->GetAABB().GetMax());
 
             // Update RenderActorInstance local bounding box
-            m_localAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetStaticBasedAABB().GetMin(), m_actorInstance->GetStaticBasedAABB().GetMax());
+            // NB: computing the local bbox from the world bbox makes the local bbox artifically larger than it should be
+            // instead EMFX should support getting the local bbox from the actor instance directly
+            m_localAABB = m_worldAABB.GetTransformedAabb(m_transformInterface->GetWorldTM().GetInverse());
+
+            // Update bbox on mesh instance if it exists
+            if (m_meshFeatureProcessor && m_meshHandle && m_meshHandle->IsValid() && m_skinnedMeshInstance)
+            {
+                m_meshFeatureProcessor->SetLocalAabb(*m_meshHandle, m_localAABB);
+            }
 
             AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
