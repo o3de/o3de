@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactTestSequence.h>
+
 #include <Artifact/Static/TestImpactDependencyGraphData.h>
 #include <Dependency/TestImpactChangeDependencyList.h>
 
@@ -24,13 +26,6 @@ namespace TestImpact
     class DynamicDependencyMap;
     class BuildTarget;
     class TestTarget;
-
-    //! Strategy for selecting tests given a set of source changes.
-    enum class TestSelectionStrategy : bool
-    {
-        SelectOnly, //!< Select tests only, do not attempt prioritization of those selected tests.
-        SelectAndPriotitize //!< Select tests and prioritize according to dependency graph locality of coverer and coveree.
-    };
 
     //! Map of build targets and their dependency graph data.
     //! For test targets, the dependency graph data is that of the build targets which the test target depends on.
@@ -52,7 +47,7 @@ namespace TestImpact
         //! Select the covering test targets for the given set of source changes and optionally prioritizes said test selection.
         //! @param changeDependencyList The resolved list of source dependencies for the CRUD source changes.
         //! @param testSelectionStrategy The test selection and prioritization strategy to apply to the given CRUD source changes.
-        AZStd::vector<const TestTarget*> SelectTestTargets(const ChangeDependencyList& changeDependencyList, TestSelectionStrategy testSelectionStrategy);
+        AZStd::vector<const TestTarget*> SelectTestTargets(const ChangeDependencyList& changeDependencyList, Policy::TestPrioritization testSelectionStrategy);
 
     private:
         //! Map of selected test targets and the production targets they cover for the given set of source changes.
@@ -69,7 +64,7 @@ namespace TestImpact
         //! @param testSelectionStrategy The test selection strategy to prioritize the selected tests.
         //! @returns The selected tests either in either arbitrary order or in prioritized with highest priority first.
         AZStd::vector<const TestTarget*> PrioritizeSelectedTestTargets(
-            const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, TestSelectionStrategy testSelectionStrategy);
+            const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap, Policy::TestPrioritization testSelectionStrategy);
 
         const DynamicDependencyMap* m_dynamicDependencyMap;
         DependencyGraphDataMap m_dependencyGraphDataMap;

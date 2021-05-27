@@ -34,7 +34,7 @@ namespace TestImpact
                 else
                 {
                     // This is a new entry on the dependency map so create an entry with this parent target and no covering targets
-                    m_sourceDependencyMap.emplace(source, DependencyData{ {target}, {} });
+                    m_sourceDependencyMap.emplace(source.String(), DependencyData{ {target}, {} });
                 }
             }
 
@@ -56,6 +56,7 @@ namespace TestImpact
         for (const auto& target : m_testTargets.GetTargets())
         {
             mapBuildTargetSources(&target);
+            m_testTargetSourceCoverageCount[&target] = 0;
         }
     }
 
@@ -142,10 +143,21 @@ namespace TestImpact
                 DependencyException, AZStd::string::format("Couldn't replace source coverage for %s, source file is an autogen input file",
                     sourceCoverage.GetPath().c_str()).c_str());
 
-            auto [it, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
-            auto& [key, sourceDependency] = *it;
+            auto [sourceDependencyIt, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
+            auto& [key, sourceDependency] = *sourceDependencyIt;
 
-            // Clear any existing coverage for the delta
+            // Knock down the source coverage count for the test targets and clear any existing coverage for the delta
+            for (const auto& testTarget : sourceDependency.m_coveringTestTargets)
+            {
+                if (auto coveringTestTargetIt = m_testTargetSourceCoverageCount.find(testTarget);
+                    coveringTestTargetIt != m_testTargetSourceCoverageCount.end())
+                {
+                    if (coveringTestTargetIt->second > 0)
+                    {
+                        coveringTestTargetIt->second--;
+                    }
+                }
+            }
             sourceDependency.m_coveringTestTargets.clear();
 
             // Update the dependency with any new coverage data
@@ -157,10 +169,13 @@ namespace TestImpact
                     // Source to covering test target mapping
                     sourceDependency.m_coveringTestTargets.insert(testTarget);
 
+                    // Test target covering sources count
+                    m_testTargetSourceCoverageCount[testTarget]++;
+
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
-                    {
-                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);
+                    {                        
+                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);                        
                     }
                 }
                 else
@@ -173,7 +188,7 @@ namespace TestImpact
             // If the new coverage data results in a parentless and coverageless entry, consider it a dead entry and remove accordingly
             if (sourceDependency.m_coveringTestTargets.empty() && sourceDependency.m_parentTargets.empty())
             {
-                m_sourceDependencyMap.erase(it);
+                m_sourceDependencyMap.erase(sourceDependencyIt);
             }
         }
     }
@@ -195,6 +210,14 @@ namespace TestImpact
             {
                 ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(path)) }));
             }
+        }
+    }
+
+    void DynamicDependencyMap::ClearAllSourceCoverage()
+    {
+        for (const auto& [path, coverage] : m_sourceDependencyMap)
+        {
+            ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(path)) }));
         }
     }
 
@@ -405,4 +428,33 @@ namespace TestImpact
 
         return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
+
+    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetCoveringTests() const
+    {
+        AZStd::vector<const TestTarget*> covering;
+        for (const auto& [testTarget, coveringSources] : m_testTargetSourceCoverageCount)
+        {
+            if (coveringSources > 0)
+            {
+                covering.push_back(testTarget);
+            }
+        }
+
+        return covering;
+    }
+
+    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetNotCoveringTests() const
+    {
+        AZStd::vector<const TestTarget*> notCovering;
+        for(const auto& [testTarget, coveringSources] : m_testTargetSourceCoverageCount)
+        {
+            if(coveringSources == 0)
+            {
+                notCovering.push_back(testTarget);
+            }
+        }
+
+        return notCovering;
+    }
+
 } // namespace TestImpact

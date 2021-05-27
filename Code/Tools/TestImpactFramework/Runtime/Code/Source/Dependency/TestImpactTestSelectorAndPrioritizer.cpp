@@ -25,7 +25,7 @@ namespace TestImpact
     }
 
     AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer::SelectTestTargets(
-        const ChangeDependencyList& changeDependencyList, TestSelectionStrategy testSelectionStrategy)
+        const ChangeDependencyList& changeDependencyList, Policy::TestPrioritization testSelectionStrategy)
     {
         const auto selectedTestTargetAndDependerMap = SelectTestTargets(changeDependencyList);
         const auto prioritizedSelectedTests = PrioritizeSelectedTestTargets(selectedTestTargetAndDependerMap, testSelectionStrategy);
@@ -210,7 +210,7 @@ namespace TestImpact
 
     AZStd::vector<const TestTarget*> TestSelectorAndPrioritizer::PrioritizeSelectedTestTargets(
         const SelectedTestTargetAndDependerMap& selectedTestTargetAndDependerMap,
-        [[maybe_unused]]TestSelectionStrategy testSelectionStrategy)
+        [[maybe_unused]] Policy::TestPrioritization testSelectionStrategy)
     {
         AZStd::vector<const TestTarget*> selectedTestTargets;
 
