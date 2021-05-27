@@ -317,7 +317,6 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         6. Verify that file contents of the orignally created asset list did not change from what was stored in memory
         7. Attempt to create a new asset list without debug while allowing overwrites
         8. Verify that file contents of the orignally created asset list changed from what was stored in memory
-        9.
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
@@ -1090,7 +1089,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         5. Attempt to overwrite Asset List without using --allowOverwrites
         6. Validate that command returned an error and file contents did not change
         7. Specifying platform but not "add" or "remove" should fail
-        8.
+        8. Verify file Has changed
         """
         helper = bundler_batch_helper
 

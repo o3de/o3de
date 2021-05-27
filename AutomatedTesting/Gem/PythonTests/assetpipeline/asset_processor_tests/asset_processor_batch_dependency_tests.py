@@ -77,9 +77,9 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         6. Add the schema file which allows our xml parser to understand dependencies for our engine_dependencies file
         7. Process assets
         8. Run Missing Dependency scanner against the engine_dependenciese.xml
-        9. Check that surfacetypes.xml is in the missing dependencies out
-
+        9. Verify that surfacetypes.xml is in the missing dependencies out
         """
+
         env = ap_setup_fixture
         BATCH_LOG_PATH = env["ap_batch_log_file"]
         asset_processor.create_temp_asset_root()
