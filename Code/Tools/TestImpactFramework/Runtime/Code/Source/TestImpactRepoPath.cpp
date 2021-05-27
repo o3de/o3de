@@ -14,8 +14,6 @@
 
 namespace TestImpact
 {
-    
-
     RepoPath& RepoPath::operator=(const string_type& other) noexcept
     {
         m_path = AZ::IO::Path(other).MakePreferred();
