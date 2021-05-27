@@ -34,10 +34,10 @@ def ap_all_platforms_setup_fixture(request, workspace, ap_setup_fixture) -> Dict
 
     # Specific platform cache locations
     resources["pc_cache_location"] = os.path.join(cache_dir, "pc")
-    resources["es3_cache_location"] = os.path.join(cache_dir, "es3")
+    resources["android_cache_location"] = os.path.join(cache_dir, "android")
     resources["ios_cache_location"] = os.path.join(cache_dir, "ios")
-    resources["osx_gl_cache_location"] = os.path.join(cache_dir, "osx_gl")
+    resources["mac_cache_location"] = os.path.join(cache_dir, "mac")
     resources["provo_cache_location"] = os.path.join(cache_dir, "provo")
-    resources["all_platforms"] = ["pc", "es3", "ios", "osx_gl", "provo"]
+    resources["all_platforms"] = ["pc", "android", "ios", "mac", "provo"]
 
     return resources

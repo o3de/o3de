@@ -13,7 +13,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{E996A696-991C-4FFC-B270-F5AD408B0618}",
                 "Name": "Uncompressed",
                 "PixelFormat": "R8G8B8X8",
@@ -31,7 +31,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{E996A696-991C-4FFC-B270-F5AD408B0618}",
                 "Name": "Uncompressed",
                 "PixelFormat": "R8G8B8X8",
