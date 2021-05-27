@@ -4633,11 +4633,7 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     dependList.clear();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(AssetProcessorManagerTest, DISABLED_RemoveSource_RemoveCacheFolderIfEmpty_Ok)
-#else
 TEST_F(AssetProcessorManagerTest, RemoveSource_RemoveCacheFolderIfEmpty_Ok)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
