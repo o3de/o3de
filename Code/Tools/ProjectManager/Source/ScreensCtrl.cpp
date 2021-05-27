@@ -149,6 +149,7 @@ namespace O3DE::ProjectManager
             {
                 m_tabWidget->setCurrentWidget(newScreen);
                 m_screenStack->setCurrentWidget(m_tabWidget);
+                newScreen->NotifyCurrentScreen();
             }
         }
         else
@@ -157,6 +158,7 @@ namespace O3DE::ProjectManager
             if (shouldRestoreCurrentScreen)
             {
                 m_screenStack->setCurrentWidget(newScreen);
+                newScreen->NotifyCurrentScreen();
             }
         }
 

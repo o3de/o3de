@@ -67,6 +67,15 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::CreateProject;
     }
 
+    void CreateProjectCtrl::NotifyCurrentScreen()
+    {
+        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
+        if (currentScreen)
+        {
+            currentScreen->NotifyCurrentScreen();
+        }
+    }
+
     void CreateProjectCtrl::HandleBackButton()
     {
         if (m_stack->currentIndex() > 0)
