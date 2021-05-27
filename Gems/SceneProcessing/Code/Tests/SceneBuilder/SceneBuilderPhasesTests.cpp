@@ -16,6 +16,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -139,6 +140,12 @@ class SceneBuilderPhasesFixture
 public:
     void SetUp() override
     {
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
         m_app.Start(AZ::ComponentApplication::Descriptor());
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

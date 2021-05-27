@@ -46,7 +46,7 @@ namespace Audio::Wwise
             ~PlatformMapping() = default;
 
             // Serialized Data...
-            AZStd::string m_assetPlatform;      // LY Asset Platform name (i.e. "pc", "osx_gl", "es3", ...)
+            AZStd::string m_assetPlatform;      // LY Asset Platform name (i.e. "pc", "mac", "android", ...)
             AZStd::string m_altAssetPlatform;   // Some platforms can be run using a different asset platform.  Useful for builder worker.
             AZStd::string m_enginePlatform;     // LY Engine Platform name (i.e. "Windows", "Mac", "Android", ...)
             AZStd::string m_wwisePlatform;      // Wwise Platform name (i.e. "Windows", "Mac", "Android", ...)

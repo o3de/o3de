@@ -62,20 +62,20 @@ namespace O3DE::ProjectManager
         bool IsValid() const;
 
         QString m_path;
-        QString m_name;
-        QString m_displayName;
+        QString m_name = "Unknown Gem Name";
+        QString m_displayName = "Unknown Gem Name";
         AZ::Uuid m_uuid;
-        QString m_creator;
+        QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
-        QString m_summary;
+        QString m_summary = "No summary provided.";
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool
         QStringList m_features;
         QString m_directoryLink;
         QString m_documentationLink;
-        QString m_version;
-        QString m_lastUpdatedDate;
+        QString m_version = "Unknown Version";
+        QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;
         QStringList m_dependingGemUuids;
         QStringList m_conflictingGemUuids;

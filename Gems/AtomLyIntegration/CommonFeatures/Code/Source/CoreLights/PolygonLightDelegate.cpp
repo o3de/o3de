@@ -73,7 +73,7 @@ namespace AZ
                 twiceArea += vertices.at(i).GetX() * vertices.at(j).GetY();
                 twiceArea -= vertices.at(i).GetY() * vertices.at(j).GetX();
             }
-            float scale = GetTransform().GetScale().GetMaxElement();
+            float scale = GetTransform().GetUniformScale();
             return GetAbs(twiceArea * 0.5f * scale * scale);
         }
 

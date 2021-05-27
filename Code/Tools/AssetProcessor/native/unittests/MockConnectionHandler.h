@@ -63,7 +63,7 @@ namespace AssetProcessor
 
         size_t SendPerPlatform(unsigned int serial, const AzFramework::AssetSystem::BaseAssetProcessorMessage& message, const QString& platform) override
         {
-            if (QString::compare(platform, "pc", Qt::CaseInsensitive) == 0 || QString::compare(platform, "es3", Qt::CaseInsensitive) == 0)
+            if (QString::compare(platform, "pc", Qt::CaseInsensitive) == 0 || QString::compare(platform, "android", Qt::CaseInsensitive) == 0)
             {
                 return Send(serial, message);
             }
@@ -72,7 +72,7 @@ namespace AssetProcessor
 
         size_t SendRawPerPlatform(unsigned int type, unsigned int serial, const QByteArray& data, const QString& platform) override
         {
-            if (QString::compare(platform, "pc", Qt::CaseInsensitive) == 0 || QString::compare(platform, "es3", Qt::CaseInsensitive) == 0)
+            if (QString::compare(platform, "pc", Qt::CaseInsensitive) == 0 || QString::compare(platform, "android", Qt::CaseInsensitive) == 0)
             {
                 return SendRaw(type, serial, data);
             }

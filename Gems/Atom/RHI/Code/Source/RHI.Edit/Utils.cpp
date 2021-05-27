@@ -494,5 +494,64 @@ namespace AZ
             AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
             return outputFile;
         }
+
+        namespace CommandLineArgumentUtils
+        {
+            AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString)
+            {
+                AZStd::vector<AZStd::string> listOfTokens;
+                AzFramework::StringFunc::Tokenize(commandLineString, listOfTokens, " \t\n");
+                AZStd::vector<AZStd::string> listOfArguments;
+                for (const AZStd::string& token : listOfTokens)
+                {
+                    AZStd::vector<AZStd::string> splitArguments;
+                    AzFramework::StringFunc::Tokenize(token, splitArguments, "=");
+                    listOfArguments.push_back(splitArguments[0]);
+                }
+                return listOfArguments;
+            }
+
+            AZStd::string RemoveArgumentsFromCommandLineString(
+                AZStd::array_view<AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
+            {
+                AZStd::string customizedArguments = commandLineString;
+                for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)
+                {
+                    AZStd::string regexStr = AZStd::string::format("%s(=\\S+)?", azslcArgumentName.c_str());
+                    AZStd::regex replaceRegex(regexStr, AZStd::regex::ECMAScript);
+                    customizedArguments = AZStd::regex_replace(customizedArguments, replaceRegex, "");
+                }
+                return customizedArguments;
+            }
+
+            AZStd::string RemoveExtraSpaces(AZStd::string_view commandLineString)
+            {
+                AZStd::vector<AZStd::string> argumentList;
+                AzFramework::StringFunc::Tokenize(commandLineString, argumentList, " \t\n");
+                AZStd::string cleanStringWithArguments;
+                AzFramework::StringFunc::Join(cleanStringWithArguments, argumentList.begin(), argumentList.end(), " ");
+                return cleanStringWithArguments;
+            }
+
+            AZStd::string MergeCommandLineArguments(AZStd::string_view left, AZStd::string_view right)
+            {
+                auto listOfArgumentNamesFromRight = GetListOfArgumentNames(right);
+                auto leftWithRightArgumentsRemoved = RemoveArgumentsFromCommandLineString(listOfArgumentNamesFromRight, left);
+                AZStd::string combinedArguments = AZStd::string::format("%s %s", leftWithRightArgumentsRemoved.c_str(), right.data());
+                return RemoveExtraSpaces(combinedArguments);
+            }
+
+            bool HasMacroDefinitions(AZStd::string_view commandLineString)
+            {
+                const AZStd::regex macroRegex(R"((^-D\s*(\w+))|(\s+-D\s*(\w+)))", AZStd::regex::ECMAScript);
+
+                AZStd::smatch match;
+                if (AZStd::regex_search(commandLineString.data(), match, macroRegex))
+                {
+                    return (match.size() >= 1);
+                }
+                return false;
+            }
+        } //namespace CommandLineArgumentUtils
     } // namespace RHI
 } // namespace AZ
