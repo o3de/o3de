@@ -137,8 +137,9 @@ def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
 
 
 # -------------------------------------------------------------------------
-def get_current_project(dev_folder=get_stub_check_path()):
-    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str"""
+def get_current_project_cfg(dev_folder=get_stub_check_path()):
+    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str
+    Note: boostrap.cfg will be deprecated.  Don't use this method anymore."""
     boostrap_filepath = Path(dev_folder, "bootstrap.cfg")
     if boostrap_filepath.exists():
         bootstrap = open(str(boostrap_filepath), "r")
@@ -150,6 +151,33 @@ def get_current_project(dev_folder=get_stub_check_path()):
                 _LOGGER.debug('Project is: {}'.format(game_folder_match.group(1)))
                 return game_folder_match.group(1)
     return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def get_current_project():
+    """Gets o3de project via .o3de data in user directory"""
+
+    from azpy.constants import PATH_USER_O3DE_BOOTSTRAP
+    from collections import OrderedDict
+    from box import Box
+    
+    bootstrap_box = None
+
+    try:
+        bootstrap_box = Box.from_json(filename=PATH_USER_O3DE_BOOTSTRAP,
+                                     encoding="utf-8",
+                                     errors="strict",
+                                     object_pairs_hook=OrderedDict)
+    except FileExistsError as e:
+        _LOGGER.error('File does not exist: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+
+    if bootstrap_box:
+        # this seems fairly hard coded - what if the data changes?
+        project_path=Path(bootstrap_box.Amazon.AzCore.Bootstrap.project_path)
+        return project_path.resolve()
+    else:
+        return None
 # -------------------------------------------------------------------------
 
 
@@ -194,7 +222,11 @@ if __name__ == '__main__':
 
     _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engine.json')))
 
-    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('bootstrap.cfg'))))
+    # this will be deprecated and shouldn't work soon (returns None)
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project_cfg(get_stub_check_path('bootstrap.cfg'))))
+
+    # new o3de version
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project()))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

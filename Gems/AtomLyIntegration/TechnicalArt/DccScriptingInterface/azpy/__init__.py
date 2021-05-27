@@ -84,7 +84,7 @@ _LY_DEV = os.getenv(constants.ENVAR_LY_DEV,
 
 # get/set the project name
 _LY_PROJECT_TAG = os.getenv(constants.ENVAR_LY_PROJECT,
-                            config_utils.get_current_project(_LY_DEV))
+                            config_utils.get_current_project().name)
 
 # project cache log dir path
 _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,

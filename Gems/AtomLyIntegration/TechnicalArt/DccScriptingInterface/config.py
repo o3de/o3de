@@ -223,8 +223,8 @@ os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 _LY_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
                                                 check_stub='engine.json')
 os.environ["DYNACONF_LY_DEV"] = str(_LY_DEV.resolve())
-_LY_PROJECT = azpy.config_utils.get_current_project(_LY_DEV)
-os.environ["DYNACONF_LY_PROJECT"] = _LY_PROJECT
+_LY_PROJECT = azpy.config_utils.get_current_project()
+os.environ["DYNACONF_LY_PROJECT"] = str(_LY_PROJECT.resolve())
 _LY_PROJECT_PATH = Path(_LY_DEV, _LY_PROJECT)
 os.environ["DYNACONF_LY_PROJECT_PATH"] = str(_LY_PROJECT_PATH)
 os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSIG_PATH)
