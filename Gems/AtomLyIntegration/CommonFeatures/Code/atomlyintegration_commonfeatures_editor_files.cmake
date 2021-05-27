@@ -53,6 +53,8 @@ set(FILES
     Source/Mesh/EditorMeshSystemComponent.h
     Source/Mesh/MeshThumbnail.h
     Source/Mesh/MeshThumbnail.cpp
+    Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h
+    Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.h
     Source/PostProcess/Bloom/EditorBloomComponent.cpp

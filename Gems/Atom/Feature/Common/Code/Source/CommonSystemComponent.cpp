@@ -102,6 +102,7 @@
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
 #include <ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h>
+#include <OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h>
 
 namespace AZ
 {
@@ -137,6 +138,7 @@ namespace AZ
             ModelPreset::Reflect(context);
             DiffuseProbeGridFeatureProcessor::Reflect(context);
             RayTracingFeatureProcessor::Reflect(context);
+            OcclusionCullingPlaneFeatureProcessor::Reflect(context);
 
             if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
             {
@@ -193,6 +195,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<SMAAFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<RayTracingFeatureProcessor>();
+            AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
 
             // Add SkyBox pass
             auto* passSystem = RPI::PassSystemInterface::Get();
@@ -295,6 +298,7 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<SkyBoxFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
+            AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<OcclusionCullingPlaneFeatureProcessor>();
         }
 
         void CommonSystemComponent::LoadPassTemplateMappings()

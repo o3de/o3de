@@ -101,6 +101,7 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCulling.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
@@ -178,4 +179,7 @@ set(FILES
     Source/RPI.Public/GpuQuery/Query.cpp
     Source/RPI.Public/GpuQuery/QueryPool.cpp
     Source/RPI.Public/GpuQuery/TimestampQueryPool.cpp
+    Source/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCulling.cpp
+    Source/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCullingAVX2.cpp
+    Source/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCullingAVX512.cpp
 )

@@ -66,6 +66,10 @@ set(FILES
     Source/Mesh/MeshComponent.cpp
     Source/Mesh/MeshComponentController.h
     Source/Mesh/MeshComponentController.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponent.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponent.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponentController.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponentController.cpp
     Source/PostProcess/PostFxLayerComponent.cpp
     Source/PostProcess/PostFxLayerComponent.h
     Source/PostProcess/PostFxLayerComponentConfig.cpp

@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -57,7 +58,7 @@ namespace AZ
             //! Only use this function to create a new view object. And force using smart pointer to manage view's life time
             static ViewPtr CreateView(const AZ::Name& name, UsageFlags usage);
 
-            ~View() = default;
+            ~View();
 
             void SetDrawListMask(const RHI::DrawListMask& drawListMask);
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
@@ -126,6 +127,12 @@ namespace AZ
             //! Notifies consumers when the world to clip matrix has changed.
             void ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
 
+            //! Prepare for view culling
+            void BeginCulling(const AZStd::vector<RenderPipelinePtr>& activePipelines);
+
+            //! Returns the masked occlusion culling interface
+            MaskedOcclusionCulling* GetMaskedOcclusionCulling();
+
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
@@ -193,6 +200,9 @@ namespace AZ
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;
+
+            // Software occlusion culling
+            MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);

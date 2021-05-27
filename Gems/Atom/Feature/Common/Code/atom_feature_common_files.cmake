@@ -175,6 +175,8 @@ set(FILES
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp
     Source/MorphTargets/MorphTargetDispatchItem.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp

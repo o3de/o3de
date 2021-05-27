@@ -44,6 +44,7 @@ set(FILES
     Include/Atom/Feature/ParamMacros/StartParamFunctionsVirtual.inl
     Include/Atom/Feature/ParamMacros/StartParamMembers.inl
     Include/Atom/Feature/ParamMacros/StartParamSerializeContext.inl
+    Include/Atom/Feature/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostProcessParams.inl
     Include/Atom/Feature/PostProcess/PostProcessSettings.inl

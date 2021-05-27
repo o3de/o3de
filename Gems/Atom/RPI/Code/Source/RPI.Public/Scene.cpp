@@ -23,6 +23,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -499,7 +500,7 @@ namespace AZ
                 }
 
                 // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
-                m_cullingScene->BeginCulling(m_renderPacket.m_views);
+                m_cullingScene->BeginCulling(m_renderPacket.m_views, activePipelines);
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
                     AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)

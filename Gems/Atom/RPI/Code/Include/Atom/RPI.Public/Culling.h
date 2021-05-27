@@ -31,7 +31,7 @@
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
 #include <Atom/RPI.Public/View.h>
-
+#include <Atom/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 #include <Atom/RHI/DrawList.h>
 
 #include <AtomCore/std/parallel/concurrency_checker.h>
@@ -213,8 +213,11 @@ namespace AZ
             void Activate(const class Scene* parentScene);
             void Deactivate();
 
+            //! Sets a list of occlusion planes to be used during the culling process.
+            void SetOcclusionCullingPlanes(const AZStd::vector<AZ::Transform>& occlusionCullingPlanes) { m_occlusionCullingPlanes = occlusionCullingPlanes; }
+
             //! Notifies the CullingScene that culling will begin for this frame.
-            void BeginCulling(const AZStd::vector<ViewPtr>& views);
+            void BeginCulling(const AZStd::vector<ViewPtr>& views, const AZStd::vector<RenderPipelinePtr>& activePipelines);
 
             //! Notifies the CullingScene that the culling is done for this frame.
             void EndCulling();
@@ -251,12 +254,9 @@ namespace AZ
 
             const Scene* m_parentScene = nullptr;
             AzFramework::IVisibilityScene* m_visScene = nullptr;
-
             CullingDebugContext m_debugCtx;
-
             AZStd::concurrency_checker m_cullDataConcurrencyCheck;
-
-            AZStd::mutex m_mutex;
+            AZStd::vector<AZ::Transform> m_occlusionCullingPlanes;
         };
         
 
