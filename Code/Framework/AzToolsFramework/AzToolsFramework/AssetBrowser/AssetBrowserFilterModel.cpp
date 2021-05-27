@@ -26,6 +26,7 @@ AZ_POP_DISABLE_WARNING
 AZ_CVAR(
     bool, ed_useNewAssetBrowserTableView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Use the new AssetBrowser TableView for searching assets.");
+#pragma optimize("", off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -138,17 +139,18 @@ namespace AzToolsFramework
             {
                 const auto& subFilters = compFilter->GetSubFilters();
 
-                auto compositeFilterIterator = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool
+                const auto compositeFilterIterator = AZStd::find_if(subFilters.begin(), subFilters.end(), [subFilters](FilterConstType filter) -> bool
                 {
                     const auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
                     return !assetTypeFilter.isNull();
                 });
+
                 if (compositeFilterIterator != subFilters.end())
                 {
                     m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(*compositeFilterIterator);
                 }
 
-                auto compStringFilterIter = AZStd::find_if(subFilters.begin(), subFilters.end(), [](FilterConstType filter) -> bool
+                const auto compStringFilterIter = AZStd::find_if(subFilters.begin(), subFilters.end(), [](FilterConstType filter) -> bool
                 {
                     //The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
                     //To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.
@@ -162,7 +164,7 @@ namespace AzToolsFramework
                             auto strFilter = qobject_cast<QSharedPointer<const StringFilter>>(filt);
                             return !strFilter.isNull();
                         };
-                        auto stringSubfliterConstIter = AZStd::find_if(stringSubfilters.begin(), stringSubfilters.end(), canBeCasted);
+                        const auto stringSubfliterConstIter = AZStd::find_if(stringSubfilters.begin(), stringSubfilters.end(), canBeCasted);
 
                         //A Composite StringFilter will only have just one subfilter and nothing more.
                         if (stringSubfliterConstIter != stringSubfilters.end() && stringSubfilters.size() == 1)
@@ -176,6 +178,7 @@ namespace AzToolsFramework
                 if (compStringFilterIter != subFilters.end())
                 {
                     const auto compStringFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compStringFilterIter);
+
                     if (!compStringFilter->GetSubFilters().isEmpty() && compStringFilter->GetSubFilters()[0])
                     {
                         m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(compStringFilter->GetSubFilters()[0]);
@@ -185,7 +188,8 @@ namespace AzToolsFramework
             }
             invalidateFilter();
             Q_EMIT filterChanged();
-            emit stringFilterPopulated(!m_stringFilter.isNull());
+            bool isNullAB = m_stringFilter.isNull();
+            emit stringFilterPopulated(!isNullAB);
         }
 
         void AssetBrowserFilterModel::filterUpdatedSlot()
@@ -205,5 +209,6 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework// namespace AssetBrowser
+#pragma optimize("", on)
 
 #include "AssetBrowser/moc_AssetBrowserFilterModel.cpp"
