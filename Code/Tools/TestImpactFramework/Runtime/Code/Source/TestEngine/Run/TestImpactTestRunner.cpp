@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactUtils.h>
+#include <TestImpactFramework/TestImpactFileUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
@@ -28,7 +28,6 @@ namespace TestImpact
 
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestRunner::Job>> TestRunner::RunTests(
         const AZStd::vector<JobInfo>& jobInfos,
-        JobExceptionPolicy jobExceptionPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
         AZStd::optional<ClientJobCallback> clientCallback)
@@ -58,7 +57,6 @@ namespace TestImpact
 
         return ExecuteJobs(
             jobInfos,
-            jobExceptionPolicy,
             payloadGenerator,
             StdOutputRouting::None,
             StdErrorRouting::None,

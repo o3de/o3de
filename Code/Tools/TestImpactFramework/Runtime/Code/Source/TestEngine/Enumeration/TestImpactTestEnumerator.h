@@ -51,16 +51,6 @@ namespace TestImpact
         AZStd::optional<Cache> m_cache = AZStd::nullopt; //!< No caching takes place if cache is empty.
     };
 
-    namespace Bitwise
-    {
-        //! Exception policy for test enumeration cache reads/writes.
-        enum class CacheExceptionPolicy
-        {
-            Never = 0, //! Never throw.
-            OnCacheWriteFailure = 1 //! Throw when a cache write policy is in place but the cache file could not be written.
-        };
-    } // namespace Bitwise
-
     //! Enumerate a batch of test targets to determine the test suites and fixtures they contain, caching the results where applicable.
     class TestEnumerator
         : public TestJobRunner<TestEnumerationJobData, TestEnumeration>
@@ -68,8 +58,6 @@ namespace TestImpact
         using JobRunner = TestJobRunner<TestEnumerationJobData, TestEnumeration>;
 
     public:
-        using CacheExceptionPolicy = Bitwise::CacheExceptionPolicy;
-
         //! Constructs a test enumerator with the specified parameters common to all enumeration job runs of this enumerator.
         //! @param maxConcurrentEnumerations The maximum number of enumerations to be in flight at any given time.
         explicit TestEnumerator(size_t maxConcurrentEnumerations);
@@ -84,8 +72,6 @@ namespace TestImpact
         //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> Enumerate(
             const AZStd::vector<JobInfo>& jobInfos,
-            CacheExceptionPolicy cacheExceptionPolicy,
-            JobExceptionPolicy jobExceptionPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
             AZStd::optional<ClientJobCallback> clientCallback);

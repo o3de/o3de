@@ -54,7 +54,6 @@ namespace TestImpact
         //! @return The result of the run sequence and the instrumented run jobs with their associated test run and coverage payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> RunInstrumentedTests(
             const AZStd::vector<JobInfo>& jobInfos,
-            JobExceptionPolicy jobExceptionPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
             AZStd::optional<ClientJobCallback> clientCallback);
