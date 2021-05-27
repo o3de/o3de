@@ -265,7 +265,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, AZStd::string& template_filename)
+    void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& template_filename)
     {
         AZ::IO::Path relativePath = m_loaderInterface->GetRelativePathToProject(filename);
         AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
