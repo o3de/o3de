@@ -454,7 +454,6 @@ void CLyShine::Render()
 
     GetUiRenderer()->EndUiFrameRender();
 
-#ifdef LYSHINE_ATOM_TODO // convert debug info to Atom
 #ifndef _RELEASE
     if (CV_ui_DisplayElemBounds)
     {
@@ -473,7 +472,6 @@ void CLyShine::Render()
     {
         m_uiCanvasManager->DebugDisplayDrawCallData();
     }
-#endif
 #endif
 }
 

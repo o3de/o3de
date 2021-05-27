@@ -809,13 +809,11 @@ namespace AzToolsFramework
         EntityIdManipulators& entityIdManipulators,
         OptionalFrame& pivotOverrideFrame,
         ViewportInteraction::KeyboardModifiers& prevModifiers,
-        bool& transformChangedInternally, SpaceCluster spaceCluster)
+        bool& transformChangedInternally, const AZStd::optional<ReferenceFrame> spaceLock)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         entityIdManipulators.m_manipulators->SetLocalPosition(action.LocalPosition());
-
-        const ReferenceFrame referenceFrame = spaceCluster.m_spaceLock ? spaceCluster.m_currentSpace : ReferenceFrameFromModifiers(action.m_modifiers);
 
         if (action.m_modifiers.Ctrl())
         {
@@ -826,6 +824,8 @@ namespace AzToolsFramework
         }
         else
         {
+            const ReferenceFrame referenceFrame = spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
+
             // note: used for parent and world depending on the current reference frame
             const auto pivotOrientation =
                 ETCS::CalculateSelectionPivotOrientation(
@@ -1298,7 +1298,7 @@ namespace AzToolsFramework
         {
             UpdateTranslationManipulator(
                 action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
-                    m_transformChangedInternally, m_spaceCluster);
+                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
         });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
@@ -1329,7 +1329,7 @@ namespace AzToolsFramework
         {
             UpdateTranslationManipulator(
                 action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
-                    m_transformChangedInternally, m_spaceCluster);
+                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
         });
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
@@ -1359,7 +1359,7 @@ namespace AzToolsFramework
         {
             UpdateTranslationManipulator(
                 action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
-                    m_transformChangedInternally, m_spaceCluster);
+                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
         });
 
         translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
@@ -1437,8 +1437,7 @@ namespace AzToolsFramework
             [this, prevModifiers, sharedRotationState]
             (const AngularManipulator::Action& action) mutable -> void
         {
-            const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock ? m_spaceCluster.m_currentSpace : ReferenceFrameFromModifiers(action.m_modifiers);
-
+            const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(action.m_modifiers));
             const AZ::Quaternion manipulatorOrientation = action.m_start.m_rotation * action.m_current.m_delta;
             // store the pivot override frame when positioning the manipulator manually (ctrl)
             // so we don't lose the orientation when adding/removing entities from the selection
@@ -2605,40 +2604,37 @@ namespace AzToolsFramework
             if (buttonId == m_spaceCluster.m_localButtonId)
             {
                 // Unlock
-                if (m_spaceCluster.m_spaceLock && m_spaceCluster.m_currentSpace == ReferenceFrame::Local)
+                if (m_spaceCluster.m_spaceLock.has_value() && m_spaceCluster.m_spaceLock.value() == ReferenceFrame::Local)
                 {
-                    m_spaceCluster.m_spaceLock = false;
+                    m_spaceCluster.m_spaceLock = AZStd::nullopt;
                 }
                 else
                 {
-                    m_spaceCluster.m_spaceLock = true;
-                    m_spaceCluster.m_currentSpace = ReferenceFrame::Local;
+                    m_spaceCluster.m_spaceLock = ReferenceFrame::Local;
                 }
             }
             else if (buttonId == m_spaceCluster.m_parentButtonId)
             {
                 // Unlock
-                if (m_spaceCluster.m_spaceLock && m_spaceCluster.m_currentSpace == ReferenceFrame::Parent)
+                if (m_spaceCluster.m_spaceLock.has_value() && m_spaceCluster.m_spaceLock.value() == ReferenceFrame::Parent)
                 {
-                    m_spaceCluster.m_spaceLock = false;
+                    m_spaceCluster.m_spaceLock = AZStd::nullopt;
                 }
                 else
                 {
-                    m_spaceCluster.m_spaceLock = true;
-                    m_spaceCluster.m_currentSpace = ReferenceFrame::Parent;
+                    m_spaceCluster.m_spaceLock = ReferenceFrame::Parent;
                 }
             }
             else if (buttonId == m_spaceCluster.m_worldButtonId)
             {
                 // Unlock
-                if (m_spaceCluster.m_spaceLock && m_spaceCluster.m_currentSpace == ReferenceFrame::World)
+                if (m_spaceCluster.m_spaceLock.has_value() && m_spaceCluster.m_spaceLock.value() == ReferenceFrame::World)
                 {
-                    m_spaceCluster.m_spaceLock = false;
+                    m_spaceCluster.m_spaceLock = AZStd::nullopt;
                 }
                 else
                 {
-                    m_spaceCluster.m_spaceLock = true;
-                    m_spaceCluster.m_currentSpace = ReferenceFrame::World;
+                    m_spaceCluster.m_spaceLock = ReferenceFrame::World;
                 }
             }
         };
@@ -3361,8 +3357,7 @@ namespace AzToolsFramework
             ViewportInteraction::BuildMouseButtons(
                 QGuiApplication::mouseButtons()), m_boxSelect.Active());
 
-        const ReferenceFrame referenceFrame =
-            m_spaceCluster.m_spaceLock ? m_spaceCluster.m_currentSpace : ReferenceFrameFromModifiers(modifiers);
+        const ReferenceFrame referenceFrame = m_spaceCluster.m_spaceLock.value_or(ReferenceFrameFromModifiers(modifiers));
 
         UpdateSpaceCluster(referenceFrame);
 

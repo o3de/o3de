@@ -1,10 +1,14 @@
 {
     "gem_name": "DccScriptingInterface",
-    "display_name": "Atom Dcc Scripting Interface",
-    "summary": "",
+    "display_name": "Atom DccScriptingInterface (DCCsi)",
+    "summary": "A python framework for working with various DCC tools and workflows.",
     "canonical_tags": [
         "Gem"
     ],
     "user_tags": [
+        "DCC",
+	"Digital",
+	"Content",
+	"Creation"
     ]
 }
