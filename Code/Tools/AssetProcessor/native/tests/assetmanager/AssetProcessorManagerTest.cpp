@@ -30,11 +30,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
-#else
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, DeleteFolder_SignalsDeleteOfContainedFiles);
 
@@ -2362,11 +2358,7 @@ TEST_F(PathDependencyTest, ChangeDependencies_Existing_ResolveCorrectly)
     );
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(PathDependencyTest, DISABLED_MixedPathDependencies_Existing_ResolveCorrectly)
-#else
 TEST_F(PathDependencyTest, MixedPathDependencies_Existing_ResolveCorrectly)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
@@ -2661,11 +2653,7 @@ TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDepende
     ASSERT_NE(SearchDependencies(dependencyContainer, asset1.m_products[0]), SearchDependencies(dependencyContainer, asset1.m_products[1]));
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
-#else
 TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     // One product will be pc, one will be console (order is non-deterministic)
     TestAsset asset1("testAsset1");
