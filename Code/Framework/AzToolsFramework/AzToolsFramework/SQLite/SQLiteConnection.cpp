@@ -347,7 +347,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            StatementPrototype stmt("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=:1;");
+            StatementPrototype stmt("SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND name=:1;");
             Statement* execute = stmt.Prepare(m_db); // execute now belongs to stmt and will die when stmt leaves scope.
             if (!execute->Prepared())
             {
