@@ -141,8 +141,6 @@ def wrap_parsed_args(parsed_args):
     parsed_args.get_argument = parse_argument_attr
 
 
-
-
 def main(args):
     """
     Perform the main argument processing and execution of the project generator
@@ -294,11 +292,20 @@ def main(args):
         installed_android_sdk_platforms = android_sdk.is_package_installed('platforms;*')
         if not installed_android_sdk_platforms:
             raise common.LmbrCmdError("No Android SDK Platform specified or installed. Make sure to install an Android SDK Platform.")
-        installed_android_sdk_platform = installed_android_sdk_platforms[0]
-        platform_number_match = re.match(r'platforms;android-([0-9]*)', installed_android_sdk_platform.path)
-        if not platform_number_match:
+        # Iterate through the list and choose the latest (highest) platform version by default
+        latest_platform_version = -1
+        for installed_android_sdk_platform in installed_android_sdk_platforms:
+            platform_number_match = re.match(r'platforms;android-([0-9]*)', installed_android_sdk_platform.path)
+            if not platform_number_match:
+                continue
+            check_platform_version = int(platform_number_match.group(1))
+            if check_platform_version > latest_platform_version:
+                latest_platform_version = check_platform_version
+
+        if latest_platform_version < 0:
             raise common.LmbrCmdError("No Android SDK Platform specified or installed. Make sure to install an Android SDK Platform.")
-        android_sdk_platform_version = str(platform_number_match.group(1))
+
+        android_sdk_platform_version = latest_platform_version
 
     # Check and make sure that the requested sdk platform exists, download if necessary
     platform_package_name = f"platforms;android-{android_sdk_platform_version}"
