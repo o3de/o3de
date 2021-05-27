@@ -1338,6 +1338,10 @@ def create_project(project_path: str,
     if template_name and not template_path:
         template_path = manifest.get_registered(template_name=template_name)
 
+    if not template_path:
+        logger.error(f'Could not find the template path using name {template_name}.\n'
+                     f'Has the engine been registered yet. It can be registered via the "o3de.py register --this-engine" command')
+        return 1
     if not os.path.isdir(template_path):
         logger.error(f'Could not find the template {template_name}=>{template_path}')
         return 1

@@ -47,6 +47,10 @@ function(ly_create_alias)
         if (NOT TARGET ${ly_create_alias_NAME})
             add_library(${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
         endif()
+        # Store off the arguments needed used ly_create_alias into a DIRECTORY property
+        # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
+        string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
+        set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
         return()
     endif()
 
@@ -75,6 +79,13 @@ function(ly_create_alias)
 
     # now add the final alias:
     add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${ly_create_alias_NAME})
+
+    # Store off the arguments needed used ly_create_alias into a DIRECTORY property
+    # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
+
+    # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
+    string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
+    set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${create_alias_args}")
 endfunction()
 
 # ly_enable_gems
@@ -143,7 +154,7 @@ endfunction()
 function(ly_enable_gems_delayed)
     get_property(ly_delayed_enable_gems GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS)
     foreach(project_target_variant ${ly_delayed_enable_gems})
-        # we expect a colon seperated list of 
+        # we expect a colon separated list of
         # PROJECT_NAME,target_name,variant_name
         string(REPLACE "," ";" project_target_variant_list "${project_target_variant}")
         list(LENGTH project_target_variant_list project_target_variant_length)
@@ -152,7 +163,7 @@ function(ly_enable_gems_delayed)
         endif()
         
         if(NOT project_target_variant_length EQUAL 3)
-            message(FATAL_ERROR "Invalid specificaiton of gems, expected 'project','target','variant' and got ${project_target_variant}")
+            message(FATAL_ERROR "Invalid specification of gems, expected 'project','target','variant' and got ${project_target_variant}")
         endif()
 
         list(POP_BACK project_target_variant_list variant)

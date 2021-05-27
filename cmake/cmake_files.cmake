@@ -20,6 +20,7 @@ set(FILES
     EngineJson.cmake
     FileUtil.cmake
     Findo3de.cmake
+    Gems.cmake
     GeneralSettings.cmake
     Install.cmake
     LyAutoGen.cmake

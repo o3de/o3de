@@ -155,6 +155,25 @@ function(ly_setup_target ALIAS_TARGET_NAME)
     list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     string(REPLACE ";" "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER}")
 
+    # Replicate the ly_create_alias() calls based on the SOURCE_DIR for each target that generates an installed CMakeLists.txt
+    string(JOIN "\n" create_alias_template
+        "if(NOT TARGET @ALIAS_NAME@)"
+        "   ly_create_alias(NAME @ALIAS_NAME@ NAMESPACE @ALIAS_NAMESPACE@ TARGETS @ALIAS_TARGETS@)"
+        "endif()"
+        ""
+    )
+    get_property(create_alias_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_CREATE_ALIAS_ARGUMENTS)
+    foreach(create_alias_single_command_arg_list ${create_alias_commands_arg_list})
+        # Split the ly_create_alias arguments back out based on commas
+        string(REPLACE "," ";" create_alias_single_command_arg_list "${create_alias_single_command_arg_list}")
+        list(POP_FRONT create_alias_single_command_arg_list ALIAS_NAME)
+        list(POP_FRONT create_alias_single_command_arg_list ALIAS_NAMESPACE)
+        # The rest of the list are the target dependencies
+        set(ALIAS_TARGETS ${create_alias_single_command_arg_list})
+        string(CONFIGURE "${create_alias_template}" create_alias_command @ONLY)
+        string(APPEND CREATE_ALIASES_PLACEHOLDER ${create_alias_command})
+    endforeach()
+
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
     configure_file(${LY_ROOT_FOLDER}/cmake/install/TargetCMakeLists.txt.in ${CMAKE_CURRENT_BINARY_DIR}/install/${NAME_PLACEHOLDER}/CMakeLists.txt @ONLY)
     
@@ -225,14 +244,19 @@ function(ly_setup_cmake_install)
     )
 
     # Transform the LY_EXTERNAL_SUBDIRS list into a json array
-    set(LY_INSTALL_EXTERNAL_SUBDIRS "[]")
-    set(external_subdir_index "0")
+    set(indent "        ")
     foreach(external_subdir ${LY_EXTERNAL_SUBDIRS})
-        math(EXPR external_subdir_index "${external_subdir_index} + 1")
         file(RELATIVE_PATH engine_rel_external_subdir ${LY_ROOT_FOLDER} ${external_subdir})
-        string(JSON LY_INSTALL_EXTERNAL_SUBDIRS ERROR_VARIABLE external_subdir_error SET ${LY_INSTALL_EXTERNAL_SUBDIRS}
-        ${external_subdir_index} "\"${engine_rel_external_subdir}\"")
+        list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
     endforeach()
+    list(JOIN relative_external_subdirs ",\n${indent}" LY_INSTALL_EXTERNAL_SUBDIRS)
+
+    # Read the "templates" key from the source engine.json
+    o3de_read_json_array(engine_templates ${LY_ROOT_FOLDER}/engine.json "templates")
+    foreach(template_path ${engine_templates})
+        list(APPEND relative_templates "\"${template_path}\"")
+    endforeach()
+    list(JOIN relative_templates ",\n${indent}" LY_INSTALL_TEMPLATES)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
