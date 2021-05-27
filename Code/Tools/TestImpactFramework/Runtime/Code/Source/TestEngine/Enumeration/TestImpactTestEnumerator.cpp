@@ -112,11 +112,48 @@ namespace TestImpact
             }
             else
             {
-                // This job has no cache read policy so place in job queue
+                // This job has no cache read policy so delete the cache and place in job queue
                 DeleteFile(jobInfo->GetCache()->m_file);
                 jobQueue.emplace_back(*jobInfo);
             }
         }
+
+        /* As per comment on PR51, this suggestion will be explored once the test coverage code for this subsystem is revisited
+        bool aborted = false;
+        for (const auto& jobInfo : jobInfos)
+        {
+            if (!jobInfo->GetCache().has_value() ||
+                 jobInfo->GetCache()->m_policy != JobData::CachePolicy::Read)
+            {
+                DeleteFile(jobInfo->GetCache()->m_file);
+                jobQueue.emplace_back(*jobInfo);
+                continue;
+            }
+
+            ... // try catch part
+            if (!enumeration.has_value())
+            {
+                jobQueue.emplace_back(*jobInfo);
+                continue;
+            }
+
+            // Cache read successfully, this job will not be placed in the job queue
+            cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
+
+            if (m_clientJobCallback.has_value() && (*m_clientJobCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
+            {
+               aborted = true; // catch the index too
+               break;
+            }
+        }
+
+        if (aborted)
+        {
+            // do the abortion part
+
+            return { ProcessSchedulerResult::UserAborted, jobs };
+        }
+        */
 
         const auto payloadGenerator = [this](const JobDataMap& jobDataMap)
         {
