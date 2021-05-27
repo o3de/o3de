@@ -68,18 +68,18 @@ namespace O3DE::ProjectManager
             QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(parent, QObject::tr("Select Project Directory")));
             if (!path.isEmpty())
             {
-                return AddProject(path);
+                return RegisterProject(path);
             }
 
             return false;
         }
 
-        bool AddProject(const QString& path)
+        bool RegisterProject(const QString& path)
         {
             return PythonBindingsInterface::Get()->AddProject(path);
         }
 
-        bool RemoveProject(const QString& path)
+        bool UnregisterProject(const QString& path)
         {
             return PythonBindingsInterface::Get()->RemoveProject(path);
         }
@@ -130,19 +130,19 @@ namespace O3DE::ProjectManager
             catch ([[maybe_unused]] std::exception& e)
             {
                 // Cleanup whatever mess was made
-                DeleteProject(newPath);
+                UnregisterAndDeleteProjectFiles(newPath);
                 return false;
             }
 
-            if (!AddProject(newPath))
+            if (!RegisterProject(newPath))
             {
-                DeleteProject(newPath);
+                UnregisterAndDeleteProjectFiles(newPath);
             }
 
             return true;
         }
 
-        bool DeleteProject(const QString& path)
+        bool UnregisterAndDeleteProjectFiles(const QString& path)
         {
             QDir projectDirectory(path);
             if (projectDirectory.exists())
@@ -155,7 +155,7 @@ namespace O3DE::ProjectManager
 
         bool MoveProject(const QString& origPath, const QString& newPath, QWidget* parent)
         {
-            if (!WarnDirectoryOverwrite(newPath, parent) || !RemoveProject(origPath))
+            if (!WarnDirectoryOverwrite(newPath, parent) || !UnregisterProject(origPath))
             {
                 return false;
             }
@@ -166,7 +166,7 @@ namespace O3DE::ProjectManager
                 return directory.rename(origPath, newPath);
             }
 
-            if (!AddProject(newPath))
+            if (!RegisterProject(newPath))
             {
                 return false;
             }

@@ -313,7 +313,7 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::HandleRemoveProject(const QString& projectPath)
     {
         // Unregister Project from O3DE and reload projects
-        if (ProjectUtils::RemoveProject(projectPath))
+        if (ProjectUtils::UnregisterProject(projectPath))
         {
             emit ResetScreenRequest(ProjectManagerScreen::Projects);
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
@@ -329,7 +329,7 @@ namespace O3DE::ProjectManager
         {
             // Remove project from O3DE and delete from disk
             ProjectsScreen::HandleRemoveProject(projectPath);
-            ProjectUtils::DeleteProject(projectPath);
+            ProjectUtils::UnregisterAndDeleteProjectFiles(projectPath);
         }
     }
 
