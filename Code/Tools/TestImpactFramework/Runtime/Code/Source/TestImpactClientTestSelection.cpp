@@ -52,5 +52,5 @@ namespace TestImpact
         {
             return GetNumIncludedTestRuns() + GetNumExcludedTestRuns();
         }
-    }
-}
+    } // namespace Client
+} // namespace TestImpact

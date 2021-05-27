@@ -36,5 +36,5 @@ namespace TestImpact
         {
             return m_result;
         }
-    }
-}
+    } // namespace Client
+} // namespace TestImpact

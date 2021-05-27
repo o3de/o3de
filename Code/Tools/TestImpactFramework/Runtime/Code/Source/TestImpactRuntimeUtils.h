@@ -59,7 +59,7 @@ namespace TestImpact
                 AZStd::vector<Client::TestFailure> testFailures;
                 for (const auto& testCase : testSuite.m_tests)
                 {
-                    if(testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
+                    if (testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
                     {
                         testFailures.push_back(Client::TestFailure(testCase.m_name, "No error message retrieved"));
                     }

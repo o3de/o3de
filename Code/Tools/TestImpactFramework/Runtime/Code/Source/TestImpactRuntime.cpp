@@ -27,7 +27,7 @@ namespace TestImpact
 {
     namespace
     {
-        // Simple helper class for tracking basic timing information
+        //! Simple helper class for tracking basic timing information.
         class Timer
         {
         public:
@@ -36,7 +36,7 @@ namespace TestImpact
             {
             }
 
-            // Returns the time elapsed (in milliseconds) since the timer was instantiated
+            //! Returns the time elapsed (in milliseconds) since the timer was instantiated
             AZStd::chrono::milliseconds Elapsed()
             {
                 const auto endTime = AZStd::chrono::high_resolution_clock::now();
@@ -47,7 +47,7 @@ namespace TestImpact
             AZStd::chrono::high_resolution_clock::time_point m_startTime;
         };
 
-        // Handler for test run complete events
+        //! Handler for test run complete events.
         class TestRunCompleteCallbackHandler
         {
         public:
@@ -145,9 +145,9 @@ namespace TestImpact
     void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
     {
         AZStd::vector<const TestTarget*> testTargets;
-        const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependency)
+        const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
         {
-            for (const auto& sourceDependency : sourceDependency)
+            for (const auto& sourceDependency : sourceDependencies)
             {
                 for (const auto& parentTarget : sourceDependency.GetParentTargets())
                 {
@@ -184,14 +184,14 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> discardedTestTargets;
 
         // Select and prioritize the test targets pertinent to this change list
-        const auto changeDependecyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
-        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependecyList, testPrioritizationPolicy);
+        const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList);
+        const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependencyList, testPrioritizationPolicy);
 
         // Populate a set with the selected test targets so that we can infer the discarded test target not selected for this change list
         const AZStd::unordered_set<const TestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
 
         // Update the enumeration caches of mutated targets regardless of the current sharding policy
-        EnumerateMutatedTestTargets(changeDependecyList);
+        EnumerateMutatedTestTargets(changeDependencyList);
 
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
