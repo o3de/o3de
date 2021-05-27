@@ -338,7 +338,7 @@ namespace O3DE::ProjectManager
             result = (registrationResult.cast<int>() == 0);
         }
 
-        AZ_Error("ProjectManagerWindow", result, "Registration of this engine failed!");
+        AZ_Assert(result, "Registration of this engine failed!");
         return result;
     }
 
