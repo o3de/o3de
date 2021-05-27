@@ -1431,8 +1431,7 @@ class MoveTest:
     env: dict = field(init=False, default=None)  # inject the ap_setup_fixture at runtime
     test_files: List[str] = field(init=False, default_factory=lambda: [])
     files_that_move: List[str] = field(init=False, default_factory=lambda: [])
-    expected_filepaths: Li
-    st[str] = field(init=False, default_factory=lambda: [])
+    expected_filepaths: List[str] = field(init=False, default_factory=lambda: [])
     unexpected_filepaths: List[str] = field(init=False, default_factory=lambda: [])
     output_to_check: List[str] = field(init=False, default_factory=lambda: [])
 
@@ -1447,7 +1446,7 @@ class MoveTest:
             self.destination = self._normalize_move_target(decoded_command.split(",")[1])
             move_command = "--move=" + self.source + "," + self.destination
         self.prefix_commands[0] = os.path.join(os.fspath(pathlib.Path(self.env["bin_dir"])), self.prefix_commands[0])
-        command = [move_command, *self.suffi    x_commands]
+        command = [move_command, *self.suffix_commands]
         logger.info(f"The command is:\n{command}")
         return command
 
