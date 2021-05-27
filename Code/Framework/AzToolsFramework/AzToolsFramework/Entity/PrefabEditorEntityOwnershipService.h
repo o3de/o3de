@@ -170,7 +170,7 @@ namespace AzToolsFramework
         void StartPlayInEditor() override;
         void StopPlayInEditor() override;
 
-        void CreateNewLevelPrefab(AZStd::string_view filename) override;
+        void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
 
     protected:
 
@@ -218,7 +218,5 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
-
-        static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
     };
 }
