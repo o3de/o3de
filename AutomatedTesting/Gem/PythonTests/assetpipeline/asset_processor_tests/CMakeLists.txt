@@ -129,7 +129,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessorBatch
     )
 
-#   Need performance improvements LYN-1218
+#   Need performance improvements
 #     ly_add_pytest(
 #         NAME AssetPipelineTests.AssetRelocator
 #         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_relocator_tests.py
