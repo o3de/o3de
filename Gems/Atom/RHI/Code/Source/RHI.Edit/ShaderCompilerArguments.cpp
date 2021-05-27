@@ -164,7 +164,7 @@ namespace AZ
                 arguments += " -Zi";  // Generate debug information
                 arguments += " -Zss"; // Compute Shader Hash considering source information
             }
-            arguments += m_dxcAdditionalFreeArguments;
+            arguments += " " + m_dxcAdditionalFreeArguments;
             return arguments;
         }
     }
