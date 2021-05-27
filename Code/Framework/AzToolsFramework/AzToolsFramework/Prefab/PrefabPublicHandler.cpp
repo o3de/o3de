@@ -384,7 +384,10 @@ namespace AzToolsFramework
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
 
                 // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-                m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
+                //m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
+
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }
 
             return AZ::Success();
