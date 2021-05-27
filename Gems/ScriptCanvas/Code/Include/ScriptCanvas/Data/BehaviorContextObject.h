@@ -120,6 +120,7 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE BehaviorContextObject() = default;
 
         BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
+        BehaviorContextObject(const BehaviorContextObject&) = default;
 
         // copy ctor
         AZ_FORCE_INLINE BehaviorContextObject(const void* source, const AnyTypeInfo& typeInfo, AZ::u32 flags);
@@ -138,13 +139,6 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE void add_ref();
 
         void release();
-
-    public:
-        // no copying allowed, this is here to allow compile time compatibility with storage in of BehaviorContextObjectPtr AZStd::any, only
-        AZ_FORCE_INLINE BehaviorContextObject(const BehaviorContextObject&)
-        {
-            AZ_Assert(false, "no copying allowed, this is here to allow storage in of BehaviorContextObjectPtr AZStd::any, only");
-        }
     };
 
     AZ_FORCE_INLINE BehaviorContextObject::BehaviorContextObject(const void* value, const AnyTypeInfo& typeInfo, AZ::u32 flags)
