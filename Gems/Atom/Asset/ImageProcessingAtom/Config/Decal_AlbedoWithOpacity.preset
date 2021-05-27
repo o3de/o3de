@@ -18,7 +18,7 @@
             "NumberResidentMips": 255
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
                 "FileMasks": [
@@ -46,7 +46,7 @@
                 // Decal Texture Arrays need all mips available immediately for packing. 
                 "NumberResidentMips": 255                       
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
                 "Name": "Decal_AlbedoWithOpacity",
                 "FileMasks": [

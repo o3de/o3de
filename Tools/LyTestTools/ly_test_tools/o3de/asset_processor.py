@@ -36,10 +36,10 @@ DEFAULT_TIMEOUT_HOURS = 8
 DEFAULT_TIMEOUT_SECONDS = 300
 
 ASSET_PROCESSOR_PLATFORM_MAP = {
-    'android': 'es3',
+    'android': 'android',
     'ios': 'ios',
     'linux': 'linux',  # Not fully implemented, see SPEC-2501
-    'mac': 'osx_gl',
+    'mac': 'mac',
     'windows': 'pc',
 }
 

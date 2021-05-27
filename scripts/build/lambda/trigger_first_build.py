@@ -53,7 +53,7 @@ def lambda_handler(event, context):
         backoff = 30
         status_list = [404]  # Retry if the branch doesn't exist yet and provide time for Jenkins to discover it.
         method_list = ['POST']
-        retry_config = Retry(total=retries, backoff_factor=backoff, status_forcelist=status_list, method_whitelist=method_list)
+        retry_config = Retry(total=retries, backoff_factor=backoff, status_forcelist=status_list, allowed_methods=method_list)
 
         session = requests.Session()
         session.mount('https://', HTTPAdapter(max_retries=retry_config))

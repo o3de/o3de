@@ -73,7 +73,6 @@ namespace O3DE::ProjectManager
         QString m_projectName;
         QString m_projectImagePath;
         LabelButton* m_projectImageLabel;
-        QPushButton* m_projectSettingsMenuButton;
         QAction* m_editProjectAction;
         QAction* m_editProjectGemsAction;
         QAction* m_copyProjectAction;
