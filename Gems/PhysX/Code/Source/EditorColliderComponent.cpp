@@ -868,7 +868,7 @@ namespace PhysX
             colliderConfigNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
             colliderConfigNoOffset.m_position = AZ::Vector3::CreateZero();
             m_colliderDebugDraw.DrawMesh(debugDisplay, colliderConfigNoOffset, m_scaledPrimitive.value(),
-                GetWorldTM().GetScale() * m_cachedNonUniformScale, shapeIndex);
+                GetWorldTM().GetUniformScale() * m_cachedNonUniformScale, shapeIndex);
         }
     }
 
@@ -1007,7 +1007,7 @@ namespace PhysX
 
     AZ::Vector3 EditorColliderComponent::GetBoxScale()
     {
-        return GetWorldTM().GetScale();
+        return AZ::Vector3(GetWorldTM().GetUniformScale());
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -1049,7 +1049,7 @@ namespace PhysX
     void EditorColliderComponent::UpdateShapeConfigurationScale()
     {
         auto& shapeConfiguration = m_shapeConfiguration.GetCurrent();
-        shapeConfiguration.m_scale = GetWorldTM().ExtractScale() * m_cachedNonUniformScale;
+        shapeConfiguration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
         m_colliderDebugDraw.ClearCachedGeometry();
     }
 

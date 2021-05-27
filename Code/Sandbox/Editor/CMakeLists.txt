@@ -173,6 +173,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Legacy::CrySystem
         Legacy::EditorLib
+        ProjectManager
 )
 ly_add_translations(
     TARGETS Editor
