@@ -298,14 +298,6 @@ namespace MCommon
         void RenderCylinder(float baseRadius, float topRadius, float length, const AZ::Vector3& position, const AZ::Vector3& direction, const MCore::RGBAColor& color);
 
         /**
-         * Render a cube.
-         * @param size The size of the cube.
-         * @param position The position of the center of the cube.
-         * @param color The desired cube color.
-         */
-        void RenderCube(float size, const AZ::Vector3& position, const MCore::RGBAColor& color);
-
-        /**
          * Render a triangle (CCW).
          * @param v1 The first corner of the triangle.
          * @param v2 The second corner of the triangle.
