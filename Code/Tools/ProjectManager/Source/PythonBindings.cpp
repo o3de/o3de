@@ -313,33 +313,38 @@ namespace O3DE::ProjectManager
 
     bool PythonBindings::RegisterThisEngine()
     {
-        bool registerThis = true;
-
-        // check current engine path against all other registered engines
-        // to see if we are already registered
-        auto allEngines = m_registration.attr("get_engines")();
-        if (pybind11::isinstance<pybind11::list>(allEngines))
-        {
-            for (const auto& engine : allEngines)
+        bool registrationResult = true; // already registered is considered successful
+        bool pythonResult = ExecuteWithLock(
+            [&]
             {
-                AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
-                if (enginePath.Compare(m_enginePath) == 0)
+                bool registerThis = true;
+
+                // check current engine path against all other registered engines
+                // to see if we are already registered
+                auto allEngines = m_registration.attr("get_engines")();
+                if (pybind11::isinstance<pybind11::list>(allEngines))
                 {
-                    registerThis = false;
-                    break;
+                    for (const auto& engine : allEngines)
+                    {
+                        AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
+                        if (enginePath.Compare(m_enginePath) == 0)
+                        {
+                            registerThis = false;
+                            break;
+                        }
+                    }
                 }
-            }
-        }
 
-        bool result = true;
-        if (registerThis)
-        {
-            auto registrationResult = m_registration.attr("register")(m_enginePath.c_str());
-            result = (registrationResult.cast<int>() == 0);
-        }
+                if (registerThis)
+                {
+                    auto result = m_registration.attr("register")(m_enginePath.c_str());
+                    registrationResult = (result.cast<int>() == 0);
+                }
+            });
 
-        AZ_Assert(result, "Registration of this engine failed!");
-        return result;
+        bool finalResult = (registrationResult && pythonResult);
+        AZ_Assert(finalResult, "Registration of this engine failed!");
+        return finalResult;
     }
 
     bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
