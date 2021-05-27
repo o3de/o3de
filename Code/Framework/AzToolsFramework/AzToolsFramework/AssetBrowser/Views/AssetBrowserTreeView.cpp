@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -270,7 +271,20 @@ namespace AzToolsFramework
             return false;
         }
 
-        bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex)
+        void AssetBrowserTreeView::SelectFolder(AZStd::string_view folderPath)
+        {
+            if (folderPath.size() == 0)
+            {
+                return;
+            }
+
+            AZStd::vector<AZStd::string> entries;
+            AZ::StringFunc::Tokenize(folderPath, entries, "/");
+
+            SelectEntry(QModelIndex(), entries, 0, true);
+        }
+
+        bool AssetBrowserTreeView::SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entries, const uint32_t entryPathIndex, bool useDisplayName)
         {
             if (entries.empty())
             {
@@ -285,30 +299,43 @@ namespace AzToolsFramework
                 auto rowIdx = model()->index(idx, 0, idxParent);
                 auto rowEntry = GetEntryFromIndex<AssetBrowserEntry>(rowIdx);
 
-                // Check if this entry name matches the query
-                if (rowEntry && AzFramework::StringFunc::Equal(entry.c_str(), rowEntry->GetName().c_str(), true))
+                if (rowEntry)
                 {
-                    // Final entry found - set it as the selected element
-                    if (entryPathIndex == entries.size() - 1)
-                    {
-                        selectionModel()->clear();
-                        selectionModel()->select(rowIdx, QItemSelectionModel::Select);
-                        setCurrentIndex(rowIdx);
-                        return true;
-                    }
+                    // Check if this entry name matches the query
+                    AZStd::string_view compareName = useDisplayName ? (const char*)(rowEntry->GetDisplayName().toUtf8()) : rowEntry->GetName().c_str();
 
-                    // If this isn't the final entry, it needs to be a folder for the path to be valid (otherwise, early out)
-                    if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                    if (AzFramework::StringFunc::Equal(entry.c_str(), compareName, true))
                     {
-                        // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset Browser (otherwise, early out)
-                        if (SelectEntry(rowIdx, entries, entryPathIndex + 1))
+                        // Final entry found - set it as the selected element
+                        if (entryPathIndex == entries.size() - 1)
                         {
-                            expand(rowIdx);
+                            if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                            {
+                                // Expand the item itself if it is a folder
+                                expand(rowIdx);
+                            }
+
+                            selectionModel()->clear();
+                            selectionModel()->select(rowIdx, QItemSelectionModel::Select);
+                            setCurrentIndex(rowIdx);
+
                             return true;
                         }
+
+                        // If this isn't the final entry, it needs to be a folder for the path to be valid (otherwise, early out)
+                        if (rowEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                        {
+                            // Folder found - if the final entry is found, expand this folder so the final entry is viewable in the Asset
+                            // Browser (otherwise, early out)
+                            if (SelectEntry(rowIdx, entries, entryPathIndex + 1, useDisplayName))
+                            {
+                                expand(rowIdx);
+                                return true;
+                            }
+                        }
+
+                        return false;
                     }
-                    
-                    return false;
                 }
             }
 

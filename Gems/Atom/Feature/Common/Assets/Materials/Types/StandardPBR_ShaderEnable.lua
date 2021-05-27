@@ -32,7 +32,7 @@ function Process(context)
     local lowEndForwardEDS = context:GetShaderByTag("LowEndForward_EDS")
 
     local depthPassWithPS = context:GetShaderByTag("DepthPass_WithPS")
-    local shadowMapWitPS = context:GetShaderByTag("Shadowmap_WithPS")
+    local shadowMapWithPS = context:GetShaderByTag("Shadowmap_WithPS")
     local forwardPass = context:GetShaderByTag("ForwardPass")
     local lowEndForward = context:GetShaderByTag("LowEndForward")
     
@@ -43,7 +43,7 @@ function Process(context)
         lowEndForwardEDS:SetEnabled(false)
         
         depthPassWithPS:SetEnabled(true)
-        shadowMapWitPS:SetEnabled(true)
+        shadowMapWithPS:SetEnabled(true)
         forwardPass:SetEnabled(true)
         lowEndForward:SetEnabled(true)
     else
@@ -53,7 +53,7 @@ function Process(context)
         lowEndForwardEDS:SetEnabled((opacityMode == OpacityMode_Opaque) or (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
         
         depthPassWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
-        shadowMapWitPS:SetEnabled(opacityMode == OpacityMode_Cutout)
+        shadowMapWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
         forwardPass:SetEnabled(opacityMode == OpacityMode_Cutout)
         lowEndForward:SetEnabled(opacityMode == OpacityMode_Cutout)
     end

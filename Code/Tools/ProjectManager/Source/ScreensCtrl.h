@@ -18,6 +18,8 @@
 #include <QStack>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
+
 namespace O3DE::ProjectManager
 {
     class ScreenWidget;
@@ -35,6 +37,9 @@ namespace O3DE::ProjectManager
         ScreenWidget* FindScreen(ProjectManagerScreen screen);
         ScreenWidget* GetCurrentScreen();
 
+    signals:
+        void NotifyCurrentProject(const QString& projectPath);
+
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);
         bool ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit = true);
@@ -43,11 +48,13 @@ namespace O3DE::ProjectManager
         void ResetAllScreens();
         void DeleteScreen(ProjectManagerScreen screen);
         void DeleteAllScreens();
+        void TabChanged(int index);
 
     private:
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
+        QTabWidget* m_tabWidget;
     };
 
 } // namespace O3DE::ProjectManager

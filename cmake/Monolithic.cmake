@@ -14,7 +14,7 @@ set(LY_MONOLITHIC_GAME FALSE CACHE BOOL "Indicates if the game will be built mon
 if(LY_MONOLITHIC_GAME)
     add_compile_definitions(AZ_MONOLITHIC_BUILD)
     ly_set(PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE STATIC)
-    ly_set(PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE STATIC)
+    ly_set(PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE GEM_STATIC)
     # Disable targets that are not supported with monolithic
     ly_set(PAL_TRAIT_BUILD_HOST_TOOLS FALSE)
     ly_set(PAL_TRAIT_BUILD_HOST_GUI_TOOLS FALSE)

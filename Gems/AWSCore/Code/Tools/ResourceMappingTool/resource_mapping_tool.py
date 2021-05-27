@@ -50,6 +50,7 @@ if __name__ == "__main__":
         from manager.thread_manager import ThreadManager
         from manager.view_manager import ViewManager
         from style import azqtcomponents_resources
+        from style import editormainwindow_resources
     except ImportError as e:
         logger.error(f"Failed to import module [{e.name}] {e}")
         environment_utils.cleanup_qt_environment()
