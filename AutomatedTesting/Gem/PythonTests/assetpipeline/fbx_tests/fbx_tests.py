@@ -533,6 +533,12 @@ class TestsFBX_AllPlatforms(object):
     def test_FBXBlackboxTest_SourceFiles_Processed_ResultInExpectedProducts(self, workspace,
                                                                             ap_setup_fixture, asset_processor, project,
                                                                             blackbox_param):
+        """
+        Test Steps:
+        1. Determine if blackbox is set to none
+        2. Run FBX Test
+        """
+
         if blackbox_param == None:
             return
         self.run_fbx_test(workspace, ap_setup_fixture,
@@ -544,6 +550,13 @@ class TestsFBX_AllPlatforms(object):
                                                                                          workspace, ap_setup_fixture,
                                                                                          asset_processor, project,
                                                                                          blackbox_param):
+        """
+        Test Steps:
+        1. Determine if blackbox is set to none
+        2. Run FBX Test
+        2. Re-run FBX test and validate the information in override assets
+        """
+
         if blackbox_param == None:
             return
         self.run_fbx_test(workspace, ap_setup_fixture,
@@ -567,6 +580,15 @@ class TestsFBX_AllPlatforms(object):
 
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset = False):
+        """
+        Test Steps:
+        1. Create temporary test environment
+        2. Process Assets
+        3. Determine what assets to validate based upon test data
+        4. Validate assets were created in cache
+        5. If debug file provided, verify scene files were generated correctly
+        6. Verify that each given source asset resulted in the expected jobs and products
+        """
 
         test_assets_folder = blackbox_params.override_asset_folder if overrideAsset else blackbox_params.asset_folder
         logger.info(f"{blackbox_params.test_name}: Processing assets in folder '"
