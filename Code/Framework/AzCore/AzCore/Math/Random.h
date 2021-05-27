@@ -126,17 +126,16 @@ namespace AZ
             m_offsets.fill(1); // Halton sequences start at index 1.
             m_increments.fill(1); // By default increment by 1 between each number.
         }
-
-        //! Returns a Halton sequence in an array of N length
-        template<uint32_t N>
-        AZStd::array<AZStd::array<float, Dimensions>, N> GetHaltonSequence()
+        
+        //! Fills a provided container from begin to end with a Halton sequence.
+        //! Entries are expected to be, or implicitly converted to, AZStd::array<float, Dimensions>.
+        template<typename Iterator>
+        void FillHaltonSequence(Iterator begin, Iterator end)
         {
-            AZStd::array<AZStd::array<float, Dimensions>, N> result;
-
             AZStd::array<uint32_t, Dimensions> indices = m_offsets;
 
             // Generator that returns the Halton number for all bases for a single entry.
-            auto f = [&] ()
+            auto f = [&]()
             {
                 AZStd::array<float, Dimensions> item;
                 for (auto d = 0; d < Dimensions; ++d)
@@ -147,12 +146,20 @@ namespace AZ
                 return item;
             };
 
-            AZStd::generate(result.begin(), result.end(), f);
+            AZStd::generate(begin, end, f);
+        }
+        
+        //! Returns a Halton sequence in an array of N length.
+        template<uint32_t N>
+        AZStd::array<AZStd::array<float, Dimensions>, N> GetHaltonSequence()
+        {
+            AZStd::array<AZStd::array<float, Dimensions>, N> result;
+            FillHaltonSequence(result.begin(), result.end());
             return result;
         }
 
         //! Sets the offsets per dimension to start generating a sequence from.
-        //! By default, there is no offset (offset of 0 corresponds to starting at index 1)
+        //! By default, there is no offset (offset of 0 corresponds to starting at index 1).
         void SetOffsets(AZStd::array<uint32_t, Dimensions> offsets)
         {
             m_offsets = offsets;

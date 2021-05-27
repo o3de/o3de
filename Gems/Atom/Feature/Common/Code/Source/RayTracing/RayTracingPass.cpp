@@ -49,6 +49,7 @@ namespace AZ
             {
                 // raytracing is not supported on this platform
                 SetEnabled(false);
+                return;
             }
 
             Init();

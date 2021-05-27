@@ -104,7 +104,7 @@ namespace AZ
             {
                 return WindowsAzslShaderHeader;
             }
-            else if (platform.m_identifier == "osx_gl")
+            else if (platform.m_identifier == "mac")
             {
                 return MacAzslShaderHeader;
             }

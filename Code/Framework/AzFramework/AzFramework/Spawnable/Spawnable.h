@@ -19,10 +19,13 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 
-namespace AzFramework
+namespace AZ
 {
     class ReflectContext;
+}
 
+namespace AzFramework
+{
     class Spawnable final
         : public AZ::Data::AssetData
     {

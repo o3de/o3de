@@ -780,6 +780,7 @@ namespace AZ
                 [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
                     inputStreamLayout,
                     streamBufferViews,
+                    nullptr,
                     shaderInputContract,
                     meshIndex,
                     materialAssignment.m_matModUvOverrides,
