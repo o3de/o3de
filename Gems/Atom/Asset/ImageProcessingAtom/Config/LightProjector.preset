@@ -14,7 +14,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{1DFEF41A-D97F-40FB-99D3-C142A3E5225E}",
                 "Name": "LightProjector",
                 "DestColor": "Linear",
@@ -34,7 +34,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{1DFEF41A-D97F-40FB-99D3-C142A3E5225E}",
                 "Name": "LightProjector",
                 "DestColor": "Linear",

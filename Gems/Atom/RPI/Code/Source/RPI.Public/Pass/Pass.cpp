@@ -98,7 +98,7 @@ namespace AZ
 
         bool Pass::IsEnabled() const
         {
-            return m_flags.m_enabled && (m_flags.m_parentEnabled || m_parent == nullptr);
+            return m_flags.m_enabled;
         }
 
         // --- Error Logging ---

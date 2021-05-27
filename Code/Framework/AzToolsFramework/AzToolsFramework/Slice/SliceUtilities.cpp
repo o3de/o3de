@@ -1475,10 +1475,8 @@ namespace AzToolsFramework
                     // to avoid pushing them to the slice.
                     // Only scale is preserved on the root entity of a slice.
                     transformComponent->SetParent(AZ::EntityId());
-                    AZ::Vector3 scale = transformComponent->GetLocalScale();
                     transformComponent->SetWorldTranslation(AZ::Vector3::CreateZero());
                     transformComponent->SetLocalRotation(AZ::Vector3::CreateZero());
-                    transformComponent->SetLocalScale(scale);
                 }
             }
 

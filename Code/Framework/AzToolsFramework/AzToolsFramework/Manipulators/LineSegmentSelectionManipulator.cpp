@@ -31,7 +31,7 @@ namespace AzToolsFramework
             rayProportion, lineSegmentProportion, worldClosestPositionRay, worldClosestPositionLineSegment);
 
         AZ::Transform worldFromLocalNormalized = worldFromLocal;
-        const AZ::Vector3 scale = worldFromLocalNormalized.ExtractScale() * nonUniformScale;
+        const AZ::Vector3 scale = worldFromLocalNormalized.ExtractUniformScale() * nonUniformScale;
         const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
 
         return { (localFromWorldNormalized.TransformPoint(worldClosestPositionLineSegment)) / scale };

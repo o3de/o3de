@@ -2048,10 +2048,6 @@ LUA_API const Node* lua_getDummyNode()
 
             return true;
         }
-        else
-        {
-            AZ_Warning("Script", false, "Index %d is not a function!", functionIndex);
-        }
 
         return false;
     }
@@ -2078,7 +2074,6 @@ LUA_API const Node* lua_getDummyNode()
         }
         else
         {
-            AZ_Warning("Script", lua_isnil(m_nativeContext, -1), "Name %s exists but is not a function!", functionName);
             lua_pop(m_nativeContext, 1);
         }
 
@@ -5888,7 +5883,6 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            AZ_Warning("Script", false, "%s is not a function!", functionName);
         }
         return false;
     }
@@ -5906,7 +5900,6 @@ LUA_API const Node* lua_getDummyNode()
         else
         {
             lua_pop(m_impl->m_lua, 1);
-            AZ_Warning("Script", false, "CacheIndex %d is not a function!", cachedIndex);
         }
         return false;
     }
