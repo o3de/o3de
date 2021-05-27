@@ -15,16 +15,26 @@
 #include <ScreenWidget.h>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QPaintEvent)
+QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+
 namespace O3DE::ProjectManager
 {
-    class ProjectsHomeScreen
+    class ProjectsScreen
         : public ScreenWidget
     {
 
     public:
-        explicit ProjectsHomeScreen(QWidget* parent = nullptr);
-        ~ProjectsHomeScreen() = default;
+        explicit ProjectsScreen(QWidget* parent = nullptr);
+        ~ProjectsScreen() = default;
+
         ProjectManagerScreen GetScreenEnum() override;
+        QString GetTabText() override;
+        bool IsTab() override;
+
+    protected:
+        void NotifyCurrentScreen() override;
 
     protected slots:
         void HandleNewProjectButton();
@@ -36,16 +46,24 @@ namespace O3DE::ProjectManager
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
 
+        void paintEvent(QPaintEvent* event) override;
+
     private:
+        QFrame* CreateFirstTimeContent();
+        QFrame* CreateProjectsContent();
+        bool ShouldDisplayFirstTimeContent();
+
         QAction* m_createNewProjectAction;
         QAction* m_addExistingProjectAction;
+        QPixmap m_background;
+        QFrame* m_firstTimeContent;
+        QFrame* m_projectsContent;
+        QStackedWidget* m_stack;
 
         const QString m_projectPreviewImagePath = "/preview.png";
+
         inline constexpr static int s_contentMargins = 80;
         inline constexpr static int s_spacerSize = 20;
-        inline constexpr static int s_projectButtonRowCount = 4;
-        inline constexpr static int s_newProjectButtonWidth = 156;
-
     };
 
 } // namespace O3DE::ProjectManager
