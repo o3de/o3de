@@ -205,9 +205,6 @@ namespace AzToolsFramework
 
         void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
 
-        // Private wrapper for m_rootInstance that allows for lazy initialization.
-        Prefab::Instance* GetRootInstance();
-
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;
         ValidateEntitiesCallback m_validateEntitiesCallback;

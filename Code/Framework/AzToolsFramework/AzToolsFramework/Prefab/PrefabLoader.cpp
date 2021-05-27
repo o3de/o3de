@@ -18,6 +18,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -448,8 +449,15 @@ namespace AzToolsFramework
             {
                 // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
 
-                AZ_Error(
-                    "Prefab", false, "Relative source path for '%.*s' could not be determined. Using project path as relative root.",
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follor
+                // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
+                // a unit test, so just execute the fallback logic without an error.
+                [[maybe_unused]] bool assetProcessorReady = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetProcessorReady, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                AZ_Error("Prefab", !assetProcessorReady,
+                    "Relative source path for '%.*s' could not be determined. Using project path as relative root.",
                     AZ_STRING_ARG(path.Native()));
 
                 AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path.Native()).MakePreferred();
