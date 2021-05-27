@@ -96,12 +96,6 @@ namespace AZ
                 return QueryResultCode::Fail;
             }
 
-            // Limit calling BeginQuery() to the first CommandList in the array.
-            if (context.GetCommandListIndex() != 0)
-            {
-                return QueryResultCode::Success;
-            }
-
             const auto rhiQueryIndices = GetRhiQueryIndicesFromCurrentFrame();
             if (!rhiQueryIndices)
             {
@@ -122,12 +116,6 @@ namespace AZ
             if (m_cachedSubQueryArrayIndex == InvalidQueryIndex)
             {
                 return QueryResultCode::Fail;
-            }
-
-            // Limit calling EndQuery() to the last CommandList in the array.
-            if (context.GetCommandListIndex() != context.GetCommandListCount() - 1)
-            {
-                return QueryResultCode::Success;
             }
 
             // Validate that the queries are recorded for the same scope.
