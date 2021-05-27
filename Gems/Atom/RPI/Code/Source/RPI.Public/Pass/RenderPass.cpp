@@ -539,17 +539,16 @@ namespace AZ
             // This scopy query implmentation should be replaced by
             // [ATOM-5407] [RHI][Core] - Add GPU timestamp and pipeline statistic support for scopes
             
-            // For timestamp query, it's okay to it across different command lists
+            // For timestamp query, it's okay to execute across different command lists
             if (context.GetCommandListIndex() == context.GetCommandListCount() - 1)
             {
                 ExecuteOnTimestampQuery(endQuery);
             }
-            // For all the other queries, the query start and end has to be in in same command list
-            // We only add query for the first command list, this is due to the limitation
-            // that RPI won't know how many command lists would be used for
-            // a scope's execution which we can add the required queries to frame graph.
+            // For all the other types of queries except timestamp, the query start and end has to be in the same command list
+            // Here only tracks the PipelineStatistics for the first command list due to that we don't know how many queries are
+            // needed when AddScopeQueryToFrameGraph is called.
             // This implementation leads to an issue that we may not get accurate pipeline statistic data
-            // for passes which has draw item count larger than command list's draw command limit.
+            // for passes which were executed with more than one command list
             if (context.GetCommandListIndex() == 0)
             {
                 ExecuteOnPipelineStatisticsQuery(endQuery);
