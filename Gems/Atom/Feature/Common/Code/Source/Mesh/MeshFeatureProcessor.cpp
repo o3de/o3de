@@ -304,6 +304,18 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb)
+        {
+            if (meshHandle.IsValid())
+            {
+                MeshDataInstance& meshData = *meshHandle;
+                meshData.m_cullBoundsNeedsUpdate = true;
+                meshData.m_objectSrgNeedsUpdate = true;
+
+                meshData.m_model->SetAabb(localAabb);
+            }
+        };
+
         Transform MeshFeatureProcessor::GetTransform(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())

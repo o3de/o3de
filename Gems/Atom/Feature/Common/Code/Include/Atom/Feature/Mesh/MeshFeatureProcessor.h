@@ -160,6 +160,8 @@ namespace AZ
             Transform GetTransform(const MeshHandle& meshHandle) override;
             Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
 
+            void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) override;
+
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
 

@@ -86,6 +86,8 @@ namespace AZ
             virtual Transform GetTransform(const MeshHandle& meshHandle) = 0;
             //! Gets the non-uniform scale for a given mesh handle.
             virtual Vector3 GetNonUniformScale(const MeshHandle& meshHandle) = 0;
+            //! Sets the local space bbox for a given mesh handle. You don't need to call this for static models, only skinned/animated models
+            virtual void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) = 0;
             //! Sets the sort key for a given mesh handle.
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.

@@ -132,6 +132,11 @@ namespace AZ
             return m_aabb;
         }
 
+        void Model::SetAabb(const AZ::Aabb& bb)
+        {
+            m_aabb = bb;
+        }
+
         const Data::Asset<ModelAsset>& Model::GetModelAsset() const
         {
             return m_modelAsset;

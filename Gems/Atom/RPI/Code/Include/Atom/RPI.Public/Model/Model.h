@@ -26,12 +26,22 @@
 
 namespace AZ
 {
+    namespace Render
+    {
+        class MeshFeatureProcessor;
+    }
+}
+
+namespace AZ
+{
     namespace RPI
     {
         class Model final
             : public Data::InstanceData
         {
             friend class ModelSystem;
+            friend class Render::MeshFeatureProcessor;
+
         public:
             AZ_INSTANCE_DATA(Model, "{C30F5522-B381-4B38-BBAF-6E0B1885C8B9}");
             AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
@@ -87,6 +97,8 @@ namespace AZ
 
         private:
             Model() = default;
+
+            void SetAabb(const AZ::Aabb&);
 
             static Data::Instance<Model> CreateInternal(ModelAsset& modelAsset);
             RHI::ResultCode Init(ModelAsset& modelAsset);
