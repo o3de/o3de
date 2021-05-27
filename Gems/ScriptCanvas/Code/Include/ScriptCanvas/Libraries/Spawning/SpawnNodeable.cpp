@@ -15,127 +15,125 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 
-namespace ScriptCanvas
+namespace ScriptCanvas::Nodeables::Spawning
 {
-    namespace Nodeables
+    SpawnNodeable::SpawnNodeable(const SpawnNodeable& rhs)
+        : m_spawnableAsset(rhs.m_spawnableAsset)
+    {}
+
+    SpawnNodeable& SpawnNodeable::operator=(SpawnNodeable& rhs)
     {
-        namespace Spawning
+        m_spawnableAsset = rhs.m_spawnableAsset;
+        return *this;
+    }
+
+    void SpawnNodeable::OnInitializeExecutionState()
+    {
+        if (!AZ::TickBus::Handler::BusIsConnected())
         {
-            SpawnNodeable::SpawnNodeable(const SpawnNodeable& rhs)
+            AZ::TickBus::Handler::BusConnect();
+        }
+
+        m_spawnTicket = AzFramework::EntitySpawnTicket(m_spawnableAsset);
+    }
+
+    void SpawnNodeable::OnDeactivate()
+    {
+        AZ::TickBus::Handler::BusDisconnect();
+
+        m_spawnTicket = AzFramework::EntitySpawnTicket();
+    }
+
+    void SpawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
+    {
+        AZStd::vector<Data::EntityIDType> swappedSpawnedEntityList;
+        AZStd::vector<size_t> swappedSpawnBatchSizes;
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_idBatchMutex);
+
+            swappedSpawnedEntityList.swap(m_spawnedEntityList);
+            swappedSpawnBatchSizes.swap(m_spawnBatchSizes);
+        }
+
+        AZ::EntityId* batchBegin = swappedSpawnedEntityList.data();
+        for (size_t batchSize : swappedSpawnBatchSizes)
+        {
+            if (batchSize == 0)
             {
-                m_spawnableAsset = rhs.m_spawnableAsset;
+                continue;
             }
 
-            void SpawnNodeable::OnInitializeExecutionState()
-            {
-                if (!AZ::TickBus::Handler::BusIsConnected())
-                {
-                    AZ::TickBus::Handler::BusConnect();
-                }
+            AZStd::vector<AZ::EntityId> spawnedEntitiesBatch(
+                batchBegin, batchBegin + batchSize);
 
-                m_spawnTicket = AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            CallOnSpawn(AZStd::move(spawnedEntitiesBatch));
+
+            batchBegin += batchSize;
+        }
+    }
+
+    void SpawnNodeable::OnSpawnAssetChanged()
+    {
+        if (m_spawnableAsset.GetId().IsValid())
+        {
+            AZStd::string rootSpawnableFile;
+            AzFramework::StringFunc::Path::GetFileName(m_spawnableAsset.GetHint().c_str(), rootSpawnableFile);
+
+            rootSpawnableFile += AzFramework::Spawnable::DotFileExtension;
+
+            AZ::u32 rootSubId = AzFramework::SpawnableAssetHandler::BuildSubId(AZStd::move(rootSpawnableFile));
+
+            if (m_spawnableAsset.GetId().m_subId != rootSubId)
+            {
+                AZ::Data::AssetId rootAssetId = m_spawnableAsset.GetId();
+                rootAssetId.m_subId = rootSubId;
+
+                m_spawnableAsset = AZ::Data::AssetManager::Instance().
+                    FindOrCreateAsset<AzFramework::Spawnable>(rootAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
             }
-
-            void SpawnNodeable::OnDeactivate()
+            else
             {
-                if (AZ::TickBus::Handler::BusIsConnected())
-                {
-                    AZ::TickBus::Handler::BusDisconnect();
-                }
-
-                m_spawnTicket = AzFramework::EntitySpawnTicket();
-            }
-
-            void SpawnNodeable::OnTick([[maybe_unused]] float delta, [[maybe_unused]] AZ::ScriptTimePoint timePoint)
-            {
-                AZStd::vector<Data::EntityIDType> swappedSpawnedEntityList;
-                AZStd::vector<size_t> swappedSpawnBatchSizes;
-                {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_idBatchMutex);
-
-                    swappedSpawnedEntityList.swap(m_spawnedEntityList);
-                    swappedSpawnBatchSizes.swap(m_spawnBatchSizes);
-                }
-
-                AZ::EntityId* batchBegin = swappedSpawnedEntityList.data();
-                for (size_t batchSize : swappedSpawnBatchSizes)
-                {
-                    if (batchSize == 0)
-                    {
-                        continue;
-                    }
-
-                    AZStd::vector<AZ::EntityId> spawnedEntitiesBatch(
-                        batchBegin, batchBegin + batchSize);
-
-                    CallOnSpawn(AZStd::move(spawnedEntitiesBatch));
-
-                    batchBegin += batchSize;
-                }
-            }
-
-            void SpawnNodeable::OnSpawnAssetChanged()
-            {
-                if (m_spawnableAsset.GetId().IsValid())
-                {
-                    AZStd::string rootSpawnableFile;
-                    AzFramework::StringFunc::Path::GetFileName(m_spawnableAsset.GetHint().c_str(), rootSpawnableFile);
-
-                    rootSpawnableFile += AzFramework::Spawnable::DotFileExtension;
-
-                    AZ::u32 rootSubId = AzFramework::SpawnableAssetHandler::BuildSubId(AZStd::move(rootSpawnableFile));
-
-                    if (m_spawnableAsset.GetId().m_subId != rootSubId)
-                    {
-                        AZ::Data::AssetId rootAssetId = m_spawnableAsset.GetId();
-                        rootAssetId.m_subId = rootSubId;
-
-                        m_spawnableAsset = AZ::Data::AssetManager::Instance().
-                            FindOrCreateAsset<AzFramework::Spawnable>(rootAssetId, AZ::Data::AssetLoadBehavior::Default);
-                    }
-
-                    m_spawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
-                }
-            }
-
-            void SpawnNodeable::RequestSpawn(Data::Vector3Type translation, Data::Vector3Type rotation, Data::NumberType scale)
-            {
-                if (!m_spawnableAsset.IsReady())
-                {
-                    return;
-                }
-
-                auto preSpawnCB = [this, translation, rotation, scale]([[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-                    AzFramework::SpawnableEntityContainerView view)
-                {
-                    AZ::Entity* rootEntity = *view.begin();
-
-                    AzFramework::TransformComponent* entityTransform =
-                        rootEntity->FindComponent<AzFramework::TransformComponent>();
-
-                    if (entityTransform)
-                    {
-                        AZ::Vector3 rotationCopy = rotation;
-                        AZ::Quaternion rotationQuat = AZ::Quaternion::CreateFromEulerAnglesDegrees(rotationCopy);
-
-                        entityTransform->SetWorldTM(AZ::Transform(translation, rotationQuat, AZ::Vector3(scale, scale, scale)));
-                    }
-                };
-
-                auto spawnCompleteCB = [this]([[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-                    AzFramework::SpawnableConstEntityContainerView view)
-                {
-                    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_idBatchMutex);
-                    m_spawnedEntityList.reserve(m_spawnedEntityList.size() + view.size());
-                    for (const AZ::Entity* entity : view)
-                    {
-                        m_spawnedEntityList.emplace_back(entity->GetId());
-                    }
-                    m_spawnBatchSizes.push_back(view.size());
-                };
-
-                AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(m_spawnTicket, preSpawnCB, spawnCompleteCB);
+                m_spawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             }
         }
+    }
+
+    void SpawnNodeable::RequestSpawn(Data::Vector3Type translation, Data::Vector3Type rotation, Data::NumberType scale)
+    {
+        if (!m_spawnableAsset.IsReady())
+        {
+            return;
+        }
+
+        auto preSpawnCB = [this, translation, rotation, scale]([[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
+            AzFramework::SpawnableEntityContainerView view)
+        {
+            AZ::Entity* rootEntity = *view.begin();
+
+            AzFramework::TransformComponent* entityTransform =
+                rootEntity->FindComponent<AzFramework::TransformComponent>();
+
+            if (entityTransform)
+            {
+                AZ::Vector3 rotationCopy = rotation;
+                AZ::Quaternion rotationQuat = AZ::Quaternion::CreateFromEulerAnglesDegrees(rotationCopy);
+
+                entityTransform->SetWorldTM(AZ::Transform(translation, rotationQuat, AZ::Vector3(scale, scale, scale)));
+            }
+        };
+
+        auto spawnCompleteCB = [this]([[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
+            AzFramework::SpawnableConstEntityContainerView view)
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_idBatchMutex);
+            m_spawnedEntityList.reserve(m_spawnedEntityList.size() + view.size());
+            for (const AZ::Entity* entity : view)
+            {
+                m_spawnedEntityList.emplace_back(entity->GetId());
+            }
+            m_spawnBatchSizes.push_back(view.size());
+        };
+
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(m_spawnTicket, preSpawnCB, spawnCompleteCB);
     }
 }

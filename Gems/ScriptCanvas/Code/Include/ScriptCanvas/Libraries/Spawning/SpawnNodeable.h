@@ -22,36 +22,31 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 
-namespace ScriptCanvas
+namespace ScriptCanvas::Nodeables::Spawning
 {
-    namespace Nodeables
+    class SpawnNodeable
+        : public ScriptCanvas::Nodeable,
+            public AZ::TickBus::Handler
     {
-        namespace Spawning
-        {
-            class SpawnNodeable
-                : public ScriptCanvas::Nodeable,
-                  public AZ::TickBus::Handler
-            {
-                SCRIPTCANVAS_NODE(SpawnNodeable);
-            public:
-                SpawnNodeable() = default;
-                SpawnNodeable(const SpawnNodeable& rhs);
+        SCRIPTCANVAS_NODE(SpawnNodeable);
+    public:
+        SpawnNodeable() = default;
+        SpawnNodeable(const SpawnNodeable& rhs);
+        SpawnNodeable& operator=(SpawnNodeable& rhs);
 
-                void OnInitializeExecutionState() override;
-                void OnDeactivate() override;
+        void OnInitializeExecutionState() override;
+        void OnDeactivate() override;
 
-                //TickBus
-                void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
+        //TickBus
+        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
 
-                void OnSpawnAssetChanged();
+        void OnSpawnAssetChanged();
 
-            private:
-                AzFramework::EntitySpawnTicket m_spawnTicket;
+    private:
+        AzFramework::EntitySpawnTicket m_spawnTicket;
 
-                AZStd::vector<Data::EntityIDType> m_spawnedEntityList;
-                AZStd::vector<size_t> m_spawnBatchSizes;
-                AZStd::recursive_mutex m_idBatchMutex;
-            };
-        }
-    }
+        AZStd::vector<Data::EntityIDType> m_spawnedEntityList;
+        AZStd::vector<size_t> m_spawnBatchSizes;
+        AZStd::recursive_mutex m_idBatchMutex;
+    };
 }
