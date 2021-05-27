@@ -34,9 +34,9 @@ namespace AzFramework
         AZ::Vector3 m_lookAt = AZ::Vector3::CreateZero(); //!< Position of camera when m_lookDist is zero,
                                                           //!< or position of m_lookAt when m_lookDist is greater
                                                           //!< than zero.
-        float m_yaw { 0.0 };
-        float m_pitch { 0.0 };
-        float m_lookDist { 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
+        float m_yaw{ 0.0 };
+        float m_pitch{ 0.0 };
+        float m_lookDist{ 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
 
         //! View camera transform (v in MVP).
         AZ::Transform View() const;

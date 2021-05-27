@@ -1262,7 +1262,8 @@ void EditorViewportWidget::SetViewportId(int id)
                             return renderGeometryIntersectionResult.m_worldPosition;
                         }
 
-                        // if there is no selection or no intersection, fallback to default camera orbit behavior (ground plane intersection)
+                        // if there is no selection or no intersection, fallback to default camera orbit behavior (ground plane
+                        // intersection)
                         return {};
                     });
 

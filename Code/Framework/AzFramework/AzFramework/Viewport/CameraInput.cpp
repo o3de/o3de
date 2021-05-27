@@ -179,7 +179,7 @@ namespace AzFramework
     {
         const auto nextCamera = m_cameras.StepCamera(targetCamera, m_motionDelta, m_scrollDelta, deltaTime);
 
-        m_motionDelta = ScreenVector { 0, 0 };
+        m_motionDelta = ScreenVector{ 0, 0 };
         m_scrollDelta = 0.0f;
 
         return nextCamera;
@@ -754,21 +754,21 @@ namespace AzFramework
 
         if (inputChannelId == InputDeviceMouse::Movement::X)
         {
-            return HorizontalMotionEvent { (int)inputChannel.GetValue() };
+            return HorizontalMotionEvent{ (int)inputChannel.GetValue() };
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Y)
         {
-            return VerticalMotionEvent { (int)inputChannel.GetValue() };
+            return VerticalMotionEvent{ (int)inputChannel.GetValue() };
         }
         else if (inputChannelId == InputDeviceMouse::Movement::Z)
         {
-            return ScrollEvent { inputChannel.GetValue() };
+            return ScrollEvent{ inputChannel.GetValue() };
         }
         else if (wasMouseButton || InputDeviceKeyboard::IsKeyboardDevice(inputDeviceId))
         {
-            return DiscreteInputEvent { inputChannelId, inputChannel.GetState() };
+            return DiscreteInputEvent{ inputChannelId, inputChannel.GetState() };
         }
 
-        return AZStd::monostate {};
+        return AZStd::monostate{};
     }
 } // namespace AzFramework
