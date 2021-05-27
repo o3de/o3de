@@ -36,7 +36,6 @@
             "diffuseTextureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
         "layer1_parallax": {
-            "enable": true,
             "factor": 0.02500000037252903,
             "textureMap": "TestData/Textures/cc0/bark1_disp.jpg"
         },
@@ -80,7 +79,6 @@
             "specularTextureMap": "TestData/Textures/cc0/Tiles009_1K_Displacement.jpg"
         },
         "layer2_parallax": {
-            "enable": true,
             "factor": 0.01600000075995922,
             "textureMap": "TestData/Textures/cc0/Lava004_1K_Displacement.jpg"
         },
@@ -118,7 +116,6 @@
             "diffuseTextureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Displacement.jpg"
         },
         "layer3_parallax": {
-            "enable": true,
             "factor": 0.004999999888241291,
             "textureMap": "TestData/Textures/cc0/PaintedMetal003_1K_Displacement.jpg"
         },

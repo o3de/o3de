@@ -937,7 +937,7 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
             ->Enum<static_cast<int>(PlatformID::PLATFORM_LINUX_64)>("Linux")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_ANDROID_64)>("Android64")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_IOS)>("iOS")
-            ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_OSX)>("OSX")
+            ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_MAC)>("Mac")
 #if defined(AZ_EXPAND_FOR_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
             ->Enum<static_cast<int>(PlatformID::PLATFORM_##PUBLICNAME)>(#CodeName)

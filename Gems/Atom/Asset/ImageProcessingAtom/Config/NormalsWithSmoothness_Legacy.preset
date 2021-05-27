@@ -22,7 +22,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{A92541B8-2E70-4EF1-BA88-1DC1EA2A2341}",
                 "Name": "NormalsWithSmoothness_Legacy",
                 "SourceColor": "Linear",
@@ -58,7 +58,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{A92541B8-2E70-4EF1-BA88-1DC1EA2A2341}",
                 "Name": "NormalsWithSmoothness_Legacy",
                 "SourceColor": "Linear",
