@@ -110,6 +110,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomFont
             Gem::AtomToolsFramework.Editor
             Gem::AtomViewportDisplayInfo
+            Gem::AtomViewportDisplayIcons.Editor
     )
 
 

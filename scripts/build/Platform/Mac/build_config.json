@@ -86,7 +86,7 @@
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
       "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
-      "ASSET_PROCESSOR_PLATFORMS": "osx_gl"
+      "ASSET_PROCESSOR_PLATFORMS": "mac"
     }
   },
   "periodic_test_profile": {

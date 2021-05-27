@@ -349,7 +349,7 @@ namespace LmbrCentral
         const AZ::Vector3& src, const AZ::Vector3& dir, float& distance)
     {
         const auto rayIntersectData = IntersectSpline(m_cachedUniformScaleTransform, src, dir, *m_splineCommon.m_spline);
-        distance = rayIntersectData.m_rayDistance * m_cachedUniformScaleTransform.GetScale().GetMaxElement();
+        distance = rayIntersectData.m_rayDistance * m_cachedUniformScaleTransform.GetUniformScale();
 
         AzFramework::CameraState cameraState;
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(

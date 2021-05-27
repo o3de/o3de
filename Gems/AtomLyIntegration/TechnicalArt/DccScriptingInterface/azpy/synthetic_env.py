@@ -384,8 +384,7 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # changed to just make the fallback what is set in boostrap
     # so now it's less of a fallnack and more correct if not
     # explicitly set
-    _LY_PROJECT = os.getenv(ENVAR_LY_PROJECT,
-                            get_current_project(_LY_DEV))
+    _LY_PROJECT = os.getenv(ENVAR_LY_PROJECT)
     _SYNTH_ENV_DICT[ENVAR_LY_PROJECT] = _LY_PROJECT
     
     _LY_BUILD_DIR_NAME = os.getenv(ENVAR_LY_BUILD_DIR_NAME,

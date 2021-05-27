@@ -73,7 +73,7 @@ namespace WhiteBox
         const AZ::Transform spaceFromLocal = localFromSpace.GetInverse();
         const AZ::Vector3 spacePosition = spaceFromLocal.TransformPoint(localPosition);
         const AZ::Vector3 spaceScaledPosition =
-            AZ::Transform::CreateScale(AZ::Vector3(scale)).TransformPoint(spacePosition);
+            AZ::Transform::CreateUniformScale(scale).TransformPoint(spacePosition);
         return localFromSpace.TransformPoint(spaceScaledPosition);
     }
 

@@ -114,6 +114,10 @@ endif()
 # Post-processing
 ################################################################################
 # The following steps have to be done after all targets are registered:
+# Defer generation of the StaticModules.inl file which is needed to create the AZ::Module derived class in monolithic
+# builds until after all the targets are known
+ly_delayed_generate_static_modules_inl()
+
 # 1. Add any dependencies registered via ly_enable_gems
 ly_enable_gems_delayed()
 

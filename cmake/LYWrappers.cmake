@@ -46,6 +46,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 #
 # \arg:NAME name of the target
 # \arg:STATIC (bool) defines this target to be a static library
+# \arg:GEM_STATIC (bool) defines this target to be a static library while also setting the GEM_MODULE property
 # \arg:SHARED (bool) defines this target to be a dynamic library
 # \arg:MODULE (bool) defines this target to be a module library
 # \arg:GEM_MODULE (bool) defines this target to be a module library while also marking the target as a "Gem" via the GEM_MODULE property
@@ -75,7 +76,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -94,6 +95,10 @@ function(ly_add_target)
     # If the GEM_MODULE tag is passed set the normal MODULE argument
     if(ly_add_target_GEM_MODULE)
         set(ly_add_target_MODULE ${ly_add_target_GEM_MODULE})
+    endif()
+    # If the GEM_STATIC tag is passed mark the target as STATIC
+    if(ly_add_target_GEM_STATIC)
+        set(ly_add_target_STATIC ${ly_add_target_GEM_STATIC})
     endif()
 
     foreach(file_cmake ${ly_add_target_FILES_CMAKE})
@@ -204,7 +209,7 @@ function(ly_add_target)
 
     endif()
 
-    if(ly_add_target_GEM_MODULE)
+    if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC)
         set_target_properties(${ly_add_target_NAME} PROPERTIES GEM_MODULE TRUE)
     endif()
 
@@ -678,14 +683,11 @@ endfunction()
 # given a target name, returns the "real" name of the target if its an alias.
 # this function recursively de-aliases
 function(ly_de_alias_target target_name output_variable_name)
-    # its not okay to call get_target_property on a non-existant target
     if (NOT TARGET ${target_name})
-        message(FATAL_ERROR "ly_de_alias_target called on non-existant target: ${target_name}")
     endif()
 
     while(target_name)
         set(de_aliased_target_name ${target_name})
-        
         get_target_property(target_name ${target_name} ALIASED_TARGET)
     endwhile()
 

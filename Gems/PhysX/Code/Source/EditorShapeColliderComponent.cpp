@@ -205,7 +205,7 @@ namespace PhysX
         }
 
         AZ::Transform transform = GetWorldTM();
-        transform.ExtractScale();
+        transform.ExtractUniformScale();
         const size_t numPoints = m_geometryCache.m_cachedSamplePoints.size();
         for (size_t pointIndex = 0; pointIndex < numPoints; ++pointIndex)
         {

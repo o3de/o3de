@@ -64,19 +64,16 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     get_target_property(load_dependencies ${ly_TARGET} MANUALLY_ADDED_DEPENDENCIES)
     if(load_dependencies)
         foreach(load_dependency ${load_dependencies})
-            # Skip wrapping produced when targets are not created in the same directory 
-            if(NOT ${load_dependency} MATCHES "^::@")
-                get_property(dependency_type TARGET ${load_dependency} PROPERTY TYPE)
-
-                get_property(is_gem_target TARGET ${load_dependency} PROPERTY GEM_MODULE SET)
-                # If the dependency is a "gem module" then add it as a load dependencies
-                # and recurse into its manually added dependencies
-                if (is_gem_target)
-                    unset(dependencies)
-                    ly_get_gem_load_dependencies(dependencies ${load_dependency})
-                    list(APPEND all_gem_load_dependencies ${load_dependency})
-                    list(APPEND all_gem_load_dependencies ${dependencies})
-                endif()
+            # Skip wrapping produced when targets are not created in the same directory
+            ly_de_alias_target(${load_dependency} dealias_load_dependency)
+            get_property(is_gem_target TARGET ${dealias_load_dependency} PROPERTY GEM_MODULE SET)
+            # If the dependency is a "gem module" then add it as a load dependencies
+            # and recurse into its manually added dependencies
+            if (is_gem_target)
+                unset(dependencies)
+                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency})
+                list(APPEND all_gem_load_dependencies ${dependencies})
+                list(APPEND all_gem_load_dependencies ${dealias_load_dependency})
             endif()
         endforeach()
     endif()

@@ -118,7 +118,7 @@ class TestGraphComponentSync(object):
 
     @pytest.mark.test_case_id('C15987206')
     @pytest.mark.SUITE_main
-    def test_LandscapeCanvas_GradientMixerNodeConstruction(self, request, editor, level, launcher_platform):
+    def test_LandscapeCanvas_GradientMixer_NodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Gradient Mixer can be setup in Landscape Canvas and all references are property set.
         """
@@ -141,7 +141,7 @@ class TestGraphComponentSync(object):
 
     @pytest.mark.test_case_id('C21333743')
     @pytest.mark.SUITE_periodic
-    def test_LandscapeCanvas_LayerBlenderNodeConstruction(self, request, editor, level, launcher_platform):
+    def test_LandscapeCanvas_LayerBlender_NodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Layer Blender can be setup in Landscape Canvas and all references are property set.
         """
