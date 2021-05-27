@@ -59,11 +59,11 @@ namespace UnitTest
     TEST(MATH_Obb, TestScaleTransform)
     {
         Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
-        Vector3 scaleFactors = Vector3(1.0f, 2.0f, 3.0f);
-        Transform transform = Transform::CreateScale(scaleFactors);
+        float scale = 3.0f;
+        Transform transform = Transform::CreateUniformScale(scale);
         obb = transform * obb;
-        EXPECT_THAT(obb.GetPosition(), IsClose(Vector3(1.0f, 4.0f, 9.0f)));
-        EXPECT_THAT(obb.GetHalfLengths(), IsClose(Vector3(0.5f, 1.0f, 1.5f)));
+        EXPECT_THAT(obb.GetPosition(), IsClose(Vector3(3.0f, 6.0f, 9.0f)));
+        EXPECT_THAT(obb.GetHalfLengths(), IsClose(Vector3(1.5f, 1.5f, 1.5f)));
     }
 
     TEST(MATH_Obb, TestSetPosition)

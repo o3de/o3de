@@ -137,19 +137,32 @@ def get_config_file_values(config_file_path, keys_to_extract):
     return result_map
 
 
-def get_bootstrap_values(engine_root, keys_to_extract):
+def get_bootstrap_values(bootstrap_dir, keys_to_extract):
     """
-    Extract requested values from the bootstrap.cfg file in the def root folder
-    :param engine_root:         The engine root folder where bootstrap.cfg exists
+    Extract requested values from the bootstrap.setreg file in the Registry folder
+    :param bootstrap_dir:       The parent directory of the bootstrap.setreg file
     :param keys_to_extract:     The keys to extract into a dictionary
     :return: Dictionary of keys and its values (for matched keys)
     """
-    bootstrap_file = os.path.join(engine_root, 'bootstrap.cfg')
+    bootstrap_file = os.path.join(bootstrap_dir, 'bootstrap.setreg')
     if not os.path.isfile(bootstrap_file):
-        raise LmbrCmdError("Missing 'bootstrap.cfg' file from engine root ('{}')".format(engine_root),
-                           ERROR_CODE_FILE_NOT_FOUND)
+        raise logging.error(f'Bootstrap.setreg file {bootstrap_file} does not exist.')
     
-    result_map = get_config_file_values(bootstrap_file, keys_to_extract)
+    result_map = {}
+    with bootstrap_file.open('r') as f:
+        try:
+            json_data = json.load(f)
+        except Exception as e:
+            logging.error(f'Bootstrap.setreg failed to load: {str(e)}')
+        else:
+            for search_key in keys_to_extract:
+                try:
+                    search_result = json_data["Amazon"]["AzCore"]["Bootstrap"][f'"{search_key}"']
+                except KeyError as e:
+                    logging.error(f'Bootstrap.setreg cannot find Amazon:AzCore:Bootstrap:{search_result}: {str(e)}')
+                else:
+                    result_map[search_key] = search_result
+    
     return result_map
 
 

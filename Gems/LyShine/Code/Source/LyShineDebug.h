@@ -14,7 +14,9 @@
 #ifndef _RELEASE
 #include <AzCore/std/containers/vector.h>
 
-class ITexture;
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
+
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +68,7 @@ public: // static member functions
 
     struct DebugInfoTextureUsage
     {
-        ITexture*   m_texture;
+        AZ::Data::Instance<AZ::RPI::Image> m_texture;
         bool        m_isClampTextureUsage;
         int         m_numCanvasesUsed;
         int         m_numDrawCallsUsed;
