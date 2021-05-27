@@ -50,15 +50,13 @@ namespace O3DE::ProjectManager
         vLayout->setAlignment(Qt::AlignTop);
         {
             m_projectName = new FormLineEditWidget(tr("Project name"), tr("New Project"), this);
-            m_projectName->setErrorLabelText(
-                tr("A project with this name already exists at this location. Please choose a new name or location."));
+            connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &NewProjectSettingsScreen::ValidateProjectPath);
             vLayout->addWidget(m_projectName);
 
             m_projectPath =
                 new FormBrowseEditWidget(tr("Project Location"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
             m_projectPath->lineEdit()->setReadOnly(true);
-            m_projectPath->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
-            m_projectPath->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
+            connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &NewProjectSettingsScreen::ValidateProjectPath);
             vLayout->addWidget(m_projectPath);
 
             // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
@@ -117,6 +115,15 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
+    void NewProjectSettingsScreen::ValidateProjectPath()
+    {
+        Validate();    
+    }
+
+    void NewProjectSettingsScreen::NotifyCurrentScreen()
+    {
+        Validate();
+    }
 
     ProjectInfo NewProjectSettingsScreen::GetProjectInfo()
     {
@@ -133,24 +140,40 @@ namespace O3DE::ProjectManager
 
     bool NewProjectSettingsScreen::Validate()
     {
-        bool projectNameIsValid = true;
-        if (m_projectName->lineEdit()->text().isEmpty())
-        {
-            projectNameIsValid = false;
-        }
-
         bool projectPathIsValid = true;
         if (m_projectPath->lineEdit()->text().isEmpty())
         {
             projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("Please provide a valid path."));
         }
 
-        QDir path(QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + m_projectName->lineEdit()->text()));
-        if (path.exists() && !path.isEmpty())
+        bool projectNameIsValid = true;
+        if (m_projectName->lineEdit()->text().isEmpty())
         {
-            projectPathIsValid = false;
+            projectNameIsValid = false;
+            m_projectName->setErrorLabelText(tr("Please provide a project name."));
+        }
+        else
+        {
+            QDir path(QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + m_projectName->lineEdit()->text()));
+
+            // path validation with multiple locals and platforms is ... difficult. Prevent the usual suspects.
+            QRegExp illegalCharacterRegex("[<>:\"|?*]");
+            const int result = illegalCharacterRegex.indexIn(m_projectName->lineEdit()->text());
+            if (result > -1)
+            {
+                projectNameIsValid = false;
+                m_projectName->setErrorLabelText(tr("Project names must not contain any of the following characters <>:\"|?*"));
+            }
+            else if (path.exists() && !path.isEmpty())
+            {
+                projectNameIsValid = false;
+                m_projectName->setErrorLabelText(tr("A folder with this name already exists in this location.  Please choose a different name or location."));
+            }
         }
 
+        m_projectName->setErrorLabelVisible(!projectNameIsValid);
+        m_projectPath->setErrorLabelVisible(!projectPathIsValid);
         return projectNameIsValid && projectPathIsValid;
     }
 } // namespace O3DE::ProjectManager

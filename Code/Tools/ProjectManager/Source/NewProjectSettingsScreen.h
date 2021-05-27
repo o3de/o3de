@@ -36,8 +36,11 @@ namespace O3DE::ProjectManager
 
         bool Validate();
 
+        void NotifyCurrentScreen() override;
+
     protected slots:
         void HandleBrowseButton();
+        void ValidateProjectPath();
 
     private:
         FormLineEditWidget* m_projectName;
