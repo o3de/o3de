@@ -69,6 +69,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AtomCore
                 AZ::AzToolsFramework
+                Gem::Atom_RHI.Edit
                 Gem::Atom_RPI.Public
     )
 

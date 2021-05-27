@@ -12,6 +12,7 @@
 #include "LyShine_precompiled.h"
 #include "UiRenderer.h"
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -24,7 +25,7 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Debug/Trace.h>
 
-#include <LyShine/IDraw2d.h>
+#include <LyShine/Draw2d.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC MEMBER FUNCTIONS
@@ -353,7 +354,6 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
-#ifdef LYSHINE_ATOM_TODO
         // compute the total area of all the textures, also create a vector that we can sort by area
         AZStd::vector<ITexture*> textures;
         int totalArea = 0;
@@ -374,15 +374,14 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
             return lhs->GetDataSize() > rhs->GetDataSize();
         });
 
-        IDraw2d* draw2d = Draw2dHelper::GetDraw2d();
+        CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
         // setup to render lines of text for the debug display
-        draw2d->BeginDraw2d(false);
 
         float xOffset = 20.0f;
         float yOffset = 20.0f;
 
-        int blackTexture = gEnv->pRenderer->GetBlackTextureId();
+        auto blackTexture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Black);
         float textOpacity = 1.0f;
         float backgroundRectOpacity = 0.75f;
         const float lineSpacing = 20.0f;
@@ -432,9 +431,6 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
                 texture->GetWidth(), texture->GetHeight(), texture->GetDataSize(), texture->GetFormatName(), texture->GetName());
             WriteLine(buffer, white);
         }
-
-        draw2d->EndDraw2d();
-#endif
     }
 }
 

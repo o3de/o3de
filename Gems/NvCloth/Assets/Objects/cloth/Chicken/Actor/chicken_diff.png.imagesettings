@@ -17,7 +17,7 @@
 		<Class name="unsigned int" field="MipMapGenType" value="5" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 		<Class name="AZStd::map" field="PlatformSpecificOverrides" type="{B2CCA964-7EF4-5D2C-9287-3459190A2409}">
 			<Class name="AZStd::pair" field="element" type="{8A18E0EA-6900-559F-9C8F-9DE74BC308F5}">
-				<Class name="AZStd::string" field="value1" value="es3" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="value1" value="android" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="DataPatch" field="value2" type="{3A8D5EC9-D70E-41CB-879C-DEF6A6D6ED03}">
 					<Class name="AZ::Uuid" field="m_targetClassId" value="{CC3ED018-7FF7-4233-AAD8-6D3115FD844A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
 					<Class name="AZStd::unordered_map" field="m_patch" type="{CF3B3C65-49C0-5199-B671-E75347EB25C2}"/>
@@ -36,7 +36,7 @@
 				</Class>
 			</Class>
 			<Class name="AZStd::pair" field="element" type="{8A18E0EA-6900-559F-9C8F-9DE74BC308F5}">
-				<Class name="AZStd::string" field="value1" value="osx_gl" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="AZStd::string" field="value1" value="mac" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 				<Class name="DataPatch" field="value2" type="{3A8D5EC9-D70E-41CB-879C-DEF6A6D6ED03}">
 					<Class name="AZ::Uuid" field="m_targetClassId" value="{CC3ED018-7FF7-4233-AAD8-6D3115FD844A}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
 					<Class name="AZStd::unordered_map" field="m_patch" type="{CF3B3C65-49C0-5199-B671-E75347EB25C2}">
