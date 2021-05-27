@@ -83,7 +83,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest --repeat until-pass:5"
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -LE SUITE_sandbox -L FRAMEWORK_googletest"
     }
   },
   "test_profile_nounity": {
@@ -95,7 +95,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -L FRAMEWORK_googletest --repeat until-pass:5"
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Editor.Tests|Gem::AWSClientAuth.Tests|Gem::AWSCore.Editor.Tests) -LE SUITE_sandbox -L FRAMEWORK_googletest"
     }
   },
   "asset_profile": {
@@ -143,7 +143,26 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\""
+      "CTEST_OPTIONS": "-L (SUITE_periodic)"
+    }
+  },
+  "sandbox_test_profile": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean",
+      "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV": {
+      "ON_FAILURE_MARK": "UNSTABLE"
+    },
+    "COMMAND": "build_test_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all",
+      "CTEST_OPTIONS": "-L (SUITE_sandbox)"
     }
   },
   "benchmark_test_profile": {
@@ -159,7 +178,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\""
+      "CTEST_OPTIONS": "-L (SUITE_benchmark)"
     }
   },
   "release": {

@@ -13,7 +13,7 @@
             "IsPowerOf2": true
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
                 "Name": "SF_Image",
                 "SourceColor": "Linear",
@@ -31,7 +31,7 @@
                 "PixelFormat": "PVRTC4",
                 "IsPowerOf2": true
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{189A42CB-AEE3-4B80-B276-0FDB0ECA140C}",
                 "Name": "SF_Image",
                 "SourceColor": "Linear",

@@ -15,6 +15,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -172,7 +173,7 @@ namespace GradientSignal
         mutable AZStd::recursive_mutex m_cacheMutex;
         GradientTransformConfig m_configuration;
         AZ::Aabb m_shapeBounds = AZ::Aabb::CreateNull();
-        AZ::Transform m_shapeTransformInverse = AZ::Transform::CreateIdentity();
+        AZ::Matrix3x4 m_shapeTransformInverse = AZ::Matrix3x4::CreateIdentity();
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
         AZStd::atomic_bool m_dirty{ false };
     };

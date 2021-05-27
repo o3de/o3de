@@ -175,12 +175,18 @@ namespace AZ
         void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
         {
             LoadShader();
-            ChooseShaderVariant();
+            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
+            {
+                ChooseShaderVariant();
+            }
         }
         void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
         {
             LoadShader();
-            ChooseShaderVariant();
+            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
+            {
+                ChooseShaderVariant();
+            }
         }
 
         void LightCullingTilePreparePass::OnShaderVariantReinitialized(
@@ -188,7 +194,10 @@ namespace AZ
              AZ::RPI::ShaderVariantStableId)
         {
             LoadShader();
-            ChooseShaderVariant();
+            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
+            {
+                ChooseShaderVariant();
+            }
         }
 
     }   // namespace Render

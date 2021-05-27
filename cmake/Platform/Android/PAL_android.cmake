@@ -35,7 +35,7 @@ else()
 endif()
 
 # Set the default asset type for deployment
-set(LY_ASSET_DEPLOY_ASSET_TYPE "es3" CACHE STRING "Set the asset type for deployment.")
+set(LY_ASSET_DEPLOY_ASSET_TYPE "android" CACHE STRING "Set the asset type for deployment.")
 
 # Set the python cmd tool
 if(PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")

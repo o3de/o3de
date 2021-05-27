@@ -4,11 +4,6 @@
         "version": 3,
         "groups": [
             {
-                "id": "general",
-                "displayName": "General",
-                "description": "General settings."
-            },
-            {
                 "id": "blend",
                 "displayName": "Blend Settings",
                 "description": "Properties for configuring how layers are blended together."
@@ -28,6 +23,11 @@
                 "id": "irradiance",
                 "displayName": "Irradiance",
                 "description": "Properties for configuring the irradiance used in global illumination."
+            },
+            {
+                "id": "general",
+                "displayName": "General",
+                "description": "General settings."
             },
             //##############################################################################################
             // Layer 1 Groups 
@@ -74,8 +74,8 @@
             },
             {
                 "id": "layer1_parallax",
-                "displayName": "Layer 1: Parallax Mapping",
-                "description": "Properties for parallax effect produced by depthmap."
+                "displayName": "Layer 1: Displacement",
+                "description": "Properties for surface displacement, which can be used for displacement-based blending and/or a parallax effect."
             },
             {
                 "id": "layer1_uv",
@@ -127,8 +127,8 @@
             },
             {
                 "id": "layer2_parallax",
-                "displayName": "Layer 2: Parallax Mapping",
-                "description": "Properties for parallax effect produced by depthmap."
+                "displayName": "Layer 2: Displacement",
+                "description": "Properties for surface displacement, which can be used for displacement-based blending and/or a parallax effect."
             },
             {
                 "id": "layer2_uv",
@@ -180,8 +180,8 @@
             },
             {
                 "id": "layer3_parallax",
-                "displayName": "Layer 3: Parallax Mapping",
-                "description": "Properties for parallax effect produced by depthmap."
+                "displayName": "Layer 3: Displacement",
+                "description": "Properties for surface displacement, which can be used for displacement-based blending and/or a parallax effect."
             },
             {
                 "id": "layer3_uv",
@@ -194,18 +194,6 @@
             // General Properties 
             //##############################################################################################
             "general": [
-                {
-                    "id": "debugDrawMode",
-                    "displayName": "Debug Draw Mode",
-                    "description": "Enables various debug view features.",
-                    "type": "Enum",
-                    "enumValues": [ "None", "BlendSource", "DepthMaps" ],
-                    "defaultValue": "None",
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_debugDrawMode"
-                    }
-                },
                 {
                     "id": "applySpecularAA",
                     "displayName": "Apply Specular AA",
@@ -322,16 +310,16 @@
                     "displayName": "Blend Source",
                     "description": "The source to use for defining the blend mask. Note VertexColors mode will still use the texture as a fallback if the mesh does not have a COLOR0 stream.",
                     "type": "Enum",
-                    "enumValues":  ["TextureMap", "VertexColors"],
-                    "defaultValue":  "TextureMap",
+                    "enumValues":  ["BlendMaskTexture", "BlendMaskVertexColors", "Displacement", "Displacement_With_BlendMaskTexture", "Displacement_With_BlendMaskVertexColors"],
+                    "defaultValue":  "BlendMaskTexture",
                     "connection": {
                         "type": "ShaderOption",
-                        "id": "o_blendSource"
+                        "id": "o_layerBlendSource"
                     }
                 },
                 {
                     "id": "textureMap",
-                    "displayName": "Blend Mask",
+                    "displayName": "Blend Mask Texture",
                     "description": "RGB image where each channel is the blend mask for one of the three available layers.",
                     "type": "Image",
                     "defaultValue": "Textures/DefaultBlendMask_layers.png",
@@ -351,6 +339,32 @@
                         "type": "ShaderInput",
                         "id": "m_blendMaskUvIndex"
                     }
+                },
+                {
+                    "id": "displacementBlendDistance",
+                    "displayName": "Blend Distance",
+                    "description": "Adjusts how smoothly to transition between layers when displacement blending is enabled.",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "min": 0.0,
+                    "softMax": 0.1,
+                    "step": 0.001,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_displacementBlendDistance"
+                    }
+                },
+                {
+                    "id": "debugDrawMode",
+                    "displayName": "Debug Draw Mode",
+                    "description": "Enables various debug view features.",
+                    "type": "Enum",
+                    "enumValues": [ "None", "BlendMask", "Displacement", "FinalBlendWeights" ],
+                    "defaultValue": "None",
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_debugDrawMode"
+                    }
                 }
             ],
             "parallax": [
@@ -359,7 +373,11 @@
                     "displayName": "Enable",
                     "description": "Whether to enable the parallax feature for this material.",
                     "type": "Bool",
-                    "defaultValue": false
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_parallax_feature_enabled"
+                    }
                 }, 
                 {
                     "id": "parallaxUv",
@@ -1091,16 +1109,9 @@
             ],
             "layer1_parallax": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the parallax feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "textureMap",
                     "displayName": "Texture Map",
-                    "description": "Depthmap to create parallax effect.",
+                    "description": "Displacement texture map, which can be used for layer blending and/or a parallax effect.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -1108,9 +1119,27 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "invert",
+                    "displayName": "Invert",
+                    "description": "Invert the displacement map",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_layer1_m_depthInverted"
+                    }
+                },
+                {
                     "id": "factor",
-                    "displayName": "Heightmap Scale",
-                    "description": "The total height of the heightmap in local model units.",
+                    "displayName": "Scale",
+                    "description": "The total height of the displacement texture map in local model units.",
                     "type": "Float",
                     "defaultValue": 0.0,
                     "min": 0.0,
@@ -1131,17 +1160,6 @@
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer1_m_depthOffset"
-                    }
-                },
-                {
-                    "id": "invert",
-                    "displayName": "Invert",
-                    "description": "Invert to depthmap if the texture is heightmap",
-                    "type": "Bool",
-                    "defaultValue": true,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_layer1_m_depthInverted"
                     }
                 }
             ],
@@ -1797,16 +1815,9 @@
             ],
             "layer2_parallax": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the parallax feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "textureMap",
                     "displayName": "Texture Map",
-                    "description": "Depthmap to create parallax effect.",
+                    "description": "Displacement texture map, which can be used for layer blending and/or a parallax effect.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -1814,9 +1825,27 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "invert",
+                    "displayName": "Invert",
+                    "description": "Invert the displacement map",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_layer2_m_depthInverted"
+                    }
+                },
+                {
                     "id": "factor",
-                    "displayName": "Heightmap Scale",
-                    "description": "The total height of the heightmap in local model units.",
+                    "displayName": "Scale",
+                    "description": "The total height of the displacement texture map in local model units.",
                     "type": "Float",
                     "defaultValue": 0.0,
                     "min": 0.0,
@@ -1837,17 +1866,6 @@
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer2_m_depthOffset"
-                    }
-                },
-                {
-                    "id": "invert",
-                    "displayName": "Invert",
-                    "description": "Invert to depthmap if the texture is heightmap",
-                    "type": "Bool",
-                    "defaultValue": true,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_layer2_m_depthInverted"
                     }
                 }
             ],
@@ -2503,16 +2521,9 @@
             ],
             "layer3_parallax": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the parallax feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "textureMap",
                     "displayName": "Texture Map",
-                    "description": "Depthmap to create parallax effect.",
+                    "description": "Displacement texture map, which can be used for layer blending and/or a parallax effect.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -2520,9 +2531,27 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "invert",
+                    "displayName": "Invert",
+                    "description": "Invert the displacement map",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_layer3_m_depthInverted"
+                    }
+                },
+                {
                     "id": "factor",
-                    "displayName": "Heightmap Scale",
-                    "description": "The total height of the heightmap in local model units.",
+                    "displayName": "Scale",
+                    "description": "The total height of the displacement texture map in local model units.",
                     "type": "Float",
                     "defaultValue": 0.0,
                     "min": 0.0,
@@ -2543,17 +2572,6 @@
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_layer3_m_depthOffset"
-                    }
-                },
-                {
-                    "id": "invert",
-                    "displayName": "Invert",
-                    "description": "Invert to depthmap if the texture is heightmap",
-                    "type": "Bool",
-                    "defaultValue": true,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_layer3_m_depthInverted"
                     }
                 }
             ],
@@ -2699,7 +2717,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardMultilayerPBR_Parallax.lua"
+                "file": "StandardMultilayerPBR_Displacement.lua"
             }
         },
         //##############################################################################################
@@ -2816,12 +2834,12 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardMultilayerPBR_ParallaxPerLayer.lua",
-                "propertyNamePrefix": "layer1_",
-                "srgNamePrefix": "m_layer1_",
-                "optionsNamePrefix": "o_layer1_"
+                "textureProperty": "layer1_parallax.textureMap",
+                "useTextureProperty": "layer1_parallax.useTexture",
+                "dependentProperties": ["layer1_parallax.factor", "layer1_parallax.invert"],
+                "shaderOption": "o_layer1_o_useDepthMap"    
             }
         },
         {
@@ -2953,12 +2971,12 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardMultilayerPBR_ParallaxPerLayer.lua",
-                "propertyNamePrefix": "layer2_",
-                "srgNamePrefix": "m_layer2_",
-                "optionsNamePrefix": "o_layer2_"
+                "textureProperty": "layer2_parallax.textureMap",
+                "useTextureProperty": "layer2_parallax.useTexture",
+                "dependentProperties": ["layer2_parallax.factor", "layer2_parallax.invert"],
+                "shaderOption": "o_layer2_o_useDepthMap"    
             }
         },
         {
@@ -3090,14 +3108,14 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardMultilayerPBR_ParallaxPerLayer.lua",
-                "propertyNamePrefix": "layer3_",
-                "srgNamePrefix": "m_layer3_",
-                "optionsNamePrefix": "o_layer3_"
+                "textureProperty": "layer3_parallax.textureMap",
+                "useTextureProperty": "layer3_parallax.useTexture",
+                "dependentProperties": ["layer3_parallax.factor", "layer3_parallax.invert"],
+                "shaderOption": "o_layer3_o_useDepthMap"    
             }
-        }, 
+        },
         {
             // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
             "type": "Transform2D",
