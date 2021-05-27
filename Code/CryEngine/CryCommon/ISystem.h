@@ -125,7 +125,7 @@ enum ESystemConfigPlatform
 {
     CONFIG_INVALID_PLATFORM = 0,
     CONFIG_PC = 1,
-    CONFIG_OSX_GL = 2,
+    CONFIG_MAC = 2,
     CONFIG_OSX_METAL = 3,
     CONFIG_ANDROID = 4,
     CONFIG_IOS = 5,
