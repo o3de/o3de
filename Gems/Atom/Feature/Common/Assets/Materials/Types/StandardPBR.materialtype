@@ -880,13 +880,6 @@
             ],
             "parallax": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the parallax feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "textureMap",
                     "displayName": "Texture Map",
                     "description": "Depthmap to create parallax effect.",
@@ -895,6 +888,13 @@
                         "type": "ShaderInput",
                         "id": "m_depthMap"
                     }
+                },
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",

@@ -35,7 +35,8 @@
             "algorithm": "ContactRefinement",
             "factor": 0.019999999552965165,
             "quality": "Medium",
-            "textureMap": "Textures/roof_1k_height.png"
+            "textureMap": "Textures/roof_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/roof_1k_roughness.png"
