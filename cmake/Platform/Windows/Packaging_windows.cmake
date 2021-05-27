@@ -28,6 +28,10 @@ endif()
 
 set(CPACK_GENERATOR "WIX")
 
+set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
+set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
+set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
+
 # CPack will generate the WiX product/upgrade GUIDs further down the chain if they weren't supplied
 # however, they are unique for each run.  instead, let's do the auto generation here and add it to
 # the cache for run persistence and have the ability to detect if they are still being used.
@@ -106,4 +110,5 @@ endif()
 
 set(CPACK_WIX_CANDLE_EXTRA_FLAGS
     -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts}
+    -dCPACK_CMAKE_PACKAGE_NAME=${_cmake_package_name}
 )

@@ -43,16 +43,14 @@
             </Directory>
         </DirectoryRef>
 
-        <Property Id="CMakeArchvieName" Value="cmake-3.19.1-win64-x64"/>
-
         <CustomAction Id="ExtractCMake"
-            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C tar -x -f &quot;[root.tools.redist.cmake][CMakeArchvieName].zip&quot; -C &quot;[root.tools.redist]CMake&quot;"
+            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C tar -x -f &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME).zip&quot; -C &quot;[root.tools.redist]CMake&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
             Impersonate="no"/>
 
         <CustomAction Id="MoveCMake"
-            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C move &quot;[root.tools.redist.cmake][CMakeArchvieName]&quot; &quot;[root.cmake]runtime&quot;"
+            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C move &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME)&quot; &quot;[root.cmake]runtime&quot;"
             Directory="INSTALL_ROOT"
             Execute="deferred"
             Impersonate="no"/>

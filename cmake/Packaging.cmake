@@ -17,6 +17,8 @@ endif()
 set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embedded into the installer to download additional artifacts")
 set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
 
+set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
+
 # set all common cpack variable overrides first so they can be accessible via configure_file
 # when the platform specific settings are applied below.  additionally, any variable with
 # the "CPACK_" prefix will automatically be cached for use in any phase of cpack namely
@@ -38,6 +40,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VER
 
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/_CPack) # to match other CPack out dirs
 
 # attempt to apply platform specific settings
 ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
@@ -47,6 +50,40 @@ include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 if(NOT CPACK_GENERATOR)
     return()
 endif()
+
+# pull down the desired copy of CMake so it can be included in the package
+if(NOT (CPACK_CMAKE_PACKAGE_FILE AND CPACK_CMAKE_PACKAGE_HASH))
+    message(FATAL_ERROR
+        "Packaging is missing one or more following properties required to include CMake: "
+        " CPACK_CMAKE_PACKAGE_FILE, CPACK_CMAKE_PACKAGE_HASH")
+endif()
+
+set(_cmake_package_dest ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
+
+string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
+list(GET _version_componets 0 _major_version)
+list(GET _version_componets 1 _minor_version)
+
+set(_url_version_tag "v${_major_version}.${_minor_version}")
+
+message(STATUS "Ensuring CMake ${CPACK_DESIRED_CMAKE_VERSION} is avaiable for packaging...")
+file(DOWNLOAD
+    https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}
+    ${_cmake_package_dest}
+)
+
+file(SHA256 ${_cmake_package_dest} _package_hash)
+if (NOT "${_package_hash}" STREQUAL "${CPACK_CMAKE_PACKAGE_HASH}")
+    file(REMOVE ${_cmake_package_dest})
+    message(FATAL_ERROR "Donwload package of CMake does not match expected hash value.  "
+        "Please double check the properies CPACK_CMAKE_PACKAGE_FILE and CPACK_CMAKE_PACKAGE_HASH "
+        "before trying again.")
+endif()
+
+install(FILES ${_cmake_package_dest}
+    DESTINATION ./Tools/Redistributables/CMake
+    COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+)
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)

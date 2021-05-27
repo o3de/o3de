@@ -286,7 +286,7 @@ endfunction()
 function(ly_setup_others)
 
     # List of directories we want to install relative to engine root
-    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole Tools/Redistributables/CMake)
+    set(DIRECTORIES_TO_INSTALL Tools/LyTestTools Tools/RemoteConsole)
     foreach(dir ${DIRECTORIES_TO_INSTALL})
 
         get_filename_component(install_path ${dir} DIRECTORY)
