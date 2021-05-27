@@ -30,7 +30,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                 "Name": "IBLSpecular",
                 "FileMasks": [
@@ -80,7 +80,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
                 "Name": "IBLSpecular",
                 "FileMasks": [
