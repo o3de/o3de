@@ -65,19 +65,32 @@ list(GET _version_componets 0 _major_version)
 list(GET _version_componets 1 _minor_version)
 
 set(_url_version_tag "v${_major_version}.${_minor_version}")
+set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
 
-message(STATUS "Ensuring CMake ${CPACK_DESIRED_CMAKE_VERSION} is avaiable for packaging...")
-file(DOWNLOAD
-    https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}
-    ${_cmake_package_dest}
+message(STATUS "Ensuring CMake ${CPACK_DESIRED_CMAKE_VERSION} is available for packaging...")
+download_file(
+    URL ${_package_url}
+    TARGET_FILE ${_cmake_package_dest}
+    EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
+    RESULTS _results
 )
+list(GET _results 0 _status_code)
 
-file(SHA256 ${_cmake_package_dest} _package_hash)
-if (NOT "${_package_hash}" STREQUAL "${CPACK_CMAKE_PACKAGE_HASH}")
+if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
+    message(STATUS "-> Package found and verified!")
+else()
     file(REMOVE ${_cmake_package_dest})
-    message(FATAL_ERROR "Donwload package of CMake does not match expected hash value.  "
-        "Please double check the properies CPACK_CMAKE_PACKAGE_FILE and CPACK_CMAKE_PACKAGE_HASH "
-        "before trying again.")
+    list(REMOVE_AT _results 0)
+
+    set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
+
+    if(${_status_code} EQUAL 1)
+        string(APPEND _error_message
+            "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
+            "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
+    endif()
+
+    message(FATAL_ERROR ${_error_message})
 endif()
 
 install(FILES ${_cmake_package_dest}
