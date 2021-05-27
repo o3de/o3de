@@ -84,7 +84,7 @@ VSDepthOutput MainVS(VSInput IN)
     }
     else
     {
-        OUT.m_blendMask = float3(1,1,1);
+        OUT.m_blendMask = float3(0,0,0);
     }
 
     return OUT;

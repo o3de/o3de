@@ -329,3 +329,11 @@ QTabBar::tab:pressed
     min-height:26px;
     max-height:26px;
 }
+
+#labelButtonOverlay {
+    background-color: rgba(50,50,50,200);
+    min-width:210px;
+    max-width:210px;;
+    min-height:278px;
+    max-height:278px;
+}

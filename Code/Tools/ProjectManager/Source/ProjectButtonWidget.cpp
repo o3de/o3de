@@ -32,11 +32,30 @@ namespace O3DE::ProjectManager
         : QLabel(parent)
     {
         setObjectName("labelButton");
+        m_overlayLabel = new QLabel("", this);
+        m_overlayLabel->setObjectName("labelButtonOverlay");
+        m_overlayLabel->setWordWrap(true);
+        m_overlayLabel->setAlignment(Qt::AlignCenter);
+        m_overlayLabel->setVisible(false);
     }
 
     void LabelButton::mousePressEvent([[maybe_unused]] QMouseEvent* event)
     {
-        emit triggered();
+        if(m_enabled)
+        {
+            emit triggered();
+        }
+    }
+
+    void LabelButton::SetEnabled(bool enabled)
+    {
+        m_enabled = enabled;
+        m_overlayLabel->setVisible(!enabled);
+    }
+
+    void LabelButton::SetOverlayText(const QString& text)
+    {
+        m_overlayLabel->setText(text);
     }
 
     ProjectButton::ProjectButton(const QString& projectName, QWidget* parent)
@@ -109,4 +128,13 @@ namespace O3DE::ProjectManager
 #endif
     }
 
+    void ProjectButton::SetButtonEnabled(bool enabled)
+    {
+        m_projectImageLabel->SetEnabled(enabled);
+    }
+
+    void ProjectButton::SetButtonOverlayText(const QString& text)
+    {
+        m_projectImageLabel->SetOverlayText(text);
+    }
 } // namespace O3DE::ProjectManager
