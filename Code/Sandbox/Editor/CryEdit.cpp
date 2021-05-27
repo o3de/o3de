@@ -3111,11 +3111,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (service)
         {
-            // We have to store this in a string for the call to CreateNewLevelPrefab, which requires a AZStd::string&
-            // due to the usage inside that method and the ebus calls used inside that method
-            AZStd::string levelTemplate = DefaultLevelTemplateName;
-
-            service->CreateNewLevelPrefab((const char*)fullyQualifiedLevelName.toUtf8(), levelTemplate);
+            service->CreateNewLevelPrefab((const char*)fullyQualifiedLevelName.toUtf8(), DefaultLevelTemplateName);
         }
     }
 
