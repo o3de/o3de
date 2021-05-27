@@ -465,7 +465,7 @@ namespace PhysX
 
     PhysX::CharacterController* CharacterControllerComponent::GetController()
     {
-        return const_cast<PhysX::CharacterController*>(GetControllerConst());
+        return const_cast<PhysX::CharacterController*>(static_cast<const CharacterControllerComponent&>(*this).GetControllerConst());
     }
 
     void CharacterControllerComponent::CreateController()

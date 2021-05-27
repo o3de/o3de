@@ -26,7 +26,7 @@ namespace EMotionFX
         MOCK_METHOD0(DisableSimulation, void());
         MOCK_METHOD0(DisableSimulationQueued, void());
 
-        MOCK_METHOD0(IsSimulated, bool());
+        MOCK_CONST_METHOD0(IsSimulated, bool());
 
         MOCK_CONST_METHOD1(GetState, void(Physics::RagdollState&));
         MOCK_METHOD1(SetState, void(const Physics::RagdollState&));

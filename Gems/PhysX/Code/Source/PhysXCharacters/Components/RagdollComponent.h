@@ -104,10 +104,13 @@ namespace PhysX
     private:
         void CreateRagdoll(const Physics::RagdollConfiguration& ragdollConfiguration);
         void DestroyRagdoll();
+        Ragdoll* GetPhysXRagdoll();
+        const Ragdoll* GetPhysXRagdollConst() const;
 
         bool IsJointProjectionVisible();
 
-        Ragdoll* m_ragdoll;
+        AzPhysics::SimulatedBodyHandle m_ragdollHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         /// Minimum number of position iterations to perform in the PhysX solver.
         /// Lower iteration counts are less expensive but may behave less realistically.
         AZ::u32 m_positionIterations = 16; 

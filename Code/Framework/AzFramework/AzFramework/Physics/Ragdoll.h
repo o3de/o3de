@@ -102,7 +102,7 @@ namespace Physics
 
         /// Is the ragdoll currently simulated?
         /// @result True in case the ragdoll is simulated, false if not.
-        virtual bool IsSimulated() = 0;
+        virtual bool IsSimulated() const = 0;
 
         /// Writes the state for all of the bodies in the ragdoll to the provided output.
         /// The caller owns the output state and can safely manipulate it without affecting the physics simulation.
