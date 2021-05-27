@@ -265,7 +265,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& template_filename)
+    void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename)
     {
         AZ::IO::Path relativePath = m_loaderInterface->GetRelativePathToProject(filename);
         AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
@@ -276,7 +276,7 @@ namespace AzToolsFramework
         AZ::Data::AssetInfo assetInfo;
         bool sourceInfoFound = false;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, template_filename.c_str(),
+            sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, templateFilename.c_str(),
             assetInfo, watchFolder);
 
         if (sourceInfoFound)
