@@ -128,7 +128,7 @@ namespace AZ
                     m_configuration.m_bakedRelocationTextureRelativePath,
                     m_configuration.m_bakedClassificationTextureRelativePath))
             {
-                // clear the baked texture paths and assets
+                // clear the baked texture paths and assets, since they belong to the original entity (not the clone)
                 m_configuration.m_bakedIrradianceTextureRelativePath.clear();
                 m_configuration.m_bakedDistanceTextureRelativePath.clear();
                 m_configuration.m_bakedRelocationTextureRelativePath.clear();

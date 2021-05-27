@@ -27,6 +27,7 @@ namespace AZ
 
         struct DiffuseProbeGridRenderData
         {
+            // [GFX TODO][ATOM-15650] Change DiffuseProbeGrid Classification texture to R8_UINT
             static const RHI::Format RayTraceImageFormat = RHI::Format::R32G32B32A32_FLOAT;
             static const RHI::Format IrradianceImageFormat = RHI::Format::R16G16B16A16_UNORM;
             static const RHI::Format DistanceImageFormat = RHI::Format::R32G32_FLOAT;

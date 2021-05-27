@@ -109,6 +109,7 @@ namespace AZ
                 const AZStd::string& relocationTextureRelativePath,
                 const AZStd::string& classificationTextureRelativePath) = 0;
 
+            // check for and retrieve a new baked texture asset (does not apply to hot-reloaded assets, only initial bakes)
             virtual bool CheckTextureAssetNotification(
                 const AZStd::string& relativePath,
                 Data::Asset<RPI::StreamingImageAsset>& outTextureAsset,

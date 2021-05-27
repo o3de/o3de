@@ -352,7 +352,8 @@ namespace AZ
                 azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
                 false);
 
-            // we only track notifications for new texture assets, existing assets are automatically reloaded by the RPI
+            // We only track notifications for new texture assets, meaning assets that are created the first time a DiffuseProbeGrid is baked.
+            // On subsequent bakes the existing assets are automatically reloaded by the RPI since they are already known by the asset system.
             if (!assetId.IsValid())
             {
                 m_notifyTextureAssets.push_back({ assetPath, assetId });
