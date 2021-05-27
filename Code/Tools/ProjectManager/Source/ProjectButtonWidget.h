@@ -52,7 +52,7 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
 
-    public :
+    public:
         explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
 
@@ -72,7 +72,6 @@ namespace O3DE::ProjectManager
 
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
-        QPushButton* m_projectSettingsMenuButton;
         QAction* m_editProjectAction;
         QAction* m_editProjectGemsAction;
         QAction* m_copyProjectAction;

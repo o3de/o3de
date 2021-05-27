@@ -11,7 +11,7 @@
             "IsPowerOf2": true
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
                 "Name": "Gradient",
                 "SourceColor": "Linear",
@@ -25,7 +25,7 @@
                 "DestColor": "Linear",
                 "IsPowerOf2": true
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{0D26B387-2FBA-456D-AB8E-613020BCC7F8}",
                 "Name": "Gradient",
                 "SourceColor": "Linear",

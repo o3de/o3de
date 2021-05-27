@@ -17,10 +17,12 @@
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
-QT_FORWARD_DECLARE_CLASS(QLineEdit)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
+    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
+
     class NewProjectSettingsScreen
         : public ScreenWidget
     {
@@ -38,8 +40,8 @@ namespace O3DE::ProjectManager
         void HandleBrowseButton();
 
     private:
-        QLineEdit* m_projectNameLineEdit;
-        QLineEdit* m_projectPathLineEdit;
+        FormLineEditWidget* m_projectName;
+        FormBrowseEditWidget* m_projectPath;
         QButtonGroup* m_projectTemplateButtonGroup;
     };
 
