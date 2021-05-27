@@ -38,20 +38,7 @@ namespace AZ
     {
         namespace FbxSceneBuilder
         {
-            static AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler* g_fbxImporter = nullptr;
             static AZStd::vector<AZ::ComponentDescriptor*> g_componentDescriptors;
-
-            void Initialize()
-            {
-                // Currently it's still needed to explicitly create an instance of this instead of letting
-                //      it be a normal component. This is because ResourceCompilerScene needs to return
-                //      the list of available extensions before it can start the application.
-                if (!g_fbxImporter)
-                {
-                    g_fbxImporter = aznew AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler();
-                    g_fbxImporter->Activate();
-                }
-            }
 
             void Reflect(AZ::SerializeContext* /*context*/)
             {
@@ -64,6 +51,7 @@ namespace AZ
                 {
                     // Global importer and behavior
                     g_componentDescriptors.push_back(FbxSceneBuilder::FbxImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(FbxSceneImporter::FbxImportRequestHandler::CreateDescriptor());
 
                     // Node and attribute importers
                     g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());
@@ -110,13 +98,6 @@ namespace AZ
                     g_componentDescriptors.clear();
                     g_componentDescriptors.shrink_to_fit();
                 }
-
-                if (g_fbxImporter)
-                {
-                    g_fbxImporter->Deactivate();
-                    delete g_fbxImporter;
-                    g_fbxImporter = nullptr;
-                }
             }
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI
@@ -125,7 +106,6 @@ namespace AZ
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
 {
     AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
-    AZ::SceneAPI::FbxSceneBuilder::Initialize();
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {
