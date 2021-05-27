@@ -61,16 +61,16 @@ namespace TestImpact
             Never, //!< Do not shard any test targets.
             Always //!< Shard all test targets that have been marked for test sharding.
         };
-    }
 
-    //! Standard output capture of test target runs. 
-    enum class TargetOutputCapture
-    {
-        None, //!< Do not capture any output.
-        StdOut, //!< Send captured output to standard output
-        File, //!< Write captured output to file.
-        StdOutAndFile //!< Send captured output to standard output and write to file.
-    };
+        //! Standard output capture of test target runs. 
+        enum class TargetOutputCapture
+        {
+            None, //!< Do not capture any output.
+            StdOut, //!< Send captured output to standard output
+            File, //!< Write captured output to file.
+            StdOutAndFile //!< Send captured output to standard output and write to file.
+        };
+    }   
 
     //! Configuration for test targets that opt in to test sharding.
     enum class ShardConfiguration

@@ -25,6 +25,7 @@ namespace TestImpact
         class TestRunSelection
         {
         public:
+            TestRunSelection(const AZStd::vector<AZStd::string>& includedTests, const AZStd::vector<AZStd::string>& excludedTests);
             TestRunSelection(AZStd::vector<AZStd::string>&& includedTests, AZStd::vector<AZStd::string>&& excludedTests);
 
             //! Returns the test runs that were selected to be run and will actually be run.
@@ -37,7 +38,10 @@ namespace TestImpact
             size_t GetNumIncludedTestRuns() const;
 
             //! Returns the number of selected test runs that will not be run.
-            size_t GetNumNumExcludedTestRuns() const;
+            size_t GetNumExcludedTestRuns() const;
+
+            //! Returns the total number of test runs selected regardless of whether or not they will actually be run.
+            size_t GetTotalNumTests() const;
 
         private:
             AZStd::vector<AZStd::string> m_includedTestRuns;

@@ -44,19 +44,6 @@ namespace TestImpact
             AZStd::string m_commandString;
         };
 
-        //! Represents a test target that terminated abnormally.
-        class LauncherFailure
-            : public ExecutionFailure
-        {
-        public:
-            LauncherFailure(const AZStd::string& targetName, const AZStd::string& command, int returnCode);
-
-            //! The return code of the test target that terminated abnormally.
-            int GetReturnCode() const;
-        private:
-            int m_returnCode;
-        };
-
         //! Represents an individual test of a test target that failed.
         class TestFailure
         {
@@ -107,6 +94,7 @@ namespace TestImpact
 
         private:
             AZStd::vector<TestCaseFailure> m_testCaseFailures;
+            size_t m_numTestFailures = 0;
         };
 
         //! Base class for reporting failing test sequences.
@@ -115,63 +103,27 @@ namespace TestImpact
         public:
             SequenceFailure(
                 AZStd::vector<ExecutionFailure>&& executionFailures,
-                AZStd::vector<LauncherFailure>&& launcherFailures,
+                AZStd::vector<TestRunFailure>&& testRunFailures,
+                AZStd::vector<TargetFailure>&& timedOutTests,
                 AZStd::vector<TargetFailure>&& unexecutedTests);
 
             //! Returns the test targets in this sequence that failed to execute.
             const AZStd::vector<ExecutionFailure>& GetExecutionFailures() const;
 
-            //! Returns the test targets in this sequence that terminated abnormally.
-            const AZStd::vector<LauncherFailure>& GetLauncherFailures() const;
-
-            //! Returns the test targets in this sequence that were not executed due to the sequence terminating prematurely.
-            const AZStd::vector<TargetFailure>& GetUnexecutedTest() const;
-
-        private:
-            AZStd::vector<ExecutionFailure> m_executionFailures;
-            AZStd::vector<LauncherFailure> m_launcherFailures;
-            AZStd::vector<TargetFailure> m_unexecutedTests;
-        };
-
-        //! Represents the report for a failed regular test sequence run without test impact analysis.
-        class RegularSequenceFailure
-            : public SequenceFailure
-        {
-        public:
-            RegularSequenceFailure(
-                AZStd::vector<ExecutionFailure>&& executionFailures,
-                AZStd::vector<LauncherFailure>&& launcherFailures,
-                AZStd::vector<TestRunFailure>&& testRunFailures,
-                AZStd::vector<TargetFailure>&& unexecutedTests);
-
             //! Returns the test targets that contain failing tests.
             const AZStd::vector<TestRunFailure>& GetTestRunFailures() const;
 
+            //! Returns the test targets in this sequence that were terminated for exceeding their allotted runtime.
+            const AZStd::vector<TargetFailure>& GetTimedOutTests() const;
+
+            //! Returns the test targets in this sequence that were not executed due to the sequence terminating prematurely.
+            const AZStd::vector<TargetFailure>& GetUnexecutedTests() const;
+
         private:
+            AZStd::vector<ExecutionFailure> m_executionFailures;
             AZStd::vector<TestRunFailure> m_testRunFailures;
-        };
-
-        //! Represents the report for a failed test sequence run with test impact analysis.
-        class ImpactAnalysisSequenceFailure
-            : public SequenceFailure
-        {
-        public:
-            ImpactAnalysisSequenceFailure(
-                AZStd::vector<ExecutionFailure>&& executionFailures,
-                AZStd::vector<LauncherFailure>&& launcherFailures,
-                AZStd::vector<TestRunFailure>&& selectedTestRunFailures,
-                AZStd::vector<TestRunFailure>&& discardedTestRunFailures,
-                AZStd::vector<TargetFailure>&& unexecutedTests);
-
-            //! Returns the test targets that were selected to run but contain failing tests.
-            const AZStd::vector<TestRunFailure> GetSelectedTestRunFailures() const;
-
-            //! Returns the test targets that were not selected but still run but contain failing tests.
-            const AZStd::vector<TestRunFailure> GetDiscardedTestRunFailures() const;
-
-        private:
-            AZStd::vector<TestRunFailure> m_selectedTestRunFailures;
-            AZStd::vector<TestRunFailure> m_discardedTestRunFailures;
+            AZStd::vector<TargetFailure> m_timedOutTests;
+            AZStd::vector<TargetFailure> m_unexecutedTests;
         };
     } // namespace Client
 } // namespace TestImpact

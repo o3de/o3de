@@ -65,7 +65,7 @@ namespace TestImpact
     {
         AZStd::sort(m_coverage.begin(), m_coverage.end(), [](const SourceCoveringTests& lhs, const SourceCoveringTests& rhs)
         {
-            return lhs.GetPath() < rhs.GetPath();
+            return lhs.GetPath().String() < rhs.GetPath().String();
         });
     }
 

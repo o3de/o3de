@@ -59,4 +59,27 @@ namespace TestImpact
         AZ_TestImpact_Eval(
             file.Write(bytes.data(), bytes.size()), ExceptionType, AZStd::string::format("Couldn't write contents for file %s", path.c_str()));
     }
+
+    //! Delete the files that match the pattern from the specified directory.
+    //! @param path The path to the directory to pattern match the files for deletion.
+    //! @param pattern The pattern to match files for deletion.
+    inline void DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
+    {
+        AZ::IO::SystemFile::FindFiles(AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(),
+            [&path](const char* file, bool isFile)
+        {
+            if (isFile)
+            {
+                AZ::IO::SystemFile::Delete(AZStd::string::format("%s/%s", path.c_str(), file).c_str());
+            }
+
+            return true;
+        });
+    }
+
+    //! Deletes the specified file.
+    inline void DeleteFile(const RepoPath& file)
+    {
+        DeleteFiles(file.ParentPath(), file.Filename().Native());
+    }
 } // namespace TestImpact
