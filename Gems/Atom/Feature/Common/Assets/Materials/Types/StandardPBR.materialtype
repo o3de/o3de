@@ -674,7 +674,7 @@
                 {
                     "id": "tileU",
                     "displayName": "Tile U",
-                    "description": "Scales texture coordinates in V.",
+                    "description": "Scales texture coordinates in U.",
                     "type": "float",
                     "defaultValue": 1.0,
                     "step": 0.1
@@ -1139,7 +1139,7 @@
                     "type": "float",
                     "defaultValue": 6.0,
                     "min": 0.0,
-                    "softMax":  20.0
+                    "softMax": 20.0
                 },
                 {
                     "id": "transmissionDistortion",
@@ -1170,7 +1170,7 @@
                 }
             ],
             "irradiance": [
-                // Note: this property group is used in the DiffuseGlobalIllumination pass, it is not read by the StandardPBR shader
+                // Note: this property group is used in the DiffuseGlobalIllumination pass and not by the main forward shader
                 {
                     "id": "color",
                     "displayName": "Color",
@@ -1277,18 +1277,18 @@
             "type": "HandleSubsurfaceScatteringParameters",
             "args": {
                 "mode": "subsurfaceScattering.transmissionMode",
-                "scale" : "subsurfaceScattering.transmissionScale",
-                "power" : "subsurfaceScattering.transmissionPower",
-                "distortion" : "subsurfaceScattering.transmissionDistortion",
-                "attenuation" : "subsurfaceScattering.transmissionAttenuation",
-                "tintColor" : "subsurfaceScattering.transmissionTint",
-                "thickness" : "subsurfaceScattering.thickness",
+                "scale": "subsurfaceScattering.transmissionScale",
+                "power": "subsurfaceScattering.transmissionPower",
+                "distortion": "subsurfaceScattering.transmissionDistortion",
+                "attenuation": "subsurfaceScattering.transmissionAttenuation",
+                "tintColor": "subsurfaceScattering.transmissionTint",
+                "thickness": "subsurfaceScattering.thickness",
                 "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor" : "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity" : "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput" : "m_scatterDistance",
-                "parametersShaderInput" : "m_transmissionParams",
-                "tintThickenssShaderInput" : "m_transmissionTintThickness"
+                "scatterDistanceColor": "subsurfaceScattering.scatterColor",
+                "scatterDistanceIntensity": "subsurfaceScattering.scatterDistance",
+                "scatterDistanceShaderInput": "m_scatterDistance",
+                "parametersShaderInput": "m_transmissionParams",
+                "tintThickenssShaderInput": "m_transmissionTintThickness"
             }
         },
         {

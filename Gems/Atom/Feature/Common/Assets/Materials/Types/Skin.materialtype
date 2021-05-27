@@ -288,6 +288,13 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "textureMapUv",
                     "displayName": "UV",
                     "description": "Specular reflection texture map UV set",
@@ -299,13 +306,7 @@
                         "id": "m_specularF0MapUvIndex"
                     }
                 },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
+                // Consider moving this to the "general" group to be consistent with StandardMultilayerPBR
                 {
                     "id": "enableMultiScatterCompensation",
                     "displayName": "Multiscattering Compensation",
@@ -616,7 +617,7 @@
                     "type": "float",
                     "defaultValue": 6.0,
                     "min": 0.0,
-                    "softMax":  20.0
+                    "softMax": 20.0
                 },
                 {
                     "id": "transmissionDistortion",
@@ -1011,18 +1012,18 @@
             "type": "HandleSubsurfaceScatteringParameters",
             "args": {
                 "mode": "subsurfaceScattering.transmissionMode",
-                "scale" : "subsurfaceScattering.transmissionScale",
-                "power" : "subsurfaceScattering.transmissionPower",
-                "distortion" : "subsurfaceScattering.transmissionDistortion",
-                "attenuation" : "subsurfaceScattering.transmissionAttenuation",
-                "tintColor" : "subsurfaceScattering.transmissionTint",
-                "thickness" : "subsurfaceScattering.thickness",
+                "scale": "subsurfaceScattering.transmissionScale",
+                "power": "subsurfaceScattering.transmissionPower",
+                "distortion": "subsurfaceScattering.transmissionDistortion",
+                "attenuation": "subsurfaceScattering.transmissionAttenuation",
+                "tintColor": "subsurfaceScattering.transmissionTint",
+                "thickness": "subsurfaceScattering.thickness",
                 "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor" : "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity" : "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput" : "m_scatterDistance",
-                "parametersShaderInput" : "m_transmissionParams",
-                "tintThickenssShaderInput" : "m_transmissionTintThickness"
+                "scatterDistanceColor": "subsurfaceScattering.scatterColor",
+                "scatterDistanceIntensity": "subsurfaceScattering.scatterDistance",
+                "scatterDistanceShaderInput": "m_scatterDistance",
+                "parametersShaderInput": "m_transmissionParams",
+                "tintThickenssShaderInput": "m_transmissionTintThickness"
             }
         },
         {
@@ -1038,8 +1039,8 @@
             "type": "UseTexture",
             "args": {
                 "textureProperty": "specularF0.textureMap",
-                "dependentProperties": ["specularF0.textureMapUv"],
                 "useTextureProperty": "specularF0.useTexture",
+                "dependentProperties": ["specularF0.textureMapUv"],
                 "shaderOption": "o_specularF0_useTexture"
             }
         },

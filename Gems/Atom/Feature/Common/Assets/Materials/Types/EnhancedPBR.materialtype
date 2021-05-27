@@ -1,5 +1,5 @@
 {
-    "description": "Material Type with properties used to define Enhanced PBR material shading model.",
+    "description": "Material Type with properties used to define Enhanced PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model, with advanced features like subsurface scattering, transmission, and anisotropy.",
     "propertyLayout": {
         "version": 3,
         "groups": [
@@ -32,7 +32,7 @@
                 "id": "clearCoat",
                 "displayName": "Clear Coat",
                 "description": "Properties for configuring gloss clear coat"
-            },
+            }, 
             {
                 "id": "normal",
                 "displayName": "Normal",
@@ -206,6 +206,13 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "textureMapUv",
                     "displayName": "UV",
                     "description": "Base color texture map UV set",
@@ -228,13 +235,6 @@
                         "type": "ShaderOption",
                         "id": "o_baseColorTextureBlendMode"
                     }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map.",
-                    "type": "Bool",
-                    "defaultValue": true
                 }
             ],
             "metallic": [
@@ -262,6 +262,13 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "textureMapUv",
                     "displayName": "UV",
                     "description": "Metallic texture map UV set",
@@ -272,29 +279,9 @@
                         "type": "ShaderInput",
                         "id": "m_metallicMapUvIndex"
                     }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
                 }
             ],
             "roughness": [
-                {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_roughnessFactor"
-                    }
-                },
                 {
                     "id": "textureMap",
                     "displayName": "Texture Map",
@@ -304,6 +291,13 @@
                         "type": "ShaderInput",
                         "id": "m_roughnessMap"
                     }
+                },
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
@@ -346,11 +340,18 @@
                     }
                 },
                 {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
+                    // Note that "factor" is mutually exclusive with "lowerBound"/"upperBound". These are swapped by a lua functor.
+                    "id": "factor",
+                    "displayName": "Factor",
+                    "description": "Controls the roughness value",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_roughnessFactor"
+                    }
                 }
             ],
             "anisotropy": [
@@ -417,6 +418,13 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "textureMapUv",
                     "displayName": "UV",
                     "description": "Specular reflection texture map UV set",
@@ -428,13 +436,7 @@
                         "id": "m_specularF0MapUvIndex"
                     }
                 },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
+                // Consider moving this to the "general" group to be consistent with StandardMultilayerPBR
                 {
                     "id": "enableMultiScatterCompensation",
                     "displayName": "Multiscattering Compensation",
@@ -452,11 +454,7 @@
                     "displayName": "Enable",
                     "description": "Enable clear coat",
                     "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_clearCoat_feature_enabled"
-                    }
+                    "defaultValue": false
                 },
                 {
                     "id": "factor",
@@ -482,6 +480,13 @@
                     }
                 },
                 {
+                    "id": "useInfluenceMap",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "influenceMapUv",
                     "displayName": "    UV",
                     "description": "Strength factor texture map UV set",
@@ -492,13 +497,6 @@
                         "type": "ShaderInput",
                         "id": "m_clearCoatInfluenceMapUvIndex"
                     }
-                },
-                {
-                    "id": "useInfluenceMap",
-                    "displayName": "    Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
                 },
                 {
                     "id": "roughness",
@@ -524,6 +522,13 @@
                     }
                 },
                 {
+                    "id": "useRoughnessMap",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the texture map, or just default to the roughness value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "roughnessMapUv",
                     "displayName": "    UV",
                     "description": "Roughness texture map UV set",
@@ -534,13 +539,6 @@
                         "type": "ShaderInput",
                         "id": "m_clearCoatRoughnessMapUvIndex"
                     }
-                },
-                {
-                    "id": "useRoughnessMap",
-                    "displayName": "    Use Texture",
-                    "description": "Whether to use the texture map, or just default to the roughness value.",
-                    "type": "Bool",
-                    "defaultValue": true
                 },
                 {
                     "id": "normalStrength",
@@ -566,8 +564,15 @@
                     }
                 },
                 {
+                    "id": "useNormalMap",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the normal map",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "normalMapUv",
-                    "displayName": "UV",
+                    "displayName": "    UV",
                     "description": "Normal texture map UV set",
                     "type": "Enum",
                     "enumIsUv": true,
@@ -576,29 +581,9 @@
                         "type": "ShaderInput",
                         "id": "m_clearCoatNormalMapUvIndex"
                     }
-                },
-                {
-                    "id": "useNormalMap",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the normal map",
-                    "type": "Bool",
-                    "defaultValue": true
                 }
             ],
             "normal": [
-                {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "softMax": 2.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_normalFactor"
-                    }
-                },
                 {
                     "id": "textureMap",
                     "displayName": "Texture Map",
@@ -608,6 +593,13 @@
                         "type": "ShaderInput",
                         "id": "m_normalMap"
                     }
+                },
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map, or just rely on vertex normals.",
+                    "type": "Bool",
+                    "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
@@ -620,13 +612,6 @@
                         "type": "ShaderInput",
                         "id": "m_normalMapUvIndex"
                     }
-                },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just rely on vertex normals.",
-                    "type": "Bool",
-                    "defaultValue": true
                 },
                 {
                     "id": "flipX",
@@ -648,6 +633,19 @@
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_flipNormalY"
+                    }
+                },
+                {
+                    "id": "factor",
+                    "displayName": "Factor",
+                    "description": "Strength factor for scaling the values",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "softMax": 2.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_normalFactor"
                     }
                 }
             ],
@@ -872,18 +870,14 @@
                     "displayName": "Enable",
                     "description": "Enable the emissive group",
                     "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_emissiveEnabled"
-                    }
+                    "defaultValue": false
                 },
                 {
                     "id": "unit",
                     "displayName": "Units",
                     "description": "The photometric units of the Intensity property.",
                     "type": "Enum",
-                    "enumValues": [ "Ev100" ],
+                    "enumValues": ["Ev100"],
                     "defaultValue": "Ev100"
                 },
                 {
@@ -919,23 +913,23 @@
                     }
                 },
                 {
-                    "id": "textureMapUv",
-                    "displayName": "UV",
-                    "description": "Emissive texture map UV set",
-                    "type": "Enum",
-                    "enumValues": [ "UV0", "UV1" ],
-                    "defaultValue": "UV0",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_emissiveMapUvIndex"
-                    }
-                },
-                {
                     "id": "useTexture",
                     "displayName": "Use Texture",
                     "description": "Whether to use the texture map.",
                     "type": "Bool",
                     "defaultValue": true
+                },
+                {
+                    "id": "textureMapUv",
+                    "displayName": "UV",
+                    "description": "Emissive texture map UV set",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_emissiveMapUvIndex"
+                    }
                 }
             ],
             "parallax": [
@@ -961,8 +955,8 @@
                     "displayName": "UV",
                     "description": "Depth texture map UV set",
                     "type": "Enum",
-                    "enumValues": [ "UV0", "UV1" ],
-                    "defaultValue": "UV0",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_parallaxUvIndex"
@@ -1055,7 +1049,7 @@
             "subsurfaceScattering": [
                 {
                     "id": "enableSubsurfaceScattering",
-                    "displayName": "Enable Subsurface Scattering",
+                    "displayName": "Subsurface Scattering",
                     "description": "Enable subsurface scattering feature, this will disable metallic and parallax mapping property due to incompatibility",
                     "type": "Bool",
                     "defaultValue": false,
@@ -1069,7 +1063,7 @@
                     "displayName": "    Factor",
                     "description": "Strength factor for scaling percentage of subsurface scattering effect applied",
                     "type": "float",
-                    "defaultValue": 0.0,
+                    "defaultValue": 1.0,
                     "min": 0.0,
                     "max": 1.0,
                     "connection": {
@@ -1088,23 +1082,23 @@
                     }
                 },
                 {
-                    "id": "influenceMapUv",
-                    "displayName": "    UV",
-                    "description": "Influence map UV set",
-                    "type": "Enum",
-                    "enumValues": [ "UV0", "UV1" ],
-                    "defaultValue": "UV0",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_subsurfaceScatteringInfluenceMapUvIndex"
-                    }
-                },
-                {
                     "id": "useInfluenceMap",
                     "displayName": "    Use Influence Map",
                     "description": "Whether to use the texture map as influence mask.",
                     "type": "Bool",
                     "defaultValue": true
+                },
+                {
+                    "id": "influenceMapUv",
+                    "displayName": "    UV",
+                    "description": "Influence map UV set",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_subsurfaceScatteringInfluenceMapUvIndex"
+                    }
                 },
                 {
                     "id": "scatterColor",
@@ -1136,11 +1130,16 @@
                     }
                 },
                 {
-                    "id": "enableTransmission",
-                    "displayName": "Enable Transmission",
-                    "description": "Enable transmission feature",
-                    "type": "Bool",
-                    "defaultValue": false
+                    "id": "transmissionMode",
+                    "displayName": "Transmission",
+                    "description": "Algorithm used for calculating transmission",
+                    "type": "Enum",
+                    "enumValues": [ "None", "ThickObject", "ThinObject" ],
+                    "defaultValue": "None",
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_transmission_mode"
+                    }
                 },
                 {
                     "id": "thickness",
@@ -1162,18 +1161,6 @@
                     }
                 },
                 {
-                    "id": "thicknessMapUv",
-                    "displayName": "    UV",
-                    "description": "Thickness map UV set",
-                    "type": "Enum",
-                    "enumValues": [ "UV0", "UV1" ],
-                    "defaultValue": "UV0",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_transmissionThicknessMapUvIndex"
-                    }
-                },
-                {
                     "id": "useThicknessMap",
                     "displayName": "    Use Thickness Map",
                     "description": "Whether to use the thickness map",
@@ -1181,23 +1168,23 @@
                     "defaultValue": true
                 },
                 {
+                    "id": "thicknessMapUv",
+                    "displayName": "    UV",
+                    "description": "Thickness map UV set",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_transmissionThicknessMapUvIndex"
+                    }
+                },
+                {
                     "id": "transmissionTint",
                     "displayName": "    Transmission Tint",
                     "description": "Color of the volume light travelling through",
                     "type": "Color",
                     "defaultValue": [ 1.0, 0.8, 0.6 ]
-                },
-                {
-                    "id": "transmissionMode",
-                    "displayName": "    Mode",
-                    "description": "Algorithm used for calculating transmission",
-                    "type": "Enum",
-                    "enumValues": [ "None", "ThickObject", "ThinObject" ],
-                    "defaultValue": "None",
-                    "connection": {
-                        "type": "ShaderOption",
-                        "id": "o_transmission_mode"
-                    }
                 },
                 {
                     "id": "transmissionPower",
@@ -1287,7 +1274,7 @@
                     }
                 },
                 {
-                    "id": "detailMapsMapUv",
+                    "id": "textureMapUv",
                     "displayName": "Detail Map UVs",
                     "description": "Which UV set to use for detail map texture sampling",
                     "type": "Enum",
@@ -1506,7 +1493,7 @@
         {
             "file": "Shaders/Depth/DepthPassTransparentMax.shader",
             "tag": "DepthPassTransparentMax"
-        }
+        }        
     ],
     "functors": [
         {
@@ -1549,26 +1536,9 @@
                 "lightUnitProperty": "emissive.unit",
                 "shaderInput": "m_emissiveIntensity",
                 "ev100Index": 0,
-                "nitIndex": 1,
-                "ev100MinMax": [ -10, 20 ],
-                "nitMinMax": [ 0.001, 100000.0 ]
-            }
-        },
-        {
-            // Enable/Disable shader based on different option.
-            "type": "ShaderEnable",
-            "args": {
-                "opacityMode": "opacity.mode",
-                "parallaxEnable": "parallax.enable",
-                "parallaxPdoEnable": "parallax.pdo",
-                "pbrShaderNoEdsIndex": 0,
-                "pbrShaderWithEdsIndex": 1,
-                "shadowShaderNoPSIndex": 2,
-                "shadowShaderWithPSIndex": 3,
-                "depthShaderNoPSIndex": 4,
-                "depthShaderWithPSIndex": 5,
-                "depthShaderTransparentMin": 8,
-                "depthShaderTransparentMax": 9
+                "nitIndex" : 1,
+                "ev100MinMax": [-10, 20],
+                "nitMinMax": [0.001, 100000.0]
             }
         },
         {
@@ -1590,120 +1560,40 @@
                 "tintThickenssShaderInput": "m_transmissionTintThickness"
             }
         },
-        { 
-            // Reads material properties to determine whether a specific texture map should be sampled at runtime, and sets a shader option accordingly.
-            // @param textureProperty    - which material property contains the texture asset reference (or maybe null)
-            // @param useTextureProperty - a boolean flag that toggles whether the texture should be sampled (if it's not null)
-            // @param shaderTags         - which shader in the 'shaders' list above is configured by this functor
-            // @param shaderOption       - the name of a shader option in the AZSL file that controls sampling of this texture
+        {
             "type": "UseTexture",
             "args": {
                 "textureProperty": "baseColor.textureMap",
-                "dependentProperties": ["baseColor.textureMapUv"],
                 "useTextureProperty": "baseColor.useTexture",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
+                "dependentProperties": ["baseColor.textureMapUv", "baseColor.textureBlendMode"],
                 "shaderOption": "o_baseColor_useTexture"
             }
         },
         {
-            // See the comment above for details.
             "type": "UseTexture",
             "args": {
                 "textureProperty": "metallic.textureMap",
-                "dependentProperties": ["metallic.textureMapUv"],
                 "useTextureProperty": "metallic.useTexture",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
+                "dependentProperties": ["metallic.textureMapUv"],
                 "shaderOption": "o_metallic_useTexture"
             }
         },
         {
-            // See the comment above for details.
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "roughness.textureMap",
-                "dependentProperties": ["roughness.textureMapUv"],
-                "useTextureProperty": "roughness.useTexture",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_roughness_useTexture"
-            }
-        },
-        {
-            // See the comment above for details.
             "type": "UseTexture",
             "args": {
                 "textureProperty": "specularF0.textureMap",
-                "dependentProperties": ["specularF0.textureMapUv"],
                 "useTextureProperty": "specularF0.useTexture",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
+                "dependentProperties": ["specularF0.textureMapUv"],
                 "shaderOption": "o_specularF0_useTexture"
             }
         },
         {
-            // See the comment above for details.
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "clearCoat.influenceMap",
-                "dependentProperties": ["clearCoat.influenceMapUv"],
-                "useTextureProperty": "clearCoat.useInfluenceMap",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_clearCoat_factor_useTexture"
-            }
-        },
-        {
-            // See the comment above for details.
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "clearCoat.roughnessMap",
-                "dependentProperties": ["clearCoat.roughnessMapUv"],
-                "useTextureProperty": "clearCoat.useRoughnessMap",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_clearCoat_roughness_useTexture"
-            }
-        },
-        {
-            // See the comment above for details.
-            "type": "UseTexture",
-            "args": {
-                "textureProperty": "clearCoat.normalMap",
-                "dependentProperties": ["clearCoat.normalMapUv"],
-                "useTextureProperty": "clearCoat.useNormalMap",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_clearCoat_normal_useTexture"
-            }
-        },
-        {
-            // See the comment above for details.
             "type": "UseTexture",
             "args": {
                 "textureProperty": "normal.textureMap",
-                "dependentProperties": ["normal.textureMapUv"],
                 "useTextureProperty": "normal.useTexture",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_normal_useTexture"
+                "dependentProperties": ["normal.textureMapUv", "normal.factor", "normal.flipX", "normal.flipY"],
+                "shaderOption": "o_normal_useTexture"    
             }
         },
         {
@@ -1725,341 +1615,39 @@
             }
         },
         {
-            // See the comment above for details.
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "emissive.textureMap",
-                "dependentProperties": ["emissive.textureMapUv"],
-                "useTextureProperty": "emissive.useTexture",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_emissive_useTexture"
+                "file": "StandardPBR_ClearCoatState.lua"
             }
         },
         {
-            // See the comment above for details.
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "subsurfaceScattering.influenceMap",
-                "dependentProperties": ["subsurfaceScattering.influenceMapUv"],
-                "useTextureProperty": "subsurfaceScattering.useInfluenceMap",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_subsurfaceScattering_useTexture"
+                "file": "StandardPBR_ClearCoatEnableFeature.lua"
             }
         },
         {
-            // See the comment above for details.
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "subsurfaceScattering.thicknessMap",
-                "dependentProperties": ["subsurfaceScattering.thicknessMapUv"],
-                "useTextureProperty": "subsurfaceScattering.useThicknessMap",
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_transmission_useTexture"
-            }
-        },
-        {
-            // Controls visibility for properties in the editor.
-            // @param actions            - a list of actions that are executed in order. visibility will be set when triggerProperty hits the triggerValue.
-            // @param affectedProperties - the properties that are affected by actions.
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "emissive.enable",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "emissive.enable",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "emissive.color",
-                    "emissive.intensity",
-                    "emissive.useTexture",
-                    "emissive.unit"
-                ]
-            }
-        },
-        {
-            // Controls visibility for properties in the editor.
-            // @param actions            - a list of actions that are executed in order. visibility will be set when triggerProperty hits the triggerValue.
-            // @param affectedProperties - the properties that are affected by actions.
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "emissive.useTexture",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "emissive.useTexture",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    },
-                    {
-                        "triggerProperty": "emissive.enable",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "emissive.textureMap",
-                    "emissive.textureMapUv"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "clearCoat.useInfluenceMap",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.useInfluenceMap",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.enable",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "clearCoat.influenceMap",
-                    "clearCoat.influenceMapUv"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "clearCoat.useRoughnessMap",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.useRoughnessMap",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.enable",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "clearCoat.roughnessMap",
-                    "clearCoat.roughnessMapUv"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "clearCoat.useNormalMap",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.useNormalMap",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.enable",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "clearCoat.normalMap",
-                    "clearCoat.normalMapUv"
-                ]
-            }
-
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "subsurfaceScattering.useInfluenceMap",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.useInfluenceMap",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableSubsurfaceScattering",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "subsurfaceScattering.influenceMap",
-                    "subsurfaceScattering.influenceMapUv"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "subsurfaceScattering.useThicknessMap",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.useThicknessMap",
-                        "triggerValue": false,
-                        "visibility": "Disabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableTransmission",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "subsurfaceScattering.thicknessMap",
-                    "subsurfaceScattering.thicknessMapUv"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "clearCoat.enable",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "clearCoat.enable",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "clearCoat.factor",
-                    "clearCoat.useInfluenceMap",
-                    "clearCoat.roughness",
-                    "clearCoat.useRoughnessMap",
-                    "clearCoat.useNormalMap"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "subsurfaceScattering.transmissionMode",
-                        "triggerValue": "ThickObject",
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.transmissionMode",
-                        "triggerValue": "None",
-                        "visibility": "Hidden"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.transmissionMode",
-                        "triggerValue": "ThinObject",
-                        "visibility": "Hidden"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableTransmission",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "subsurfaceScattering.transmissionPower",
-                    "subsurfaceScattering.transmissionDistortion",
-                    "subsurfaceScattering.transmissionAttenuation"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableSubsurfaceScattering",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableSubsurfaceScattering",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "subsurfaceScattering.subsurfaceScatterFactor",
-                    "subsurfaceScattering.useInfluenceMap",
-                    "subsurfaceScattering.scatterColor",
-                    "subsurfaceScattering.scatterDistance",
-                    "subsurfaceScattering.quality"
-                ]
-            }
-        },
-        {
-            "type": "UpdatePropertyVisibility",
-            "args": {
-                "actions": [
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableTransmission",
-                        "triggerValue": true,
-                        "visibility": "Enabled"
-                    },
-                    {
-                        "triggerProperty": "subsurfaceScattering.enableTransmission",
-                        "triggerValue": false,
-                        "visibility": "Hidden"
-                    }
-                ],
-                "affectedProperties": [
-                    "subsurfaceScattering.thickness",
-                    "subsurfaceScattering.useThicknessMap",
-                    "subsurfaceScattering.transmissionTint",
-                    "subsurfaceScattering.transmissionMode",
-                    "subsurfaceScattering.transmissionScale"
-                ]
+                "file": "StandardPBR_EmissiveState.lua"
             }
         },
         {
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_ParallaxState.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_Roughness.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_SubsurfaceState.lua"
             }
         },
         {
@@ -2097,6 +1685,12 @@
             "args": {
                 "file": "MaterialInputs/DetailMapsCommonFunctor.lua"
             }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_ShaderEnable.lua"
+            }
         }
     ],
     "uvNameMap": {
@@ -2104,3 +1698,4 @@
         "UV1": "Unwrapped"
     }
 }
+
