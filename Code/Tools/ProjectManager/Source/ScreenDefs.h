@@ -17,11 +17,10 @@ namespace O3DE::ProjectManager
     {
         Invalid = -1,
         Empty,
-        FirstTimeUse,
         CreateProject,
         NewProjectSettings,
         GemCatalog,
-        ProjectsHome,
+        Projects,
         UpdateProject,
         ProjectSettings,
         EngineSettings

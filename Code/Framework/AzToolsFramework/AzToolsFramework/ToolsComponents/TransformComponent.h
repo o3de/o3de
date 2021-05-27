@@ -99,22 +99,7 @@ namespace AzToolsFramework
             float GetLocalZ() override;
 
             // Rotation modifiers
-            void SetRotation(const AZ::Vector3& eulerAnglesRadians) override;
-            void SetRotationQuaternion(const AZ::Quaternion& quaternion) override;
-            void SetRotationX(float eulerAngleRadians) override;
-            void SetRotationY(float eulerAngleRadians) override;
-            void SetRotationZ(float eulerAngleRadians) override;
-
-            void RotateByX(float eulerAngleRadians) override;
-            void RotateByY(float eulerAngleRadians) override;
-            void RotateByZ(float eulerAngleRadians) override;
-
-            AZ::Vector3 GetRotationEulerRadians() override;
-            AZ::Quaternion GetRotationQuaternion() override;
-
-            float GetRotationX() override;
-            float GetRotationY() override;
-            float GetRotationZ() override;
+            void SetWorldRotationQuaternion(const AZ::Quaternion& quaternion) override;
 
             AZ::Vector3 GetWorldRotation() override;
             AZ::Quaternion GetWorldRotationQuaternion() override;

@@ -196,7 +196,7 @@ namespace PhysX
                     AZ::Transform::CreateFromQuaternionAndTranslation(colliderConfiguration.m_rotation, colliderConfiguration.m_position);
 
                 AZ::Transform shapeTransform = *m_transform;
-                shapeTransform.ExtractScale();
+                shapeTransform.ExtractUniformScale();
 
                 shapeTransform = existingTransform * shapeTransform;
 

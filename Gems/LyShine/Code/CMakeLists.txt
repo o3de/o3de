@@ -26,13 +26,13 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            Gem::LmbrCentral
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
             Gem::Atom_Bootstrap.Headers
             Gem::AtomFont
-            Gem::LmbrCentral.Static
-            Gem::TextureAtlas
+            Gem::TextureAtlas       
 )
 
 ly_add_target(
@@ -49,6 +49,7 @@ ly_add_target(
         PRIVATE
             Gem::LyShine.Static
             Legacy::CryCommon
+            Gem::LmbrCentral
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
         Gem::TextureAtlas
@@ -86,7 +87,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Gem::LyShine.Static
                 Legacy::CryCommon
-                Gem::LmbrCentral.Editor.Static
+                Gem::LmbrCentral.Editor
                 Gem::TextureAtlas.Editor
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
@@ -152,6 +153,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::LyShine.Static
                 Legacy::CryCommon
+                Gem::LmbrCentral
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
             Gem::TextureAtlas
