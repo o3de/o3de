@@ -57,11 +57,11 @@ namespace AudioControlBuilder
                     {
                         atlPlatform = "windows";
                     }
-                    else if (platform == "es3")
+                    else if (platform == "android")
                     {
                         atlPlatform = "android";
                     }
-                    else if (platform == "osx_gl")
+                    else if (platform == "mac")
                     {
                         atlPlatform = "mac";
                     }

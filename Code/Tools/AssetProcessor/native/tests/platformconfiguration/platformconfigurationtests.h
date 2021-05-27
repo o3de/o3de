@@ -37,6 +37,5 @@ private:
     int         m_argc;
     char**      m_argv;
     QCoreApplication* m_qApp;
-    
 };
 

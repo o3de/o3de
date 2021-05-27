@@ -148,15 +148,15 @@ namespace AssetBuilderSDK
     {
         Platform_NONE       = 0x00,
         Platform_PC         = 0x01,
-        Platform_ES3        = 0x02,
+        Platform_ANDROID    = 0x02,
         Platform_IOS        = 0x04,
-        Platform_OSX        = 0x08,
+        Platform_MAC        = 0x08,
         Platform_PROVO      = 0x20,
         Platform_SALEM      = 0x40,
         Platform_JASPER     = 0x80,
 
         //! if you add a new platform entry to this enum, you must add it to allplatforms as well otherwise that platform would not be considered valid. 
-        AllPlatforms = Platform_PC | Platform_ES3 | Platform_IOS | Platform_OSX | Platform_PROVO | Platform_SALEM | Platform_JASPER
+        AllPlatforms = Platform_PC | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER
     };
 #endif // defined(ENABLE_LEGACY_PLATFORMFLAGS_SUPPORT)
     //! Map data structure to holder parameters that are passed into a job for ProcessJob requests.
@@ -503,7 +503,7 @@ namespace AssetBuilderSDK
         AZ_CLASS_ALLOCATOR(PlatformInfo, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(PlatformInfo, "{F7DA39A5-C319-4552-954B-3479E2454D3F}");
 
-        AZStd::string m_identifier; ///< like "pc" or "es3" or "ios"...
+        AZStd::string m_identifier; ///< like "pc" or "android" or "ios"...
         AZStd::unordered_set<AZStd::string> m_tags; ///< The tags like "console" or "tools" on that platform
 
         PlatformInfo() = default;

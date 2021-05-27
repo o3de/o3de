@@ -14,11 +14,17 @@
 #include <ScreensCtrl.h>
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
+#include <ScreenHeaderWidget.h>
+#include <GemCatalog/GemCatalogScreen.h>
 
 #include <QDialogButtonBox>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QStackedWidget>
+#include <QLabel>
+#include <QSizePolicy>
 
 namespace O3DE::ProjectManager
 {
@@ -26,29 +32,34 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
-        setLayout(vLayout);
+        vLayout->setContentsMargins(0,0,0,0);
 
-        m_screensCtrl = new ScreensCtrl();
-        vLayout->addWidget(m_screensCtrl);
+        m_header = new ScreenHeader(this);
+        m_header->setTitle(tr("Create a New Project"));
+        m_header->setSubTitle(tr("Enter Project Details"));
+        connect(m_header->backButton(), &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
+        vLayout->addWidget(m_header);
+
+        m_stack = new QStackedWidget(this);
+        m_stack->setObjectName("body");
+        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
+        m_stack->addWidget(new NewProjectSettingsScreen());
+        m_stack->addWidget(new GemCatalogScreen());
+        vLayout->addWidget(m_stack);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
+        backNextButtons->setObjectName("footer");
         vLayout->addWidget(backNextButtons);
 
         m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_backButton->setProperty("secondary", true);
         m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::pressed, this, &CreateProjectCtrl::HandleBackButton);
-        connect(m_nextButton, &QPushButton::pressed, this, &CreateProjectCtrl::HandleNextButton);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleNextButton);
 
-        m_screensOrder =
-        {
-            ProjectManagerScreen::NewProjectSettings,
-            ProjectManagerScreen::GemCatalog
-        };
-        m_screensCtrl->BuildScreens(m_screensOrder);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::NewProjectSettings, false);
-
-        UpdateNextButtonText();
+        Update();
+        setLayout(vLayout);
     }
 
     ProjectManagerScreen CreateProjectCtrl::GetScreenEnum()
@@ -58,28 +69,20 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::HandleBackButton()
     {
-        if (!m_screensCtrl->GotoPreviousScreen())
+        if (m_stack->currentIndex() > 0)
         {
-            emit GotoPreviousScreenRequest();
+            m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            Update();
         }
         else
         {
-            UpdateNextButtonText();
+            emit GotoPreviousScreenRequest();
         }
     }
     void CreateProjectCtrl::HandleNextButton()
     {
-        ScreenWidget* currentScreen = m_screensCtrl->GetCurrentScreen();
+        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
         ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
-        auto screenOrderIter = m_screensOrder.begin();
-        for (; screenOrderIter != m_screensOrder.end(); ++screenOrderIter)
-        {
-            if (*screenOrderIter == screenEnum)
-            {
-                ++screenOrderIter;
-                break;
-            }
-        }
 
         if (screenEnum == ProjectManagerScreen::NewProjectSettings)
         {
@@ -97,10 +100,10 @@ namespace O3DE::ProjectManager
             }
         }
 
-        if (screenOrderIter != m_screensOrder.end())
+        if (m_stack->currentIndex() != m_stack->count() - 1)
         {
-            m_screensCtrl->ChangeToScreen(*screenOrderIter);
-            UpdateNextButtonText();
+            m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
+            Update();
         }
         else
         {
@@ -108,7 +111,7 @@ namespace O3DE::ProjectManager
             if (result.IsSuccess())
             {
                 // adding gems is not implemented yet because we don't know what targets to add or how to add them
-                emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
             {
@@ -117,14 +120,21 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void CreateProjectCtrl::UpdateNextButtonText()
+    void CreateProjectCtrl::Update()
     {
-        QString nextButtonText = tr("Next");
-        if (m_screensCtrl->GetCurrentScreen()->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
+        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
+        if (currentScreen && currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
         {
-            nextButtonText = tr("Create Project");
+            m_header->setTitle(tr("Create Project"));
+            m_header->setSubTitle(tr("Configure project with Gems"));
+            m_nextButton->setText(tr("Create Project"));
         }
-        m_nextButton->setText(nextButtonText);
+        else
+        {
+            m_header->setTitle(tr("Create Project"));
+            m_header->setSubTitle(tr("Enter Project Details"));
+            m_nextButton->setText(tr("Next"));
+        }
     }
 
 } // namespace O3DE::ProjectManager

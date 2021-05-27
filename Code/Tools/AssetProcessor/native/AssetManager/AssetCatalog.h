@@ -95,6 +95,12 @@ namespace AssetProcessor
         const char* GetAbsoluteDevGameFolderPath() override;
         const char* GetAbsoluteDevRootFolderPath() override;
         bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& relativeProductPath) override;
+
+        //! Given a partial or full source file path, respond with its relative path and the watch folder it is relative to.
+        //! The input source path does not need to exist, so this can be used for new files that haven't been saved yet.
+        bool GenerateRelativeSourcePath(
+            const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& watchFolder) override;
+
         bool GetFullSourcePathFromRelativeProductPath(const AZStd::string& relPath, AZStd::string& fullSourcePath) override;
         bool GetAssetInfoById(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType, const AZStd::string& platformName, AZ::Data::AssetInfo& assetInfo, AZStd::string& rootFilePath) override;
         bool GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder) override;

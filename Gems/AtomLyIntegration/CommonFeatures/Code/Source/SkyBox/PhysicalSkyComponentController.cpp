@@ -218,7 +218,7 @@ namespace AZ
         SunPosition PhysicalSkyComponentController::GetSunTransform(const AZ::Transform& world)
         {
             Transform worldNoScale = world;
-            worldNoScale.ExtractScale();
+            worldNoScale.ExtractUniformScale();
             AZ::Vector3 sunPositionAtom = worldNoScale.TransformVector(AZ::Vector3(0, -1, 0)); // transform Sun from default position
 
             // Convert sun position to Y-up coordinate

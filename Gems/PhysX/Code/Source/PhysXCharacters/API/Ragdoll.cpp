@@ -274,7 +274,7 @@ namespace PhysX
         m_queuedDisableSimulation = true;
     }
 
-    bool Ragdoll::IsSimulated()
+    bool Ragdoll::IsSimulated() const
     {
         return m_simulating;
     }
