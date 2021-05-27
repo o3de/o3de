@@ -23,12 +23,14 @@
 #include <BallJointComponent.h>
 #include <FixedJointComponent.h>
 #include <HingeJointComponent.h>
+#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace PhysX
 {
@@ -207,5 +209,70 @@ namespace PhysX
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
 
         EXPECT_TRUE(followerEndPosition.GetZ() > followerPosition.GetZ());
+    }
+
+    class PhysXJointsApiTest : public PhysX::GenericPhysicsInterfaceTest
+    {
+    public:
+        
+        void SetUp() override
+        {
+            PhysX::GenericPhysicsInterfaceTest::SetUp();
+
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                AzPhysics::RigidBodyConfiguration parentConfiguration;
+                AzPhysics::RigidBodyConfiguration childConfiguration;
+
+                Physics::ColliderConfiguration colliderConfig;
+                Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+
+                parentConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+                childConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+                
+                childConfiguration.m_position.SetX(childConfiguration.m_position.GetX() + 1);
+                m_childInitialPos = childConfiguration.m_position;
+                parentConfiguration.m_initialLinearVelocity.SetX(10.);
+
+                m_parentBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &parentConfiguration);
+                m_childBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &childConfiguration);
+            }
+        }
+        void TearDown() override
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveSimulatedBodies(m_testSceneHandle, {m_parentBodyHandle, m_childBodyHandle});    
+            }
+
+            PhysX::GenericPhysicsInterfaceTest::TearDown();
+        }
+
+        AzPhysics::SimulatedBodyHandle m_parentBodyHandle;
+        AzPhysics::SimulatedBodyHandle m_childBodyHandle;
+        AZ::Vector3 m_childInitialPos;
+    };
+
+    TEST_F(PhysXJointsApiTest, Joint_D6Joint_ChildFollowsParent)
+    {
+        PhysX::D6ApiJointLimitConfiguration jointConfiguration;
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            sceneInterface->AddJoint(m_testSceneHandle, &jointConfiguration, m_parentBodyHandle, m_childBodyHandle);    
+        }
+
+        // run physics to trigger the the move of parent body
+        TestUtils::UpdateScene(m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);
+
+        AZ::Vector3 childCurrentPos;
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            auto* childBody = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, m_childBodyHandle);
+            childCurrentPos = childBody->GetPosition();
+        }
+
+        EXPECT_GT(childCurrentPos.GetX(), m_childInitialPos.GetX());
     }
 }
