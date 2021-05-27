@@ -294,8 +294,7 @@ namespace PhysX
                 rotateInverse.InvertFull();
             }
 
-            AZ::Vector3 scaleInverse = region.m_scale;
-            scaleInverse = scaleInverse.GetReciprocal();
+            float scaleInverse = 1.0f / region.m_scale;
 
             AZ::Vector3 position = entity.m_position + entity.m_velocity * m_lookAhead;
             AZ::Vector3 localPos = position - region.m_position;

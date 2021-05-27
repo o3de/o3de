@@ -36,7 +36,7 @@ namespace PhysX
         AZ::EntityId m_id;
         AZ::Vector3 m_position;
         AZ::Quaternion m_rotation;
-        AZ::Vector3 m_scale;
+        float m_scale;
         AZ::SplinePtr m_spline;
         AZ::Aabb m_aabb;
     };

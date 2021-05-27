@@ -148,7 +148,7 @@ namespace PhysX
     {
         m_worldTransform = world;
         m_regionParams.m_position = world.GetTranslation();
-        m_regionParams.m_scale = world.GetScale();
+        m_regionParams.m_scale = world.GetUniformScale();
         m_regionParams.m_rotation = world.GetRotation();
         AZ::EBusReduceResult<AZ::Aabb, PhysX::TriggerAabbAggregator> triggerAabb;
         triggerAabb.value = AZ::Aabb::CreateNull();
@@ -223,7 +223,7 @@ namespace PhysX
             , entityId
             , &AZ::TransformBus::Events::GetWorldTM);
         regionParams.m_position = worldTransform.GetTranslation();
-        regionParams.m_scale = worldTransform.GetScale();
+        regionParams.m_scale = worldTransform.GetUniformScale();
         regionParams.m_rotation = worldTransform.GetRotation();
 
         LmbrCentral::SplineComponentRequestBus::EventResult(regionParams.m_spline
