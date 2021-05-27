@@ -65,6 +65,7 @@
 #include "OutlinerTreeView.hxx"
 #include "Include/ICommandManager.h"
 #include "Include/IObjectManager.h"
+#include "OutlinerCacheBus.h"
 
 #include <Editor/CryEditDoc.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -1538,6 +1539,16 @@ void OutlinerListModel::OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZS
 {
     (void)name;
     QueueEntityUpdate(entityId);
+
+    bool isSelected = false;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        isSelected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, entityId);
+
+    if (isSelected)
+    {
+        // Ask the system to scroll to the entity in case it is off screen after the rename
+        OutlinerModelNotificationBus::Broadcast(&OutlinerModelNotifications::QueueScrollToNewContent, entityId);
+    }
 }
 
 void OutlinerListModel::OnEntityInfoUpdatedUnsavedChanges(AZ::EntityId entityId)

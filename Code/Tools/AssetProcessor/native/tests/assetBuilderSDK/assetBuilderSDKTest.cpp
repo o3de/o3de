@@ -28,7 +28,7 @@ namespace AssetProcessor
 
         createJobsRequest.m_enabledPlatforms = {
             { "pc", {}
-            }, { "es3", {}
+            }, { "android", {}
             }
         };
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformsCount(), 2);
@@ -48,19 +48,19 @@ namespace AssetProcessor
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_NONE);
 
         createJobsRequest.m_enabledPlatforms = {
-            { "es3", {}
+            { "android", {}
             }
         };
-        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(0), AssetBuilderSDK::Platform_ES3);
+        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(0), AssetBuilderSDK::Platform_ANDROID);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_NONE);
 
         createJobsRequest.m_enabledPlatforms = {
             { "pc", {}
-            }, { "es3", {}
+            }, { "android", {}
             }
         };
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(0), AssetBuilderSDK::Platform_PC);
-        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ES3);
+        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ANDROID);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(2), AssetBuilderSDK::Platform_NONE);
 
         createJobsRequest.m_enabledPlatforms = {
@@ -72,24 +72,24 @@ namespace AssetProcessor
 
         createJobsRequest.m_enabledPlatforms = {
             { "pc", {}
-            }, { "es3", {}
+            }, { "android", {}
             }, { "ios", {}
-            }, { "osx_gl", {}
+            }, { "mac", {}
             }
         };
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(0), AssetBuilderSDK::Platform_PC);
-        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ES3);
+        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ANDROID);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(2), AssetBuilderSDK::Platform_IOS);
-        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(3), AssetBuilderSDK::Platform_OSX);
+        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(3), AssetBuilderSDK::Platform_MAC);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(4), AssetBuilderSDK::Platform_NONE);
 
         createJobsRequest.m_enabledPlatforms = {
             { "pc", {}
-            }, { "es3", {}
+            }, { "android", {}
             }
         };
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(0), AssetBuilderSDK::Platform_PC);
-        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ES3);
+        ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(1), AssetBuilderSDK::Platform_ANDROID);
         ASSERT_EQ(createJobsRequest.GetEnabledPlatformAt(2), AssetBuilderSDK::Platform_NONE);
         // using a deprecated API should have generated warnings.
         // but we can't test for it because these warnings are WarningOnce and some other unit test might have already triggered it
@@ -106,23 +106,23 @@ namespace AssetProcessor
             }
         };
         ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_PC));
-        ASSERT_FALSE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_ES3));
+        ASSERT_FALSE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_ANDROID));
 
         createJobsRequest.m_enabledPlatforms = {
             { "pc", {}
-            }, { "es3", {}
+            }, { "android", {}
             }
         };
         ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_PC));
-        ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_ES3));
+        ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_ANDROID));
 
         createJobsRequest.m_enabledPlatforms = {
             { "pc", {}
-            }, { "es3", {}
+            }, { "android", {}
             }
         };
         ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_PC));
-        ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_ES3));
+        ASSERT_TRUE(createJobsRequest.IsPlatformEnabled(AssetBuilderSDK::Platform_ANDROID));
         // using a deprecated API should have generated warnings.
         // but we can't test for it because these warnings are WarningOnce and some other unit test might have already triggered it
     }
@@ -133,9 +133,9 @@ namespace AssetProcessor
         UnitTestUtils::AssertAbsorber absorb;
 
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_PC));
-        ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_ES3));
+        ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_ANDROID));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_IOS));
-        ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_OSX));
+        ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_MAC));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_PROVO));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_SALEM));
         ASSERT_TRUE(createJobsRequest.IsPlatformValid(AssetBuilderSDK::Platform_JASPER));

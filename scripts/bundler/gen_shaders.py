@@ -163,11 +163,11 @@ def add_shaders_types():
     shaders.append(gl4)
 
     gles3 = _ShaderType('GLES3', 'GLSL_HLSLcc')
-    gles3.add_configuration('Android', 'es3')
+    gles3.add_configuration('Android', 'android')
     shaders.append(gles3)
 
     metal = _ShaderType('METAL', 'METAL_LLVM_DXC')
-    metal.add_configuration('Mac', 'osx_gl')
+    metal.add_configuration('Mac', 'mac')
     metal.add_configuration('iOS', 'ios')
     shaders.append(metal)
 

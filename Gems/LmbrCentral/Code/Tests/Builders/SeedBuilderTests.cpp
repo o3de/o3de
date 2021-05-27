@@ -12,6 +12,7 @@
 
 #include "LmbrCentral_precompiled.h"
 #include <AzTest/AzTest.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <Builders/DependencyBuilder/SeedBuilderWorker/SeedBuilderWorker.h>
@@ -22,6 +23,12 @@ class SeedBuilderTests
 {
     void SetUp() override
     {
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+        
         m_app.Start(AZ::ComponentApplication::Descriptor());
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
