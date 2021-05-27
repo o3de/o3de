@@ -201,7 +201,7 @@ namespace PhysX
             AZ::Quaternion newRotation = AZ::Quaternion::CreateIdentity();
             m_interpolator->GetInterpolated(newPosition, newRotation, deltaTime);
 
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetRotationQuaternion, newRotation);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldRotationQuaternion, newRotation);
             AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, newPosition);
         }
     }
@@ -256,7 +256,7 @@ namespace PhysX
         }
         else
         {
-            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetRotationQuaternion, rigidBody->GetOrientation());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldRotationQuaternion, rigidBody->GetOrientation());
             AZ::TransformBus::Event(GetEntityId(), &AZ::TransformInterface::SetWorldTranslation, rigidBody->GetPosition());
         }
         m_isLastMovementFromKinematicSource = false;
