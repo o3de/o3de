@@ -77,8 +77,9 @@ namespace TestImpact
         });
     }
 
-    inline void DeleteFile(const RepoPath& path)
+    //! Deletes the specified file.
+    inline void DeleteFile(const RepoPath& file)
     {
-        DeleteFiles(path.ParentPath(), path.Filename().Native());
+        DeleteFiles(file.ParentPath(), file.Filename().Native());
     }
 } // namespace TestImpact
