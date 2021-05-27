@@ -68,7 +68,7 @@ namespace O3DE::ProjectManager
         AZStd::recursive_mutex m_lock;
         pybind11::handle m_register;
         pybind11::handle m_manifest;
-        pybind11::handle m_addGemProject;
-        pybind11::handle m_removeGemProject;
+        pybind11::handle m_enableGemProject;
+        pybind11::handle m_disableGemProject;
     };
 }

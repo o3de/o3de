@@ -286,8 +286,8 @@ namespace O3DE::ProjectManager
             m_register = pybind11::module::import("o3de.register");
             m_manifest = pybind11::module::import("o3de.manifest");
             m_engineTemplate = pybind11::module::import("o3de.engine_template");
-            m_addGemProject = pybind11::module::import("o3de.add_gem_project");
-            m_removeGemProject = pybind11::module::import("o3de.remove_gem_project");
+            m_enableGemProject = pybind11::module::import("o3de.enable_gem");
+            m_disableGemProject = pybind11::module::import("o3de.disable_gem");
 
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
@@ -588,7 +588,7 @@ namespace O3DE::ProjectManager
             pybind11::str pyGemPath     = gemPath.toStdString();
             pybind11::str pyProjectPath = projectPath.toStdString();
 
-            m_addGemProject.attr("add_gem_to_project")(
+            m_enableGemProject.attr("enable_gem_in_project")(
                 pybind11::none(), // gem_name
                 pyGemPath,
                 pybind11::none(), // project_name
@@ -605,7 +605,7 @@ namespace O3DE::ProjectManager
             pybind11::str pyGemPath     = gemPath.toStdString();
             pybind11::str pyProjectPath = projectPath.toStdString();
 
-            m_removeGemProject.attr("remove_gem_from_project")(
+            m_disableGemProject.attr("disable_gem_in_project")(
                 pybind11::none(), // gem_name
                 pyGemPath,
                 pybind11::none(), // project_name

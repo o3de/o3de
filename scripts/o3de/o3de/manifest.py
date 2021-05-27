@@ -231,6 +231,11 @@ def get_gems() -> list:
     return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
 
 
+def get_external_subdirectories() -> list:
+    json_data = load_o3de_manifest()
+    return json_data['external_subdirectories']
+
+
 def get_templates() -> list:
     json_data = load_o3de_manifest()
     return json_data['templates']
@@ -239,11 +244,6 @@ def get_templates() -> list:
 def get_restricted() -> list:
     json_data = load_o3de_manifest()
     return json_data['restricted']
-
-
-def get_external_subdirectories() -> list:
-    json_data = load_o3de_manifest()
-    return json_data['external_subdirectories']
 
 
 def get_repos() -> list:
@@ -266,6 +266,13 @@ def get_engine_gems() -> list:
     return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
 
 
+def get_engine_external_subdirectories() -> list:
+    engine_path = get_this_engine_path()
+    engine_object = get_engine_json_data(engine_path=engine_path)
+    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
+                    engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
+
+
 def get_engine_templates() -> list:
     engine_path = get_this_engine_path()
     engine_object = get_engine_json_data(engine_path=engine_path)
@@ -280,19 +287,12 @@ def get_engine_restricted() -> list:
                     engine_object['restricted'])) if 'restricted' in engine_object else []
 
 
-def get_engine_external_subdirectories() -> list:
-    engine_path = get_this_engine_path()
-    engine_object = get_engine_json_data(engine_path=engine_path)
-    return list(map(lambda rel_path: (pathlib.Path(engine_path) / rel_path).as_posix(),
-               engine_object['external_subdirectories'])) if 'external_subdirectories' in engine_object else []
-
-
 # project.json queries
 def get_project_gems(project_path: pathlib.Path) -> list:
     def is_gem_subdirectory(subdir):
         return (pathlib.Path(subdir) / 'gem.json').exists()
 
-    external_subdirs = get_project_external_subdirectories()
+    external_subdirs = get_project_external_subdirectories(project_path)
     return list(filter(is_gem_subdirectory, external_subdirs)) if external_subdirs else []
 
 
@@ -302,26 +302,42 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
                project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
 
 
+# Combined manifest queries
 def get_all_projects() -> list:
-    engine_projects = get_engine_projects()
-    projects_data = get_projects()
-    projects_data.extend(engine_projects)
-    return projects_data
+    projects_data = set(get_projects())
+    projects_data.update(get_engine_projects())
+    return list(projects_data)
 
 
-def get_all_gems() -> list:
-    engine_gems = get_engine_gems()
-    gems_data = get_gems()
-    gems_data.extend(engine_gems)
-    return gems_data
+def get_all_gems(project_path: pathlib.Path = None) -> list:
+    gems_data = set(get_gems())
+    gems_data.update(get_engine_gems())
+    if project_path:
+        gems_data.update(get_project_gems(project_path))
+    return list(gems_data)
+
+
+def get_all_external_subdirectories(project_path: pathlib.Path = None) -> list:
+    external_subdirectories_data = set(get_external_subdirectories())
+    external_subdirectories_data.update(get_engine_external_subdirectories())
+    if project_path:
+        external_subdirectories_data.update(get_project_external_subdirectories(project_path))
+    return list(templates_data)
 
 
 def get_all_templates() -> list:
-    engine_templates = get_engine_templates()
-    templates_data = get_templates()
-    templates_data.extend(engine_templates)
-    return templates_data
+    templates_data = set(get_templates())
+    templates_data.update(get_engine_templates())
+    return list(templates_data)
 
+
+def get_all_restricted() -> list:
+    restricted_data = set(get_restricted())
+    restricted_data.update(get_engine_restricted())
+    return list(gems_data)
+
+
+# Template functions
 def get_project_templates():  # temporary until we have a better way to do this... maybe template_type element
     project_templates = []
     for template in get_all_templates():

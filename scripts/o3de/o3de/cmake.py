@@ -26,9 +26,9 @@ def get_project_gems(project_path: pathlib.Path,
     return get_gems_from_cmake_file(get_enabled_gem_cmake_file(project_path=project_path, platform=platform))
 
 
-def get_gem_from_cmake_file(cmake_file: pathlib.Path) -> set:
+def get_enabled_gems(cmake_file: pathlib.Path) -> set:
     """
-    Gets a list of declared gem targets dependencies of a cmake file
+    Gets a list of enabled gems from the cmake file
     :param cmake_file: path to the cmake file
     :return: set of gem targets found
     """
@@ -38,11 +38,29 @@ def get_gem_from_cmake_file(cmake_file: pathlib.Path) -> set:
         logger.error(f'Failed to locate cmake file {cmake_file}')
         return set()
 
+    enable_gem_start_marker = 'set(ENABLED_GEMS'
+    enable_gem_end_marker = ')'
     gem_target_set = set()
     with cmake_file.open('r') as s:
+        in_gem_list = False
         for line in s:
-            gem_name = line.strip()
-            gem_target_set.add(gem_name)
+            line = line.strip()
+            if line.startswith(enable_gem_start_marker):
+                # Set the flag to indicate that we are in the ENABLED_GEMS variable
+                in_gem_list = True
+                # Skip pass the 'set(ENABLED_GEMS' marker just in case their are gems declared on the same line
+                line = line[len(enable_gem_start_marker):]
+            if in_gem_list:
+                # Since we are inside the ENABLED_GEMS variable determine if the line has the end_marker of ')'
+                if line.endswith(enable_gem_end_marker):
+                    # Strip away the line end marker
+                    line = line[:-len(enable_gem_end_marker)]
+                    # Set the flag to indicate that we are no longer in the ENABLED_GEMS variable after this line
+                    in_gem_list = False
+                # Split the rest of the line on whitespace just in case there are multiple gems in a line
+                gem_name_list = line.split()
+                gem_target_set.update(gem_name_list)
+
     return gem_target_set
 
 
@@ -72,7 +90,7 @@ def get_enabled_gem_cmake_file(project_name: str = None,
         project_path = manifest.get_registered(project_name=project_name)
 
     project_path = pathlib.Path(project_path).resolve()
-    enable_gem_filename = "enabled_gem.cmake"
+    enable_gem_filename = "enabled_gems.cmake"
 
     if platform == 'Common':
         project_code_dir = project_path / 'Gem/Code'

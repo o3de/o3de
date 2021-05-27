@@ -29,7 +29,7 @@ executable_path = ''
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-from o3de import add_gem_project, cmake, engine_template, manifest, register, remove_gem_project
+from o3de import disable_gem, enable_gem, cmake, engine_template, manifest, register
 
 o3de_folder = manifest.get_o3de_folder()
 o3de_logs_folder = manifest.get_o3de_logs_folder()
@@ -671,8 +671,8 @@ class ProjectManagerDialog(QObject):
         gem_paths = manifest.get_all_gems()
         for gem_target in self.manage_project_gem_targets_get_selected_available_gems():
             for gem_path in gem_paths:
-                add_gem_project.add_gem_to_project(gem_path=gem_path,
-                                                   project_path=self.get_selected_project_path())
+                enable_gem.enable_gem_in_project(gem_path=gem_path,
+                                                 project_path=self.get_selected_project_path())
                 self.refresh_project_gem_targets_available_list()
                 self.refresh_project_gem_targets_enabled_list()
                 return
@@ -683,8 +683,8 @@ class ProjectManagerDialog(QObject):
         gem_paths = manifest.get_all_gems()
         for gem_target in self.manage_project_gem_targets_get_selected_enabled_gems():
             for gem_path in gem_paths:
-                remove_gem_project.remove_gem_from_project(gem_path=gem_path,
-                                                           project_path=self.get_selected_project_path())
+                disable_gem.disable_gem_in_project(gem_path=gem_path,
+                                                   project_path=self.get_selected_project_path())
                 self.refresh_project_gem_targets_available_list()
                 self.refresh_project_gem_targets_enabled_list()
                 return
