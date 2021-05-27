@@ -91,9 +91,10 @@ namespace AzToolsFramework
             //! The path will always have the correct separator for the current OS
             AZ::IO::Path GetFullPath(AZ::IO::PathView path) override;
 
-            //! Converts path into a relative path to the project, this will be the paths in .prefab file.
-            //! The path will always have '/' separator.
-            AZ::IO::Path GetRelativePathToProject(AZ::IO::PathView path) override;
+            //! Converts path into a path that's relative to all the folders registered with the engine.
+            //! This path will be the path that appears in the .prefab file.
+            //! The path will always use the '/' separator.
+            AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) override;
 
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
