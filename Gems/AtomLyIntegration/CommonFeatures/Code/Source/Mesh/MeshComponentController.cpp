@@ -479,17 +479,18 @@ namespace AZ
             AzFramework::RenderGeometry::RayResult result;
             if (const Data::Instance<RPI::Model> model = GetModel())
             {
-                float distance;
+                float t;
                 AZ::Vector3 normal;
                 if (model->RayIntersection(
                     m_transformInterface->GetWorldTM(), m_cachedNonUniformScale, ray.m_startWorldPosition,
-                    ray.m_endWorldPosition - ray.m_startWorldPosition, distance, normal))
+                    ray.m_endWorldPosition - ray.m_startWorldPosition, t, normal))
                 {
+                    const auto intersectionLine = (ray.m_endWorldPosition - ray.m_startWorldPosition);
                     result.m_uv = AZ::Vector2::CreateZero();
                     result.m_worldPosition =
-                        ray.m_startWorldPosition + (ray.m_endWorldPosition - ray.m_startWorldPosition).GetNormalized() * distance;
+                        ray.m_startWorldPosition + intersectionLine * t;
                     result.m_worldNormal = normal;
-                    result.m_distance = distance;
+                    result.m_distance = intersectionLine.GetLength() * t;
                     result.m_entityAndComponent = m_entityComponentIdPair;
                 }
             }
