@@ -68,14 +68,17 @@ IF "%DEV_REL_PATH%"=="" (set DEV_REL_PATH=..\..\..\..)
 echo     DEV_REL_PATH = %DEV_REL_PATH%
 
 :: You can define the project name
-:: if not defined we just use the DCCsi path as standin
-IF "%LY_PROJECT%"=="" (
-    for %%a in (%CD%..\..\..) do set LY_PROJECT=%%~na
+IF "%LY_PROJECT_NAME%"=="" (
+    for %%a in (%CD%..\..\..) do set LY_PROJECT_NAME=%%~na
         )
+echo     LY_PROJECT_NAME = %LY_PROJECT_NAME%
+
+:: if not defined we just use the DCCsi path as stand-in
+IF "%LY_PROJECT%"=="" (set LY_PROJECT=%CD%)
 echo     LY_PROJECT = %LY_PROJECT%
 
 :: set up the default project path (dccsi)
-:: if not set we lso use the DCCsi path as standin
+:: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\
 IF "%LY_PROJECT_PATH%"=="" (set LY_PROJECT_PATH=%CD%)
 echo     LY_PROJECT_PATH = %LY_PROJECT_PATH%
@@ -88,7 +91,7 @@ pushd %ABS_PATH%
 
 :: Change to root Lumberyard dev dir
 CD /d %LY_PROJECT_PATH%\%DEV_REL_PATH%
-set LY_DEV=%CD%
+IF "%LY_DEV%"=="" (set LY_DEV=%CD%)
 echo     LY_DEV = %LY_DEV%
 :: Restore original directory
 popd
