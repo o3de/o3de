@@ -411,7 +411,7 @@ namespace AzToolsFramework
             return *rootInstance;
         }
 
-        return {};
+        return AZStd::nullopt;
     }
 
     const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
