@@ -20,7 +20,7 @@
 
 namespace TestImpact
 {
-    // Tag used to indicate that a given line is the name o a covering test target
+    // Tag used to indicate whether a given line is the name or a covering test target
     constexpr char TargetTag = '-';
 
     AZStd::string SerializeSourceCoveringTestsList(const SourceCoveringTestsList& sourceCoveringTestsList)

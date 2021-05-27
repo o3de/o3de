@@ -83,7 +83,7 @@ namespace TestImpact
         AZStd::chrono::milliseconds duration)>;
 
     //! Callback for test runs that have completed for any reason.
-    //! selectedTests The test that has completed.
+    //! @param selectedTests The test that has completed.
     using TestRunCompleteCallback = AZStd::function<void(Client::TestRun&& selectedTests)>;
 
     //! The API exposed to the client responsible for all test runs and persistent data management.

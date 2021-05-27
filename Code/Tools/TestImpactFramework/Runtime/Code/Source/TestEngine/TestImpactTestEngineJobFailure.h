@@ -31,4 +31,4 @@ namespace TestImpact
 
     //! Checks for all known error return codes and returns the corresponding client test run result or empty.
     AZStd::optional<Client::TestRunResult> CheckForAnyKnownErrorCode(ReturnCode returnCode);
-}
+} // namespace TestImpact

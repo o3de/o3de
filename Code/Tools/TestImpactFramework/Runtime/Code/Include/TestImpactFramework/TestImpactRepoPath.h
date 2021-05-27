@@ -30,7 +30,7 @@ namespace TestImpact
         constexpr RepoPath() = default;
         constexpr RepoPath(const RepoPath&) = default;
         constexpr RepoPath(RepoPath&&) noexcept = default;
-        constexpr RepoPath::RepoPath(const string_type & path) noexcept;
+        constexpr RepoPath::RepoPath(const string_type& path) noexcept;
         constexpr RepoPath::RepoPath(const string_view_type& path) noexcept;
         constexpr RepoPath::RepoPath(const value_type* path) noexcept;
         constexpr RepoPath::RepoPath(const AZ::IO::PathView& path);
@@ -53,11 +53,11 @@ namespace TestImpact
         constexpr AZ::IO::PathView RootName() const { return m_path.RootName(); }
         constexpr AZ::IO::PathView RelativePath() const { return m_path.RelativePath(); }
 
+        // Wrappers around the AZ::IO::Path concatenation operator
         friend RepoPath operator/(const RepoPath& lhs, const AZ::IO::PathView& rhs);
         friend RepoPath operator/(const RepoPath& lhs, AZStd::string_view rhs);
         friend RepoPath operator/(const RepoPath& lhs, const typename value_type* rhs);
         friend RepoPath operator/(const RepoPath& lhs, const RepoPath& rhs);
-
         RepoPath& operator/=(const AZ::IO::PathView& rhs);
         RepoPath& operator/=(AZStd::string_view rhs);
         RepoPath& operator/=(const typename value_type* rhs);

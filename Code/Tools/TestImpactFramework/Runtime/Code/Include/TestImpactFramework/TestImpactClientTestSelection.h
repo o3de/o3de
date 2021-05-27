@@ -40,7 +40,7 @@ namespace TestImpact
             //! Returns the number of selected test runs that will not be run.
             size_t GetNumExcludedTestRuns() const;
 
-            //! Returns the total number of tests runs selected regardless of whether or not they will actually be run.
+            //! Returns the total number of test runs selected regardless of whether or not they will actually be run.
             size_t GetTotalNumTests() const;
 
         private:

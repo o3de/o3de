@@ -32,4 +32,4 @@ namespace TestImpact
 
         return AZStd::nullopt;
     }
-}
+} // namespace TestImpact

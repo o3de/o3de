@@ -174,8 +174,8 @@ namespace TestImpact
 
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
-                    {                        
-                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);                        
+                    {
+                        m_buildTargetCoverage[parentTarget.GetBuildTarget()].insert(testTarget);
                     }
                 }
                 else
