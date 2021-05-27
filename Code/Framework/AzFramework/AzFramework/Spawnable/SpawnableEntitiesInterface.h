@@ -27,11 +27,11 @@ namespace AzFramework
 {
     AZ_TYPE_SAFE_INTEGRAL(SpawnablePriority, uint8_t);
 
-    inline static constexpr SpawnablePriority SpawnablePriorty_Highest  { 0 };
-    inline static constexpr SpawnablePriority SpawnablePriorty_High     { 32 };
-    inline static constexpr SpawnablePriority SpawnablePriorty_Default  { 128 };
-    inline static constexpr SpawnablePriority SpawnablePriorty_Low      { 192 };
-    inline static constexpr SpawnablePriority SpawnablePriorty_Lowest   { 255 };
+    inline static constexpr SpawnablePriority SpawnablePriority_Highest  { 0 };
+    inline static constexpr SpawnablePriority SpawnablePriority_High     { 32 };
+    inline static constexpr SpawnablePriority SpawnablePriority_Default  { 128 };
+    inline static constexpr SpawnablePriority SpawnablePriority_Low      { 192 };
+    inline static constexpr SpawnablePriority SpawnablePriority_Lowest   { 255 };
 
     class SpawnableEntityContainerView
     {
@@ -154,7 +154,7 @@ namespace AzFramework
         EntitySpawnTicket& operator=(const EntitySpawnTicket&) = delete;
         EntitySpawnTicket& operator=(EntitySpawnTicket&& rhs);
 
-        uint64_t GetId() const;
+        Id GetId() const;
         bool IsValid() const;
 
     private:
@@ -179,11 +179,11 @@ namespace AzFramework
     //! Calls on the same ticket are guaranteed to be executed in the order they are issued. Note that when issuing requests from
     //! multiple threads on the same ticket the order in which the requests are assigned to the ticket is not guaranteed.
     //!
-    //! Most calls have a priority where values closer to 0 mean higher priority than values closer to 255. The implementation of this
+    //! Most calls have a priority with values that range from 0 (highest priority) to 255 (lowest priority). The implementation of this
     //! interface may choose to use priority lanes which doesn't guarantee that higher priority requests happen before lower priority
     //! requests if they don't pass the priority lane threshold. Priority lanes and their thresholds are implementation specific and may
     //! differ between platforms. Note that if a call happened on a ticket with lower priority followed by a one with a higher priority
-    //! the first lower priority call will still needs to complete before the second higher priority call can be executed and the priority
+    //! the first lower priority call will still need to complete before the second higher priority call can be executed and the priority
     //! of the first call will not be updated.
     class SpawnableEntitiesDefinition
     {

@@ -207,6 +207,10 @@ namespace AzFramework
         AZ::Event<AZ::Data::Asset<Spawnable>> m_onSpawnedEvent;
         AZ::Event<AZ::Data::Asset<Spawnable>> m_onDespawnedEvent;
 
+        //! The threshold used to determine if a request goes in the regular (if bigger than the value) or high priority queue (if smaller
+        //! or equal to this value). The starting value of 64 is chosen as it's between default values SpawnablePriority_High and
+        //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured
+        //! through the Settings Registry under the key "/O3DE/AzFramework/Spawnables/HighPriorityThreshold".
         SpawnablePriority m_highPriorityThreshold { 64 };
     };
 

@@ -275,7 +275,7 @@ namespace AzFramework
         return *this;
     }
 
-    uint64_t EntitySpawnTicket::GetId() const
+    auto EntitySpawnTicket::GetId() const -> Id
     {
         return m_id;
     }
