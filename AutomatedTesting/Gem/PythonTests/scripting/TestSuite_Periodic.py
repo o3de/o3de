@@ -278,6 +278,7 @@ class TestScriptCanvasTests(object):
             },
         ],
     )
+
     def test_Pane_PropertiesChanged_RetainsOnRestart(self, request, editor, config, project, launcher_platform):
         hydra.launch_and_validate_results(
             request,
@@ -289,3 +290,31 @@ class TestScriptCanvasTests(object):
             auto_test_mode=False,
             timeout=60,
         )
+
+    def test_ScriptEvent_AddRemoveMethod_UpdatesInSC(self, request, workspace, editor, launcher_platform):
+        def teardown():
+            file_system.delete(
+                [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
+            )
+        request.addfinalizer(teardown)
+        file_system.delete(
+            [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
+        )
+        expected_lines = [
+            "Success: New Script Event created",
+            "Success: Initial Child Event created",
+            "Success: Second Child Event created",
+            "Success: Script event file saved",
+            "Success: Method added to scriptevent file",
+            "Success: Method removed from scriptevent file",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+        

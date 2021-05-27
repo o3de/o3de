@@ -98,7 +98,39 @@ ly_add_target(
             Gem::Atom_RPI.Edit
     RUNTIME_DEPENDENCIES
         3rdParty::DirectXShaderCompilerDxc
-        3rdParty::DirectXShaderCompilerDxcAz
         3rdParty::SPIRVCross
         3rdParty::azslc
 )
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME Atom_Asset_Shader.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            atom_asset_shader_builders_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Source/Editor
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AtomCore
+                AZ::AzTest
+                AZ::AzFramework
+                AZ::AzToolsFramework
+                Legacy::CryCommon
+                Gem::Atom_RPI.Public
+                Gem::Atom_RHI.Public
+                Gem::Atom_RPI.Edit
+                Gem::Atom_Asset_Shader.Static
+    )
+    ly_add_googletest(
+        NAME Gem::Atom_Asset_Shader.Tests
+    )
+
+endif()

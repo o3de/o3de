@@ -251,7 +251,7 @@ namespace LmbrCentral
         const AZ::Transform& currentTransform, const BoxShapeConfig& configuration, const AZ::Vector3& currentNonUniformScale)
     {
         AZ::Transform worldFromLocalNormalized = currentTransform;
-        const float entityScale = worldFromLocalNormalized.ExtractScale().GetMaxElement();
+        const float entityScale = worldFromLocalNormalized.ExtractUniformScale();
 
         m_currentPosition = worldFromLocalNormalized.GetTranslation();
         m_scaledDimensions = configuration.m_dimensions * currentNonUniformScale * entityScale;

@@ -12,7 +12,7 @@
 # Extracted from Editor.xml
 set(GEM_DEPENDENCIES
     Gem::Maestro.Editor
-    Gem::TextureAtlas
+    Gem::TextureAtlas.Editor
     Gem::LmbrCentral.Editor
     Gem::LyShine.Editor
     Gem::HttpRequestor
@@ -57,7 +57,4 @@ set(GEM_DEPENDENCIES
     Gem::Atom_AtomBridge.Editor
     Gem::NvCloth.Editor
     Gem::Blast.Editor
-    Gem::AWSCore.Editor
-    Gem::AWSClientAuth
-    Gem::AWSMetrics
 )

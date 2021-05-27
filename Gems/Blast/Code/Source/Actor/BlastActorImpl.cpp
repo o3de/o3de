@@ -45,6 +45,7 @@ namespace Blast
         , m_parentLinearVelocity(desc.m_parentLinearVelocity)
         , m_parentCenterOfMass(desc.m_parentCenterOfMass)
         , m_bodyConfiguration(desc.m_bodyConfiguration)
+        , m_scale(desc.m_scale)
     {
         // Store pointer to ourselves in the blast toolkit actor's userData
         m_tkActor.userData = this;
@@ -67,7 +68,7 @@ namespace Blast
 
         auto transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             m_bodyConfiguration.m_orientation, m_bodyConfiguration.m_position);
-        transform.MultiplyByScale(m_bodyConfiguration.m_scale);
+        transform.MultiplyByUniformScale(m_scale);
 
         AZ::TransformBus::Event(m_entity->GetId(), &AZ::TransformInterface::SetWorldTM, transform);
 
@@ -130,7 +131,7 @@ namespace Blast
                 Physics::NativeShapeConfiguration shapeConfiguration;
                 shapeConfiguration.m_nativeShapePtr =
                     reinterpret_cast<void*>(const_cast<physx::PxConvexMeshGeometry*>(&subchunk.geometry)->convexMesh);
-                shapeConfiguration.m_nativeShapeScale = m_bodyConfiguration.m_scale;
+                shapeConfiguration.m_nativeShapeScale = AZ::Vector3(m_scale);
 
                 AZStd::shared_ptr<Physics::Shape> shape = AZ::Interface<Physics::SystemRequests>::Get()->CreateShape(
                     colliderConfiguration, shapeConfiguration);
