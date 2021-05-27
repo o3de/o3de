@@ -1221,63 +1221,71 @@ void EditorViewportWidget::SetViewportId(int id)
         AzFramework::ReloadCameraKeyBindings();
 
         auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
-        controller->SetCameraListBuilderCallback([](AzFramework::Cameras& cameras)
-        {
-            auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
-            auto firstPersonPanCamera =
-                AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
-            auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
-            auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
+        controller->SetCameraListBuilderCallback(
+            [](AzFramework::Cameras& cameras)
+            {
+                auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
+                auto firstPersonPanCamera =
+                    AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
+                auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
+                auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
 
-            auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
-            orbitCamera->SetLookAtFn([](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3> {
-                AzFramework::RenderGeometry::RayRequest ray;
-                ray.m_startWorldPosition = position;
-                ray.m_endWorldPosition = position + direction * 1000.0f;
-                ray.m_onlyVisible = true;
+                auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
+                orbitCamera->SetLookAtFn(
+                    [](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
+                    {
+                        AZStd::optional<AZ::Transform> manipulatorTransform;
+                        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                            manipulatorTransform, AzToolsFramework::GetEntityContextId(),
+                            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
 
-                AzFramework::RenderGeometry::RayResult result;
-                AzFramework::RenderGeometry::IntersectorBus::EventResult(
-                    result, AzToolsFramework::GetEntityContextId(), &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
+                        // initially attempt to use manipulator transform if one exists (there is a selection)
+                        if (manipulatorTransform)
+                        {
+                            return manipulatorTransform->GetTranslation();
+                        }
 
-                if (result)
-                {
-                    return result.m_worldPosition;
-                }
+                        const float RayDistance = 1000.0f;
+                        AzFramework::RenderGeometry::RayRequest ray;
+                        ray.m_startWorldPosition = position;
+                        ray.m_endWorldPosition = position + direction * RayDistance;
+                        ray.m_onlyVisible = true;
 
-                // AZStd::optional<AZ::Transform> manipulatorTransform;
-                // AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-                //    manipulatorTransform, AzToolsFramework::GetEntityContextId(),
-                //    &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+                        AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
+                        AzFramework::RenderGeometry::IntersectorBus::EventResult(
+                            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
+                            &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
 
-                // if (manipulatorTransform)
-                //{
-                //    return manipulatorTransform->GetTranslation();
-                //}
+                        // attempt a ray intersection with any visible mesh and return the intersection position if successful
+                        if (renderGeometryIntersectionResult)
+                        {
+                            return renderGeometryIntersectionResult.m_worldPosition;
+                        }
 
-                return {};
+                        // if there is no selection or no intersection, fallback to default camera orbit behavior (ground plane intersection)
+                        return {};
+                    });
+
+                auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
+                auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
+                auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+                auto orbitDollyMoveCamera =
+                    AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+                auto orbitPanCamera =
+                    AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+
+                orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
+                orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
+                orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
+                orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
+                orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
+
+                cameras.AddCamera(firstPersonRotateCamera);
+                cameras.AddCamera(firstPersonPanCamera);
+                cameras.AddCamera(firstPersonTranslateCamera);
+                cameras.AddCamera(firstPersonWheelCamera);
+                cameras.AddCamera(orbitCamera);
             });
-
-            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
-            auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
-            auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
-            auto orbitDollyMoveCamera =
-                AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
-            auto orbitPanCamera =
-                AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
-
-            orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
-
-            cameras.AddCamera(firstPersonRotateCamera);
-            cameras.AddCamera(firstPersonPanCamera);
-            cameras.AddCamera(firstPersonTranslateCamera);
-            cameras.AddCamera(firstPersonWheelCamera);
-            cameras.AddCamera(orbitCamera);
-        });
 
         m_renderViewport->GetControllerList()->Add(controller);
     }

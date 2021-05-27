@@ -34,9 +34,9 @@ namespace AzFramework
         AZ::Vector3 m_lookAt = AZ::Vector3::CreateZero(); //!< Position of camera when m_lookDist is zero,
                                                           //!< or position of m_lookAt when m_lookDist is greater
                                                           //!< than zero.
-        float m_yaw{0.0};
-        float m_pitch{0.0};
-        float m_lookDist{0.0}; //!< Zero gives first person free look, otherwise orbit about m_lookAt
+        float m_yaw { 0.0 };
+        float m_pitch { 0.0 };
+        float m_lookDist { 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
 
         //! View camera transform (v in MVP).
         AZ::Transform View() const;
@@ -195,7 +195,11 @@ namespace AzFramework
     inline bool Cameras::Exclusive() const
     {
         return AZStd::any_of(
-            m_activeCameraInputs.begin(), m_activeCameraInputs.end(), [](const auto& cameraInput) { return cameraInput->Exclusive(); });
+            m_activeCameraInputs.begin(), m_activeCameraInputs.end(),
+            [](const auto& cameraInput)
+            {
+                return cameraInput->Exclusive();
+            });
     }
 
     //! Responsible for updating a series of cameras given various inputs.
@@ -237,7 +241,7 @@ namespace AzFramework
     inline PanAxes LookPan(const Camera& camera)
     {
         const AZ::Matrix3x3 orientation = camera.Rotation();
-        return {orientation.GetBasisX(), orientation.GetBasisZ()};
+        return { orientation.GetBasisX(), orientation.GetBasisZ() };
     }
 
     inline PanAxes OrbitPan(const Camera& camera)
@@ -245,12 +249,13 @@ namespace AzFramework
         const AZ::Matrix3x3 orientation = camera.Rotation();
 
         const auto basisX = orientation.GetBasisX();
-        const auto basisY = [&orientation] {
+        const auto basisY = [&orientation]
+        {
             const auto forward = orientation.GetBasisY();
             return AZ::Vector3(forward.GetX(), forward.GetY(), 0.0f).GetNormalized();
         }();
 
-        return {basisX, basisY};
+        return { basisX, basisY };
     }
 
     class PanCameraInput : public CameraInput
@@ -285,7 +290,8 @@ namespace AzFramework
         const AZ::Matrix3x3 orientation = camera.Rotation();
 
         const auto basisX = orientation.GetBasisX();
-        const auto basisY = [&orientation] {
+        const auto basisY = [&orientation]
+        {
             const auto forward = orientation.GetBasisY();
             return AZ::Vector3(forward.GetX(), forward.GetY(), 0.0f).GetNormalized();
         }();

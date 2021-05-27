@@ -36,8 +36,8 @@ namespace AzFramework
             AzFramework::EntityContextId m_contextId;
         };
 
-        //! Interface for intersection requests, implement this interface to make your component
-        //! intersect with render geometry.
+        //! Interface for intersection requests.
+        //! Implement this interface to make your component 'intersectable'.
         class IntersectionRequests
             : public AZ::EBusTraits
         {
