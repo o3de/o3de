@@ -460,9 +460,9 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         """
         helper = bundler_batch_helper
         # fmt:off
-        assert "pc" in helper["platforms"] and "osx_gl" in helper["platforms"], \
+        assert "pc" in helper["platforms"] and "mac" in helper["platforms"], \
             "This test requires both PC and MAC platforms to be enabled. " \
-            "Please rerun with commandline option: '--bundle_platforms=pc,osx_gl'"
+            "Please rerun with commandline option: '--bundle_platforms=pc,mac'"
         # fmt:on
 
         seed_list = os.path.join(workspace.paths.engine_root(), "Engine", "SeedAssetList.seed")  # Engine seed list
@@ -502,7 +502,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         for bundle_file in bundle_files.values():
             assert os.path.isfile(bundle_file)
 
-        # This asset is created on osx_gl platform but not on windows
+        # This asset is created on mac platform but not on windows
         file_to_check = b"engineassets/shading/defaultprobe_cm.dds.5"  # [use byte str because file is in binary]
 
         # Extract the delta catalog file from pc archive. {file_to_check} SHOULD NOT be present for PC
@@ -512,11 +512,11 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             f"{file_to_check} was found in DeltaCatalog.xml in pc bundle file {bundle_files['pc']}"
         # fmt:on
 
-        # Extract the delta catalog file from osx_gl archive. {file_to_check} SHOULD be present for MAC
-        file_contents = helper.extract_file_content(bundle_files["osx_gl"], "DeltaCatalog.xml")
+        # Extract the delta catalog file from mac archive. {file_to_check} SHOULD be present for MAC
+        file_contents = helper.extract_file_content(bundle_files["mac"], "DeltaCatalog.xml")
         # fmt:off
         assert file_to_check in file_contents, \
-            f"{file_to_check} was not found in DeltaCatalog.xml in darwin bundle file {bundle_files['osx_gl']}"
+            f"{file_to_check} was not found in DeltaCatalog.xml in darwin bundle file {bundle_files['mac']}"
         # fmt:on
 
         # Gather checksums for first set of bundles
@@ -613,7 +613,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
             addSeed=test_asset,
-            platform="pc,osx_gl",
+            platform="pc,mac",
         )
 
         # Validate both mac and pc are activated for seed
@@ -626,7 +626,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
             removePlatformFromSeeds="",
-            platform="osx_gl",
+            platform="mac",
         )
         # Validate only pc platform for seed. Save file contents to variable
         all_lines = check_seed_platform(helper["seed_list_file"], test_asset, helper["platform_values"]["pc"])
@@ -646,7 +646,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
             addPlatformToSeeds="",
-            platform="osx_gl",
+            platform="mac",
         )
         # Validate Mac platform was added back on. Save file contents
         # fmt:off
@@ -670,7 +670,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         helper.call_seeds(
             seedListFile=helper["seed_list_file"],
             removeSeed=test_asset,
-            platform="pc,osx_gl",
+            platform="pc,mac",
         )
 
         # Validate seed was removed from file
@@ -697,9 +697,9 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         env = ap_setup_fixture
 
         # fmt:off
-        assert "pc" in helper["platforms"] and "osx_gl" in helper["platforms"], \
+        assert "pc" in helper["platforms"] and "mac" in helper["platforms"], \
             "This test requires both PC and MAC platforms to be enabled. " \
-            "Please rerun with commandline option: '--bundle_platforms=pc,osx_gl'"
+            "Please rerun with commandline option: '--bundle_platforms=pc,mac'"
         # fmt:on
 
         # Test assets arranged in common lists: six (0-5) .txt files and .dat files
@@ -717,16 +717,16 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         file_platforms = {
             "txtfile_0.txt": "pc",
             "txtfile_1.txt": "pc",
-            "txtfile_2.txt": "pc,osx_gl",
-            "txtfile_3.txt": "pc,osx_gl",
-            "txtfile_4.txt": "osx_gl",
-            "txtfile_5.txt": "osx_gl",
+            "txtfile_2.txt": "pc,mac",
+            "txtfile_3.txt": "pc,mac",
+            "txtfile_4.txt": "mac",
+            "txtfile_5.txt": "mac",
             "datfile_0.dat": "pc",
             "datfile_1.dat": "pc",
-            "datfile_2.dat": "pc,osx_gl",
-            "datfile_3.dat": "pc,osx_gl",
-            "datfile_4.dat": "osx_gl",
-            "datfile_5.dat": "osx_gl",
+            "datfile_2.dat": "pc,mac",
+            "datfile_3.dat": "pc,mac",
+            "datfile_4.dat": "mac",
+            "datfile_5.dat": "mac",
         }
 
         # Comparison rules files and their associated 'comparisonType' flags
@@ -741,7 +741,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
 
         # Get our test assets ready and processed
         utils.prepare_test_assets(env["tests_dir"], "C16877178", env["project_test_assets_dir"])
-        asset_processor.batch_process(timeout=timeout, fastscan=False, platforms="pc,osx_gl")
+        asset_processor.batch_process(timeout=timeout, fastscan=False, platforms="pc,mac")
 
         # *** Some helper functions *** #
 
@@ -759,7 +759,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             helper.call_assetLists(
                 assetListFile=os.path.join(helper["test_dir"], asset_list_file_name),
                 seedListFile=os.path.join(helper["test_dir"], seed_file_name),
-                platform="pc,osx_gl",
+                platform="pc,mac",
             )
 
         def get_platform_assets(asset_name_list: List[str]) -> Dict[str, List[str]]:
@@ -769,7 +769,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             for asset_name in asset_name_list:
                 if "pc" in file_platforms[asset_name]:
                     win_assets.append(asset_name)
-                if "osx_gl" in file_platforms[asset_name]:
+                if "mac" in file_platforms[asset_name]:
                     mac_assets.append(asset_name)
             return {"win": win_assets, "mac": mac_assets}
 
@@ -798,7 +798,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
 
             # Get platform result file names
             win_asset_list_file = helper.platform_file_name(request_file, platforms["pc"])
-            mac_asset_list_file = helper.platform_file_name(request_file, platforms["osx_gl"])
+            mac_asset_list_file = helper.platform_file_name(request_file, platforms["mac"])
 
             # Get expected platforms for each asset in asset_names
             platform_files = get_platform_assets(asset_names)
@@ -879,14 +879,14 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 # fmt:on
             # End verify_asset_list_contents()
 
-            def run_compare_command_and_verify(platform_arg: str, expect_pc_output: bool, expect_osx_gl_output: bool) -> None:
+            def run_compare_command_and_verify(platform_arg: str, expect_pc_output: bool, expect_mac_output: bool) -> None:
                 # Expected asset list to equal result of comparison
                 expected_pc_asset_list = None
-                expected_osx_gl_asset_list = None
+                expected_mac_asset_list = None
 
                 # Last output file. Use this for comparison to 'expected'
                 output_pc_asset_list = None
-                output_osx_gl_asset_list = None
+                output_mac_asset_list = None
 
                 # Add the platform to the file name to match what the Bundler will create
                 last_output_arg = output_arg.split(",")[-1]
@@ -895,10 +895,10 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     expected_pc_asset_list = os.path.join(helper["test_dir"], helper.platform_file_name(expected_asset_list, platform))
                     output_pc_asset_list = helper.platform_file_name(last_output_arg, platform)
 
-                if expect_osx_gl_output:
-                    platform = platforms["osx_gl"]
-                    expected_osx_gl_asset_list = os.path.join(helper["test_dir"], helper.platform_file_name(expected_asset_list, platform))
-                    output_osx_gl_asset_list = helper.platform_file_name(last_output_arg, platform)
+                if expect_mac_output:
+                    platform = platforms["mac"]
+                    expected_mac_asset_list = os.path.join(helper["test_dir"], helper.platform_file_name(expected_asset_list, platform))
+                    output_mac_asset_list = helper.platform_file_name(last_output_arg, platform)
 
                 # Build execution command
                 cmd = generate_compare_command(platform_arg)
@@ -911,15 +911,15 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     verify_asset_list_contents(expected_pc_asset_list, output_pc_asset_list)
                     fs.delete([output_pc_asset_list], True, True)
 
-                if expect_osx_gl_output:
-                    verify_asset_list_contents(expected_osx_gl_asset_list, output_osx_gl_asset_list)
-                    fs.delete([output_osx_gl_asset_list], True, True)
+                if expect_mac_output:
+                    verify_asset_list_contents(expected_mac_asset_list, output_mac_asset_list)
+                    fs.delete([output_mac_asset_list], True, True)
             # End run_compare_command_and_verify()
 
             # Generate command, run and validate for each platform
             run_compare_command_and_verify("pc", True, False)
-            run_compare_command_and_verify("osx_gl", False, True)
-            run_compare_command_and_verify("pc,osx_gl", True, True)
+            run_compare_command_and_verify("mac", False, True)
+            run_compare_command_and_verify("pc,mac", True, True)
             #run_compare_command_and_verify(None, True, True)
 
         # End compare_and_check()
