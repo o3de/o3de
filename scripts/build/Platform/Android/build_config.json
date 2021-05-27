@@ -141,10 +141,8 @@
     "COMMAND":"gradle_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build\\android_gradle",
+      "OUTPUT_DIRECTORY":"build\\ad_grd",
       "GAME_PROJECT": "AutomatedTesting",
-      "ANDROID_GRADLE_PLUGIN": "4.2.0",
-      "ANDROID_SDK_PLATFORM": "29",
       "SIGN_APK": "false",
       "GRADLE_BUILD_CMD": "build",
       "ADDITIONAL_GENERATE_ARGS": ""
@@ -158,8 +156,6 @@
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"build\\android_unittest",
       "GAME_PROJECT": "AutomatedTesting",
-      "ANDROID_GRADLE_PLUGIN": "4.2.0",
-      "ANDROID_SDK_PLATFORM": "29",
       "SIGN_APK": "true",
       "GRADLE_BUILD_CMD": "assemble",
       "ADDITIONAL_GENERATE_ARGS": "--unit-test"

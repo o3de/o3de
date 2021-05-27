@@ -170,7 +170,8 @@ def main(args):
                         required=True)
 
     parser.add_argument('-g', '--project-path',
-                        help='The project path to generate an android project')
+                        help='The project path to generate an android project',
+                        required=True)
 
     parser.add_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME,
                         help='The android SDK platform number version to use for the APK.')
@@ -211,11 +212,11 @@ def main(args):
     parser.add_argument(ASSET_MODE_ARGUMENT_NAME,
                         choices=ALL_ASSET_MODES,
                         default=ASSET_MODE_LOOSE,
-                        help='Asset Mode (vfs|pak|loose) to use when including assets into the APK')
+                        help=f'Asset Mode (vfs|pak|loose) to use when including assets into the APK. (Defaults to {ASSET_MODE_LOOSE})')
 
     parser.add_argument(ASSET_TYPE_ARGUMENT_NAME,
                         default=DEFAULT_ASSET_TYPE,
-                        help='Asset Type to use when including assets into the APK')
+                        help=f'Asset Type to use when including assets into the APK. (Defaults to {DEFAULT_ASSET_TYPE})')
 
     parser.add_argument('--debug',
                         action='store_true',
