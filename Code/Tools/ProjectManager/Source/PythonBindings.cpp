@@ -286,29 +286,8 @@ namespace O3DE::ProjectManager
             m_registration = pybind11::module::import("cmake.Tools.registration");
             m_engineTemplate = pybind11::module::import("cmake.Tools.engine_template");
 
-            // register the current engine if it isn't already
-            bool registerThis = true;
-            auto allEngines = m_registration.attr("get_engines")();
-            if (pybind11::isinstance<pybind11::list>(allEngines))
-            {
-                for (const auto& engine : allEngines)
-                {
-                    AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
-                    if (enginePath.Compare(m_enginePath) == 0)
-                    {
-                        registerThis = false;
-                        break;
-                    }
-                }
-            }
-
-            if (registerThis)
-            {
-                auto registrationResult = m_registration.attr("register")(m_enginePath.c_str());
-
-                AZ_Error("ProjectManagerWindow", registrationResult.cast<int>() == 0,
-                    "Registration of this engine failed!");
-            }
+            // make sure the engine is registered
+            RegisterThisEngine();
 
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
@@ -330,6 +309,37 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
         }
         return !PyErr_Occurred();
+    }
+
+    bool PythonBindings::RegisterThisEngine()
+    {
+        bool registerThis = true;
+
+        // check current engine path against all other registered engines
+        // to see if we are already registered
+        auto allEngines = m_registration.attr("get_engines")();
+        if (pybind11::isinstance<pybind11::list>(allEngines))
+        {
+            for (const auto& engine : allEngines)
+            {
+                AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
+                if (enginePath.Compare(m_enginePath) == 0)
+                {
+                    registerThis = false;
+                    break;
+                }
+            }
+        }
+
+        bool result = true;
+        if (registerThis)
+        {
+            auto registrationResult = m_registration.attr("register")(m_enginePath.c_str());
+            result = (registrationResult.cast<int>() == 0);
+        }
+
+        AZ_Error("ProjectManagerWindow", result, "Registration of this engine failed!");
+        return result;
     }
 
     bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
