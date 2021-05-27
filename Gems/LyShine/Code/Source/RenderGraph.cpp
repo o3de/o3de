@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 
 #ifndef _RELEASE
+#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #endif
 
@@ -1115,7 +1116,7 @@ namespace LyShine
 
         m_wasBuiltThisFrame = false;
 
-        AZStd::set<ITexture*> uniqueTextures;
+        AZStd::set<AZ::Data::Instance<AZ::RPI::Image>> uniqueTextures;
 
         // If we are rendering to the render targets this frame then record the stats for doing that
         if (m_renderToRenderTargetCount < 2)
@@ -1144,13 +1145,11 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void RenderGraph::GetDebugInfoRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, LyShineDebug::DebugInfoRenderGraph& info, AZStd::set<ITexture*>& uniqueTextures) const
+    void RenderGraph::GetDebugInfoRenderNodeList(
+        const AZStd::vector<RenderNode*>& renderNodeList,
+        LyShineDebug::DebugInfoRenderGraph& info,
+        AZStd::set<AZ::Data::Instance<AZ::RPI::Image>>& uniqueTextures) const
     {
-        AZ_UNUSED(renderNodeList);
-        AZ_UNUSED(info);
-        AZ_UNUSED(uniqueTextures);
-
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (convert debug info to use Atom)
         const PrimitiveListRenderNode* prevPrimListNode = nullptr;
         bool isFirstNode = true;
         bool wasLastNodeAMask = false;
@@ -1235,7 +1234,6 @@ namespace LyShine
 
             isFirstNode = false;
         }
-#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1290,13 +1288,6 @@ namespace LyShine
         void* context,
         const AZStd::string& indent) const
     {
-        AZ_UNUSED(renderNodeList);
-        AZ_UNUSED(fileHandle);
-        AZ_UNUSED(reportInfo);
-        AZ_UNUSED(context);
-        AZ_UNUSED(indent);
-
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (convert debug info to use Atom)
         AZStd::string logLine;
 
         bool previousNodeAlreadyCounted = false;
@@ -1355,10 +1346,10 @@ namespace LyShine
                     {
                         for (int i = 0; i < prevPrimListNode->GetNumTextures(); ++i)
                         {
-                            ITexture* texture = prevPrimListNode->GetTexture(i);
+                            AZ::Data::Instance<AZ::RPI::Image> texture = prevPrimListNode->GetTexture(i);
                             if (!texture)
                             {
-                                texture = gEnv->pRenderer->GetWhiteTexture();
+                                texture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
                             }
                             bool isClampTextureUsage = prevPrimListNode->GetTextureIsClampMode(i);
 
@@ -1405,17 +1396,19 @@ namespace LyShine
 
                 for (int i = 0; i < primListRenderNode->GetNumTextures(); ++i)
                 {
-                    ITexture* texture = primListRenderNode->GetTexture(i);
+                    AZ::Data::Instance<AZ::RPI::Image> texture = primListRenderNode->GetTexture(i);
                     if (!texture)
                     {
-                        texture = gEnv->pRenderer->GetWhiteTexture();
+                        texture = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
                     }
                     bool isClampTextureUsage = primListRenderNode->GetTextureIsClampMode(i);
 
                     LyShineDebug::DebugInfoTextureUsage* matchingTextureUsage = nullptr;
 
                     // Write line to logfile for this texture
-                    logLine = AZStd::string::format("%s  %s\r\n", indent.c_str(), texture->GetName());
+                    AZStd::string textureName;
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, texture->GetAssetId());
+                    logLine = AZStd::string::format("%s  %s\r\n", indent.c_str(), textureName.c_str());
                     AZ::IO::LocalFileIO::GetInstance()->Write(fileHandle, logLine.c_str(), logLine.size());
 
                     // see if texture is in reportInfo
@@ -1459,7 +1452,6 @@ namespace LyShine
                 prevPrimListNode = primListRenderNode;
             }
         }
-#endif
     }
 
 #endif
