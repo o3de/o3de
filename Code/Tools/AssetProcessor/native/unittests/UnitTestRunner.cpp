@@ -54,7 +54,7 @@ namespace UnitTestUtils
 {
     void SleepForMinimumFileSystemTime()
     {
-        // note that on OSX, the file system has a resolution of 1 second, and since we're using modtime for a bunch of things, 
+        // note that on Mac, the file system has a resolution of 1 second, and since we're using modtime for a bunch of things, 
         // not the actual hash files, we have to wait different amount depending on the OS.
 #ifdef AZ_PLATFORM_WINDOWS
         int milliseconds = 1;

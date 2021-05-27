@@ -15,7 +15,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{0D2F4C31-A665-4862-9C63-9E49A58E9A37}",
                 "Name": "Minimap",
                 "SuppressEngineReduce": true,
@@ -37,7 +37,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{0D2F4C31-A665-4862-9C63-9E49A58E9A37}",
                 "Name": "Minimap",
                 "SuppressEngineReduce": true,
