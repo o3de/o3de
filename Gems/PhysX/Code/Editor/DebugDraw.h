@@ -115,11 +115,13 @@ namespace PhysX
                 AzFramework::DebugDisplayRequests& debugDisplay) override;
 
             // Internal mesh drawing subroutines 
-            void DrawTriangleMesh(AzFramework::DebugDisplayRequests& debugDisplay,
-                const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex) const;
+            void DrawTriangleMesh(
+                AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
+                const AZ::Vector3& meshScale = AZ::Vector3::CreateOne()) const;
 
-            void DrawConvexMesh(AzFramework::DebugDisplayRequests& debugDisplay,
-                const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex) const;
+            void DrawConvexMesh(
+                AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
+                const AZ::Vector3& meshScale = AZ::Vector3::CreateOne()) const;
 
             void BuildTriangleMesh(physx::PxBase* meshData, AZ::u32 geomIndex) const;
 
