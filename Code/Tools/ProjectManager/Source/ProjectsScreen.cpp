@@ -66,9 +66,6 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_projectsContent);
 
         vLayout->addWidget(m_stack);
-
-        connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
-        connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
     }
 
     QFrame* ProjectsScreen::CreateFirstTimeContent()
@@ -186,9 +183,9 @@ namespace O3DE::ProjectManager
                     connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
                     connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
 
-    #ifdef DISPLAY_PROJECT_DEV_DATA
+#ifdef SHOW_ALL_PROJECT_ACTIONS
                     connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
-    #endif
+#endif
                 }
 
                 layout->addWidget(projectsScrollArea);
