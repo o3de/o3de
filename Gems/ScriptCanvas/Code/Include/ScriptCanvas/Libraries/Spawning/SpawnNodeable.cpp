@@ -10,7 +10,6 @@
 *
 */
 
-#pragma optimize("", off)
 #include <ScriptCanvas/Libraries/Spawning/SpawnNodeable.h>
 
 #include <AzFramework/Components/TransformComponent.h>

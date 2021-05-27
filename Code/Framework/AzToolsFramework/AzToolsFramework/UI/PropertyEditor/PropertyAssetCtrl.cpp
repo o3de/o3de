@@ -802,16 +802,7 @@ namespace AzToolsFramework
             AZ_Assert(product || folder, "Incorrect entry type selected. Expected product or folder.");
             if (product)
             {
-                AZ::Data::AssetId selectedAssetId = product->GetAssetId();
-
-                // If we hid the product files a source asset was picked
-                // Clear the sub id as a source could have N products with different sub ids
-                if (m_hideProductFilesInAssetPicker)
-                {
-                    selectedAssetId.m_subId = 0;
-                }
-
-                SetSelectedAssetID(selectedAssetId);
+                SetSelectedAssetID(product->GetAssetId());
             }
             else if (folder)
             {
