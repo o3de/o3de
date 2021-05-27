@@ -502,7 +502,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         for bundle_file in bundle_files.values():
             assert os.path.isfile(bundle_file)
 
-        # This asset is created both on osx_gl platform and on windows
+        # This asset is created both on mac and windows platform
         file_to_check = b"engineassets/shading/defaultprobe_cm_ibldiffuse.tif.streamingimage"  # [use byte str because file is in binary]
 
         # Extract the delta catalog file from pc archive. {file_to_check} SHOULD NOT be present for PC
