@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -42,11 +43,15 @@ namespace AzFramework
     {
         ViewportId m_drawViewportId = InvalidViewportId; //!< Viewport to draw into
         AZ::Vector3 m_position; //!< world space position for 3d draws, screen space x,y,depth for 2d.
-        AZ::Color   m_color = AZ::Colors::White; //!< Color to draw the text
+        AZ::Color m_color = AZ::Colors::White; //!< Color to draw the text
+        unsigned int m_effectIndex = 0; //!< effect index to apply
         AZ::Vector2 m_scale = AZ::Vector2(1.0f); //!< font scale
-        float       m_lineSpacing; //!< Spacing between new lines, as a percentage of m_scale.
+        float m_textSizeFactor = 12.0f; //!< font size in pixels
+        float m_lineSpacing = 1.0f; //!< Spacing between new lines, as a percentage of m_scale.
         TextHorizontalAlignment m_hAlign = TextHorizontalAlignment::Left; //!< Horizontal text alignment
         TextVerticalAlignment m_vAlign = TextVerticalAlignment::Top; //!< Vertical text alignment
+        bool m_useTransform = false; //!< Use specified transform
+        AZ::Matrix3x4 m_transform = AZ::Matrix3x4::Identity(); //!< Transform to apply to text quads
         bool m_monospace = false; //!< disable character proportional spacing
         bool m_depthTest = false; //!< Test character against the depth buffer
         bool m_virtual800x600ScreenSize = true; //!< Text placement and size are scaled relative to a virtual 800x600 resolution
