@@ -1,0 +1,65 @@
+<?xml version='1.0' encoding='windows-1252'?>
+
+<?include "cpack_variables.wxi"?>
+
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'
+    xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <Fragment>
+
+        <!-- RemoveFolderEx works on properties instead of directory references -->
+        <Property Id="INSTALLPATH">
+            <RegistrySearch Id="INSTALLPATH_REGSEARCH"
+                Root="HKLM"
+                Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.CPACK_PACKAGE_NAME)\$(var.CPACK_PACKAGE_VERSION)"
+                Name="Install Path"
+                Type="raw"/>
+        </Property>
+
+        <DirectoryRef Id="INSTALL_ROOT">
+            <!-- this will clear out any additional files as part of the installation that weren't originally
+                included of the MSI table -->
+            <Component Id="SanitizeInstallFolder" Guid="{85468941-52E6-4C04-A66D-8E3CA3BBF04A}">
+                <Condition><![CDATA[Installed OR NOT MANUALPRODUCTFOUND]]></Condition>
+                <util:RemoveFolderEx On="uninstall" Property="INSTALLPATH"/>
+
+                <!-- registry entry is required to properly initialize the property during uninstall-->
+                <RegistryValue Root="HKLM"
+                    Key="Software\$(var.CPACK_PACKAGE_VENDOR)\$(var.CPACK_PACKAGE_NAME)\$(var.CPACK_PACKAGE_VERSION)"
+                    Name="Install Path"
+                    Type="string"
+                    Value="[INSTALL_ROOT]"
+                    KeyPath="yes"/>
+            </Component>
+
+            <!-- installation directory references for use in post install commands -->
+            <Directory Id="root.cmake" Name="cmake">
+                <Directory Id="root.cmake.runtime" Name="runtime"/>
+            </Directory>
+            <Directory Id="root.python" Name="python"/>
+            <Directory Id="root.tools" Name="Tools">
+                <Directory Id="root.tools.redist" Name="Redistributables">
+                    <Directory Id="root.tools.redist.cmake" Name="CMake"/>
+                </Directory>
+            </Directory>
+        </DirectoryRef>
+
+        <CustomAction Id="ExtractCMake"
+            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C tar -x -f &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME).zip&quot; -C &quot;[root.tools.redist]CMake&quot;"
+            Directory="INSTALL_ROOT"
+            Execute="deferred"
+            Impersonate="no"/>
+
+        <CustomAction Id="MoveCMake"
+            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C move &quot;[root.tools.redist.cmake]$(var.CPACK_CMAKE_PACKAGE_NAME)&quot; &quot;[root.cmake]runtime&quot;"
+            Directory="INSTALL_ROOT"
+            Execute="deferred"
+            Impersonate="no"/>
+
+        <CustomAction Id="ConfigurePython"
+            ExeCommand="&quot;[SystemFolder]cmd.exe&quot; /C set &quot;LY_CMAKE_PATH=[root.cmake.runtime]bin&quot; &amp;&amp; &quot;[root.python]get_python.bat&quot;"
+            Directory="INSTALL_ROOT"
+            Execute="deferred"
+            Impersonate="no"/>
+
+    </Fragment>
+</Wix>
