@@ -285,7 +285,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                SetDecalHalfSize(handle, nonUniformScale * world.GetScale());
+                SetDecalHalfSize(handle, nonUniformScale * world.GetUniformScale());
                 SetDecalPosition(handle, world.GetTranslation());
                 SetDecalOrientation(handle, world.GetRotation());
 
