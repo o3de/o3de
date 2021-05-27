@@ -21,8 +21,6 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 
-#include <iostream>
-
 namespace TestImpact
 {
     namespace
