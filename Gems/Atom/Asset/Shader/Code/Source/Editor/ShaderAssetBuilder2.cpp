@@ -344,8 +344,7 @@ namespace AZ
                 AZStd::string prependedAzslFilePath = RHI::PrependFile(args);
                 if (prependedAzslFilePath == azslFullPath)
                 {
-                    // For some reason the combined azsl file was not created in the temporary
-                    // directory assigned to this job.
+                    // The specific error is already reported by RHI::PrependFile().
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }

@@ -54,7 +54,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
         platforms = [platform.strip() for platform in platforms.split(",")]
     else:
         # No commandline argument provided, default to mac and pc
-        platforms = ["pc", "osx_gl"]
+        platforms = ["pc", "mac"]
 
     class BundlerBatchFixture:
         """
@@ -241,11 +241,11 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
         def get_platform_flag(self, platform_name: str) -> int:
             if (platform_name == "pc"):
                 return 1
-            elif (platform_name == "es3"):
+            elif (platform_name == "android"):
                 return 2
             elif (platform_name == "ios"):
                 return 4
-            elif (platform_name == "osx_gl"):
+            elif (platform_name == "mac"):
                 return 8
             elif (platform_name == "server"):
                 return 128

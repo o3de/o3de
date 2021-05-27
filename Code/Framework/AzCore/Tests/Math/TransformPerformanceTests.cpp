@@ -180,13 +180,13 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, CreateScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, CreateUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
-                AZ::Transform result = AZ::Transform::CreateScale(testData.v3);
+                AZ::Transform result = AZ::Transform::CreateUniformScale(testData.value[0]);
                 benchmark::DoNotOptimize(result);
             }
         }
@@ -344,39 +344,39 @@ namespace Benchmark
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, GetScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, GetUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
-                AZ::Vector3 result = testData.t1.GetScale();
+                float result = testData.t1.GetUniformScale();
                 benchmark::DoNotOptimize(result);
             }
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, SetScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, SetUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
                 AZ::Transform testTransform = testData.t2;
-                testTransform.SetScale(testData.v3);
+                testTransform.SetUniformScale(testData.value[0]);
                 benchmark::DoNotOptimize(testTransform);
             }
         }
     }
 
-    BENCHMARK_F(BM_MathTransform, ExtractScale)(benchmark::State& state)
+    BENCHMARK_F(BM_MathTransform, ExtractUniformScale)(benchmark::State& state)
     {
         for (auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
                 AZ::Transform testTransform = testData.t2;
-                AZ::Vector3 result = testTransform.ExtractScale();
+                float result = testTransform.ExtractUniformScale();
                 benchmark::DoNotOptimize(result);
             }
         }

@@ -208,7 +208,6 @@ namespace ScriptCanvas
                 }
             }
 
-
             void Method::InitializeMethod(const MethodConfiguration& config)
             {
                 m_namespaces = config.m_namespaces ? *config.m_namespaces : m_namespaces;
@@ -239,7 +238,11 @@ namespace ScriptCanvas
                 for (size_t argIndex(0), sentinel(config.m_method.GetNumArguments()); argIndex != sentinel; ++argIndex)
                 {
                     SlotId addedSlot = AddMethodInputSlot(config, argIndex);
-                    MethodHelper::SetSlotToDefaultValue(*this, addedSlot, config, argIndex);
+
+                    if (addedSlot.IsValid())
+                    {
+                        MethodHelper::SetSlotToDefaultValue(*this, addedSlot, config, argIndex);
+                    }
                 }
             }
 

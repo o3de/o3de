@@ -372,15 +372,15 @@ mac_remote_filesystem=0
 -- We need to know this before we establish VFS because different platform assets
 -- are stored in different root folders in the cache.  These correspond to the names
 -- In the asset processor config file.  This value also controls what config file is read
--- when you read system_xxxx_xxxx.cfg (for example, system_windows_pc.cfg or system_android_es3.cfg)
+-- when you read system_xxxx_xxxx.cfg (for example, system_windows_pc.cfg or system_android_android.cfg)
 -- by default, pc assets (in the 'pc' folder) are used, with RC being fed 'pc' as the platform
 -- by default on console we use the default assets=pc for better iteration times
 -- we should turn on console specific assets only when in release and/or testing assets and/or loading performance
 -- that way most people will not need to have 3 different caches taking up disk space
 assets = pc
-android_assets = es3
+android_assets = android
 ios_assets = ios
-mac_assets = osx_gl
+mac_assets = mac
 
 -- Add the IP address of your console to the white list that will connect to the asset processor here
 -- You can list addresses or CIDR's. CIDR's are helpful if you are using DHCP. A CIDR looks like an ip address with
@@ -438,9 +438,9 @@ mac_wait_for_connect=0
             ConfigFileParams::SettingsKeyValuePair{"/ios_remote_filesystem", AZ::s64{0}},
             ConfigFileParams::SettingsKeyValuePair{"/mac_remote_filesystem", AZ::s64{0}},
             ConfigFileParams::SettingsKeyValuePair{"/assets", AZStd::string_view{"pc"}},
-            ConfigFileParams::SettingsKeyValuePair{"/android_assets", AZStd::string_view{"es3"}},
+            ConfigFileParams::SettingsKeyValuePair{"/android_assets", AZStd::string_view{"android"}},
             ConfigFileParams::SettingsKeyValuePair{"/ios_assets", AZStd::string_view{"ios"}},
-            ConfigFileParams::SettingsKeyValuePair{"/mac_assets", AZStd::string_view{"osx_gl"}},
+            ConfigFileParams::SettingsKeyValuePair{"/mac_assets", AZStd::string_view{"mac"}},
             ConfigFileParams::SettingsKeyValuePair{"/connect_to_remote", AZ::s64{0}},
             ConfigFileParams::SettingsKeyValuePair{"/windows_connect_to_remote", AZ::s64{1}},
             ConfigFileParams::SettingsKeyValuePair{"/android_connect_to_remote", AZ::s64{0}},
@@ -478,20 +478,20 @@ test_asset_processor_tag = test_value
 [Platform pc]
 tags=tools,renderer,dx12,vulkan
 
-[Platform es3]
+[Platform android]
 tags=android,mobile,renderer,vulkan ; With Comments at the end
 
 [Platform ios]
 tags=mobile,renderer,metal
 
-[Platform osx_gl]
+[Platform mac]
 tags=tools,renderer,metal)"
         , AZStd::fixed_vector<ConfigFileParams::SettingsKeyValuePair, 20>{
             ConfigFileParams::SettingsKeyValuePair{"/test_asset_processor_tag", AZStd::string_view{"test_value"}},
             ConfigFileParams::SettingsKeyValuePair{"/Platform pc/tags", AZStd::string_view{"tools,renderer,dx12,vulkan"}},
-            ConfigFileParams::SettingsKeyValuePair{"/Platform es3/tags", AZStd::string_view{"android,mobile,renderer,vulkan"}},
+            ConfigFileParams::SettingsKeyValuePair{"/Platform android/tags", AZStd::string_view{"android,mobile,renderer,vulkan"}},
             ConfigFileParams::SettingsKeyValuePair{"/Platform ios/tags", AZStd::string_view{"mobile,renderer,metal"}},
-            ConfigFileParams::SettingsKeyValuePair{"/Platform osx_gl/tags", AZStd::string_view{"tools,renderer,metal"}},
+            ConfigFileParams::SettingsKeyValuePair{"/Platform mac/tags", AZStd::string_view{"tools,renderer,metal"}},
         }}
         )
     );

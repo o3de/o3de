@@ -276,18 +276,14 @@ namespace AzToolsFramework
             PrefabDomValueReference linkPatchesReference =
                 PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
-            // This logic only covers addition of patches. If patches already exists, the given list of patches must be appended to them.
-            if (!linkPatchesReference.has_value())
-            {
-                /*
-                If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
-                linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
-                associate them with the linkDom's allocator.
-                */
-                PrefabDom patchesCopy;
-                patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
-                linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
-            }
+            /*
+            If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
+            linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
+            associate them with the linkDom's allocator.
+            */
+            PrefabDom patchesCopy;
+            patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
+            linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
         }
     }
 }
