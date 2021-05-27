@@ -182,7 +182,7 @@ set_property(TARGET ${TARGET_NAME}
     )
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
-    file(READ ${LY_ROOT_FOLDER}/cmake/install/TargetCMakeLists.txt.in target_cmakelists_template)
+    file(READ ${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
     string(CONFIGURE ${target_cmakelists_template} output_cmakelists_data @ONLY)
     set(${OUTPUT_CONFIGURED_TARGET} ${output_cmakelists_data} PARENT_SCOPE)
 endfunction()
