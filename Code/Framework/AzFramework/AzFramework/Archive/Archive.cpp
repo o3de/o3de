@@ -2010,7 +2010,7 @@ namespace AZ::IO
 
         // Check if archive file disk exist on disk.
         const bool pakOnDisk = FileIOBase::GetDirectInstance()->Exists(szFullPath->c_str());
-        if (!pakOnDisk)
+        if (!pakOnDisk && (nFactoryFlags & ZipDir::CacheFactory::FLAGS_READ_ONLY))
         {
             // Archive file not found.
             AZ_TracePrintf("Archive", "Archive file %s does not exist\n", szFullPath->c_str());
