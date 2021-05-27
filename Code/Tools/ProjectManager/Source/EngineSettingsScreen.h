@@ -26,7 +26,10 @@ namespace O3DE::ProjectManager
     public:
         explicit EngineSettingsScreen(QWidget* parent = nullptr);
         ~EngineSettingsScreen() = default;
+
         ProjectManagerScreen GetScreenEnum() override;
+        QString GetTabText() override;
+        bool IsTab() override;
 
     protected slots:
         void OnTextChanged();

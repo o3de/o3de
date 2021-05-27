@@ -1425,7 +1425,8 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
         if (reportTextureUsage.m_numCanvasesUsed > 1 &&
             reportTextureUsage.m_numDrawCallsWhereExceedingMaxTextures)
         {
-            AZStd::string textureName = reportTextureUsage.m_texture->GetName();
+            AZStd::string textureName;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, reportTextureUsage.m_texture->GetAssetId());
             if (textureName.compare(0, fontTexturePrefix.length(), fontTexturePrefix) != 0)
             {
                 logLine = AZStd::string::format("%s\r\n", textureName.c_str());
@@ -1457,7 +1458,8 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
                 reportTextureUsage.m_lastContextUsed == canvas &&
                 reportTextureUsage.m_numDrawCallsWhereExceedingMaxTextures)
             {
-                AZStd::string textureName = reportTextureUsage.m_texture->GetName();
+                AZStd::string textureName;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(textureName, &AZ::Data::AssetCatalogRequests::GetAssetPathById, reportTextureUsage.m_texture->GetAssetId());
 
                 // exclude font textures
                 if (textureName.compare(0, fontTexturePrefix.length(), fontTexturePrefix) != 0)

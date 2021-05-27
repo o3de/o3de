@@ -13,6 +13,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/std/string/string.h>
+#include <AtomCore/std/containers/array_view.h>
 
 namespace AZ
 {
@@ -30,9 +32,16 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            //! Returns true if either @m_azslcAdditionalFreeArguments or @m_dxcAdditionalFreeArguments contain
+            //! macro definitions, e.g. "-D MACRO" or "-D MACRO=VALUE" or "-DMACRO", "-DMACRO=VALUE".
+            //! It is used for validation to forbid macro definitions, because the idea is that this struct
+            //! is used inside GlobalBuildOptions which has a dedicated variable for macro definitions.
+            bool HasMacroDefinitionsInCommandLineArguments();
+
             //! Mix two instances of arguments, by or-ing bools, or by "if different, right hand side wins"
             void Merge(const ShaderCompilerArguments& right);
 
+            //! [GFX TODO] [ATOM-15472] Remove this function.
             //! Determine whether there is a rebuild-worthy difference in arguments for AZSLc
             bool HasDifferentAzslcArguments(const ShaderCompilerArguments& right) const;
 

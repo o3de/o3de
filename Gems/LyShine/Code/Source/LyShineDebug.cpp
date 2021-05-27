@@ -12,6 +12,7 @@
 #include "LyShine_precompiled.h"
 #include "LyShineDebug.h"
 #include "IConsole.h"
+#include "IRenderer.h"
 #include <LyShine/Draw2d.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -392,15 +393,15 @@ static void DebugDrawColoredBox(AZ::Vector2 pos, AZ::Vector2 size, AZ::Color col
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static void DebugDrawStringWithSizeBox(IFFont* font, unsigned int effectIndex, const char* sizeString,
+static void DebugDrawStringWithSizeBox(AZStd::string_view font, unsigned int effectIndex, const char* sizeString,
     const char* testString, AZ::Vector2 pos, float spacing, float size)
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
     IDraw2d::TextOptions textOptions = draw2d->GetDefaultTextOptions();
-    if (font)
+    if (!font.empty())
     {
-        textOptions.font = font;
+        textOptions.fontName = font;
     }
     textOptions.effectIndex = effectIndex;
 
@@ -427,7 +428,7 @@ static void DebugDrawStringWithSizeBox(IFFont* font, unsigned int effectIndex, c
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
-static void DebugDraw2dFontSizes(IFFont* font, unsigned int effectIndex, const char* fontName)
+static void DebugDraw2dFontSizes(AZStd::string_view font, unsigned int effectIndex)
 {
     CDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
 
@@ -436,7 +437,7 @@ static void DebugDraw2dFontSizes(IFFont* font, unsigned int effectIndex, const c
     float xSpacing = 20.0f;
 
     char buffer[32];
-    sprintf_s(buffer, "Font = %s, effect = %d", fontName, effectIndex);
+    sprintf_s(buffer, "Font = %s, effect = %d", font.data(), effectIndex);
     draw2d->DrawText(buffer, AZ::Vector2(xOffset, yOffset), 32);
     yOffset += 40.0f;
     draw2d->DrawText("NOTE: if the effect includes a drop shadow baked into font then the pixel size",
@@ -1441,10 +1442,10 @@ void LyShineDebug::RenderDebug()
         switch (CV_r_DebugUIDraw2dFont)
         {
         case 1:     // test font sizes (default font, effect 0)
-            DebugDraw2dFontSizes(0, 0, "default");
+            DebugDraw2dFontSizes("default", 0);
             break;
         case 2:     // test font sizes (default font, effect 1)
-            DebugDraw2dFontSizes(0, 1, "default");
+            DebugDraw2dFontSizes("default", 1);
             break;
         case 3:     // test font alignment
             DebugDraw2dFontAlignment();

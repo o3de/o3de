@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityBus.h>
 
 namespace AzFramework
 {
@@ -27,18 +28,43 @@ namespace AzFramework
         template<typename T, typename = void>
         struct ComponentInitHelper
         {
-            static void Init(T& common)
+            static void Init([[maybe_unused]] T& controller)
             {
-                AZ_UNUSED(common);
             }
         };
 
         template<typename T>
         struct ComponentInitHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Init())>>
         {
-            static void Init(T& common)
+            static void Init(T& controller)
             {
-                common.Init();
+                controller.Init();
+            }
+        };
+
+        template<typename T, typename = void>
+        struct ComponentActivateHelper
+        {
+            static void Activate([[maybe_unused]] T& controller, [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+            }
+        };
+
+        template<typename T>
+        struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityId()))>>
+        {
+            static void Activate(T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+                controller.Activate(entityComponentIdPair.GetEntityId());
+            }
+        };
+
+        template<typename T>
+        struct ComponentActivateHelper<T, AZStd::void_t<decltype(AZStd::declval<T>().Activate(AZ::EntityComponentIdPair()))>>
+        {
+            static void Activate(T& controller, const AZ::EntityComponentIdPair& entityComponentIdPair)
+            {
+                controller.Activate(entityComponentIdPair);
             }
         };
 

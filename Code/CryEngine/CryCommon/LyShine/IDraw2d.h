@@ -11,7 +11,6 @@
 */
 #pragma once
 
-#include <IRenderer.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
@@ -84,7 +83,7 @@ public: // types
     //! If this is not passed then the defaults below are used
     struct TextOptions
     {
-        IFFont*         font;                   //!< default is "default"
+        AZStd::string   fontName;               //!< default is "default"
         unsigned int    effectIndex;            //!< default is 0
         AZ::Vector3     color;                  //!< default is (1,1,1)
         HAlign          horizontalAlignment;    //!< default is HAlign::Left
