@@ -1657,24 +1657,6 @@
             }
         },
         {
-            "type": "OverrideDrawList",
-            "args": {
-                "triggerProperty": "opacity.mode",
-                "triggerValue": "Blended",
-                "shaderIndex": 1,
-                "drawList": "transparent"
-            }
-        },
-        {
-            "type": "OverrideDrawList",
-            "args": {
-                "triggerProperty": "opacity.mode",
-                "triggerValue": "TintedTransparent",
-                "shaderIndex": 1,
-                "drawList": "transparent"
-            }
-        },
-        {
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_HandleOpacityMode.lua"

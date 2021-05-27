@@ -601,7 +601,7 @@
                     "displayName": "Opacity Mode",
                     "description": "Opacity mode for this texture.",
                     "type": "Enum",
-                    "enumValues": [ "Opaque", "Cutout", "Blended" ],
+                    "enumValues": [ "Opaque", "Cutout", "Blended", "TintedTransparent" ],
                     "defaultValue": "Opaque",
                     "connection": {
                         "type": "ShaderOption",
@@ -1385,15 +1385,6 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_HandleOpacityDoubleSided.lua"
-            }
-        },
-        {
-            "type": "OverrideDrawList",
-            "args": {
-                "triggerProperty": "opacity.mode",
-                "triggerValue": "Blended",
-                "shaderIndex": 1,
-                "drawList": "transparent"
             }
         },
         {
