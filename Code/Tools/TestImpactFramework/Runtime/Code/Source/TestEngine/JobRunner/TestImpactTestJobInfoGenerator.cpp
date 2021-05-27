@@ -38,7 +38,7 @@ namespace TestImpact
         {
             return AZStd::string::format(
                 "%s%s %s",
-                (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
+                (m_targetBinaryDir / RepoPath(testTarget->GetOutputName())).c_str(),
                 GetTestTargetExtension(testTarget).c_str(),
                 testTarget->GetCustomArgs().c_str()).c_str();
         }
@@ -47,7 +47,7 @@ namespace TestImpact
             return AZStd::string::format(
                 "\"%s\" \"%s%s\" %s",
                 m_testRunnerBinary.c_str(),
-                (m_targetBinaryDir / testTarget->GetOutputName()).c_str(),
+                (m_targetBinaryDir / RepoPath(testTarget->GetOutputName())).c_str(),
                 GetTestTargetExtension(testTarget).c_str(),
                 testTarget->GetCustomArgs().c_str()).c_str();
         }
@@ -55,22 +55,22 @@ namespace TestImpact
 
     RepoPath TestJobInfoGenerator::GenerateTargetEnumerationCacheFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.cache", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.cache", (m_cacheDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetEnumerationArtifactFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.Enumeration.xml", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.Enumeration.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetRunArtifactFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.Run.xml", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.Run.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     RepoPath TestJobInfoGenerator::GenerateTargetCoverageArtifactFilePath(const TestTarget* testTarget) const
     {
-        return AZStd::string::format("%s.Coverage.xml", (m_artifactDir / testTarget->GetName()).c_str());
+        return AZStd::string::format("%s.Coverage.xml", (m_artifactDir / RepoPath(testTarget->GetName())).c_str());
     }
 
     TestEnumerator::JobInfo TestJobInfoGenerator::GenerateTestEnumerationJobInfo(

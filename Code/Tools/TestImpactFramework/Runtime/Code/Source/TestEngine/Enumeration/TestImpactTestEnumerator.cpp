@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactUtils.h>
+#include <TestImpactFramework/TestImpactFileUtils.h>
 
 #include <Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
@@ -22,35 +22,6 @@
 
 namespace TestImpact
 {
-    namespace
-    {
-        void WriteCacheFile(
-            const TestEnumeration& enumeration, const RepoPath& path, Bitwise::CacheExceptionPolicy cacheExceptionPolicy)
-        {
-            const AZStd::string cacheJSON = SerializeTestEnumeration(enumeration);
-            const AZStd::vector<char> cacheBytes(cacheJSON.begin(), cacheJSON.end());
-            AZ::IO::SystemFile cacheFile;
-
-            if (!cacheFile.Open(
-                    path.c_str(),
-                    AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-            {
-                AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheWriteFailure), TestEngineException,
-                    "Couldn't open cache file for writing");
-                return;
-            }
-
-            if (cacheFile.Write(cacheBytes.data(), cacheBytes.size()) == 0)
-            {
-                AZ_TestImpact_Eval(
-                    !IsFlagSet(cacheExceptionPolicy, Bitwise::CacheExceptionPolicy::OnCacheWriteFailure), TestEngineException,
-                    "Couldn't write cache file data");
-                return;
-            }
-        }
-    } // namespace
-
     TestEnumeration ParseTestEnumerationFile(const RepoPath& enumerationFile)
     {
         return TestEnumeration(GTest::TestEnumerationSuitesFactory(ReadFileContents<TestEngineException>(enumerationFile)));
@@ -79,8 +50,6 @@ namespace TestImpact
     
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<TestEnumerator::Job>> TestEnumerator::Enumerate(
         const AZStd::vector<JobInfo>& jobInfos,
-        CacheExceptionPolicy cacheExceptionPolicy,
-        JobExceptionPolicy jobExceptionPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
         AZStd::optional<ClientJobCallback> clientCallback)
@@ -88,50 +57,105 @@ namespace TestImpact
         AZStd::vector<Job> cachedJobs;
         AZStd::vector<JobInfo> jobQueue;
 
-        for (const auto& jobInfo : jobInfos)
+        for (auto jobInfo = jobInfos.begin(); jobInfo != jobInfos.end(); ++jobInfo)
         {
             // If this job has a cache read policy attempt to read the cache
-            if (jobInfo.GetCache().has_value() && jobInfo.GetCache()->m_policy == JobData::CachePolicy::Read)
+            if (jobInfo->GetCache().has_value())
             {
-                JobMeta meta;
-                AZStd::optional<TestEnumeration> enumeration;
+                if (jobInfo->GetCache()->m_policy == JobData::CachePolicy::Read)
+                {
+                    JobMeta meta;
+                    AZStd::optional<TestEnumeration> enumeration;
 
-                try
-                {
-                    enumeration = TestEnumeration(DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo.GetCache()->m_file)));
-                }
-                catch (const TestEngineException& e)
-                {
-                    AZ_Printf("Enumerate", "Enumeration cache error: %s", e.what());
-                }
-
-                // Even though cached jobs don't get executed we still give the client the opportunity to handle the job state
-                // change in order to make the caching process transparent to the client
-                if (enumeration.has_value())
-                {
-                    if (m_clientJobCallback.has_value())
+                    try
                     {
-                        (*m_clientJobCallback)(jobInfo, meta);
+                        enumeration = TestEnumeration(DeserializeTestEnumeration(ReadFileContents<TestEngineException>(jobInfo->GetCache()->m_file)));
+                    }
+                    catch (const TestEngineException& e)
+                    {
+                        AZ_Printf("Enumerate", "Enumeration cache error: %s", e.what());
+                        DeleteFile(jobInfo->GetCache()->m_file);
                     }
 
-                    // Cache read successfully, this job will not be placed in the job queue
-                    cachedJobs.emplace_back(Job(jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
+                    // Even though cached jobs don't get executed we still give the client the opportunity to handle the job state
+                    // change in order to make the caching process transparent to the client
+                    if (enumeration.has_value())
+                    {
+                        // Cache read successfully, this job will not be placed in the job queue
+                        cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
+
+                        if (m_clientJobCallback.has_value() && (*m_clientJobCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
+                        {
+                            // Client chose to abort so we will copy over the existing cache enumerations and fill the rest with blanks
+                            AZStd::vector<Job> jobs(cachedJobs);
+                            for (auto emptyJobInfo = ++jobInfo; emptyJobInfo != jobInfos.end(); ++emptyJobInfo)
+                            {
+                                jobs.emplace_back(Job(*emptyJobInfo, {}, AZStd::nullopt));
+                            }
+
+                            return { ProcessSchedulerResult::UserAborted, jobs };
+                        }
+                    }
+                    else
+                    {
+                        // The cache read failed and exception policy for cache read failures is not to throw so instead place this
+                        // job in the job queue
+                        jobQueue.emplace_back(*jobInfo);
+                    }
                 }
                 else
                 {
-                    // The cache read failed and exception policy for cache read failures is not to throw so instead place this job in the
-                    // job queue
-                    jobQueue.emplace_back(jobInfo);
+                    // This job has no cache read policy so delete the cache and place in job queue
+                    DeleteFile(jobInfo->GetCache()->m_file);
+                    jobQueue.emplace_back(*jobInfo);
                 }
             }
             else
             {
-                // This job has no cache read policy so place in job queue
-                jobQueue.emplace_back(jobInfo);
+                // This job has no cache read policy so delete the cache and place in job queue
+                DeleteFile(jobInfo->GetCache()->m_file);
+                jobQueue.emplace_back(*jobInfo);
             }
         }
 
-        const auto payloadGenerator = [this, cacheExceptionPolicy](const JobDataMap& jobDataMap)
+        /* As per comment on PR51, this suggestion will be explored once the test coverage code for this subsystem is revisited
+        bool aborted = false;
+        for (const auto& jobInfo : jobInfos)
+        {
+            if (!jobInfo->GetCache().has_value() ||
+                 jobInfo->GetCache()->m_policy != JobData::CachePolicy::Read)
+            {
+                DeleteFile(jobInfo->GetCache()->m_file);
+                jobQueue.emplace_back(*jobInfo);
+                continue;
+            }
+
+            ... // try catch part
+            if (!enumeration.has_value())
+            {
+                jobQueue.emplace_back(*jobInfo);
+                continue;
+            }
+
+            // Cache read successfully, this job will not be placed in the job queue
+            cachedJobs.emplace_back(Job(*jobInfo, AZStd::move(meta), AZStd::move(enumeration)));
+
+            if (m_clientJobCallback.has_value() && (*m_clientJobCallback)(*jobInfo, meta) == ProcessCallbackResult::Abort)
+            {
+               aborted = true; // catch the index too
+               break;
+            }
+        }
+
+        if (aborted)
+        {
+            // do the abortion part
+
+            return { ProcessSchedulerResult::UserAborted, jobs };
+        }
+        */
+
+        const auto payloadGenerator = [this](const JobDataMap& jobDataMap)
         {
             PayloadMap<Job> enumerations;
             for (const auto& [jobId, jobData] : jobDataMap)
@@ -146,7 +170,7 @@ namespace TestImpact
                         // Write out the enumeration to a cache file if we have a cache write policy for this job
                         if (jobInfo->GetCache().has_value() && jobInfo->GetCache()->m_policy == JobData::CachePolicy::Write)
                         {
-                            WriteCacheFile(enumeration.value(), jobInfo->GetCache()->m_file, cacheExceptionPolicy);
+                            WriteFileContents<TestEngineException>(SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
                         }
                     }
                     catch (const Exception& e)
@@ -163,7 +187,6 @@ namespace TestImpact
         // Generate the enumeration results for the jobs that weren't cached
         auto [result, jobs] = ExecuteJobs(
             jobQueue,
-            jobExceptionPolicy,
             payloadGenerator,
             StdOutputRouting::None,
             StdErrorRouting::None,
