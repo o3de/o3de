@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>WelcomeScreenDialog</class>
  <widget class="QWidget" name="WelcomeScreenDialog">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -156,7 +159,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="WelcomeScreenDialog.qrc">:/WelcomeScreenDialog/DefaultActiveProject.png</pixmap>
+               <pixmap resource="C:/o3de/Code/Sandbox/Editor/WelcomeScreen/WelcomeScreenDialog.qrc">:/WelcomeScreenDialog/DefaultActiveProject.png</pixmap>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -232,13 +235,13 @@
          <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>0</number>
+         <number>20</number>
         </property>
         <property name="topMargin">
          <number>0</number>
         </property>
         <property name="rightMargin">
-         <number>0</number>
+         <number>20</number>
         </property>
         <property name="bottomMargin">
          <number>0</number>
@@ -426,7 +429,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+                 <iconset resource="C:/o3de/Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
                   <normaloff>:/stylesheet/img/UI20/toolbar/Object_list.svg</normaloff>:/stylesheet/img/UI20/toolbar/Object_list.svg</iconset>
                 </property>
                 <property name="iconSize">
@@ -443,7 +446,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+                 <iconset resource="C:/o3de/Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
                   <normaloff>:/stylesheet/img/UI20/toolbar/Grid.svg</normaloff>:/stylesheet/img/UI20/toolbar/Grid.svg</iconset>
                 </property>
                 <property name="iconSize">
@@ -474,27 +477,96 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLabel" name="levelFileLabel">
-             <property name="text">
-              <string>No level file created yet for this project. &lt;a href=&quot;#&quot;&gt;Create one&lt;/a&gt; now.</string>
-             </property>
-             <property name="textFormat">
-              <enum>Qt::RichText</enum>
-             </property>
-            </widget>
+            <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,2,1">
+             <item>
+              <widget class="QLabel" name="nameLabel">
+               <property name="text">
+                <string>Name</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="modifiedLabel">
+               <property name="text">
+                <string>Last modified</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="typeLabel">
+               <property name="text">
+                <string>Type</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
         </item>
         <item>
-         <widget class="QListView" name="recentLevelList">
-          <property name="horizontalScrollBarPolicy">
-           <enum>Qt::ScrollBarAlwaysOff</enum>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <property name="leftMargin">
+           <number>16</number>
           </property>
-          <property name="spacing">
-           <number>4</number>
+          <property name="topMargin">
+           <number>16</number>
           </property>
-         </widget>
+          <property name="rightMargin">
+           <number>16</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="levelFileLabel">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>No level file created yet for this project. &lt;a href=&quot;#&quot;&gt;Create one&lt;/a&gt; now.</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::RichText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListView" name="recentLevelList">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: &quot;blue&quot;</string>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="spacing">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="Line" name="line_4">
@@ -526,8 +598,8 @@
   </layout>
  </widget>
  <resources>
-  <include location="WelcomeScreenDialog.qrc"/>
-  <include location="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
+  <include location="C:/o3de/Code/Sandbox/Editor/WelcomeScreen/WelcomeScreenDialog.qrc"/>
+  <include location="C:/o3de/Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

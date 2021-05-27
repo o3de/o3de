@@ -6,30 +6,30 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
+    <width>430</width>
     <height>280</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" colspan="2">
-      <widget class="QGroupBox" name="PLACEHOLDER_TRN">
-        <layout class="QFormLayout" name="formLayout_2">
-          <property name="fieldGrowthPolicy">
-            <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-          </property>
-        </layout>
-      </widget>
-    </item>
-    <item row="0" column="0" colspan="2">
+   <item row="1" column="0" colspan="2">
+    <widget class="QGroupBox" name="PLACEHOLDER_TRN">
+     <layout class="QFormLayout" name="formLayout_2">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
     <widget class="QGroupBox" name="STATIC_GROUP1">
      <property name="title">
-      <string>Level</string>
+      <string>Assign a name and location to the new level.</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="STATIC2">
         <property name="text">
-         <string>Name:</string>
+         <string>Name</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -48,8 +48,14 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="STATIC1">
+        <property name="minimumSize">
+         <size>
+          <width>100</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Folder:</string>
+         <string>Location</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
