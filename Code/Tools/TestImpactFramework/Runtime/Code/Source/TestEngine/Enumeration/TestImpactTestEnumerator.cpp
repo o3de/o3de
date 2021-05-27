@@ -113,6 +113,7 @@ namespace TestImpact
             else
             {
                 // This job has no cache read policy so place in job queue
+                DeleteFile(jobInfo->GetCache()->m_file);
                 jobQueue.emplace_back(*jobInfo);
             }
         }
