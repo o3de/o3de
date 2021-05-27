@@ -69,6 +69,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 // AzQtComponents
@@ -3104,6 +3105,15 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     // Save the document to this folder
     GetIEditor()->GetDocument()->SetPathName(fullyQualifiedLevelName);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
+
+    if (usePrefabSystemForLevels)
+    {
+        auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (service)
+        {
+            service->CreateNewLevelPrefab((const char*)fullyQualifiedLevelName.toUtf8());
+        }
+    }
 
     if (GetIEditor()->GetDocument()->Save())
     {

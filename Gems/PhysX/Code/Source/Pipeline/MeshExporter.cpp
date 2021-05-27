@@ -328,7 +328,7 @@ namespace PhysX
             physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
 
             // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
-            if (platformIdentifier == "es3" || platformIdentifier == "ios")
+            if (platformIdentifier == "android" || platformIdentifier == "ios")
             {
                 ret = physx::PxMeshMidPhase::eBVH33;
             }

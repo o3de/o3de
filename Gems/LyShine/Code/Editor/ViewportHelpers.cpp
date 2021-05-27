@@ -30,6 +30,11 @@ namespace ViewportHelpers
         return isControlledByParent;
     }
 
+    float GetDpiScaledSize(float size)
+    {
+        return size * ViewportIcon::GetDpiScaleFactor();
+    }
+
     bool IsHorizontallyFit(const AZ::Entity* element)
     {
         bool isHorizontallyFit = false;
@@ -332,11 +337,12 @@ namespace ViewportHelpers
 
             AZ::Vector2 pivotPos;
             EBUS_EVENT_ID_RESULT(pivotPos, element->GetId(), UiTransformBus, GetViewportSpacePivot);
-            AZ::Vector2 rotationStringPos(pivotPos.GetX(), pivotPos.GetY() - ((viewportPivot->GetSize().GetY() * 0.5f) + 4.0f));
+            float offset = (viewportPivot->GetSize().GetY() * 0.5f) + (GetDpiScaledSize(4.0f));
+            AZ::Vector2 rotationStringPos(pivotPos.GetX(), pivotPos.GetY() - offset);
 
             draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
             draw2d.SetTextRotation(0.0f);
-            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, 16.0f, 1.0f);
+            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, GetDpiScaledSize(16.0f), 1.0f);
         }
     }
 
@@ -350,6 +356,6 @@ namespace ViewportHelpers
 
         draw2d.SetTextAlignment(IDraw2d::HAlign::Left, IDraw2d::VAlign::Bottom);
         draw2d.SetTextRotation(0.0f);
-        draw2d.DrawText(textLabel.c_str(), textPos, 16.0f, 1.0f);
+        draw2d.DrawText(textLabel.c_str(), textPos, GetDpiScaledSize(16.0f), 1.0f);
     }
 }   // namespace ViewportHelpers

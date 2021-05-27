@@ -736,13 +736,13 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
-                else if (platformIdentifier == "osx_gl")
+                else if (platformIdentifier == "mac")
                 {
-                    platformId = AzFramework::PlatformId::OSX;
+                    platformId = AzFramework::PlatformId::MAC;
                 }
-                else if (platformIdentifier == "es3")
+                else if (platformIdentifier == "android")
                 {
-                    platformId = AzFramework::PlatformId::ES3;
+                    platformId = AzFramework::PlatformId::ANDROID_ID;
                 }
                 else if (platformIdentifier == "ios")
                 {
@@ -788,13 +788,13 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
-                else if (platform == "osx_gl")
+                else if (platform == "mac")
                 {
-                    platformId = AzFramework::PlatformId::OSX;
+                    platformId = AzFramework::PlatformId::MAC;
                 }
-                else if (platform == "es3")
+                else if (platform == "android")
                 {
-                    platformId = AzFramework::PlatformId::ES3;
+                    platformId = AzFramework::PlatformId::ANDROID_ID;
                 }
                 else if (platform == "ios")
                 {
