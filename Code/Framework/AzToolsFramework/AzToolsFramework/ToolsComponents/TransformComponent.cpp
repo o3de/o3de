@@ -357,7 +357,7 @@ namespace AzToolsFramework
 
         AZ::Transform TransformComponent::GetLocalScaleTM() const
         {
-            return AZ::Transform::CreateScale(m_editorTransform.m_scale);
+            return AZ::Transform::CreateUniformScale(m_editorTransform.m_scale.GetMaxElement());
         }
 
         const AZ::Transform& TransformComponent::GetLocalTM()
@@ -677,97 +677,9 @@ namespace AzToolsFramework
             return result;
         }
 
-        void TransformComponent::SetScale(const AZ::Vector3& newScale)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetScale is deprecated, please use SetLocalScale");
-
-            AZ::Transform newWorldTransform = GetWorldTM();
-            AZ::Vector3 prevScale = newWorldTransform.ExtractScale();
-            if (!prevScale.IsClose(newScale))
-            {
-                newWorldTransform.MultiplyByScale(newScale);
-                SetWorldTM(newWorldTransform);
-            }
-        }
-
-        void TransformComponent::SetScaleX(float newScale)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetScaleX is deprecated, please use SetLocalScaleX");
-
-            AZ::Transform newWorldTransform = GetWorldTM();
-            AZ::Vector3 scale = newWorldTransform.ExtractScale();
-            scale.SetX(newScale);
-            newWorldTransform.MultiplyByScale(scale);
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetScaleY(float newScale)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetScaleY is deprecated, please use SetLocalScaleY");
-
-            AZ::Transform newWorldTransform = GetWorldTM();
-            AZ::Vector3 scale = newWorldTransform.ExtractScale();
-            scale.SetY(newScale);
-            newWorldTransform.MultiplyByScale(scale);
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetScaleZ(float newScale)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetScaleZ is deprecated, please use SetLocalScaleZ");
-
-            AZ::Transform newWorldTransform = GetWorldTM();
-            AZ::Vector3 scale = newWorldTransform.ExtractScale();
-            scale.SetZ(newScale);
-            newWorldTransform.MultiplyByScale(scale);
-            SetWorldTM(newWorldTransform);
-        }
-
-        AZ::Vector3 TransformComponent::GetScale()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetScale is deprecated, please use GetLocalScale");
-            return GetWorldTM().GetScale();
-        }
-
-        float TransformComponent::GetScaleX()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetScaleX is deprecated, please use GetLocalScale");
-            return GetWorldTM().GetScale().GetX();
-        }
-
-        float TransformComponent::GetScaleY()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetScaleY is deprecated, please use GetLocalScale");
-            return GetWorldTM().GetScale().GetY();
-        }
-
-        float TransformComponent::GetScaleZ()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetScaleZ is deprecated, please use GetLocalScale");
-            return GetWorldTM().GetScale().GetZ();
-        }
-
         void TransformComponent::SetLocalScale(const AZ::Vector3& scale)
         {
             m_editorTransform.m_scale = scale;
-            TransformChanged();
-        }
-
-        void TransformComponent::SetLocalScaleX(float scaleX)
-        {
-            m_editorTransform.m_scale.SetX(scaleX);
-            TransformChanged();
-        }
-
-        void TransformComponent::SetLocalScaleY(float scaleY)
-        {
-            m_editorTransform.m_scale.SetY(scaleY);
-            TransformChanged();
-        }
-
-        void TransformComponent::SetLocalScaleZ(float scaleZ)
-        {
-            m_editorTransform.m_scale.SetZ(scaleZ);
             TransformChanged();
         }
 
@@ -779,6 +691,22 @@ namespace AzToolsFramework
         AZ::Vector3 TransformComponent::GetWorldScale()
         {
             return GetWorldTM().GetScale();
+        }
+
+        void TransformComponent::SetLocalUniformScale(float scale)
+        {
+            m_editorTransform.m_scale = AZ::Vector3(scale);
+            TransformChanged();
+        }
+
+        float TransformComponent::GetLocalUniformScale()
+        {
+            return m_editorTransform.m_scale.GetMaxElement();
+        }
+
+        float TransformComponent::GetWorldUniformScale()
+        {
+            return GetWorldTM().GetUniformScale();
         }
 
         const AZ::Transform& TransformComponent::GetParentWorldTM() const
@@ -1181,12 +1109,6 @@ namespace AzToolsFramework
             parent.Invert();
 
             ModifyEditorTransform(m_editorTransform.m_rotate, data, parent);
-        }
-
-        void TransformComponent::ScaleBy(const AZ::Vector3& data)
-        {
-            //scale is always local
-            ModifyEditorTransform(m_editorTransform.m_scale, data, AZ::Transform::Identity());
         }
 
         AZ::EntityId TransformComponent::GetSliceEntityParentId()

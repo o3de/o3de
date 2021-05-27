@@ -250,9 +250,6 @@ class AbstractResourceLocator(object):
         """
         return os.path.join(self.build_directory(), 'CrySCompileServer')
 
-    def bootstrap_config_file(self):
-        return os.path.join(self.engine_root(), 'bootstrap.cfg')
-
     def asset_processor_config_file(self):
         return os.path.join(self.engine_root(), 'Registry', 'AssetProcessorPlatformConfig.setreg')
 

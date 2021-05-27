@@ -25,6 +25,8 @@ namespace AzFramework
     void SpawnableEntitiesManager::SpawnAllEntities(EntitySpawnTicket& ticket, EntityPreInsertionCallback preInsertionCallback,
         EntitySpawnCallback completionCallback)
     {
+        AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnAllEntities hasn't been initialized.");
+
         SpawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
@@ -40,6 +42,8 @@ namespace AzFramework
         EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices,
         EntityPreInsertionCallback preInsertionCallback, EntitySpawnCallback completionCallback)
     {
+        AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnEntities hasn't been initialized.");
+
         SpawnEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_entityIndices = AZStd::move(entityIndices);
@@ -54,6 +58,8 @@ namespace AzFramework
 
     void SpawnableEntitiesManager::DespawnAllEntities(EntitySpawnTicket& ticket, EntityDespawnCallback completionCallback)
     {
+        AZ_Assert(ticket.IsValid(), "Ticket provided to DespawnAllEntities hasn't been initialized.");
+
         DespawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
@@ -67,6 +73,8 @@ namespace AzFramework
     void SpawnableEntitiesManager::ReloadSpawnable(EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable,
         ReloadSpawnableCallback completionCallback)
     {
+        AZ_Assert(ticket.IsValid(), "Ticket provided to ReloadSpawnable hasn't been initialized.");
+
         ReloadSpawnableCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_spawnable = AZStd::move(spawnable);
@@ -81,8 +89,24 @@ namespace AzFramework
     void SpawnableEntitiesManager::ListEntities(EntitySpawnTicket& ticket, ListEntitiesCallback listCallback)
     {
         AZ_Assert(listCallback, "ListEntities called on spawnable entities without a valid callback to use.");
+        AZ_Assert(ticket.IsValid(), "Ticket provided to ListEntities hasn't been initialized.");
 
         ListEntitiesCommand queueEntry;
+        queueEntry.m_ticket = &ticket;
+        queueEntry.m_listCallback = AZStd::move(listCallback);
+        {
+            AZStd::scoped_lock queueLock(m_pendingRequestQueueMutex);
+            queueEntry.m_ticketId = GetTicketPayload<Ticket>(ticket).m_nextTicketId++;
+            m_pendingRequestQueue.push(AZStd::move(queueEntry));
+        }
+    }
+
+    void SpawnableEntitiesManager::ListIndicesAndEntities(EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback)
+    {
+        AZ_Assert(listCallback, "ListEntities called on spawnable entities without a valid callback to use.");
+        AZ_Assert(ticket.IsValid(), "Ticket provided to ListEntities hasn't been initialized.");
+
+        ListIndicesEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
         queueEntry.m_listCallback = AZStd::move(listCallback);
         {
@@ -95,6 +119,7 @@ namespace AzFramework
     void SpawnableEntitiesManager::ClaimEntities(EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback)
     {
         AZ_Assert(listCallback, "ClaimEntities called on spawnable entities without a valid callback to use.");
+        AZ_Assert(ticket.IsValid(), "Ticket provided to ClaimEntities hasn't been initialized.");
 
         ClaimEntitiesCommand queueEntry;
         queueEntry.m_ticket = &ticket;
@@ -109,6 +134,7 @@ namespace AzFramework
     void SpawnableEntitiesManager::Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback)
     {
         AZ_Assert(completionCallback, "Barrier on spawnable entities called without a valid callback to use.");
+        AZ_Assert(ticket.IsValid(), "Ticket provided to Barrier hasn't been initialized.");
 
         BarrierCommand queueEntry;
         queueEntry.m_ticket = &ticket;
@@ -490,6 +516,27 @@ namespace AzFramework
         {
             request.m_listCallback(*request.m_ticket, SpawnableConstEntityContainerView(
                 ticket.m_spawnedEntities.begin(), ticket.m_spawnedEntities.end()));
+            ticket.m_currentTicketId++;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    bool SpawnableEntitiesManager::ProcessRequest(ListIndicesEntitiesCommand& request, [[maybe_unused]] AZ::SerializeContext& serializeContext)
+    {
+        Ticket& ticket = GetTicketPayload<Ticket>(*request.m_ticket);
+        if (request.m_ticketId == ticket.m_currentTicketId)
+        {
+            AZ_Assert(
+                ticket.m_spawnedEntities.size() == ticket.m_spawnedEntityIndices.size(),
+                "Entities and indices on spawnable ticket have gone out of sync.");
+            request.m_listCallback(
+                *request.m_ticket,
+                SpawnableConstIndexEntityContainerView(
+                    ticket.m_spawnedEntities.begin(), ticket.m_spawnedEntityIndices.begin(), ticket.m_spawnedEntities.size()));
             ticket.m_currentTicketId++;
             return true;
         }

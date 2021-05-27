@@ -10,6 +10,7 @@
 *
 */
 
+#include "AzCore/RTTI/TypeInfo.h"
 #include <AzCore/Math/UuidSerializer.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/Json/CastingHelpers.h>
@@ -61,6 +62,13 @@ namespace AZ
 
         if (classData->m_azRtti && classData->m_azRtti->GetGenericTypeId() != typeId)
         {
+            if (((classData->m_azRtti->GetTypeTraits() & (AZ::TypeTraits::is_signed | AZ::TypeTraits::is_unsigned)) != AZ::TypeTraits{0}) &&
+                context.GetSerializeContext()->GetUnderlyingTypeId(typeId) == classData->m_typeId)
+            {
+                // This value is from an enum, where a field has been reflected using ClassBuilder::Field, but the enum
+                // type itself has not been reflected using EnumBuilder. Treat it as an enum.
+                return LoadEnum(object, *classData, value, context);
+            }
             serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
             if (serializer)
             {
@@ -77,21 +85,18 @@ namespace AZ
         {
             return LoadEnum(object, *classData, value, context);
         }
-        else if (classData->m_container)
+        if (classData->m_container)
         {
             return context.Report(Tasks::ReadField, Outcomes::Unsupported,
                 "The Json Serializer uses custom serializers to load containers. If this message is encountered "
                 "then a serializer for the target containers is missing, isn't registered or doesn't exist.");
         }
-        else if (value.IsObject())
+        if (value.IsObject())
         {
             return LoadClass(object, *classData, value, context);
         }
-        else
-        {
-            return context.Report(Tasks::ReadField, Outcomes::Unsupported,
-                AZStd::string::format("Reading into targets of type '%s' is not supported.", classData->m_name));
-        }
+        return context.Report(Tasks::ReadField, Outcomes::Unsupported,
+            AZStd::string::format("Reading into targets of type '%s' is not supported.", classData->m_name));
     }
 
     JsonSerializationResult::ResultCode JsonDeserializer::LoadToPointer(void* object, const Uuid& typeId,
@@ -233,8 +238,16 @@ namespace AZ
         AZ::TypeId underlyingTypeId = AZ::TypeId::CreateNull();
         if (!attributeReader.Read<AZ::TypeId>(underlyingTypeId))
         {
-            return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
-                "Unable to find underlying type of enum in class data.");
+            // for non-reflected enums, the passed-in classData already represents the enum's underlying type
+            if (context.GetSerializeContext()->GetUnderlyingTypeId(classData.m_typeId) == classData.m_typeId)
+            {
+                underlyingTypeId = classData.m_typeId;
+            }
+            else
+            {
+                return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
+                    "Unable to find underlying type of enum in class data.");
+            }
         }
 
         const SerializeContext::ClassData* underlyingClassData = context.GetSerializeContext()->FindClassData(underlyingTypeId);

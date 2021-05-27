@@ -864,7 +864,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
         if (drawFrame)
         {
             ColorB tempColor(255, 255, 255, 255);
-            uint32_t frameColor = tempColor.pack_abgr8888();        //note: this ends up in r,g,b,a order on little-endian machines
+            uint32_t frameColor = tempColor.pack_argb8888();        //note: this ends up in r,g,b,a order on little-endian machines
 
             Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 
@@ -1122,7 +1122,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             {
                 ColorB tempColor = color;
                 tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
-                packedColor = tempColor.pack_abgr8888();                    //note: this ends up in r,g,b,a order on little-endian machines
+                packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)
@@ -1786,18 +1786,17 @@ void AZ::FFont::DrawScreenAlignedText3d(
     }
     AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
         params.m_position,
-        currentView->GetViewToWorldMatrix(),
+        currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
-    AzFramework::TextDrawParameters param2d = params;
-    param2d.m_position = positionNDC;
+    internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(
         *internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        internalParams.m_position.GetX(), 
-        internalParams.m_position.GetY(), 
-        params.m_position.GetZ(), // Z
+        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNDC.GetZ(), // Z
         text.data(),
         params.m_multiline,
         internalParams.m_ctx

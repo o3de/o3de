@@ -216,5 +216,7 @@ namespace AzToolsFramework
         Prefab::PrefabLoaderInterface* m_loaderInterface;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
+
+        static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
     };
 }

@@ -72,11 +72,6 @@ namespace SceneBuilder
         m_sceneBuilder.BusDisconnect();
     }
 
-    void BuilderPluginComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-    {
-        required.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
-    }
-
     void BuilderPluginComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -86,4 +81,5 @@ namespace SceneBuilder
                 ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
         }
     }
+
 } // namespace SceneBuilder

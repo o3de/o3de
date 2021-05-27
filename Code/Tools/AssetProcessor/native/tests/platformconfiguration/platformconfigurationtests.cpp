@@ -39,7 +39,6 @@ void PlatformConfigurationUnitTests::SetUp()
     m_qApp = new QCoreApplication(m_argc, m_argv);
     AssetProcessorTest::SetUp();
     AssetUtilities::ResetAssetRoot();
-
 }
 
 void PlatformConfigurationUnitTests::TearDown()

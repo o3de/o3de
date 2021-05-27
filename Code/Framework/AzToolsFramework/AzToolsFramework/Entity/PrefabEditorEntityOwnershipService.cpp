@@ -14,9 +14,11 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
@@ -222,21 +224,52 @@ namespace AzToolsFramework
         AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
 
         m_rootInstance->SetTemplateSourcePath(relativePath);
+
+        bool newLevelFromTemplate = false;
+
         if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
         {
-            // This has not been loaded yet, this is the case of being saved with a different name.
-            // Create it
-            m_rootInstance->m_containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
-            HandleEntitiesAdded({m_rootInstance->m_containerEntity.get()});
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            bool sourceInfoFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, DefaultLevelTemplateName,
+                assetInfo, watchFolder);
 
-            AzToolsFramework::Prefab::PrefabDom dom;
-            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
-            if (!success)
+            if (sourceInfoFound)
             {
-                AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
-                return false;
+                AZStd::string fullPath;
+                AZ::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), fullPath);
+
+                // Get the default prefab and copy the Dom over to the new template being saved
+                Prefab::TemplateId defaultId = m_loaderInterface->LoadTemplateFromFile(fullPath.c_str());
+                Prefab::PrefabDom& dom = m_prefabSystemComponent->FindTemplateDom(defaultId);
+
+                Prefab::PrefabDom levelDefaultDom;
+                levelDefaultDom.CopyFrom(dom, levelDefaultDom.GetAllocator());
+
+                Prefab::PrefabDomPath sourcePath("/Source");
+                sourcePath.Set(levelDefaultDom, relativePath.c_str());
+
+                templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(levelDefaultDom));
+                newLevelFromTemplate = true;
             }
-            templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(dom));
+            else
+            {
+                // Create an empty level since we couldn't find the default template
+                m_rootInstance->m_containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
+                HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
+
+                AzToolsFramework::Prefab::PrefabDom dom;
+                bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
+                if (!success)
+                {
+                    AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
+                    return false;
+                }
+                templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(dom));
+            }
+
             if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
             {
                 AZ_Error("Prefab", false, "Couldn't add new template id '%i' when saving file '%.*s'", templateId, AZ_STRING_ARG(filename));
@@ -251,6 +284,13 @@ namespace AzToolsFramework
         {
             // Make sure we only have one level template loaded at a time
             m_prefabSystemComponent->RemoveTemplate(prevTemplateId);
+        }
+
+        // If we have a new level from a template, we need to make sure to propagate the changes here otherwise
+        // the entities from the new template won't show up
+        if (newLevelFromTemplate)
+        {
+            m_prefabSystemComponent->PropagateTemplateChanges(templateId);
         }
 
         AZStd::string out;

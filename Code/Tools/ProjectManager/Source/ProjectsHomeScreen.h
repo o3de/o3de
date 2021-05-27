@@ -15,11 +15,6 @@
 #include <ScreenWidget.h>
 #endif
 
-namespace Ui
-{
-    class ProjectsHomeClass;
-}
-
 namespace O3DE::ProjectManager
 {
     class ProjectsHomeScreen
@@ -34,10 +29,23 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
-        void HandleEditProjectButton();
+        void HandleOpenProject(const QString& projectPath);
+        void HandleEditProject(const QString& projectPath);
+        void HandleEditProjectGems(const QString& projectPath);
+        void HandleCopyProject(const QString& projectPath);
+        void HandleRemoveProject(const QString& projectPath);
+        void HandleDeleteProject(const QString& projectPath);
 
     private:
-        QScopedPointer<Ui::ProjectsHomeClass> m_ui;
+        QAction* m_createNewProjectAction;
+        QAction* m_addExistingProjectAction;
+
+        const QString m_projectPreviewImagePath = "/preview.png";
+        inline constexpr static int s_contentMargins = 80;
+        inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_projectButtonRowCount = 4;
+        inline constexpr static int s_newProjectButtonWidth = 156;
+
     };
 
 } // namespace O3DE::ProjectManager

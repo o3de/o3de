@@ -12,7 +12,7 @@
 # Extracted from Editor.xml
 set(GEM_DEPENDENCIES
     Gem::Maestro.Editor
-    Gem::TextureAtlas
+    Gem::TextureAtlas.Editor
     Gem::LmbrCentral.Editor
     Gem::LyShine.Editor
     Gem::HttpRequestor

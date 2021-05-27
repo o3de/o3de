@@ -30,6 +30,23 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::ProjectSettings;
     }
 
+    ProjectInfo ProjectSettingsScreen::GetProjectInfo()
+    {
+        // Impl pending next PR
+        return ProjectInfo();
+    }
+
+    void ProjectSettingsScreen::SetProjectInfo()
+    {
+        // Impl pending next PR
+    }
+
+    bool ProjectSettingsScreen::Validate()
+    {
+        // Impl pending next PR
+        return true;
+    }
+
     void ProjectSettingsScreen::HandleGemsButton()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);

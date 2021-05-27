@@ -16,7 +16,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 
-class ITexture;
+#include <Atom/RPI.Reflect/Image/Image.h>
+#include <AtomCore/Instance/Instance.h>
 
 namespace TextureAtlasNamespace
 {
@@ -77,9 +78,9 @@ namespace TextureAtlasNamespace
         //! Retrieve a coordinate set from the Atlas by its handle
         virtual AtlasCoordinates GetAtlasCoordinates(const AZStd::string& handle) const = 0;
         //! Links this atlas to an image pointer
-        virtual void SetTexture(ITexture* image) = 0;
+        virtual void SetTexture(AZ::Data::Instance<AZ::RPI::Image> image) = 0;
         //! Returns the image linked to this atlas
-        virtual ITexture* GetTexture() const = 0;
+        virtual AZ::Data::Instance<AZ::RPI::Image> GetTexture() const = 0;
         //! Returns the width of the atlas
         virtual int GetWidth() const = 0;
         //! Returns the height of the atlas

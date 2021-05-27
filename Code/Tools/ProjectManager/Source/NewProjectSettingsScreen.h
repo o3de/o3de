@@ -28,7 +28,6 @@ namespace O3DE::ProjectManager
         explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetNextButtonText() override;
 
         ProjectInfo GetProjectInfo();
         QString GetProjectTemplatePath();

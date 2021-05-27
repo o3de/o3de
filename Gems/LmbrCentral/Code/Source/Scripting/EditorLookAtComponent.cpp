@@ -169,22 +169,24 @@ namespace LmbrCentral
         {
             AZ::TransformNotificationBus::MultiHandler::BusDisconnect(GetEntityId());
             {
-                AZ::Transform currentTM = AZ::Transform::CreateIdentity();
-                EBUS_EVENT_ID_RESULT(currentTM, GetEntityId(), AZ::TransformBus, GetWorldTM);
-                AZ::Vector3 currentScale = currentTM.ExtractScale();
+                AZ::Transform sourceTM = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(sourceTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
                 AZ::Transform targetTM = AZ::Transform::CreateIdentity();
-                EBUS_EVENT_ID_RESULT(targetTM, m_targetId, AZ::TransformBus, GetWorldTM);
+                AZ::TransformBus::EventResult(targetTM, m_targetId, &AZ::TransformBus::Events::GetWorldTM);
 
                 AZ::Transform lookAtTransform = AZ::Transform::CreateLookAt(
-                    currentTM.GetTranslation(),
+                    sourceTM.GetTranslation(),
                     targetTM.GetTranslation(),
                     m_forwardAxis
                     );
 
-                lookAtTransform.MultiplyByScale(currentScale);
+                // update the rotation and translation for sourceTM based on lookAtTransform, but leave scale unchanged
+                sourceTM.SetRotation(lookAtTransform.GetRotation());
+                sourceTM.SetTranslation(lookAtTransform.GetTranslation());
 
                 EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, lookAtTransform);
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, sourceTM);
             }
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
         }

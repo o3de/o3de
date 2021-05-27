@@ -20,11 +20,11 @@ namespace AZ
     class Transform;
 }
 
-namespace SandboxEditor
+namespace AtomToolsFramework
 {
     //! Provides an interface to control the modern viewport camera controller from the Editor.
     //! @note The bus is addressed by viewport id.
-    class ModernViewportCameraControllerRequests : public AZ::EBusTraits
+    class ModularViewportCameraControllerRequests : public AZ::EBusTraits
     {
     public:
         using BusIdType = AzFramework::ViewportId;
@@ -35,8 +35,8 @@ namespace SandboxEditor
         virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
 
     protected:
-        ~ModernViewportCameraControllerRequests() = default;
+        ~ModularViewportCameraControllerRequests() = default;
     };
 
-    using ModernViewportCameraControllerRequestBus = AZ::EBus<ModernViewportCameraControllerRequests>;
-} // namespace SandboxEditor
+    using ModularViewportCameraControllerRequestBus = AZ::EBus<ModularViewportCameraControllerRequests>;
+} // namespace AtomToolsFramework

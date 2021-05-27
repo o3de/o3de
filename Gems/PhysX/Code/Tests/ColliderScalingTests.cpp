@@ -68,7 +68,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId editorId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.5f));
+        worldTM.SetUniformScale(1.5f);
         worldTM.SetTranslation(AZ::Vector3(5.0f, 6.0f, 7.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)));
         AZ::TransformBus::Event(editorId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -99,7 +99,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId editorId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.5f));
+        worldTM.SetUniformScale(1.5f);
         worldTM.SetTranslation(AZ::Vector3(5.0f, 6.0f, 7.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)));
         AZ::TransformBus::Event(editorId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -144,7 +144,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId capsuleId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(0.5f));
+        worldTM.SetUniformScale(0.5f);
         worldTM.SetTranslation(AZ::Vector3(3.0f, 1.0f, -4.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -176,7 +176,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId capsuleId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(0.5f));
+        worldTM.SetUniformScale(0.5f);
         worldTM.SetTranslation(AZ::Vector3(3.0f, 1.0f, -4.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -222,7 +222,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId sphereId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.2f));
+        worldTM.SetUniformScale(1.2f);
         worldTM.SetTranslation(AZ::Vector3(-2.0f, -1.0f, 3.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -254,7 +254,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId sphereId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.2f));
+        worldTM.SetUniformScale(1.2f);
         worldTM.SetTranslation(AZ::Vector3(-2.0f, -1.0f, 3.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
