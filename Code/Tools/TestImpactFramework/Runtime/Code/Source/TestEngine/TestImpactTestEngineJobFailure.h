@@ -20,10 +20,16 @@
 
 namespace TestImpact
 {
+    //! Checks for known test instrumentation error return codes and returns the corresponding client test run result or empty.
     AZStd::optional<Client::TestRunResult> CheckForKnownTestInstrumentErrorCode(ReturnCode returnCode);
+
+    //! Checks for known test runner error return codes and returns the corresponding client test run result or empty.
     AZStd::optional<Client::TestRunResult> CheckForKnownTestRunnerErrorCode(ReturnCode returnCode);
+
+    //! Checks for known test library error return codes and returns the corresponding client test run result or empty.
     AZStd::optional<Client::TestRunResult> CheckForKnownTestLibraryErrorCode(ReturnCode returnCode);
 
+    //! Checks for all known error return codes and returns the corresponding client test run result or empty.
     AZStd::optional<Client::TestRunResult> CheckForAnyKnownErrorCode(ReturnCode returnCode);
 
 }
