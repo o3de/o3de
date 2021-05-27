@@ -40,14 +40,14 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_MacFile_OutputBaseNameAndPlatform)
     {
-        AZStd::string filePath = "assetInfoFile_osx_gl.xml";
+        AZStd::string filePath = "assetInfoFile_mac.xml";
         AZStd::string baseFilename;
         AZStd::string platformIdentifier;
 
         AzToolsFramework::SplitFilename(filePath, baseFilename, platformIdentifier);
 
         ASSERT_EQ(baseFilename, "assetInfoFile");
-        ASSERT_EQ(platformIdentifier, "osx_gl");
+        ASSERT_EQ(platformIdentifier, "mac");
     }
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_PcFile_OutputBaseNameAndPlatform)
@@ -64,14 +64,14 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_MacFileWithUnderScoreInFileName_OutputBaseNameAndPlatform)
     {
-        AZStd::string filePath = "assetInfoFile_test_osx_gl.xml";
+        AZStd::string filePath = "assetInfoFile_test_mac.xml";
         AZStd::string baseFilename;
         AZStd::string platformIdentifier;
 
         AzToolsFramework::SplitFilename(filePath, baseFilename, platformIdentifier);
 
         ASSERT_EQ(baseFilename, "assetInfoFile_test");
-        ASSERT_EQ(platformIdentifier, "osx_gl");
+        ASSERT_EQ(platformIdentifier, "mac");
     }
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_PcFileWithUnderScoreInFileName_OutputBaseNameAndPlatform)

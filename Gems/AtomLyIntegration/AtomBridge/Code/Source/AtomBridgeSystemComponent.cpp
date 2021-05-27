@@ -13,6 +13,7 @@
 #include <AtomBridgeSystemComponent.h>
 #include <AtomDebugDisplayViewportInterface.h>
 #include <FlyCameraInputComponent.h>
+#include <PerViewportDynamicDrawManager.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -104,10 +105,12 @@ namespace AZ
             AzFramework::GameEntityContextRequestBus::BroadcastResult(m_entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
             AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
+            m_dynamicDrawManager = AZStd::make_unique<PerViewportDynamicDrawManager>();
         }
 
         void AtomBridgeSystemComponent::Deactivate()
         { 
+            m_dynamicDrawManager.reset();
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
             RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
             // Check if scene is emptry since scene might be released already when running AtomSampleViewer 

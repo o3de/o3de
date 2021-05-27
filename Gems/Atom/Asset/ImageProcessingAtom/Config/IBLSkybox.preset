@@ -26,7 +26,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
                 "Name": "IBLSkybox",
                 "FileMasks": [
@@ -68,7 +68,7 @@
                     "IBLDiffusePreset": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{E6441EAC-9843-484B-8EFC-C03B2935B48D}",
                 "Name": "IBLSkybox",
                 "FileMasks": [

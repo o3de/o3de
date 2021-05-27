@@ -12,15 +12,18 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "ProjectInfo.h"
 #include <ScreenWidget.h>
-#include <ScreensCtrl.h>
-#include <QPushButton>
+#include <ProjectInfo.h>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(ScreenHeader)
+
     class CreateProjectCtrl
         : public ScreenWidget
     {
@@ -34,12 +37,13 @@ namespace O3DE::ProjectManager
         void HandleNextButton();
 
     private:
-        void UpdateNextButtonText();
+        void Update();
 
-        ScreensCtrl* m_screensCtrl;
+        QStackedWidget* m_stack;
+        ScreenHeader* m_header;
+
         QPushButton* m_backButton;
         QPushButton* m_nextButton;
-        QVector<ProjectManagerScreen> m_screensOrder;
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;

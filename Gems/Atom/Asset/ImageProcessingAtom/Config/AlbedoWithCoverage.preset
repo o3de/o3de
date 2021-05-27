@@ -23,7 +23,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",
@@ -61,7 +61,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{57ED16B1-407B-4E29-BCFC-D3BAE60F2C85}",
                 "Name": "AlbedoWithCoverage",
                 "RGB_Weight": "CIEXYZ",

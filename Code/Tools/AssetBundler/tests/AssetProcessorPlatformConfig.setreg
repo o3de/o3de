@@ -3,7 +3,7 @@
         "AssetProcessor": {
             "Settings": {
                 "Platforms": {
-                    "es3": "enabled"
+                    "android": "enabled"
                 }
             }
         }

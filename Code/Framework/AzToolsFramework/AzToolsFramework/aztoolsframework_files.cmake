@@ -46,6 +46,7 @@ set(FILES
     API/EditorWindowRequestBus.h
     API/EntityCompositionRequestBus.h
     API/EntityCompositionNotificationBus.h
+    API/EditorViewportIconDisplayInterface.h
     API/ViewPaneOptions.h
     Application/Ticker.h
     Application/Ticker.cpp

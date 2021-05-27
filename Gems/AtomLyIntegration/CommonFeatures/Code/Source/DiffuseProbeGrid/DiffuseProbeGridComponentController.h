@@ -39,6 +39,19 @@ namespace AZ
             float m_ambientMultiplier = DefaultDiffuseProbeGridAmbientMultiplier;
             float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
+
+            DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
+            DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
+
+            AZStd::string m_bakedIrradianceTextureRelativePath;
+            AZStd::string m_bakedDistanceTextureRelativePath;
+            AZStd::string m_bakedRelocationTextureRelativePath;
+            AZStd::string m_bakedClassificationTextureRelativePath;
+
+            Data::Asset<RPI::StreamingImageAsset> m_bakedIrradianceTextureAsset;
+            Data::Asset<RPI::StreamingImageAsset> m_bakedDistanceTextureAsset;
+            Data::Asset<RPI::StreamingImageAsset> m_bakedRelocationTextureAsset;
+            Data::Asset<RPI::StreamingImageAsset> m_bakedClassificationTextureAsset;
         };
 
         class DiffuseProbeGridComponentController final
@@ -79,12 +92,24 @@ namespace AZ
             // ShapeComponentNotificationsBus overrides
             void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
+            // AssetBus overrides
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetError(Data::Asset<Data::AssetData> asset) override;
+
             // Property handlers
             bool ValidateProbeSpacing(const AZ::Vector3& newSpacing);
             void SetProbeSpacing(const AZ::Vector3& probeSpacing);
             void SetAmbientMultiplier(float ambientMultiplier);
             void SetViewBias(float viewBias);
             void SetNormalBias(float normalBias);
+            void SetEditorMode(DiffuseProbeGridMode editorMode);
+            void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
+
+            // Bake the diffuse probe grid textures to assets
+            void BakeTextures(DiffuseProbeGridBakeTexturesCallback callback);
+
+            // Update the baked texture assets from the configuration
+            void UpdateBakedTextures();
 
             // box shape component, used for defining the outer extents of the probe area
             LmbrCentral::BoxShapeComponentRequests* m_boxShapeInterface = nullptr;
