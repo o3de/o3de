@@ -469,7 +469,7 @@
                     "max": 1.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_depthFactor"
+                        "id": "m_heightmapScale"
                     }
                 },
                 {
@@ -479,18 +479,7 @@
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_depthMap"
-                    }
-                },
-                {
-                    "id": "invert",
-                    "displayName": "Invert",
-                    "description": "Invert to depthmap if the texture is heightmap",
-                    "type": "Bool",
-                    "defaultValue": true,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_depthInverted"
+                        "id": "m_heightmap"
                     }
                 },
                 {
