@@ -82,6 +82,7 @@ namespace O3DE::ProjectManager
 
         m_projectImageLabel = new LabelButton(this);
         m_projectImageLabel->setFixedSize(s_projectImageWidth, s_projectImageHeight);
+        m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         vLayout->addWidget(m_projectImageLabel);
 
         m_projectImageLabel->setPixmap(
@@ -97,7 +98,6 @@ namespace O3DE::ProjectManager
 
 #ifdef SHOW_ALL_PROJECT_ACTIONS
         m_editProjectGemsAction = newProjectMenu->addAction(tr("Cutomize Gems..."));
-
 #endif
 
         QFrame* footer = new QFrame(this);
