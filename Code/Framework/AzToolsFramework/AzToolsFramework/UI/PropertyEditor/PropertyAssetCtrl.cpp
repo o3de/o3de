@@ -953,11 +953,16 @@ namespace AzToolsFramework
             return;
         }
 
-        const AZ::Data::AssetId assetID = GetCurrentAssetID();
-        m_currentAssetHint = "";
-
-        if (!m_unnamedType)
+        const AZStd::string& folderPath = GetFolderSelection();
+        if (!folderPath.empty())
         {
+            m_currentAssetHint = folderPath;
+        }
+        else
+        {
+            const AZ::Data::AssetId assetID = GetCurrentAssetID();
+            m_currentAssetHint = "";
+
             AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
 
@@ -971,7 +976,7 @@ namespace AzToolsFramework
 
                 if (!jobs.empty())
                 {
-                    // The default behavior is show to the source filename.
+                    // The default behavior is to show the source filename.
                     assetPath = jobs[0].m_sourceFile;
 
                     AZStd::string errorLog;
