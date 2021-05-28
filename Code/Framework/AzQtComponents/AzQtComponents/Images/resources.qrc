@@ -13,5 +13,6 @@
     <qresource prefix="/Notifications">
         <file alias="checkmark.svg">Notifications/checkmark.svg</file>
         <file alias="download.svg">Notifications/download.svg</file>
+        <file alias="link.svg">Notifications/link.svg</file>
     </qresource>
 </RCC>
