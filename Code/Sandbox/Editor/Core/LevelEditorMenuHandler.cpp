@@ -433,6 +433,9 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     projectSettingMenu.AddSeparator();
 
     fileMenu.AddSeparator();
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_NEW);
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_OPEN);
+    fileMenu.AddSeparator();
 
     // NEWMENUS: NEEDS IMPLEMENTATION
     // should have the equivalent of a Close here; it should be close the current slice, but the editor isn't slice based right now

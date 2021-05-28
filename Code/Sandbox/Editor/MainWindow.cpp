@@ -748,6 +748,8 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
+    am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."));
+    am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."));
     am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
     am->AddAction(ID_GAME_PC_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)

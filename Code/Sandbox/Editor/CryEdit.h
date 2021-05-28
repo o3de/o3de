@@ -229,6 +229,7 @@ public:
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
+    void OnOpenProjectManager();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
