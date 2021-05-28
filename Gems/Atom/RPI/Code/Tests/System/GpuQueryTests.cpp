@@ -159,7 +159,9 @@ namespace UnitTest
         const uint32_t ResultSize = sizeof(uint64_t);
 
         uint64_t mockData;
-        const RHI::FrameGraphExecuteContext::Descriptor desc = {};
+        RHI::FrameGraphExecuteContext::Descriptor desc = {};
+        uint64_t dummyCommandList;
+        desc.m_commandList = reinterpret_cast<RHI::CommandList*>(&dummyCommandList);
         RHI::FrameGraphExecuteContext context(desc);
 
         RHI::Scope scope;
@@ -209,7 +211,9 @@ namespace UnitTest
         const uint32_t ResultSize = sizeof(uint64_t) * 4u;
 
         uint64_t mockData;
-        const RHI::FrameGraphExecuteContext::Descriptor desc = {};
+        RHI::FrameGraphExecuteContext::Descriptor desc = {};
+        uint64_t dummyCommandList;
+        desc.m_commandList = reinterpret_cast<RHI::CommandList*>(&dummyCommandList);
         RHI::FrameGraphExecuteContext context(desc);
 
         RHI::Scope scope;
@@ -273,7 +277,9 @@ namespace UnitTest
         const uint32_t ResultSize = sizeof(uint64_t) * 2u;
 
         uint64_t mockData;
-        const RHI::FrameGraphExecuteContext::Descriptor desc = {};
+        RHI::FrameGraphExecuteContext::Descriptor desc = {};
+        uint64_t dummyCommandList;
+        desc.m_commandList = reinterpret_cast<RHI::CommandList*>(&dummyCommandList);
         RHI::FrameGraphExecuteContext context(desc);
 
         RHI::Scope scope;

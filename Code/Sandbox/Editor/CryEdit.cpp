@@ -3111,7 +3111,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
         auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (service)
         {
-            service->CreateNewLevelPrefab((const char*)fullyQualifiedLevelName.toUtf8());
+            service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
         }
     }
 
