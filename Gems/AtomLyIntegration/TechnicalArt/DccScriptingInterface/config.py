@@ -43,20 +43,21 @@ import azpy
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 
 # set up global space, logging etc.
 # set these true if you want them set globally for debugging
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, int(20))
 
 _PACKAGENAME = 'DCCsi.config'
 
-_LOG_LEVEL = int(20)
 if _DCCSI_GDEBUG:
-    _LOG_LEVEL = int(10)
+    _DCCSI_LOGLEVEL = int(10)
 _LOGGER = azpy.initialize_logger(_PACKAGENAME,
                                  log_to_file=False,
-                                 default_log_level=_LOG_LEVEL)
+                                 default_log_level=_DCCSI_LOGLEVEL)
 _LOGGER.info('Starting up: {}.'.format({_PACKAGENAME}))
 _LOGGER.info('site.addsitedir({})'.format(_DCCSIG_PATH))
 _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
@@ -218,10 +219,13 @@ from azpy.constants import PATH_LY_BIN_PATH
 # global settings
 os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
 os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+os.environ["DYNACONF_DCCSI_LOGLEVEL"] = str(_DCCSI_LOGLEVEL)
 
-# search up to get \dev
+# Search up to get \dev (engine root)
+# To Do: this may need to change if there is a better way to retreive o3de .setreg data
 _LY_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
                                                 check_stub='engine.json')
+
 os.environ["DYNACONF_LY_DEV"] = str(_LY_DEV.resolve())
 _LY_PROJECT = azpy.config_utils.get_current_project()
 os.environ["DYNACONF_LY_PROJECT"] = str(_LY_PROJECT.resolve())

@@ -275,6 +275,9 @@ PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
                                     'Python API',
                                     'install'))
 
+PATH_USER_WINGSTUB = str('{home}\\AppData\\Roaming\\Wing Pro {ver}')
+#PATH_USER_WINGSTUB.format(home=expanduser("~"), ver=TAG_DEFAULT_WING_MAJOR_VER)
+
 # -------------------------------------------------------------------------
 
 
@@ -284,15 +287,15 @@ PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
 if __name__ == '__main__':
     # there are not really tests to run here due to this being a list of
     # constants for shared use.
-    _G_DEBUG = True
-    _DCCSI_DEV_MODE = True
+    _G_DEBUG=True
+    _DCCSI_DEV_MODE=True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
 
     # this is a top level module and to reduce cyclical azpy imports
     # it only has a basic logger configured, add log to console
-    _handler = _logging.StreamHandler(sys.stdout)
+    _handler=_logging.StreamHandler(sys.stdout)
     _handler.setLevel(_logging.DEBUG)
-    _formatter = _logging.Formatter(FRMT_LOG_LONG)
+    _formatter=_logging.Formatter(FRMT_LOG_LONG)
     _handler.setFormatter(_formatter)
     _LOGGER.addHandler(_handler)
 
