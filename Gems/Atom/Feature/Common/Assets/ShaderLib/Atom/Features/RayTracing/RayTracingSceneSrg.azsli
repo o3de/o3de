@@ -143,7 +143,7 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
 
         float4   m_irradianceColor;
         float3x3 m_worldInvTranspose;
-        float    m_padding1[1];
+        float    m_padding1;
 
         uint     m_bufferFlags;
         uint     m_bufferStartIndex;

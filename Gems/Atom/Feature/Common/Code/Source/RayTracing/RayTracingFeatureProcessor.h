@@ -236,7 +236,7 @@ namespace AZ
 
                 AZStd::array<float, 4> m_irradianceColor;   // float4
                 AZStd::array<float, 9> m_worldInvTranspose; // float3x3
-                float m_padding1[1];
+                float m_padding1;
 
                 RayTracingSubMeshBufferFlags m_bufferFlags = RayTracingSubMeshBufferFlags::None;
                 uint32_t m_bufferStartIndex = 0;
