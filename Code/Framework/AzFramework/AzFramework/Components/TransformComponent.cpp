@@ -409,7 +409,7 @@ namespace AzFramework
     AZ::Vector3 TransformComponent::GetLocalScale()
     {
         AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
-        return m_localTM.GetScale();
+        return AZ::Vector3(m_localTM.GetUniformScale());
     }
 
     void TransformComponent::SetLocalUniformScale(float scale)
