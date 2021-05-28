@@ -30,7 +30,7 @@ namespace AzToolsFramework
             EditorTransform()
             {
                 m_translate = AZ::Vector3::CreateZero();
-                m_scale = AZ::Vector3::CreateOne();
+                m_legacyScale = AZ::Vector3::CreateOne();
                 m_rotate = AZ::Vector3::CreateZero();
                 m_locked = false;
             }
@@ -40,10 +40,10 @@ namespace AzToolsFramework
                 return EditorTransform();
             }
 
-            AZ::Vector3 m_translate; //! Translation in engine units (meters)
-            AZ::Vector3 m_scale;
-            float m_uniformScale;
-            AZ::Vector3 m_rotate; //! Rotation in degrees
+            AZ::Vector3 m_translate; //!< Translation in engine units (meters)
+            AZ::Vector3 m_legacyScale; //!< Legacy vector scale value, retained only for migration.
+            float m_uniformScale; //!< Single scale value applied uniformly.
+            AZ::Vector3 m_rotate; //!< Rotation in degrees
             bool m_locked;
         };
 
