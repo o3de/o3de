@@ -18,8 +18,6 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 
-#include <filesystem>
-
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
@@ -59,6 +57,34 @@ namespace O3DE::ProjectManager
                 descendent.cdUp();
             }
             while (!descendent.isRoot());
+
+            return true;
+        }
+
+        static bool CopyDirectory(const QString& origPath, const QString& newPath)
+        {
+            QDir original(origPath);
+            if (!original.exists())
+            {
+                return false;
+            }
+
+            for (QString directory : original.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
+            {
+                QString newDirectoryPath = newPath + QDir::separator() + directory;
+                original.mkpath(newDirectoryPath);
+
+                if (!CopyDirectory(origPath + QDir::separator() + directory, newDirectoryPath))
+                {
+                    return false;
+                }
+            }
+
+            for (QString file : original.entryList(QDir::Files))
+            {
+                if (!QFile::copy(origPath + QDir::separator() + file, newPath + QDir::separator() + file))
+                    return false;
+            }
 
             return true;
         }
@@ -115,19 +141,7 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            std::filesystem::path origFilesytemPath(origPath.toStdString());
-            std::filesystem::path newFilesytemPath(newPath.toStdString());
-
-            // Use Filesystem because its much better at recursive directory copies than Qt
-            try
-            {
-                std::filesystem::copy(
-                    origFilesytemPath,
-                    newFilesytemPath,
-                    std::filesystem::copy_options::overwrite_existing | std::filesystem::copy_options::recursive
-                );
-            }
-            catch ([[maybe_unused]] std::exception& e)
+            if (!CopyDirectory(origPath, newPath))
             {
                 // Cleanup whatever mess was made
                 DeleteProjectFiles(newPath, true);
