@@ -1010,37 +1010,10 @@ namespace AzToolsFramework
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-            UndoSystem::URSequencePoint* currentUndoBatch = nullptr;
-            ToolsApplicationRequests::Bus::BroadcastResult(currentUndoBatch, &ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
-
-            bool createdUndo = false;
-            if (!currentUndoBatch)
-            {
-                createdUndo = true;
-                ToolsApplicationRequests::Bus::BroadcastResult(
-                    currentUndoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Detach Prefab");
-                AZ_Assert(currentUndoBatch, "Failed to create new undo batch.");
-            }
-
-            // In order to undo Prefab Instance detachment, we have to create a selection command which selects the current selection
-            // and then add the detach as children.
-            // Commands always execute themselves first and then their children (when going forwards)
-            // and do the opposite when going backwards.
-            EntityIdList selectedEntities;
-            ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
-            SelectionCommand* selCommand = aznew SelectionCommand(selectedEntities, "Detach Prefab");
-
-            // We insert a "deselect all" command before we detach the Prefab Instance. This ensures the detach operations aren't changing
-            // selection state, which triggers expensive UI updates. By deselecting up front, we are able to do those expensive
-            // UI updates once at the start instead of once for each entity.
-            {
-                EntityIdList deselection;
-                SelectionCommand* deselectAllCommand = aznew SelectionCommand(deselection, "Deselect Entities");
-                deselectAllCommand->SetParent(selCommand);
-            }
-
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DetachPrefab:UndoCapture");
+
+                ScopedUndoBatch undoBatch("Detach Prefab");
 
                 InstanceOptionalReference parentInstance = owningInstance->get().GetParentInstance();
                 const auto parentTemplateId = parentInstance->get().GetTemplateId();
@@ -1049,7 +1022,7 @@ namespace AzToolsFramework
                     auto instancePtr = parentInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
                     AZ_Assert(instancePtr, "Can't detach selected Instance from its parent Instance.");
 
-                    RemoveLink(instancePtr, parentTemplateId, currentUndoBatch);
+                    RemoveLink(instancePtr, parentTemplateId, undoBatch.GetUndoBatch());
 
                     Prefab::PrefabDom instanceDomBefore;
                     m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance->get());
@@ -1094,12 +1067,10 @@ namespace AzToolsFramework
 
                     PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment");
                     command->Capture(instanceDomBefore, instanceDomAfter, parentTemplateId);
-                    command->SetParent(selCommand);
-
-                    selCommand->SetParent(currentUndoBatch);
+                    command->SetParent(undoBatch.GetUndoBatch());
                     {
                         AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DetachPrefab:RunRedo");
-                        selCommand->RunRedo();
+                        command->RunRedo();
                     }
 
                     const auto instanceTemplateId = instancePtr->GetTemplateId();
@@ -1117,7 +1088,7 @@ namespace AzToolsFramework
                         PrefabDom linkPatchesCopy;
                         linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
 
-                        RemoveLink(nestedInstancePtr, instanceTemplateId, currentUndoBatch);
+                        RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
                         PrefabDomUtils::PrintPrefabDomValue("linkPatchesCopy", linkPatchesCopy);
 
                         //update aliases
@@ -1139,17 +1110,13 @@ namespace AzToolsFramework
 
                         linkPatchesCopy.Parse(previousPatchString.toUtf8().constData());
 
-                        CreateLink(*nestedInstancePtr, parentTemplateId, currentUndoBatch, AZStd::move(linkPatchesCopy), true);
+                        CreateLink(*nestedInstancePtr, parentTemplateId, undoBatch.GetUndoBatch(),
+                            AZStd::move(linkPatchesCopy), true);
                     });
                 }
-            }
 
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
-
-            if (createdUndo)
-            {
-                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::EndUndoBatch);
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }
 
             return AZ::Success();
