@@ -92,9 +92,6 @@ namespace AZ
 
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
 
-        //! Sets the transform to apply scale only, no rotation or translation.
-        static Transform CreateScale(const AZ::Vector3& scale);
-
         //! Sets the transform to apply (uniform) scale only, no rotation or translation.
         static Transform CreateUniformScale(const float scale);
 
@@ -127,7 +124,6 @@ namespace AZ
 
         Vector3 GetScale() const;
         float GetUniformScale() const;
-        void SetScale(const Vector3& v);
         void SetUniformScale(const float scale);
 
         //! Sets the transform's scale to a unit value and returns the previous scale value.

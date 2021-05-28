@@ -312,7 +312,6 @@ namespace AZ
                 Method<void (Transform::*)(const Quaternion&)>("SetRotation", &Transform::SetRotation)->
                 Method("GetScale", &Transform::GetScale)->
                 Method("GetUniformScale", &Transform::GetUniformScale)->
-                Method("SetScale", &Transform::SetScale)->
                 Method("SetUniformScale", &Transform::SetUniformScale)->
                 Method("ExtractUniformScale", &Transform::ExtractUniformScale)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
@@ -334,7 +333,6 @@ namespace AZ
                 Method("CreateFromQuaternionAndTranslation", &Transform::CreateFromQuaternionAndTranslation)->
                 Method("CreateFromMatrix3x3", &Transform::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix3x3AndTranslation", &Transform::CreateFromMatrix3x3AndTranslation)->
-                Method("CreateScale", &Transform::CreateScale)->
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);

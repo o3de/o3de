@@ -63,16 +63,6 @@ namespace AZ
         return result;
     }
 
-    AZ_MATH_INLINE Transform Transform::CreateScale(const Vector3& scale)
-    {
-        AZ_WarningOnce("Transform", false, "CreateScale is deprecated, please use CreateUniformScale instead.");
-        Transform result;
-        result.m_rotation = Quaternion::CreateIdentity();
-        result.m_scale = scale;
-        result.m_translation = Vector3::CreateZero();
-        return result;
-    }
-
     AZ_MATH_INLINE Transform Transform::CreateUniformScale(float scale)
     {
         Transform result;
@@ -169,12 +159,6 @@ namespace AZ
     AZ_MATH_INLINE float Transform::GetUniformScale() const
     {
         return m_scale.GetMaxElement();
-    }
-
-    AZ_MATH_INLINE void Transform::SetScale(const Vector3& scale)
-    {
-        AZ_WarningOnce("Transform", false, "SetScale is deprecated, please use SetUniformScale instead.");
-        m_scale = scale;
     }
 
     AZ_MATH_INLINE void Transform::SetUniformScale(const float scale)
