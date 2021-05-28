@@ -142,7 +142,7 @@ def get_o3de_manifest() -> pathlib.Path:
             with default_restricted_folder_json.open('w') as s:
                 restricted_json_data = {}
                 restricted_json_data.update({'restricted_name': 'o3de'})
-                s.write(json.dumps(restricted_json_data, indent=4))
+                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
         json_data.update({'default_restricted_folder': default_restricted_folder.as_posix()})
 
         default_projects_restricted_folder_json = default_projects_restricted_folder / 'restricted.json'
@@ -150,24 +150,24 @@ def get_o3de_manifest() -> pathlib.Path:
             with default_projects_restricted_folder_json.open('w') as s:
                 restricted_json_data = {}
                 restricted_json_data.update({'restricted_name': 'projects'})
-                s.write(json.dumps(restricted_json_data, indent=4))
+                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
         default_gems_restricted_folder_json = default_gems_restricted_folder / 'restricted.json'
         if not default_gems_restricted_folder_json.is_file():
             with default_gems_restricted_folder_json.open('w') as s:
                 restricted_json_data = {}
                 restricted_json_data.update({'restricted_name': 'gems'})
-                s.write(json.dumps(restricted_json_data, indent=4))
+                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
         default_templates_restricted_folder_json = default_templates_restricted_folder / 'restricted.json'
         if not default_templates_restricted_folder_json.is_file():
             with default_templates_restricted_folder_json.open('w') as s:
                 restricted_json_data = {}
                 restricted_json_data.update({'restricted_name': 'templates'})
-                s.write(json.dumps(restricted_json_data, indent=4))
+                s.write(json.dumps(restricted_json_data, indent=4) + '\n')
 
         with manifest_path.open('w') as s:
-            s.write(json.dumps(json_data, indent=4))
+            s.write(json.dumps(json_data, indent=4) + '\n')
 
     return manifest_path
 
@@ -201,7 +201,7 @@ def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> N
         manifest_path = get_o3de_manifest()
     with manifest_path.open('w') as s:
         try:
-            s.write(json.dumps(json_data, indent=4))
+            s.write(json.dumps(json_data, indent=4) + '\n')
         except OSError as e:
             logger.error(f'Manifest json failed to save: {str(e)}')
 

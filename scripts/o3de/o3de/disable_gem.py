@@ -83,7 +83,7 @@ def disable_gem_in_project(gem_name: str = None,
         project_path = manifest.get_registered(project_name=project_name)
     if not project_path:
         logger.error(f'Unable to locate project path from the registered manifest.json files:'
-                     f' {str(pathlib.Path.home() / ".o3de/manifest.json")}, engine.json')
+                     f' {str(pathlib.Path("~/.o3de/o3de_manifest.json").expanduser())}, engine.json')
         return 1
 
     project_path = pathlib.Path(project_path).resolve()
