@@ -31,6 +31,36 @@
 namespace PhysX
 {
     constexpr const char* DefaultAssetFilename = "SurfaceTypeMaterialLibrary";
+    constexpr const char* TemplateAssetFilename = "Physx/TemplateMaterialLibrary";
+
+    static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> GetMaterialLibraryTemplate()
+    {
+        const auto& assetType = AZ::AzTypeInfo<Physics::MaterialLibraryAsset>::Uuid();
+
+        AZStd::vector<AZStd::string> assetTypeExtensions;
+        AZ::AssetTypeInfoBus::Event(assetType, &AZ::AssetTypeInfo::GetAssetTypeExtensions, assetTypeExtensions);
+
+        if (assetTypeExtensions.size() == 1)
+        {
+            // Constructing the path to the library asset
+            const AZStd::string& assetExtension = assetTypeExtensions[0];
+
+            // Use the path relative to the asset root to avoid hardcoding full path in the configuration
+            AZStd::string relativePath = TemplateAssetFilename;
+            AzFramework::StringFunc::Path::ReplaceExtension(relativePath, assetExtension.c_str());
+
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, false);
+
+            if (assetId.IsValid())
+            {
+                return AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(assetId, AZ::Data::AssetLoadBehavior::NoLoad);
+            }
+        }
+
+        return AZStd::nullopt;
+    }
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> CreateMaterialLibrary(const AZStd::string& fullTargetFilePath, const AZStd::string& relativePath)
     {
@@ -46,24 +76,41 @@ namespace PhysX
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
                 AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
-            if (Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
+            if (Physics::MaterialLibraryAsset* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
-                // check it out in the source control system
-                AzToolsFramework::SourceControlCommandBus::Broadcast(
-                    &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, fullTargetFilePath.c_str(), true,
-                    [](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& /*info*/) {});
+                auto templateLibraryOpt = GetMaterialLibraryTemplate();
+                if (templateLibraryOpt)
+                {
+                    if (const Physics::MaterialLibraryAsset* templateMaterialLibData = azrtti_cast<Physics::MaterialLibraryAsset*>(templateLibraryOpt->GetData()))
+                    {
+                        templateLibraryOpt->QueueLoad();
+                        templateLibraryOpt->BlockUntilLoadComplete();
 
-                // Save the material library asset into a file
-                auto assetHandler = AZ::Data::AssetManager::Instance().GetHandler(assetType);
-                if (assetHandler->SaveAssetData(newAsset, &fileStream))
-                {
-                    return newAsset;
-                }
-                else
-                {
-                    AZ_Error("PhysX", false,
-                        "CreateSurfaceTypeMaterialLibrary: Unable to save Surface Types Material Library Asset to %s",
-                        fullTargetFilePath.c_str());
+                        // Fill the newly created material library using the template data
+                        for (const auto& materialData : templateMaterialLibData->GetMaterialsData())
+                        {
+                            newMaterialLibraryData->AddMaterialData(materialData);
+                        }
+
+                        // check it out in the source control system
+                        AzToolsFramework::SourceControlCommandBus::Broadcast(
+                            &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, fullTargetFilePath.c_str(), true,
+                            [](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& /*info*/) {});
+
+                        // Save the material library asset into a file
+                        auto assetHandler = AZ::Data::AssetManager::Instance().GetHandler(assetType);
+                        if (assetHandler->SaveAssetData(newAsset, &fileStream))
+                        {
+                            return newAsset;
+                        }
+                        else
+                        {
+                            AZ_Error(
+                                "PhysX", false,
+                                "CreateSurfaceTypeMaterialLibrary: Unable to save Surface Types Material Library Asset to %s",
+                                fullTargetFilePath.c_str());
+                        }
+                    }
                 }
             }
         }
