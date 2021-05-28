@@ -12,7 +12,7 @@
 set(GEM_DEPENDENCIES
     Project::${Name}
     Gem::Maestro.Editor
-    Gem::TextureAtlas
+    Gem::TextureAtlas.Editor
     Gem::LmbrCentral.Editor
     Gem::NvCloth.Editor
     Gem::LyShine.Editor
