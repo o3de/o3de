@@ -59,7 +59,7 @@ namespace ScriptCanvas
 
     const char* SubgraphInterfaceAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png";
+        return "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png";
     }
 
     AZ::Uuid SubgraphInterfaceAssetHandler::GetComponentTypeId() const

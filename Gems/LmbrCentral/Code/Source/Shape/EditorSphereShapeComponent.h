@@ -44,6 +44,8 @@ namespace LmbrCentral
             provided.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
         }
 
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
     private:
         AZ_DISABLE_COPY_MOVE(EditorSphereShapeComponent)
 

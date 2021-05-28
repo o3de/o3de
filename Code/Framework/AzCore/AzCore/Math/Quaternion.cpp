@@ -258,7 +258,8 @@ namespace AZ
                 Method("CreateFromMatrix3x3", &Quaternion::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix4x4", &Quaternion::CreateFromMatrix4x4)->
                 Method("CreateFromAxisAngle", &Quaternion::CreateFromAxisAngle)->
-                Method("CreateShortestArc", &Quaternion::CreateShortestArc)
+                Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
+                Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)
                 ;
         }
     }
@@ -347,10 +348,17 @@ namespace AZ
         return result.GetW() >= 0.0f ? result : -result;
     }
 
-    const Quaternion Quaternion::CreateFromEulerAnglesDegrees(Vector3& anglesInDegrees)
+    const Quaternion Quaternion::CreateFromEulerAnglesDegrees(const Vector3& anglesInDegrees)
     {
         Quaternion result;
         result.SetFromEulerDegrees(anglesInDegrees);
+        return result;
+    }
+
+    const Quaternion Quaternion::CreateFromEulerAnglesRadians(const Vector3& anglesInRadians)
+    {
+        Quaternion result;
+        result.SetFromEulerRadians(anglesInRadians);
         return result;
     }
 

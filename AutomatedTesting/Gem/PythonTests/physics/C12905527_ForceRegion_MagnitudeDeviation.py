@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12905527
 # Test Case Title : Check that deviation occurring in Force Magnitude due to Values in Force direction is not large
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12905527
+
 
 # fmt: off
 class Tests():
@@ -63,8 +63,8 @@ def C12905527_ForceRegion_MagnitudeDeviation():
     imports.init()
 
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr
     import azlmbr.legacy.general as general
@@ -150,5 +150,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C12905527_ForceRegion_MagnitudeDeviation)

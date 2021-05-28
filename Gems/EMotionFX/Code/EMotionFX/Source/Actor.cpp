@@ -156,6 +156,7 @@ namespace EMotionFX
         result->mRetargetRootNode       = mRetargetRootNode;
         result->mInvBindPoseTransforms  = mInvBindPoseTransforms;
         result->m_optimizeSkeleton      = m_optimizeSkeleton;
+        result->m_skinToSkeletonIndexMap = m_skinToSkeletonIndexMap;
 
         result->RecursiveAddDependencies(this);
 
@@ -1490,18 +1491,19 @@ namespace EMotionFX
             const bool skinMetaAssetExists = DoesSkinMetaAssetExist(meshAssetId);
             const bool morphTargetMetaAssetExists = DoesMorphTargetMetaAssetExist(m_meshAsset.GetId());
 
+            m_skinToSkeletonIndexMap.clear();
+
             // Skin and morph target meta assets are ready, fill the runtime mesh data.
             if ((!skinMetaAssetExists || m_skinMetaAsset.IsReady()) &&
                 (!morphTargetMetaAssetExists || m_morphTargetMetaAsset.IsReady()))
             {
                 // Optional, not all actors have a skinned meshes.
-                AZStd::unordered_map<AZ::u16, AZ::u16> skinToSkeletonIndexMap;
                 if (skinMetaAssetExists)
                 {
-                    skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
+                    m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
                 }
 
-                ConstructMeshes(skinToSkeletonIndexMap);
+                ConstructMeshes(m_skinToSkeletonIndexMap);
 
                 // Optional, not all actors have morph targets.
                 if (morphTargetMetaAssetExists)
@@ -3012,17 +3014,22 @@ namespace EMotionFX
                 jointInfo.mStack->InsertDeformer(/*deformerPosition=*/0, morphTargetDeformer);
             }
 
-            // The lod has shared buffers that combine the data from each submesh. These buffers can be accessed through the first submesh in their entirety
-            const AZ::RPI::ModelLodAsset::Mesh& sourceMesh = sourceMeshes[0];
+            // The lod has shared buffers that combine the data from each submesh. In case any of the submeshes has a
+            // morph target buffer view we can access the entire morph target buffer via the buffer asset.
             AZStd::array_view<uint8_t> morphTargetDeltaView;
-            if (const auto* bufferAssetView = sourceMesh.GetSemanticBufferAssetView(AZ::Name("MORPHTARGET_VERTEXDELTAS")))
+            for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
             {
-                if (const auto* bufferAsset = bufferAssetView->GetBufferAsset().Get())
+                if (const auto* bufferAssetView = sourceMesh.GetSemanticBufferAssetView(AZ::Name("MORPHTARGET_VERTEXDELTAS")))
                 {
-                    // The buffer of the view is the buffer of the whole LOD, not just the source mesh.
-                    morphTargetDeltaView = bufferAsset->GetBuffer();
+                    if (const auto* bufferAsset = bufferAssetView->GetBufferAsset().Get())
+                    {
+                        // The buffer of the view is the buffer of the whole LOD, not just the source mesh.
+                        morphTargetDeltaView = bufferAsset->GetBuffer();
+                        break;
+                    }
                 }
             }
+
             AZ_Assert(morphTargetDeltaView.data(), "Unable to find MORPHTARGET_VERTEXDELTAS buffer");
             const AZ::RPI::PackedCompressedMorphTargetDelta* vertexDeltas = reinterpret_cast<const AZ::RPI::PackedCompressedMorphTargetDelta*>(morphTargetDeltaView.data());
 

@@ -418,7 +418,6 @@ private: // ----------------------------------------------------------
 
     CSystem*                                               m_pSystem;
     IFFont*                                                m_pFont;
-    IRenderer*                                         m_pRenderer;
     ITimer*                                                m_pTimer;
 
     ICVar*                                                 m_pSysDeactivateConsole;

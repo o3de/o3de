@@ -6,7 +6,7 @@
 	       PreferredClassName="Expect Less Than"
            Uuid="{693FD406-8735-4DBB-B0A8-39E7DA467559}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/ExpectLessThan.png"
+           Icon="Icons/ScriptCanvas/ExpectLessThan.png"
            Version="1"
            VersionConverter="ScriptCanvas::UnitTesting::ExpectComparisonVersioner"
            GeneratePropertyFriend="True"

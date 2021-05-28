@@ -22,7 +22,7 @@
 #include <Cry_Geo.h>
 
 namespace Intersect {
-    inline bool Ray_Plane(const Ray& ray, const Plane& plane, Vec3& output, bool bSingleSidePlane = true)
+    inline bool Ray_Plane(const Ray& ray, const Plane_tpl<f32>& plane, Vec3& output, bool bSingleSidePlane = true)
     {
         float cosine    =   plane.n | ray.direction;
 
@@ -49,7 +49,7 @@ namespace Intersect {
         return true;        //intersection occurred
     }
 
-    inline bool Line_Plane(const Line& line, const Plane& plane, Vec3& output, bool bSingleSidePlane = true)
+    inline bool Line_Plane(const Line& line, const Plane_tpl<f32>& plane, Vec3& output, bool bSingleSidePlane = true)
     {
         float cosine        =   plane.n | line.direction;
 
@@ -792,7 +792,7 @@ namespace Intersect {
     //--- 0x03 = two intersection, lineseg has ENTRY and EXIT point  --
     //----------------------------------------------------------------------------------
 
-    inline unsigned char Line_Sphere(const Line& line, const Sphere& s, Vec3& i0, Vec3& i1)
+    inline unsigned char Line_Sphere(const Line& line, const ::Sphere& s, Vec3& i0, Vec3& i1)
     {
         Vec3 end = line.pointonline + line.direction;
 
@@ -830,7 +830,7 @@ namespace Intersect {
     //--- 0x03 = two intersection, lineseg has ENTRY and EXIT point  --
     //----------------------------------------------------------------------------------
 
-    inline unsigned char Ray_Sphere(const Ray& ray, const Sphere& s, Vec3& i0, Vec3& i1)
+    inline unsigned char Ray_Sphere(const Ray& ray, const ::Sphere& s, Vec3& i0, Vec3& i1)
     {
         Vec3 end = ray.origin + ray.direction;
         float a = ray.direction | ray.direction;
@@ -863,7 +863,7 @@ namespace Intersect {
         return intersection;
     }
 
-    inline bool Ray_SphereFirst(const Ray& ray, const Sphere& s, Vec3& intPoint)
+    inline bool Ray_SphereFirst(const Ray& ray, const ::Sphere& s, Vec3& intPoint)
     {
         Vec3 p2;
         unsigned char res = Ray_Sphere(ray, s, intPoint, p2);
@@ -886,7 +886,7 @@ namespace Intersect {
     //--- 0x02 = one intersection, lineseg has just an EXIT point but no ENTRY point (ls.start is inside the sphere)  --
     //--- 0x03 = two intersection, lineseg has ENTRY and EXIT point  --
     //----------------------------------------------------------------------------------
-    inline unsigned char Lineseg_Sphere(const Lineseg& ls, const Sphere& s, Vec3& i0, Vec3& i1)
+    inline unsigned char Lineseg_Sphere(const Lineseg& ls, const ::Sphere& s, Vec3& i0, Vec3& i1)
     {
         Vec3 dir = (ls.end - ls.start);
 
@@ -931,7 +931,7 @@ namespace Intersect {
     }
 
 
-    inline bool Lineseg_SphereFirst(const Lineseg& lineseg, const Sphere& s, Vec3& intPoint)
+    inline bool Lineseg_SphereFirst(const Lineseg& lineseg, const ::Sphere& s, Vec3& intPoint)
     {
         Vec3 p2;
         uint8 res = Lineseg_Sphere(lineseg, s, intPoint, p2);

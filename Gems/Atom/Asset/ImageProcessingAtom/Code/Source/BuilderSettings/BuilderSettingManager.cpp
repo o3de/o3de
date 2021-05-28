@@ -524,6 +524,10 @@ namespace ImageProcessingAtom
             {
                 return outPreset;
             }
+            else
+            {
+                AZ_Warning("Image Processing", false, "Image dimensions are not compatible with preset '%s'. The default preset will be used.", presetInfo->m_name.c_str());
+            }
         }
 
         //uncompressed one which could be used for almost everything

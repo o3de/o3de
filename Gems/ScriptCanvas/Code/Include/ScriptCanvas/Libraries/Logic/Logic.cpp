@@ -34,7 +34,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Logic>("Logic", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Logic.png")->
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Logic.png")->
                         Attribute(AZ::Edit::Attributes::CategoryStyle, ".logic")->
                         Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "LogicNodeTitlePalette")
                         ;

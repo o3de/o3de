@@ -37,6 +37,15 @@ namespace AZ
 
             void CaptureStep::Start()
             {
+                if (!m_context->GetData()->m_materialAsset ||
+                    !m_context->GetData()->m_modelAsset)
+                {
+                    AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                        m_context->GetData()->m_thumbnailKeyRendered,
+                        &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                    m_context->SetStep(Step::FindThumbnailToRender);
+                    return;
+                }
                 Render::MaterialComponentRequestBus::Event(
                     m_context->GetData()->m_modelEntity->GetId(),
                     &Render::MaterialComponentRequestBus::Events::SetDefaultMaterialOverride,

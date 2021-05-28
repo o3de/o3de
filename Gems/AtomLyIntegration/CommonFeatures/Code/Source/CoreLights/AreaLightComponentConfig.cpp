@@ -73,6 +73,11 @@ namespace AZ
                 || m_lightType == LightType::Polygon;
         }
 
+        bool AreaLightComponentConfig::LightTypeIsSelected() const
+        {
+            return m_lightType != LightType::Unknown;
+        }
+
         bool AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic() const
         {
             return m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic;
@@ -107,7 +112,7 @@ namespace AZ
 
         bool AreaLightComponentConfig::SupportsShadows() const
         {
-            return m_shapeType == AZ_CRC_CE("DiskShape");
+            return m_lightType == LightType::SpotDisk || m_lightType == LightType::Sphere;
         }
         
         bool AreaLightComponentConfig::ShadowsDisabled() const

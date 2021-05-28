@@ -18,7 +18,6 @@ set(FILES
     Tests/ActorHelper.cpp
     Tests/TriangleInputHelper.h
     Tests/TriangleInputHelper.cpp
-    Tests/CryRenderMeshStub.h
     Tests/System/ClothSystemTest.cpp
     Tests/System/ClothTest.cpp
     Tests/System/FabricCookerTest.cpp

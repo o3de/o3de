@@ -1,0 +1,19 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platform pc": {
+                    "tags": "tools,renderer"
+                },
+                "Platform mac": {
+                    "tags": "tools,renderer"
+                },
+                "RC i_caf": {
+                    "glob": "*.i_caf",
+                    "params": "copy",
+                    "priority": 5
+                }
+            }
+        }
+    }
+}

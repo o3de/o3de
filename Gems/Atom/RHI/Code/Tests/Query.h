@@ -21,7 +21,6 @@ namespace UnitTest
     class Query
         : public AZ::RHI::Query
     {
-        friend class QueryPool;
     public:
         AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
         

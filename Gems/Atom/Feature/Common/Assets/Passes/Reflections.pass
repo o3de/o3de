@@ -18,7 +18,7 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "ClearCoatNormalInput",
+                    "Name": "AlbedoInput",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
@@ -128,10 +128,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "ClearCoatNormalInput",
+                            "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "ClearCoatNormalInput"
+                                "Attachment": "AlbedoInput"
                             }
                         },
                         {
@@ -147,7 +147,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionGlobalFullscreen.shader"
                         },
-                        "StencilRef": 15,
+                        "StencilRef": 3, // See RenderCommon.h and ReflectionGlobalFullscreen.shader
                         "PipelineViewTag": "MainCamera"
                     }
                 },
@@ -189,13 +189,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SpecularF0Input"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ClearCoatNormalInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "ClearCoatNormalInput"
                             }
                         },
                         {
@@ -253,13 +246,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SpecularF0Input"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ClearCoatNormalInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "ClearCoatNormalInput"
                             }
                         }
                     ],

@@ -3379,7 +3379,7 @@ namespace WhiteBox
             CalculatePlanarUVs(whiteBox);
         }
 
-        bool WriteMesh(const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::u8>& output)
+        bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -3403,9 +3403,14 @@ namespace WhiteBox
             return false;
         }
 
-        bool ReadMesh(WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::u8>& input)
+        ReadResult ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+            if (input.empty())
+            {
+                return ReadResult::Empty;
+            }
 
             std::string inputStr;
             inputStr.reserve(input.size());
@@ -3418,33 +3423,33 @@ namespace WhiteBox
             return ReadMesh(whiteBox, whiteBoxStream);
         }
 
-        bool ReadMesh(WhiteBoxMesh& whiteBox, std::istream& input)
+        ReadResult ReadMesh(WhiteBoxMesh& whiteBox, std::istream& input)
         {
             const auto skipws = input.flags() & std::ios_base::skipws;
             AZ_Assert(skipws == 0, "Input stream must not skip white space characters");
 
             if (skipws != 0)
             {
-                return false;
+                return ReadResult::Error;
             }
 
             AZStd::lock_guard lg(g_omSerializationLock);
             OpenMesh::IO::Options options{OpenMesh::IO::Options::FaceTexCoord | OpenMesh::IO::Options::FaceNormal};
-            return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options);
+            return OpenMesh::IO::read_mesh(whiteBox.mesh, input, ".om", options) ? ReadResult::Full : ReadResult::Error;
         }
 
         WhiteBoxMeshPtr CloneMesh(const WhiteBoxMesh& whiteBox)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-            AZStd::vector<AZ::u8> clonedData;
+            WhiteBoxMeshStream clonedData;
             if (!WriteMesh(whiteBox, clonedData))
             {
                 return nullptr;
             }
 
             WhiteBoxMeshPtr newMesh = CreateWhiteBoxMesh();
-            if (!ReadMesh(*newMesh, clonedData))
+            if (ReadMesh(*newMesh, clonedData) != ReadResult::Full)
             {
                 return nullptr;
             }
@@ -3461,7 +3466,7 @@ namespace WhiteBox
 
         bool SaveToWbm(const WhiteBoxMesh& whiteBox, AZ::IO::GenericStream& stream)
         {
-            AZStd::vector<AZ::u8> buffer;
+            WhiteBoxMeshStream buffer;
             const bool success = WhiteBox::Api::WriteMesh(whiteBox, buffer);
 
             const auto bytesWritten = stream.Write(buffer.size(), buffer.data());

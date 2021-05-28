@@ -84,8 +84,8 @@ namespace UnitTests
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
             m_data->m_platformConfig.PopulatePlatformsForScanFolder(platforms);
 
-            m_data->m_scanFolder1 = { tempPath.absoluteFilePath("dev").toUtf8().constData(), "dev", "devKey", ""};
-            m_data->m_scanFolder2 = { tempPath.absoluteFilePath("folder").toUtf8().constData(), "folder", "folderKey", "prefix" };
+            m_data->m_scanFolder1 = { tempPath.absoluteFilePath("dev").toUtf8().constData(), "dev", "devKey"};
+            m_data->m_scanFolder2 = { tempPath.absoluteFilePath("folder").toUtf8().constData(), "folder", "folderKey"};
 
             ASSERT_TRUE(m_data->m_connection->SetScanFolder(m_data->m_scanFolder1));
             ASSERT_TRUE(m_data->m_connection->SetScanFolder(m_data->m_scanFolder2));
@@ -93,21 +93,19 @@ namespace UnitTests
             ScanFolderInfo scanFolder1(m_data->m_scanFolder1.m_scanFolder.c_str(),
                 m_data->m_scanFolder1.m_displayName.c_str(),
                 m_data->m_scanFolder1.m_portableKey.c_str(),
-                m_data->m_scanFolder1.m_outputPrefix.c_str(),
                 false, true, platforms, 0, m_data->m_scanFolder1.m_scanFolderID);
             m_data->m_platformConfig.AddScanFolder(scanFolder1);
 
             ScanFolderInfo scanFolder2(m_data->m_scanFolder2.m_scanFolder.c_str(),
                 m_data->m_scanFolder2.m_displayName.c_str(),
                 m_data->m_scanFolder2.m_portableKey.c_str(),
-                m_data->m_scanFolder2.m_outputPrefix.c_str(),
                 false, true, platforms, 0, m_data->m_scanFolder2.m_scanFolderID);
             m_data->m_platformConfig.AddScanFolder(scanFolder2);
 
             SourceDatabaseEntry sourceFile1 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder1/somefile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile2 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder1/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile3 = { m_data->m_scanFolder2.m_scanFolderID, "prefix/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
-            SourceDatabaseEntry sourceFile4 = { m_data->m_scanFolder2.m_scanFolderID, "prefix/a/b/c/d/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile3 = { m_data->m_scanFolder2.m_scanFolderID, "otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
+            SourceDatabaseEntry sourceFile4 = { m_data->m_scanFolder2.m_scanFolderID, "a/b/c/d/otherfile.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile5 = { m_data->m_scanFolder1.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile6 = { m_data->m_scanFolder2.m_scanFolderID, "duplicate/file1.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
             SourceDatabaseEntry sourceFile7 = { m_data->m_scanFolder1.m_scanFolderID, "subfolder2/file.tif", AZ::Uuid::CreateRandom(), "AnalysisFingerprint" };
@@ -128,7 +126,7 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection->SetSource(sourceFile11));
 
             SourceFileDependencyEntry dependency1 = { AZ::Uuid::CreateRandom(), "subfolder1/somefile.tif", "subfolder1/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_SourceToSource, false };
-            SourceFileDependencyEntry dependency2 = { AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "prefix/otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false };
+            SourceFileDependencyEntry dependency2 = { AZ::Uuid::CreateRandom(), "subfolder1/otherfile.tif", "otherfile.tif", SourceFileDependencyEntry::TypeOfDependency::DEP_JobToJob, false };
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency1));
             ASSERT_TRUE(m_data->m_connection->SetSourceFileDependency(dependency2));
 
@@ -252,7 +250,7 @@ namespace UnitTests
 
             const ScanFolderInfo* info;
             auto result = m_data->m_reporter->GetSourcesByPath(source, relocationContainer, info, excludeMetaDataFiles);
-            ASSERT_EQ(result.IsSuccess(), expectSuccess) << result.GetError().c_str();
+            ASSERT_EQ(result.IsSuccess(), expectSuccess) << (!result.IsSuccess() ? result.GetError().c_str() : "");
 
             if (expectSuccess)
             {
@@ -423,13 +421,13 @@ namespace UnitTests
 
     TEST_F(SourceFileRelocatorTest, GetSources_PrefixedFile_Succeeds)
     {
-        TestGetSourcesByPath("otherfile.tif", { "prefix/otherfile.tif" });
+        TestGetSourcesByPath("otherfile.tif", { "otherfile.tif" });
     }
 
     TEST_F(SourceFileRelocatorTest, GetSources_PrefixedAbsFile_Succeeds)
     {
         QDir tempDir(m_tempDir.path());
-        TestGetSourcesByPath(  tempDir.absoluteFilePath("folder/otherfile.tif").toUtf8().constData(), { "prefix/otherfile.tif" });
+        TestGetSourcesByPath(tempDir.absoluteFilePath("folder/otherfile.tif").toUtf8().constData(), { "otherfile.tif" });
     }
 
     TEST_F(SourceFileRelocatorTest, GetSources_Folder_Fails)
@@ -664,7 +662,7 @@ namespace UnitTests
 
         ASSERT_TRUE(m_data->m_reporter->GetSourcesByPath(tempPath.absoluteFilePath(AZStd::string("folder/o*").c_str()).toUtf8().constData(), entryContainer, info));
         ASSERT_EQ(entryContainer.size(), 1);
-        ASSERT_STREQ(entryContainer[0].m_sourceEntry.m_sourceName.c_str(), "prefix/otherfile.tif");
+        ASSERT_STREQ(entryContainer[0].m_sourceEntry.m_sourceName.c_str(), "otherfile.tif");
 
         m_data->m_reporter->PopulateDependencies(entryContainer);
 
@@ -803,7 +801,7 @@ namespace UnitTests
         FileUpdateTasks updateTasks;
 
         ASSERT_TRUE(m_data->m_reporter->GetSourcesByPath(tempPath.absoluteFilePath("folder/*").toUtf8().constData(), entryContainer, info));
-        ASSERT_EQ(entryContainer.size(), 2);
+        ASSERT_EQ(entryContainer.size(), 3);
 
         m_data->m_reporter->ComputeDestination(entryContainer, info, "*", "someOtherPlace/*", destInfo);
         m_data->m_reporter->PopulateDependencies(entryContainer);

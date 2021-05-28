@@ -13,6 +13,7 @@
 #ifndef __RENDERGL_GRAPHICSMANAGER__H
 #define __RENDERGL_GRAPHICSMANAGER__H
 
+#include <AzCore/IO/Path/Path.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Color.h>
@@ -57,21 +58,21 @@ namespace RenderGL
         const char* GetDeviceName();
         const char* GetDeviceVendor();
         MCORE_INLINE RenderTexture* GetRenderTexture()                                          { return mRenderTexture; }
-        MCORE_INLINE const char* GetShaderPath() const                                          { return mShaderPath.c_str(); }
+        MCORE_INLINE AZ::IO::PathView GetShaderPath() const                                     { return mShaderPath; }
         MCORE_INLINE TextureCache* GetTextureCache()                                            { return &mTextureCache; }
 
-        bool Init(const char* shaderPath = "Shaders/");
+        bool Init(AZ::IO::PathView shaderPath = "Shaders");
 
         bool GetIsPostProcessingEnabled() const                                                 { return mPostProcessing; }
-        PostProcessShader* LoadPostProcessShader(const char* filename);
-        GLSLShader* LoadShader(const char* vertexFileName, const char* pixelFileName);
-        GLSLShader* LoadShader(const char* vertexFileName, const char* pixelFileName, MCore::Array<AZStd::string>& defines);
+        PostProcessShader* LoadPostProcessShader(AZ::IO::PathView filename);
+        GLSLShader* LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName);
+        GLSLShader* LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines);
 
         MCORE_INLINE void SetGBuffer(GBuffer* gBuffer)                                          { mGBuffer = gBuffer; }
         MCORE_INLINE GBuffer* GetGBuffer()                                                      { return mGBuffer; }
 
-        Texture* LoadTexture(const char* filename, bool createMipMaps);
-        Texture* LoadTexture(const char* filename);
+        Texture* LoadTexture(AZ::IO::PathView filename, bool createMipMaps);
+        Texture* LoadTexture(AZ::IO::PathView filename);
 
         void SetCreateMipMaps(bool createMipMaps)                                               { mCreateMipMaps = createMipMaps; }
         MCORE_INLINE bool GetCreateMipMaps() const                                              { return mCreateMipMaps; }
@@ -96,7 +97,7 @@ namespace RenderGL
 
         void SetShader(Shader* shader);
         MCORE_INLINE void SetRenderTexture(RenderTexture* texture)                              { mRenderTexture = texture; }
-        MCORE_INLINE void SetShaderPath(const char* shaderPath)                                 { mShaderPath = shaderPath; }
+        MCORE_INLINE void SetShaderPath(AZ::IO::PathView shaderPath)                            { mShaderPath = shaderPath; }
 
         MCORE_INLINE void SetBloomEnabled(bool enabled)                                         { mBloomEnabled     = enabled; }
         MCORE_INLINE void SetBloomThreshold(float threshold)                                    { mBloomThreshold   = threshold; }
@@ -154,7 +155,7 @@ namespace RenderGL
         MCommon::Camera*    mCamera;        /**< The camera used for rendering. */
 
         ShaderCache         mShaderCache;   /**< The shader manager used to load and manage vertex and pixel shaders. */
-        AZStd::string       mShaderPath;    /**< The absolute path to the directory where the shaders are located. This string will be added as prefix to each shader file the user tries to load. */
+        AZ::IO::Path        mShaderPath;    /**< The absolute path to the directory where the shaders are located. This string will be added as prefix to each shader file the user tries to load. */
         MCore::RGBAColor    mClearColor;    /**< The scene background color. */
         MCore::RGBAColor    mGradientSourceColor;   /**< The background gradient source color. */
         MCore::RGBAColor    mGradientTargetColor;   /**< The background gradient target color. */

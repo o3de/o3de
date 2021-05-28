@@ -38,7 +38,6 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #endif
 
-#include <I3DEngine.h>
 #include <ISystem.h>
 #include <cinttypes>
 
@@ -852,17 +851,6 @@ namespace Vegetation
             {
                 AZ::TransformBus::EventResult(cameraPosition, activeCameraId, &AZ::TransformInterface::GetWorldTranslation);
                 cameraPositionIsValid = true;
-            }
-            else
-            {
-                //Go straight to the engine.
-                auto engine = m_system ? m_system->GetI3DEngine() : nullptr;
-                if (engine)
-                {
-                    const Vec3 pos = engine->GetRenderingCamera().GetPosition();
-                    cameraPosition = LYVec3ToAZVec3(pos);
-                    cameraPositionIsValid = true;
-                }
             }
         }
 

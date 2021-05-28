@@ -36,8 +36,11 @@ CAnimParamType CAnimNodeGroup::GetParamType([[maybe_unused]] unsigned int nIndex
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimNodeGroup::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimNodeGroup::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimNodeGroup, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimNodeGroup, CAnimNode>()
+            ->Version(1);
+    }
 }

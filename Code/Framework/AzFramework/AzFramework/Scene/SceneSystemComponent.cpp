@@ -14,7 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzFramework/Scene/Scene.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 namespace AzFramework
 {
@@ -41,14 +41,10 @@ namespace AzFramework
 
     void SceneSystemComponent::Activate()
     {
-        // Connect busses
-        SceneSystemRequestBus::Handler::BusConnect();
     }
 
     void SceneSystemComponent::Deactivate()
     {
-        // Disconnect Busses
-        SceneSystemRequestBus::Handler::BusDisconnect();
     }
 
     void SceneSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -61,140 +57,105 @@ namespace AzFramework
         incompatible.push_back(AZ_CRC("SceneSystemComponentService", 0xd8975435));
     }
 
-    AZ::Outcome<Scene*, AZStd::string> SceneSystemComponent::CreateScene(AZStd::string_view name)
+    AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> SceneSystemComponent::CreateScene(AZStd::string_view name)
     {
-        Scene* existingScene = GetScene(name);
+        return CreateSceneWithParent(name, nullptr);
+    }
 
+    AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> SceneSystemComponent::CreateSceneWithParent(
+        AZStd::string_view name, AZStd::shared_ptr<Scene> parent)
+    {
+        const AZStd::shared_ptr<Scene>& existingScene = GetScene(name);
         if (existingScene)
         {
             return AZ::Failure<AZStd::string>("A scene already exists with this name.");
         }
 
-        auto newScene = AZStd::make_unique<Scene>(name);
-        Scene* scenePointer = newScene.get();
-        m_scenes.push_back(AZStd::move(newScene));
-        SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneCreated, *scenePointer);
-        return AZ::Success(scenePointer);
+        auto newScene = AZStd::make_shared<Scene>(name, AZStd::move(parent));
+        m_activeScenes.push_back(newScene);
+        {
+            AZStd::lock_guard lock(m_eventMutex);
+            m_events.Signal(EventType::SceneCreated, newScene);
+        }
+        return AZ::Success(AZStd::move(newScene));
     }
 
-    Scene* SceneSystemComponent::GetScene(AZStd::string_view name)
+    AZStd::shared_ptr<Scene> SceneSystemComponent::GetScene(AZStd::string_view name)
     {
-        auto sceneIterator = AZStd::find_if(m_scenes.begin(), m_scenes.end(),
+        auto sceneIterator = AZStd::find_if(m_activeScenes.begin(), m_activeScenes.end(),
             [name](auto& scene) -> bool
             {
                 return scene->GetName() == name;
             }
         );
 
-        return sceneIterator == m_scenes.end() ? nullptr : sceneIterator->get();
+        return sceneIterator == m_activeScenes.end() ? nullptr : *sceneIterator;
     }
 
-    AZStd::vector<Scene*> SceneSystemComponent::GetAllScenes()
+    void SceneSystemComponent::IterateActiveScenes(const ActiveIterationCallback& callback)
     {
-        AZStd::vector<Scene*> scenes;
-        scenes.resize_no_construct(m_scenes.size());
-
-        for (size_t i = 0; i < m_scenes.size(); ++i)
+        bool keepGoing = true;
+        auto end = m_activeScenes.end();
+        for (auto it = m_activeScenes.begin(); it != end && keepGoing; ++it)
         {
-            scenes.at(i) = m_scenes.at(i).get();
+            keepGoing = callback(*it);
         }
-        return scenes;
+    }
+
+    void SceneSystemComponent::IterateZombieScenes(const ZombieIterationCallback& callback)
+    {
+        bool keepGoing = true;
+        auto end = m_zombieScenes.end();
+        for (auto it = m_zombieScenes.begin(); it != end && keepGoing;)
+        {
+            if (!it->expired())
+            {
+                keepGoing = callback(*(it->lock()));
+                ++it;
+            }
+            else
+            {
+                *it = m_zombieScenes.back();
+                m_zombieScenes.pop_back();
+                end = m_zombieScenes.end();
+            }
+        }
     }
 
     bool SceneSystemComponent::RemoveScene(AZStd::string_view name)
     {
-        for (size_t i = 0; i < m_scenes.size(); ++i)
+        for (AZStd::shared_ptr<Scene>& scene : m_activeScenes)
         {
-            auto& scenePtr = m_scenes.at(i);
-            if (scenePtr->GetName() == name)
+            if (scene->GetName() == name)
             {
-                // Remove any entityContext mappings.
-                Scene* scene = scenePtr.get();
-                for (auto entityContextScenePairIt = m_entityContextToScenes.begin(); entityContextScenePairIt != m_entityContextToScenes.end();)
+                MarkSceneForDestruction(*scene);
                 {
-                    AZStd::pair<EntityContextId, Scene*>& pair = *entityContextScenePairIt;
-                    if (pair.second == scene)
-                    {
-                        // swap and pop back.
-                        *entityContextScenePairIt = m_entityContextToScenes.back();
-                        m_entityContextToScenes.pop_back();
-                    }
-                    else
-                    {
-                        ++entityContextScenePairIt;
-                    }
+                    AZStd::lock_guard lock(m_eventMutex);
+                    m_events.Signal(EventType::ScenePendingRemoval, scene);
                 }
 
-                SceneSystemNotificationBus::Broadcast(&SceneSystemNotificationBus::Events::SceneAboutToBeRemoved, *scene);
-                SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::SceneAboutToBeRemoved);
-
-                m_scenes.erase(&scenePtr);
+                // Zombies are weak pointers that are kept around for situations where there's a delay in deleting the scene. This can happen
+                // if there are outstanding calls like in-progress async calls or resources locked by hardware. A weak_ptr of the original
+                // scene is kept so the zombie scene can still be found through iteration as it may require additional calls such as Tick calls.
+                m_zombieScenes.push_back(scene);
+                scene = AZStd::move(m_activeScenes.back());
+                m_activeScenes.pop_back();
+                // The scene may not be held onto anymore, so check here to see if the previously added zombie can be released.
+                if (m_zombieScenes.back().expired())
+                {
+                    m_zombieScenes.pop_back();
+                }
                 return true;
             }
         }
 
-        AZ_Warning("SceneSystemComponent", false, "Attempting to remove scene name \"%.*s\", but that scene was not found.", static_cast<int>(name.size()), name.data());
+        AZ_Warning("SceneSystemComponent", false, R"(Attempting to remove scene name "%.*s", but that scene was not found.)", AZ_STRING_ARG(name));
         return false;
     }
 
-    bool SceneSystemComponent::SetSceneForEntityContextId(EntityContextId entityContextId, Scene* scene)
+    void SceneSystemComponent::ConnectToEvents(SceneEvent::Handler& handler)
     {
-        Scene* existingSceneForEntityContext = GetSceneFromEntityContextId(entityContextId);
-        if (existingSceneForEntityContext)
-        {
-            // This entity context is already mapped and must be unmapped explictely before it can be changed.
-            char entityContextIdString[EntityContextId::MaxStringBuffer];
-            entityContextId.ToString(entityContextIdString, sizeof(entityContextIdString));
-            AZ_Warning("SceneSystemComponent", false, "Failed to set a scene for entity context %s, scene is already set for that entity context.", entityContextIdString);
-
-            return false;
-        }
-        m_entityContextToScenes.emplace_back(entityContextId, scene);
-        SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextMapped, entityContextId);
-        return true;
+        AZStd::lock_guard lock(m_eventMutex);
+        handler.Connect(m_events);
     }
-
-    bool SceneSystemComponent::RemoveSceneForEntityContextId(EntityContextId entityContextId, Scene* scene)
-    {
-        if (!scene || entityContextId.IsNull())
-        {
-            return false;
-        }
-
-        for (auto entityContextScenePairIt = m_entityContextToScenes.begin(); entityContextScenePairIt != m_entityContextToScenes.end();)
-        {
-            AZStd::pair<EntityContextId, Scene*>& pair = *entityContextScenePairIt;
-            if (!(pair.first == entityContextId && pair.second == scene))
-            {
-                ++entityContextScenePairIt;
-            }
-            else
-            {
-                // swap and pop back.
-                *entityContextScenePairIt = m_entityContextToScenes.back();
-                m_entityContextToScenes.pop_back();
-
-                SceneNotificationBus::Event(scene, &SceneNotificationBus::Events::EntityContextUnmapped, entityContextId);
-                return true;
-            }
-        }
-
-        char entityContextIdString[EntityContextId::MaxStringBuffer];
-        entityContextId.ToString(entityContextIdString, sizeof(entityContextIdString));
-        AZ_Warning("SceneSystemComponent", false, "Failed to remove scene \"%.*s\" for entity context %s, entity context is not currently mapped to that scene.", static_cast<int>(scene->GetName().size()), scene->GetName().data(), entityContextIdString);
-        return false;
-    }
-
-    Scene* SceneSystemComponent::GetSceneFromEntityContextId(EntityContextId entityContextId)
-    {
-        for (AZStd::pair<EntityContextId, Scene*>& pair : m_entityContextToScenes)
-        {
-            if (pair.first == entityContextId)
-            {
-                return pair.second;
-            }
-        }
-        return nullptr;
-    }
-
-} // AzFramework
+} // namespace AzFramework

@@ -78,8 +78,6 @@ namespace EMStudio
         virtual void OnBeforeRemovePlugin(uint32 classID) { MCORE_UNUSED(classID); }
         virtual void OnMainWindowClosed() {}
 
-        virtual void RegisterKeyboardShortcuts() {}
-
         struct RenderInfo
         {
             MCORE_MEMORYOBJECTCATEGORY(EMStudioPlugin::RenderInfo, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)

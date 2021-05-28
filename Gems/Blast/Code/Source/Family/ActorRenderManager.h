@@ -15,11 +15,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <Azcore/Math/Vector3.h>
 
-namespace LmbrCentral
-{
-    class MeshComponentRequests;
-}
-
 namespace Blast
 {
     class BlastMeshData;

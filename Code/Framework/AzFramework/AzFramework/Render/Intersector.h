@@ -33,6 +33,8 @@ namespace AzFramework
             , protected IntersectionNotificationBus::Handler
         {
         public:
+            AZ_TYPE_INFO(AzFramework::RenderGeometry::Intersector, "{4CCA7971-CD83-4856-ADEA-89CEB41FB197}");
+
             Intersector(AzFramework::EntityContextId contextId);
             ~Intersector();
 

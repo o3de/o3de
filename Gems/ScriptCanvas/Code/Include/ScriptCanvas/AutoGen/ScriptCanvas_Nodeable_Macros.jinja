@@ -307,41 +307,49 @@ AZStd::tuple<{{returns|join(", ")}}>
 {%      for executionOut in Class.findall('Output') %}
                 {{ ExecutionOutDeclaration(Class, executionOut) }}
 {%-     endfor %}
+size_t GetRequiredOutCount() const override; 
 {% endmacro %}
 
-{% macro ExecutionBranchDefinition(Class, qualifiedName, executionOut) %}
+{% macro ExecutionBranchDefinition(Class, qualifiedName, executionOut, outIndexBranch) %}
 {%      set outName = CleanName(executionOut.attrib['Name']) %}
 {%      set returns = executionOut.findall('Parameter') %}
 {%      set params = executionOut.findall('Return') %}
-void {{qualifiedName}}::Call{{CleanName(outName)}}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}) {
+void {{qualifiedName}}::Call{{outName}}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}) {
 {% if returns|length() == 0 %}
-    ExecutionOut(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"){% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
+    ExecutionOut({{ outIndexBranch }}{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}}{% endfor %}
 {% else %}
-    OutResult(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"), result{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
-{% endif -%}); 
+    ExecutionOutResult({{ outIndexBranch }}, result{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}}{% endfor %}
+{% endif -%}); // {{ executionOut.attrib['Name'] }}
 }
 {% endmacro %}
 
-{% macro ExecutionOutDefinition(Class, qualifiedName, executionOut) %}
+{% macro ExecutionOutDefinition(Class, qualifiedName, executionOut, outIndexLatent) %}
 {%      set outName = CleanName(executionOut.attrib['Name']) %}
 {%      set returns = executionOut.findall('Return') %}
 {%      set params = executionOut.findall('Parameter') %}
 void {{qualifiedName}}::Call{{CleanName(outName)}}({{ExecutionOutReturnDefinition(returns)}}{{ExecutionOutParameterDefinition(returns, params)}}) {
 {% if returns|length() == 0 %}
-    ExecutionOut(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"){% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
+    ExecutionOut({{ outIndexLatent }}{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}}{% endfor %}
 {% else %}
-    OutResult(AZ_CRC_CE("{{ executionOut.attrib['Name'] }}"), result{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}} {% endfor %}
-{% endif -%} ); 
+    ExecutionOutResult({{ outIndexLatent }}, result{% for parameter in params %}, {{CleanName(parameter.attrib['Name'])}}{% endfor %}
+{% endif -%}); // {{ executionOut.attrib['Name'] }}
 }
 {% endmacro %}
 
 {% macro ExecutionOutDefinitions(Class, qualifiedName) %}
+{%      set branches = [] %}
 {%      for method in Class.findall('Input') %}
 {%-             for branch in method.findall('Branch') %}
-                      {{ ExecutionBranchDefinition(Class, qualifiedName, branch) }}
+{%                    if branches.append(branch) %}{% endif %}
 {%-             endfor %}
-{%     endfor %}
-{%-      for executionOut in Class.findall('Output') -%}
-                {{ ExecutionOutDefinition(Class, qualifiedName, executionOut) }}
+{%      endfor %}
+{%-     for branch in branches -%}
+                {{ ExecutionBranchDefinition(Class, qualifiedName, branch, loop.index0) }}
 {%-     endfor %}
+{%-     for executionOut in Class.findall('Output') -%}
+                {{ ExecutionOutDefinition(Class, qualifiedName, executionOut, loop.index0 + branches|length) }}
+{%-     endfor %}
+
+size_t {{qualifiedName}}::GetRequiredOutCount() const { return {{Class.findall('Output')|length + branches|length}}; }
+
 {% endmacro %}

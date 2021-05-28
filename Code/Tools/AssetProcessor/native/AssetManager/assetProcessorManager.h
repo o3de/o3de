@@ -57,6 +57,9 @@ namespace AzFramework
         class GetRelativeProductPathFromFullSourceOrProductPathRequest;
         class GetRelativeProductPathFromFullSourceOrProductPathResponse;
 
+        class GenerateRelativeSourcePathRequest;
+        class GenerateRelativeSourcePathResponse;
+
         class GetFullSourcePathFromRelativeProductPathRequest;
         class GetFullSourcePathFromRelativeProductPathResponse;
         class AssetNotificationMessage;
@@ -104,6 +107,8 @@ namespace AssetProcessor
         using GetAbsoluteAssetDatabaseLocationResponse = AzToolsFramework::AssetSystem::GetAbsoluteAssetDatabaseLocationResponse;
         using GetRelativeProductPathFromFullSourceOrProductPathRequest = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathRequest;
         using GetRelativeProductPathFromFullSourceOrProductPathResponse = AzFramework::AssetSystem::GetRelativeProductPathFromFullSourceOrProductPathResponse;
+        using GenerateRelativeSourcePathRequest = AzFramework::AssetSystem::GenerateRelativeSourcePathRequest;
+        using GenerateRelativeSourcePathResponse = AzFramework::AssetSystem::GenerateRelativeSourcePathResponse;
         using GetFullSourcePathFromRelativeProductPathRequest = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathRequest;
         using GetFullSourcePathFromRelativeProductPathResponse = AzFramework::AssetSystem::GetFullSourcePathFromRelativeProductPathResponse;
 
@@ -163,7 +168,7 @@ namespace AssetProcessor
         //! Internal structure that will hold all the necessary source info
         struct SourceFileInfo
         {
-            QString m_databasePath; // clarification: this is the database path (ie, includes outputprefix)
+            QString m_databasePath; // clarification: this is the database path
             QString m_pathRelativeToScanFolder;
             AZ::Uuid m_uuid;
             const ScanFolderInfo* m_scanFolder{ nullptr };
@@ -222,7 +227,7 @@ namespace AssetProcessor
         //! Emit whenever a new asset is found or an existing asset is updated
         void AssetMessage(AzFramework::AssetSystem::AssetNotificationMessage message);
         
-        // InputAssetProcessed - uses absolute asset path of input file - no outputprefix
+        // InputAssetProcessed - uses absolute asset path of input file
         void InputAssetProcessed(QString fullAssetPath, QString platform);
 
         void RequestInputAssetStatus(QString inputAssetPath, QString platform, QString jobDescription);

@@ -1,7 +1,6 @@
 {
     "configurations": [
         {
-            "autoSelect": false,
             "displayName": "Greenwich Park 02",
             "skyboxImageAsset": {
                 "assetId": {
@@ -64,7 +63,6 @@
             "shadowCatcherOpacity": 0.20000000298023225
         },
         {
-            "autoSelect": false,
             "displayName": "Greenwich Park 02 (Alt)",
             "skyboxImageAsset": {
                 "assetId": {

@@ -14,7 +14,6 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
-    API/AtomActiveInterface.h
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -104,6 +103,9 @@ set(FILES
     Viewport/CameraState.cpp
     Viewport/CameraInput.h
     Viewport/CameraInput.cpp
+    Viewport/ClickDetector.h
+    Viewport/ClickDetector.cpp
+    Viewport/CursorState.h
     Viewport/DisplayContextRequestBus.h
     Entity/BehaviorEntity.cpp
     Entity/BehaviorEntity.h
@@ -145,6 +147,7 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
+    Font/FontInterface.h
     Gem/GemInfo.cpp
     Gem/GemInfo.h
     StringFunc/StringFunc.h
@@ -161,26 +164,6 @@ set(FILES
     Metrics/MetricsPlainTextNameRegistration.h
     Network/AssetProcessorConnection.cpp
     Network/AssetProcessorConnection.h
-    Network/DynamicSerializableFieldMarshaler.h
-    Network/EntityIdMarshaler.h
-    Network/InterestManagerComponent.h
-    Network/InterestManagerComponent.cpp
-    Network/NetBindable.h
-    Network/NetBindable.cpp
-    Network/NetBindingEventsBus.h
-    Network/NetBindingHandlerBus.h
-    Network/NetBindingSystemBus.h
-    Network/NetBindingComponent.h
-    Network/NetBindingComponent.cpp
-    Network/NetBindingComponentChunk.h
-    Network/NetBindingComponentChunk.cpp
-    Network/NetBindingSystemImpl.h
-    Network/NetBindingSystemImpl.cpp
-    Network/NetBindingSystemComponent.h
-    Network/NetBindingSystemComponent.cpp
-    Network/NetworkContext.h
-    Network/NetworkContext.cpp
-    Network/NetSystemBus.h
     Network/SocketConnection.cpp
     Network/SocketConnection.h
     Logging/LogFile.cpp
@@ -193,25 +176,34 @@ set(FILES
     Logging/MissingAssetLogger.h
     Logging/MissingAssetNotificationBus.h
     Scene/Scene.h
+    Scene/Scene.inl
     Scene/Scene.cpp
-    Scene/SceneSystemBus.h
     Scene/SceneSystemComponent.h
     Scene/SceneSystemComponent.cpp
+    Scene/SceneSystemInterface.h
     Script/ScriptComponent.h
     Script/ScriptComponent.cpp
     Script/ScriptDebugAgentBus.h
     Script/ScriptDebugMsgReflection.cpp
     Script/ScriptDebugMsgReflection.h
-    Script/ScriptMarshal.h
-    Script/ScriptMarshal.cpp
-    Script/ScriptNetBindings.h
-    Script/ScriptNetBindings.cpp
     Script/ScriptRemoteDebugging.cpp
     Script/ScriptRemoteDebugging.h
+    Session/ISessionHandlingRequests.h
+    Session/ISessionRequests.cpp
+    Session/ISessionRequests.h
+    Session/SessionConfig.cpp
+    Session/SessionConfig.h
+    Session/SessionNotifications.h
     StreamingInstall/StreamingInstall.h
     StreamingInstall/StreamingInstall.cpp
     StreamingInstall/StreamingInstallRequests.h
     StreamingInstall/StreamingInstallNotifications.h
+    Physics/Collision/CollisionEvents.h
+    Physics/Collision/CollisionEvents.cpp
+    Physics/Collision/CollisionLayers.h
+    Physics/Collision/CollisionLayers.cpp
+    Physics/Collision/CollisionGroups.h
+    Physics/Collision/CollisionGroups.cpp
     Physics/Common/PhysicsSceneQueries.h
     Physics/Common/PhysicsSceneQueries.cpp
     Physics/Common/PhysicsEvents.h
@@ -222,12 +214,7 @@ set(FILES
     Physics/Common/PhysicsSimulatedBodyEvents.h
     Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsTypes.h
-    Physics/Collision/CollisionEvents.h
-    Physics/Collision/CollisionEvents.cpp
-    Physics/Collision/CollisionLayers.h
-    Physics/Collision/CollisionLayers.cpp
-    Physics/Collision/CollisionGroups.h
-    Physics/Collision/CollisionGroups.cpp
+    Physics/Components/SimulatedBodyComponentBus.h
     Physics/Configuration/CollisionConfiguration.h
     Physics/Configuration/CollisionConfiguration.cpp
     Physics/Configuration/RigidBodyConfiguration.h
@@ -264,7 +251,6 @@ set(FILES
     Physics/ShapeConfiguration.h
     Physics/ShapeConfiguration.cpp
     Physics/SystemBus.h
-    Physics/WorldBodyBus.h
     Physics/ColliderComponentBus.h
     Physics/RagdollPhysicsBus.h
     Physics/CharacterPhysicsDataBus.h
@@ -278,6 +264,7 @@ set(FILES
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h
+    Physics/WindBus.h
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
@@ -315,8 +302,8 @@ set(FILES
     Spawnable/SpawnableSystemComponent.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
+    Thermal/ThermalInfo.h
     Platform/PlatformDefaults.h
-    Platform/PlatformDefaults.cpp
     Windowing/WindowBus.h
     Windowing/NativeWindow.cpp
     Windowing/NativeWindow.h

@@ -32,8 +32,11 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QDialog>
-#include <QPushButton>
+#include <QDialogButtonBox>
 #include <QHBoxLayout>
+#include <QMenu>
+#include <QPushButton>
+#include <QToolButton>
 #include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
 
@@ -286,42 +289,31 @@ namespace AZ
                 MaterialModelUvNameMapInspector* inspector = new MaterialModelUvNameMapInspector(assetId, matModUvOverrides, modelUvNames, matModUvOverrideMapChangedCallBack, &dialog);
                 inspector->Populate();
 
-                // Create the bottom row of the dialog with action buttons for exporting or canceling the operation
-                QWidget* buttonRow = new QWidget(&dialog);
-                buttonRow->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+                // Create the menu button
+                QToolButton* menuButton = new QToolButton(&dialog);
+                menuButton->setAutoRaise(true);
+                menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
+                menuButton->setVisible(true);
+                QObject::connect(menuButton, &QToolButton::clicked, &dialog, [&]() {
+                    QAction* action = nullptr;
 
-                QPushButton* revertButton = new QPushButton("Revert", buttonRow);
-                QObject::connect(revertButton, &QPushButton::clicked, revertButton, [inspector, matModUvOverrides] {
-                    inspector->SetUvNameMap(matModUvOverrides);
-                    });
+                    QMenu menu(&dialog);
+                    action = menu.addAction("Clear", [&] { inspector->SetUvNameMap(RPI::MaterialModelUvOverrideMap()); });
+                    action = menu.addAction("Revert", [&] { inspector->SetUvNameMap(matModUvOverrides);; });
+                    menu.exec(QCursor::pos());
+                });
 
-                QPushButton* clearButton = new QPushButton("Clear", buttonRow);
-                QObject::connect(clearButton, &QPushButton::clicked, clearButton, [inspector] {
-                    inspector->SetUvNameMap(RPI::MaterialModelUvOverrideMap());
-                    });
-
-                QPushButton* confirmButton = new QPushButton("Confirm", buttonRow);
-                QObject::connect(confirmButton, &QPushButton::clicked, confirmButton, [&dialog] {
-                    dialog.accept();
-                    });
-
-                QPushButton* cancelButton = new QPushButton("Cancel", buttonRow);
-                QObject::connect(cancelButton, &QPushButton::clicked, cancelButton, [inspector, matModUvOverrides, &dialog] {
-                    inspector->SetUvNameMap(matModUvOverrides);
-                    dialog.reject();
-                    });
-
-                QHBoxLayout* buttonLayout = new QHBoxLayout(buttonRow);
-                buttonLayout->addStretch();
-                buttonLayout->addWidget(revertButton);
-                buttonLayout->addWidget(clearButton);
-                buttonLayout->addWidget(confirmButton);
-                buttonLayout->addWidget(cancelButton);
+                QDialogButtonBox* buttonBox = new QDialogButtonBox(&dialog);
+                buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+                QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+                QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
                 QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
+                dialogLayout->addWidget(menuButton);
                 dialogLayout->addWidget(inspector);
-                dialogLayout->addWidget(buttonRow);
+                dialogLayout->addWidget(buttonBox);
                 dialog.setLayout(dialogLayout);
+                dialog.setModal(true);
 
                 // Forcing the initial dialog size to accomodate typical content.
                 // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.

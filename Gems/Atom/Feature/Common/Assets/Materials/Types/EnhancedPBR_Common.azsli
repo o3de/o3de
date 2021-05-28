@@ -13,7 +13,10 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include "MaterialInputs/BaseColorInput.azsli"
 #include "MaterialInputs/RoughnessInput.azsli"
@@ -103,7 +106,22 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 }
 
 // Callback function for ParallaxMapping.azsli
-float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
     return SampleDepthOrHeightMap(MaterialSrg::m_depthInverted, MaterialSrg::m_depthMap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+}
+
+COMMON_OPTIONS_PARALLAX()
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useDepthMap;
+}
+
+bool ShouldHandleParallaxInDepthShaders()
+{
+    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
+    // parallax could affect texel clipping.
+    return ShouldHandleParallax() && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
 }

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 '''
 This unittest might have to be refactored once changes to Physmaterial_Editor.py are made. 
 These changes will occur after the but, reverence below is resloved.
-Bug: https://jira.agscollab.com/browse/LY-107392
+Bug: LY-107392
 '''
 class Tests:
     opening_bad_file         = ("Bad file could not be opened",           "Bad file was opened")
@@ -58,9 +58,8 @@ def run():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     from Physmaterial_Editor import Physmaterial_Editor

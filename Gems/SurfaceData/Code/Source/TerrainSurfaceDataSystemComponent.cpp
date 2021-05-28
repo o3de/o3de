@@ -22,7 +22,6 @@
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 #include <ISystem.h>
-#include <I3DEngine.h>
 
 namespace SurfaceData
 {

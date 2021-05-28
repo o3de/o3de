@@ -26,3 +26,6 @@ git config --global "credential.UseHttpPath" "true"
 
 # Install Java (for Jenkins)
 choco install corretto8jdk -y --ia INSTALLDIR="c:\jdk8" # Custom directory to handle cases where whitespace in the path is not quote wrapped
+
+# Install CMake
+choco install cmake -y --installargs 'ADD_CMAKE_TO_PATH=System'

@@ -312,19 +312,6 @@ void OutlinerWidget::OnSelectionChanged(const QItemSelection& selected, const QI
     AzToolsFramework::EntityIdList newlyDeselected;
     ExtractEntityIdsFromSelection(deselected, newlyDeselected);
 
-    CEditTool* tool = GetIEditor()->GetEditTool();
-    IClassDesc* classDescription = tool ? tool->GetClassDesc() : nullptr;
-
-    if (classDescription && QString::compare(classDescription->ClassName(), "EditTool.Clone") == 0)
-    {
-        // if the user clicks an empty space or selects a different entity in the entity outliner, the clone operation will be accepted.
-        if ((newlySelected.empty() && !newlyDeselected.empty()) || !newlySelected.empty())
-        {
-            tool->Accept(true);
-            GetIEditor()->GetSelection()->FinishChanges();
-        }
-    }
-
     AzToolsFramework::ScopedUndoBatch undo("Select Entity");
 
     // initialize the selection command here to store the current selection before

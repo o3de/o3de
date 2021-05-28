@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
@@ -23,6 +24,8 @@
 #include <Editor/EditorWindow.h>
 #include <Editor/ConfigurationWidget.h>
 #include <System/PhysXSystem.h>
+#include <PhysX/Configuration/PhysXConfiguration.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 namespace PhysX
 {

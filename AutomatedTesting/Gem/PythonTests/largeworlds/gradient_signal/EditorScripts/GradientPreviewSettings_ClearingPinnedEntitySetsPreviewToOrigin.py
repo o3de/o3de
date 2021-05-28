@@ -9,19 +9,6 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-"""
-The below cases are combined in this script
-C2676829
-C3961326
-C3980659
-C3980664
-C3980669
-C3416548
-C2676823
-C3961321
-C2676826
-"""
-
 import os
 import sys
 
@@ -33,8 +20,8 @@ import azlmbr.paths
 import azlmbr.entity as EntityId
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestGradientPreviewSettings(EditorTestHelper):

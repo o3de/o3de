@@ -117,7 +117,7 @@ namespace AWSCore
         result.m_content.append(AZStd::string::format(Detail::FOOTER_FMT, m_boundary.c_str()));
 
         // Populate the metadata
-        result.m_contentLength = AZStd::string::format("%lu", result.m_content.length());
+        result.m_contentLength = AZStd::string::format("%zu", result.m_content.length());
         result.m_contentType = AZStd::string::format("multipart/form-data; boundary=%s", m_boundary.c_str());
 
         return result;

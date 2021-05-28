@@ -30,7 +30,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DMS<float>  m_depth;
     Texture2DMS<float4> m_normal;
     Texture2DMS<float4> m_specularF0;
-    Texture2DMS<float4> m_clearCoatNormal;
     Texture2DMS<float>  m_blendWeight;
     Texture2D<float2>   m_brdfMap;
 

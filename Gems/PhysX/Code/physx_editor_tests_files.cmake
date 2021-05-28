@@ -11,8 +11,6 @@
 
 set(FILES
     Source/Module.cpp
-    Source/SystemComponent.cpp
-    Source/SystemComponent.h
     Tests/PhysXTestCommon.cpp
     Tests/PhysXTestCommon.h
     Tests/ColliderScalingTests.cpp

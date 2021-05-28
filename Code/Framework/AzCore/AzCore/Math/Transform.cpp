@@ -250,6 +250,7 @@ namespace AZ
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
+                Constructor<const Vector3&, const Quaternion&, const Vector3&>()->
                 Method("GetBasis", &Transform::GetBasis)->
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
@@ -283,10 +284,15 @@ namespace AZ
                 Method("GetRotation", &Transform::GetRotation)->
                 Method<void (Transform::*)(const Quaternion&)>("SetRotation", &Transform::SetRotation)->
                 Method("GetScale", &Transform::GetScale)->
-                Method<void (Transform::*)(const Vector3&)>("SetScale", &Transform::SetScale)->
+                Method("GetUniformScale", &Transform::GetUniformScale)->
+                Method("SetScale", &Transform::SetScale)->
+                Method("SetUniformScale", &Transform::SetUniformScale)->
                 Method("ExtractScale", &Transform::ExtractScale)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
+                Method("ExtractUniformScale", &Transform::ExtractUniformScale)->
+                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("MultiplyByScale", &Transform::MultiplyByScale)->
+                Method("MultiplyByUniformScale", &Transform::MultiplyByUniformScale)->
                 Method("GetInverse", &Transform::GetInverse)->
                 Method("Invert", &Transform::Invert)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
@@ -305,6 +311,7 @@ namespace AZ
                 Method("CreateFromMatrix3x3", &Transform::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix3x3AndTranslation", &Transform::CreateFromMatrix3x3AndTranslation)->
                 Method("CreateScale", &Transform::CreateScale)->
+                Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
         }

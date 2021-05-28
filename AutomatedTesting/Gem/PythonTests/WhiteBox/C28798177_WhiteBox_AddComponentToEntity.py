@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID :  C28798177
 # Test Case Title : White Box Tool Component can be added to an Entity
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/28798177
 
 
 # fmt:off
@@ -22,10 +21,10 @@ class Tests():
 # fmt:on
 
 
-def run():
+def C28798177_WhiteBox_AddComponentToEntity():
     import os
     import sys
-    import WhiteBoxInit as init
+    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
     import ImportPathHelper as imports
     imports.init()
 
@@ -33,8 +32,9 @@ def run():
     import azlmbr.editor as editor
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # open level
     helper.init_idle()
@@ -57,4 +57,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C28798177_WhiteBox_AddComponentToEntity)

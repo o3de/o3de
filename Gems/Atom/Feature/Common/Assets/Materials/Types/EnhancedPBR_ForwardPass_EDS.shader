@@ -49,5 +49,5 @@
       ]
     },
 
-    "DrawList" : "forward"
+    "DrawList" : "forwardWithSubsurfaceOutput"
 }

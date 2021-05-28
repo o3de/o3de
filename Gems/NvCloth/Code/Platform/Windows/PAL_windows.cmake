@@ -10,3 +10,5 @@
 #
 
 set(PAL_TRAIT_NVCLOTH_USE_STUB FALSE)
+
+ly_associate_package(PACKAGE_NAME NvCloth-1.1.6-rev1-multiplatform TARGETS NvCloth PACKAGE_HASH 05fc62634ca28644e7659a89e97f4520d791e6ddf4b66f010ac669e4e2ed4454)

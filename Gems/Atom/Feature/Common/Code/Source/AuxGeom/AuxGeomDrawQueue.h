@@ -62,7 +62,7 @@ namespace AZ
             void DrawTriangles(const AuxGeomDynamicIndexedDrawArguments& args, FaceCullMode faceCull = FaceCullMode::None) override;
 
             // Fixed shape draws
-            void DrawQuad(float width, float height, const AZ::Transform& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
+            void DrawQuad(float width, float height, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawSphere(const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawDisk(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawCone(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;

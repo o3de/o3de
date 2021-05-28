@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4044461
 # Test Case Title : Verify the functionality of restitution
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044461
+
 
 
 # fmt: off
@@ -96,9 +96,8 @@ def C4044461_Material_Restitution():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr
     import azlmbr.legacy.general as general
@@ -238,5 +237,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4044461_Material_Restitution)

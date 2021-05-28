@@ -52,11 +52,25 @@ namespace AZ::SettingsRegistryMergeUtils
     //! project settings can be stored
     inline static constexpr char FilePathKey_ProjectUserPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectUserPath";
 
+    //! User facing key which represents the root of a project cmake build tree. i.e the ${CMAKE_BINARY_DIR}
+    //! A relative path is taking relative to the *project* root, NOT *engine* root.
+    inline constexpr AZStd::string_view ProjectBuildPath = "/Amazon/Project/Settings/Build/project_build_path";
+    //! In-Memory only key which stores an absolute path to the project build directory
+    inline constexpr AZStd::string_view FilePathKey_ProjectBuildPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectBuildPath";
+    //! In-Memory only key which stores the configuration directory containing the built binaries
+    inline constexpr AZStd::string_view FilePathKey_ProjectConfigurationBinPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectConfigurationBinPath";
+
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
 
+    //! Stores error text regarding engine boot sequence when engine and project roots cannot be determined
+    inline static constexpr char FilePathKey_ErrorText[] = "/Amazon/AzCore/Runtime/FilePaths/ErrorText";
+
     //! Root key for where command line are stored at within the settings registry
     inline static constexpr char CommandLineRootKey[] = "/Amazon/AzCore/Runtime/CommandLine";
+    //! Key set to trigger a notification that the CommandLine has been stored within the settings registry
+    //! The value of the key has no meaning. Notification Handlers only need to check if the key was supplied
+    inline static constexpr char CommandLineValueChangedKey[] = "/Amazon/AzCore/Runtime/CommandLineChanged";
 
     //! Root key where raw project settings (project.json) file is merged to settings registry
     inline static constexpr char ProjectSettingsRootKey[] = "/Amazon/Project/Settings";
@@ -74,6 +88,20 @@ namespace AZ::SettingsRegistryMergeUtils
     //! If it's still not found, attempt to find the project (by similar means) then reconcile the
     //! engine root by inspecting project.json and the engine manifest file.
     AZ::IO::FixedMaxPath FindEngineRoot(SettingsRegistryInterface& settingsRegistry);
+
+    //! The algorithm that is used to find the project root is as follows
+    //! 1. The first time this function is it performs a upward scan for a project.json file from
+    //! the executable directory and if found stores that path to an internal key.
+    //! In the same step it injects the path into the front of list of command line parameters
+    //! using the --regset="{BootstrapSettingsRootKey}/project_path=<path>" value
+    //! 2. Next the "{BootstrapSettingsRootKey}/project_path" is checked to see if it has a project path set
+    //!
+    //! The order in which the project path settings are overridden proceeds in the following order
+    //! 1. project_path set in the <engine-root>/bootstrap.cfg file
+    //! 2. project_path set in a *.setreg/*.setregpatch file
+    //! 3. project_path found by scanning upwards from the executable directory to the project.json path
+    //! 4. project_path set on the Command line via either --regset="{BootstrapSettingsRootKey}/project_path=<path>"
+    //!    or --project_path=<path>
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry);
 
     //! Query the specializations that will be used when loading the Settings Registry.
@@ -108,7 +136,7 @@ namespace AZ::SettingsRegistryMergeUtils
         //! Callback function that is after a has been filtered through the CommentPrefixFunc
         //! to determine if the text matches a section header
         //! returns a view of the section name if the line contains a section
-        //! Otherwise an empty view is returend
+        //! Otherwise an empty view is returned
         using SectionHeaderFunc = AZStd::function<AZStd::string_view(AZStd::string_view line)>;
 
         //! Root JSON pointer path to place all key=values pairs of configuration data within
@@ -143,9 +171,6 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @return true if the configuration file was able to be merged into the Settings Registry
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings);
-
-    //! Loads bootstrap.cfg into the Settings Registry. This file does not support specializations.
-    void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry);
 
     //! Extracts file path information from the environment and bootstrap to calculate the various file paths and adds those
     //! to the Settings Registry under the FilePathsRootKey.
@@ -201,6 +226,9 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Query the command line settings from the Setting Registry and stores them
     //! into the AZ::CommandLine instance
     bool GetCommandLineFromRegistry(SettingsRegistryInterface& registry, AZ::CommandLine& commandLine);
+
+    //! Parse a CommandLine and transform certain options into formal "regset" options
+    void ParseCommandLine(AZ::CommandLine& commandLine);
 
     //! Structure for configuring how values should be dumped from the Settings Registry
     struct DumperSettings

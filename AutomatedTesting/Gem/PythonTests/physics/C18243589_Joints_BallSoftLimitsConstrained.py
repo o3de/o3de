@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : 18243589
 # Test Case Title : Check that ball joint allows soft limit constraints
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18243589
+
 
 # fmt: off
 class Tests:
@@ -57,14 +57,14 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     """
     import os
     import sys
+    import math
 
     import ImportPathHelper as imports
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -96,13 +96,33 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     Report.info_vector3(follower.position, "follower initial position:")
     leadInitialPosition = lead.position
     followerInitialPosition = follower.position
+    
+    followerMovedAboveJoint = False
+    #calculate  the start vector from follower and lead positions
+    normalizedStartPos = JointsHelper.getRelativeVector(lead.position, follower.position)
+    normalizedStartPos = normalizedStartPos.GetNormalizedSafe()
+    #the targeted angle to reach between the initial vector and the current follower-lead vector
+    TARGET_ANGLE_DEG = 45
+    targetAngle = math.radians(TARGET_ANGLE_DEG)
+    angleAchieved = 0.0
 
-    # 4) Wait for several seconds
-    general.idle_wait(1.0) # wait for lead and follower to move
+    def checkAngleMet():
+        #calculate the current follower-lead vector
+        normalVec = JointsHelper.getRelativeVector(lead.position, follower.position)
+        normalVec = normalVec.GetNormalizedSafe()
+        #dot product + acos to get the angle
+        angleAchieved = math.acos(normalizedStartPos.Dot(normalVec))
+        #is it above target?
+        return angleAchieved > targetAngle
+
+    MAX_WAIT_TIME = 2.0 #seconds
+    followerMovedAboveJoint = helper.wait_for_condition(checkAngleMet, MAX_WAIT_TIME)
 
     # 5) Check to see if lead and follower behaved as expected
-    Report.info_vector3(lead.position, "lead position after 1 second:")
-    Report.info_vector3(follower.position, "follower position after 1 second:")
+    Report.info_vector3(lead.position, "lead position:")
+    Report.info_vector3(follower.position, "follower position:")
+    angleAchievedDeg = math.degrees(angleAchieved)
+    Report.info(f"Angle achieved {angleAchievedDeg:.2f} Target {TARGET_ANGLE_DEG:.2f}")
 
     leadPositionDelta = lead.position.Subtract(leadInitialPosition)
     leadRemainedStill = JointsHelper.vector3SmallerThanScalar(leadPositionDelta, FLOAT_EPSILON)
@@ -112,7 +132,6 @@ def C18243589_Joints_BallSoftLimitsConstrained():
     followerMovedinXYZ = JointsHelper.vector3LargerThanScalar(followerPositionDelta, FLOAT_EPSILON)
     Report.critical_result(Tests.check_follower_position, followerMovedinXYZ)
 
-    followerMovedAboveJoint = follower.position.z > (followerInitialPosition.z + 2.5) # (followerInitialPosition.z + 2.5) is the z position past the 45 degree limit. This is to show that the follower swinged past the 45 degree cone limit, above the joint position.
     Report.critical_result(Tests.check_follower_above_joint, followerMovedAboveJoint)
 
     # 6) Exit Game Mode
@@ -123,5 +142,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C18243589_Joints_BallSoftLimitsConstrained)

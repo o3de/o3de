@@ -4,9 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "Textures/ceiling_1k_ao.png"
+        "occlusion": {
+            "diffuseTextureMap": "Textures/ceiling_1k_ao.png"
         },
         "baseColor": {
             "textureBlendMode": "Lerp",
@@ -49,7 +48,8 @@
             "factor": 0.019999999552965165,
             "pdo": true,
             "quality": "Medium",
-            "textureMap": "Textures/ceiling_1k_height.png"
+            "textureMap": "Textures/ceiling_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/ceiling_1k_roughness.png"

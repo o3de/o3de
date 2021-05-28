@@ -15,6 +15,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 using namespace AZ;
 
@@ -384,5 +385,78 @@ namespace UnitTest
         EXPECT_TRUE(transAabb.GetMax().IsClose(transAabb2.GetMax()));
         EXPECT_TRUE(aabb.GetMin().IsClose(transAabb.GetMin()));
         EXPECT_TRUE(aabb.GetMax().IsClose(transAabb.GetMax()));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedObbMatrix3x4)
+    {
+        Vector3 min(-1.0f, -2.0f, -3.0f);
+        Vector3 max(4.0f, 3.0f, 2.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Quaternion rotation(0.46f, 0.26f, 0.58f, 0.62f);
+        Vector3 translation(5.0f, 7.0f, 9.0f);
+
+        Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+
+        matrix3x4.MultiplyByScale(Vector3(0.5f, 1.5f, 2.0f));
+
+        Obb obb = aabb.GetTransformedObb(matrix3x4);
+
+        EXPECT_THAT(obb.GetRotation(), IsClose(rotation));
+        EXPECT_THAT(obb.GetHalfLengths(), IsClose(Vector3(1.25f, 3.75f, 5.0f)));
+        EXPECT_THAT(obb.GetPosition(), IsClose(Vector3(3.928f, 7.9156f, 9.3708f)));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbMatrix3x4)
+    {
+        Vector3 min(2.0f, 3.0f, 5.0f);
+        Vector3 max(6.0f, 5.0f, 11.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Quaternion rotation(0.34f, 0.46f, 0.58f, 0.58f);
+        Vector3 translation(-3.0f, -4.0f, -5.0f);
+
+        Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+
+        matrix3x4.MultiplyByScale(Vector3(1.2f, 0.8f, 2.0f));
+
+        Aabb transformedAabb = aabb.GetTransformedAabb(matrix3x4);
+
+        EXPECT_THAT(transformedAabb.GetMin(), IsClose(Vector3(4.1488f, -0.01216f, -0.31904f)));
+        EXPECT_THAT(transformedAabb.GetMax(), IsClose(Vector3(16.3216f, 6.54272f, 5.98112f)));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedObbFitsInsideTransformedAabb)
+    {
+        Vector3 min(4.0f, 3.0f, 1.0f);
+        Vector3 max(7.0f, 6.0f, 8.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Quaternion rotation(0.40f, 0.40f, 0.64f, 0.52f);
+        Vector3 translation(-2.0f, 4.0f, -3.0f);
+
+        Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+
+        matrix3x4.MultiplyByScale(Vector3(2.2f, 0.6f, 1.4f));
+
+        Aabb transformedAabb = aabb.GetTransformedAabb(matrix3x4);
+        Obb transformedObb = aabb.GetTransformedObb(matrix3x4);
+        Aabb aabbContainingTransformedObb = Aabb::CreateFromObb(transformedObb);
+
+        EXPECT_THAT(transformedAabb.GetMin(), IsClose(aabbContainingTransformedObb.GetMin()));
+        EXPECT_THAT(transformedAabb.GetMax(), IsClose(aabbContainingTransformedObb.GetMax()));
+    }
+
+    TEST(MATH_AabbTransform, MultiplyByScale)
+    {
+        Vector3 min(2.0f, 6.0f, 8.0f);
+        Vector3 max(6.0f, 9.0f, 10.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Vector3 scale(0.5f, 2.0f, 1.5f);
+        aabb.MultiplyByScale(scale);
+
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(1.0f, 12.0f, 12.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(3.0f, 18.0f, 15.0f)));
     }
 }

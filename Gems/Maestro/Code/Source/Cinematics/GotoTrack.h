@@ -40,7 +40,7 @@ public:
     void SerializeKey(IDiscreteFloatKey& key, XmlNodeRef& keyNode, bool bLoading);
     void GetKeyInfo(int key, const char*& description, float& duration);
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 protected:
     void SetKeyAtTime(float time, IKey* key);

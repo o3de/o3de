@@ -25,6 +25,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace AZ::AtomBridge
 {
@@ -42,6 +43,10 @@ namespace AZ::AtomBridge
         AZ::RPI::AuxGeomDraw::DepthWrite m_depthWrite = AZ::RPI::AuxGeomDraw::DepthWrite::On;
         AZ::RPI::AuxGeomDraw::FaceCullMode m_faceCullMode = AZ::RPI::AuxGeomDraw::FaceCullMode::Back;
         int32_t m_viewProjOverrideIndex = -1; // will be used to implement SetDrawInFrontMode & 2D mode
+
+        // separate tracking for Cry only state
+        bool m_drawInFront = false;
+        bool m_2dMode = false;
     };
 
     //! Utility class to collect line segments when the number of segments is known at compile time.
@@ -77,6 +82,24 @@ namespace AZ::AtomBridge
             }
         }
 
+        void Draw2d(AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr, const RenderState& rendState) const
+        {
+            if (auxGeomDrawPtr && !m_points.empty())
+            {
+                AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
+                drawArgs.m_verts = m_points.data();
+                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_points.size());
+                drawArgs.m_colors = &rendState.m_color;
+                drawArgs.m_colorCount = 1;
+                drawArgs.m_size = rendState.m_lineWidth;
+                drawArgs.m_opacityType = rendState.m_opacityType;
+                drawArgs.m_depthTest = rendState.m_depthTest;
+                drawArgs.m_depthWrite = rendState.m_depthWrite;
+                drawArgs.m_viewProjectionOverrideIndex = auxGeomDrawPtr->GetOrAdd2DViewProjOverride();
+                auxGeomDrawPtr->DrawLines( drawArgs );
+            }
+        }
+
         void Reset()
         {
             m_points.clear();
@@ -91,6 +114,7 @@ namespace AZ::AtomBridge
         SingleColorDynamicSizeLineHelper(int estimatedNumLineSegments);
         void AddLineSegment(const AZ::Vector3& lineStart, const AZ::Vector3& lineEnd);
         void Draw(AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr, const RenderState& rendState) const;
+        void Draw2d(AZ::RPI::AuxGeomDrawPtr auxGeomDrawPtr, const RenderState& rendState) const;
         void Reset();
 
         AZStd::vector<AZ::Vector3> m_points;
@@ -98,6 +122,7 @@ namespace AZ::AtomBridge
 
     class AtomDebugDisplayViewportInterface final
         : public AzFramework::DebugDisplayRequestBus::Handler
+        , public AZ::RPI::ViewportContextIdNotificationBus::Handler
     {
     public:
         AZ_RTTI(AtomDebugDisplayViewportInterface, "{09AF6A46-0100-4FBF-8F94-E6B221322D14}", AzFramework::DebugDisplayRequestBus::Handler);
@@ -119,30 +144,32 @@ namespace AZ::AtomBridge
         void SetColor(const AZ::Vector4& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-        // void DrawQuad(float width, float height) overr
-        // void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-        // void DrawWireQuad(float width, float height) override;
+        void DrawQuad(float width, float height) override;
+        void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
+        void DrawWireQuad(float width, float height) override;
         void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
         void DrawTri(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3) override;
         void DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color) override;
         void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) override;
         void DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max) override;
         void DrawSolidBox(const AZ::Vector3& min, const AZ::Vector3& max) override;
+        void DrawWireOBB(const AZ::Vector3& center, const AZ::Vector3& axisX, const AZ::Vector3& axisY, const AZ::Vector3& axisZ, const AZ::Vector3& halfExtents) override;
         void DrawSolidOBB(const AZ::Vector3& center, const AZ::Vector3& axisX, const AZ::Vector3& axisY, const AZ::Vector3& axisZ, const AZ::Vector3& halfExtents) override;
         void DrawPoint(const AZ::Vector3& p, int nSize = 1) override;
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2) override;
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2) override;
         void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) override;
         void DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled = true) override;
-        // void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
-        // void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
-        // void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
-        // void DrawWireCircle2d(const AZ::Vector2& center, float radius, float z) override;
+        void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
+        void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
+        void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
+        void DrawWireCircle2d(const AZ::Vector2& center, float radius, float z) override;
         void DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, int referenceAxis = 2) override;
         void DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, const AZ::Vector3& fixedAxis) override;
         void DrawCircle(const AZ::Vector3& pos, float radius, int nUnchangedAxis = 2 /*z axis*/) override;
         void DrawHalfDottedCircle(const AZ::Vector3& pos, float radius, const AZ::Vector3& viewPos, int nUnchangedAxis = 2 /*z axis*/) override;
-        void DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded) override;
+        void DrawWireCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height) override;
+        void DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded) override;
         void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
         void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded) override;
         void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float heightStraightSection) override;
@@ -152,14 +179,11 @@ namespace AZ::AtomBridge
         void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded) override;
         void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
         void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float headScale = 1.0f, bool dualEndedArrow = false) override;
-        // void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) override;
-        // void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) override;
-        // void DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& TextColor, const AZ::Vector4& TextBackColor) override;
-        // unhandled on Atom - virtual void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-        // void DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
+        void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) override;
+        void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) override;
+        void DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& TextColor, const AZ::Vector4& TextBackColor) override;
         void SetLineWidth(float width) override;
-        // bool IsVisible(const AZ::Aabb& bounds) override;
-        // int SetFillMode(int nFillMode) override;
+        bool IsVisible(const AZ::Aabb& bounds) override;
         float GetLineWidth() override;
         float GetAspectRatio() override;
         void DepthTestOff() override;
@@ -169,14 +193,18 @@ namespace AZ::AtomBridge
         void CullOff() override;
         void CullOn() override;
         bool SetDrawInFrontMode(bool on) override;
-        // AZ::u32 GetState() override;
-        // AZ::u32 SetState(AZ::u32 state) override;
-        // AZ::u32 SetStateFlag(AZ::u32 state) override;
-        // AZ::u32 ClearStateFlag(AZ::u32 state) override;
+        AZ::u32 GetState() override;
+        AZ::u32 SetState(AZ::u32 state) override;
         void PushMatrix(const AZ::Transform& tm) override;
         void PopMatrix() override;
 
     private:
+
+        // ViewportContextIdNotificationBus handlers
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
+
+
+        // internal helper functions
         using LineSegmentFilterFunc = AZStd::function<bool(const AZ::Vector3& lineStart, const AZ::Vector3& lineEnd, int segmentIndex)>;
         enum CircleAxis
         {
@@ -220,19 +248,32 @@ namespace AZ::AtomBridge
         //! Convert direction to world space (translation is not considered)
         AZ::Vector3 ToWorldSpaceVector(const AZ::Vector3& v) const { return m_rendState.m_transformStack[m_rendState.m_currentTransform].Multiply3x3(v); }
 
+        //! Convert positions to world space.
+        AZStd::vector<AZ::Vector3> ToWorldSpacePosition(const AZStd::vector<AZ::Vector3>& positions) const;
+
+        //! Convert directions to world space (translation is not considered)
+        AZStd::vector<AZ::Vector3> ToWorldSpaceVector(const AZStd::vector<AZ::Vector3>& vectors) const;
+
         void CalcBasisVectors(const AZ::Vector3& n, AZ::Vector3& b1, AZ::Vector3& b2) const;
         
         const AZ::Matrix3x4& GetCurrentTransform() const;
 
+        void UpdateAuxGeom(RPI::Scene* scene, AZ::RPI::View* view);
         void InitInternal(RPI::Scene* scene, AZ::RPI::ViewportContextPtr viewportContextPtr);
+
+        AZ::RPI::ViewportContextPtr GetViewportContext() const;
+
+        uint32_t ConvertRenderStateToCry() const;
 
         RenderState m_rendState;
 
         AZ::RPI::AuxGeomDrawPtr m_auxGeomPtr;
-        bool                    m_defaultInstance = false; // only true for drawing to a particular viewport. What would 2D drawing mean in a scene with several windows?
+
+        // m_defaultInstance is true for the instance that multicasts the debug draws to all viewports
+        // (with an AuxGeom render pass) in the default scene.
+        bool                    m_defaultInstance = false;
         AzFramework::ViewportId m_viewportId = AzFramework::InvalidViewportId; // Address this instance answers on.
-        AZ::RPI::ViewportContext::SceneChangedEvent::Handler
-                                m_sceneChangeHandler;
+        AZ::RPI::ViewportContext::SceneChangedEvent::Handler m_sceneChangeHandler;
     };
 
     // this is duplicated from Cry_Math.h, GetBasisVectors.

@@ -15,4 +15,5 @@ set(FILES
     Source/ShaderManagementConsoleApplication.h
     Include/Atom/Document/ShaderManagementConsoleDocumentModule.h
     Source/Document/ShaderManagementConsoleDocumentModule.cpp
+    ../Scripts/GenerateShaderVariantListForMaterials.py
 )

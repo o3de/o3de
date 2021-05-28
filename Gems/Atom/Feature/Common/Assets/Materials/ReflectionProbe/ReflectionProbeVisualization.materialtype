@@ -401,38 +401,6 @@
                     "step": 0.1
                 }
             ],
-            "ambientOcclusion": [
-                {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the ambient occlusion feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                 {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 2.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_ambientOcclusionFactor"
-                    }
-                },
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining ambient occlusion area.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMap"
-                    }
-                }
-            ],
             "emissive": [
                 {
                     "id": "enable",

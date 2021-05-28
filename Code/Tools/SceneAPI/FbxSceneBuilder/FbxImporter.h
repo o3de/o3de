@@ -45,13 +45,11 @@ namespace AZ
                 Events::ProcessingResult ImportProcessing(Events::ImportEventContext& context);
 
             protected:
-                bool ConvertFbxSceneContext(Containers::Scene& scene) const;
                 bool ConvertFbxScene(Containers::Scene& scene) const;
                 void SanitizeNodeName(AZStd::string& nodeName) const;
 
                 AZStd::unique_ptr<SDKScene::SceneWrapperBase> m_sceneWrapper;
                 AZStd::shared_ptr<FbxSceneSystem> m_sceneSystem;
-                bool m_useAssetImporterSDK = false;
             };
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI

@@ -16,6 +16,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
@@ -60,21 +61,22 @@ namespace ScriptCanvasDeveloperEditor
 
         void GenerateTSFile()
         {
-            AZStd::string tsFileName("@devroot@/editor/translation/scriptcanvas_en_us.ts");
+            auto translationScriptPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) /
+                "Assets" / "Editor" / "Translation" / "scriptcanvas_en_us.ts";
 
-            XMLDocPtr tsDoc(XMLDoc::LoadFromDisk(tsFileName));
+            XMLDocPtr tsDoc(XMLDoc::LoadFromDisk(translationScriptPath.c_str()));
 
             if (tsDoc == nullptr)
             {
                 tsDoc = XMLDoc::Alloc("ScriptCanvas");
             }
-            
+
             DumpBehaviorContextMethods(tsDoc);
             DumpBehaviorContextEbuses(tsDoc);
 
-            tsDoc->WriteToDisk(tsFileName);
+            tsDoc->WriteToDisk(translationScriptPath.c_str());
         }
-        
+
         void DumpBehaviorContextMethods(const XMLDocPtr& doc)
         {
             AZ::SerializeContext* serializeContext{};
@@ -141,7 +143,7 @@ namespace ScriptCanvasDeveloperEditor
                     {
                         nodeCategoryName = attribute->Get(nullptr);
                     }
-                    
+
                     AddMessageNode(doc, classIter.first, methodPair.first, toolTip, nodeCategoryName, methodPair.second);
                 }
             }
@@ -159,7 +161,7 @@ namespace ScriptCanvasDeveloperEditor
             {
                 return;
             }
-            
+
             // We will skip buses that are ONLY registered on classes that derive from EditorComponentBase,
             // because they don't have a runtime implementation. Buses such as the TransformComponent which
             // is implemented by both an EditorComponentBase derived class and a Component derived class
@@ -259,7 +261,7 @@ namespace ScriptCanvasDeveloperEditor
                         StartContext(doc, "EBus", ebusIter.first, ebusIter.second->m_toolTip, categoryName);
                         addContext = true;
                     }
-                    
+
                     AZStd::string toolTip;
                     if (auto toolTipAttribute = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(AZ::Script::Attributes::ToolTip, eventIter.second.m_attributes)))
                     {
@@ -276,7 +278,7 @@ namespace ScriptCanvasDeveloperEditor
                 }
             }
         }
-        
+
         void DumpBehaviorContextEBusHandlers(const XMLDocPtr& doc, AZ::BehaviorEBus* ebus, const AZStd::string& categoryName)
         {
             if (!ebus)
@@ -400,10 +402,10 @@ namespace ScriptCanvasDeveloperEditor
                     const AZStd::string name = event.m_metadataParameters[AZ::eBehaviorBusForwarderEventIndices::Result].m_name.empty() ? event.m_parameters[AZ::eBehaviorBusForwarderEventIndices::Result].m_name : event.m_parameters[AZ::eBehaviorBusForwarderEventIndices::Result].m_name;
 
                     AddParameterElements(doc, baseID, 0, event.m_parameters[AZ::eBehaviorBusForwarderEventIndices::Result].m_typeId, name, event.m_metadataParameters[AZ::eBehaviorBusForwarderEventIndices::Result].m_toolTip, "");
-                
+
                     AZ_TracePrintf("ScriptCanvas", "EBusHandler Index: 0 CategoryName: %s Ebus: %s Event: %s Name: %s", categoryName.c_str(), classorbusName.c_str(), eventormethodName.c_str(), name.c_str());
                 }
-          
+
                 size_t outputIndex = 0;
                 for (size_t i = AZ::eBehaviorBusForwarderEventIndices::ParameterFirst; i < event.m_parameters.size(); ++i)
                 {
@@ -427,7 +429,7 @@ namespace ScriptCanvasDeveloperEditor
                 {
                     AddResultElements(doc, baseID, result->m_typeId, result->m_name, "");
                 }
-            
+
                 size_t start = method->HasBusId() ? 1 : 0;
                 for (size_t i = start; i < method->GetNumArguments(); ++i)
                 {

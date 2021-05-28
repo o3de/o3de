@@ -23,7 +23,6 @@
 #include <memory> // for shared_ptr
 #include <QMap>
 #include <QApplication>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzCore/std/string/string.h>
 
@@ -43,35 +42,19 @@ class CUndoManager;
 class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
-class CLensFlareManager;
 class CIconManager;
-class CBackgroundTaskManager;
 class CTrackViewSequenceManager;
 class CEditorFileMonitor;
 class AzAssetWindow;
 class AzAssetBrowserRequestHandler;
 class AssetEditorRequestsHandler;
-class CAlembicCompiler;
-struct IBackgroundTaskManager;
-struct IBackgroundScheduleManager;
 struct IEditorFileMonitor;
-class CShaderEnum;
 class CVegetationMap;
 
 
 namespace Editor
 {
     class EditorQtApplication;
-}
-
-namespace BackgroundScheduleManager
-{
-    class CScheduleManager;
-}
-
-namespace BackgroundTaskManager
-{
-    class CTaskManager;
 }
 
 namespace WinWidget
@@ -86,13 +69,12 @@ namespace AssetDatabase
 
 class CEditorImpl 
     : public IEditor
-    , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
 {
     Q_DECLARE_TR_FUNCTIONS(CEditorImpl)
 
 public:
     CEditorImpl();
-    ~CEditorImpl();
+    virtual ~CEditorImpl();
 
     void Initialize();
     void OnBeginShutdownSequence();
@@ -119,8 +101,6 @@ public:
     bool IsInitialized() const{ return m_bInitialized; }
     bool SaveDocument();
     ISystem*    GetSystem();
-    I3DEngine*  Get3DEngine();
-    IRenderer*  GetRenderer();
     void WriteToConsole(const char* string) { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) { CLogFile::WriteLine(string); };
     // Change the message in the status bar
@@ -181,17 +161,10 @@ public:
     void SelectObject(CBaseObject* obj);
     void LockSelection(bool bLock);
     bool IsSelectionLocked();
-    void PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass = 0, const char* statusText = 0, bool bMultipick = false);
 
-    void CancelPick();
-    bool IsPicking();
     IDataBaseManager* GetDBItemManager(EDataBaseItemType itemType);
-    CMaterialManager* GetMaterialManager() { return m_pMaterialManager; }
     CMusicManager* GetMusicManager() { return m_pMusicManager; };
-    CLensFlareManager* GetLensFlareManager()    { return m_pLensFlareManager; };
 
-    IBackgroundTaskManager* GetBackgroundTaskManager() override;
-    IBackgroundScheduleManager* GetBackgroundScheduleManager() override;
     IEditorFileMonitor* GetFileMonitor() override;
     void RegisterEventLoopHook(IEventLoopHook* pHook) override;
     void UnregisterEventLoopHook(IEventLoopHook* pHook) override;
@@ -224,25 +197,10 @@ public:
     void SetMarkerPosition(const Vec3& pos) { m_marker = pos; };
     void    SetSelectedRegion(const AABB& box);
     void    GetSelectedRegion(AABB& box);
-    CRuler* GetRuler() { return m_pRuler; }
     bool AddToolbarItem(uint8 iId, IUIEvent* pIHandler);
     void SetDataModified();
     void SetOperationMode(EOperationMode mode);
     EOperationMode GetOperationMode();
-    void SetEditMode(int editMode);
-    int GetEditMode();
-
-    //! A correct tool is one that corresponds to the previously set edit mode.
-    bool HasCorrectEditTool() const;
-
-    //! Returns the edit tool required for the edit mode specified.
-    CEditTool* CreateCorrectEditTool();
-
-    void SetEditTool(CEditTool* tool, bool bStopCurrentTool = true) override;
-    void SetEditTool(const QString& sEditToolName, bool bStopCurrentTool = true) override;
-    void ReinitializeEditTool() override;
-    //! Returns current edit tool.
-    CEditTool* GetEditTool() override;
 
     ITransformManipulator* ShowTransformManipulator(bool bShow);
     ITransformManipulator* GetTransformManipulator();
@@ -256,7 +214,6 @@ public:
     RefCoordSys GetReferenceCoordSys();
     XmlNodeRef FindTemplate(const QString& templateName);
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl);
-    void OpenMaterialLibrary(IDataBaseItem* pItem = NULL);
    
     const QtViewPane* OpenView(QString sViewClassName, bool reuseOpened = true) override;
 
@@ -280,7 +237,6 @@ public:
     SFileVersion GetFileVersion() { return m_fileVersion; };
     SFileVersion GetProductVersion() { return m_productVersion; };
     //! Get shader enumerator.
-    CShaderEnum* GetShaderEnum();
     CUndoManager* GetUndoManager() { return m_pUndoManager; };
     void BeginUndo();
     void RestoreUndo(bool undo);
@@ -344,7 +300,6 @@ public:
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
     virtual void RegisterObjectContextMenuExtension(TContextMenuExtensionFunc func) override;
 
-    virtual void SetCurrentMissionTime(float time);
     virtual SSystemGlobalEnvironment* GetEnv() override;
     virtual IBaseLibraryManager* GetMaterialManagerLibrary() override; // Vladimir@Conffx
     virtual IEditorMaterialManager* GetIEditorMaterialManager() override; // Vladimir@Conffx
@@ -359,27 +314,17 @@ public:
     QMimeData* CreateQMimeData() const override;
     void DestroyQMimeData(QMimeData* data) const override;
 
-    bool IsNewViewportInteractionModelEnabled() const override;
-
 protected:
 
-    //////////////////////////////////////////////////////////////////////////
-    // EditorEntityContextNotificationBus implementation
-    void OnStartPlayInEditor() override;
-    //////////////////////////////////////////////////////////////////////////
     AZStd::string LoadProjectIdFromProjectData();
 
     void DetectVersion();
     void RegisterTools();
     void SetPrimaryCDFolder();
 
-    void LoadSettings();
-    void SaveSettings() const;
-
     //! List of all notify listeners.
     std::list<IEditorNotifyListener*> m_listeners;
 
-    EEditMode m_currEditMode;
     EOperationMode m_operationMode;
     ISystem* m_pSystem;
     IFileUtil* m_pFileUtil;
@@ -393,8 +338,6 @@ protected:
     AABB m_selectedRegion;
     AxisConstrains m_selectedAxis;
     RefCoordSys m_refCoordsSys;
-    AxisConstrains m_lastAxis[16];
-    RefCoordSys m_lastCoordSys[16];
     bool m_bAxisVectorLock;
     bool m_bUpdates;
     bool m_bTerrainAxisIgnoreObjects;
@@ -402,23 +345,17 @@ protected:
     SFileVersion m_productVersion;
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
-    CShaderEnum* m_pShaderEnum;
-    _smart_ptr<CEditTool> m_pEditTool;
     CIconManager* m_pIconManager;
     std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
     QString m_userFolder;
     bool m_bSelectionLocked;
-    _smart_ptr<CEditTool> m_pPickTool;
     class CAxisGizmo* m_pAxisGizmo;
     CGameEngine* m_pGameEngine;
     CAnimationContext* m_pAnimationContext;
     CTrackViewSequenceManager* m_pSequenceManager;
     CToolBoxManager* m_pToolBoxManager;
-    CMaterialManager* m_pMaterialManager;
-    CAlembicCompiler* m_pAlembicCompiler;
     CMusicManager* m_pMusicManager;
-    CLensFlareManager* m_pLensFlareManager;
     CErrorReport* m_pErrorReport;
     //! Contains the error reports for the last loaded level.
     CErrorReport* m_pLasLoadedLevelErrorReport;
@@ -431,8 +368,6 @@ protected:
     CSelectionTreeManager* m_pSelectionTreeManager;
 
     CUIEnumsDatabase* m_pUIEnumsDatabase;
-    //! Currently used ruler
-    CRuler* m_pRuler;
     //! CConsole Synchronization
     CConsoleSynchronization* m_pConsoleSync;
     //! Editor Settings Manager
@@ -442,8 +377,6 @@ protected:
 
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     CExportManager* m_pExportManager;
-    std::unique_ptr<BackgroundTaskManager::CTaskManager> m_pBackgroundTaskManager;
-    std::unique_ptr<BackgroundScheduleManager::CScheduleManager> m_pBackgroundScheduleManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
     std::unique_ptr<IResourceSelectorHost> m_pResourceSelectorHost;
     QString m_selectFileBuffer;
@@ -474,7 +407,5 @@ protected:
 
     CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
-
-    bool m_isNewViewportInteractionModelEnabled = true;
 };
 

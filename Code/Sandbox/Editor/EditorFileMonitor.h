@@ -15,7 +15,6 @@
 #define CRYINCLUDE_EDITOR_EDITORFILEMONITOR_H
 #pragma once
 #include "Include/IEditorFileMonitor.h"
-#include "IFileChangeMonitor.h"
 #include "Util/FileChangeMonitor.h"
 
 class CEditorFileMonitor

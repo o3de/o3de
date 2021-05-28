@@ -72,8 +72,6 @@ namespace EMStudio
         void mousePressEvent(QMouseEvent* event)                { RenderWidget::OnMousePressEvent(this, event); }
         void mouseReleaseEvent(QMouseEvent* event)              { RenderWidget::OnMouseReleaseEvent(this, event); }
         void wheelEvent(QWheelEvent* event)                     { RenderWidget::OnWheelEvent(this, event); }
-        void keyPressEvent(QKeyEvent* event)                    { RenderWidget::OnKeyPressEvent(this, event); }
-        void keyReleaseEvent(QKeyEvent* event)                  { RenderWidget::OnKeyReleaseEvent(this, event); }
 
         void focusInEvent(QFocusEvent* event);
         void focusOutEvent(QFocusEvent* event);

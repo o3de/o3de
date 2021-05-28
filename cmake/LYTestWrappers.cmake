@@ -24,8 +24,8 @@ ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-c
 ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
 ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
-# Set default to 20 minutes
-ly_set(LY_TEST_DEFAULT_TIMEOUT 1200)
+# Set default test aborts to 25 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
+ly_set(LY_TEST_DEFAULT_TIMEOUT 1500)
 
 # Add the CMake Test targets for each suite if testing is supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -115,6 +115,8 @@ function(ly_add_test)
     # Set default test module timeout
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
+    elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
+        message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
     if(NOT ly_add_test_TEST_COMMAND)
@@ -337,22 +339,23 @@ function(ly_add_editor_python_test)
         message(FATAL_ERROR "Must supply a value for TEST_SUITE")
     endif()
 
+    file(REAL_PATH ${ly_add_editor_python_test_TEST_PROJECT} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
+
     # Run test via the run_epbtest.cmake script.
     # Parameters used are explained in run_epbtest.cmake.
     ly_add_test(
         NAME ${ly_add_editor_python_test_NAME}
         TEST_REQUIRES ${ly_add_editor_python_test_TEST_REQUIRES}
         TEST_COMMAND ${CMAKE_COMMAND}
-            -DCMD_ARG_TEST_PROJECT=${ly_add_editor_python_test_TEST_PROJECT} 
+            -DCMD_ARG_TEST_PROJECT=${project_real_path} 
             -DCMD_ARG_EDITOR=$<TARGET_FILE:Legacy::Editor> 
             -DCMD_ARG_PYTHON_SCRIPT=${ly_add_editor_python_test_PATH}
             -DPLATFORM=${PAL_PLATFORM_NAME}
             -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/run_epbtest.cmake
         RUNTIME_DEPENDENCIES
-        ${ly_add_editor_python_test_RUNTIME_DEPENDENCIES}
-        Gem::EditorPythonBindings.Editor
-        Legacy::CryRenderNULL
-        Legacy::Editor
+            ${ly_add_editor_python_test_RUNTIME_DEPENDENCIES}
+            Gem::EditorPythonBindings.Editor
+            Legacy::Editor
         TEST_SUITE ${ly_add_editor_python_test_TEST_SUITE}
         LABELS FRAMEWORK_pytest
         TEST_LIBRARY pytest_editor
@@ -360,13 +363,14 @@ function(ly_add_editor_python_test)
         COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
 
-    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
+    set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_editor_python_test_TEST_SERIAL}")
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ADDED_TEST_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
 endfunction()
 
 #! ly_add_googletest: Adds a new RUN_TEST using for the specified target using the supplied command or fallback to running
 #                     googletest tests through AzTestRunner
 # \arg:NAME Name to for the test run target
+# \arg:TARGET Name of the target module that is being run for tests. If not provided, will default to 'NAME'
 # \arg:TEST_REQUIRES(optional) List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
@@ -381,14 +385,20 @@ function(ly_add_googletest)
         message(FATAL_ERROR "Platform does not support test targets")
     endif()
 
-    set(one_value_args NAME TEST_SUITE) 
+    set(one_value_args NAME TARGET TEST_SUITE) 
     set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    if (ly_add_googletest_TARGET)
+        set(target_name ${ly_add_googletest_TARGET})
+    else()
+        set(target_name ${ly_add_googletest_NAME})
+    endif()
 
 
     # AzTestRunner modules only supports google test libraries, regardless of whether or not 
     # google test suites are supported
-    set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${ly_add_googletest_NAME}")
+    set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
 
     if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
         return()
@@ -397,7 +407,7 @@ function(ly_add_googletest)
 
     if (ly_add_googletest_TEST_SUITE AND NOT ly_add_googletest_TEST_SUITE STREQUAL "main")
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
-        set(non_ide_params "-gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
+        set(non_ide_params "--gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
     else()
         # otherwise, if its the main suite we only runs things that dont have any of the other suites. 
         # Note: it doesn't do AND, only 'or' - so specifying SUITE_main:REQUIRES_gpu
@@ -409,11 +419,11 @@ function(ly_add_googletest)
 
     if(NOT ly_add_googletest_TEST_COMMAND)
         # Use the NAME parameter as the build target
-        set(build_target ${ly_add_googletest_NAME})
+        set(build_target ${target_name})
         ly_strip_target_namespace(TARGET ${build_target} OUTPUT_VARIABLE build_target)
 
         if(NOT TARGET ${build_target})
-            message(FATAL_ERROR "A valid build target \"${build_target}\" for test run \"${ly_add_googletest_NAME}\" has not been found.\
+            message(FATAL_ERROR "A valid build target \"${build_target}\" for test run \"${target_name}\" has not been found.\
                 A valid target via the TARGET parameter or a custom TEST_COMMAND must be supplied")
         endif()
 

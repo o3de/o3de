@@ -82,6 +82,11 @@ namespace AZ
             }
         }
 
+        void DrawPacketBuilder::SetDrawFilterMask(DrawFilterMask filterMask)
+        {
+            m_drawFilterMask = filterMask;
+        }
+
         void DrawPacketBuilder::AddDrawItem(const DrawRequest& request)
         {
             if (request.m_listTag.IsValid())
@@ -165,6 +170,7 @@ namespace AZ
             drawPacket->m_allocator = m_allocator;
             drawPacket->m_indexBufferView =  m_indexBufferView;
             drawPacket->m_drawListMask = m_drawListMask;
+            drawPacket->m_drawFilterMask = m_drawFilterMask;
 
             if (shaderResourceGroupsOffset.IsValid())
             {
@@ -288,6 +294,7 @@ namespace AZ
             m_rootConstants = {};
             m_scissors.clear();
             m_viewports.clear();
+            m_drawFilterMask = DrawFilterMaskDefaultValue;
         }
     }
 }

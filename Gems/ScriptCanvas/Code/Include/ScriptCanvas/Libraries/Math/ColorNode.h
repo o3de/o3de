@@ -41,7 +41,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Color>("Color", "A four channel color value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Color.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Color.png")
                                 ;
                         }
                     }

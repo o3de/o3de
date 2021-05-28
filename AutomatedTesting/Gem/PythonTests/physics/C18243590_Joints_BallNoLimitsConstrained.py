@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18243590
 # Test Case Title : Check that ball joint allows no limit constraints
-# URL of the test case :https://testrail.agscollab.com/index.php?/cases/view/18243590
+
 
 # fmt: off
 class Tests:
@@ -63,9 +63,8 @@ def C18243590_Joints_BallNoLimitsConstrained():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -121,5 +120,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C18243590_Joints_BallNoLimitsConstrained)

@@ -455,8 +455,6 @@ void ReflectedVarGenericPropertyAdapter::SyncReflectedVarToIVar(IVariable *pVari
 {
     QString value;
     pVariable->Get(value);
-    if (m_reflectedVar->m_propertyType == ePropertyMaterial)
-        value.replace('\\', '/');
 
     m_reflectedVar->m_value = value.toUtf8().data();
 }

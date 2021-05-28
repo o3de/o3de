@@ -19,6 +19,7 @@
 #include <Processing/ImageFlags.h>
 
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI.Reflect/ImageSubresource.h>
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
@@ -238,14 +239,9 @@ namespace ImageProcessingAtom
             uint8_t* mipBuffer;
             uint32_t pitch;
             m_imageObject->GetImagePointer(mip, mipBuffer, pitch);
-            uint32_t mipBufferSize = m_imageObject->GetMipBufSize(mip);
-
-            RHI::ImageSubresourceLayout layout;
-            layout.m_bytesPerImage = mipBufferSize / arraySize;
-            layout.m_rowCount = layout.m_bytesPerImage / pitch;
-            layout.m_size = RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1);
-            layout.m_bytesPerRow = pitch;
-
+            RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
+            
+            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1), format);
             builder.BeginMip(layout);
 
             for (uint32_t arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)

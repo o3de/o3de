@@ -10,7 +10,7 @@
 *
 */
 
-#include "NullReplicationWindow.h"
+#include <Source/ReplicationWindows/NullReplicationWindow.h>
 
 namespace Multiplayer
 {

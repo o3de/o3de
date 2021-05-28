@@ -13,6 +13,5 @@ set(FILES
     main.cpp
     Style/Editor.qss
     Style/resources.qrc
-    Style/LensFlareEditor.qss
     EditorCryEdit.rc
 )

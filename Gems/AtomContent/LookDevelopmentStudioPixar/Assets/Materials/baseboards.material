@@ -4,9 +4,6 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "textureMap": "Materials/Bricks038_8K/Bricks038_8K_AmbientOcclusion.png"
-        },
         "baseColor": {
             "color": [
                 0.496940553188324,
@@ -33,7 +30,8 @@
             "factor": 0.02500000037252903,
             "pdo": true,
             "quality": "Ultra",
-            "textureMap": "Materials/Bricks038_8K/Bricks038_8K_Displacement.png"
+            "textureMap": "Materials/Bricks038_8K/Bricks038_8K_Displacement.png",
+            "useTexture": false
         },
         "roughness": {
             "factor": 0.4343433976173401,

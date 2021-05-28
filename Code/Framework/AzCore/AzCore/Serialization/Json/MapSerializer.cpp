@@ -215,10 +215,10 @@ namespace AZ
         // Load key
         void* keyAddress = pairContainer->GetElementByIndex(address, pairElement, 0);
         AZ_Assert(keyAddress, "Element reserved for associative container, but unable to retrieve address of the key.");
-        Flags keyLoadFlags = Flags::None;
+        ContinuationFlags keyLoadFlags = ContinuationFlags::None;
         if (keyElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
         {
-            keyLoadFlags = Flags::ResolvePointer;
+            keyLoadFlags = ContinuationFlags::ResolvePointer;
             *reinterpret_cast<void**>(keyAddress) = nullptr;
         }
         JSR::ResultCode keyResult = ContinueLoading(keyAddress, keyElement->m_typeId, key, context, keyLoadFlags);
@@ -231,10 +231,10 @@ namespace AZ
         // Load value
         void* valueAddress = pairContainer->GetElementByIndex(address, pairElement, 1);
         AZ_Assert(valueAddress, "Element reserved for associative container, but unable to retrieve address of the value.");
-        Flags valueLoadFlags = Flags::None; 
+        ContinuationFlags valueLoadFlags = ContinuationFlags::None; 
         if (valueElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
         {
-            valueLoadFlags = Flags::ResolvePointer;
+            valueLoadFlags = ContinuationFlags::ResolvePointer;
             *reinterpret_cast<void**>(valueAddress) = nullptr;
         }
         JSR::ResultCode valueResult = ContinueLoading(valueAddress, valueElement->m_typeId, value, context, valueLoadFlags);

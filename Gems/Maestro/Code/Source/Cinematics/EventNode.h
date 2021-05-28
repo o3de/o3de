@@ -42,7 +42,7 @@ public:
     virtual CAnimParamType GetParamType(unsigned int nIndex) const;
     virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 private:
     //! Last animated key in track.

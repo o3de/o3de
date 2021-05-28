@@ -28,11 +28,6 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "ClearCoatNormalInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
                     "Name": "BRDFTextureInput",
                     "ShaderInputName": "m_brdfMap",
                     "SlotType": "Input",

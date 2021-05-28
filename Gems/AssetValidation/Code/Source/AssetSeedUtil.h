@@ -30,7 +30,7 @@ namespace AssetValidation::AssetSeed
     constexpr char GemsDirectoryName[] = "Gems";
     constexpr char GemsSeedFileName[] = "seedList";
     constexpr char EngineSeedFileName[] = "SeedAssetList";
-    constexpr char EngineDirectoryName[] = "Engine";
+    constexpr auto EngineDirectoryName = AZ::IO::FixedMaxPath("Assets") / "Engine";
 
     void AddPlatformSeeds(const AZStd::string& rootFolder, AZStd::vector<AZStd::string>& defaultSeedLists, AzFramework::PlatformFlags platformFlags);
 

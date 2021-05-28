@@ -97,6 +97,8 @@ namespace Maestro
             provided.push_back(AZ_CRC("SequenceService", 0x7cbe5938));
         }
 
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
         // Required Reflect function.
         static void Reflect(AZ::ReflectContext* context);
     private:
@@ -104,7 +106,7 @@ namespace Maestro
         AZStd::intrusive_ptr<IAnimSequence> m_sequence;
 
         // Reflects the entire CryMovie library
-        static void ReflectCinematicsLib(AZ::SerializeContext* context);
+        static void ReflectCinematicsLib(AZ::ReflectContext* context);
     };
 
 } // namespace Maestro

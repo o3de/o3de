@@ -104,7 +104,7 @@ namespace Blast
 
     const char* BlastAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/Box.png";
+        return "Icons/Components/Box.png";
     }
 
     void BlastAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)

@@ -13,6 +13,8 @@
 #include "EditorBoxSelect.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QApplication>
 
@@ -26,8 +28,11 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-            mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+        m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+
+        const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
+        const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
+        if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Move)
         {
             if (m_leftMouseDown)
             {
@@ -57,8 +62,7 @@ namespace AzToolsFramework
                 }
             }
 
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Release)
             {
                 if (m_leftMouseUp)
                 {
@@ -72,9 +76,11 @@ namespace AzToolsFramework
         m_previousModifiers = mouseInteraction.m_mouseInteraction.m_keyboardModifiers;
     }
 
-    void EditorBoxSelect::Display2d(AzFramework::DebugDisplayRequests& debugDisplay)
+    void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+        m_cursorState.Update();
 
         if (m_boxSelectRegion)
         {
@@ -82,12 +88,15 @@ namespace AzToolsFramework
             debugDisplay.SetLineWidth(s_boxSelectLineWidth);
             debugDisplay.SetColor(s_boxSelectColor);
 
-            debugDisplay.DrawWireBox(
-                AZ::Vector3(
-                    static_cast<float>(m_boxSelectRegion->x()), static_cast<float>(m_boxSelectRegion->y()), 0.0f),
-                AZ::Vector3(
-                    static_cast<float>(m_boxSelectRegion->x()) + static_cast<float>(m_boxSelectRegion->width()),
-                    static_cast<float>(m_boxSelectRegion->y()) + static_cast<float>(m_boxSelectRegion->height()), 0.0f));
+            AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+
+            debugDisplay.DrawWireQuad2d(
+                AZ::Vector2(
+                    aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,
+                AZ::Vector2(
+                    aznumeric_cast<float>(m_boxSelectRegion->x()) + aznumeric_cast<float>(m_boxSelectRegion->width()),
+                    aznumeric_cast<float>(m_boxSelectRegion->y()) + aznumeric_cast<float>(m_boxSelectRegion->height())) / viewportSize,
+                0.f);
 
             debugDisplay.DepthTestOn();
 

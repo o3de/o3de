@@ -21,13 +21,13 @@ namespace AZ
     {
         namespace Thumbnails
         {
-            const int MaterialThumbnailSize = 200;
+            static constexpr const int MaterialThumbnailSize = 512; // 512 is the default size in render to texture pass
 
             //////////////////////////////////////////////////////////////////////////
             // MaterialThumbnail
             //////////////////////////////////////////////////////////////////////////
-            MaterialThumbnail::MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, int thumbnailSize)
-                : Thumbnail(key, thumbnailSize)
+            MaterialThumbnail::MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key)
+                : Thumbnail(key)
             {
                 m_assetId = GetAssetId(key, RPI::MaterialAsset::RTTI_Type());
                 if (!m_assetId.IsValid())
@@ -47,7 +47,7 @@ namespace AZ
                     RPI::MaterialAsset::RTTI_Type(),
                     &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
                     m_key,
-                    m_thumbnailSize);
+                    MaterialThumbnailSize);
                 // wait for response from thumbnail renderer
                 m_renderWait.acquire();
             }

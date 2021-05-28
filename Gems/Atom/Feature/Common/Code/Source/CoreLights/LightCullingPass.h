@@ -59,7 +59,6 @@ namespace AZ
             void SetLightBuffersToSRG();
             void SetLightsCountToSRG();
             void SetConstantdataToSRG();
-            void SetLightListToSRG();
 
             AZ::RHI::Size GetDepthBufferResolution();
             float CreateTraceValues(const AZ::Vector2& unprojection);

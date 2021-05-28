@@ -39,12 +39,11 @@ def run():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     helper.init_idle()
     

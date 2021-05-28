@@ -47,12 +47,18 @@ namespace MaterialEditor
         //! @param distanceMax furthest camera can be from the target
         virtual void GetExtents(float& distanceMin, float& distanceMax) const = 0;
 
+        //! Get bounding sphere radius of the active model
+        virtual float GetRadius() const = 0;
+
         //! Reset camera to default position and rotation 
         virtual void Reset() = 0;
 
         //! Modify camera's field of view
         //! @param value field of view in degrees
         virtual void SetFieldOfView(float value) = 0;
+
+        //! Check if camera is looking directly at a model
+        virtual bool IsCameraCentered() const = 0;
     };
 
     using MaterialEditorViewportInputControllerRequestBus = AZ::EBus<MaterialEditorViewportInputControllerRequests>;

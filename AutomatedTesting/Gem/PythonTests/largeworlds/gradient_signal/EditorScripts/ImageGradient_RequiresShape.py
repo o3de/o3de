@@ -17,8 +17,8 @@ import azlmbr.entity as entity
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestImageGradientRequiresShape(EditorTestHelper):
@@ -28,8 +28,20 @@ class TestImageGradientRequiresShape(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        Verify that Image Gradient component requires a
-        Shape component before the Entity can become active.
+        This test verifies that the Image Gradient component is dependent on a shape component.
+
+        Expected Result:
+        Gradient Transform Modifier component is disabled until a shape component is added to the entity.
+
+        Test Steps:
+         1) Open level
+         2) Create a new entity with a Image Gradient component
+         3) Verify the component is disabled until a shape component is also added to the entity
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """

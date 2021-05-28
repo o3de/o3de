@@ -19,13 +19,13 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
-#include <I3DEngine.h>
 #include <VectorSet.h>
 #include <CryName.h>
 
@@ -326,7 +326,16 @@ struct IMovieCallback
 */
 struct IAnimTrack
 {
-    AZ_RTTI(IAnimTrack, "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}")
+    AZ_RTTI(IAnimTrack, "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}");
+    AZ_CLASS_ALLOCATOR(IAnimTrack, AZ::SystemAllocator, 0);
+
+    static void Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<IAnimTrack>();
+        }
+    }
 
     //! Flags that can be set on animation track.
     enum EAnimTrackFlags
@@ -593,7 +602,16 @@ struct IAnimNodeOwner
 struct IAnimNode
 {
 public:
-    AZ_RTTI(IAnimNode, "{0A096354-7F26-4B18-B8C0-8F10A3E0440A}")
+    AZ_RTTI(IAnimNode, "{0A096354-7F26-4B18-B8C0-8F10A3E0440A}");
+    AZ_CLASS_ALLOCATOR(IAnimNode, AZ::SystemAllocator, 0);
+
+    static void Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<IAnimNode>();
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // Supported params.
@@ -914,9 +932,18 @@ struct IAnimStringTable
  */
 struct IAnimSequence
 {
-    AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}")
+    AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}");
+    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator, 0);
 
-    static const int kSequenceVersion = 4;
+    static const int kSequenceVersion = 5;
+
+    static void Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<IAnimSequence>();
+        }
+    }
 
     //! Flags used for SetFlags(),GetFlags(),SetParentFlags(),GetParentFlags() methods.
     enum EAnimSequenceFlags

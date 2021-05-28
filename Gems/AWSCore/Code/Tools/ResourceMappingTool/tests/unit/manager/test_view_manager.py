@@ -18,7 +18,7 @@ from manager.view_manager import (ViewManager, ViewManagerConstants)
 
 class TestViewManager(TestCase):
     """
-    ThreadManager unit test cases
+    ViewManager unit test cases
     """
     _mock_import_resources_page: MagicMock
     _mock_view_edit_page: MagicMock
@@ -36,6 +36,8 @@ class TestViewManager(TestCase):
 
         main_window_patcher: patch = patch("manager.view_manager.QMainWindow")
         cls._mock_main_window = main_window_patcher.start()
+        window_icon_patcher: patch = patch("manager.view_manager.QPixmap")
+        window_icon_patcher.start()
 
         stacked_pages_patcher: patch = patch("manager.view_manager.QStackedWidget")
         cls._mock_stacked_pages = stacked_pages_patcher.start()

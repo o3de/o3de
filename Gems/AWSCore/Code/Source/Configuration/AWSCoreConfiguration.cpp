@@ -20,7 +20,7 @@ namespace AWSCore
 {
     AWSCoreConfiguration::AWSCoreConfiguration()
         : m_sourceProjectFolder("")
-        , m_profileName(AWSCORE_DEFAULT_PROFILE_NAME)
+        , m_profileName(AWSCoreDefaultProfileName)
         , m_resourceMappingConfigFileName("")
     {
     }
@@ -44,16 +44,16 @@ namespace AWSCore
     {
         if (m_sourceProjectFolder.empty())
         {
-            AZ_Warning("AWSCoreConfiguration", false, "Failed to get source project folder path.");
+            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
             return "";
         }
         if (m_resourceMappingConfigFileName.empty())
         {
-            AZ_Warning("AWSCoreConfiguration", false, "Failed to get resource mapping config file name.");
+            AZ_Warning(AWSCoreConfigurationName, false, ResourceMappingFileNameNotFoundErrorMessage);
             return "";
         }
         AZStd::string configFilePath = AZStd::string::format("%s/%s/%s",
-            m_sourceProjectFolder.c_str(), AWSCORE_RESOURCE_MAPPING_CONFIG_FOLDERNAME, m_resourceMappingConfigFileName.c_str());
+            m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName, m_resourceMappingConfigFileName.c_str());
         AzFramework::StringFunc::Path::Normalize(configFilePath);
         return configFilePath;
     }
@@ -68,17 +68,17 @@ namespace AWSCore
     {
         if (m_sourceProjectFolder.empty())
         {
-            AZ_Warning("AWSCoreConfiguration", false, "Failed to get source project folder path.");
+            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
             return;
         }
 
         AZStd::string settingsRegistryPath = AZStd::string::format("%s/%s/%s",
-            m_sourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder, AWSCoreConfiguration::AWSCORE_CONFIGURATION_FILENAME);
+            m_sourceProjectFolder.c_str(), AZ::SettingsRegistryInterface::RegistryFolder, AWSCoreConfiguration::AWSCoreConfigurationFileName);
         AzFramework::StringFunc::Path::Normalize(settingsRegistryPath);
 
         if (!m_settingsRegistry.MergeSettingsFile(settingsRegistryPath, AZ::SettingsRegistryInterface::Format::JsonMergePatch, ""))
         {
-            AZ_Warning("AWSCoreConfiguration", false, "Failed to merge AWS core settings registry.");
+            AZ_Warning(AWSCoreConfigurationName, false, SettingsRegistryLoadFailureErrorMessage);
             return;
         }
 
@@ -90,7 +90,7 @@ namespace AWSCore
         auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
         if (!sourceProjectFolder)
         {
-            AZ_Error("AWSCoreConfiguration", false, "Failed to initialize source project folder path.");
+            AZ_Error(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
         }
         else
         {
@@ -102,24 +102,38 @@ namespace AWSCore
     {
         m_resourceMappingConfigFileName.clear();
         auto resourceMappingConfigFileNamePath = AZStd::string::format("%s%s",
-            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCORE_RESOURCE_MAPPING_CONFIG_FILENAME_KEY);
+            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);
         if (!m_settingsRegistry.Get(m_resourceMappingConfigFileName, resourceMappingConfigFileNamePath))
         {
-            AZ_Warning("AWSCoreConfiguration", false, "Failed to get resource mapping config file name from settings registry.");
+            AZ_Warning(AWSCoreConfigurationName, false, ResourceMappingFileNameNotFoundErrorMessage);
         }
 
         m_profileName.clear();
         auto profileNamePath = AZStd::string::format(
-            "%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCORE_PROFILENAME_KEY);
+            "%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreProfileNameKey);
         if (!m_settingsRegistry.Get(m_profileName, profileNamePath))
         {
-            AZ_Warning("AWSCoreConfiguration", false, "Failed to get profile name from settings registry, using default value instead.");
-            m_profileName = AWSCORE_DEFAULT_PROFILE_NAME;
+            AZ_Warning(AWSCoreConfigurationName, false, ProfileNameNotFoundErrorMessage);
+            m_profileName = AWSCoreDefaultProfileName;
         }
+    }
+
+    void AWSCoreConfiguration::ResetSettingsRegistryData()
+    {
+        auto profileNamePath = AZStd::string::format("%s%s",
+            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreProfileNameKey);
+        m_settingsRegistry.Remove(profileNamePath);
+        m_profileName.clear();
+
+        auto resourceMappingConfigFileNamePath = AZStd::string::format("%s%s",
+            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);
+        m_settingsRegistry.Remove(resourceMappingConfigFileNamePath);
+        m_resourceMappingConfigFileName.clear();
     }
 
     void AWSCoreConfiguration::ReloadConfiguration()
     {
+        ResetSettingsRegistryData();
         InitSettingsRegistry();
     }
 } // namespace AWSCore

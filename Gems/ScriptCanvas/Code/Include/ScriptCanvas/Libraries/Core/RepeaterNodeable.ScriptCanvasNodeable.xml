@@ -6,7 +6,7 @@
            PreferredClassName="Repeater"
            Uuid="{4FBB5021-F3C8-E743-BF2E-BC6E5D57D48E}"
            Base="Nodeables::Time::BaseTimer"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Nodeables"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"

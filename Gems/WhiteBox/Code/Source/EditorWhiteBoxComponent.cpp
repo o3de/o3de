@@ -265,6 +265,11 @@ namespace WhiteBox
         provided.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
     }
 
+    void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
 
     EditorWhiteBoxComponent::~EditorWhiteBoxComponent()
@@ -348,14 +353,14 @@ namespace WhiteBox
         else
         {
             // attempt to load the mesh
-            if (Api::ReadMesh(*m_whiteBox, m_whiteBoxData))
+            const auto result = Api::ReadMesh(*m_whiteBox, m_whiteBoxData);
+            AZ_Error("EditorWhiteBoxComponent", result != WhiteBox::Api::ReadResult::Error, "Error deserializing white box mesh stream");
+
+            // if the read was successful but the byte stream is empty
+            // (there was nothing to load), create a default mesh
+            if (result == Api::ReadResult::Empty)
             {
-                // if the read was successful but the byte stream is empty
-                // (there was nothing to load), create a default mesh
-                if (m_whiteBoxData.empty())
-                {
-                    Api::InitializeAsUnitCube(*m_whiteBox);
-                }
+                Api::InitializeAsUnitCube(*m_whiteBox);
             }
         }
     }
@@ -414,8 +419,7 @@ namespace WhiteBox
         m_localAabb.reset();
         m_faces.reset();
 
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
         // must have been created in Activate or have had the Entity made visible again
         if (m_renderMesh.has_value())

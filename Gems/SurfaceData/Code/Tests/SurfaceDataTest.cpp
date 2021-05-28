@@ -40,7 +40,6 @@ struct MockGlobalEnvironment
         m_stubEnv.pCryPak = &m_stubPak;
         m_stubEnv.pConsole = &m_stubConsole;
         m_stubEnv.pSystem = &m_stubSystem;
-        m_stubEnv.p3DEngine = nullptr;
         gEnv = &m_stubEnv;
     }
 

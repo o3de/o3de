@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 Test case ID : C15096740
 Test Case Title : Verify that clearing a material library on all systems that use it,
                   assigns the default material library
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096740
+
 """
 
 
@@ -58,9 +58,9 @@ def C15096740_Material_LibraryUpdatedCorrectly():
     imports.init()
 
     # Helper file Imports
-    from utils import Report
-    from utils import TestHelper as helper
-    from editor_entity_utils import EditorEntity
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     from asset_utils import Asset
 
     # Open 3D Engine Imports
@@ -107,5 +107,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15096740_Material_LibraryUpdatedCorrectly)

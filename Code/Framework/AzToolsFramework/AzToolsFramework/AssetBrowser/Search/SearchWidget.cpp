@@ -170,6 +170,15 @@ namespace AzToolsFramework
             return m_filter;
         }
 
+        QSharedPointer<CompositeFilter> SearchWidget::GetStringFilter() const
+        {
+            return m_stringFilter;
+        }
+
+        QSharedPointer<CompositeFilter> SearchWidget::GetTypesFilter() const
+        {
+            return m_typesFilter;
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

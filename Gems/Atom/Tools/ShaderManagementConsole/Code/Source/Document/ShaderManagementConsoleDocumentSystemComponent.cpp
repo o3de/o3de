@@ -105,7 +105,6 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleDocumentSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TargetManagerService", 0x6d5708bc));
         required.push_back(AZ_CRC("AssetProcessorToolsConnection", 0x734669bc));
         required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
         required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
@@ -130,13 +129,11 @@ namespace ShaderManagementConsole
     {
         m_documentMap.clear();
         ShaderManagementConsoleDocumentSystemRequestBus::Handler::BusConnect();
-        AzFramework::TmMsgBus::Handler::BusConnect(AZ_CRC("OpenInShaderManagementConsole", 0x9f92aac8));
     }
 
     void ShaderManagementConsoleDocumentSystemComponent::Deactivate()
     {
         ShaderManagementConsoleDocumentSystemRequestBus::Handler::BusDisconnect();
-        AzFramework::TmMsgBus::Handler::BusDisconnect();
         m_documentMap.clear();
     }
 
@@ -157,19 +154,6 @@ namespace ShaderManagementConsole
     bool ShaderManagementConsoleDocumentSystemComponent::DestroyDocument(const AZ::Uuid& documentId)
     {
         return m_documentMap.erase(documentId) != 0;
-    }
-
-    void ShaderManagementConsoleDocumentSystemComponent::OnReceivedMsg(AzFramework::TmMsgPtr msg)
-    {
-        if (msg->GetId() == AZ_CRC("OpenInShaderManagementConsole", 0x9f92aac8))
-        {
-            const char* documentPath = reinterpret_cast<const char*>(msg->GetCustomBlob());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, documentPath);
-        }
-        else
-        {
-            AZ_Assert(false, "We received a message of an unrecognized class type!");
-        }
     }
 
     AZ::Uuid ShaderManagementConsoleDocumentSystemComponent::OpenDocument(AZStd::string_view path)

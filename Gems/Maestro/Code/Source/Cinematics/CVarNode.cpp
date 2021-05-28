@@ -151,8 +151,11 @@ void CAnimCVarNode::Animate(SAnimContext& ec)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimCVarNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimCVarNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimCVarNode,CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimCVarNode, CAnimNode>()
+            ->Version(1);
+    }
 }

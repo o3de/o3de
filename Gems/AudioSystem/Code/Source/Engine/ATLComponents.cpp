@@ -33,8 +33,8 @@
 #include <IAudioSystemImplementation.h>
 
 #include <MathConversion.h>
-#include <I3DEngine.h>
 #include <IRenderAuxGeom.h>
+#include <IConsole.h>
 
 namespace Audio
 {

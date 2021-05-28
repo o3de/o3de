@@ -33,7 +33,6 @@ namespace Physics
             BusDisconnect();
         }
         MOCK_METHOD2(CreateShape, AZStd::shared_ptr<Physics::Shape>(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration));
-        MOCK_METHOD4(AddColliderComponentToEntity, void(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration, bool addEditorComponents));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void* nativeMeshObject));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration& materialConfiguration));
         MOCK_METHOD0(GetDefaultMaterial, AZStd::shared_ptr<Physics::Material>());
@@ -93,10 +92,10 @@ namespace Physics
             [[maybe_unused]] bool enable) override {}
         void RemoveSimulatedBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-            [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
+            [[maybe_unused]] AzPhysics::SimulatedBodyHandle& bodyHandle) override {}
         void RemoveSimulatedBodies(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-            [[maybe_unused]] const AzPhysics::SimulatedBodyHandleList& bodyHandles) override {}
+            [[maybe_unused]] AzPhysics::SimulatedBodyHandleList& bodyHandles) override {}
         void EnableSimulationOfBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}

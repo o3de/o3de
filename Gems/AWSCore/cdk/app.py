@@ -22,11 +22,11 @@ from core.aws_core import AWSCore
 from example.example_resources_stack import ExampleResources
 
 """Configuration"""
-REGION = os.environ.get('O3D_AWS_DEPLOY_REGION', os.environ.get('CDK_DEFAULT_REGION'))
-ACCOUNT = os.environ.get('O3D_AWS_DEPLOY_ACCOUNT', os.environ.get('CDK_DEFAULT_ACCOUNT'))
+REGION = os.environ.get('O3DE_AWS_DEPLOY_REGION', os.environ.get('CDK_DEFAULT_REGION'))
+ACCOUNT = os.environ.get('O3DE_AWS_DEPLOY_ACCOUNT', os.environ.get('CDK_DEFAULT_ACCOUNT'))
 
 # Set the common prefix to group stacks in a project together.
-PROJECT_NAME = os.environ.get('O3D_AWS_PROJECT_NAME', f'AWS-PROJECT').upper()
+PROJECT_NAME = os.environ.get('O3DE_AWS_PROJECT_NAME', f'O3DE-AWS-PROJECT').upper()
 
 # The name of this feature
 FEATURE_NAME = 'Core'

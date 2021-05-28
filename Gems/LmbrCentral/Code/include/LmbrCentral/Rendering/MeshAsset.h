@@ -15,7 +15,6 @@
 
 #include <smartptr.h>
 #include <IStatObj.h>
-#include <IGeomCache.h>
 
 namespace LmbrCentral
 {
@@ -53,18 +52,4 @@ namespace LmbrCentral
     // with the lod bits set in the SUBID
     // note that there is no current reserved UUID for .chr files.
 
-    // for alembic geometry caches / animations
-    class GeomCacheAsset
-        : public AZ::Data::AssetData
-    {
-    public:
-        using GeomCachePtr = _smart_ptr<IGeomCache>;
-        
-        AZ_RTTI(GeomCacheAsset, "{EBC96071-E960-41B6-B3E3-328F515AE5DA}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(GeomCacheAsset, AZ::SystemAllocator, 0);
-
-        /// The assigned geom cache instance.
-        GeomCachePtr m_geomCache = nullptr;
-    };
-    
 } // namespace LmbrCentral

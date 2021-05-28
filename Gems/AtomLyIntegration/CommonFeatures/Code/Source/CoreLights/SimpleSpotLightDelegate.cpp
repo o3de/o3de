@@ -24,8 +24,11 @@ namespace AZ::Render
     
     void SimpleSpotLightDelegate::HandleShapeChanged()
     {
-        GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
-        GetFeatureProcessor()->SetDirection(GetLightHandle(), GetTransform().GetBasisZ());
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetPosition(GetLightHandle(), GetTransform().GetTranslation());
+            GetFeatureProcessor()->SetDirection(GetLightHandle(), GetTransform().GetBasisZ());
+        }
     }
 
     float SimpleSpotLightDelegate::CalculateAttenuationRadius(float lightThreshold) const
@@ -42,17 +45,45 @@ namespace AZ::Render
     
     void SimpleSpotLightDelegate::SetShutterAngles(float innerAngleDegrees, float outerAngleDegrees)
     {
-        GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetConeAngles(GetLightHandle(), DegToRad(innerAngleDegrees), DegToRad(outerAngleDegrees));
+        }
     }
-
-    void SimpleSpotLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    
+    void SimpleSpotLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& /*color*/, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
     {
         if (isSelected)
         {
-            debugDisplay.SetColor(color);
+            float innerRadians = DegToRad(GetConfig()->m_innerShutterAngleDegrees);
+            float outerRadians = DegToRad(GetConfig()->m_outerShutterAngleDegrees);
+            float radius = GetConfig()->m_attenuationRadius;
 
-            // Draw a cone for the cone angle and attenuation radius
-            debugDisplay.DrawCone(transform.GetTranslation(), transform.GetBasisX(), CalculateAttenuationRadius(AreaLightComponentConfig::CutoffIntensity), false);
+            // Draw a cone using the cone angle and attenuation radius
+            innerRadians = GetMin(innerRadians, outerRadians);
+            float coneRadiusInner = sin(innerRadians) * radius;
+            float coneHeightInner = cos(innerRadians) * radius;
+            float coneRadiusOuter = sin(outerRadians) * radius;
+            float coneHeightOuter = cos(outerRadians) * radius;
+
+            debugDisplay.PushMatrix(transform);
+
+            auto DrawCone = [&debugDisplay](uint32_t numRadiusLines, float radius, float height, float brightness)
+            {
+                debugDisplay.SetColor(Color(brightness, brightness, brightness, 1.0f));
+                debugDisplay.DrawWireDisk(Vector3(0.0, 0.0, height), Vector3::CreateAxisZ(), radius);
+            
+                for (uint32_t i = 0; i < numRadiusLines; ++i)
+                {
+                    float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
+                    debugDisplay.DrawLine(Vector3::CreateZero(), Vector3(cos(radiusLineAngle) * radius, sin(radiusLineAngle) * radius, height));
+                }
+            };
+            
+            DrawCone(16, coneRadiusInner, coneHeightInner, 1.0f);
+            DrawCone(16, coneRadiusOuter, coneHeightOuter, 0.65f);
+
+            debugDisplay.PopMatrix();
         }
     }
 } // namespace AZ::Render

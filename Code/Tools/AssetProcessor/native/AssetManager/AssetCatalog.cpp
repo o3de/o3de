@@ -655,6 +655,80 @@ namespace AssetProcessor
         return true;
     }
 
+    bool AssetCatalog::GenerateRelativeSourcePath(
+        const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& rootFolder)
+    {
+        QString normalizedSourcePath = AssetUtilities::NormalizeFilePath(sourcePath.c_str());
+        QDir inputPath(normalizedSourcePath);
+        QString scanFolder;
+        QString relativeName;
+
+        bool validResult = false;
+
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "ProcessGenerateRelativeSourcePathRequest: %s...\n", sourcePath.c_str());
+
+        if (sourcePath.empty())
+        {
+            // For an empty input path, do nothing, we'll return an empty, invalid result.
+            // (We check fullPath instead of inputPath, because an empty fullPath actually produces "." for inputPath)
+        }
+        else if (inputPath.isAbsolute())
+        {
+            // For an absolute path, try to convert it to a relative path, based on the existing scan folders.
+            // To get the inputPath, we use absolutePath() instead of path() so that any . or .. entries get collapsed.
+            validResult = m_platformConfig->ConvertToRelativePath(inputPath.absolutePath(), relativeName, scanFolder);
+        }
+        else if (inputPath.isRelative())
+        {
+            // For a relative path, concatenate it with each scan folder, and see if a valid relative path emerges.
+            int scanFolders = m_platformConfig->GetScanFolderCount();
+            for (int scanIdx = 0; scanIdx < scanFolders; scanIdx++)
+            {
+                auto& scanInfo = m_platformConfig->GetScanFolderAt(scanIdx);
+                QDir possibleRoot(scanInfo.ScanPath());
+                QDir possibleAbsolutePath = possibleRoot.filePath(normalizedSourcePath);
+                // To get the inputPath, we use absolutePath() instead of path() so that any . or .. entries get collapsed.
+                if (m_platformConfig->ConvertToRelativePath(possibleAbsolutePath.absolutePath(), relativeName, scanFolder))
+                {
+                    validResult = true;
+                    break;
+                }
+            }
+        }
+
+        // The input has produced a valid relative path.  However, the path might match multiple nested scan folders,
+        // so look to see if a higher-priority folder has a better match.
+        if (validResult)
+        {
+            QString overridingFile = m_platformConfig->GetOverridingFile(relativeName, scanFolder);
+
+            if (!overridingFile.isEmpty())
+            {
+                overridingFile = AssetUtilities::NormalizeFilePath(overridingFile);
+                validResult = m_platformConfig->ConvertToRelativePath(overridingFile, relativeName, scanFolder);
+            }
+        }
+
+        if (!validResult)
+        {
+            // if we are here it means we have failed to determine the relativePath, so we will send back the original path
+            AZ_TracePrintf(AssetProcessor::DebugChannel,
+                "GenerateRelativeSourcePath found no valid result, returning original path: %s...\n", sourcePath.c_str());
+
+            rootFolder.clear();
+            relativePath.clear();
+            relativePath = sourcePath;
+            return false;
+        }
+
+        relativePath = relativeName.toUtf8().data();
+        rootFolder = scanFolder.toUtf8().data();
+
+        AZ_Assert(!relativePath.empty(), "ConvertToRelativePath returned true, but relativePath is empty");
+
+        return true;
+    }
+
     bool AssetCatalog::GetFullSourcePathFromRelativeProductPath(const AZStd::string& relPath, AZStd::string& fullSourcePath)
     {
         ProcessGetFullSourcePathFromRelativeProductPathRequest(relPath, fullSourcePath);
@@ -951,17 +1025,7 @@ namespace AssetProcessor
                         // the subId part of the assetId will always be set to zero.
                         assetInfo.m_assetId = AZ::Data::AssetId(entry.m_sourceGuid, 0);
 
-                        // the Scan Folder may have an output prefix, so we must remove it from the relpath.
-                        // this involves deleting the output prefix and the first slash ('editor/') which is why
-                        // we remove the length of outputPrefix and one extra character.
-                        if (!scanEntry.m_outputPrefix.empty())
-                        {
-                            assetInfo.m_relativePath = entry.m_sourceName.substr(static_cast<int>(scanEntry.m_outputPrefix.size()) + 1);
-                        }
-                        else
-                        {
-                            assetInfo.m_relativePath = entry.m_sourceName;
-                        }
+                        assetInfo.m_relativePath = entry.m_sourceName;
                         AZStd::string absolutePath;
                         AzFramework::StringFunc::Path::Join(scanEntry.m_scanFolder.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
                         assetInfo.m_sizeBytes = AZ::IO::SystemFile::Length(absolutePath.c_str());
@@ -1375,17 +1439,7 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanEntry;
                 if (m_db->GetScanFolderByScanFolderID(entry.m_scanFolderPK, scanEntry))
                 {
-                    // the Scan Folder may have an output prefix, so we must remove it from the relpath.
-                    // this involves deleting the output prefix and the first slash ('editor/') which is why
-                    // we remove the length of outputPrefix and one extra character.
-                    if (!scanEntry.m_outputPrefix.empty())
-                    {
-                        relativePath = entry.m_sourceName.substr(static_cast<int>(scanEntry.m_outputPrefix.size()) + 1);
-                    }
-                    else
-                    {
-                        relativePath = entry.m_sourceName;
-                    }
+                    relativePath = entry.m_sourceName;
 
                     watchFolder = scanEntry.m_scanFolder;
                     
@@ -1530,28 +1584,7 @@ namespace AssetProcessor
                     watchFolder = sourceInfo.m_watchFolder.toStdString().c_str();
 
                     AZStd::string sourceNameStr(sourceInfo.m_sourceName.toStdString().c_str());
-                    
-                    // the Scan Folder may have an output prefix, so we must remove it from the relpath.
-                    // this involves deleting the output prefix and the first slash ('editor/') which is why
-                    // we remove the length of outputPrefix and one extra character.
-                    const AssetProcessor::ScanFolderInfo* info = m_platformConfig->GetScanFolderByPath(watchFolder.c_str());
-                    if ((info)&&(!info->GetOutputPrefix().isEmpty()))
-                    {
-                        const int prefixLength = static_cast<int>(info->GetOutputPrefix().length()) + 1;
-                        AZ_Assert(sourceNameStr.length() > prefixLength, "Source name [%s] was invalid compared to the output prefix.", sourceNameStr.c_str() != nullptr ? sourceNameStr.c_str() : "");
-                        if (sourceNameStr.length() > prefixLength)
-                        {
-                            assetInfo.m_relativePath = sourceNameStr.substr(prefixLength);
-                        }
-                        else
-                        {
-                            assetInfo.m_relativePath.swap(sourceNameStr);
-                        }
-                    }
-                    else
-                    {
-                        assetInfo.m_relativePath.swap(sourceNameStr);
-                    }
+                    assetInfo.m_relativePath.swap(sourceNameStr);
 
                     assetInfo.m_assetId = foundSource->first;
 
@@ -1598,15 +1631,7 @@ namespace AssetProcessor
             return false;
         }
         QString databasePath = QString::fromUtf8(sourceDatabaseName);
-        if (!scanFolderInfo->GetOutputPrefix().isEmpty() && databasePath.startsWith(scanFolderInfo->GetOutputPrefix(), Qt::CaseInsensitive))
-        {
-            QString relativePath = databasePath.right(databasePath.length() - scanFolderInfo->GetOutputPrefix().length() - 1); // also eat the slash, hence -1
-            assetInfo.m_relativePath = relativePath.toUtf8().data();
-        }
-        else
-        {
-            assetInfo.m_relativePath = sourceDatabaseName;
-        }
+        assetInfo.m_relativePath = sourceDatabaseName;
 
         AZStd::string absolutePath;
         AzFramework::StringFunc::Path::Join(watchFolder, assetInfo.m_relativePath.c_str(), absolutePath);

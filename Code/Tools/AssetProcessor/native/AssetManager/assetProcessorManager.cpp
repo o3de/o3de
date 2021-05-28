@@ -142,11 +142,6 @@ namespace AssetProcessor
                 QString databaseSourceName = QString::fromUtf8(entry.m_sourceName.c_str());
                 QString scanFolderPath = QString::fromUtf8(entry.m_scanFolder.c_str());
                 QString relativeToScanFolderPath = databaseSourceName;
-                if (!entry.m_outputPrefix.empty())
-                {
-                    relativeToScanFolderPath = relativeToScanFolderPath.remove(0, static_cast<int>(entry.m_outputPrefix.size()) + 1);
-                }
-
                 QString finalAbsolute = (QString("%1/%2").arg(scanFolderPath).arg(relativeToScanFolderPath));
                 m_sourceFilesInDatabase[finalAbsolute] = { scanFolderPath, relativeToScanFolderPath, databaseSourceName, entry.m_analysisFingerprint.c_str() };
 
@@ -173,12 +168,6 @@ namespace AssetProcessor
                     if (scanFolderInfo.ScanFolderID() == entry.m_scanFolderPK)
                     {
                         scanFolderPath = scanFolderInfo.ScanPath();
-
-                        if (!scanFolderInfo.GetOutputPrefix().isEmpty())
-                        {
-                            relativeToScanFolderPath = relativeToScanFolderPath.remove(0, static_cast<int>(scanFolderInfo.GetOutputPrefix().size()) + 1);
-                        }
-
                         break;
                     }
                 }
@@ -470,12 +459,12 @@ namespace AssetProcessor
             return;
         }
 
-        // note that m_SourceFilesInDatabase is a map from (full absolute path) --> (database name for file, which includes outputprefix)
+        // note that m_SourceFilesInDatabase is a map from (full absolute path) --> (database name for file)
         for (auto iter = m_sourceFilesInDatabase.begin(); iter != m_sourceFilesInDatabase.end(); iter++)
         {
             // CheckDeletedSourceFile actually expects the database name as the second value
             // iter.key is the full path normalized.  iter.value is the database path.
-            // we need the relative path too, which involves removing the scan folder outputprefix it present:
+            // we need the relative path too:
             CheckDeletedSourceFile(
                 iter.key(), iter.value().m_sourceRelativeToWatchFolder, iter.value().m_sourceDatabaseName,
                 AZStd::chrono::system_clock::now());
@@ -1633,27 +1622,7 @@ namespace AssetProcessor
             AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
             if (m_stateData->GetScanFolderByScanFolderID(source.m_scanFolderPK, scanfolder))
             {
-                // there's one more thing to account for here, and thats the fact that the sourceName may have an outputPrefix appended on to it
-                // so for example, the scan folder might be c:/ly/dev/Gems/Clouds/Assets
-                // but the outputPrefix might be Clouds/Assets, meaning "put it in that folder in the cache instead of just at the root"
-                // When we have an outputprefix, we prepend it to SourceName so that its a unique source
-                // so for example, the sourceName might be Clouds/Assets/blah.tif
-                // if you were to blindly concatenate them you'd end up with c:/ly/dev/Gems/Clouds/Assets/Clouds/Assets/blah.tif
-                //                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                //                                                              The watch folder is here
-                //                                                                                       ^^^^^^^^^^^^^^
-                //                                                                                        Prefix prepended
-                //                                                                                                      ^^^^^^^^
-                //                                                                                                      actual name
-                // so remove the output prefix from sourcename if present before doing any source ops on it.
-
-                AZStd::string sourceName(source.m_sourceName);
-
-                if (!scanfolder.m_outputPrefix.empty())
-                {
-                    sourceName = sourceName.substr(scanfolder.m_outputPrefix.size() + 1);
-                }
-                AZStd::string fullSourcePath = AZStd::string::format("%s/%s", scanfolder.m_scanFolder.c_str(), sourceName.c_str());
+                AZStd::string fullSourcePath = AZStd::string::format("%s/%s", scanfolder.m_scanFolder.c_str(), source.m_sourceName.c_str());
 
                 AssessFileInternal(fullSourcePath.c_str(), false);
             }
@@ -2001,18 +1970,7 @@ namespace AssetProcessor
             //remove the jobs associated with these products
             m_stateData->RemoveJob(oldJobInfo.m_jobID);
 
-            // note that JobRemoved is supposed to emit a jobinfo that is not output-prefixed
-            if (!scanFolder->GetOutputPrefix().isEmpty())
-            {
-                JobInfo newJobInfo(oldJobInfo);
-                QString sourcePathWithPrefix = QString::fromUtf8(oldJobInfo.m_sourceFile.c_str());
-                newJobInfo.m_sourceFile = (sourcePathWithPrefix.right(sourcePathWithPrefix.length() - (scanFolder->GetOutputPrefix().length() + 1))).toUtf8().constData();
-                Q_EMIT JobRemoved(newJobInfo);
-            }
-            else
-            {
-                Q_EMIT JobRemoved(oldJobInfo);
-            }
+            Q_EMIT JobRemoved(oldJobInfo);
         }
     }
 
@@ -2239,7 +2197,7 @@ namespace AssetProcessor
         }
 
         AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
-        QString sourceName = scanFolderInfo->GetOutputPrefix().isEmpty() ? relativePath : QDir::cleanPath(scanFolderInfo->GetOutputPrefix() + QDir::separator() + relativePath);
+        QString sourceName = relativePath;
         m_stateData->GetSourcesLikeSourceName(sourceName, AzToolsFramework::AssetDatabase::AssetDatabaseConnection::StartsWith, sources);
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "CheckDeletedSourceFolder: %i matching files.\n", sources.size());
@@ -2249,11 +2207,6 @@ namespace AssetProcessor
         {
             // reconstruct full path:
             QString actualRelativePath = source.m_sourceName.c_str();
-
-            if (!scanFolderInfo->GetOutputPrefix().isEmpty())
-            {
-                actualRelativePath = actualRelativePath.right(actualRelativePath.length() - (scanFolderInfo->GetOutputPrefix().length() + 1)); // adding one for separator
-            }
 
             QString finalPath = scanFolder.absoluteFilePath(actualRelativePath);
 
@@ -2513,11 +2466,6 @@ namespace AssetProcessor
                 const ScanFolderInfo* scanFolderInfo = m_platformConfig->GetScanFolderForFile(normalizedPath);
 
                 relativePathToFile = databasePathToFile;
-                // remove output prefix if present to generate relative path
-                if ((scanFolderInfo)&&(!scanFolderInfo->GetOutputPrefix().isEmpty()))
-                {
-                    relativePathToFile = relativePathToFile.remove(0, static_cast<int>(scanFolderInfo->GetOutputPrefix().length()) + 1);
-                }
 
                 if (normalizedPath.length() >= AP_MAX_PATH_LEN)
                 {
@@ -2537,7 +2485,7 @@ namespace AssetProcessor
                             job.m_jobEntry = JobEntry(
                                 QString::fromUtf8(jobInfo.m_watchFolder.c_str()),
                                 relativePathToFile,
-                                databasePathToFile, // with outputprefix 
+                                databasePathToFile,
                                 jobInfo.m_builderGuid, 
                                 *platformFromInfo, 
                                 jobInfo.m_jobKey.c_str(), 0, GenerateNewJobRunKey(), 
@@ -2646,7 +2594,7 @@ namespace AssetProcessor
                             // to call the expensive function to discover correct case.
                             QString pathRelativeToScanFolder;
                             QString scanFolderPath;
-                            m_platformConfig->ConvertToRelativePath(overrider, pathRelativeToScanFolder, scanFolderPath, false /*include output prefix*/);
+                            m_platformConfig->ConvertToRelativePath(overrider, pathRelativeToScanFolder, scanFolderPath);
                             AssetUtilities::UpdateToCorrectCase(scanFolderPath, pathRelativeToScanFolder);
                             overrider = QDir(scanFolderPath).absoluteFilePath(pathRelativeToScanFolder);
                         }
@@ -3367,10 +3315,6 @@ namespace AssetProcessor
         newSourceInfo.m_watchFolder = scanFolder->ScanPath();
         newSourceInfo.m_sourceDatabaseName = databasePathToFile;
         newSourceInfo.m_sourceRelativeToWatchFolder = databasePathToFile;
-        if (!scanFolder->GetOutputPrefix().isEmpty())
-        {
-            newSourceInfo.m_sourceRelativeToWatchFolder = newSourceInfo.m_sourceRelativeToWatchFolder.remove(0, static_cast<int>(scanFolder->GetOutputPrefix().length()) + 1);
-        }
 
         {
             // this scope exists only to narrow the range of m_sourceUUIDToSourceNameMapMutex
@@ -3642,12 +3586,6 @@ namespace AssetProcessor
                         if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
                         {
                             continue;
-                        }
-
-                        //if relative path starts with the output prefix then remove it first
-                        if (!scanFolderInfo->GetOutputPrefix().isEmpty() && knownPathBeforeWildcard.startsWith(scanFolderInfo->GetOutputPrefix(), Qt::CaseInsensitive))
-                        {
-                            knownPathBeforeWildcard = knownPathBeforeWildcard.right(knownPathBeforeWildcard.length() - (scanFolderInfo->GetOutputPrefix().length() + 1)); // adding 1 for slash
                         }
 
                         QDir rooted(scanFolderInfo->ScanPath());
@@ -3950,7 +3888,6 @@ namespace AssetProcessor
                         scanFolderFromConfigFile.ScanPath().toUtf8().constData(),
                         scanFolderFromConfigFile.GetDisplayName().toUtf8().constData(),
                         scanFolderFromConfigFile.GetPortableKey().toUtf8().constData(),
-                        scanFolderFromConfigFile.GetOutputPrefix().toUtf8().constData(),
                         scanFolderFromConfigFile.IsRoot());
                 //remove this scan path from the scan folders so what is left can deleted
                 m_scanFoldersInDatabase.erase(found);
@@ -3962,7 +3899,6 @@ namespace AssetProcessor
                         scanFolderFromConfigFile.ScanPath().toUtf8().constData(),
                         scanFolderFromConfigFile.GetDisplayName().toUtf8().constData(),
                         scanFolderFromConfigFile.GetPortableKey().toUtf8().constData(),
-                        scanFolderFromConfigFile.GetOutputPrefix().toUtf8().constData(),
                         scanFolderFromConfigFile.IsRoot());
             }
 
@@ -4006,11 +3942,7 @@ namespace AssetProcessor
                 result.m_sourceDatabaseName = QString::fromUtf8(sourceDatabaseEntry.m_sourceName.c_str());
                 result.m_watchFolder = QString::fromUtf8(scanFolder.m_scanFolder.c_str());
                 result.m_sourceRelativeToWatchFolder = result.m_sourceDatabaseName;
-                if (!scanFolder.m_outputPrefix.empty())
-                {
-                    result.m_sourceRelativeToWatchFolder = result.m_sourceRelativeToWatchFolder.remove(0, static_cast<int>(scanFolder.m_outputPrefix.size()) + 1);
-                }
-                
+
                 {   
                     // this scope exists to restrict the duration of the below lock.
                     AZStd::lock_guard<AZStd::mutex> lock(m_sourceUUIDToSourceInfoMapMutex);
@@ -4088,16 +4020,7 @@ namespace AssetProcessor
     {
         sourceDatabaseEntry.m_scanFolderPK = scanFolder->ScanFolderID();
 
-        if (!scanFolder->GetOutputPrefix().isEmpty())
-        {
-            // replace the "output prefix" part of the file name with the one from the ini file to sort out case sensitivity problems.
-            QString withoutOutputPrefix = relativeSourceFilePath.remove(0, scanFolder->GetOutputPrefix().length() + 1);
-            sourceDatabaseEntry.m_sourceName = AZStd::string::format("%s/%s", scanFolder->GetOutputPrefix().toUtf8().constData(), withoutOutputPrefix.toUtf8().data());
-        }
-        else
-        {
-            sourceDatabaseEntry.m_sourceName = relativeSourceFilePath.toUtf8().constData();
-        }
+        sourceDatabaseEntry.m_sourceName = relativeSourceFilePath.toUtf8().constData();
 
         sourceDatabaseEntry.m_sourceGuid = AssetUtilities::CreateSafeSourceUUIDFromName(sourceDatabaseEntry.m_sourceName.c_str());
         
@@ -4709,7 +4632,7 @@ namespace AssetProcessor
 
             QString databasePath;
             QString scanFolderPath;
-            m_platformConfig->ConvertToRelativePath(metaDataFileName, databasePath, scanFolderPath, true);
+            m_platformConfig->ConvertToRelativePath(metaDataFileName, databasePath, scanFolderPath);
             outFilesToFingerprint.insert(AZStd::make_pair(metaDataFileName.toUtf8().constData(), databasePath.toUtf8().constData()));
         }
     }

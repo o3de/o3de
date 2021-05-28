@@ -33,10 +33,6 @@ namespace NvCloth
             const AZStd::string& meshNode,
             MeshNodeInfo& meshNodeInfo,
             MeshClothInfo& meshClothInfo) override;
-        bool DoesSupportSkinnedAnimation() const override
-        {
-            return false;
-        }
 
     private:
         bool CopyDataFromMeshes(

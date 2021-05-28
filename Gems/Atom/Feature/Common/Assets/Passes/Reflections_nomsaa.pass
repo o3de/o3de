@@ -18,11 +18,6 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "ClearCoatNormalInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
                     "Name": "DepthStencilInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "DepthStencil"
@@ -128,13 +123,6 @@
                             }
                         },
                         {
-                            "LocalSlot": "ClearCoatNormalInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "ClearCoatNormalInput"
-                            }
-                        },
-                        {
                             "LocalSlot": "ReflectionBlendWeightInput",
                             "AttachmentRef": {
                                 "Pass": "ReflectionProbeBlendWeightPass",
@@ -147,7 +135,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.shader"
                         },
-                        "StencilRef": 15,
+                        "StencilRef": 3, // See RenderCommon.h and ReflectionGlobalFullscreen_nomsaa.shader
                         "PipelineViewTag": "MainCamera"
                     }
                 },
@@ -189,13 +177,6 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SpecularF0Input"
-                            }
-                        },
-                        {
-                            "LocalSlot": "ClearCoatNormalInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "ClearCoatNormalInput"
                             }
                         },
                         {
@@ -254,13 +235,6 @@
                                 "Pass": "Parent",
                                 "Attachment": "SpecularF0Input"
                             }
-                        },
-                        {
-                            "LocalSlot": "ClearCoatNormalInput",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "ClearCoatNormalInput"
-                            }
                         }
                     ],
                     "PassData": {
@@ -273,8 +247,10 @@
                     }
                 },
                 {
-                    "Name": "ReflectionScreenSpacePass",
-                    "TemplateName": "ReflectionScreenSpacePassTemplate",
+                    // Using cut-down version of screen space reflection for handling the attachment format compatibility issues.
+                    // This is used for mobile devices with limited capabilities.
+                    "Name": "ReflectionScreenSpaceMobilePass",
+                    "TemplateName": "ReflectionScreenSpaceMobilePassTemplate",
                     "Enabled": false,
                     "Connections": [
                         {

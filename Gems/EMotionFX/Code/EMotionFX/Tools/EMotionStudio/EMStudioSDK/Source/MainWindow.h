@@ -152,9 +152,6 @@ namespace EMStudio
         FileManager*        GetFileManager() const                              { return mFileManager; }
         PreferencesWindow*  GetPreferencesWindow() const                        { return mPreferencesWindow; }
 
-        void keyPressEvent(QKeyEvent* event) override;
-        void keyReleaseEvent(QKeyEvent* event) override;
-
         uint32 GetNumLayouts() const                                            { return mLayoutNames.GetLength(); }
         const char* GetLayoutName(uint32 index) const                           { return mLayoutNames[index].c_str(); }
         const char* GetCurrentLayoutName() const;
@@ -167,6 +164,8 @@ namespace EMStudio
         QMessageBox* GetRemoveLayoutDialog();
 
         void AddRecentActorFile(const QString& fileName);
+
+        void LoadKeyboardShortcuts();
 
     public slots:
         void OnAutosaveTimeOut();

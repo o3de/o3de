@@ -29,6 +29,23 @@ namespace ScriptCanvas
         class SubgraphInterface;
     } 
 
+    /*
+    Note: Many parts of AzAutoGen, compilation, and runtime depend on the order of declaration and addition of slots.
+    The display order can be manipulated in the editor, but it will always just be a change of view.
+
+    Whenever in doubt, this is the order, in pseudo code
+
+    for in : Ins do
+        somethingOrdered(in)
+        for branch : in.Branches do
+            somethingOrdered(branch)
+        end
+    end
+    for out : Outs do
+        somethingOrdered(out)
+    end
+    */
+
     // derive from this to make an object that when wrapped with a NodeableNode can be instantly turned into a node that is easily embedded in graphs,
     // and easily compiled in
     class Nodeable
@@ -40,21 +57,23 @@ namespace ScriptCanvas
         // reflect nodeable class API
         static void Reflect(AZ::ReflectContext* reflectContext);
 
+        // the run-time constructor for non-EBus handlers
         Nodeable();
 
+        // this constructor is used by EBus handlers only
         Nodeable(ExecutionStateWeakPtr executionState);
 
         virtual ~Nodeable() = default;
 
-        void CallOut(const AZ::Crc32 key, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const;
+        void CallOut(size_t index, AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments) const;
 
         AZ::Data::AssetId GetAssetId() const;
 
         AZ::EntityId GetEntityId() const;
 
-        const Execution::FunctorOut& GetExecutionOut(AZ::Crc32 key) const;
+        const Execution::FunctorOut& GetExecutionOut(size_t index) const;
         
-        const Execution::FunctorOut& GetExecutionOutChecked(AZ::Crc32 key) const;
+        const Execution::FunctorOut& GetExecutionOutChecked(size_t index) const;
 
         virtual NodePropertyInterface* GetPropertyInterface(AZ::Crc32 /*propertyId*/) { return nullptr; }
 
@@ -66,98 +85,97 @@ namespace ScriptCanvas
         // any would only be good if graphs could opt into it, and execution slots could annotate changing activity level
         virtual bool IsActive() const { return false; }
 
-        void InitializeExecutionOuts(const AZ::Crc32* begin, const AZ::Crc32* end);
+        void InitializeExecutionOuts(size_t count);
 
-        void InitializeExecutionOuts(const AZStd::vector<AZ::Crc32>& keys);
+        void SetExecutionOut(size_t index, Execution::FunctorOut&& out);
 
-        void SetExecutionOut(AZ::Crc32 key, Execution::FunctorOut&& out);
-
-        void SetExecutionOutChecked(AZ::Crc32 key, Execution::FunctorOut&& out);
+        void SetExecutionOutChecked(size_t index, Execution::FunctorOut&& out);
 
     protected:
+        void InitializeExecutionOutByRequiredCount();
+
         void InitializeExecutionState(ExecutionState* executionState);
+
+        virtual void OnInitializeExecutionState() {}
 
         virtual void OnDeactivate() {}
 
-        // all of these hooks are known at compile time, so no branching
-        // we will need with and without result calls for each time for method
-        // methods with result but no result requested, etc
-        
-        template<typename t_Return>
-        void OutResult(const AZ::Crc32 key, t_Return& result) const
-        {
-            // this is correct, it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
-            AZ::BehaviorValueParameter resultBVP(&result);
-
-            CallOut(key, &resultBVP, nullptr, 0);
-
-#if !defined(RELEASE) 
-            if (!resultBVP.GetAsUnsafe<t_Return>())
-            {
-                AZ_Error("ScriptCanvas", false, "%s:CallOut(%u) failed to provide a useable result", TYPEINFO_Name(), (AZ::u32)key);
-                return;
-            }
-#endif
-            result = *resultBVP.GetAsUnsafe<t_Return>();
-        }
+        virtual size_t GetRequiredOutCount() const { return 0; }
 
         // Required to decay array type to pointer type
         template<typename T>
         using decay_array = AZStd::conditional_t<AZStd::is_array_v<AZStd::remove_reference_t<T>>, std::remove_extent_t<AZStd::remove_reference_t<T>>*, T&&>;
 
-        template<typename t_Return, typename... t_Args>
-        void OutResult(const AZ::Crc32 key, t_Return& result, t_Args&&... args) const
+        // all of these hooks are known at compile time, so no branching
+        // we will need with and without result calls for each type of method
+        // methods with result but no result requested, etc
+        
+        template<typename... t_Args>
+        void ExecutionOut(size_t index, t_Args&&... args) const
         {
-            // this is correct, it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
+            // it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
             AZStd::tuple<decay_array<t_Args>...> lvalueWrapper(AZStd::forward<t_Args>(args)...);
             using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
                 return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
             };
-            BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
-            AZ::BehaviorValueParameter resultBVP(&result);
 
-            CallOut(key, &resultBVP, argsBVPs.data(), sizeof...(t_Args));
+            BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
+            CallOut(index, nullptr, argsBVPs.data(), sizeof...(t_Args));
+        }
+
+        void ExecutionOut(size_t index) const
+        {
+            // it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
+            CallOut(index, nullptr, nullptr, 0);
+        }
+        template<typename t_Return>
+        void ExecutionOutResult(size_t index, t_Return& result) const
+        {
+            // It is up to the FunctorOut referenced by the index to decide what to do with these params (whether to modify or handle strings differently)
+            AZ::BehaviorValueParameter resultBVP(&result);
+            CallOut(index, &resultBVP, nullptr, 0);
 
 #if !defined(RELEASE) 
             if (!resultBVP.GetAsUnsafe<t_Return>())
             {
-                AZ_Error("ScriptCanvas", false, "%s:CallOut(%u) failed to provide a useable result", TYPEINFO_Name(), (AZ::u32)key);
+                AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);
                 return;
             }
 #endif
             result = *resultBVP.GetAsUnsafe<t_Return>();
         }
 
-        template<typename... t_Args>
-        void ExecutionOut(const AZ::Crc32 key, t_Args&&... args) const
+        template<typename t_Return, typename... t_Args>
+        void ExecutionOutResult(size_t index, t_Return& result, t_Args&&... args) const
         {
-            // this is correct, it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
+            // it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
             AZStd::tuple<decay_array<t_Args>...> lvalueWrapper(AZStd::forward<t_Args>(args)...);
             using BVPReserveArray = AZStd::array<AZ::BehaviorValueParameter, sizeof...(args)>;
             auto MakeBVPArrayFunction = [](auto&&... element)
             {
                 return BVPReserveArray{ {AZ::BehaviorValueParameter{&element}...} };
             };
+
             BVPReserveArray argsBVPs = AZStd::apply(MakeBVPArrayFunction, lvalueWrapper);
+            AZ::BehaviorValueParameter resultBVP(&result);
+            CallOut(index, &resultBVP, argsBVPs.data(), sizeof...(t_Args));
 
-            CallOut(key, nullptr, argsBVPs.data(), sizeof...(t_Args));
+#if !defined(RELEASE) 
+            if (!resultBVP.GetAsUnsafe<t_Return>())
+            {
+                AZ_Error("ScriptCanvas", false, "%s:CallOut(%zu) failed to provide a useable result", TYPEINFO_Name(), index);
+                return;
+            }
+#endif
+            result = *resultBVP.GetAsUnsafe<t_Return>();
         }
 
-        void ExecutionOut(const AZ::Crc32 key) const
-        {
-            // this is correct, it is up to the FunctorOut referenced by key to decide what to do with these params (whether to modify or handle strings differently)
-            CallOut(key, nullptr, nullptr, 0);
-        }
-        
     private:
-        // keep this here, and don't even think about putting it back in the FunctorOuts by any method*, lambda capture or other.
-        // programmers will need this for internal node state debugging and who knows what other reasons
-        // * Lua execution is an exception
         ExecutionStateWeakPtr m_executionState = nullptr;
         Execution::FunctorOut m_noOpFunctor;
-        AZStd::unordered_map<AZ::Crc32, Execution::FunctorOut> m_outs;
+        AZStd::vector<Execution::FunctorOut> m_outs;
     };
     
 }

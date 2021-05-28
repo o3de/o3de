@@ -21,7 +21,6 @@
 // Editor
 #include "UsedResources.h"
 #include "GameEngine.h"
-#include "Material/MaterialManager.h"
 #include "Include/IObjectManager.h"
 #include "WaitProgress.h"
 
@@ -51,7 +50,7 @@ void CGameResourcesExporter::ChooseDirectory()
 void CGameResourcesExporter::GatherAllLoadedResources()
 {
     m_files.clear();
-    m_files.reserve(100000);        // count from GetResourceList, GetFilesFromObjects, GetFilesFromMaterials ...  is unknown
+    m_files.reserve(100000);        // count from GetResourceList, GetFilesFromObjects ...  is unknown
 
     auto pResList = gEnv->pCryPak->GetResourceList(AZ::IO::IArchive::RFOM_Level);
     {
@@ -62,7 +61,6 @@ void CGameResourcesExporter::GatherAllLoadedResources()
     }
 
     GetFilesFromObjects();
-    GetFilesFromMaterials();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,12 +156,3 @@ void CGameResourcesExporter::GetFilesFromObjects()
 
     Append(m_files, rs.files);
 }
-
-//////////////////////////////////////////////////////////////////////////
-void CGameResourcesExporter::GetFilesFromMaterials()
-{
-    CUsedResources rs;
-    GetIEditor()->GetMaterialManager()->GatherUsedResources(rs);
-    Append(m_files, rs.files);
-}
-

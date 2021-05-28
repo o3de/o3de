@@ -20,6 +20,7 @@ set(FILES
     Include/Private/AWSClientAuthBus.h
     Include/Private/AWSClientAuthResourceMappingConstants.h
     Include/Private/Authentication/AuthenticationProviderTypes.h
+    Include/Private/Authentication/AuthenticationProviderScriptCanvasBus.h
     Include/Private/Authentication/AuthenticationProviderManager.h
     Include/Private/Authentication/AuthenticationNotificationBusBehaviorHandler.h
 

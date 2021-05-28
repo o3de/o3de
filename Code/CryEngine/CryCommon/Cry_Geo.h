@@ -794,7 +794,7 @@ struct HWVSphere
         radius = r;
     }
 
-    ILINE HWVSphere(const Sphere& sp)
+    ILINE HWVSphere(const ::Sphere& sp)
     {
         center = HWVLoadVecUnaligned(&sp.center);
         radius = SIMDFLoadFloat(sp.radius);

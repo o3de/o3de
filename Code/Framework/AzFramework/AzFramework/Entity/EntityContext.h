@@ -17,6 +17,7 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/IdUtils.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
 
@@ -27,7 +28,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    class EntityContext;
+    class Scene;
 
     /**
      * Provides services for a group of entities under the umbrella of a given context.
@@ -47,8 +48,10 @@ namespace AzFramework
         , public EntityOwnershipServiceNotificationBus::Handler
     {
     public:
-
         AZ_TYPE_INFO(EntityContext, "{4F98A6B9-C7B5-450E-8A8A-30EEFC411EF5}");
+
+        /// The type used to store entity in AzFramework::Scene.
+        using SceneStorageType = EntityContext*;
 
         EntityContext(AZ::SerializeContext* serializeContext = nullptr);
         EntityContext(const EntityContextId& contextId, AZ::SerializeContext* serializeContext = nullptr);
@@ -75,6 +78,7 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::ReflectContext* context);
+        static AZStd::shared_ptr<Scene> FindContainingScene(const EntityContextId& contextId);
 
     protected:
 

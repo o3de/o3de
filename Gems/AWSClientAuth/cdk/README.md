@@ -26,9 +26,9 @@ Once the python and pip are set up, you can install the required dependencies.
 
 Set variables
 ```
-set O3D_AWS_DEPLOY_REGION="us-west-2"
-set O3D_AWS_DEPLOY_ACCOUNT=""
-set O3D_AWS_PROJECT_NAME="AWSIProject"
+set O3DE_AWS_DEPLOY_REGION="us-west-2"
+set O3DE_AWS_DEPLOY_ACCOUNT=""
+set O3DE_AWS_PROJECT_NAME="AWSIProject"
 
 If you want to add 3rd party providers fill values in utils/constant.py
 ```

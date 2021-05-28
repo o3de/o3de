@@ -19,6 +19,7 @@
 namespace AzPhysics
 {
     class CollisionConfiguration;
+    struct SceneConfiguration;
 }
 
 namespace Ui
@@ -28,6 +29,12 @@ namespace Ui
 
 namespace PhysX
 {
+    struct PhysXSystemConfiguration;
+    namespace Debug
+    {
+        struct DebugConfiguration;
+    }
+
     namespace Editor
     {
         /// Window pane wrapper for the PhysX Configuration Widget.

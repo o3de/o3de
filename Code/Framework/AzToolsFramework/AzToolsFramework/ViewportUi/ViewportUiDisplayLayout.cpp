@@ -30,7 +30,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment
         m_internalLayouts = AZStd::unordered_map<Qt::Alignment, QBoxLayout*> {
-            CreateSubLayout(new QHBoxLayout(), 0, 0, Qt::AlignTop | Qt::AlignLeft),
+            CreateSubLayout(new QVBoxLayout(), 0, 0, Qt::AlignTop | Qt::AlignLeft),
             CreateSubLayout(new QHBoxLayout(), 1, 0, Qt::AlignBottom | Qt::AlignLeft),
             CreateSubLayout(new QVBoxLayout(), 0, 1, Qt::AlignTop),
             CreateSubLayout(new QHBoxLayout(), 1, 1, Qt::AlignBottom),
@@ -60,7 +60,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     AZStd::pair<Qt::Alignment, QBoxLayout*> ViewportUiDisplayLayout::CreateSubLayout(
         QBoxLayout* layout, const int row, const int column, const Qt::Alignment alignment)
     {
-        layout->setAlignment(alignment); 
+        layout->setAlignment(alignment);
 
         // add an invisible spacer (stretch) to occupy empty space
         // without this, alignment and resizing within the sublayouts becomes difficult

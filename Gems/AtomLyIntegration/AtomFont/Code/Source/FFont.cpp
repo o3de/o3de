@@ -23,6 +23,9 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Casting/numeric_cast.h>
 
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+
 #include <AzFramework/Archive/Archive.h>
 
 #include <AtomLyIntegration/AtomFont/FFont.h>
@@ -42,6 +45,8 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
+#include <AzCore/Interface/Interface.h>
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacket.h>
@@ -78,31 +83,43 @@ AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
     AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 }
 
-bool AZ::FFont::InitFont()
+AZ::RPI::ViewportContextPtr AZ::FFont::GetDefaultViewportContext() const
 {
-    if (m_fontInitialized)
+    auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    return viewContextManager->GetDefaultViewportContext();
+}
+
+AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
+{
+    if (auto defaultViewportContext = GetDefaultViewportContext())
     {
-        return true;
+        return defaultViewportContext->GetWindowContext();
+    }
+    return {};
+}
+
+bool AZ::FFont::InitFont(AZ::RPI::Scene* renderScene)
+{
+    if (!renderScene)
+    {
+        return false;
     }
 
-    InitWindowContext();
-    InitViewportContext();
-
-    const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
+    auto initializationState = InitializationState::Uninitialized;
+    // Do an atomic transition to Initializing if we're in the Uninitialized state.
+    // Otherwise, check the current state.
+    // If we're Initialized, there's no more work to be done, return true to indicate we're good to go.
+    // If we're Initializing (on another thread), return false to let the consumer know it's not safe for us to be used yet.
+    if (!m_fontInitializationState.compare_exchange_strong(initializationState, InitializationState::Initializing))
+    {
+        return initializationState == InitializationState::Initialized;
+    }
 
     // Create and initialize DynamicDrawContext for font draw
-    m_dynamicDraw = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(m_viewportContext->GetRenderScene().get());
-
-    Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
-    AZ::RPI::ShaderOptionList shaderOptions;
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
-    m_dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
-    m_dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::R8G8B8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
-    m_dynamicDraw->EndInit();
+    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(renderScene);
 
     // Save draw srg input indices for later use
-    Data::Instance<RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+    Data::Instance<RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
     const RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
 
     m_fontShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::TextureIndexName));
@@ -120,7 +137,7 @@ bool AZ::FFont::InitFont()
     m_vertexCount = 0;
     m_indexCount = 0;
 
-    m_fontInitialized = true;
+    m_fontInitializationState = InitializationState::Initialized;
     return true;
 }
 
@@ -257,27 +274,45 @@ void AZ::FFont::Free()
 
 void AZ::FFont::DrawString(float x, float y, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
 {
-    if (!str || !m_vertexBuffer)
+    if (!str)
     {
         return;
     }
 
-    DrawStringUInternal(x, y, 1.0f, str, asciiMultiLine, ctx);
+    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext(), x, y, 1.0f, str, asciiMultiLine, ctx);
 }
 
 void AZ::FFont::DrawString(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
 {
-    if (!str || !m_vertexBuffer)
+    if (!str)
     {
         return;
     }
 
-    DrawStringUInternal(x, y, z, str, asciiMultiLine, ctx);
+    DrawStringUInternal(GetDefaultWindowContext()->GetViewport(), GetDefaultViewportContext(), x, y, z, str, asciiMultiLine, ctx);
 }
 
-void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
+void AZ::FFont::DrawStringUInternal(
+    const RHI::Viewport& viewport, 
+    RPI::ViewportContextPtr viewportContext, 
+    float x,
+    float y, 
+    float z, 
+    const char* str, 
+    const bool asciiMultiLine, 
+    const TextDrawContext& ctx)
 {
-    if (!str || !m_fontTexture || ctx.m_fxIdx >= m_effects.size() || m_effects[ctx.m_fxIdx].m_passes.empty())
+    // Lazily ensure we're initialized before attempting to render.
+    if (!viewportContext || !InitFont(viewportContext->GetRenderScene().get()))
+    {
+        return;
+    }
+
+    if (!str
+        || !m_vertexBuffer // vertex buffer isn't created until BootstrapScene is ready, Editor tries to render text before that.
+        || !m_fontTexture
+        || ctx.m_fxIdx >= m_effects.size()
+        || m_effects[ctx.m_fxIdx].m_passes.empty())
     {
         return;
     }
@@ -296,7 +331,6 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
 
     const bool orthoMode = ctx.m_overrideViewProjMatrices;
 
-    const RHI::Viewport& viewport = m_windowContext->GetViewport();
     const float viewX = viewport.m_minX;
     const float viewY = viewport.m_minY;
     const float viewWidth = viewport.m_maxX - viewport.m_minX;
@@ -307,7 +341,7 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
     Matrix4x4 modelViewProjMat;
     if (!orthoMode)
     {
-        AZ::RPI::ViewPtr view = m_viewportContext->GetDefaultView();
+        AZ::RPI::ViewPtr view = viewportContext->GetDefaultView();
         modelViewProjMat = view->GetWorldToClipMatrix();
     }
     else
@@ -322,7 +356,7 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
     size_t startingVertexCount = m_vertexCount;
 
     // Local function that is passed into CreateQuadsForText as the AddQuad function
-    AddFunction AddQuad = [this, startingVertexCount]
+    AZ::FFont::AddFunction AddQuad = [this, startingVertexCount]
             (const Vec3& v0, const Vec3& v1, const Vec3& v2, const Vec3& v3, const Vec2& tc0, const Vec2& tc1, const Vec2& tc2, const Vec2& tc3, uint32_t packedColor)
         {
             const bool vertexSpaceLeft = m_vertexCount + 4 < MaxVerts;
@@ -367,18 +401,19 @@ void AZ::FFont::DrawStringUInternal(float x, float y, float z, const char* str, 
     int numQuads = 0;
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_vertexDataMutex);
-        numQuads = CreateQuadsForText(x, y, z, str, asciiMultiLine, ctx, AddQuad);
+        numQuads = CreateQuadsForText(viewport, x, y, z, str, asciiMultiLine, ctx, AddQuad);
     }
 
     if (numQuads)
     {
+        auto dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(viewportContext->GetRenderScene().get());
         //setup per draw srg
-        auto drawSrg = m_dynamicDraw->NewDrawSrg();
+        auto drawSrg = dynamicDraw->NewDrawSrg();
         drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
         drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
         drawSrg->Compile();
 
-        m_dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
+        dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
         m_indexCount = 0;
         m_vertexCount = 0;
     }
@@ -391,10 +426,14 @@ Vec2 AZ::FFont::GetTextSize(const char* str, const bool asciiMultiLine, const Te
         return Vec2(0.0f, 0.0f);
     }
 
-    return GetTextSizeUInternal(str, asciiMultiLine, ctx);
+    return GetTextSizeUInternal(GetDefaultWindowContext()->GetViewport(), str, asciiMultiLine, ctx);
 }
 
-Vec2 AZ::FFont::GetTextSizeUInternal(const char* str, const bool asciiMultiLine, const TextDrawContext& ctx)
+Vec2 AZ::FFont::GetTextSizeUInternal(
+    const RHI::Viewport& viewport, 
+    const char* str, 
+    const bool asciiMultiLine, 
+    const TextDrawContext& ctx)
 {
     const size_t fxSize = m_effects.size();
 
@@ -411,12 +450,12 @@ Vec2 AZ::FFont::GetTextSizeUInternal(const char* str, const bool asciiMultiLine,
     Vec2 size = ctx.m_size;
     if (ctx.m_sizeIn800x600)
     {
-        ScaleCoord(size.x, size.y);
+        ScaleCoord(viewport, size.x, size.y);
     }
 
     // This scaling takes into account the logical size of the font relative
     // to any additional scaling applied (such as from "size ratio").
-    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(ctx));
+    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(viewport, ctx));
 
     float maxW = 0;
     float maxH = 0;
@@ -465,7 +504,7 @@ Vec2 AZ::FFont::GetTextSizeUInternal(const char* str, const bool asciiMultiLine,
                 }
 
                 charX = offset.x;
-                charY += size.y;
+                charY += size.y * (1.f + ctx.GetLineSpacing());
 
                 if (charY > maxH)
                 {
@@ -733,7 +772,7 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
             return true;
         };
 
-    CreateQuadsForText(x, y, z, str, asciiMultiLine, ctx, AddQuad);
+    CreateQuadsForText(GetDefaultWindowContext()->GetViewport(), x, y, z, str, asciiMultiLine, ctx, AddQuad);
 
     return numQuadsWritten;
 }
@@ -743,7 +782,7 @@ uint32_t AZ::FFont::GetFontTextureVersion()
     return m_fontImageVersion;
 }
 
-int AZ::FFont::CreateQuadsForText(float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx,
+int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float y, float z, const char* str, const bool asciiMultiLine, const TextDrawContext& ctx,
     AddFunction AddQuad)
 {
     int numQuads = 0;
@@ -768,17 +807,17 @@ int AZ::FFont::CreateQuadsForText(float x, float y, float z, const char* str, co
     Vec2 size = ctx.m_size;
     if (ctx.m_sizeIn800x600)
     {
-        ScaleCoord(size.x, size.y);
+        ScaleCoord(viewport, size.x, size.y);
     }
 
     // This scaling takes into account the logical size of the font relative
     // to any additional scaling applied (such as from "size ratio").
-    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(ctx));
+    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(viewport, ctx));
 
     Vec2 baseXY = Vec2(x, y); // in pixels
     if (ctx.m_sizeIn800x600)
     {
-        ScaleCoord(baseXY.x, baseXY.y);
+        ScaleCoord(viewport, baseXY.x, baseXY.y);
     }
 
     // snap for pixel perfect rendering (better quality for text)
@@ -824,9 +863,9 @@ int AZ::FFont::CreateQuadsForText(float x, float y, float z, const char* str, co
         if (drawFrame)
         {
             ColorB tempColor(255, 255, 255, 255);
-            uint32_t frameColor = tempColor.pack_abgr8888();        //note: this ends up in r,g,b,a order on little-endian machines
+            uint32_t frameColor = tempColor.pack_argb8888();        //note: this ends up in r,g,b,a order on little-endian machines
 
-            Vec2 textSize = GetTextSizeUInternal(str, asciiMultiLine, ctx);
+            Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 
             float x0 = baseXY.x - 12;
             float y0 = baseXY.y - 6;
@@ -904,7 +943,7 @@ int AZ::FFont::CreateQuadsForText(float x, float y, float z, const char* str, co
             case '\n':
             {
                 charX = baseXY.x + offset.x;
-                charY += size.y;
+                charY += size.y * (1.f + ctx.GetLineSpacing());
                 continue;
             }
             break;
@@ -1082,7 +1121,7 @@ int AZ::FFont::CreateQuadsForText(float x, float y, float z, const char* str, co
             {
                 ColorB tempColor = color;
                 tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
-                packedColor = tempColor.pack_abgr8888();                    //note: this ends up in r,g,b,a order on little-endian machines
+                packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)
@@ -1107,13 +1146,13 @@ int AZ::FFont::CreateQuadsForText(float x, float y, float z, const char* str, co
     return numQuads;
 }
 
-AZ::FFont::TextScaleInfoInternal AZ::FFont::CalculateScaleInternal(const TextDrawContext& ctx) const
+AZ::FFont::TextScaleInfoInternal AZ::FFont::CalculateScaleInternal(const RHI::Viewport& viewport, const TextDrawContext& ctx) const
 {
     Vec2 size = GetRestoredFontSize(ctx); // in pixel
 
     if (ctx.m_sizeIn800x600)
     {
-        ScaleCoord(size.x, size.y);
+        ScaleCoord(viewport, size.x, size.y);
     }
 
     float rcpCellWidth;
@@ -1193,10 +1232,11 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
 
     if (ctx.m_sizeIn800x600)
     {
-        maxWidth = gEnv->pRenderer->ScaleCoordX(maxWidth);
+        // ToDo: Update to work with Atom? LYN-3676
+        // maxWidth = ???->ScaleCoordX(maxWidth);
     }
 
-    Vec2 strSize = GetTextSizeUInternal(result.c_str(), true, ctx);
+    Vec2 strSize = GetTextSize(result.c_str(), true, ctx);
 
     if (strSize.x <= maxWidth)
     {
@@ -1245,7 +1285,7 @@ void AZ::FFont::WrapText(string& result, float maxWidth, const char* str, const 
         // Note: This is not unicode compatible, since char-width depends on surrounding context (ie, combining diacritics etc)
         char codepoint[5];
         Unicode::Convert(codepoint, ch);
-        curCharWidth = GetTextSizeUInternal(codepoint, true, ctx).x;
+        curCharWidth = GetTextSize(codepoint, true, ctx).x;
 
         // keep track of spaces
         // they are good for splitting the string
@@ -1425,7 +1465,12 @@ void AZ::FFont::AddCharsToFontTexture(const char* chars, int glyphSizeX, int gly
 
 Vec2 AZ::FFont::GetKerning(uint32_t leftGlyph, uint32_t rightGlyph, const TextDrawContext& ctx) const
 {
-    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(ctx));
+    return GetKerningInternal(GetDefaultWindowContext()->GetViewport(), leftGlyph, rightGlyph, ctx);
+}
+
+Vec2 AZ::FFont::GetKerningInternal(const RHI::Viewport& viewport, uint32_t leftGlyph, uint32_t rightGlyph, const TextDrawContext& ctx) const
+{
+    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(viewport, ctx));
     return m_fontTexture->GetKerning(leftGlyph, rightGlyph) * scaleInfo.scale.x;
 }
 
@@ -1436,11 +1481,17 @@ float AZ::FFont::GetAscender(const TextDrawContext& ctx) const
 
 float AZ::FFont::GetBaseline(const TextDrawContext& ctx) const
 {
-    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(ctx));
+    return GetBaselineInternal(GetDefaultWindowContext()->GetViewport(), ctx);
+}
+
+float AZ::FFont::GetBaselineInternal(const RHI::Viewport& viewport, const TextDrawContext& ctx) const
+{
+    const TextScaleInfoInternal scaleInfo(CalculateScaleInternal(viewport, ctx));
     // Calculate baseline the same way as the font renderer which uses the glyph height * size ratio.
     // Adding 1 because FontTexture always adds 1 to the char height in GetTextureCoord
     return (round(m_fontTexture->GetCellHeight() * GetSizeRatio()) + 1.0f) * scaleInfo.scale.y;
 }
+
 
 bool AZ::FFont::InitTexture()
 {
@@ -1472,7 +1523,7 @@ bool AZ::FFont::UpdateTexture()
 {
     using namespace AZ;
 
-    if (!m_fontInitialized || !m_fontImage)
+    if (m_fontInitializationState != InitializationState::Initialized || !m_fontImage)
     {
         return false;
     }
@@ -1540,7 +1591,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
     const bool rerenderGlyphs = m_sizeBehavior == SizeBehavior::Rerender;
     const AtomFont::GlyphSize usedGlyphSize = rerenderGlyphs ? glyphSize : AtomFont::defaultGlyphSize;
     bool texUpdateNeeded = m_fontTexture->PreCacheString(str, nullptr, m_sizeRatio, usedGlyphSize, m_fontHintParams) == 1 || m_fontTexDirty;
-    if (m_fontInitialized && updateTexture && texUpdateNeeded && m_fontImage)
+    if (m_fontInitializationState == InitializationState::Initialized && updateTexture && texUpdateNeeded && m_fontImage)
     {
         UpdateTexture();
         m_fontTexDirty = false;
@@ -1565,14 +1616,8 @@ Vec2 AZ::FFont::GetRestoredFontSize(const TextDrawContext& ctx) const
     return Vec2(ctx.m_size.x * restoringScale, ctx.m_size.y * restoringScale);
 }
 
-void AZ::FFont::ScaleCoord(float& x, float& y) const
+void AZ::FFont::ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) const
 {
-    if (!m_windowContext)
-    {
-        return;
-    }
-
-    const RHI::Viewport& viewport = m_windowContext->GetViewport();
     float width = viewport.m_maxX - viewport.m_minX;
     float height = viewport.m_maxY - viewport.m_minY;
 
@@ -1580,11 +1625,197 @@ void AZ::FFont::ScaleCoord(float& x, float& y) const
     y *= height / WindowScaleHeight;
 }
 
+
 void AZ::FFont::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
 {
-    InitFont();
+    InitFont(bootstrapScene);
 }
 
+static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::TextDrawParameters& params)
+{
+        if (params.m_hAlign == AzFramework::TextHorizontalAlignment::Center)
+        {
+            ctx.m_drawTextFlags |= eDrawText_Center;
+        }
 
-#endif
+        if (params.m_hAlign == AzFramework::TextHorizontalAlignment::Right)
+        {
+            ctx.m_drawTextFlags |= eDrawText_Right;
+        }
+        
+        if (params.m_vAlign == AzFramework::TextVerticalAlignment::Center)
+        {
+            ctx.m_drawTextFlags |= eDrawText_CenterV;
+        }
+        
+        if (params.m_vAlign == AzFramework::TextVerticalAlignment::Bottom)
+        {
+            ctx.m_drawTextFlags |= eDrawText_Bottom;
+        }
+        
+        if (params.m_monospace)
+        {
+            ctx.m_drawTextFlags |= eDrawText_Monospace;
+        }
+        
+        if (params.m_depthTest)
+        {
+            ctx.m_drawTextFlags |= eDrawText_DepthTest;
+        }
+        
+        if (params.m_virtual800x600ScreenSize)
+        {
+            ctx.m_drawTextFlags |= eDrawText_800x600;
+        }
+        
+        if (!params.m_scaleWithWindow)
+        {
+            ctx.m_drawTextFlags |= eDrawText_FixedSize;
+        }
+
+        if (params.m_useTransform)
+        {
+            ctx.m_drawTextFlags |= eDrawText_UseTransform;
+            ctx.SetTransform(AZMatrix3x4ToLYMatrix3x4(params.m_transform));
+        }
+}
+
+AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize)
+{
+    DrawParameters internalParams;
+    if (params.m_drawViewportId == AzFramework::InvalidViewportId ||
+        text.empty())
+    {
+        return internalParams;
+    }
+
+    float posX = params.m_position.GetX();
+    float posY = params.m_position.GetY();
+    internalParams.m_viewportContext = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextById(params.m_drawViewportId);
+    const AZ::RHI::Viewport& viewport = internalParams.m_viewportContext->GetWindowContext()->GetViewport();
+    internalParams.m_viewport = &viewport;
+    if (params.m_virtual800x600ScreenSize)
+    {
+        posX *= WindowScaleWidth / (viewport.m_maxX - viewport.m_minX);
+        posY *= WindowScaleHeight / (viewport.m_maxY - viewport.m_minY);
+    }
+    internalParams.m_ctx.SetBaseState(GS_NODEPTHTEST);
+    internalParams.m_ctx.SetColor(AZColorToLYColorF(params.m_color));
+    internalParams.m_ctx.SetEffect(params.m_effectIndex);
+    internalParams.m_ctx.SetCharWidthScale((params.m_monospace || params.m_scaleWithWindow) ? 0.5f : 1.0f);
+    internalParams.m_ctx.EnableFrame(false);
+    internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
+    internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
+    internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
+
+    if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||
+        params.m_vAlign != AzFramework::TextVerticalAlignment::Top ||
+        forceCalculateSize)
+    {
+        // We align based on the size of the default font effect because we do not want the
+        // text to move when the font effect is changed
+        unsigned int effectIndex = internalParams.m_ctx.m_fxIdx;
+        internalParams.m_ctx.SetEffect(0);
+        Vec2 textSize = GetTextSizeUInternal(viewport, text.data(), params.m_multiline, internalParams.m_ctx);
+        internalParams.m_ctx.SetEffect(effectIndex);
+        
+        // If we're using virtual 800x600 coordinates, convert the text size from
+        // pixels to that before using it as an offset.
+        if (internalParams.m_ctx.m_sizeIn800x600)
+        {
+            float width = 1.0f;
+            float height = 1.0f;
+            ScaleCoord(viewport, width, height);
+            textSize.x /= width;
+            textSize.y /= height;
+        }
+
+        if (params.m_hAlign == AzFramework::TextHorizontalAlignment::Center)
+        {
+            posX -= textSize.x * 0.5f;
+        }
+        else if (params.m_hAlign == AzFramework::TextHorizontalAlignment::Right)
+        {
+            posX -= textSize.x;
+        }
+
+        if (params.m_vAlign == AzFramework::TextVerticalAlignment::Center)
+        {
+            posY -= textSize.y * 0.5f;
+        }
+        else if (params.m_vAlign == AzFramework::TextVerticalAlignment::Bottom)
+        {
+            posY -= textSize.y;
+        }
+        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y};
+    }
+    SetCommonContextFlags(internalParams.m_ctx, params);
+    internalParams.m_ctx.m_drawTextFlags |= eDrawText_2D;
+    internalParams.m_position = AZ::Vector2{posX, posY};
+    return internalParams;
+}
+
+void AZ::FFont::DrawScreenAlignedText2d(
+    const AzFramework::TextDrawParameters& params,
+    AZStd::string_view text)
+{
+    DrawParameters internalParams = ExtractDrawParameters(params, text, false);
+    if (!internalParams.m_viewportContext)
+    {
+        return;
+    }
+
+    DrawStringUInternal(
+        *internalParams.m_viewport, 
+        internalParams.m_viewportContext, 
+        internalParams.m_position.GetX(), 
+        internalParams.m_position.GetY(), 
+        params.m_position.GetZ(), // Z
+        text.data(),
+        params.m_multiline,
+        internalParams.m_ctx
+    );
+}
+
+void AZ::FFont::DrawScreenAlignedText3d(
+    const AzFramework::TextDrawParameters& params,
+    AZStd::string_view text)
+{
+    DrawParameters internalParams = ExtractDrawParameters(params, text, false);
+    if (!internalParams.m_viewportContext)
+    {
+        return;
+    }
+    AZ::RPI::ViewPtr currentView = internalParams.m_viewportContext->GetDefaultView();
+    if (!currentView)
+    {
+        return;
+    }
+    AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
+        params.m_position,
+        currentView->GetWorldToViewMatrix(),
+        currentView->GetViewToClipMatrix()
+    );
+    internalParams.m_ctx.m_sizeIn800x600 = false;
+
+    DrawStringUInternal(
+        *internalParams.m_viewport, 
+        internalParams.m_viewportContext, 
+        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNDC.GetZ(), // Z
+        text.data(),
+        params.m_multiline,
+        internalParams.m_ctx
+    );
+}
+
+AZ::Vector2 AZ::FFont::GetTextSize(const AzFramework::TextDrawParameters& params, AZStd::string_view text)
+{
+    DrawParameters sizeParams = ExtractDrawParameters(params, text, true);
+    return sizeParams.m_size;
+}
+
+#endif //USE_NULLFONT_ALWAYS
 

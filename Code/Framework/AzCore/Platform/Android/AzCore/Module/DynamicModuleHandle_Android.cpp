@@ -11,14 +11,16 @@
 */
 
 #include <AzCore/std/string/osstring.h>
+#include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
 
 namespace AZ
 {
     namespace Platform
     {
-        void GetModulePath(AZ::OSString& path)
+        AZ::IO::FixedMaxPath GetModulePath()
         {
+            return {};
         }
 
         void* OpenModule(const AZ::OSString& fileName, bool&)
@@ -26,10 +28,9 @@ namespace AZ
             // Android 19 does not have RTLD_NOLOAD but it should be OK since only the Editor expects to reopen modules
             return dlopen(fileName.c_str(), RTLD_NOW);
         }
-    
-        void ConstructModuleFullFileName(const AZ::OSString& path, const AZ::OSString& fileName, AZ::OSString& fullPath)
+
+        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath&)
         {
-            fullPath = path + fileName;
         }
     }
 }

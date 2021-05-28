@@ -56,9 +56,11 @@ namespace AZ
             //! Draw calls which are made to this DynamicDrawContext will only be submitted for this scene.
             //! The created DynamicDrawContext is managed by dynamic draw system.
             virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) = 0;
-
-            //! Create a DynamicDrawContext for specified pass
-            virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Pass* pass = nullptr) = 0;
+                                    
+            //! Create a DynamicDrawContext for specified render pipeline
+            //! Draw calls submitted through the context created by this function are only submitted
+            //! to the supplied render pipeline (viewport)
+            virtual RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) = 0;
 
             //! Get a DynamicBuffer from DynamicDrawSystem.
             //! The returned buffer will be invalidated every time the RPISystem's RenderTick is called

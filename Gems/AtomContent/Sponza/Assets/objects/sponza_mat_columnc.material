@@ -4,9 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "Textures/columnC_1k_ao.png"
+        "occlusion": {
+            "diffuseTextureMap": "Textures/columnC_1k_ao.png"
         },
         "baseColor": {
             "color": [
@@ -48,7 +47,8 @@
             "factor": 0.014000000432133675,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/columnC_1k_height.png"
+            "textureMap": "Textures/columnC_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/columnC_1k_roughness.png"

@@ -66,10 +66,9 @@ namespace AzManipulatorTestFramework
         return m_angularStep;
     }
 
-    QPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
+    AzFramework::ScreenPoint ViewportInteraction::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-        auto pos = AzFramework::WorldToScreen(worldPosition, m_cameraState);
-        return QPoint(pos.m_x, pos.m_y);
+        return AzFramework::WorldToScreen(worldPosition, m_cameraState);
     }
 
     void ViewportInteraction::SetCameraState(const AzFramework::CameraState& cameraState)
@@ -117,13 +116,20 @@ namespace AzManipulatorTestFramework
         return m_viewportId;
     }
 
-    AZStd::optional<AZ::Vector3> ViewportInteraction::ViewportScreenToWorld([[maybe_unused]]const QPoint& screenPosition, [[maybe_unused]]float depth)
+    AZStd::optional<AZ::Vector3> ViewportInteraction::ViewportScreenToWorld(
+        [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition, [[maybe_unused]] float depth)
     {
         return {};
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportInteraction::ViewportScreenToWorldRay([[maybe_unused]]const QPoint& screenPosition)
+    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportInteraction::ViewportScreenToWorldRay(
+        [[maybe_unused]] const AzFramework::ScreenPoint& screenPosition)
     {
         return {};
     }
-} // namespace AzManipulatorTestFramework
+
+    float ViewportInteraction::DeviceScalingFactor()
+    {
+        return 1.0f;
+    }
+}// namespace AzManipulatorTestFramework

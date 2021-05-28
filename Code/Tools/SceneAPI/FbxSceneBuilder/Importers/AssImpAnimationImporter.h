@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <SceneAPI/FbxSceneBuilder/ImportContexts/FbxImportContexts.h>
-#include <SceneAPI/FbxSDKWrapper/FbxTimeWrapper.h>
 #include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
 
@@ -45,7 +43,7 @@ namespace AZ
                     const aiMeshMorphAnim* meshMorphAnim,
                     const aiMesh* mesh);
 
-                static const double s_defaultTimeStepSampleRate;
+                static const double s_defaultTimeStepBetweenFrames;
 
             protected:
                 static const char* s_animationNodeName;

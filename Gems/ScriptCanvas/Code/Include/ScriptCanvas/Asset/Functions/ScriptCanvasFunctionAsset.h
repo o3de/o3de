@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
                 "Script Canvas Function Files (*.scriptcanvas_fn)",
                 "Script Canvas Function",
                 "Script Canvas Function",
-                "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
+                "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
                 AZ::Color(0.192f, 0.149f, 0.392f, 1.0f),
                 true
                 )

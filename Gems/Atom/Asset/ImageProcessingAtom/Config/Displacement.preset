@@ -9,30 +9,46 @@
             "SourceColor": "Linear",
             "DestColor": "Linear",
             "FileMasks": [
-                "_displ"
+                "_displ",
+                "_disp",
+                "_dsp",
+                "_d",
+                "_dm",
+                "_displacement",
+                "_height",
+                "_hm",
+                "_ht",
+                "_h"
             ],
             "PixelFormat": "BC4",
             "DiscardAlpha": true,
             "IsPowerOf2": true,
-            "Swizzle": "aaa1",
             "MipMapSetting": {
                 "MipGenType": "Box"
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
                 "Name": "Displacement",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_displ"
+                    "_displ",
+                    "_disp",
+                    "_dsp",
+                    "_d",
+                    "_dm",
+                    "_displacement",
+                    "_height",
+                    "_hm",
+                    "_ht",
+                    "_h"
                 ],
                 "PixelFormat": "EAC_R11",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
                 "SizeReduceLevel": 3,
-                "Swizzle": "aaa1",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
@@ -57,23 +73,30 @@
                 "PixelFormat": "EAC_R11",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
-                "Swizzle": "aaa1",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
                 "Name": "Displacement",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_displ"
+                    "_displ",
+                    "_disp",
+                    "_dsp",
+                    "_d",
+                    "_dm",
+                    "_displacement",
+                    "_height",
+                    "_hm",
+                    "_ht",
+                    "_h"
                 ],
                 "PixelFormat": "BC4",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
-                "Swizzle": "aaa1",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }
@@ -84,12 +107,20 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "FileMasks": [
-                    "_displ"
+                    "_displ",
+                    "_disp",
+                    "_dsp",
+                    "_d",
+                    "_dm",
+                    "_displacement",
+                    "_height",
+                    "_hm",
+                    "_ht",
+                    "_h"
                 ],
                 "PixelFormat": "BC4",
                 "DiscardAlpha": true,
                 "IsPowerOf2": true,
-                "Swizzle": "aaa1",
                 "MipMapSetting": {
                     "MipGenType": "Box"
                 }

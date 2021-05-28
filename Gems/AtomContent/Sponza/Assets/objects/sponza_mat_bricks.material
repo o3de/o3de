@@ -4,9 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "Textures/bricks_1k_ao.png"
+        "occlusion": {
+            "diffuseTextureMap": "Textures/bricks_1k_ao.png"
         },
         "baseColor": {
             "color": [
@@ -47,7 +46,8 @@
             "algorithm": "ContactRefinement",
             "factor": 0.03500000014901161,
             "quality": "Medium",
-            "textureMap": "Textures/bricks_1k_height.png"
+            "textureMap": "Textures/bricks_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/bricks_1k_roughness.png"

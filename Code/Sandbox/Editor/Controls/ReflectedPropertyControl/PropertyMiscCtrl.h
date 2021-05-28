@@ -70,39 +70,6 @@ public:
 
 };
 
-
-class LensFlarePropertyWidget : public QWidget
-{
-    Q_OBJECT
-public:
-    AZ_CLASS_ALLOCATOR(LensFlarePropertyWidget, AZ::SystemAllocator, 0);
-    LensFlarePropertyWidget(QWidget *pParent = nullptr);
-
-    void SetValue(const QString &value);
-    QString GetValue() const;
-
-    void OnEditClicked();
-
-signals:
-    void ValueChanged(const QString &value);
-
-private:
-    QLineEdit *m_valueEdit;
-};
-
-class LensFlareHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarGenericProperty, LensFlarePropertyWidget>
-{
-public:
-    AZ_CLASS_ALLOCATOR(LensFlareHandler, AZ::SystemAllocator, 0);
-    bool IsDefaultHandler() const override { return false; }
-    QWidget* CreateGUI(QWidget *pParent) override;
-
-    AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("ePropertyFlare", 0x5ce803df); }
-    void ConsumeAttribute(LensFlarePropertyWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
-    void WriteGUIValuesIntoProperty(size_t index, LensFlarePropertyWidget* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
-    bool ReadValuesIntoGUI(size_t index, LensFlarePropertyWidget* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;
-};
-
 class FloatCurveHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarSpline, CSplineCtrl>
 {
 public:

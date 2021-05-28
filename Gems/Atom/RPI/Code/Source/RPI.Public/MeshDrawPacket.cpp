@@ -17,11 +17,20 @@
 #include <Atom/RPI.Public/Scene.h> 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <AzCore/Console/Console.h>
 
 namespace AZ
 {   
     namespace RPI
     {
+        AZ_CVAR(bool,
+            r_forceRootShaderVariantUsage,
+            false,
+            [](const bool&) { AZ::Interface<AZ::IConsole>::Get()->PerformCommand("MeshFeatureProcessor.ForceRebuildDrawPackets"); },
+            ConsoleFunctorFlags::Null,
+            "(For Testing) Forces usage of root shader variant in the mesh draw packet level, ignoring any other shader variants that may exist."
+        );
+
         MeshDrawPacket::MeshDrawPacket(
             ModelLod& modelLod,
             size_t modelLodMeshIndex,
@@ -160,7 +169,7 @@ namespace AZ
                 const AZ::Data::Asset<ShaderResourceGroupAsset>& drawSrgAsset = shader->GetAsset()->GetDrawSrgAsset();
 
                 // Set all unspecified shader options to default values, so that we get the most specialized variant possible.
-                // (because FindVariantStableId treats unspecified options as a request specificlly for a variant that doesn't specify those options)
+                // (because FindVariantStableId treats unspecified options as a request specifically for a variant that doesn't specify those options)
                 // [GFX TODO][ATOM-3883] We should consider updating the FindVariantStableId algorithm to handle default values for us, and remove this step here.
                 RPI::ShaderOptionGroup shaderOptions = *shaderItem.GetShaderOptions();
                 shaderOptions.SetUnspecifiedToDefaultValues();
@@ -187,7 +196,32 @@ namespace AZ
                 }
 
                 const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
-                const ShaderVariant& variant = shader->GetVariant(finalVariantId);
+                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(finalVariantId);
+
+                RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
+                variant.ConfigurePipelineState(pipelineStateDescriptor);
+
+                // Render states need to merge the runtime variation.
+                // This allows materials to customize the render states that the shader uses.
+                const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
+                RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
+
+                streamBufferViewsPerShader.push_back();
+                auto& streamBufferViews = streamBufferViewsPerShader.back();
+
+                UvStreamTangentBitmask uvStreamTangentBitmask;
+
+                if (!m_modelLod->GetStreamsForMesh(
+                    pipelineStateDescriptor.m_inputStreamLayout,
+                    streamBufferViews,
+                    &uvStreamTangentBitmask,
+                    variant.GetInputContract(),
+                    m_modelLodMeshIndex,
+                    m_materialModelUvMap,
+                    m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
+                {
+                    return false;
+                }
 
                 Data::Instance<ShaderResourceGroup> drawSrg;
                 if (drawSrgAsset)
@@ -201,29 +235,18 @@ namespace AZ
                         drawSrg->SetShaderVariantKeyFallbackValue(shaderOptions.GetShaderVariantKeyFallbackValue());
                     }
 
+                    // Pass UvStreamTangentBitmask to the shader if the draw SRG has it.
+                    {
+                        AZ::Name shaderUvStreamTangentBitmask = AZ::Name(UvStreamTangentBitmask::SrgName);
+                        auto index = drawSrg->FindShaderInputConstantIndex(shaderUvStreamTangentBitmask);
+
+                        if (index.IsValid())
+                        {
+                            drawSrg->SetConstant(index, uvStreamTangentBitmask.GetFullTangentBitmask());
+                        }
+                    }
+
                     drawSrg->Compile();
-                }
-
-                RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-                variant.ConfigurePipelineState(pipelineStateDescriptor);
-
-                // Render states need to merge the runtime variation.
-                // This allows materials to customize the render states that the shader uses.
-                const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
-                RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
-
-                streamBufferViewsPerShader.push_back();
-                auto& streamBufferViews = streamBufferViewsPerShader.back();
-
-                if (!m_modelLod->GetStreamsForMesh(
-                    pipelineStateDescriptor.m_inputStreamLayout,
-                    streamBufferViews,
-                    variant.GetInputContract(),
-                    m_modelLodMeshIndex,
-                    m_materialModelUvMap,
-                    m_material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap()))
-                {
-                    return false;
                 }
 
                 // Use the default draw list tag from the shader variant.

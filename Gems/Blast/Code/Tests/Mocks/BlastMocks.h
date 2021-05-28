@@ -213,9 +213,6 @@ namespace Blast
             CreateShape,
             AZStd::shared_ptr<Physics::Shape>(
                 const Physics::ColliderConfiguration&, const Physics::ShapeConfiguration&));
-        MOCK_METHOD4(
-            AddColliderComponentToEntity,
-            void(AZ::Entity*, const Physics::ColliderConfiguration&, const Physics::ShapeConfiguration&, bool));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void*));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration&));
         MOCK_METHOD0(GetDefaultMaterial, AZStd::shared_ptr<Physics::Material>());
@@ -287,12 +284,12 @@ namespace Blast
             return m_transform;
         }
 
-        AzPhysics::SimulatedBody* GetWorldBody() override
+        AzPhysics::SimulatedBody* GetSimulatedBody() override
         {
             return m_worldBody.get();
         }
 
-        const AzPhysics::SimulatedBody* GetWorldBody() const override
+        const AzPhysics::SimulatedBody* GetSimulatedBody() const override
         {
             return m_worldBody.get();
         }
@@ -427,7 +424,7 @@ namespace Blast
 
         void SetAngularVelocity([[maybe_unused]] const AZ::Vector3& angularVelocity) override {}
 
-        AZ::Vector3 GetLinearVelocityAtWorldPoint([[maybe_unused]] const AZ::Vector3& worldPoint) override
+        AZ::Vector3 GetLinearVelocityAtWorldPoint([[maybe_unused]] const AZ::Vector3& worldPoint) const override
         {
             return {};
         }
@@ -647,19 +644,7 @@ namespace Blast
         MOCK_METHOD0(GetLocalX, float());
         MOCK_METHOD0(GetLocalY, float());
         MOCK_METHOD0(GetLocalZ, float());
-        MOCK_METHOD1(SetRotation, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetRotationX, void(float));
-        MOCK_METHOD1(SetRotationY, void(float));
-        MOCK_METHOD1(SetRotationZ, void(float));
-        MOCK_METHOD1(SetRotationQuaternion, void(const AZ::Quaternion&));
-        MOCK_METHOD1(RotateByX, void(float));
-        MOCK_METHOD1(RotateByY, void(float));
-        MOCK_METHOD1(RotateByZ, void(float));
-        MOCK_METHOD0(GetRotationEulerRadians, AZ::Vector3());
-        MOCK_METHOD0(GetRotationQuaternion, AZ::Quaternion());
-        MOCK_METHOD0(GetRotationX, float());
-        MOCK_METHOD0(GetRotationY, float());
-        MOCK_METHOD0(GetRotationZ, float());
+        MOCK_METHOD1(SetWorldRotationQuaternion, void(const AZ::Quaternion&));
         MOCK_METHOD0(GetWorldRotation, AZ::Vector3());
         MOCK_METHOD0(GetWorldRotationQuaternion, AZ::Quaternion());
         MOCK_METHOD1(SetLocalRotation, void(const AZ::Vector3&));
@@ -669,20 +654,12 @@ namespace Blast
         MOCK_METHOD1(RotateAroundLocalZ, void(float));
         MOCK_METHOD0(GetLocalRotation, AZ::Vector3());
         MOCK_METHOD0(GetLocalRotationQuaternion, AZ::Quaternion());
-        MOCK_METHOD1(SetScale, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetScaleX, void(float));
-        MOCK_METHOD1(SetScaleY, void(float));
-        MOCK_METHOD1(SetScaleZ, void(float));
-        MOCK_METHOD0(GetScale, AZ::Vector3());
-        MOCK_METHOD0(GetScaleX, float());
-        MOCK_METHOD0(GetScaleY, float());
-        MOCK_METHOD0(GetScaleZ, float());
         MOCK_METHOD1(SetLocalScale, void(const AZ::Vector3&));
-        MOCK_METHOD1(SetLocalScaleX, void(float));
-        MOCK_METHOD1(SetLocalScaleY, void(float));
-        MOCK_METHOD1(SetLocalScaleZ, void(float));
         MOCK_METHOD0(GetLocalScale, AZ::Vector3());
         MOCK_METHOD0(GetWorldScale, AZ::Vector3());
+        MOCK_METHOD1(SetLocalUniformScale, void(float));
+        MOCK_METHOD0(GetLocalUniformScale, float());
+        MOCK_METHOD0(GetWorldUniformScale, float());
         MOCK_METHOD0(GetParentId, AZ::EntityId());
         MOCK_METHOD0(GetParent, TransformInterface*());
         MOCK_METHOD1(SetParent, void(AZ::EntityId));

@@ -13,7 +13,9 @@ set(FILES
     Include/Private/AWSCoreEditorSystemComponent.h
     Include/Private/Editor/AWSCoreEditorManager.h
     Include/Private/Editor/UI/AWSCoreEditorMenu.h
+    Include/Private/Editor/UI/AWSCoreResourceMappingToolAction.h
     Source/AWSCoreEditorSystemComponent.cpp
     Source/Editor/AWSCoreEditorManager.cpp
     Source/Editor/UI/AWSCoreEditorMenu.cpp
+    Source/Editor/UI/AWSCoreResourceMappingToolAction.cpp
 )

@@ -14,8 +14,8 @@
 #include "EditorCommon.h"
 
 ViewportHighlight::ViewportHighlight()
-    : m_highlightIconSelected(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Border_Selected.tif"))
-    , m_highlightIconUnselected(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Border_Unselected.tif"))
+    : m_highlightIconSelected(new ViewportIcon("Editor/Icons/Viewport/Border_Selected.tif"))
+    , m_highlightIconUnselected(new ViewportIcon("Editor/Icons/Viewport/Border_Unselected.tif"))
 {
 }
 

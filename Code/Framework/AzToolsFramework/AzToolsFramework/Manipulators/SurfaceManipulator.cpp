@@ -103,8 +103,7 @@ namespace AzToolsFramework
         ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
             worldSurfacePosition, interaction.m_interactionId.m_viewportId,
             &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            ViewportInteraction::QPointFromScreenPoint(
-                interaction.m_mousePick.m_screenCoordinates));
+            interaction.m_mousePick.m_screenCoordinates);
 
         m_startInternal = CalculateManipulationDataStart(
             worldFromLocalUniformScale, worldSurfacePosition, GetLocalPosition(),
@@ -129,8 +128,7 @@ namespace AzToolsFramework
             ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
                 worldSurfacePosition, interaction.m_interactionId.m_viewportId,
                 &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-                ViewportInteraction::QPointFromScreenPoint(
-                    interaction.m_mousePick.m_screenCoordinates));
+                interaction.m_mousePick.m_screenCoordinates);
 
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 
@@ -150,8 +148,7 @@ namespace AzToolsFramework
             ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
                 worldSurfacePosition, interaction.m_interactionId.m_viewportId,
                 &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-                ViewportInteraction::QPointFromScreenPoint(
-                    interaction.m_mousePick.m_screenCoordinates));
+                interaction.m_mousePick.m_screenCoordinates);
 
             const GridSnapParameters gridSnapParams = GridSnapSettings(interaction.m_interactionId.m_viewportId);
 

@@ -13,7 +13,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/ViewportUi/Cluster.h>
+#include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
 #include <QAction>
 #include <QApplication>
@@ -23,14 +23,14 @@
 namespace UnitTest
 {
     using ViewportUiCluster = AzToolsFramework::ViewportUi::Internal::ViewportUiCluster;
-    using Cluster = AzToolsFramework::ViewportUi::Internal::Cluster;
+    using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
     using Button = AzToolsFramework::ViewportUi::Internal::Button;
     using ButtonId = AzToolsFramework::ViewportUi::ButtonId;
 
     TEST(ViewportUiCluster, RegisterButtonIncreasesClusterHeight)
     {
-        auto clusterInfo = AZStd::make_shared<Cluster>();
-        ViewportUiCluster viewportUiCluster(clusterInfo);
+        auto buttonGroup = AZStd::make_shared<ButtonGroup>();
+        ViewportUiCluster viewportUiCluster(buttonGroup);
         viewportUiCluster.resize(viewportUiCluster.minimumSizeHint());
 
         // need to initialize cluster with a single button or size will be invalid
@@ -48,8 +48,8 @@ namespace UnitTest
 
     TEST(ViewportUiCluster, RemoveClusterButtonDecreasesClusterHeight)
     {
-        auto clusterInfo = AZStd::make_shared<Cluster>();
-        ViewportUiCluster viewportUiCluster(clusterInfo);
+        auto buttonGroup = AZStd::make_shared<ButtonGroup>();
+        ViewportUiCluster viewportUiCluster(buttonGroup);
         viewportUiCluster.resize(viewportUiCluster.minimumSizeHint());
 
         // need to initialize cluster with a single button or size will be invalid
@@ -70,8 +70,8 @@ namespace UnitTest
 
     TEST(ViewportUiCluster, UpdateChangesActiveButton)
     {
-        auto clusterInfo = AZStd::make_shared<Cluster>();
-        ViewportUiCluster viewportUiCluster(clusterInfo);
+        auto buttonGroup = AZStd::make_shared<ButtonGroup>();
+        ViewportUiCluster viewportUiCluster(buttonGroup);
 
         // register a button to the cluster
         auto button = AZStd::make_unique<Button>("", ButtonId(1));
@@ -93,8 +93,8 @@ namespace UnitTest
 
     TEST(ViewportUiCluster, TriggeringActionTriggersClusterEventForButton)
     {
-        auto clusterInfo = AZStd::make_shared<Cluster>();
-        ViewportUiCluster viewportUiCluster(clusterInfo);
+        auto buttonGroup = AZStd::make_shared<ButtonGroup>();
+        ViewportUiCluster viewportUiCluster(buttonGroup);
 
         // create a handler which will be triggered by the button
         bool handlerTriggered = false;
@@ -107,7 +107,7 @@ namespace UnitTest
                     handlerTriggered = true;
                 }
             });
-        clusterInfo->ConnectEventHandler(handler);
+        buttonGroup->ConnectEventHandler(handler);
 
         // register the button
         auto button = AZStd::make_unique<Button>("", testButtonId);

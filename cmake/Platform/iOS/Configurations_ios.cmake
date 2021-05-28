@@ -41,6 +41,11 @@ endif()
 # Signing
 ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS --deep)
 
+# Symbol Stripping
+ly_set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=debug] "NO")
+ly_set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=profile] "NO")
+ly_set(CMAKE_XCODE_ATTRIBUTE_DEPLOYMENT_POSTPROCESSING[variant=release] "YES")
+
 # Generate scheme files for Xcode
 ly_set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 

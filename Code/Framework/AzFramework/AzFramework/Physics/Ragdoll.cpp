@@ -52,6 +52,11 @@ namespace Physics
         }
     }
 
+    RagdollConfiguration::RagdollConfiguration()
+    {
+        m_startSimulationEnabled = false; //ragdolls do not start enabled.
+    }
+
     void RagdollConfiguration::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

@@ -21,7 +21,7 @@ namespace AzPhysics
     namespace
     {
         const float TimestepMin = 0.001f; //1000fps
-        const float TimestepMax = 0.05f; //20fps
+        const float TimestepMax = 0.1f; //10fps
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(SystemConfiguration, AZ::SystemAllocator, 0);

@@ -185,6 +185,7 @@ string CCmdLine::Next(char*& src)
             return string(org, src - 1);
 
         case ' ':
+            ch = *src++;
             continue;
         default:
             org = src - 1;

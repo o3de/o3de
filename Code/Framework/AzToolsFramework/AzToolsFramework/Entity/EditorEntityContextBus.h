@@ -49,6 +49,8 @@ namespace AzToolsFramework
         /// Retrieve the Id of the editor entity context.
         virtual AzFramework::EntityContextId GetEditorEntityContextId() = 0;
 
+        virtual AzFramework::EntityContext* GetEditorEntityContextInstance() = 0;
+
         /// Creates an entity in the editor context.
         /// \return the EntityId for the created Entity
         virtual AZ::EntityId CreateNewEditorEntity(const char* name) = 0;

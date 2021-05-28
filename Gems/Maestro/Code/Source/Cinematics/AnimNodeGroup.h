@@ -34,7 +34,7 @@ public:
 
     virtual CAnimParamType GetParamType(unsigned int nIndex) const;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_ANIMNODEGROUP_H

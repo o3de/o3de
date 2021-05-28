@@ -11,11 +11,11 @@
 */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/ReflectContext.h>
 
 class AnimSerializer
 {
 public:
     //! Reflection for Maestro's AZ_TYPE_INFO'ed classes
-    static void ReflectAnimTypes(AZ::SerializeContext* context);
+    static void ReflectAnimTypes(AZ::ReflectContext* context);
 };

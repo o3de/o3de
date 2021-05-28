@@ -24,6 +24,13 @@ namespace UnitTest
     public:
         AZ_CLASS_ALLOCATOR(EmptyAsset, AZ::SystemAllocator, 0);
         AZ_RTTI(EmptyAsset, "{098E3F7F-13AC-414B-9B4E-49B5AD1BD7FE}", AZ::Data::AssetData);
+
+        EmptyAsset(
+            const AZ::Data::AssetId& assetId = AZ::Data::AssetId(),
+            AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded)
+            : AZ::Data::AssetData(assetId, status)
+        {
+        }
     };
 
     // EmptyAssetWithNoHandler:  no data contained within, and no AssetHandler registered for this type

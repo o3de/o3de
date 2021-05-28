@@ -70,6 +70,7 @@ namespace AZ
             void Shutdown();
 
             // RPISystemInterface overrides...
+            bool IsInitialized() const override;
             void InitializeSystemAssets() override;
             void RegisterScene(ScenePtr scene) override;
             void UnregisterScene(ScenePtr scene) override;

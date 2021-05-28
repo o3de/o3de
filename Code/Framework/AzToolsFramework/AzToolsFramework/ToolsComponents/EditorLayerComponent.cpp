@@ -101,8 +101,8 @@ namespace AzToolsFramework
                 {
                     editContext->Class<EditorLayerComponent>("Layer", "The layer component allows entities to be saved to different files on disk.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Layers.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Layers.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Layers.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Layers.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Layer", 0xe4db211a))
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
                         ->Attribute(AZ::Edit::Attributes::RemoveableByUser, false)

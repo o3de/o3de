@@ -79,7 +79,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 19;   // [ATOM-14459]
+        builderDescriptor.m_version = 23;   // [ATOM-14022]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -88,11 +88,13 @@ namespace ImageProcessingAtom
         m_assetHandlers.emplace_back(AZ::RPI::MakeAssetHandler<AZ::RPI::StreamingImageAssetHandler>());
 
         ImageProcessingRequestBus::Handler::BusConnect();
+        ImageBuilderRequestBus::Handler::BusConnect();
     }
 
     void BuilderPluginComponent::Deactivate()
     {
         ImageProcessingRequestBus::Handler::BusDisconnect();
+        ImageBuilderRequestBus::Handler::BusDisconnect();
         m_imageBuilder.BusDisconnect();
         BuilderSettingManager::DestroyInstance();
         CPixelFormats::DestroyInstance();
@@ -146,6 +148,78 @@ namespace ImageProcessingAtom
         return image;
     }
 
+    IImageObjectPtr BuilderPluginComponent::CreateImage(
+        AZ::u32 width,
+        AZ::u32 height,
+        AZ::u32 maxMipCount,
+        EPixelFormat pixelFormat)
+    {
+        IImageObjectPtr image(IImageObject::CreateImage(width, height, maxMipCount, pixelFormat));
+        return image;
+    }
+
+    AZStd::vector<AssetBuilderSDK::JobProduct> BuilderPluginComponent::ConvertImageObject(
+        IImageObjectPtr imageObject,
+        const AZStd::string& presetName,
+        const AZStd::string& platformName,
+        const AZStd::string& outputDir,
+        const AZ::Data::AssetId& sourceAssetId,
+        const AZStd::string& sourceAssetName)
+    {
+        AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+        AZStd::string_view presetFilePath;
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName, platformName, &presetFilePath);
+        if (preset == nullptr)
+        {
+            AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
+            return outProducts;
+        }
+
+        AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
+        TextureSettings& textureSettings = desc->m_textureSetting;
+        textureSettings.m_preset = preset->m_uuid;
+        desc->m_inputImage = imageObject;
+        desc->m_presetSetting = *preset;
+        desc->m_isPreview = false;
+        desc->m_platform = platformName;
+        desc->m_filePath = presetFilePath;
+        desc->m_isStreaming = BuilderSettingManager::Instance()->GetBuilderSetting(platformName)->m_enableStreaming;
+        desc->m_imageName = sourceAssetName;
+        desc->m_outputFolder = outputDir;
+        desc->m_sourceAssetId = sourceAssetId;
+        
+        // Create an image convert process
+        ImageConvertProcess process(AZStd::move(desc));
+        process.ProcessAll();
+        bool result = process.IsSucceed();
+        if (result)
+        {
+            process.GetAppendOutputProducts(outProducts);
+        }
+
+        return outProducts;
+    }
+
+    bool BuilderPluginComponent::DoesSupportPlatform(const AZStd::string& platformId)
+    {
+        return ImageProcessingAtom::BuilderSettingManager::Instance()->DoesSupportPlatform(platformId);
+    }
+
+    bool BuilderPluginComponent::IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName)
+    {
+        AZStd::string_view filePath;
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName, platformName, &filePath);
+        if (preset == nullptr)
+        {
+            AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
+            return false;
+        }
+
+        const PixelFormatInfo* info = CPixelFormats::GetInstance().GetPixelFormatInfo(preset->m_pixelFormat);
+        return info->bSquarePow2;
+    }
+
     void ImageBuilderWorker::ShutDown()
     {
         // it is important to note that this will be called on a different thread than your process job thread
@@ -188,26 +262,6 @@ namespace ImageProcessingAtom
     // the request will contain the CreateJobResponse you constructed earlier, including any keys and values you placed into the hash table
     void ImageBuilderWorker::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
     {
-        // Exclude the "Engine/EngineAssets/Textures/rotrandom.dds" which is not a legit dds file but required by Cry3dEngine.
-        // [GFX TODO] Remove this block of code when removing Cry3dEngine and its engine assets entirely. 
-        AZStd::string assetFileName;
-        AzFramework::StringFunc::Path::GetFullFileName(request.m_sourceFile.data(), assetFileName);
-        if (azstricmp(assetFileName.data(), "rotrandom.dds") == 0)
-        {
-            AZStd::string assetPath = request.m_fullPath;
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::MakePathRootRelative, assetPath);
-            // The MakePathRootRelative only normalize but not convert the path to lower case, we need to call NormalizePath to convert it to lower case
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, assetPath);
-            AZStd::string excludePath = "Engine/EngineAssets/Textures/rotrandom.dds";
-            AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePath, excludePath);
-
-            if (assetPath == excludePath)
-            {
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-                return;
-            }
-        }
-
         // Before we begin, let's make sure we are not meant to abort.
         AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 

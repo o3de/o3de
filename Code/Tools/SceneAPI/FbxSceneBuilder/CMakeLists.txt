@@ -31,9 +31,9 @@ ly_add_target(
             AZ::AzFramework
         PUBLIC
             AZ::AzToolsFramework
-            AZ::FbxSDKWrapper
             AZ::SceneCore
             AZ::SceneData
+            AZ::SDKWrapper
 )
 
 ly_add_target(

@@ -16,7 +16,7 @@ from __future__ import division
 # -------------------------------------------------------------------------
 # -------------------------------------------------------------------------
 # node.py
-# simple base Node Class, for tool creation.
+# simple base Node Class, useful in tool creation.
 # version: 0.1
 # author: Gallowj
 # -------------------------------------------------------------------------
@@ -25,16 +25,8 @@ from __future__ import division
 Module docstring:
 A Simple Node Base Class Module, for creating basic nodes within a hierarchy.
 """
-
 __author__ = 'HogJonny'
 
-_G_DEBUG = True        # global state for debugging
-_G_SETTINGS = None     # global Settings storage
-_G_LOG = None          # global LOGger storage
-
-_G_MASTER_NODE = None  # We intend to init a master node, unless provided
-
-# -------------------------------------------------------------------------
 # built-ins
 import os
 import copy
@@ -48,10 +40,31 @@ import cachetools
 from sched import scheduler
 
 # local imports
-from LyPy.si_shared.noodly.helpers import display_cached_value
-from LyPy.si_shared.noodly.find_arg import find_arg
-from LyPy.si_shared.noodly.synth import synthesize
+from azpy.shared.noodely.helpers import display_cached_value
+from azpy.shared.noodely.find_arg import find_arg
+from azpy.shared.noodely.synth import synthesize
+
+import azpy
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
+
+#  global space
+# To Do: update to dynaconf dynamic env and settings?
+_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+
+_MODULENAME = 'azpy.shared.noodely.node'
+
+_log_level = int(20)
+if _G_DEBUG:
+    _log_level = int(10)
+_LOGGER = azpy.initialize_logger(_MODULENAME,
+                                 log_to_file=False,
+                                 default_log_level=_log_level)
+_LOGGER.debug('Starting:: {}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
 # quick test code (remove later)
@@ -79,8 +92,6 @@ if os.path.supports_unicode_filenames:
 ###########################################################################
 # HELPER method functions
 # -------------------------------------------------------------------------
-
-
 def return_node_from_hashid(hashid):
     if not isinstance(hashid, str):
         raise TypeError("{0},{1}: Accepts hashids as str types!\r"
@@ -95,6 +106,7 @@ def return_node_from_hashid(hashid):
 # -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
 class Node(object):
     """Class constructor: makes a node."""
 
@@ -131,9 +143,9 @@ class Node(object):
 
         # -- secret keyword -----------------------------------------------
         self._temp_node = False
-        temp_node, kwargs = find_arg(argPosIndex=None, argTag='temp_node',
-                                     removeKwarg=True, inArgs=args,
-                                     inKwargs=kwargs)  # <-- kwarg only
+        temp_node, kwargs = find_arg(arg_pos_index=None, arg_tag='temp_node',
+                                     remove_kwarg=True, in_args=args,
+                                     in_kwargs=kwargs)  # <-- kwarg only
         self._temp_node = temp_node
         if self._temp_node:
             self._kwargs_dict['temp_node'] = self._temp_node
@@ -141,9 +153,9 @@ class Node(object):
 
         # -- store message header -----------------------------------------
         # setup the .message_header <-- kwarg only
-        message_header, kwargs = find_arg(argPosIndex=None, argTag='message_header',
-                                          removeKwarg=True, inArgs=args, inKwargs=kwargs,
-                                          defaultValue=('{0}(), Message'
+        message_header, kwargs = find_arg(arg_pos_index=None, arg_tag='message_header',
+                                          remove_kwarg=True, in_args=args, in_kwargs=kwargs,
+                                          default_value=('{0}(), Message'
                                                         .format(self._node_type)))
         self._message_header = message_header
         # -----------------------------------------------------------------
@@ -165,7 +177,7 @@ class Node(object):
         # -- store the node name ------------------------------------------
         self._node_name = node_name
         if (self._node_class_index == 0 and self._node_name == None):
-            self._node_name = 'MASTER'
+            self._node_name = 'PRIME'
         elif (self._node_class_index > 0 and self._node_name == None):
             # set a default node_name if none, based on the unihashid
             if not self._name_is_uni_hashid:
@@ -325,7 +337,7 @@ class Node(object):
     @property
     def cls_node_dict(self):
         return Node._cls_node_dict
-    # ----------------------------------------------------------------------
+    # ---------------------------------------------------------------------
 
     # --method-set---------------------------------------------------------
     def cls_node_count_up(self):
@@ -584,10 +596,10 @@ def tests():
     print(default_node.hierarchy())
 
     # retreive a node from it's known hashid
-    master_node = return_node_from_hashid('kxYLm0XQeXJ7jWaP')
-    print(master_node.uni_hashid)  # verify hasid
+    prime_node = return_node_from_hashid('kxYLm0XQeXJ7jWaP')
+    print(prime_node.uni_hashid)  # verify hasid
     # should return the same node as default_node
-    print(master_node.node_name)  # should be 'MASTER'
+    print(prime_node.node_name)  # should be 'PRIME'
     return
 # -------------------------------------------------------------------------
 

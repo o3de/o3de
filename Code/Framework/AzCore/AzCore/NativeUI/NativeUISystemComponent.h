@@ -15,40 +15,24 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 
-namespace AZ
+namespace AZ::NativeUI
 {
-    namespace NativeUI
+    class NativeUISystem
+        : public NativeUIRequestBus::Handler
     {
-        class NativeUISystemComponent
-            : public AZ::Component
-            , public NativeUIRequestBus::Handler
-        {
-        public:
-            AZ_COMPONENT(NativeUISystemComponent, "{E996C058-4AFE-4C8C-816F-98D864D8576D}");
+    public:
+        AZ_RTTI(NativeUISystem, "{FF534B2C-11BE-4DEA-A5B7-A4FA96FE1EDE}", NativeUIRequests);
+        AZ_CLASS_ALLOCATOR(NativeUISystem, AZ::OSAllocator, 0);
 
-            static void Reflect(AZ::ReflectContext* context);
+        NativeUISystem();
+        ~NativeUISystem() override;
 
-            static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-            static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-
-            ////////////////////////////////////////////////////////////////////////
-            // NativeUIRequestBus interface implementation
-            AZStd::string DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const override;
-            AZStd::string DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
-            AZStd::string DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
-            AssertAction DisplayAssertDialog(const AZStd::string& message) const override;
-            ////////////////////////////////////////////////////////////////////////
-
-        protected:
-
-            ////////////////////////////////////////////////////////////////////////
-            // AZ::Component interface implementation
-            void Init() override;
-            void Activate() override;
-            void Deactivate() override;
-            ////////////////////////////////////////////////////////////////////////
-        };
-    }
-}
+        ////////////////////////////////////////////////////////////////////////
+        // NativeUIRequestBus interface implementation
+        AZStd::string DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const override;
+        AZStd::string DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
+        AZStd::string DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const override;
+        AssertAction DisplayAssertDialog(const AZStd::string& message) const override;
+        ////////////////////////////////////////////////////////////////////////
+    };
+} // namespace AZ::NativeUI

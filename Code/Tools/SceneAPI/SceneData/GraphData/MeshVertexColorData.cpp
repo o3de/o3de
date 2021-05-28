@@ -16,8 +16,6 @@
 
 namespace AZ
 {
-    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::Color, "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}");
-
     namespace SceneData
     {
         namespace GraphData
@@ -40,7 +38,7 @@ namespace AZ
                         ->Method("GetCount", &MeshVertexColorData::GetCount )
                         ->Method("GetColor", &MeshVertexColorData::GetColor);
 
-                    behaviorContext->Class<AZ::SceneAPI::DataTypes::Color>("MeshVertexColor")
+                    behaviorContext->Class<AZ::SceneAPI::DataTypes::Color>("VertexColor")
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Property("red", BehaviorValueGetter(&AZ::SceneAPI::DataTypes::Color::red), nullptr)

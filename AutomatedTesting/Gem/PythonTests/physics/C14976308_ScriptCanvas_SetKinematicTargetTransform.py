@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test Case
 # ID    : C14976308
 # Title : Verify that SetKinematicTarget on PhysX rigid body updates transform for kinematic entities and vice versa
-# URL   : https://testrail.agscollab.com/index.php?/cases/view/14976308
+
 
 
 # fmt: off
@@ -68,7 +68,7 @@ def C14976308_ScriptCanvas_SetKinematicTargetTransform():
     the script deactivates Signal, Sphere's transform will update to that of Transform_Target.
     NOTE: There is a known bug (LY-107723) which causes the rotation to update to a value that is not sufficiently close
     to the expected result when using Set Kinematic Target which will cause the test to fail:
-    https://jira.agscollab.com/browse/LY-107723
+    LY-107723
 
     Test Steps:
      1) Open level and enter game mode
@@ -100,14 +100,13 @@ def C14976308_ScriptCanvas_SetKinematicTargetTransform():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import azlmbr.components
     import azlmbr.math
     import azlmbr.physics
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     import itertools
 
     class Entity:
@@ -228,5 +227,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14976308_ScriptCanvas_SetKinematicTargetTransform)

@@ -17,8 +17,8 @@ namespace AzFramework
     MultiViewportController<TViewportControllerInstance, Priority>::~MultiViewportController()
     {
         static_assert(
-            AZStd::is_constructible<TViewportControllerInstance, ViewportId>::value,
-            "TViewportControllerInstance must implement a TViewportControllerInstance(ViewportId) constructor"
+            AZStd::is_same<TViewportControllerInstance, decltype(TViewportControllerInstance(0, nullptr))>::value,
+            "TViewportControllerInstance must implement a TViewportControllerInstance(ViewportId, ViewportController) constructor"
         );
     }
 
@@ -28,6 +28,15 @@ namespace AzFramework
         auto instanceIt = m_instances.find(event.m_viewportId);
         AZ_Assert(instanceIt != m_instances.end(), "Attempted to call HandleInputChannelEvent on an unregistered viewport");
         return instanceIt->second->HandleInputChannelEvent(event);
+    }
+
+    template <class TViewportControllerInstance, ViewportControllerPriority Priority>
+    void MultiViewportController<TViewportControllerInstance, Priority>::ResetInputChannels()
+    {
+        for (auto instanceIt = m_instances.begin(); instanceIt != m_instances.end(); ++instanceIt)
+        {
+            instanceIt->second->ResetInputChannels();
+        }
     }
 
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>
@@ -41,7 +50,7 @@ namespace AzFramework
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>
     void MultiViewportController<TViewportControllerInstance, Priority>::RegisterViewportContext(ViewportId viewport)
     {
-        m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport);
+        m_instances[viewport] = AZStd::make_unique<TViewportControllerInstance>(viewport, static_cast<typename TViewportControllerInstance::ControllerType*>(this));
     }
 
     template <class TViewportControllerInstance, ViewportControllerPriority Priority>

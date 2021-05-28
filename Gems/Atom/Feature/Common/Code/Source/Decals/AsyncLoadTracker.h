@@ -23,7 +23,9 @@ namespace AZ
         {
         public:
 
-            void TrackAssetLoad(const FeatureProcessorHandle handle, const AZ::Data::AssetId asset)
+            using MaterialAssetPtr = AZ::Data::Asset<AZ::RPI::MaterialAsset>;
+
+            void TrackAssetLoad(const FeatureProcessorHandle handle, const MaterialAssetPtr asset)
             {
                 if (IsAssetLoading(handle))
                 {
@@ -77,12 +79,12 @@ namespace AZ
             {
                 const auto asset = EraseFromInFlightHandles(handle);
 
-                AZ_Assert(m_inFlightHandlesByAsset.count(asset) > 0, "AsyncLoadTracker in a bad state");
-                auto& handleList = m_inFlightHandlesByAsset[asset];
+                AZ_Assert(m_inFlightHandlesByAsset.count(asset.GetId()) > 0, "AsyncLoadTracker in a bad state");
+                auto& handleList = m_inFlightHandlesByAsset[asset.GetId()];
                 EraseFromVector(handleList, handle);
                 if (handleList.empty())
                 {
-                    m_inFlightHandlesByAsset.erase(asset);
+                    m_inFlightHandlesByAsset.erase(asset.GetId());
                 }
             }
 
@@ -104,14 +106,14 @@ namespace AZ
                 vec.pop_back();
             }
 
-            void Add(const FeatureProcessorHandle handle, const AZ::Data::AssetId asset)
+            void Add(const FeatureProcessorHandle handle, const MaterialAssetPtr asset)
             {
                 AZ_Assert(m_inFlightHandles.count(handle) == 0, "AsyncLoadTracker::Add() - told to add a handle that was already being tracked.");
-                m_inFlightHandlesByAsset[asset].push_back(handle);
+                m_inFlightHandlesByAsset[asset.GetId()].push_back(handle);
                 m_inFlightHandles[handle] = asset;
             }
 
-            AZ::Data::AssetId EraseFromInFlightHandles(const FeatureProcessorHandle handle)
+            MaterialAssetPtr EraseFromInFlightHandles(const FeatureProcessorHandle handle)
             {
                 const auto iter = m_inFlightHandles.find(handle);
                 AZ_Assert(iter != m_inFlightHandles.end(), "Told to remove handle that was not present");
@@ -125,7 +127,7 @@ namespace AZ
 
             // Hash table that tracks the reverse of the m_inFlightHandlesByAsset hash table.
             // i.e. for each object, it stores what asset that it needs.
-            AZStd::unordered_map<FeatureProcessorHandle, AZ::Data::AssetId> m_inFlightHandles;
+            AZStd::unordered_map<FeatureProcessorHandle, MaterialAssetPtr> m_inFlightHandles;
         };
     }
 }

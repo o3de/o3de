@@ -13,27 +13,18 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <ACES/Aces.h>
 #include <Atom/Feature/Utils/LightingPreset.h>
 #include <Atom/Feature/Utils/ModelPreset.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
+#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
 
 namespace MaterialEditor
 {
-    struct GeneralViewportSettings
-    {
-        AZ_TYPE_INFO(GeneralViewportSettings, "{16150503-A314-4765-82A3-172670C9EA90}");
-        AZ_CLASS_ALLOCATOR(GeneralViewportSettings, AZ::SystemAllocator, 0);
-        static void Reflect(AZ::ReflectContext* context);
-
-        bool m_enableGrid = true;
-        bool m_enableShadowCatcher = true;
-        bool m_enableAlternateSkybox = false;
-        float m_fieldOfView = 90.0f;
-    };
-
     //! Provides controls for viewing and editing a material document settings.
     //! The settings can be divided into cards, with each one showing a subset of properties.
     class ViewportSettingsInspector
@@ -49,7 +40,7 @@ namespace MaterialEditor
         ~ViewportSettingsInspector() override;
 
     private:
-        void Popuate();
+        void Populate();
         void AddGeneralGroup();
 
         void AddModelGroup();
@@ -74,6 +65,7 @@ namespace MaterialEditor
         void OnGridEnabledChanged(bool enable) override;
         void OnAlternateSkyboxEnabledChanged(bool enable) override;
         void OnFieldOfViewChanged(float fieldOfView) override;
+        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
@@ -87,8 +79,14 @@ namespace MaterialEditor
 
         AZStd::string GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const;
 
-        GeneralViewportSettings m_generalSettings;
+        AZ::Crc32 GetGroupSaveStateKey(const AZStd::string& groupNameId) const;
+        bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const override;
+        void OnGroupExpanded(const AZStd::string& groupNameId) override;
+        void OnGroupCollapsed(const AZStd::string& groupNameId) override;
+
         AZ::Render::ModelPresetPtr m_modelPreset;
         AZ::Render::LightingPresetPtr m_lightingPreset;
+        AZStd::intrusive_ptr<MaterialViewportSettings> m_viewportSettings;
+        AZStd::intrusive_ptr<MaterialEditorWindowSettings> m_windowSettings;
     };
 } // namespace MaterialEditor

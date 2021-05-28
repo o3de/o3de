@@ -36,7 +36,7 @@ namespace AZ
 
             // DynamicDrawInterface overrides...
             RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Scene* scene) override;
-            RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(Pass* pass) override;
+            RHI::Ptr<DynamicDrawContext> CreateDynamicDrawContext(RenderPipeline* pipeline) override;
             RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) override;
             void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) override;
             void AddDrawPacket(Scene* scene, AZStd::unique_ptr<const RHI::DrawPacket> drawPacket) override;

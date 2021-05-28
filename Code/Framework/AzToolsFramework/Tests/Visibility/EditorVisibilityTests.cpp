@@ -62,8 +62,8 @@ namespace UnitTest
         SetupRowOfEntities(AZ::Vector3::CreateAxisX(-20.0f), AZ::Vector3::CreateAxisX(2.0f));
 
         // request the entity union bounds system to update
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
 
         // create default camera looking down the negative y-axis moved just back from the origin
         AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
@@ -101,8 +101,8 @@ namespace UnitTest
         SetupRowOfEntities(AZ::Vector3::CreateAxisX(-20.0f), AZ::Vector3::CreateAxisX(2.0f));
 
         // request the entity union bounds system to update
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
 
         // create default camera looking down the negative x-axis moved along the x-axis and tilted slightly down
         AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
@@ -143,15 +143,15 @@ namespace UnitTest
         SetupRowOfEntities(AZ::Vector3::CreateAxisX(-20.0f), AZ::Vector3::CreateAxisX(2.0f));
 
         // request the entity union bounds system to update
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
 
         const AZ::EntityId entityIdToMove = m_editorEntityIds[10];
         AZ::TransformBus::Event(
             entityIdToMove, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3::CreateAxisZ(100.0f));
 
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
 
         // create default camera looking down the negative y-axis moved just back from the origin
         AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
@@ -241,8 +241,8 @@ namespace UnitTest
     {
         m_localAabb = localAabb;
 
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
     }
 
     TEST_F(EditorVisibilityFixture, UpdatedBoundsIntersectingFrustumAddsVisibleEntity)
@@ -264,8 +264,8 @@ namespace UnitTest
             entityId, &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(40.0f, -3.0f, 20.0f));
 
         // request the entity union bounds system to update
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
 
         // create default camera looking down the positive x-axis moved to position offset from world origin
         AzFramework::CameraState cameraState = AzFramework::CreateDefaultCamera(
@@ -288,8 +288,8 @@ namespace UnitTest
         testBoundComponent->ChangeBounds(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-2.5f), AZ::Vector3(2.5f)));
 
         // perform an 'update' of the visibility system
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
+        AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+            &AzFramework::IEntityBoundsUnionRequestBus::Events::ProcessEntityBoundsUnionRequests);
 
         entityVisibilityQuery.UpdateVisibility(cameraState);
 

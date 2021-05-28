@@ -44,7 +44,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            ProductThumbnail(Thumbnailer::SharedThumbnailKey key, int thumbnailSize);
+            ProductThumbnail(Thumbnailer::SharedThumbnailKey key);
 
         protected:
             void LoadThread() override;

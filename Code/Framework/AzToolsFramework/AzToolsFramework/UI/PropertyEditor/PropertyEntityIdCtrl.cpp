@@ -121,17 +121,14 @@ namespace AzToolsFramework
             EditorPickModeRequestBus::Handler::BusConnect(pickModeEntityContextId);
             EditorEventsBus::Handler::BusConnect();
 
-            if (IsNewViewportInteractionModelEnabled())
+            // replace the default input handler with one specific for dealing with
+            // entity selection in the viewport
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
+                [](const EditorVisibleEntityDataCache* entityDataCache)
             {
-                // replace the default input handler with one specific for dealing with
-                // entity selection in the viewport
-                EditorInteractionSystemViewportSelectionRequestBus::Event(
-                    GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                    [](const EditorVisibleEntityDataCache* entityDataCache)
-                {
-                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache);
-                });
-            }
+                return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache);
+            });
 
             if (!pickModeEntityContextId.IsNull())
             {
@@ -162,12 +159,9 @@ namespace AzToolsFramework
             EditorEventsBus::Handler::BusDisconnect();
             emit OnPickComplete();
 
-            if (IsNewViewportInteractionModelEnabled())
-            {
-                // return to the default viewport editor selection
-                EditorInteractionSystemViewportSelectionRequestBus::Event(
-                    GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
-            }
+            // return to the default viewport editor selection
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetDefaultHandler);
 
             EditorPickModeNotificationBus::Broadcast(&EditorPickModeNotifications::OnEntityPickModeStopped);
         }

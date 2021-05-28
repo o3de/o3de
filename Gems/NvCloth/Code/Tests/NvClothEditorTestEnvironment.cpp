@@ -25,7 +25,6 @@
 #include <Editor/EditorSystemComponent.h>
 #include <Components/EditorClothComponent.h>
 #include <Pipeline/SceneAPIExt/ClothRuleBehavior.h>
-#include <Pipeline/RCExt/CgfClothExporter.h>
 
 namespace UnitTest
 {
@@ -80,7 +79,6 @@ namespace UnitTest
             NvCloth::EditorSystemComponent::CreateDescriptor(),
             NvCloth::EditorClothComponent::CreateDescriptor(),
             NvCloth::Pipeline::ClothRuleBehavior::CreateDescriptor(),
-            NvCloth::Pipeline::CgfClothExporter::CreateDescriptor(),
         });
 
         AddRequiredComponents({

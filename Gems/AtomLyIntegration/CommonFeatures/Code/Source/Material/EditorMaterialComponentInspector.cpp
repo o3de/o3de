@@ -37,6 +37,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -202,6 +203,7 @@ namespace AZ
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, shaderInputStr).GetCStr();
                     propertyConfig.m_nameId = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
+                    propertyConfig.m_groupName = groupDisplayName;
                     propertyConfig.m_description = shaderInputStr;
                     propertyConfig.m_defaultValue = uvName;
                     propertyConfig.m_originalValue = uvName;
@@ -211,7 +213,11 @@ namespace AZ
                 }
 
                 // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                const AZ::Crc32 saveStateKey(AZStd::string::format(
+                    "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                    groupNameId.c_str()));
+                auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                    &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                     [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                         AZ_UNUSED(source);
                         const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -243,10 +249,15 @@ namespace AZ
                         for (const auto& propertyDefinition : propertyListItr->second)
                         {
                             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
+
+                            // Assign id before conversion so it can be used in dynamic description
+                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
-                            propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName();
+                            propertyConfig.m_groupName = groupDisplayName;
                             const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+                            propertyConfig.m_showThumbnail = true;
                             propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
                             propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
@@ -255,7 +266,11 @@ namespace AZ
                     }
 
                     // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
-                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(&group, &group, group.TYPEINFO_Uuid(), this, this,
+                    const AZ::Crc32 saveStateKey(AZStd::string::format(
+                        "MaterialPropertyInspector::PropertyGroup::%s::%s", m_materialAssetId.ToString<AZStd::string>().c_str(),
+                        groupNameId.c_str()));
+                    auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
+                        &group, &group, group.TYPEINFO_Uuid(), this, this, saveStateKey,
                         [this](const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) {
                             AZ_UNUSED(source);
                             const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
@@ -281,15 +296,25 @@ namespace AZ
             void MaterialPropertyInspector::RunEditorMaterialFunctors()
             {
                 AZStd::unordered_set<AZ::Name> changedPropertyNames;
+                AZStd::unordered_set<AZ::Name> changedPropertyGroupNames;
 
                 // Convert editor property configuration data into material property meta data so that it can be used to execute functors
                 AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata> propertyDynamicMetadata;
-                for (auto& group : m_groups)
+                AZStd::unordered_map<AZ::Name, AZ::RPI::MaterialPropertyGroupDynamicMetadata> propertyGroupDynamicMetadata;
+                for (auto& groupPair : m_groups)
                 {
-                    for (auto& property : group.second.m_properties)
+                    AZ::RPI::MaterialPropertyGroupDynamicMetadata& metadata = propertyGroupDynamicMetadata[AZ::Name{groupPair.first}];
+                    
+                    for (auto& property : groupPair.second.m_properties)
                     {
                         AtomToolsFramework::ConvertToPropertyMetaData(propertyDynamicMetadata[property.GetId()], property.GetConfig());
                     }
+
+                    // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
+                    // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
+                    // of the material property inspector.
+                    metadata.m_visibility = IsGroupHidden(groupPair.first) ?
+                        AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }
 
                 for (AZ::RPI::Ptr<AZ::RPI::MaterialFunctor>& functor : m_editorFunctors)
@@ -303,7 +328,9 @@ namespace AZ
                             m_materialInstance->GetPropertyValues(),
                             m_materialInstance->GetMaterialPropertiesLayout(),
                             propertyDynamicMetadata,
+                            propertyGroupDynamicMetadata,
                             changedPropertyNames,
+                            changedPropertyGroupNames,
                             &materialPropertyDependencies
                         );
                         functor->Process(context);
@@ -312,9 +339,16 @@ namespace AZ
                 m_dirtyPropertyFlags.reset();
 
                 // Apply any changes to material property meta data back to the editor property configurations
-                for (auto& group : m_groups)
+                for (auto& groupPair : m_groups)
                 {
-                    for (auto& property : group.second.m_properties)
+                    AZ::Name groupName{groupPair.first};
+
+                    if (changedPropertyGroupNames.find(groupName) != changedPropertyGroupNames.end())
+                    {
+                        SetGroupVisible(groupPair.first, propertyGroupDynamicMetadata[groupName].m_visibility == AZ::RPI::MaterialPropertyGroupVisibility::Enabled);
+                    }
+
+                    for (auto& property : groupPair.second.m_properties)
                     {
                         AtomToolsFramework::DynamicPropertyConfig propertyConfig = property.GetConfig();
 
@@ -534,7 +568,7 @@ namespace AZ
                 inspector->Populate();
                 inspector->SetOverrides(propertyOverrideMap);
 
-                // Create the menu bottom row with actions for exporting or canceling the operation
+                // Create the menu button
                 QToolButton* menuButton = new QToolButton(&dialog);
                 menuButton->setAutoRaise(true);
                 menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
@@ -545,10 +579,6 @@ namespace AZ
                     QMenu menu(&dialog);
                     action = menu.addAction("Clear Overrides", [&] { inspector->SetOverrides(MaterialPropertyOverrideMap()); });
                     action = menu.addAction("Revert Changes", [&] { inspector->SetOverrides(propertyOverrideMap); });
-
-                    menu.addSeparator();
-                    action = menu.addAction("Confirm Changes", [&] { dialog.accept(); });
-                    action = menu.addAction("Cancel Changes", [&] { dialog.reject(); });
 
                     menu.addSeparator();
                     action = menu.addAction("Save Material", [&] { inspector->SaveMaterial(); });
@@ -563,12 +593,19 @@ namespace AZ
                     menu.exec(QCursor::pos());
                 });
 
+                QDialogButtonBox* buttonBox = new QDialogButtonBox(&dialog);
+                buttonBox->setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+                QObject::connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+                QObject::connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
                 QObject::connect(&dialog, &QDialog::rejected, &dialog, [&] { inspector->SetOverrides(propertyOverrideMap); });
 
                 QVBoxLayout* dialogLayout = new QVBoxLayout(&dialog);
                 dialogLayout->addWidget(menuButton);
                 dialogLayout->addWidget(inspector);
+                dialogLayout->addWidget(buttonBox);
                 dialog.setLayout(dialogLayout);
+                dialog.setModal(true);
 
                 // Forcing the initial dialog size to accomodate typical content.
                 // Temporarily settng fixed size because dialog.show/exec invokes WindowDecorationWrapper::showEvent.

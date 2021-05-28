@@ -39,7 +39,7 @@ enum PropertyType
     ePropertySelection,
     ePropertyList,
     ePropertyShader,
-    ePropertyMaterial,
+    ePropertyDeprecated2, // formerly ePropertyMaterial
     ePropertyEquip,
     ePropertyReverbPreset,
     ePropertyLocalString,
@@ -50,7 +50,7 @@ enum PropertyType
     ePropertyUser,
     ePropertySequenceId,
     ePropertyLightAnimation,
-    ePropertyFlare,
+    ePropertyDeprecated1, // formerly ePropertyFlare
     ePropertyParticleName,
     ePropertyGeomCache,
     ePropertyAudioTrigger,

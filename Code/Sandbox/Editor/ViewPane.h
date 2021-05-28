@@ -63,8 +63,6 @@ public:
     void SetFullscren(bool f);
     bool IsFullscreen() const { return m_bFullscreen; }
 
-    void SetFullscreenViewport(bool b);
-
     QWidget* GetViewport() { return m_viewport; }
 
     //////////////////////////////////////////////////////////////////////////
@@ -73,7 +71,6 @@ public:
     void ShowTitleMenu();
     void ToggleMaximize();
 
-    void SetFocusToViewportSearch();
     void SetFocusToViewport();
 
     void ResizeViewport(int width, int height);

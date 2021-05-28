@@ -89,6 +89,7 @@ namespace WhiteBox
     private:
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // EditorComponentBase overrides ...
         void BuildGameEntity(AZ::Entity* gameEntity) override;
@@ -124,7 +125,7 @@ namespace WhiteBox
         AZStd::optional<AZStd::unique_ptr<RenderMeshInterface>>
             m_renderMesh; //!< The render mesh to use for the White Box mesh data.
         AZ::Transform m_worldFromLocal = AZ::Transform::CreateIdentity(); //!< Cached world transform of Entity.
-        AZStd::vector<AZ::u8> m_whiteBoxData; //!< Serialized White Box mesh data.
+        Api::WhiteBoxMeshStream m_whiteBoxData; //!< Serialized White Box mesh data.
         //! Holds a reference to an optional WhiteBoxMeshAsset and manages the lifecycle of adding/removing an asset.
         EditorWhiteBoxMeshAsset* m_editorMeshAsset = nullptr;
         AZStd::optional<AZ::Aabb> m_worldAabb; //!< Cached world aabb (used for selection/view determination).

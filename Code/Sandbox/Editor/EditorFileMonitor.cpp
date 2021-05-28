@@ -35,9 +35,6 @@ void CEditorFileMonitor::OnEditorNotifyEvent(EEditorNotifyEvent ev)
 {
     if (ev == eNotify_OnInit)
     {
-        // Setup file change monitoring
-        gEnv->pSystem->SetIFileChangeMonitor(this);
-
         // We don't want the file monitor to be enabled while
         // in console mode...
         if (!GetIEditor()->IsInConsolewMode())
@@ -49,7 +46,6 @@ void CEditorFileMonitor::OnEditorNotifyEvent(EEditorNotifyEvent ev)
     }
     else if (ev == eNotify_OnQuit)
     {
-        gEnv->pSystem->SetIFileChangeMonitor(NULL);
         CFileChangeMonitor::Instance()->StopMonitor();
         GetIEditor()->UnregisterNotifyListener(this);
     }

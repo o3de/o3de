@@ -5,7 +5,7 @@
            QualifiedName="Nodeables::Time::TimeDelayNodeable"
            PreferredClassName="Time Delay"
            Base="Nodeables::Time::BaseTimer"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Nodeables"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"

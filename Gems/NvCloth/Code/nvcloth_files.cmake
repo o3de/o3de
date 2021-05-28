@@ -51,6 +51,4 @@ set(FILES
     Source/Utils/AssetHelper.cpp
     Source/Utils/MeshAssetHelper.cpp
     Source/Utils/MeshAssetHelper.h
-    Source/Utils/ActorAssetHelper.cpp
-    Source/Utils/ActorAssetHelper.h
 )

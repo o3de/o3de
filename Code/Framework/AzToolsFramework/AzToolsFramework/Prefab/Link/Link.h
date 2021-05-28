@@ -47,7 +47,7 @@ namespace AzToolsFramework
 
             void SetSourceTemplateId(TemplateId id);
             void SetTargetTemplateId(TemplateId id);
-            void SetTemplatePatches(const PrefabDomValue& patches);
+            void SetLinkDom(const PrefabDomValue& linkDom);
             void SetInstanceName(const char* instanceName);
 
             bool IsValid() const;
@@ -78,6 +78,8 @@ namespace AzToolsFramework
              * @param instanceDomValue The DOM value of the instance within the target template DOM.
              */
             void AddLinkIdToInstanceDom(PrefabDomValue& instanceDomValue);
+
+            PrefabDomValueReference GetLinkPatches();
 
         private:
 

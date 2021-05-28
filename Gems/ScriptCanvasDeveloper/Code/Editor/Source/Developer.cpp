@@ -34,7 +34,7 @@ namespace ScriptCanvasDeveloper
                 {
                     editContext->Class<Developer>("Developer", "Library of Developer only nodes")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/ScriptCanvas.png")
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.png")
                         ;
                 }
             }

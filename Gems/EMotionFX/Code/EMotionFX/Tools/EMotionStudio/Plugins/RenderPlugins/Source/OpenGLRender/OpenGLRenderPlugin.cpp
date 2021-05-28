@@ -64,7 +64,7 @@ namespace EMStudio
 
         // create graphics manager and initialize it
         mGraphicsManager = new RenderGL::GraphicsManager();
-        if (mGraphicsManager->Init(shaderPath.c_str()) == false)
+        if (mGraphicsManager->Init(shaderPath) == false)
         {
             MCore::LogError("Could not initialize OpenGL graphics manager.");
             return false;

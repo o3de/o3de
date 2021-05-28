@@ -11,20 +11,15 @@
 */
 #pragma once
 
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/chrono/clocks.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AWSClientAuth
 {
-    enum class ProviderNameEnum
-    {
-        None,
-        AWSCognitoIDP,
-        LoginWithAmazon,
-        Google,
-        Apple,
-        Facebook
-    };
+    AZ_ENUM_CLASS(ProviderNameEnum, None, AWSCognitoIDP, LoginWithAmazon, Twitch, Google, Apple, Facebook);
 
     //! Used to share authentication tokens to caller and to AWSCognitoAuthorizationController.
     class AuthenticationTokens
@@ -54,6 +49,8 @@ namespace AWSClientAuth
 
         //! @return Expiration time in seconds.
         int GetTokensExpireTimeSeconds() const;
+
+        static void Reflect(AZ::ReflectContext* context);
 
     private:
         int m_tokensExpireTimeSeconds = 0;

@@ -20,7 +20,6 @@
 
 #include "StlUtils.h"
 #include "EventNode.h"
-#include "I3DEngine.h"
 #include "AzEntityNode.h"
 #include "UiAnimSerialize.h"
 

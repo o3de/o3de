@@ -32,7 +32,7 @@ namespace AZ
                     AZ_Assert(commandList && commandList->IsRecording() == false, "Command list not valid.");
                 }
             }
-#endif()
+#endif
 
             return AZStd::move(m_workRequest);
         }

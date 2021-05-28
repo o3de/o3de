@@ -101,20 +101,25 @@ namespace AzFramework
             cameraState.m_nearClip, cameraState.m_farClip);
     }
 
-    ScreenPoint WorldToScreen(
-        const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection,
-        const AZ::Vector2& viewportSize)
+    AZ::Vector3 WorldToScreenNDC(
+        const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection)
     {
         // transform the world space position to clip space
         const auto clipSpacePosition = cameraProjection * cameraView * AZ::Vector3ToVector4(worldPosition, 1.0f);
         // transform the clip space position to ndc space (perspective divide)
         const auto ndcPosition = clipSpacePosition / clipSpacePosition.GetW();
         // transform ndc space from <-1,1> to <0, 1> range
-        const auto ndcNormalizedPosition = (AZ::Vector4ToVector2(ndcPosition) + AZ::Vector2::CreateOne()) * 0.5f;
+        return (AZ::Vector4ToVector3(ndcPosition) + AZ::Vector3::CreateOne()) * 0.5f;
+    }
+
+
+    ScreenPoint WorldToScreen(
+        const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection,
+        const AZ::Vector2& viewportSize)
+    {
+        const auto ndcNormalizedPosition = WorldToScreenNDC(worldPosition, cameraView, cameraProjection);
         // scale ndc position by screen dimensions to return screen position
-        return ScreenPoint(
-            aznumeric_caster(std::round(ndcNormalizedPosition.GetX() * viewportSize.GetX())),
-            aznumeric_caster(std::round(viewportSize.GetY() - (ndcNormalizedPosition.GetY() * viewportSize.GetY()))));
+        return ScreenPointFromNDC(ndcNormalizedPosition, viewportSize);
     }
 
     ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition, const CameraState& cameraState)
@@ -127,12 +132,8 @@ namespace AzFramework
         const ScreenPoint& screenPosition, const AZ::Matrix4x4& inverseCameraView,
         const AZ::Matrix4x4& inverseCameraProjection, const AZ::Vector2& viewportSize)
     {
-        const auto screenHeight = viewportSize.GetY();
-        const auto flippedScreenPosition =
-            AZ::Vector2(aznumeric_caster(screenPosition.m_x), aznumeric_caster(screenHeight - screenPosition.m_y));
-
-        // convert screen space coordinates to <-1,1> range
-        const auto ndcPosition = (flippedScreenPosition / viewportSize) * 2.0f - AZ::Vector2::CreateOne();
+        // convert screen space coordinates from <0, 1> to <-1,1> range
+        const auto ndcPosition = NDCFromScreenPoint(screenPosition, viewportSize) * 2.0f - AZ::Vector2::CreateOne();
 
         // transform ndc space position to clip space
         const auto clipSpacePosition = inverseCameraProjection * Vector2ToVector4(ndcPosition, -1.0f, 1.0f);

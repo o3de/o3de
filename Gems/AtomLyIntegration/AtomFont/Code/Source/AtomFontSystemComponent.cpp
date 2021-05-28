@@ -65,27 +65,38 @@ namespace AZ
 
         void AtomFontSystemComponent::Activate()
         {
-            AZ::CryFontCreationRequestBus::Handler::BusConnect();
+            CrySystemEventBus::Handler::BusConnect();
         }
 
         void AtomFontSystemComponent::Deactivate()
         {
-            AZ::CryFontCreationRequestBus::Handler::BusDisconnect();
+            CrySystemEventBus::Handler::BusDisconnect();
         }
 
-        bool AtomFontSystemComponent::CreateCryFont(SSystemGlobalEnvironment& env, [[maybe_unused]] const SSystemInitParams& initParams)
+        void LoadFont(ICryFont& cryFont, const AZStd::string& fontName)
         {
-            ISystem* system = env.pSystem;
+            IFFont* font = cryFont.NewFont(fontName.c_str());
+            AZ_Assert(font, "Could not instantiate font: %s", fontName.c_str());
+
+            const AZStd::string fontPath = "Fonts/" + fontName + ".font";
+            if (!font->Load(fontPath.c_str()))
+            {
+                AZ_Error("AtomFont", false, "Could not load font: %s", fontPath.c_str());
+            }
+        }
+
+        void AtomFontSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
+        {
 #if !defined(AZ_MONOLITHIC_BUILD)
             // When module is linked dynamically, we must set our gEnv pointer.
             // When module is linked statically, we'll share the application's gEnv pointer.
-            gEnv = system->GetGlobalEnvironment();
+            gEnv = system.GetGlobalEnvironment();
 #endif
 
-            if (env.IsDedicated())
+            if (gEnv->IsDedicated())
             {
         #if defined(USE_NULLFONT)
-                env.pCryFont = new AtomNullFont();
+                gEnv->pCryFont = new AtomNullFont();
         #else
                 // The NULL font implementation must be present for all platforms
                 // supporting running as a pure dedicated server.
@@ -96,12 +107,17 @@ namespace AZ
             else
             {
         #if defined(USE_NULLFONT) && defined(USE_NULLFONT_ALWAYS)
-                env.pCryFont = new AtomNullFont();
+                gEnv->pCryFont = new AtomNullFont();
         #else
-                env.pCryFont = new AtomFont(system);
+                gEnv->pCryFont = new AtomFont(&system);
         #endif
             }
-            return env.pCryFont != 0;
+
+            if (gEnv->pCryFont)
+            {
+                LoadFont(*gEnv->pCryFont, "default");
+                LoadFont(*gEnv->pCryFont, "default-ui");
+            }
         }
 
         void AtomFontSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)

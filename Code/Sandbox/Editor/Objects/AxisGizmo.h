@@ -22,7 +22,6 @@
 // forward declarations.
 struct DisplayContext;
 class CAxisHelper;
-class CAxisHelperExtended;
 
 /** Gizmo of Objects animation track.
 */
@@ -75,7 +74,6 @@ private:
     CBaseObjectPtr m_object;
     AABB m_bbox;
     std::unique_ptr<CAxisHelper> m_pAxisHelper;
-    std::unique_ptr<CAxisHelperExtended> m_pAxisHelperExtended;
 
     bool m_bDragging;
     QPoint m_cMouseDownPos;

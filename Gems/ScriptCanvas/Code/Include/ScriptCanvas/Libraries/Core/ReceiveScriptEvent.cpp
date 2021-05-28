@@ -548,6 +548,11 @@ namespace ScriptCanvas
                 return EBusEventHandlerProperty::GetDisconnectSlot(this);
             }
 
+            AZStd::optional<size_t> ReceiveScriptEvent::GetEventIndex(AZStd::string eventName) const
+            {
+                return m_handler->GetFunctionIndex(eventName.c_str());;
+            }
+
             AZStd::vector<SlotId> ReceiveScriptEvent::GetEventSlotIds() const
             {
                 AZStd::vector<SlotId> eventSlotIds;

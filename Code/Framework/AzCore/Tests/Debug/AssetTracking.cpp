@@ -105,7 +105,7 @@ namespace UnitTest
 
             EXPECT_EQ(&rootAsset, &m_env->m_tree.GetRoot());
             ASSERT_NE(itr, rootAsset.m_children.end());
-            EXPECT_EQ(itr->second.m_masterInfo->m_id->m_id, "TestScopedAllocation.1");
+            EXPECT_EQ(itr->second.m_primaryinfo->m_id->m_id, "TestScopedAllocation.1");
 
             EXPECT_EQ(&itr->second, m_env->m_table.FindAllocation(TEST_POINTER));
 

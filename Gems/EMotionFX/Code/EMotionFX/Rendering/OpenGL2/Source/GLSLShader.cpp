@@ -116,12 +116,12 @@ namespace RenderGL
     }
 
 
-    bool GLSLShader::CompileShader(const GLenum type, unsigned int* outShader, const char* filename)
+    bool GLSLShader::CompileShader(const GLenum type, unsigned int* outShader, AZ::IO::PathView filename)
     {
-        QFile file(filename);
+        QFile file(QString::fromUtf8(filename.Native().data(), aznumeric_caster(filename.Native().size())));
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         {
-            AZ_Error("EMotionFX", false, "[GLSL] Failed to open shader file '%s'.", filename);
+            AZ_Error("EMotionFX", false, "[GLSL] Failed to open shader file '%.*s'.", AZ_STRING_ARG(filename.Native()));
             return false;
         }
 
@@ -156,7 +156,7 @@ namespace RenderGL
 
         if (success == false)
         {
-            MCore::LogError("[GLSL] Failed to compile shader '%s'.", filename);
+            MCore::LogError("[GLSL] Failed to compile shader '%.*s'.", AZ_STRING_ARG(filename.Native()));
             return false;
         }
 
@@ -212,7 +212,7 @@ namespace RenderGL
 
 
     // Init
-    bool GLSLShader::Init(const char* vFile, const char* pFile, MCore::Array<AZStd::string>& defines)
+    bool GLSLShader::Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines)
     {
         initializeOpenGLFunctions();
         /*const char* args[] = { "unroll all",
@@ -225,24 +225,24 @@ namespace RenderGL
         glUseProgram(0);
 
         // compile shaders
-        if (vFile && CompileShader(GL_VERTEX_SHADER, &mVertexShader, vFile) == false)
+        if (!vertexFileName.empty() && CompileShader(GL_VERTEX_SHADER, &mVertexShader, vertexFileName) == false)
         {
             return false;
         }
 
-        if (pFile && CompileShader(GL_FRAGMENT_SHADER, &mPixelShader, pFile) == false)
+        if (!pixelFileName.empty() && CompileShader(GL_FRAGMENT_SHADER, &mPixelShader, pixelFileName) == false)
         {
             return false;
         }
 
         // create program
         mProgram = glCreateProgram();
-        if (vFile)
+        if (!vertexFileName.empty())
         {
             glAttachShader(mProgram, mVertexShader);
         }
 
-        if (pFile)
+        if (!pixelFileName.empty())
         {
             glAttachShader(mProgram, mPixelShader);
         }
@@ -256,7 +256,7 @@ namespace RenderGL
 
         if (!success)
         {
-            MCore::LogInfo("[OpenGL] Failed to link shaders '%s' and '%s' ", vFile, pFile);
+            MCore::LogInfo("[OpenGL] Failed to link shaders '%.*s' and '%.*s' ", AZ_STRING_ARG(vertexFileName.Native()), AZ_STRING_ARG(pixelFileName.Native()));
             InfoLog(mProgram, &QOpenGLExtraFunctions::glGetProgramInfoLog);
             return false;
         }

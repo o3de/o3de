@@ -25,6 +25,7 @@ namespace Physics
 namespace PhysX
 {
     class CharacterController;
+    class PhysXScene;
 
     namespace Utils
     {
@@ -33,18 +34,14 @@ namespace PhysX
             AZ::Outcome<size_t> GetNodeIndex(const Physics::RagdollConfiguration& configuration, const AZStd::string& nodeName);
 
             //! Creates a character controller based on the supplied configuration in the specified world.
-            //! @param configuration Information required to create the controller such as shape, slope behavior etc.
-            //! @param sceneHandle A handle to the physics scene in which the character controller should be created.
-            AZStd::unique_ptr<CharacterController> CreateCharacterController(const Physics::CharacterConfiguration&
-                characterConfig, const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle sceneHandle);
+            //! @param scene The scene to add the character controller to.
+            //! @param characterConfig Information required to create the controller such as shape, slope behavior etc.
+            CharacterController* CreateCharacterController(PhysXScene* scene, const Physics::CharacterConfiguration& characterConfig);
 
             //! Creates a ragdoll based on the specified setup and initial pose.
             //! @param configuration Information about collider geometry and joint setup required to initialize the ragdoll.
-            //! @param initialState Initial settings for the positions, orientations and velocities of the ragdoll nodes.
-            //! @param parentIndices Identifies the parent ragdoll node for each node in the ragdoll.
             //! @param sceneHandle A handle to the physics scene in which the ragdoll should be created.
-            AZStd::unique_ptr<Ragdoll> CreateRagdoll(Physics::RagdollConfiguration& configuration,
-                const Physics::RagdollState& initialState, const ParentIndices& parentIndices, AzPhysics::SceneHandle sceneHandle);
+            Ragdoll* CreateRagdoll(Physics::RagdollConfiguration& configuration, AzPhysics::SceneHandle sceneHandle);
 
             //! Creates a joint drive with properties based on the input values.
             //! The input values are validated and the damping ratio is used to calculate the damping value used internally.

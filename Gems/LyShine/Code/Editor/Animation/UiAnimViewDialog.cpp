@@ -1332,12 +1332,6 @@ void CUiAnimViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndGameMode:
         m_bIgnoreUpdates = false;
         break;
-    case eNotify_OnMissionChange:
-        if (!m_bIgnoreUpdates)
-        {
-            ReloadSequences();
-        }
-        break;
     case eNotify_OnIdleUpdate:
         if (!m_bIgnoreUpdates)
         {

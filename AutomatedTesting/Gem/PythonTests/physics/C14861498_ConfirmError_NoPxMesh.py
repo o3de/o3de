@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C14861498
 # Test Case Title : Confirm that when a PhysXCollider has no physics asset, the physics asset collider \
 #   shape throw an error
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/14861498
+
 
 
 # fmt:off
@@ -57,9 +57,9 @@ def C14861498_ConfirmError_NoPxMesh():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     import azlmbr.legacy.general as general
 
@@ -92,5 +92,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C14861498_ConfirmError_NoPxMesh)

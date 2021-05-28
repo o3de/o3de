@@ -77,7 +77,7 @@ namespace PhysX
 
         const char* MeshAssetHandler::GetBrowserIcon() const
         {
-            return "Editor/Icons/Components/ColliderMesh.svg";
+            return "Icons/Components/ColliderMesh.svg";
         }
 
         const char* MeshAssetHandler::GetGroup() const
@@ -196,7 +196,7 @@ namespace PhysX
                     AZ::Transform::CreateFromQuaternionAndTranslation(colliderConfiguration.m_rotation, colliderConfiguration.m_position);
 
                 AZ::Transform shapeTransform = *m_transform;
-                shapeTransform.ExtractScale();
+                shapeTransform.ExtractUniformScale();
 
                 shapeTransform = existingTransform * shapeTransform;
 

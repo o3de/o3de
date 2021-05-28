@@ -30,9 +30,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            AZ::AzCore
             AZ::CrashHandler
-            AZ::CrashSupport
 )
 
 ly_add_target(
@@ -46,10 +44,5 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            #3rdParty::Crashpad
-            #3rdParty::Crashpad::Handler
-            AZ::AzCore
             AZ::CrashUploaderSupport
-            #AZ::CrashHandler
-            AZ::CrashSupport
 )

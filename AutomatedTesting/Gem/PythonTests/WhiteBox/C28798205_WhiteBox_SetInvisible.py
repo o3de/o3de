@@ -12,7 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID :  C28798205
 # Test Case Title : From the White Box Component Card the White Box Mesh can be set to be invisible in Game View
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/28798205
 
 
 # fmt:off
@@ -22,15 +21,15 @@ class Tests():
 # fmt:on
 
 
-def run():
+def C28798205_WhiteBox_SetInvisible():
     # note: This automated test does not fully replicate the test case in Test Rail as it's
     # not currently possible using the Hydra API to get an EntityComponentIdPair at runtime,
     # in future game_mode will be activated and a runtime White Box Component queried
     import os
     import sys
-    import WhiteBoxInit as init
+    from Gems.WhiteBox.Editor.Scripts import WhiteBoxInit as init
     import ImportPathHelper as imports
-    import Tests.ly_shared.hydra_editor_utils as hydra
+    import editor_python_test_tools.hydra_editor_utils as hydra
     imports.init()
 
     import azlmbr.whitebox.api as api
@@ -40,8 +39,9 @@ def run():
     import azlmbr.entity as entity
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # open level
     helper.init_idle()
@@ -67,4 +67,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    import ImportPathHelper as imports
+    imports.init()
+    
+    from editor_python_test_tools.utils import Report
+    Report.start_test(C28798205_WhiteBox_SetInvisible)

@@ -40,14 +40,14 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_MacFile_OutputBaseNameAndPlatform)
     {
-        AZStd::string filePath = "assetInfoFile_osx_gl.xml";
+        AZStd::string filePath = "assetInfoFile_mac.xml";
         AZStd::string baseFilename;
         AZStd::string platformIdentifier;
 
         AzToolsFramework::SplitFilename(filePath, baseFilename, platformIdentifier);
 
         ASSERT_EQ(baseFilename, "assetInfoFile");
-        ASSERT_EQ(platformIdentifier, "osx_gl");
+        ASSERT_EQ(platformIdentifier, "mac");
     }
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_PcFile_OutputBaseNameAndPlatform)
@@ -64,14 +64,14 @@ namespace AssetBundler
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_MacFileWithUnderScoreInFileName_OutputBaseNameAndPlatform)
     {
-        AZStd::string filePath = "assetInfoFile_test_osx_gl.xml";
+        AZStd::string filePath = "assetInfoFile_test_mac.xml";
         AZStd::string baseFilename;
         AZStd::string platformIdentifier;
 
         AzToolsFramework::SplitFilename(filePath, baseFilename, platformIdentifier);
 
         ASSERT_EQ(baseFilename, "assetInfoFile_test");
-        ASSERT_EQ(platformIdentifier, "osx_gl");
+        ASSERT_EQ(platformIdentifier, "mac");
     }
 
     TEST_F(AssetBundlerBatchUtilsTest, SplitFilename_PcFileWithUnderScoreInFileName_OutputBaseNameAndPlatform)
@@ -88,7 +88,7 @@ namespace AssetBundler
 
     const char RelativeTestFolder[] = "Code/Tools/AssetBundler/tests";
     const char GemsFolder[] = "Gems";
-    const char EngineFolder[] = "Engine";
+    constexpr auto EngineFolder = AZ::IO::FixedMaxPath("Assets") / "Engine";
     const char PlatformsFolder[] = "Platforms";
     const char DummyProjectFolder[] = "DummyProject";
 
@@ -97,7 +97,28 @@ namespace AssetBundler
     {
     public:
         void SetUp() override
-        {
+        {          
+            AZ::SettingsRegistryInterface* registry = nullptr;
+            if (!AZ::SettingsRegistry::Get())
+            {
+                AZ::SettingsRegistry::Register(&m_registry);
+                registry = &m_registry;
+            }
+            else
+            {
+                registry = AZ::SettingsRegistry::Get();
+            }
+            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            if (engineRoot.empty())
+            {
+                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
+            }
+
             m_data = AZStd::make_unique<StaticData>();
             m_data->m_application.reset(aznew AzToolsFramework::ToolsApplication());
             m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
@@ -107,20 +128,7 @@ namespace AssetBundler
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            if (!AZ::SettingsRegistry::Get())
-            {
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(m_registry);
-                AZ::SettingsRegistry::Register(&m_registry);
-            }
-
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            if (!engineRoot)
-            {
-                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
-            }
-
-            AzFramework::StringFunc::Path::Join(engineRoot, RelativeTestFolder, m_data->m_testEngineRoot);
+            m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).LexicallyNormal().String();
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_data->m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -132,8 +140,8 @@ namespace AssetBundler
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemA");
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemB");
 
-            AZStd::string absoluteEngineSeedFilePath;
-            AzFramework::StringFunc::Path::ConstructFull(m_data->m_testEngineRoot.c_str(), EngineFolder, "SeedAssetList", AzToolsFramework::AssetSeedManager::GetSeedFileExtension(), absoluteEngineSeedFilePath, true);
+            auto absoluteEngineSeedFilePath = m_data->m_testEngineRoot / EngineFolder / "SeedAssetList";
+            absoluteEngineSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
             m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(absoluteEngineSeedFilePath, true));
 
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemC", false);
@@ -144,14 +152,24 @@ namespace AssetBundler
         }
         void TearDown() override
         {
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            delete m_data->m_localFileIO;
-            AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
+            if (m_data)
+            {
+                AZ::IO::FileIOBase::SetInstance(nullptr);
+                delete m_data->m_localFileIO;
+                AZ::IO::FileIOBase::SetInstance(m_data->m_priorFileIO);
 
-            m_data->m_gemInfoList.set_capacity(0);
-            m_data->m_gemSeedFilePairList.set_capacity(0);
-            m_data->m_application.get()->Stop();
-            m_data->m_application.reset();
+                m_data->m_gemInfoList.set_capacity(0);
+                m_data->m_gemSeedFilePairList.set_capacity(0);
+                m_data->m_application.get()->Stop();
+                m_data->m_application.reset();
+            }
+
+            if(auto settingsRegistry = AZ::SettingsRegistry::Get();
+                settingsRegistry == &m_registry)
+            {
+                AZ::SettingsRegistry::Unregister(settingsRegistry);
+            }
+
         }
 
         void AddGemData(const char* engineRoot, const char* gemName, bool seedFileExists = true)
@@ -213,7 +231,7 @@ namespace AssetBundler
             AZStd::unique_ptr<AzToolsFramework::ToolsApplication> m_application = {};
             AZ::IO::FileIOBase* m_priorFileIO = nullptr;
             AZ::IO::FileIOBase* m_localFileIO = nullptr;
-            AZStd::string m_testEngineRoot;
+            AZ::IO::Path m_testEngineRoot;
         };
 
         const int GemAIndex = 0;

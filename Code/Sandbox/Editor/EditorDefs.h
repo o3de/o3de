@@ -132,7 +132,6 @@
 #include <IRenderer.h>
 #include <CryFile.h>
 #include <ISystem.h>
-#include <I3DEngine.h>
 #include <IIndexedMesh.h>
 #include <ITimer.h>
 #include <IXml.h>

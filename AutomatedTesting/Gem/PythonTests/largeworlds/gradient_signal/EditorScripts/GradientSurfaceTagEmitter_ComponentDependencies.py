@@ -16,9 +16,10 @@ import azlmbr.bus as bus
 import azlmbr.entity as entity
 import azlmbr.paths
 import azlmbr.editor as editor
+
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestGradientSurfaceTagEmitterDependencies(EditorTestHelper):
@@ -30,11 +31,21 @@ class TestGradientSurfaceTagEmitterDependencies(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        Component has a dependency on a Gradient component
+        This test verifies that the Gradient Surface Tag Emitter component is dependent on a gradient component.
 
         Expected Result:
-        Component is disabled until a Gradient Generator, Modifier or Gradient Reference component
-        (and any sub-dependencies) is added to the entity.
+        Gradient Surface Tag Emitter component is disabled until a Gradient Generator, Modifier or Gradient Reference
+        component (and any sub-dependencies) is added to the entity.
+
+        Test Steps:
+         1) Open level
+         2) Create a new entity with a Gradient Surface Tag Emitter component
+         3) Verify the component is disabled until a dependent component is also added to the entity
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """

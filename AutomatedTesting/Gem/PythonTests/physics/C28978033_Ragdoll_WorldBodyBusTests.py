@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C28978033
 # Test Case Title : Check that WorldRequestBus works with PhysX ragdoll
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/28978033
+
 
 
 # fmt: off
@@ -56,9 +56,9 @@ def C28978033_Ragdoll_WorldBodyBusTests():
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import vector3_str, aabb_str
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import vector3_str, aabb_str
 
     # Global time out
     TIME_OUT = 1.0
@@ -123,5 +123,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C28978033_Ragdoll_WorldBodyBusTests)

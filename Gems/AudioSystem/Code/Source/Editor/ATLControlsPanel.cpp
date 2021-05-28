@@ -147,7 +147,7 @@ namespace AudioControls
 
         QWidgetAction* pWidgetAction = new QWidgetAction(this);
 
-        m_unassignedFilterButton = new QFilterButton(QIcon(":/Editor/Icons/Unassigned.svg"), "", this);
+        m_unassignedFilterButton = new QFilterButton(QIcon(":/Icons/Unassigned.svg"), "", this);
         m_unassignedFilterButton->SetText("Unassigned");
         m_unassignedFilterButton->SetChecked(m_showUnassignedControls);
         pWidgetAction->setDefaultWidget(m_unassignedFilterButton);

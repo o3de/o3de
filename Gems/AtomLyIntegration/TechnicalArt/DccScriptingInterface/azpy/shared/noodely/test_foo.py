@@ -25,13 +25,13 @@ class Foo(object):
     This is a Class, it creates a Foo object... which does nothing really
     """
 
-    __propertyTag = 'fooProperty'
+    __property_tag = 'fooProperty'
 
     # ------------------------------------------------------------------
     def __init__(self, name='Foo', value='defaultValue', *args, **kwargs):
         '''Class __init__'''
         synthesize(self, 'name', name)
-        synthesize(self, Foo.__propertyTag, value)
+        synthesize(self, Foo.__property_tag, value)
 
         synthesize(self, 'test', 'testValue')
 

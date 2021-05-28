@@ -26,12 +26,9 @@
 #include <AzCore/std/string/conversions.h>
 
 #include <AzFramework/Script/ScriptComponent.h>
-#include <AzFramework/Script/ScriptNetBindings.h>
 
-#include <AzFramework/Network/NetworkContext.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <GridMate/Replica/ReplicaChunk.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 
@@ -267,12 +264,12 @@ namespace AzFramework
     //          SampleRPC =
     //          {
     //              // Two callbacks can be registered to the NetRPC
-    //              // A function to be invoked on the Master - OnMaster
+    //              // A function to be invoked on the main server - OnServer
     //              // and a function to be invoked on the Proxy - OnProxy
     //              //
-    //              // Every NetRPC needs to  have a valid OnMaster function, while OnProxy is optional.
-    //              OnMaster = function()
-    //                  Debug.Log("Function to be invoked on the Master.");
+    //              // Every NetRPC needs to  have a valid OnServer function, while OnProxy is optional.
+    //              OnServer = function()
+    //                  Debug.Log("Function to be invoked on the server.");
     //              end
     //
     //              OnProxy = function()
@@ -429,83 +426,60 @@ namespace AzFramework
         {
             LSV_BEGIN(lua, 1);
 
-            // calling format __index(table,key)
-            ScriptNetBindingTable* netBindingTable = reinterpret_cast<ScriptNetBindingTable*>(lua_touserdata(lua, lua_upvalueindex(1)));
+            AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Warning, true,
+                "Property %s not found in entity table. Please push this property to your slice to avoid decrease in performance.", lua_tostring(lua, -1));
+            int lookupKey = lua_gettop(lua);
 
-            bool readValue = false;
-
-            if (netBindingTable != nullptr)
+            int lookupTable = lookupKey - 1;
+            // This is a slow function and it's made slow so we don't cache any extra data.
+            // This is done because this function will be called only the exported components
+            // and script are not in sync and we added new properties.
+            lua_getmetatable(lua, -2); // get the metatable which will be the top property table
+            int entityProperties = lua_gettop(lua);
+            if (lua_getmetatable(lua, -1) == 0) // get the metatable of the property which will be the original table
             {
-                AZ_Error("ScriptComponent",netBindingTable->GetScriptContext() != nullptr,"ScriptNetBindingTable is missing ScriptContext.");
-                AZ_Error("ScriptComponent",netBindingTable->GetScriptContext() == nullptr || netBindingTable->GetScriptContext()->NativeContext() == lua,"Trying to use a NetBindingTable in wrong lua context");
-
-                AZ::ScriptContext* scriptContext = netBindingTable->GetScriptContext();
-
-                if (scriptContext)
-                {
-                    AZ::ScriptDataContext stackContext;
-                    scriptContext->ReadStack(stackContext);
-
-                    readValue = netBindingTable->InspectTableValue(stackContext);
-                }
+                // we are looking at top level properties
+                lua_pushvalue(lua, -2); // copy the key
+                lua_rawget(lua, -2); // read the value
             }
-
-            if (!readValue)
+            else
             {
-                AZ::ScriptContext::FromNativeContext(lua)->Error(AZ::ScriptContext::ErrorType::Warning, true,
-                    "Property %s not found in entity table. Please push this property to your slice to avoid decrease in performance.", lua_tostring(lua, -1));
-                int lookupKey = lua_gettop(lua);
-
-                int lookupTable = lookupKey - 1;
-                // This is a slow function and it's made slow so we don't cache any extra data.
-                // This is done because this function will be called only the exported components
-                // and script are not in sync and we added new properties.
-                lua_getmetatable(lua, -2); // get the metatable which will be the top property table
-                int entityProperties = lua_gettop(lua);
-                if (lua_getmetatable(lua, -1) == 0) // get the metatable of the property which will be the original table
+                // we are looking into the sub table, so do a slow traversal
+                int scriptProperties = lua_gettop(lua);
+                if (!Properties__IndexFindSubtable(lua, lookupTable, entityProperties, scriptProperties))
                 {
-                    // we are looking at top level properties
-                    lua_pushvalue(lua, -2); // copy the key
-                    lua_rawget(lua, -2); // read the value
+                    lua_pushnil(lua);
+                    return 1; // we did not find the table
                 }
                 else
                 {
-                    // we are looking into the sub table, so do a slow traversal
-                    int scriptProperties = lua_gettop(lua);
-                    if (!Properties__IndexFindSubtable(lua, lookupTable, entityProperties, scriptProperties))
-                    {
-                        lua_pushnil(lua);
-                        return 1; // we did not find the table
-                    }
-                    else
-                    {
-                        lua_pushvalue(lua, lookupKey);
-                        lua_rawget(lua, -2);
-                    }
-                }
-
-                if (lua_istable(lua, -1))
-                {
-                    // if we are here the target table is on the top if the stack
-                    lua_pushstring(lua, ScriptComponent::DefaultFieldName);
+                    lua_pushvalue(lua, lookupKey);
                     lua_rawget(lua, -2);
-                    if (lua_isnil(lua, -1))
-                    {
-                        // parent table is a group, pop the value and return the table
-                        lua_pop(lua, 1);
-                    }
                 }
-
-                // Duplicate the value, so once the storage is done its on top of the stack, and returned
-                lua_pushvalue(lua, -1);
-
-                // Push key, and then move it below the value
-                lua_pushvalue(lua, lookupKey);
-                lua_insert(lua, -2);
-
-                // Cache the value so that subsequent accesses to this property don't result in warnings
-                lua_rawset(lua, lookupTable);
             }
+
+            if (lua_istable(lua, -1))
+            {
+                // if we are here the target table is on the top if the stack
+                lua_pushstring(lua, ScriptComponent::DefaultFieldName);
+                lua_rawget(lua, -2);
+                if (lua_isnil(lua, -1))
+                {
+                    // parent table is a group, pop the value and return the table
+                    lua_pop(lua, 1);
+                }
+            }
+
+            // Duplicate the value, so once the storage is done its on top of the stack, and returned
+            lua_pushvalue(lua, -1);
+
+            // Push key, and then move it below the value
+            lua_pushvalue(lua, lookupKey);
+            lua_insert(lua, -2);
+
+            // Cache the value so that subsequent accesses to this property don't result in warnings
+            lua_rawset(lua, lookupTable);
+
             return 1;
         }
         //=========================================================================
@@ -515,30 +489,7 @@ namespace AzFramework
         {
             LSV_BEGIN_VARIABLE(lua);
 
-            // calling format __newindex(table,key,value)
-            ScriptNetBindingTable* netBindingTable = reinterpret_cast<ScriptNetBindingTable*>(lua_touserdata(lua, lua_upvalueindex(1)));
-            if (netBindingTable != nullptr)
-            {
-                AZ_Error("ScriptContext",netBindingTable->GetScriptContext() != nullptr,"ScriptNetBindingTable is missing ScriptContext.");
-                AZ_Error("ScriptContext",netBindingTable->GetScriptContext() == nullptr || netBindingTable->GetScriptContext()->NativeContext() == lua,"Trying to use a NetBindingTable in wrong lua context");
-
-                AZ::ScriptContext* scriptContext = netBindingTable->GetScriptContext();
-                if (scriptContext)
-                {
-                    AZ::ScriptDataContext stackContext;
-                    scriptContext->ReadStack(stackContext);
-
-                    const bool assignedValue = netBindingTable->AssignTableValue(stackContext);
-                    if (assignedValue)
-                    {
-                        LSV_END_VARIABLE(0);
-                        return 0;
-                    }
-                }
-            }
-
-            // If we didn't assign the value above, we want
-            // to raw set the value to avoid coming back in here.
+            // We want to raw set the value to avoid coming back in here.
             lua_rawset(lua, 1);
             LSV_END_VARIABLE(-2);
             return 0;
@@ -553,7 +504,6 @@ namespace AzFramework
     // [8/9/2013]
     //=========================================================================
 
-    const char* ScriptComponent::NetRPCFieldName = "NetRPCs";
     const char* ScriptComponent::DefaultFieldName = "default";
 
     ScriptComponent::ScriptComponent()
@@ -561,7 +511,6 @@ namespace AzFramework
         , m_contextId(AZ::ScriptContextIds::DefaultScriptContextId)
         , m_script(AZ::Data::AssetLoadBehavior::PreLoad)
         , m_table(LUA_NOREF)
-        , m_netBindingTable(nullptr)
     {
         m_properties.m_name = "Properties";
     }
@@ -573,8 +522,6 @@ namespace AzFramework
     ScriptComponent::~ScriptComponent()
     {
         m_properties.Clear();
-
-        delete m_netBindingTable;
     }
 
     //=========================================================================
@@ -604,11 +551,6 @@ namespace AzFramework
         return m_properties.GetProperty(propertyName);
     }
 
-    const AZ::ScriptProperty* ScriptComponent::GetNetworkedScriptProperty(const char* propertyName) const
-    {
-        return m_netBindingTable->FindScriptProperty(propertyName);
-    }
-
     void ScriptComponent::Init()
     {
         // Grab the script context
@@ -622,11 +564,6 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::Activate()
     {
-        if (m_isSyncEnabled && m_netBindingTable == nullptr)
-        {
-            m_netBindingTable = aznew ScriptNetBindingTable();
-        }
-
         // if we have valid asset listen for script asset events, like reload
         if (m_script.GetId().IsValid())
         {
@@ -682,43 +619,6 @@ namespace AzFramework
     }
 
     //=========================================================================
-    // ScriptComponent::GetNetworkBinding
-    //=========================================================================
-    GridMate::ReplicaChunkPtr ScriptComponent::GetNetworkBinding()
-    {
-        if (m_netBindingTable == nullptr)
-        {
-            m_netBindingTable = aznew ScriptNetBindingTable();
-        }
-
-        return m_netBindingTable->GetNetworkBinding();
-    }
-
-    //=========================================================================
-    // ScriptComponent::SetNetworkBinding
-    //=========================================================================
-    void ScriptComponent::SetNetworkBinding(GridMate::ReplicaChunkPtr chunk)
-    {
-        if (m_netBindingTable == nullptr)
-        {
-            m_netBindingTable = aznew ScriptNetBindingTable();
-        }
-
-        m_netBindingTable->SetNetworkBinding(chunk);
-    }
-
-    //=========================================================================
-    // ScriptComponent::UnbindFromNetwork
-    //=========================================================================
-    void ScriptComponent::UnbindFromNetwork()
-    {
-        if (m_netBindingTable)
-        {
-            m_netBindingTable->UnbindFromNetwork();
-        }
-    }
-
-    //=========================================================================
     // LoadScript
     //=========================================================================
     void ScriptComponent::LoadScript()
@@ -741,11 +641,6 @@ namespace AzFramework
         AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Unload: %s", m_script.GetHint().c_str());
 
         DestroyEntityTable();
-
-        if (m_netBindingTable)
-        {
-            m_netBindingTable->Unload();
-        }
     }
 
     //=========================================================================
@@ -798,12 +693,10 @@ namespace AzFramework
             // set the __index so we can read values in case we change the script
             // after we export the component
             lua_pushliteral(lua, "__index");
-            lua_pushlightuserdata(lua, m_netBindingTable);
             lua_pushcclosure(lua, &Internal::Properties__Index, 1);
             lua_rawset(lua, -3);
 
             lua_pushliteral(lua, "__newindex");
-            lua_pushlightuserdata(lua, m_netBindingTable);
             lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
             lua_rawset(lua, -3);
         }
@@ -835,8 +728,7 @@ namespace AzFramework
                     {
                         const char* tableName = lua_tolstring(lua, -2, nullptr);
                         if (strncmp(tableName, "__", 2) == 0 || // skip metatables
-                            strcmp(tableName, propertyTableName) == 0 || // Skip the Properties table
-                            strcmp(tableName, ScriptComponent::NetRPCFieldName) == 0) // Want to skip the RPC table as well
+                            strcmp(tableName, propertyTableName) == 0) // Skip the Properties table
                         {
                             break;
                         }
@@ -904,12 +796,9 @@ namespace AzFramework
         }
 
         lua_createtable(lua, 0, 1); // Create entity table;
-        int entityStackIndex = lua_gettop(lua);
+        [[maybe_unused]] int entityStackIndex = lua_gettop(lua);
 
         // Stack: ScriptRootTable PropertiesTable EntityTable
-
-        // Create our network binding.
-        CreateNetworkBindingTable(baseStackIndex, entityStackIndex);
 
         if (basePropertyTable > -1) // if property table exists
         {
@@ -931,11 +820,6 @@ namespace AzFramework
 
         // Keep the entity table in the registry
         m_table = luaL_ref(lua, LUA_REGISTRYINDEX);
-
-        if (m_netBindingTable)
-        {
-            m_netBindingTable->FinalizeNetworkTable(m_context, m_table);
-        }
 
         // call OnActivate
         lua_pushliteral(lua, "OnActivate");
@@ -994,18 +878,6 @@ namespace AzFramework
     }
 
     //=========================================================================
-    // CreateNetworkBindingTable
-    // [6/27/2016]
-    //=========================================================================
-    void ScriptComponent::CreateNetworkBindingTable(int baseStackIndex, int entityStackIndex)
-    {
-        if (m_netBindingTable)
-        {
-            m_netBindingTable->CreateNetworkBindingTable(m_context, baseStackIndex, entityStackIndex);
-        }
-    }
-
-    //=========================================================================
     // CreatePropertyGroup
     // [3/3/2014]
     //=========================================================================
@@ -1028,12 +900,10 @@ namespace AzFramework
             // Ensure that this instance of Properties table has the proper __index and __newIndex metamethods.
             lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} 
             lua_pushliteral(lua, "__index");  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index
-            lua_pushlightuserdata(lua, m_netBindingTable);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index m_netBinding
             lua_pushcclosure(lua, &Internal::Properties__Index, 1);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
             lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index} 
 
             lua_pushliteral(lua, "__newindex");
-            lua_pushlightuserdata(lua, m_netBindingTable);
             lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
             lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} 
             lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} } 
@@ -1049,55 +919,6 @@ namespace AzFramework
         for (size_t i = 0; i < group.m_properties.size(); ++i)
         {
             AZ::ScriptProperty* prop = group.m_properties[i];
-
-            if (m_netBindingTable != nullptr)
-            {
-                lua_pushlstring(lua, prop->m_name.c_str(), prop->m_name.length());
-                lua_rawget(lua, propertyGroupTableIndex);
-
-                // Stack: ... SomePropertyInThePropertiesTable. This may be any basic lua type (number, string, table etc)
-                if (lua_istable(lua, -1))
-                {
-                    bool isNetworkedProperty = false;
-
-                    AZ::ScriptDataContext stackContext;
-
-                    // If we find a table value. We want to inspect it for information.
-                    if (m_context->ReadStack(stackContext))
-                    {
-                        // check if the current property, which is a table, has a sub-table called "netSynched"
-                        lua_pushliteral(lua, "netSynched");  // Stack: ... SomePropertyInThePropertiesTable netSynched
-                        lua_rawget(lua, -2);  // Stack: ... SomePropertyInThePropertiesTable NetSynchedSubTable/nil
-                        if (stackContext.IsTable(-1))
-                        {
-                            AZ::ScriptDataContext networkTableContext;
-                            if (stackContext.InspectTable(-1, networkTableContext))  // Stack: ... SomePropertyInThePropertiesTable NetSynchedSubTable NetSynchedSubTable nil nil
-                            {
-                                // RegisterDataSet will make sure our __NewIndex function callback will be triggered whenever modifying netSynched Properties.
-                                //isNetworkedProperty = true;
-                                isNetworkedProperty = m_netBindingTable->RegisterDataSet(networkTableContext, prop);
-                            }
-                        }
-
-                        // Network binding table
-                        lua_pop(lua, 1);  // Stack: ... SomePropertyInThePropertiesTable
-                    }
-
-                    // Pop this PropertiesTable's property
-                    lua_pop(lua, 1);
-
-                    // If the property is networked, we don't want to copy it over into the table.
-                    if (isNetworkedProperty)
-                    {
-                        continue;
-                    }
-                }
-                else
-                {
-                    // Remove the value we just pushed onto the stack
-                    lua_pop(lua, 1);
-                }
-            }
 
             lua_pushlstring(lua, prop->m_name.c_str(), prop->m_name.length());
             if (prop->Write(*m_context))
@@ -1157,8 +978,8 @@ namespace AzFramework
                     return true;
                 };
 
-                serializeContext->Class<ScriptComponent, AZ::Component,  NetBindable>()
-                    ->Version(3, converter)
+                serializeContext->Class<ScriptComponent, AZ::Component>()
+                    ->Version(4, converter)
                     ->Field("ContextID", &ScriptComponent::m_contextId)
                     ->Field("Properties", &ScriptComponent::m_properties)
                     ->Field("Script", &ScriptComponent::m_script)
@@ -1174,8 +995,6 @@ namespace AzFramework
                 AZ::ScriptProperties::Reflect(reflection);
             }
         }
-
-        ScriptNetBindingTable::Reflect(reflection);
     }
 
     //=========================================================================

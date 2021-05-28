@@ -105,7 +105,7 @@ namespace WhiteBox
         // create the buffer with the specified data
         AZ::RPI::BufferAssetCreator bufferAssetCreator;
         bufferAssetCreator.Begin(AZ::Uuid::CreateRandom());
-        bufferAssetCreator.SetUseCommonPool(AZ::RPI::CommonBufferPoolType::DynamicInputAssembly);
+        bufferAssetCreator.SetUseCommonPool(AZ::RPI::CommonBufferPoolType::StaticInputAssembly);
         bufferAssetCreator.SetBuffer(data.data(), bufferDescriptor.m_byteCount, bufferDescriptor);
         bufferAssetCreator.SetBufferViewDescriptor(m_bufferViewDescriptor);
 

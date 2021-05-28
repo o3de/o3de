@@ -131,8 +131,14 @@ namespace RenderGL
 
     void GLRenderUtil::Validate()
     {
-        mLineShader->Validate();
-        mMeshShader->Validate();
+        if (mLineShader)
+        {
+            mLineShader->Validate();
+        }
+        if (mMeshShader)
+        {
+            mMeshShader->Validate();
+        }
     }
 
     // destroy the allocated memory

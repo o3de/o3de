@@ -19,7 +19,6 @@ AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: con
                                                                     // 4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
 #include <QObject>
 #include <QPixmap>
-#include <QIcon>
 #include <QFutureWatcher>
 AZ_POP_DISABLE_WARNING
 #endif
@@ -86,12 +85,11 @@ namespace AzToolsFramework
                 Failed
             };
 
-            Thumbnail(SharedThumbnailKey key, int thumbnailSize);
+            Thumbnail(SharedThumbnailKey key);
             ~Thumbnail() override;
             bool operator == (const Thumbnail& other) const;
             void Load();
-            virtual QPixmap GetPixmap() const;
-            virtual QPixmap GetPixmap(const QSize& size) const;
+            const QPixmap& GetPixmap() const;
             virtual void UpdateTime(float /*deltaTime*/) {}
             SharedThumbnailKey GetKey() const;
             State GetState() const;
@@ -105,10 +103,8 @@ namespace AzToolsFramework
         protected:
             QFutureWatcher<void> m_watcher;
             State m_state;
-            int m_thumbnailSize;
             SharedThumbnailKey m_key;
             QPixmap m_pixmap;
-            QIcon m_icon;
 
             virtual void LoadThread() {}
         };
@@ -122,7 +118,6 @@ namespace AzToolsFramework
             ThumbnailProvider() = default;
             virtual ~ThumbnailProvider() = default;
             virtual bool GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail) = 0;
-            virtual void SetThumbnailSize(int thumbnailSize) = 0;
             //! Priority identifies ThumbnailProvider order in ThumbnailContext
             //! Higher priority means this ThumbnailProvider will take precedence in generating a thumbnail when
             //! a supplied ThumbnailKey is supported by multiple providers.
@@ -185,10 +180,7 @@ namespace AzToolsFramework
 
             bool GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail) override;
 
-            void SetThumbnailSize(int thumbnailSize) override;
-
         protected:
-            int m_thumbnailSize;
             AZStd::unordered_map<SharedThumbnailKey, SharedThumbnail, Hasher, EqualKey> m_cache;
 
             //! Check if thumbnail key is handled by this provider, overload in derived class

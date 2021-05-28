@@ -137,15 +137,6 @@ void DebugCamera::PostUpdate()
 
     CCamera& camera = gEnv->pSystem->GetViewCamera();
     camera.SetMatrix(Matrix34(m_view, m_position));
-
-    const float FONT_COLOR[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-    gEnv->pRenderer->Draw2dLabel(0.0f, 700.0f, 1.3f, FONT_COLOR, false,
-        "Debug Camera: pos [ %.3f, %.3f, %.3f ] p/y [ %.1f, %.1f ] dir [ %.3f, %.3f, %.3f ] scl %.2f  inv %d",
-        m_position.x, m_position.y, m_position.z,
-        m_cameraPitch, m_cameraYaw,
-        m_view.GetColumn1().x, m_view.GetColumn1().y, m_view.GetColumn1().z,
-        m_moveScale,
-        m_isYInverted);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

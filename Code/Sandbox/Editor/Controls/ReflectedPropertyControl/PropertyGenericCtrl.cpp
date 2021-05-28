@@ -26,8 +26,6 @@
 #include <CryCommon/ILocalizationManager.h>
 
 // Editor
-#include "ShadersDialog.h"
-#include "Material/MaterialManager.h"
 #include "SelectLightAnimationDialog.h"
 #include "SelectSequenceDialog.h"
 #include "SelectEAXPresetDlg.h"
@@ -77,38 +75,6 @@ void GenericPopupPropertyEditor::SetValue(const QString &value, bool notify)
 void GenericPopupPropertyEditor::SetPropertyType(PropertyType type)
 {
     m_propertyType = type;
-}
-
-void ShaderPropertyEditor::onEditClicked()
-{
-    CShadersDialog cShaders(GetValue());
-    if (cShaders.exec() == QDialog::Accepted)
-    {
-        SetValue(cShaders.GetSelection());
-    }
-
-}
-void MaterialPropertyEditor::onEditClicked()
-{
-    QString name = GetValue();
-    IDataBaseItem *pItem = GetIEditor()->GetMaterialManager()->FindItemByName(name);
-    GetIEditor()->OpenMaterialLibrary(pItem);
-}
-
-void MaterialPropertyEditor::onButton2Clicked()
-{
-    // Open material browser dialog.
-    IDataBaseItem *pItem = GetIEditor()->GetMaterialManager()->GetSelectedItem();
-    if (pItem)
-    {
-        QString value = pItem->GetName();
-        value.replace('\\', '/');
-        if (value.length() >= MAX_PATH)
-            value = value.left(MAX_PATH);
-        SetValue(value);
-    }
-    else
-        SetValue(QString());
 }
 
 void ReverbPresetPropertyEditor::onEditClicked()

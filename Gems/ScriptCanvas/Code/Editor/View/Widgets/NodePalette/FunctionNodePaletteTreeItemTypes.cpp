@@ -41,11 +41,11 @@ namespace ScriptCanvasEditor
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
             serializeContext->Class<CreateFunctionMimeEvent, CreateNodeMimeEvent>()
-                ->Version(4)
+                ->Version(5)
                 ->Field("AssetId", &CreateFunctionMimeEvent::m_assetId)
+                ->Field("sourceId", &CreateFunctionMimeEvent::m_sourceId)
                 ;
         }
-
     }
 
     CreateFunctionMimeEvent::CreateFunctionMimeEvent(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)

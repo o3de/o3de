@@ -13,7 +13,6 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <CryCommon/CryFontBus.h>
 #include <CryCommon/CrySystemBus.h>
 
 namespace AZ
@@ -22,7 +21,6 @@ namespace AZ
     {
         class AtomFontSystemComponent
             : public AZ::Component
-            , private AZ::CryFontCreationRequestBus::Handler
             , private CrySystemEventBus::Handler
         {
         public:
@@ -43,12 +41,12 @@ namespace AZ
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // CryFontCreationBus
-            bool CreateCryFont(SSystemGlobalEnvironment& env, const SSystemInitParams& initParams) override;
+            // CrySystemEventBus
+            void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& initParams);
             ////////////////////////////////////////////////////////////////////////
 
             ////////////////////////////////////////////////////////////////////////
-            // CryFontCreationBus
+            // CrySystemEventBus
             void OnCrySystemShutdown(ISystem& system) override;
             ////////////////////////////////////////////////////////////////////////
         };

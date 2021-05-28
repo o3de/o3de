@@ -22,6 +22,7 @@
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <ScriptCanvas/PerformanceTracker.h>
+#include <ScriptCanvas/Data/DataRegistry.h>
 
 namespace AZ
 {
@@ -65,6 +66,8 @@ namespace ScriptCanvas
 
         inline bool IsAnyScriptInterpreted() const { return true; }
 
+        AZStd::pair<DataRegistry::Createability, TypeProperties> GetCreatibility(AZ::SerializeContext* serializeContext, AZ::BehaviorClass* behaviorClass);
+
         // SystemRequestBus::Handler...
         bool IsScriptUnitTestingInProgress() override;
         void MarkScriptUnitTestBegin() override;
@@ -100,7 +103,7 @@ namespace ScriptCanvas
         using LockType = AZStd::lock_guard<MutexType>;
         AZStd::unordered_map<const void*, BehaviorContextObject*> m_ownedObjectsByAddress;
         MutexType m_ownedObjectsByAddressMutex;
-        int m_infiniteLoopDetectionMaxIterations = 3000;
+        int m_infiniteLoopDetectionMaxIterations = 1000000;
         int m_maxHandlerStackDepth = 50;
 
         static void SafeRegisterPerformanceTracker();

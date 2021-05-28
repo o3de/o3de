@@ -88,7 +88,10 @@ namespace AZ
 
             //! Sets the transform of the decal
             //! Equivalent to calling SetDecalPosition() + SetDecalOrientation() + SetDecalHalfSize()
+            //! @{
             virtual void SetDecalTransform(DecalHandle handle, const AZ::Transform& world) = 0;
+            virtual void SetDecalTransform(DecalHandle handle, const AZ::Transform& world, const AZ::Vector3& nonUniformScale) = 0;
+            //! @}
 
             //! Sets the material information for this decal
             virtual void SetDecalMaterial(DecalHandle handle, const AZ::Data::AssetId) = 0;

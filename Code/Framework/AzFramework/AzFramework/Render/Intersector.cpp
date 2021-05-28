@@ -14,9 +14,9 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 
+#include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Render/Intersector.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <algorithm>
@@ -30,11 +30,11 @@ namespace AzFramework
         {
             IntersectorBus::Handler::BusConnect(m_contextId);
             IntersectionNotificationBus::Handler::BusConnect(m_contextId);
-            Scene* scene = nullptr;
-            SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, m_contextId);
+
+            AZStd::shared_ptr<Scene> scene = EntityContext::FindContainingScene(m_contextId);
             if (scene)
             {
-                scene->SetSubsystem<IntersectorInterface>(this);
+                scene->SetSubsystem(this);
             }
         }
 
@@ -42,11 +42,12 @@ namespace AzFramework
         {
             IntersectorBus::Handler::BusDisconnect();
             IntersectionNotificationBus::Handler::BusDisconnect();
-            Scene* scene = nullptr;
-            SceneSystemRequestBus::BroadcastResult(scene, &AzFramework::SceneSystemRequestBus::Events::GetSceneFromEntityContextId, m_contextId);
+
+            AZStd::shared_ptr<Scene> scene = EntityContext::FindContainingScene(m_contextId);
             if (scene)
             {
-                scene->UnsetSubsystem<IntersectorInterface>();
+                [[maybe_unused]] bool result = scene->UnsetSubsystem(this);
+                AZ_Assert(result, "Failed to unregister Intersector with scene");
             }
         }
 
@@ -138,7 +139,8 @@ namespace AzFramework
                     "Implementers of IntersectionRequestBus must also implement BoundsRequestBus to ensure valid "
                     "bounds are returned");
 
-                m_registeredEntities.Update({ entityId, CalculateEntityWorldBoundsUnion(entityId) });
+                AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+                m_registeredEntities.Update({ entityId, CalculateEntityWorldBoundsUnion(entity) });
             }
 
             m_dirtyEntities.clear();

@@ -128,7 +128,7 @@ namespace GraphCanvas
 
     const char* TranslationAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/Names.svg";
+        return "Icons/Components/Names.svg";
     }
 
     AZ::Uuid TranslationAssetHandler::GetComponentTypeId() const

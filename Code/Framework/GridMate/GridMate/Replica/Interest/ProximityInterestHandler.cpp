@@ -508,7 +508,7 @@ namespace GridMate
 
         auto replica = Replica::CreateReplica("ProximityInterestHandlerRules");
         m_rulesReplica = CreateAndAttachReplicaChunk<ProximityInterestChunk>(replica);
-        m_rm->AddMaster(replica);
+        m_rm->AddPrimary(replica);
     }
 
     void ProximityInterestHandler::OnRulesHandlerUnregistered(InterestManager* manager)

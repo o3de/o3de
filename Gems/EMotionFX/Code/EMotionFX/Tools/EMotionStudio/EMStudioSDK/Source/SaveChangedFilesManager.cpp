@@ -21,6 +21,7 @@
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <QSettings>
 #include <QGridLayout>
@@ -398,33 +399,49 @@ namespace EMStudio
         const size_t numDirtyFiles = dirtyFileNames.size();
         mTableWidget->setRowCount(static_cast<int>(numDirtyFiles));
 
-        AZStd::string extension, typeString, filenameText, path, filenameOnly;
         for (size_t i = 0; i < numDirtyFiles; ++i)
         {
             SaveDirtyFilesCallback::ObjectPointer object = mObjects[i];
 
+            QString labelText;
             if (dirtyFileNames[i].empty())
             {
-                filenameText = "<not saved yet>";
+                labelText = "<not saved yet>";
             }
             else
             {
-                AzFramework::StringFunc::Path::GetFullPath(dirtyFileNames[i].c_str(), path);
-                AzFramework::StringFunc::Path::GetFullFileName(dirtyFileNames[i].c_str(), filenameOnly);
+                const AZStd::string& productFilename = dirtyFileNames[i];
 
-                filenameText = AZStd::string::format("<qt>%s<b>%s</b></qt>", path.c_str(), filenameOnly.c_str());
+                // Get the asset source name from the product filename.
+                bool sourceAssetFound = false;
+                AZStd::string sourceAssetFilename;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceAssetFound,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                    productFilename,
+                    sourceAssetFilename);
+
+                const AZStd::string usedFilename = sourceAssetFound ? sourceAssetFilename : dirtyFileNames[i];
+
+                // Separate the path from the filename, so that we can display the filename in bold.
+                AZStd::string fullPath;
+                AzFramework::StringFunc::Path::GetFullPath(usedFilename.c_str(), fullPath);
+                AzFramework::StringFunc::RelativePath::Normalize(fullPath); // Add trailing slash in case it is missing
+                AZStd::string fullFilename;
+                AzFramework::StringFunc::Path::GetFullFileName(usedFilename.c_str(), fullFilename);
+                labelText = QString("<qt>%1<b>%2</b></qt>").arg(fullPath.c_str(), fullFilename.c_str());
             }
 
             // create the checkbox
             QCheckBox* checkbox = new QCheckBox("");
-            checkbox->setStyleSheet("background: transparent; padding-left: 3px; max-width: 13px;");
+            checkbox->setStyleSheet("background: transparent;");
             checkbox->setChecked(true);
 
             // create the filename table item
             QLabel* filenameLabel = new QLabel();
-            filenameLabel->setToolTip(filenameText.c_str());
-            filenameLabel->setText(filenameText.c_str());
+            filenameLabel->setToolTip(labelText);
+            filenameLabel->setText(labelText);
 
+            QString typeString;
             if (object.mMotion)
             {
                 typeString = "Motion";
@@ -445,12 +462,8 @@ namespace EMStudio
             {
                 typeString = "Workspace";
             }
-            else
-            {
-                typeString = "";
-            }
 
-            QTableWidgetItem* itemType = new QTableWidgetItem(typeString.c_str());
+            QTableWidgetItem* itemType = new QTableWidgetItem(typeString);
             const int row = static_cast<int>(i);
             itemType->setData(Qt::UserRole, row);
 

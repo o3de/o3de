@@ -13,17 +13,20 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Jobs/JobFunction.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AWSCoreEditor_Traits_Platform.h>
 #include <Editor/UI/AWSCoreEditorMenu.h>
+#include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 
 #include <QAction>
+#include <QApplication>
 #include <QDesktopServices>
 #include <QIcon>
 #include <QList>
+#include <QMessageBox>
 #include <QObject>
-#include <QProcess>
 #include <QString>
 #include <QUrl>
 
@@ -31,15 +34,9 @@ namespace AWSCore
 {
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
         : QMenu(text)
-        , m_engineRootFolder("")
-        , m_resourceMappintToolIsRunning(false)
+        , m_resourceMappingToolWatcher(nullptr)
     {
-        InitializeEngineRootFolder();
-
-#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
         InitializeResourceMappingToolAction();
-        this->addSeparator();
-#endif
         InitializeAWSDocActions();
         this->addSeparator();
         InitializeAWSFeatureGemActions();
@@ -50,46 +47,58 @@ namespace AWSCore
     AWSCoreEditorMenu::~AWSCoreEditorMenu()
     {
         AWSCoreEditorRequestBus::Handler::BusDisconnect();
-
-        if (m_resourceMappingToolThread.joinable())
+        if (m_resourceMappingToolWatcher)
         {
-            m_resourceMappingToolThread.join();
+            if (m_resourceMappingToolWatcher->IsProcessRunning())
+            {
+                m_resourceMappingToolWatcher->TerminateProcess(AZ::u32(-1));
+            }
+            m_resourceMappingToolWatcher.reset();
         }
-    }
-
-    void AWSCoreEditorMenu::InitializeEngineRootFolder()
-    {
-        auto engineRootFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@engroot@");
-        if (!engineRootFolder)
-        {
-            AZ_Error("AWSCoreEditorMenu", false, "Failed to initialize engine root folder path.");
-        }
-        else
-        {
-            m_engineRootFolder = engineRootFolder;
-        }
+        this->clear();
     }
 
     void AWSCoreEditorMenu::InitializeResourceMappingToolAction()
     {
-        QAction* resourceMappingAction = new QAction(QObject::tr(AWSResourceMappingToolActionText));
-        QObject::connect(resourceMappingAction, &QAction::triggered, this, [this]() {
-            AZStd::lock_guard<AZStd::mutex> lockGuard{m_resourceMappingToolMutex};
-            if (!m_resourceMappintToolIsRunning)
-            {
-                m_resourceMappintToolIsRunning = true;
-                if (m_resourceMappingToolThread.joinable())
+#ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
+        AWSCoreResourceMappingToolAction* resourceMappingTool =
+            new AWSCoreResourceMappingToolAction(QObject::tr(AWSResourceMappingToolActionText));
+        QObject::connect(resourceMappingTool, &QAction::triggered, this,
+            [resourceMappingTool, this]() {
+                AZStd::string launchCommand = resourceMappingTool->GetToolLaunchCommand();
+                if (launchCommand.empty())
                 {
-                    m_resourceMappingToolThread.join();
+                    AZStd::string resourceMappingToolReadMePath = resourceMappingTool->GetToolReadMePath();
+                    AZStd::string message = AZStd::string::format(AWSResourceMappingToolReadMeWarningText, resourceMappingToolReadMePath.c_str());
+                    QMessageBox::warning(QApplication::activeWindow(), "Warning", message.c_str(), QMessageBox::Ok);
+                    return;
                 }
-                m_resourceMappingToolThread = AZStd::thread(AZStd::bind(&AWSCoreEditorMenu::StartResourceMappingProcess, this));
-            }
-            else
-            {
-                AZ_Warning("AWSCoreEditorMenu", false, "Resource Mapping Tool is already running...");
-            }
+                if (m_resourceMappingToolWatcher && m_resourceMappingToolWatcher->IsProcessRunning())
+                {
+                    QMessageBox::information(QApplication::activeWindow(), "Info", AWSResourceMappingToolIsRunningText, QMessageBox::Ok);
+                    return;
+                }
+                if (m_resourceMappingToolWatcher)
+                {
+                    m_resourceMappingToolWatcher.reset();
+                }
+
+                AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+                processLaunchInfo.m_commandlineParameters = launchCommand;
+                processLaunchInfo.m_showWindow = false;
+                m_resourceMappingToolWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(
+                    AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));
+
+                if (!m_resourceMappingToolWatcher || !m_resourceMappingToolWatcher->IsProcessRunning())
+                {
+                    AZStd::string resourceMappingToolLogPath = resourceMappingTool->GetToolLogPath();
+                    AZStd::string message = AZStd::string::format(AWSResourceMappingToolLogWarningText, resourceMappingToolLogPath.c_str());
+                    QMessageBox::warning(QApplication::activeWindow(), "Warning", message.c_str(), QMessageBox::Ok);
+                }
         });
-        this->addAction(resourceMappingAction);
+        this->addAction(resourceMappingTool);
+        this->addSeparator();
+#endif
     }
 
     void AWSCoreEditorMenu::InitializeAWSDocActions()
@@ -122,31 +131,6 @@ namespace AWSCore
         metrics->setIcon(QIcon(QString(":/Notifications/download.svg")));
         metrics->setDisabled(true);
         this->addAction(metrics);
-    }
-
-    void AWSCoreEditorMenu::StartResourceMappingProcess()
-    {
-        AZStd::string toolScriptPath = AZStd::string::format("%s/%s", m_engineRootFolder.c_str(), ResourceMappingToolPath);
-        AzFramework::StringFunc::Path::Normalize(toolScriptPath);
-        QProcess resourceMappingToolProcess;
-        resourceMappingToolProcess.setProgram("cmd.exe");
-        resourceMappingToolProcess.setArguments({"/C", toolScriptPath.c_str()});
-
-        resourceMappingToolProcess.start();
-        while (!resourceMappingToolProcess.waitForFinished())
-        {
-            if (resourceMappingToolProcess.state() != QProcess::Running)
-            {
-                break;
-            }
-        }
-        if (resourceMappingToolProcess.exitCode() != 0)
-        {
-            AZ_Error("AWSCoreEditorMenu", false,
-                "Failed to launch Resource Mapping Tool, please follow README to setup tool before using it.");
-        }
-        AZStd::lock_guard<AZStd::mutex> lockGuard{m_resourceMappingToolMutex};
-        m_resourceMappintToolIsRunning = false;
     }
 
     void AWSCoreEditorMenu::SetAWSClientAuthEnabled()

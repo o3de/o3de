@@ -943,10 +943,8 @@ namespace AzToolsFramework
             const char* scanFolder,
             const char* displayName,
             const char* portableKey,
-            const char* outputPrefix,
             int isRoot)
             : m_scanFolderID(scanFolderID)
-            , m_outputPrefix(outputPrefix)
             , m_isRoot(isRoot)
         {
             if (scanFolder)
@@ -967,10 +965,8 @@ namespace AzToolsFramework
             const char* scanFolder,
             const char* displayName,
             const char* portableKey,
-            const char* outputPrefix,
             int isRoot)
-            : m_outputPrefix(outputPrefix)
-            , m_isRoot(isRoot)
+            : m_isRoot(isRoot)
         {
             if (scanFolder)
             {
@@ -993,7 +989,6 @@ namespace AzToolsFramework
             , m_scanFolder(other.m_scanFolder)
             , m_displayName(other.m_displayName)
             , m_portableKey(other.m_portableKey)
-            , m_outputPrefix(other.m_outputPrefix)
             , m_isRoot(other.m_isRoot)
         {
         }
@@ -1011,7 +1006,6 @@ namespace AzToolsFramework
                 m_scanFolderID = other.m_scanFolderID;
                 m_displayName = AZStd::move(other.m_displayName);
                 m_portableKey = AZStd::move(other.m_portableKey);
-                m_outputPrefix = AZStd::move(other.m_outputPrefix);
                 m_isRoot = other.m_isRoot;
             }
             return *this;
@@ -1023,7 +1017,6 @@ namespace AzToolsFramework
             m_scanFolderID = other.m_scanFolderID;
             m_displayName = other.m_displayName;
             m_portableKey = other.m_portableKey;
-            m_outputPrefix = other.m_outputPrefix;
             m_isRoot = other.m_isRoot;
             return *this;
         }
@@ -1050,7 +1043,6 @@ namespace AzToolsFramework
                 MakeColumn("ScanFolder", m_scanFolder),
                 MakeColumn("DisplayName", m_displayName),
                 MakeColumn("PortableKey", m_portableKey),
-                MakeColumn("OutputPrefix", m_outputPrefix),
                 MakeColumn("IsRoot", m_isRoot)
             );
         }

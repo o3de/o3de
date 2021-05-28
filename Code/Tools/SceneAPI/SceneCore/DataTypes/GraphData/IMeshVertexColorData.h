@@ -97,6 +97,9 @@ namespace AZ
             };
         }  // DataTypes
     }  // SceneAPI
+
+    AZ_TYPE_INFO_SPECIALIZE(SceneAPI::DataTypes::Color, "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}");
+
 }  // AZ
 
 namespace AZStd

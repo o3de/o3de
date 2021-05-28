@@ -25,6 +25,7 @@
 class RulerWidget;
 class QMimeData;
 class UiRenderer;
+class CDraw2d;
 
 class ViewportWidget
     : public AtomToolsFramework::RenderViewportWidget
@@ -52,8 +53,6 @@ public: // member functions
 
     bool IsDrawingElementBorders(uint32 flags) const;
     void ToggleDrawElementBorders(uint32 flags);
-
-    void UpdateViewportBackground();
 
     void ActiveCanvasChanged();
     void EntityContextChanged();
@@ -153,6 +152,9 @@ private: // member functions
     //! Render the viewport when in preview mode
     void RenderPreviewMode(float deltaTime);
 
+    //! Fill the entire viewport area with a background color
+    void RenderViewportBackground();
+
     //! Create shortcuts for manipulating the viewport
     void SetupShortcuts();
 
@@ -201,4 +203,5 @@ private: // data
     bool     m_fontTextureHasChanged = false;
 
     AZStd::shared_ptr<UiRenderer> m_uiRenderer;
+    AZStd::shared_ptr<CDraw2d> m_draw2d;
 };

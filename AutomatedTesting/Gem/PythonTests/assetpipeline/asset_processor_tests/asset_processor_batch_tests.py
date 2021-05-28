@@ -102,7 +102,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     def test_RunAPBatch_TwoPlatforms_ExitCodeZero(self, asset_processor):
         asset_processor.create_temp_asset_root()
         asset_processor.enable_asset_processor_platform("pc")
-        asset_processor.enable_asset_processor_platform("osx_gl")
+        asset_processor.enable_asset_processor_platform("mac")
         result, _ = asset_processor.batch_process()
         assert result, "AP Batch failed"
 

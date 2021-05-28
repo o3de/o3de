@@ -125,8 +125,8 @@ namespace UnitTest
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game"))
                         ->Attribute(AZ::Edit::Attributes::Category, "Inspector Test Components")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Tag.png")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Tag.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.amazongames.com/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Inspector_TestComponent2::m_data, "Data", "The component's Data");
@@ -194,8 +194,8 @@ namespace UnitTest
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::Category, "Inspector Test Components")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Tag.png")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Tag.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.amazongames.com/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Inspector_TestComponent3::m_data, "Data", "The component's Data");

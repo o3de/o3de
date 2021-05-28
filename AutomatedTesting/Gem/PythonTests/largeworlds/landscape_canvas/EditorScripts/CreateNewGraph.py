@@ -19,8 +19,8 @@ import azlmbr.legacy.general as general
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 new_root_entity_id = None
@@ -37,6 +37,25 @@ class TestCreateNewGraph(EditorTestHelper):
         print("New root entity created")
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that new graphs can be created in Landscape Canvas.
+
+        Expected Behavior:
+        New graphs can be created, and proper entity is created to hold graph data with a Landscape Canvas component.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Ensures the root entity created contains a Landscape Canvas component
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
         self.test_success = self.create_level(
             self.args["level"],
             heightmap_resolution=128,

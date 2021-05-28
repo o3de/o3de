@@ -16,7 +16,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 
 #include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Source/Window/MaterialBrowserInteractions.h>
+#include <Source/Window/MaterialEditorBrowserInteractions.h>
 #include <Source/Window/MaterialEditorWindow.h>
 
 namespace MaterialEditor
@@ -57,6 +57,6 @@ namespace MaterialEditor
         ////////////////////////////////////////////////////////////////////////
 
         AZStd::unique_ptr<MaterialEditorWindow> m_window;
-        AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
+        AZStd::unique_ptr<MaterialEditorBrowserInteractions> m_materialEditorBrowserInteractions;
     };
 }

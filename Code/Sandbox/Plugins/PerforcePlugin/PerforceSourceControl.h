@@ -26,7 +26,7 @@ class CPerforceSourceControl
 public:
     // constructor
     CPerforceSourceControl() = default;
-    ~CPerforceSourceControl() = default;
+    virtual ~CPerforceSourceControl() = default;
 
     void Init();
 

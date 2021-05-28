@@ -25,8 +25,6 @@ namespace GradientSignal
     // GradientPreviewDataWidgetHandler
     //
 
-    GradientPreviewDataWidgetHandler* GradientPreviewDataWidgetHandler::s_instance = nullptr;
-
     AZ::u32 GradientPreviewDataWidgetHandler::GetHandlerName() const
     {
         return AZ_CRC("GradientPreviewer", 0x1dbbba45);
@@ -92,23 +90,18 @@ namespace GradientSignal
     {
         using namespace AzToolsFramework;
 
-        if (!s_instance)
-        {
-            s_instance = aznew GradientPreviewDataWidgetHandler();
-            PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, s_instance);
-        }
+        // Property handlers are set to auto-delete by default, which means that we're handing off ownership of the pointer to the
+        // PropertyManagerComponent, where it will get cleaned up on system shutdown.
+        auto propertyHandler = aznew GradientPreviewDataWidgetHandler();
+        AZ_Assert(propertyHandler->AutoDelete(),
+            "GradientPreviewDataWidgetHandler is no longer set to auto-delete, it will leak memory.");
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, propertyHandler);
     }
 
     void GradientPreviewDataWidgetHandler::Unregister()
     {
-        using namespace AzToolsFramework;
-
-        if (s_instance)
-        {
-            PropertyTypeRegistrationMessages::Bus::Broadcast(&PropertyTypeRegistrationMessages::Bus::Events::UnregisterPropertyType, s_instance);
-            delete s_instance;
-            s_instance = nullptr;
-        }
+        // We don't need to call UnregisterPropertyType here because it's an autoDelete handler.
     }
 
     //

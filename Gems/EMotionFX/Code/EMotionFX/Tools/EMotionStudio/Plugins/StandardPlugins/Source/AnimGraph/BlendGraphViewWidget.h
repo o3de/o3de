@@ -53,25 +53,32 @@ namespace EMStudio
     public:
         enum EOptionFlag
         {
-            SELECTION_ALIGNLEFT                 = 0,
-            SELECTION_ALIGNRIGHT                = 1,
-            SELECTION_ALIGNTOP                  = 2,
-            SELECTION_ALIGNBOTTOM               = 3,
-            FILE_NEW                            = 4,
-            FILE_OPENFILE                       = 5,
-            FILE_OPEN                           = 6,
-            FILE_SAVE                           = 7,
-            FILE_SAVEAS                         = 8,
-            NAVIGATION_FORWARD                  = 9,
-            NAVIGATION_BACK                     = 10,
-            NAVIGATION_NAVPANETOGGLE            = 11,
-            SELECTION_ZOOMSELECTION             = 12,
-            ACTIVATE_ANIMGRAPH                  = 13,
-            WINDOWS_NODEGROUPWINDOW             = 14,
-            VISUALIZATION_PLAYSPEEDS            = 15,
-            VISUALIZATION_GLOBALWEIGHTS         = 16,
-            VISUALIZATION_SYNCSTATUS            = 17,
-            VISUALIZATION_PLAYPOSITIONS         = 18,
+            SELECTION_ALIGNLEFT,
+            SELECTION_ALIGNRIGHT,
+            SELECTION_ALIGNTOP,
+            SELECTION_ALIGNBOTTOM,
+            SELECTION_SELECTALL,
+            SELECTION_UNSELECTALL,
+            FILE_NEW,
+            FILE_OPEN,
+            FILE_SAVE,
+            FILE_SAVEAS,
+            NAVIGATION_FORWARD,
+            NAVIGATION_BACK,
+            NAVIGATION_NAVPANETOGGLE,
+            NAVIGATION_OPEN_SELECTED,
+            NAVIGATION_TO_PARENT,
+            NAVIGATION_FRAME_ALL,
+            NAVIGATION_ZOOMSELECTION,
+            ACTIVATE_ANIMGRAPH,
+            VISUALIZATION_PLAYSPEEDS,
+            VISUALIZATION_GLOBALWEIGHTS,
+            VISUALIZATION_SYNCSTATUS,
+            VISUALIZATION_PLAYPOSITIONS,
+            EDIT_CUT,
+            EDIT_COPY,
+            EDIT_PASTE,
+            EDIT_DELETE,
 
             NUM_OPTIONS //automatically gets the next number assigned
         };
@@ -85,13 +92,12 @@ namespace EMStudio
 
         void Init(BlendGraphWidget* blendGraphWidget);
         void UpdateAnimGraphOptions();
-        void UpdateSelection();
+        void UpdateEnabledActions();
 
         // If there is a specific widget to handle this node returns that.
         // Else, returns nullptr.
         AnimGraphNodeWidget* GetWidgetForNode(const EMotionFX::AnimGraphNode* node);
 
-        // Get Actions (used for testing purposes)
         QAction* GetAction(EOptionFlag option) const { return m_actions[option]; }
 
     public slots:
@@ -100,11 +106,10 @@ namespace EMStudio
         void OnCreateAnimGraph();
 
         void NavigateToRoot();
-        void NavigateToNode();
-        void NavigateToParent();
         void ToggleNavigationPane();
 
         void ZoomSelected();
+        void ZoomToAll();
 
         void OnActivateState();
 
@@ -122,17 +127,15 @@ namespace EMStudio
 
         void showEvent(QShowEvent* showEvent);
 
-        void keyReleaseEvent(QKeyEvent* event) override;
-        void keyPressEvent(QKeyEvent* event) override;
-
     private:
+        void CreateActions();
         QToolBar* CreateTopToolBar();
         QToolBar* CreateNavigationToolBar();
 
         QMenuBar* m_menu = nullptr;
         QMenu* m_openMenu = nullptr;
         QHBoxLayout* m_toolbarLayout = nullptr;
-        QAction* m_actions[NUM_OPTIONS];
+        AZStd::array<QAction*, NUM_OPTIONS> m_actions{};
         AnimGraphPlugin* m_parentPlugin = nullptr;
         NavigationLinkWidget* mNavigationLink = nullptr;
         QStackedWidget m_viewportStack;

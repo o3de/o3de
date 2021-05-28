@@ -31,18 +31,6 @@
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpBoneImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpAnimationImporter.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpBlendShapeImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxAnimationImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxBlendShapeImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxBoneImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxColorStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxTangentStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxBitangentStreamImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxMaterialImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxMeshImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxSkinImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxSkinWeightsImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxTransformImporter.h>
-#include <SceneAPI/FbxSceneBuilder/Importers/FbxUvMapImporter.h>
 
 namespace AZ
 {
@@ -50,20 +38,7 @@ namespace AZ
     {
         namespace FbxSceneBuilder
         {
-            static AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler* g_fbxImporter = nullptr;
             static AZStd::vector<AZ::ComponentDescriptor*> g_componentDescriptors;
-
-            void Initialize()
-            {
-                // Currently it's still needed to explicitly create an instance of this instead of letting
-                //      it be a normal component. This is because ResourceCompilerScene needs to return
-                //      the list of available extensions before it can start the application.
-                if (!g_fbxImporter)
-                {
-                    g_fbxImporter = aznew AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler();
-                    g_fbxImporter->Activate();
-                }
-            }
 
             void Reflect(AZ::SerializeContext* /*context*/)
             {
@@ -76,20 +51,9 @@ namespace AZ
                 {
                     // Global importer and behavior
                     g_componentDescriptors.push_back(FbxSceneBuilder::FbxImporter::CreateDescriptor());
+                    g_componentDescriptors.push_back(FbxSceneImporter::FbxImportRequestHandler::CreateDescriptor());
 
                     // Node and attribute importers
-                    g_componentDescriptors.push_back(FbxAnimationImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxBlendShapeImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxBoneImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxColorStreamImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxMaterialImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxMeshImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxSkinImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxSkinWeightsImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxTransformImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxUvMapImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxTangentStreamImporter::CreateDescriptor());
-                    g_componentDescriptors.push_back(FbxBitangentStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpBitangentStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpColorStreamImporter::CreateDescriptor());
                     g_componentDescriptors.push_back(AssImpMaterialImporter::CreateDescriptor());
@@ -134,13 +98,6 @@ namespace AZ
                     g_componentDescriptors.clear();
                     g_componentDescriptors.shrink_to_fit();
                 }
-
-                if (g_fbxImporter)
-                {
-                    g_fbxImporter->Deactivate();
-                    delete g_fbxImporter;
-                    g_fbxImporter = nullptr;
-                }
             }
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI
@@ -149,7 +106,6 @@ namespace AZ
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
 {
     AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
-    AZ::SceneAPI::FbxSceneBuilder::Initialize();
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {

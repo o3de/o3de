@@ -17,8 +17,9 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <Integration/Rendering/RenderActorInstance.h>
+#include <EMotionFX/Source/MorphTargetStandard.h>
 
-#include <LmbrCentral/Rendering/MeshComponentBus.h>
+#include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
@@ -29,6 +30,8 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -41,6 +44,7 @@ namespace AZ::RPI
 {
     class Model;
     class Buffer;
+    class StreamingImage;
 }
 
 namespace AZ
@@ -62,7 +66,6 @@ namespace AZ
             , public AzFramework::BoundsRequestBus::Handler
             , public AZ::Render::MaterialComponentNotificationBus::Handler
             , public AZ::Render::MeshComponentRequestBus::Handler
-            , public LmbrCentral::MeshComponentRequestBus::Handler
             , private AZ::Render::SkinnedMeshFeatureProcessorNotificationBus::Handler
             , private AZ::Render::SkinnedMeshOutputStreamNotificationBus::Handler
             , private LmbrCentral::SkeletalHierarchyRequestBus::Handler
@@ -129,26 +132,18 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MeshComponentRequestBus::Handler overrides...
             void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) override;
-            const Data::Asset<RPI::ModelAsset>& GetModelAsset() const override;
+            Data::Asset<const RPI::ModelAsset> GetModelAsset() const override;
             void SetModelAssetId(Data::AssetId modelAssetId) override;
             Data::AssetId GetModelAssetId() const override;
             void SetModelAssetPath(const AZStd::string& modelAssetPath) override;
             AZStd::string GetModelAssetPath() const override;
-            const AZ::Data::Instance<RPI::Model> GetModel() const override;
+            AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
-            // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
-
-            //////////////////////////////////////////////////////////////////////////
-            // LmbrCentral::MeshComponentRequestBus::Handler
-            void SetMeshAsset(const AZ::Data::AssetId& id) override;
-            AZ::Data::Asset<AZ::Data::AssetData> GetMeshAsset() override;
-            bool GetVisibility() override;
-            // SetVisibility already overridden by MeshComponentRequestBus::Handler
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -177,6 +172,11 @@ namespace AZ
             // SkinnedMeshOutputStreamNotificationBus
             void OnSkinnedMeshOutputStreamMemoryAvailable() override;
 
+            // Check to see if the skin material is being used,
+            // and if there are blend shapes with wrinkle masks that should be applied to it
+            void InitWrinkleMasks();
+            void UpdateWrinkleMasks();
+
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;
             AZ::Data::Instance<AZ::RPI::Buffer> m_boneTransforms = nullptr;
@@ -188,6 +188,12 @@ namespace AZ
             AZ::TransformInterface* m_transformInterface = nullptr;
             AZStd::set<Data::AssetId> m_waitForMaterialLoadIds;
             AZStd::vector<float> m_morphTargetWeights;
+
+            typedef AZStd::unordered_map<EMotionFX::MorphTargetStandard*, Data::Instance<RPI::Image>> MorphTargetWrinkleMaskMap;
+            AZStd::vector<MorphTargetWrinkleMaskMap> m_morphTargetWrinkleMaskMapsByLod;
+
+            AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
+            AZStd::vector<float> m_wrinkleMaskWeights;
         };
 
     } // namespace Render

@@ -29,12 +29,12 @@ namespace WhiteBox
         m_asset = asset;
     }
 
-    void WhiteBoxMeshAssetUndoCommand::SetUndoState(const AZStd::vector<AZ::u8>& undoState)
+    void WhiteBoxMeshAssetUndoCommand::SetUndoState(const Api::WhiteBoxMeshStream& undoState)
     {
         m_undoState = undoState;
     }
 
-    void WhiteBoxMeshAssetUndoCommand::SetRedoState(const AZStd::vector<AZ::u8>& redoState)
+    void WhiteBoxMeshAssetUndoCommand::SetRedoState(const Api::WhiteBoxMeshStream& redoState)
     {
         m_redoState = redoState;
     }

@@ -13,18 +13,18 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/map.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Entity/EntityContext.h>
 
 namespace AzFramework
 {
     class SceneSystemComponent
         : public AZ::Component
-        , public SceneSystemRequestBus::Handler
+        , public SceneSystemInterface::Registrar
     {
     public:
-
-        AZ_COMPONENT(SceneSystemComponent, "{7AC53AF0-BE1A-437C-BE3E-4D6A998DA945}", AZ::Component);
+        AZ_COMPONENT(SceneSystemComponent, "{7AC53AF0-BE1A-437C-BE3E-4D6A998DA945}", AZ::Component, ISceneSystem);
 
         SceneSystemComponent();
         ~SceneSystemComponent() override;
@@ -41,24 +41,26 @@ namespace AzFramework
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         //////////////////////////////////////////////////////////////////////////
-        // SceneSystemRequestsBus::Handler
+        // SceneSystemInterface overrides
         //////////////////////////////////////////////////////////////////////////
-        AZ::Outcome<Scene*, AZStd::string> CreateScene(AZStd::string_view name) override;
-        Scene* GetScene(AZStd::string_view name) override;
-        AZStd::vector<Scene*> GetAllScenes() override;
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateScene(AZStd::string_view name) override;
+        AZ::Outcome<AZStd::shared_ptr<Scene>, AZStd::string> CreateSceneWithParent(
+            AZStd::string_view name, AZStd::shared_ptr<Scene> parent) override;
+        [[nodiscard]] AZStd::shared_ptr<Scene> GetScene(AZStd::string_view name) override;
+        void IterateActiveScenes(const ActiveIterationCallback& callback) override;
+        void IterateZombieScenes(const ZombieIterationCallback& callback) override;
         bool RemoveScene(AZStd::string_view name) override;
-        bool SetSceneForEntityContextId(EntityContextId entityContextId, Scene* scene) override;
-        bool RemoveSceneForEntityContextId(EntityContextId entityContextId, Scene* scene) override;
-        Scene* GetSceneFromEntityContextId(EntityContextId entityContextId) override;
+        void ConnectToEvents(SceneEvent::Handler& handler) override;
 
     private:
+        AZ_DISABLE_COPY_MOVE(SceneSystemComponent);
 
-        AZ_DISABLE_COPY(SceneSystemComponent);
-
-        // Container of scene in order of creation
-        AZStd::vector<AZStd::unique_ptr<Scene>> m_scenes;
-
-        // Map of entity context Ids to scenes. Using a vector because lookups will be common, but the size will be small.
-        AZStd::vector<AZStd::pair<EntityContextId, Scene*>> m_entityContextToScenes;
+        AZStd::vector<AZStd::shared_ptr<Scene>> m_activeScenes;
+        AZStd::vector<AZStd::weak_ptr<Scene>> m_zombieScenes;
+        // Using a mutex around the events as other threads may respond to a new/deleted scene by making
+        // local updates and unregistering themselves. Since Scene is single threaded, no updates (other
+        // then unregistering an event) should be done from other threads though.
+        AZStd::recursive_mutex m_eventMutex;
+        SceneEvent m_events;
     };
 }

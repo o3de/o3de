@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{463D666B-3CA8-4FA5-8B4A-5FEF12B883F6}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{463D666B-3CA8-4FA5-8B4A-5FEF12B883F6}" SchemaVersion="103">
 	<VirtualAcoustics>
 		<WorkUnit Name="Factory Reflect Acoustic Textures" ID="{463D666B-3CA8-4FA5-8B4A-5FEF12B883F6}" PersistMode="Standalone">
 			<ChildrenList>

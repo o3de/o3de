@@ -23,7 +23,6 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             Legacy::CryCommon
-            Legacy::CryRender.Headers
             Gem::ImGui.Static
 )
 

@@ -519,11 +519,6 @@ void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
         }
         bDone = true;
     }
-    if (pError && pError->pItem != NULL)
-    {
-        GetIEditor()->OpenMaterialLibrary(pError->pItem);
-        bDone = true;
-    }
 
     if (!bDone && pError && GetIEditor()->GetActiveView())
     {
@@ -579,11 +574,6 @@ void CErrorReportDialog::OnReportHyperlink(const QModelIndex& index)
         GetIEditor()->ClearSelection();
         // Select this object.
         GetIEditor()->SelectObject(pError->pObject);
-        bDone = true;
-    }
-    if (pError && pError->pItem != NULL)
-    {
-        GetIEditor()->OpenMaterialLibrary(pError->pItem);
         bDone = true;
     }
 

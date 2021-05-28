@@ -44,9 +44,9 @@
                 "description": "Properties for configuring UV transforms."
             },
             {
-                "id": "ambientOcclusion",
-                "displayName": "Ambient Occlusion",
-                "description": "Properties for baked AO texture."
+                "id": "occlusion",
+                "displayName": "Occlusion",
+                "description": "Properties for baked textures that represent geometric occlusion of light."
             },
             {
                 "id": "emissive",
@@ -601,7 +601,7 @@
                     "displayName": "Opacity Mode",
                     "description": "Opacity mode for this texture.",
                     "type": "Enum",
-                    "enumValues": [ "Opaque", "Cutout", "Blended" ],
+                    "enumValues": [ "Opaque", "Cutout", "Blended", "TintedTransparent" ],
                     "defaultValue": "Opaque",
                     "connection": {
                         "type": "ShaderOption",
@@ -669,12 +669,12 @@
                     "description": "Center point for scaling and rotation transformations.",
                     "type": "vector2",
                     "vectorLabels": [ "U", "V" ],
-                    "defaultValue": [ 0.0, 0.0 ]
+                    "defaultValue": [ 0.5, 0.5 ]
                 },
                 {
                     "id": "tileU",
                     "displayName": "Tile U",
-                    "description": "Scales texture coordinates in V.",
+                    "description": "Scales texture coordinates in U.",
                     "type": "float",
                     "defaultValue": 1.0,
                     "step": 0.1
@@ -724,47 +724,89 @@
                     "step": 0.1
                 }
             ],
-            "ambientOcclusion": [
+            "occlusion": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the ambient occlusion feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining ambient occlusion area.",
+                    "id": "diffuseTextureMap",
+                    "displayName": "Diffuse AO",
+                    "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMap"
+                        "id": "m_diffuseOcclusionMap"
                     }
                 },
                 {
-                    "id": "textureMapUv",
-                    "displayName": "UV",
-                    "description": "Ambient occlusion texture map UV set",
+                    "id": "diffuseUseTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the Diffuse AO texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "diffuseTextureMapUv",
+                    "displayName": "    UV",
+                    "description": "Diffuse AO texture map UV set.",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMapUvIndex"
+                        "id": "m_diffuseOcclusionMapUvIndex"
                     }
                 },
                 {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
+                    "id": "diffuseFactor",
+                    "displayName": "    Factor",
+                    "description": "Strength factor for scaling the values of Diffuse AO",
                     "type": "Float",
                     "defaultValue": 1.0,
                     "min": 0.0,
-                    "max": 2.0,
+                    "softMax": 2.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionFactor"
+                        "id": "m_diffuseOcclusionFactor"
+                    }
+                },
+                {
+                    "id": "specularTextureMap",
+                    "displayName": "Specular Cavity",
+                    "description": "Texture map for defining occlusion area for specular lighting.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionMap"
+                    }
+                },
+                {
+                    "id": "specularUseTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the Specular Cavity texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "specularTextureMapUv",
+                    "displayName": "    UV",
+                    "description": "Specular Cavity texture map UV set.",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionMapUvIndex"
+                    }
+                },
+                {
+                    "id": "specularFactor",
+                    "displayName": "    Factor",
+                    "description": "Strength factor for scaling the values of Specular Cavity",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "softMax": 2.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionFactor"
                     }
                 }
             ],
@@ -838,13 +880,6 @@
             ],
             "parallax": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the parallax feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
                     "id": "textureMap",
                     "displayName": "Texture Map",
                     "description": "Depthmap to create parallax effect.",
@@ -853,6 +888,13 @@
                         "type": "ShaderInput",
                         "id": "m_depthMap"
                     }
+                },
+                {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
@@ -868,15 +910,28 @@
                 },
                 {
                     "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the depth values",
+                    "displayName": "Heightmap Scale",
+                    "description": "The total height of the heightmap in local model units.",
                     "type": "Float",
-                    "defaultValue": 0.0,
+                    "defaultValue": 0.05,
                     "min": 0.0,
                     "softMax": 0.1,
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_depthFactor"
+                    }
+                },
+                {
+                    "id": "offset",
+                    "displayName": "Offset",
+                    "description": "Adjusts the overall displacement amount in local model units.",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "softMin": -0.1,
+                    "softMax": 0.1,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_depthOffset"
                     }
                 },
                 {
@@ -896,7 +951,7 @@
                     "description": "Select the algorithm to use for parallax mapping.",
                     "type": "Enum",
                     "enumValues": [ "Basic", "Steep", "POM", "Relief", "ContactRefinement" ],
-                    "defaultValue": "Basic",
+                    "defaultValue": "POM",
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_parallax_algorithm"
@@ -923,6 +978,17 @@
                     "connection": {
                         "type": "ShaderOption",
                         "id": "o_parallax_enablePixelDepthOffset"
+                    }
+                },
+                {
+                    "id": "showClipping",
+                    "displayName": "Show Clipping",
+                    "description": "Highlight areas where the heightmap is clipped by the mesh surface.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_parallax_highlightClipping"
                     }
                 }
             ],
@@ -1073,7 +1139,7 @@
                     "type": "float",
                     "defaultValue": 6.0,
                     "min": 0.0,
-                    "softMax":  20.0
+                    "softMax": 20.0
                 },
                 {
                     "id": "transmissionDistortion",
@@ -1104,7 +1170,7 @@
                 }
             ],
             "irradiance": [
-                // Note: this property group is used in the DiffuseGlobalIllumination pass, it is not read by the StandardPBR shader
+                // Note: this property group is used in the DiffuseGlobalIllumination pass and not by the main forward shader
                 {
                     "id": "color",
                     "displayName": "Color",
@@ -1132,6 +1198,14 @@
         {
             "file": "./StandardPBR_ForwardPass_EDS.shader",
             "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "./StandardPBR_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "./StandardPBR_LowEndForward_EDS.shader",
+            "tag": "LowEndForward_EDS"
         },
         {
             "file": "Shaders/Shadow/Shadowmap.shader",
@@ -1203,18 +1277,18 @@
             "type": "HandleSubsurfaceScatteringParameters",
             "args": {
                 "mode": "subsurfaceScattering.transmissionMode",
-                "scale" : "subsurfaceScattering.transmissionScale",
-                "power" : "subsurfaceScattering.transmissionPower",
-                "distortion" : "subsurfaceScattering.transmissionDistortion",
-                "attenuation" : "subsurfaceScattering.transmissionAttenuation",
-                "tintColor" : "subsurfaceScattering.transmissionTint",
-                "thickness" : "subsurfaceScattering.thickness",
+                "scale": "subsurfaceScattering.transmissionScale",
+                "power": "subsurfaceScattering.transmissionPower",
+                "distortion": "subsurfaceScattering.transmissionDistortion",
+                "attenuation": "subsurfaceScattering.transmissionAttenuation",
+                "tintColor": "subsurfaceScattering.transmissionTint",
+                "thickness": "subsurfaceScattering.thickness",
                 "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor" : "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity" : "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput" : "m_scatterDistance",
-                "parametersShaderInput" : "m_transmissionParams",
-                "tintThickenssShaderInput" : "m_transmissionTintThickness"
+                "scatterDistanceColor": "subsurfaceScattering.scatterColor",
+                "scatterDistanceIntensity": "subsurfaceScattering.scatterDistance",
+                "scatterDistanceShaderInput": "m_scatterDistance",
+                "parametersShaderInput": "m_transmissionParams",
+                "tintThickenssShaderInput": "m_transmissionTintThickness"
             }
         },
         {
@@ -1223,10 +1297,6 @@
                 "textureProperty": "baseColor.textureMap",
                 "useTextureProperty": "baseColor.useTexture",
                 "dependentProperties": ["baseColor.textureMapUv", "baseColor.textureBlendMode"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_baseColor_useTexture"
             }
         },
@@ -1236,10 +1306,6 @@
                 "textureProperty": "metallic.textureMap",
                 "useTextureProperty": "metallic.useTexture",
                 "dependentProperties": ["metallic.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_metallic_useTexture"
             }
         },
@@ -1249,10 +1315,6 @@
                 "textureProperty": "specularF0.textureMap",
                 "useTextureProperty": "specularF0.useTexture",
                 "dependentProperties": ["specularF0.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_specularF0_useTexture"
             }
         },
@@ -1262,17 +1324,25 @@
                 "textureProperty": "normal.textureMap",
                 "useTextureProperty": "normal.useTexture",
                 "dependentProperties": ["normal.textureMapUv", "normal.factor", "normal.flipX", "normal.flipY"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
                 "shaderOption": "o_normal_useTexture"    
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_AoState.lua"
+                "textureProperty": "occlusion.diffuseTextureMap",
+                "useTextureProperty": "occlusion.diffuseUseTexture",
+                "dependentProperties": ["occlusion.diffuseTextureMapUv", "occlusion.diffuseFactor"],
+                "shaderOption": "o_diffuseOcclusion_useTexture"    
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "occlusion.specularTextureMap",
+                "useTextureProperty": "occlusion.specularUseTexture",
+                "dependentProperties": ["occlusion.specularTextureMapUv", "occlusion.specularFactor"],
+                "shaderOption": "o_specularOcclusion_useTexture"    
             }
         },
         {
@@ -1315,15 +1385,6 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_HandleOpacityDoubleSided.lua"
-            }
-        },
-        {
-            "type": "OverrideDrawList",
-            "args": {
-                "triggerProperty": "opacity.mode",
-                "triggerValue": "Blended",
-                "shaderIndex": 1,
-                "drawList": "transparent"
             }
         },
         {

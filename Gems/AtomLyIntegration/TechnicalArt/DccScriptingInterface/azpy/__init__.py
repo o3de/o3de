@@ -36,11 +36,10 @@ _TYPE_TAG = 'module'
 
 _PACKAGENAME = _TOOL_TAG
 
-__all__ = ['initialize_logger', 
-           'config_utils', 'render',
+__all__ = ['config_utils', 'render',
            'constants', 'return_stub', 'synthetic_env',
            'env_base', 'env_bool', 'test', 'dev',
-           'lumberyard', 'marmoset'] #'blender', 'maya', 'substance', 'houdini']
+           'lumberyard', 'marmoset']  # 'blender', 'maya', 'substance', 'houdini']
 # -------------------------------------------------------------------------
 
 
@@ -68,7 +67,10 @@ _DCCSI_DEV_MODE = env_bool.env_bool(constants.ENVAR_DCCSI_DEV_MODE, False)
 # for py2.7 (Maya) we provide this, so we must assume some bootstrapping
 # has occured, see DccScriptingInterface\\config.py (_DCCSI_PYTHON_LIB_PATH)
 
-import pathlib
+try:
+    import pathlib
+except:
+    import pathlib2 as pathlib
 from pathlib import Path
 if _G_DEBUG:
     print('DCCsi debug breadcrumb, pathlib is: {}'.format(pathlib))
@@ -81,13 +83,13 @@ _LY_DEV = os.getenv(constants.ENVAR_LY_DEV,
                                                      check_stub='engine.json'))
 
 # get/set the project name
-_LY_PROJECT_TAG = os.getenv(constants.ENVAR_LY_PROJECT,
-                            config_utils.get_current_project(_LY_DEV))
+_LY_PROJECT_NAME = os.getenv(constants.ENVAR_LY_PROJECT,
+                            config_utils.get_current_project().name)
 
 # project cache log dir path
 _DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,
                                  Path(_LY_DEV,
-                                      _LY_PROJECT_TAG,
+                                      _LY_PROJECT_NAME,
                                       'Cache',
                                      'pc', 'user', 'log', 'logs')))
 
@@ -221,7 +223,7 @@ if _G_DEBUG:
 _LOGGER.debug('MODULE_PATH: {}'.format(_MODULE_PATH))
 _LOGGER.debug('LY_DEV_PATH: {}'.format(_LY_DEV))
 _LOGGER.debug('DCCSI_PATH: {}'.format(_DCCSIG_PATH))
-_LOGGER.debug('LY_PROJECT_TAG: {}'.format(_LY_PROJECT_TAG))
+_LOGGER.debug('LY_PROJECT_TAG: {}'.format(_LY_PROJECT_NAME))
 _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 
 

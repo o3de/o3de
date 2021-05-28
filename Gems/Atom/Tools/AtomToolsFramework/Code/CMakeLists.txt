@@ -33,6 +33,7 @@ ly_add_target(
             AZ::AzQtComponents
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
+            3rdParty::Qt::Network
             3rdParty::Qt::Widgets
             3rdParty::Python
             Gem::Atom_RPI.Edit

@@ -18,8 +18,8 @@ import azlmbr.entity as entity
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 
@@ -30,6 +30,26 @@ class TestLandscapeCanvasComponentAddedRemoved(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="LandscapeCanvasComponentAddedRemoved", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that the Landscape Canvas component can be added to/removed from an entity.
+
+        Expected Behavior:
+        Closing a tabbed graph only closes the appropriate graph.
+
+        Test Steps:
+         1) Create a new level
+         2) Create a new entity
+         3) Add a Landscape Canvas component to the entity
+         4) Remove the Landscape Canvas component from the entity
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         # Create a new empty level
         self.test_success = self.create_level(

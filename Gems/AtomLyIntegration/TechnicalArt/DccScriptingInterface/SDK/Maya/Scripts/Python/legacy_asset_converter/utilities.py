@@ -17,8 +17,14 @@
 
 
 import logging as _logging
+
+try:
+    import pathlib
+except:
+    import pathlib2 as pathlib
+
 from pathlib import Path
-import pathlib
+
 from box import Box
 import os
 

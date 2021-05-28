@@ -14,6 +14,7 @@
 #define __RENDERGL_GLSLSHADER_H
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path.h>
 #include "Shader.h"
 
 // include OpenGL
@@ -45,7 +46,7 @@ namespace RenderGL
         MCORE_INLINE unsigned int GetProgram() const                                    { return mProgram; }
         bool CheckIfIsDefined(const char* attributeName);
 
-        bool Init(const char* vertexFileName, const char* pixelFileName, MCore::Array<AZStd::string>& defines);
+        bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines);
         void SetAttribute(const char* name, uint32 dim, uint32 type, uint32 stride, size_t offset) override;
 
         void SetUniform(const char* name, float value) override;
@@ -81,11 +82,11 @@ namespace RenderGL
         ShaderParameter* FindAttribute(const char* name);
         ShaderParameter* FindUniform(const char* name);
 
-        bool CompileShader(const GLenum type, unsigned int* outShader, const char* filename);
+        bool CompileShader(const GLenum type, unsigned int* outShader, AZ::IO::PathView filename);
         template<class T>
         void InfoLog(GLuint object, T func);
 
-        AZStd::string                   mFileName;
+        AZ::IO::Path                    mFileName;
 
         MCore::Array<uint32>            mActivatedAttribs;
         MCore::Array<uint32>            mActivatedTextures;

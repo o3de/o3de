@@ -192,6 +192,10 @@ namespace LegacyFramework
         // if we're in console mode, listen for CTRL+C
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, true);
 #endif
+
+        m_ptrCommandLineParser = aznew AzFramework::CommandLine();
+        m_ptrCommandLineParser->Parse(m_desc.m_argc, m_desc.m_argv);
+
         // If we don't have one create a serialize context
         if (GetSerializeContext() == nullptr)
         {

@@ -19,8 +19,8 @@ import sys
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
-import automatedtesting_shared.pyside_utils as pyside_utils
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.pyside_utils as pyside_utils
 
 
 class TestEditMenuOptions(EditorTestHelper):
@@ -64,8 +64,6 @@ class TestEditMenuOptions(EditorTestHelper):
             ("Modify", "Transform Mode", "Move"),
             ("Modify", "Transform Mode", "Rotate"),
             ("Modify", "Transform Mode", "Scale"),
-            ("Lock Selection",),
-            ("Unlock All Entities",),
             ("Editor Settings", "Global Preferences"),
             ("Editor Settings", "Graphics Settings"),
             ("Editor Settings", "Editor Settings Manager"),

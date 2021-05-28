@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <ACES/Aces.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
@@ -147,6 +148,12 @@ namespace MaterialEditor
 
         //! Get field of view
         virtual float GetFieldOfView() const = 0;
+
+        //! Set tone mapping type
+        virtual void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType operationType) = 0;
+
+        //! Get tone mapping type
+        virtual AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const = 0;
     };
 
     using MaterialViewportRequestBus = AZ::EBus<MaterialViewportRequests>;

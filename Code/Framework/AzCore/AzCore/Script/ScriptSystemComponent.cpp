@@ -699,6 +699,10 @@ Data::AssetHandler::LoadResult ScriptSystemComponent::LoadAssetData(
         script->m_scriptBuffer.resize(scriptDataLength);
         stream->Read(scriptDataLength, script->m_scriptBuffer.data());
 
+        // Clear cached references in the event of a successful load. This function has to be queued on
+        // AssetBus where NotifyAssetReloaded is also queued, to ensure its execution before NotifyAssetReloaded
+        Data::AssetBus::QueueFunction(&ScriptSystemComponent::ClearAssetReferences, this, asset.GetId());
+
         return Data::AssetHandler::LoadResult::LoadComplete;
     }
 
@@ -853,7 +857,7 @@ const char* ScriptSystemComponent::GetGroup() const
 
 const char* AZ::ScriptSystemComponent::GetBrowserIcon() const
 {
-    return "Editor/Icons/Components/LuaScript.svg";
+    return "Icons/Components/LuaScript.svg";
 }
 
 AZ::Uuid AZ::ScriptSystemComponent::GetComponentTypeId() const
@@ -933,7 +937,7 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
             ->Enum<static_cast<int>(PlatformID::PLATFORM_LINUX_64)>("Linux")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_ANDROID_64)>("Android64")
             ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_IOS)>("iOS")
-            ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_OSX)>("OSX")
+            ->Enum<static_cast<int>(PlatformID::PLATFORM_APPLE_MAC)>("Mac")
 #if defined(AZ_EXPAND_FOR_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #define AZ_RESTRICTED_PLATFORM_EXPANSION(CodeName, CODENAME, codename, PrivateName, PRIVATENAME, privatename, PublicName, PUBLICNAME, publicname, PublicAuxName1, PublicAuxName2, PublicAuxName3)\
             ->Enum<static_cast<int>(PlatformID::PLATFORM_##PUBLICNAME)>(#CodeName)

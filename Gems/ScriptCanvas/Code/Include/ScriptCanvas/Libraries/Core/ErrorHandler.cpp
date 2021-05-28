@@ -68,7 +68,7 @@ namespace ScriptCanvas
                         editContext->Class<ErrorHandler>("Error Handler", "")
                             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                                 ->Attribute(AZ::Edit::Attributes::Category, "Utilities/Debug")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/ErrorHandler.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ErrorHandler.png")
                             ;
                     }
                 }

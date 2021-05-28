@@ -13,6 +13,7 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 #include "MaterialInputs/BaseColorInput.azsli"

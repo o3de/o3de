@@ -65,7 +65,7 @@ namespace AssetProcessor
 
                 if (!AzFramework::StringFunc::Path::IsRelative(path.c_str()))
                 {
-                    if (m_platformConfig->ConvertToRelativePath(QString::fromUtf8(path.c_str()), relativePath, scanFolder, true))
+                    if (m_platformConfig->ConvertToRelativePath(QString::fromUtf8(path.c_str()), relativePath, scanFolder))
                     {
                         auto* scanFolderInfo = m_platformConfig->GetScanFolderByPath(scanFolder);
 

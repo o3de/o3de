@@ -41,6 +41,7 @@ set(FILES
     Source/BuilderSettings/PresetSettings.h
     Source/BuilderSettings/TextureSettings.cpp
     Source/BuilderSettings/TextureSettings.h
+    Source/Processing/AzDXGIFormat.h
     Source/Processing/DDSHeader.h
     Source/Processing/ImageAssetProducer.cpp
     Source/Processing/ImageAssetProducer.h
@@ -133,4 +134,8 @@ set(FILES
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.h
     Source/Compressors/CryTextureSquisher/ColorTypes.h
+    Source/Thumbnail/ImageThumbnail.cpp
+    Source/Thumbnail/ImageThumbnail.h
+    Source/Thumbnail/ImageThumbnailSystemComponent.cpp
+    Source/Thumbnail/ImageThumbnailSystemComponent.h
 )

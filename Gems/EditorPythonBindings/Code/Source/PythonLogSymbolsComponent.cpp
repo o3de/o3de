@@ -161,7 +161,7 @@ namespace EditorPythonBindings
                 bufferArg = *name;
             }
 
-            AZStd::string_view type = FetchPythonType(*behaviorMethod.GetArgument(argIndex));
+            AZStd::string type = FetchPythonTypeName(*behaviorMethod.GetArgument(argIndex));
             if (!type.empty())
             {
                 AzFramework::StringFunc::Append(bufferArg, ": ");
@@ -289,7 +289,7 @@ namespace EditorPythonBindings
             bool isBroadcast = false;
             if (sender.m_event)
             {
-                AZStd::string_view addressType = FetchPythonType(behaviorEBus->m_idParam);
+                AZStd::string addressType = FetchPythonTypeName(behaviorEBus->m_idParam);
                 if (addressType.empty())
                 {
                     AzFramework::StringFunc::Append(buffer, "(busCallType: int, busEventName: str, address: Any, args: Tuple[Any])");
@@ -338,7 +338,7 @@ namespace EditorPythonBindings
                 }
 
                 const AZ::BehaviorParameter* resultParam = behaviorMethod->GetResult();
-                AZStd::string_view returnType = FetchPythonType(*resultParam);
+                AZStd::string returnType = FetchPythonTypeName(*resultParam);
                 AZStd::string returnTypeStr = AZStd::string::format(") -> " AZ_STRING_FORMAT" \n",  AZ_STRING_ARG(returnType));
                 AzFramework::StringFunc::Append(inOutStrBuffer, returnTypeStr.c_str());
             };
@@ -664,9 +664,9 @@ namespace EditorPythonBindings
         return m_typeCache[typeId];
     }
 
-    AZStd::string_view PythonLogSymbolsComponent::FetchPythonType(const AZ::BehaviorParameter& param)
+    AZStd::string PythonLogSymbolsComponent::FetchPythonTypeName(const AZ::BehaviorParameter& param)
     {
-        AZStd::string_view pythonType = FetchPythonTypeAndTraits(param.m_typeId, param.m_traits);
+        AZStd::string pythonType = FetchPythonTypeAndTraits(param.m_typeId, param.m_traits);
 
         if (pythonType.empty())
         {

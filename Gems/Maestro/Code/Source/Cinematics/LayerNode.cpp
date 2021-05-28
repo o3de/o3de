@@ -172,8 +172,11 @@ bool CLayerNode::GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo&
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayerNode::Reflect(AZ::SerializeContext* serializeContext)
+void CLayerNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CLayerNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CLayerNode, CAnimNode>()
+            ->Version(1);
+    }
 }

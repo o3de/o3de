@@ -26,9 +26,11 @@ set(FILES
     LYPython.cmake
     LYWrappers.cmake
     Monolithic.cmake
+    Packaging.cmake
     PAL.cmake
     PALTools.cmake
     Projects.cmake
+    run_epbtest.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake
     UnitTest.cmake

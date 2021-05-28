@@ -73,6 +73,8 @@ partial ShaderResourceGroup ViewSrg
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_rgbIntensityCandelas;
         float m_bulbRadius;
+        uint3 m_shadowIndices;
+        uint m_padding;
     };
 
     StructuredBuffer<PointLight> m_pointLights;

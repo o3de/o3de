@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Public/View.h>
 
@@ -208,6 +209,42 @@ namespace AZ
 
             m_cachedRhiPipelineStates[m_currentStates.m_hash] = m_pipelineState->GetRHIPipelineState();
             m_rhiPipelineState = m_pipelineState->GetRHIPipelineState();
+        }
+
+        void DynamicDrawContext::SetScene(Scene* scene)
+        {
+            AZ_Assert(scene, "SetScene called with an invalid scene");
+            if (!scene || m_scene == scene)
+            {
+                return;
+            }
+            m_scene = scene;
+            m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+            // Reinitialize if it was initialized
+            if (m_initialized)
+            {
+                // Report warning if there were some draw data
+                AZ_Warning(
+                    "DynamicDrawContext", m_cachedDrawItems.size() == 0,
+                    "DynamicDrawContext::SetForScene should be called"
+                    " when there is no cached draw data");
+                // Clear some cached data
+                FrameEnd();
+                m_cachedRhiPipelineStates.clear();
+                // Reinitialize
+                EndInit();
+            }
+        }
+
+        void DynamicDrawContext::SetRenderPipeline(RenderPipeline* pipeline)
+        {
+            AZ_Assert(pipeline, "SetRenderPipeline called with an invalid pipeline");
+            if (!pipeline)
+            {
+                return;
+            }
+            SetScene(pipeline->GetScene());
+            m_drawFilter = pipeline->GetDrawFilterMask();
         }
 
         bool DynamicDrawContext::IsReady()
@@ -446,6 +483,7 @@ namespace AZ
                 drawItem.m_viewports = &m_viewport;
             }
 
+            drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
                 
@@ -526,6 +564,7 @@ namespace AZ
                 drawItem.m_viewports = &m_viewport;
             }
 
+            drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
 
@@ -576,6 +615,16 @@ namespace AZ
             return m_shader;
         }
 
+        void DynamicDrawContext::SetSortKey(RHI::DrawItemSortKey key)
+        {
+            m_sortKey = key;
+        }
+
+        RHI::DrawItemSortKey DynamicDrawContext::GetSortKey() const
+        {
+            return m_sortKey;
+        }
+
         void DynamicDrawContext::SubmitDrawData(ViewPtr view)
         {
             if (!m_initialized)
@@ -587,8 +636,7 @@ namespace AZ
             {
                 return;
             }
-
-            uint64_t sortKey = 0; // use the draw order as sort key. 
+ 
             for (auto& drawItemInfo : m_cachedDrawItems)
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
@@ -601,16 +649,17 @@ namespace AZ
                     drawItemInfo.m_drawItem.m_streamBufferViews = &m_cachedStreamBufferViews[drawItemInfo.m_vertexBufferViewIndex];
                 }
 
-                RHI::DrawItemKeyPair drawItemKeyPair;
-                drawItemKeyPair.m_sortKey = sortKey;
-                drawItemKeyPair.m_item = &drawItemInfo.m_drawItem;
-                view->AddDrawItem(m_drawListTag, drawItemKeyPair);
-                sortKey++;
+                RHI::DrawItemProperties drawItemProperties;
+                drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
+                drawItemProperties.m_item = &drawItemInfo.m_drawItem;
+                drawItemProperties.m_drawFilterMask = m_drawFilter;
+                view->AddDrawItem(m_drawListTag, drawItemProperties);
             }
         }
 
         void DynamicDrawContext::FrameEnd()
         {
+            m_sortKey = 0;
             m_cachedDrawItems.clear();
             m_cachedStreamBufferViews.clear();
             m_cachedIndexBufferViews.clear();

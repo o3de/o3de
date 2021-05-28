@@ -48,7 +48,7 @@ namespace RenderGL
 
 
     // add the shader to the cache (assume there are no duplicate names)
-    void ShaderCache::AddShader(const char* filename, Shader* shader)
+    void ShaderCache::AddShader(AZStd::string_view filename, Shader* shader)
     {
         mEntries.AddEmpty();
         mEntries.GetLast().mName    = filename;
@@ -57,12 +57,12 @@ namespace RenderGL
 
 
     // try to locate a shader based on its name
-    Shader* ShaderCache::FindShader(const char* filename) const
+    Shader* ShaderCache::FindShader(AZStd::string_view filename) const
     {
         const uint32 numEntries = mEntries.GetLength();
         for (uint32 i = 0; i < numEntries; ++i)
         {
-            if (AzFramework::StringFunc::Equal(mEntries[i].mName.c_str(), filename, false /* no case */)) // non-case-sensitive name compare
+            if (AzFramework::StringFunc::Equal(mEntries[i].mName, filename, false /* no case */)) // non-case-sensitive name compare
             {
                 return mEntries[i].mShader;
             }

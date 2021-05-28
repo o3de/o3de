@@ -12,9 +12,9 @@
 #include "AssetMemoryAnalyzer_precompiled.h"
 
 #include <AzCore/Debug/AssetTrackingTypesImpl.h>
+#include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <Common/Memory/VRAMDrillerBus.h>
 
 #include "AssetMemoryAnalyzerSystemComponent.h"
 
@@ -186,9 +186,6 @@ namespace AssetMemoryAnalyzer
 
     void AssetMemoryAnalyzerSystemComponent::Init()
     {
-        static_assert(AZ_ARRAY_SIZE(VRAM_CATEGORIES) == Render::Debug::VRAMAllocationCategory::VRAM_CATEGORY_NUMBER_CATEGORIES, "VRAMAllocationCategory has changed length! Fix VRAM_CATEGORIES to match.");
-        static_assert(AZ_ARRAY_SIZE(VRAM_SUBCATEGORIES) == Render::Debug::VRAMAllocationSubcategory::VRAM_SUBCATEGORY_NUMBER_SUBCATEGORIES, "VRAMAllocationSubcategory has changed length! Fix VRAM_SUBCATEGORIES to match.");
-
         m_impl->m_debugImGUI.Init(this);
         m_impl->m_exportCSV.Init(this);
         m_impl->m_exportJSON.Init(this);

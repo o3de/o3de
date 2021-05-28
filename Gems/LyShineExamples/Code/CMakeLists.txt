@@ -23,6 +23,7 @@ ly_add_target(
         PUBLIC
             Legacy::CryCommon
             Gem::LmbrCentral
+            Gem::LyShine.Static
 )
 
 ly_add_target(

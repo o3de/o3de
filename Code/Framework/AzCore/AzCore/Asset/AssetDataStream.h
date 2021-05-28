@@ -82,6 +82,10 @@ namespace AZ::Data
         //! Gets the size of data loaded (so far).
         size_t GetLoadedSize() const { return m_loadedSize; }
 
+        //! Request a cancellation of any current IO streamer requests.
+        //! Note: This is asynchronous and not guaranteed to cancel if the request is already in-process.
+        void RequestCancel();
+
     private:
         //! Perform any operations needed by all variants of Open()
         void OpenInternal(size_t assetSize, const char* streamName);

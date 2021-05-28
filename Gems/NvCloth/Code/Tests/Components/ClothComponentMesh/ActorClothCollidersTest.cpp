@@ -145,8 +145,8 @@ namespace UnitTest
         const AZStd::vector<NvCloth::CapsuleCollider>& capsuleColliders = actorClothColliders->GetCapsuleColliders();
         const AZStd::vector<uint32_t>& nativeCapsuleIndices = actorClothColliders->GetCapsuleIndices();
 
-        EXPECT_EQ(sphereColliders.size(), 1);
-        EXPECT_EQ(nativeSpheres.size(), 1);
+        ASSERT_EQ(sphereColliders.size(), 1);
+        ASSERT_EQ(nativeSpheres.size(), 1);
         EXPECT_TRUE(capsuleColliders.empty());
         EXPECT_TRUE(nativeCapsuleIndices.empty());
 
@@ -189,9 +189,9 @@ namespace UnitTest
         const AZStd::vector<uint32_t>& nativeCapsuleIndices = actorClothColliders->GetCapsuleIndices();
 
         EXPECT_TRUE(sphereColliders.empty());
-        EXPECT_EQ(nativeSpheres.size(), 2); // Each capsule produces 2 spheres
-        EXPECT_EQ(capsuleColliders.size(), 1);
-        EXPECT_EQ(nativeCapsuleIndices.size(), 2); // Each capsule is 2 indices
+        ASSERT_EQ(nativeSpheres.size(), 2); // Each capsule produces 2 spheres
+        ASSERT_EQ(capsuleColliders.size(), 1);
+        ASSERT_EQ(nativeCapsuleIndices.size(), 2); // Each capsule is 2 indices
 
         EXPECT_NEAR(capsuleColliders[0].m_height, height, Tolerance);
         EXPECT_NEAR(capsuleColliders[0].m_radius, radius, Tolerance);

@@ -46,10 +46,10 @@ namespace UnitTests
         
         m_data->m_fileProcessor = AZStd::make_unique<FileProcessor>(m_data->m_config.get());
 
-        m_data->m_scanFolder = { m_data->m_temporarySourceDir.absolutePath().toUtf8().constData(), "dev", "rootportkey", "" };
+        m_data->m_scanFolder = { m_data->m_temporarySourceDir.absolutePath().toUtf8().constData(), "dev", "rootportkey" };
         ASSERT_TRUE(m_data->m_connection.SetScanFolder(m_data->m_scanFolder));
 
-        m_data->m_config->AddScanFolder(ScanFolderInfo(m_data->m_temporarySourceDir.absolutePath(), "dev", "rootportkey", "", false, true, m_data->m_config->GetEnabledPlatforms(), 0, m_data->m_scanFolder.m_scanFolderID));
+        m_data->m_config->AddScanFolder(ScanFolderInfo(m_data->m_temporarySourceDir.absolutePath(), "dev", "rootportkey", false, true, m_data->m_config->GetEnabledPlatforms(), 0, m_data->m_scanFolder.m_scanFolderID));
 
         for (int index = 0; index < 10; ++index)
         {

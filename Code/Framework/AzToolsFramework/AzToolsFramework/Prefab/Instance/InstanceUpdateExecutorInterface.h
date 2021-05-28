@@ -31,6 +31,9 @@ namespace AzToolsFramework
 
             // Update Instances in the waiting queue.
             virtual bool UpdateTemplateInstancesInQueue() = 0;
+
+            // Remove an Instance from the waiting queue.
+            virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
         };
     }
 }

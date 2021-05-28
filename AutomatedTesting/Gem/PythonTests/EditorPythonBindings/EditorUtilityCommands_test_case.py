@@ -28,15 +28,6 @@ def testing_cvar(setMethod, methodName, label, value, compare):
         print('{} failed'.format(methodName))
 
 
-def testing_edit_mode(mode):
-    python_editor_funcs.PythonEditorBus(bus.Broadcast, 'SetEditMode', mode)
-
-    if mode == python_editor_funcs.PythonEditorBus(bus.Broadcast, 'GetEditMode'):
-        return True
-
-    return False
-
-
 def testing_axis_constraints(constraint):
     python_editor_funcs.PythonEditorBus(bus.Broadcast, 'SetAxisConstraint', constraint)
 
@@ -56,13 +47,6 @@ testing_cvar('SetCVarFromString', 'SetCVarFromString', 'e_ScreenShotFileFormat',
 
 compare = lambda lhs, rhs: rhs == int(lhs)
 testing_cvar('SetCVarFromInteger', 'SetCVarFromInteger', 'sys_LocalMemoryGeometryLimit', 33, compare)
-
-# ----- Test Edit Mode
-
-if (testing_edit_mode("SELECT") and testing_edit_mode('SELECTAREA') and
-        testing_edit_mode("MOVE") and testing_edit_mode("ROTATE") and
-        testing_edit_mode("SCALE") and testing_edit_mode("TOOL")):
-    print("edit mode works")
 
 # ----- Test Axis Constraints
 

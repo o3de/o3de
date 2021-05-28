@@ -21,14 +21,12 @@
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/MaterialBrowser/MaterialBrowserComponent.h>
 
 // Editor
 #include "MainWindow.h"
 #include "CryEdit.h"
 #include "DisplaySettingsPythonFuncs.h"
 #include "GameEngine.h"
-#include "Material/MaterialPythonFuncs.h"
 #include "PythonEditorFuncs.h"
 #include "TrackView/TrackViewPythonFuncs.h"
 #include "Include/IObjectManager.h"
@@ -65,7 +63,6 @@ namespace EditorInternal
         RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsPythonFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::MainWindowEditorFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::ObjectManagerFuncsHandler::CreateDescriptor());
-        RegisterComponentDescriptor(AzToolsFramework::MaterialPythonFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::PythonEditorComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::PythonEditorFuncsHandler::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
@@ -81,7 +78,6 @@ namespace EditorInternal
 
         components.emplace_back(azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>());
         components.emplace_back(azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>());
-        components.emplace_back(azrtti_typeid<AzToolsFramework::MaterialBrowser::MaterialBrowserComponent>());
 
         // Add new Bus-based Python Bindings
         components.emplace_back(azrtti_typeid<AzToolsFramework::DisplaySettingsComponent>());

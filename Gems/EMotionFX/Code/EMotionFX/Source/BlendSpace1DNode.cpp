@@ -75,6 +75,11 @@ namespace EMotionFX
 
     void BlendSpace1DNode::UniqueData::Reset()
     {
+        BlendSpaceNode::ClearMotionInfos(m_motionInfos);
+        m_currentSegment.m_segmentIndex = MCORE_INVALIDINDEX32;
+        m_motionCoordinates.clear();
+        m_sortedMotions.clear();
+
         Invalidate();
     }
 

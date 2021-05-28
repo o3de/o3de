@@ -22,6 +22,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphViewWidget.h>
 
 #include <EMotionFX/Source/AnimGraphBindPoseNode.h>
 
@@ -64,8 +65,10 @@ namespace EMotionFX {
         m_blendGraphWidget->OnContextMenuEvent(m_blendGraphWidget, localPoint, m_blendGraphWidget->LocalToGlobal(localPoint), m_animGraphPlugin, m_blendGraphWidget->GetActiveGraph()->GetSelectedAnimGraphNodes(), true, false, m_animGraphPlugin->GetActionFilter());
 
         // Find Action for deleting node
-        QAction* deleteAction = GetNamedAction(m_blendGraphWidget, "Delete Node");
-        ASSERT_TRUE(deleteAction) << "Could not find the 'Delete Node' action in the context menu";
+        QAction* deleteAction = GetNamedAction(m_animGraphPlugin->GetViewWidget(), FromStdString(EMStudio::AnimGraphPlugin::s_deleteSelectedNodesShortcutName));
+        ASSERT_TRUE(deleteAction) << "Could not find the '" <<
+            std::string(EMStudio::AnimGraphPlugin::s_deleteSelectedNodesShortcutName.data(), EMStudio::AnimGraphPlugin::s_deleteSelectedNodesShortcutName.size()) 
+            << "' action in the context menu";
 
         // Trigger delete
         const size_t nodeCount = activeAnimGraph->GetNumNodes();

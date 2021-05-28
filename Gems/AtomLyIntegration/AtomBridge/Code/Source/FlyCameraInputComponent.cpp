@@ -79,6 +79,12 @@ void FlyCameraInputComponent::GetProvidedServices(AZ::ComponentDescriptor::Depen
 }
 
 //////////////////////////////////////////////////////////////////////////////
+void FlyCameraInputComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+{
+    incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+}
+
+//////////////////////////////////////////////////////////////////////////////
 void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
 {
     AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);
@@ -99,8 +105,8 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
             editContext->Class<FlyCameraInputComponent>("Fly Camera Input", "The Fly Camera Input allows you to control the camera")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute("Category", "Gameplay")
-                ->Attribute("Icon", "Editor/Icons/Components/CameraRig.svg")
-                ->Attribute("ViewportIcon", "Editor/Icons/Components/Viewport/CameraRig.png")
+                ->Attribute("Icon", "Icons/Components/CameraRig.svg")
+                ->Attribute("ViewportIcon", "Icons/Components/Viewport/CameraRig.png")
                 ->Attribute("AutoExpand", true)
                 ->Attribute("AppearsInAddComponentMenu", AZ_CRC("Game", 0x232b318c))
                 ->DataElement(0, &FlyCameraInputComponent::m_moveSpeed, "Move Speed", "Speed at which the camera moves")

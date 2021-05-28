@@ -66,7 +66,7 @@ namespace ScriptCanvas
                     break;
                 }
 
-                while (m_timerCounter > m_timerDuration)
+                while (m_timerCounter >= m_timerDuration)
                 {
                     if (!m_isActive)
                     {

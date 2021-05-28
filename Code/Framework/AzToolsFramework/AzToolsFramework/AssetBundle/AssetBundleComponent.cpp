@@ -17,7 +17,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/parallel/thread.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -250,7 +250,7 @@ namespace AzToolsFramework
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "AZ::IO::FileIOBase must be ready for use.\n");
 
-        AZStd::string bundleFilePath = assetBundleSettings.m_bundleFilePath;
+        AZ::IO::Path bundleFilePath = AZ::IO::Path(AZStd::string_view{ AZ::Utils::GetEnginePath() }) / assetBundleSettings.m_bundleFilePath;
 
         AzFramework::PlatformId platformId = static_cast<AzFramework::PlatformId>(AzFramework::PlatformHelper::GetPlatformIndexFromName(assetBundleSettings.m_platform.c_str()));
 
@@ -259,22 +259,13 @@ namespace AzToolsFramework
             return false;
         }
 
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-        if (AzFramework::StringFunc::Path::IsRelative(bundleFilePath.c_str()))
-        {
-            AzFramework::StringFunc::Path::ConstructFull(appRoot, bundleFilePath.c_str(), bundleFilePath, true);
-        }
-
         AZ::u64 maxSizeInBytes = static_cast<AZ::u64>(assetBundleSettings.m_maxBundleSizeInMB * NumOfBytesInMB);
         AZ::u64 assetCatalogFileSizeBuffer = static_cast<AZ::u64>(AssetCatalogFileSizeBufferPercentage * assetBundleSettings.m_maxBundleSizeInMB * NumOfBytesInMB) / 100;
         AZ::u64 bundleSize = 0;
         AZ::u64 totalFileSize = 0;
         int bundleIndex = 0;
 
-        AZStd::string bundleFullPath = bundleFilePath;
-        AZStd::string tempBundleFilePath = bundleFullPath + "_temp";
+        AZStd::string tempBundleFilePath = bundleFilePath.Native() + "_temp";
 
         AZStd::vector<AZStd::string> dependentBundleNames;
         AZStd::vector<AZStd::string> levelDirs;
@@ -301,7 +292,7 @@ namespace AzToolsFramework
         if (fileIO->Exists(bundleFilePath.c_str()))
         {
             // This will delete both the parent bundle as well as all the dependent bundles mentioned in the manifest file of the parent bundle.
-            if (!DeleteBundleFiles(bundleFilePath))
+            if (!DeleteBundleFiles(bundleFilePath.Native()))
             {
                 return false;
             }
@@ -390,7 +381,7 @@ namespace AzToolsFramework
                     // we need to find a bundle which does not exist on disk;
                     bundleIndex++;
                     numOfTries--;
-                    dependentBundleFileName = CreateAssetBundleFileName(bundleFilePath, bundleIndex);
+                    dependentBundleFileName = CreateAssetBundleFileName(bundleFilePath.Native(), bundleIndex);
                     AzFramework::StringFunc::Path::ReplaceFullName(tempBundleFilePath, (dependentBundleFileName + tempBundleFileSuffix).c_str());
                 } while (numOfTries && fileIO->Exists(tempBundleFilePath.c_str()));
 
@@ -463,15 +454,7 @@ namespace AzToolsFramework
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
 
-        AZStd::string assetFileInfoListPath = assetBundleSettings.m_assetFileInfoListPath;
-
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-        if (AzFramework::StringFunc::Path::IsRelative(assetFileInfoListPath.c_str()))
-        {
-            AzFramework::StringFunc::Path::ConstructFull(appRoot, assetFileInfoListPath.c_str(), assetFileInfoListPath, true);
-        }
+        AZ::IO::Path assetFileInfoListPath = AZ::IO::Path{ AZStd::string_view{AZ::Utils::GetEnginePath()} } / assetBundleSettings.m_assetFileInfoListPath;
 
         if (!fileIO->Exists(assetFileInfoListPath.c_str()))
         {

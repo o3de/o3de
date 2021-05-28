@@ -258,8 +258,16 @@ namespace EMotionFX
         }
         else if (!timeValues.empty())
         {
-            if (!AZ::IsClose(timeValues.front(), startTime, AZ::Constants::FloatEpsilon) || !AZ::IsClose(timeValues.back(), endTime, AZ::Constants::FloatEpsilon))
+            if (!AZ::IsClose(timeValues.front(), startTime, AZ::Constants::FloatEpsilon))
             {
+                AZ_Error("EMotionFX", false, "No keyframe present at the start of the animation (%f). The first keyframe is at %f.",
+                    startTime, timeValues.front());
+                return false;
+            }
+            if (!AZ::IsClose(timeValues.back(), endTime, AZ::Constants::FloatEpsilon))
+            {
+                AZ_Error("EMotionFX", false, "No keyframe present at the end of the animation (%f). The last keyframe is at %f.",
+                    endTime, timeValues.back());
                 return false;
             }
         }
@@ -271,14 +279,25 @@ namespace EMotionFX
     {
         for (const JointData& jointData : m_jointData)
         {
-            if ((jointData.m_positionTrack.m_times.size() != jointData.m_positionTrack.m_values.size()) || (jointData.m_rotationTrack.m_times.size() != jointData.m_rotationTrack.m_values.size()))
+            if (jointData.m_positionTrack.m_times.size() != jointData.m_positionTrack.m_values.size())
             {
+                AZ_Error("EMotionFX", false, "Number of position keyframe times (%d) does not match the number of keyframe values (%d).",
+                    jointData.m_positionTrack.m_times.size(), jointData.m_positionTrack.m_values.size());
+                return false;
+            }
+
+            if (jointData.m_rotationTrack.m_times.size() != jointData.m_rotationTrack.m_values.size())
+            {
+                AZ_Error("EMotionFX", false, "Number of rotation keyframe times (%d) does not match the number of keyframe values (%d).",
+                    jointData.m_rotationTrack.m_times.size(), jointData.m_rotationTrack.m_values.size());
                 return false;
             }
 
 #ifndef EMFX_SCALE_DISABLED
             if (jointData.m_scaleTrack.m_times.size() != jointData.m_scaleTrack.m_values.size())
             {
+                AZ_Error("EMotionFX", false, "Number of scale keyframe times (%d) does not match the number of keyframe values (%d).",
+                    jointData.m_scaleTrack.m_times.size(), jointData.m_scaleTrack.m_values.size());
                 return false;
             }
 
@@ -288,7 +307,8 @@ namespace EMotionFX
             }
 #endif
 
-            if (!VerifyKeyTrackTimeIntegrity(jointData.m_positionTrack.m_times) || !VerifyKeyTrackTimeIntegrity(jointData.m_rotationTrack.m_times))
+            if (!VerifyKeyTrackTimeIntegrity(jointData.m_positionTrack.m_times) ||
+                !VerifyKeyTrackTimeIntegrity(jointData.m_rotationTrack.m_times))
             {
                 return false;
             }
@@ -300,7 +320,8 @@ namespace EMotionFX
         bool firstCheck = true;
         for (const JointData& jointData : m_jointData)
         {
-            if (!VerifyStartEndTimeIntegrity(jointData.m_positionTrack.m_times, firstCheck, startTime, endTime) || !VerifyStartEndTimeIntegrity(jointData.m_rotationTrack.m_times, firstCheck, startTime, endTime))
+            if (!VerifyStartEndTimeIntegrity(jointData.m_positionTrack.m_times, firstCheck, startTime, endTime) ||
+                !VerifyStartEndTimeIntegrity(jointData.m_rotationTrack.m_times, firstCheck, startTime, endTime))
             {
                 return false;
             }
@@ -317,6 +338,8 @@ namespace EMotionFX
         {
             if (morphData.m_track.m_times.size() != morphData.m_track.m_values.size())
             {
+                AZ_Error("EMotionFX", false, "Number of morph keyframe times (%d) does not match the number of keyframe values (%d).",
+                    morphData.m_track.m_times.size(), morphData.m_track.m_values.size());
                 return false;
             }
 
@@ -333,7 +356,17 @@ namespace EMotionFX
 
         for (const FloatData& floatData : m_floatData)
         {
-            if (floatData.m_track.m_times.size() != floatData.m_track.m_values.size() || !VerifyStartEndTimeIntegrity(floatData.m_track.m_times, firstCheck, startTime, endTime) || !VerifyKeyTrackTimeIntegrity(floatData.m_track.m_times))
+            if (floatData.m_track.m_times.size() != floatData.m_track.m_values.size())
+            {
+                AZ_Error("EMotionFX", false, "Number of float keyframe times (%d) does not match the number of keyframe values (%d).",
+                    floatData.m_track.m_times.size(), floatData.m_track.m_values.size());
+                return false;
+            }
+            if (!VerifyStartEndTimeIntegrity(floatData.m_track.m_times, firstCheck, startTime, endTime))
+            {
+                return false;
+            }
+            if (!VerifyKeyTrackTimeIntegrity(floatData.m_track.m_times))
             {
                 return false;
             }
@@ -342,10 +375,48 @@ namespace EMotionFX
         return true;
     }
 
+    template<class KeyTrackType>
+    void NonUniformMotionData::FixMissingEndKeyframes(KeyTrackType& keytrack, float endTimeToMatch)
+    {
+        if (keytrack.m_times.empty() || keytrack.m_values.empty())
+        {
+            return;
+        }
+
+        if (!AZ::IsClose(keytrack.m_times.back(), endTimeToMatch, AZ::Constants::FloatEpsilon))
+        {
+            keytrack.m_times.emplace_back(endTimeToMatch);
+            keytrack.m_values.emplace_back(keytrack.m_values.back());
+        }
+    }
+
+    void NonUniformMotionData::FixMissingEndKeyframes()
+    {
+        UpdateDuration();
+
+        for (JointData& jointData : m_jointData)
+        {
+            FixMissingEndKeyframes(jointData.m_positionTrack, m_duration);
+            FixMissingEndKeyframes(jointData.m_rotationTrack, m_duration);
+
+#ifndef EMFX_SCALE_DISABLED
+            FixMissingEndKeyframes(jointData.m_scaleTrack, m_duration);
+#endif
+        }
+
+        for (FloatData& morphData : m_morphData)
+        {
+            FixMissingEndKeyframes(morphData.m_track, m_duration);
+        }
+
+        for (FloatData& floatData : m_floatData)
+        {
+            FixMissingEndKeyframes(floatData.m_track, m_duration);
+        }
+    }
+
     void NonUniformMotionData::UpdateDuration()
     {
-        AZ_Assert(VerifyIntegrity(), "Data integrity issue!");
-
         for (const JointData& jointData : m_jointData)
         {
             if (!jointData.m_positionTrack.m_times.empty())
@@ -657,6 +728,8 @@ namespace EMotionFX
         {
             if (curTime < prevKeyTime)
             {
+                AZ_Error("EMotionFX", false, "Keyframe times need to be ascending. Current keyframe time (%f) is smaller than the previous (%f).",
+                    curTime, prevKeyTime);
                 return false;
             }
             prevKeyTime = curTime;

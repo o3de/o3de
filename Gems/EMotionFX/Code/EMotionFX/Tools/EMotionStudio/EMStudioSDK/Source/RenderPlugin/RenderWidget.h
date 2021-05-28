@@ -96,6 +96,8 @@ namespace EMStudio
         RenderWidget(RenderPlugin* renderPlugin, RenderViewWidget* viewWidget);
         virtual ~RenderWidget();
 
+        void CreateActions();
+
         // main render callback
         virtual void Render() = 0;
         virtual void Update() = 0;
@@ -132,8 +134,6 @@ namespace EMStudio
         void OnMousePressEvent(QWidget* renderWidget, QMouseEvent* event);
         void OnMouseReleaseEvent(QWidget* renderWidget, QMouseEvent* event);
         void OnWheelEvent(QWidget* renderWidget, QWheelEvent* event);
-        void OnKeyPressEvent(QWidget* renderWidget, QKeyEvent* event);
-        void OnKeyReleaseEvent(QWidget* renderWidget, QKeyEvent* event);
         void OnContextMenuEvent(QWidget* renderWidget, bool shiftPressed, bool altPressed, int32 localMouseX, int32 localMouseY, QPoint globalMousePos);
 
     protected:

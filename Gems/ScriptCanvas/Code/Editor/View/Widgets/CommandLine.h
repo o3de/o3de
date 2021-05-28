@@ -25,6 +25,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Console/Console.h>
 #endif
 
 namespace Ui
@@ -36,10 +37,49 @@ namespace ScriptCanvasEditor
 {
     namespace Widget
     {
+        class Command
+        {
+        public:
+            using Functor = AZStd::function<void(AZStd::vector<AZStd::string>)>;
+
+            Command(const AZStd::string& name, const AZStd::string& description, Functor functor)
+                : m_name(name)
+                , m_description(description)
+                , m_functor(functor)
+            {}
+
+            void operator()(const AZStd::vector<AZStd::string>& args)
+            {
+                m_functor(args);
+            }
+
+            const AZStd::string& GetName() const { return m_name; }
+            const AZStd::string& GetDescription() const { return m_description; }
+
+        private:
+            AZStd::string m_name;
+            AZStd::string m_description;
+            Functor m_functor;
+        };
+
+        using CommandRegistry = AZStd::unordered_map<AZStd::string, AZStd::unique_ptr<Command>>;
+
+        struct ScriptCanvasCommandLineRequests : public AZ::EBusTraits
+        {
+            virtual void AddCommand(const AZStd::string commandName, const AZStd::string description, Command::Functor) = 0;
+            virtual void Invoke(const char* commandName) = 0;
+            virtual void InvokeWithArguments(const char* commandName, const AZStd::vector<AZStd::string>&) = 0;
+
+            using CommandNameList = AZStd::list<AZStd::pair<AZStd::string, AZStd::string>>;
+            virtual CommandNameList GetCommands() = 0;
+        };
+        using ScriptCanvasCommandLineRequestBus = AZ::EBus<ScriptCanvasCommandLineRequests>;
+
         // TODO #lsempe: this deserves its own file
         // CommandListDataModel
         /////////////////////////////////////////////////////////////////////////////////////////////
         class CommandListDataModel : public QAbstractTableModel
+            , ScriptCanvasCommandLineRequestBus::Handler
         {
             Q_OBJECT
 
@@ -49,9 +89,9 @@ namespace ScriptCanvasEditor
 
             enum ColumnIndex
             {
-                Command,
-                Description,
-                Trail,
+                CommandIndex,
+                DescriptionIndex,
+                TrailIndex,
                 Count
             };
 
@@ -65,6 +105,8 @@ namespace ScriptCanvasEditor
             };
 
             CommandListDataModel(QWidget* parent = nullptr);
+            ~CommandListDataModel() override;
+
             QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
             QModelIndex parent(const QModelIndex &child) const override;
             int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -75,10 +117,62 @@ namespace ScriptCanvasEditor
 
             bool HasMatches(const AZStd::string& input);
 
+            struct Entry
+            {
+                AZ::Uuid m_type;
+                AZStd::string m_command;
+
+                Entry()
+                {
+                    m_type = AZ::Uuid::CreateNull();
+                }
+            };
+
         protected:
 
-            AZStd::vector<AZ::Uuid> m_nodeTypes;
+            AZStd::vector<Entry> m_entries;
 
+            static CommandRegistry m_commands;
+
+            void AddCommand(const AZStd::string commandName, const AZStd::string description, Command::Functor f) override
+            {
+                if (m_commands.find(commandName) == m_commands.end())
+                {
+                    m_commands[commandName] = AZStd::make_unique<Command>(commandName, description, f);
+                    Entry entry;
+                    entry.m_command = commandName;
+                    entry.m_type = AZ::Uuid::CreateNull();
+                    m_entries.emplace_back(entry);
+                }
+            }
+
+            void Invoke(const char* commandName) override
+            {
+                auto command = m_commands.find(commandName);
+                if (command != m_commands.end())
+                {
+                    command->second->operator()({});
+                }
+            }
+
+            void InvokeWithArguments(const char* commandName, const AZStd::vector<AZStd::string>& args) override
+            {
+                auto command = m_commands.find(commandName);
+                if (command != m_commands.end())
+                {
+                    command->second->operator()(args);
+                }
+            }
+
+            ScriptCanvasCommandLineRequests::CommandNameList GetCommands() override
+            {
+                ScriptCanvasCommandLineRequests::CommandNameList commands;
+                for (auto& command : m_commands)
+                {
+                    commands.push_back(AZStd::make_pair(command.second->GetName(), command.second->GetDescription()));
+                }
+                return commands;
+            }
         };
 
         class CommandListDataProxyModel : public QSortFilterProxyModel
@@ -88,7 +182,7 @@ namespace ScriptCanvasEditor
         public:
             AZ_CLASS_ALLOCATOR(CommandListDataProxyModel, AZ::SystemAllocator, 0);
 
-            CommandListDataProxyModel(QObject* parent = nullptr);
+            CommandListDataProxyModel(CommandListDataModel* commandListData, QObject* parent = nullptr);
 
             bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 

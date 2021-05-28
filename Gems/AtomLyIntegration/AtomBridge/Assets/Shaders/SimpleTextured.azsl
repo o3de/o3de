@@ -103,4 +103,4 @@ PSOutput MainPS(VSOutput IN)
 
     OUT.m_color.a = opacity;
     return OUT;
-}; 
+};

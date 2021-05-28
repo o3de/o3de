@@ -25,13 +25,24 @@ namespace AWSCore
         : AWSCoreInternalRequestBus::Handler
     {
     public:
-        static constexpr const char AWSCORE_CONFIGURATION_FILENAME[] = "awscoreconfiguration.setreg";
+        static constexpr const char AWSCoreConfigurationName[] = "AWSCoreConfiguration";
+        static constexpr const char AWSCoreConfigurationFileName[] = "awscoreconfiguration.setreg";
 
-        static constexpr const char AWSCORE_RESOURCE_MAPPING_CONFIG_FOLDERNAME[] = "Config";
-        static constexpr const char AWSCORE_RESOURCE_MAPPING_CONFIG_FILENAME_KEY[] = "/AWSCore/ResourceMappingConfigFileName";
+        static constexpr const char AWSCoreResourceMappingConfigFolderName[] = "Config";
+        static constexpr const char AWSCoreResourceMappingConfigFileNameKey[] = "/AWSCore/ResourceMappingConfigFileName";
 
-        static constexpr const char AWSCORE_DEFAULT_PROFILE_NAME[] = "default";
-        static constexpr const char AWSCORE_PROFILENAME_KEY[] = "/AWSCore/ProfileName";
+        static constexpr const char AWSCoreDefaultProfileName[] = "default";
+        static constexpr const char AWSCoreProfileNameKey[] = "/AWSCore/ProfileName";
+
+        static constexpr const char ProjectSourceFolderNotFoundErrorMessage[] =
+            "Failed to get project source folder path.";
+        static constexpr const char ProfileNameNotFoundErrorMessage[] =
+            "Failed to get profile name, return default value instead.";
+        static constexpr const char ResourceMappingFileNameNotFoundErrorMessage[] =
+            "Failed to get resource mapping config file name, return empty value instead.";
+        static constexpr const char SettingsRegistryLoadFailureErrorMessage[] =
+            "Failed to load AWSCore settings registry file.";
+
 
         AWSCoreConfiguration();
         ~AWSCoreConfiguration() = default;
@@ -54,6 +65,9 @@ namespace AWSCore
 
         // Parse values from project .setreg file
         void ParseSettingsRegistryValues();
+
+        // Reset settings registry data
+        void ResetSettingsRegistryData();
 
         AZStd::string m_sourceProjectFolder;
         AZ::SettingsRegistryImpl m_settingsRegistry;

@@ -11,6 +11,7 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
@@ -22,7 +23,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <source/utils/utils.h>
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalogManager.h>
-
+#endif
 namespace AssetBundler
 {
     struct SeedsParams
@@ -161,16 +162,18 @@ namespace AssetBundler
     };
 
     class ApplicationManager
-        : public AZ::Debug::TraceMessageBus::Handler
+        : public QObject
+        , public AZ::Debug::TraceMessageBus::Handler
         , public AzToolsFramework::ToolsApplication
     {
+        Q_OBJECT
     public:
-        explicit ApplicationManager(int* argc, char*** argv);
-        ~ApplicationManager();
+        explicit ApplicationManager(int* argc, char*** argv, QObject* parent = 0);
+        virtual ~ApplicationManager();
 
-        void Init();
+        virtual bool Init();
         void DestroyApplication();
-        bool Run();
+        virtual bool Run();
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // AzFramework::Application overrides

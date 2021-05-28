@@ -33,8 +33,12 @@ namespace MaterialEditor
         // MaterialViewportNotificationBus::Handler overrides...
         void OnShadowCatcherEnabledChanged([[maybe_unused]] bool enable) override;
         void OnGridEnabledChanged([[maybe_unused]] bool enable) override;
+        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
 
         QAction* m_toggleGrid = {};
         QAction* m_toggleShadowCatcher = {};
+
+        AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QString> m_operationNames;
+        AZStd::unordered_map<AZ::Render::DisplayMapperOperationType, QAction*> m_operationActions;
     };
 } // namespace MaterialEditor

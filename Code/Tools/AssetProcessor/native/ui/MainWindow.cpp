@@ -32,6 +32,7 @@
 
 #include <native/resourcecompiler/JobsModel.h>
 #include "native/ui/ui_MainWindow.h"
+#include "native/ui/JobTreeViewItemDelegate.h"
 
 
 #include "../utilities/GUIApplicationManager.h"
@@ -221,6 +222,7 @@ void MainWindow::Activate()
     ui->jobTreeView->setModel(m_jobSortFilterProxy);
     ui->jobTreeView->setSortingEnabled(true);
     ui->jobTreeView->header()->setDefaultAlignment(Qt::AlignVCenter | Qt::AlignHCenter);
+    ui->jobTreeView->setItemDelegate(new AssetProcessor::JobTreeViewItemDelegate(ui->jobTreeView));
 
     ui->jobTreeView->setToolTip(tr("Click to view Job Log"));
 

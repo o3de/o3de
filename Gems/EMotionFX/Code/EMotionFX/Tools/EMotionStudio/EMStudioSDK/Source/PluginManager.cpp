@@ -136,7 +136,6 @@ namespace EMStudio
         mActivePlugins.push_back(newPlugin);
 
         newPlugin->Init();
-        newPlugin->RegisterKeyboardShortcuts();
 
         return newPlugin;
     }

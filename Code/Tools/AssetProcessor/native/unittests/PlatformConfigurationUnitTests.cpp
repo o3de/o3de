@@ -64,39 +64,39 @@ void PlatformConfigurationTests::StartTest()
 
         PlatformConfiguration config;
         config.EnablePlatform({ "pc",{ "desktop", "host" } }, true);
-        config.EnablePlatform({ "es3",{ "mobile", "android" } }, true);
+        config.EnablePlatform({ "android",{ "mobile", "android" } }, true);
         config.EnablePlatform({ "fandago",{ "console" } }, false);
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
 
-        //                                         PATH               DisplayName  PortKey outputfolder  root   recurse  platforms,      isunittesting
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"),   "", "sf3",  "",           false, false,   platforms), true); // subfolder 3 overrides subfolder2
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"),   "", "sf4",  "",           false, true,    platforms), true); // subfolder 2 overrides subfolder1
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"),   "", "sf1",  "subfolder1", false, true,    platforms), true); // subfolder1 overrides root
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"),   "", "sf4",  "",           false, true,    platforms), true); // subfolder4 overrides subfolder5
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder5"),   "", "sf5",  "b/c",        false, true,    platforms), true); // subfolder5 overrides subfolder6
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder6"), "", "sf6", "b/c",           false, true,    platforms), true); // subfolder6 overrides subfolder7
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder7"), "", "sf7", "",              false, true,    platforms), true); // subfolder7 overrides subfolder8
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder8/x"), "", "sf8", "",            false, true,    platforms), true); // subfolder8 overrides root
-        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),       "temp", "temp", "",           true, false,    platforms), true); // add the root
+        //                                         PATH               DisplayName  PortKey root   recurse  platforms,      isunittesting
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder3"),   "", "sf3",  false, false,   platforms), true); // subfolder 3 overrides subfolder2
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"),   "", "sf4",  false, true,    platforms), true); // subfolder 2 overrides subfolder1
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"),   "", "sf1",  false, true,    platforms), true); // subfolder1 overrides root
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder4"),   "", "sf4",  false, true,    platforms), true); // subfolder4 overrides subfolder5
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder5"),   "", "sf5",  false, true,    platforms), true); // subfolder5 overrides subfolder6
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder6"), "", "sf6", false, true,    platforms), true); // subfolder6 overrides subfolder7
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder7"), "", "sf7", false, true,    platforms), true); // subfolder7 overrides subfolder8
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder8/x"), "", "sf8", false, true,    platforms), true); // subfolder8 overrides root
+        config.AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),       "temp", "temp", true, false,    platforms), true); // add the root
 
         // these are checked for later.
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("GameName"),             "gn",    "",          "", false, true, platforms), true);
-        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("GameNameButWithExtra"), "gnbwe", "", "WithExtra", false, true, platforms), true);
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("GameName"),             "gn",    "", false, true, platforms), true);
+        config.AddScanFolder(ScanFolderInfo(tempPath.filePath("GameNameButWithExtra"), "gnbwe", "", false, true, platforms), true);
 
 
 
         AssetRecognizer rec;
         AssetPlatformSpec specpc;
-        AssetPlatformSpec speces3;
+        AssetPlatformSpec specandroid;
         AssetPlatformSpec specfandago; 
         specpc.m_extraRCParams = ""; // blank must work
-        speces3.m_extraRCParams = "testextraparams";
+        specandroid.m_extraRCParams = "testextraparams";
 
         rec.m_name = "txt files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("es3", speces3);
+        rec.m_platformSpecs.insert("android", specandroid);
         rec.m_platformSpecs.insert("fandago", specfandago); 
         config.AddRecognizer(rec);
 
@@ -111,7 +111,7 @@ void PlatformConfigurationTests::StartTest()
 
         UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms().size() == 2);
         UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms()[0].m_identifier == "pc");
-        UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms()[1].m_identifier == "es3");
+        UNIT_TEST_EXPECT_TRUE(config.GetEnabledPlatforms()[1].m_identifier == "android");
 
         UNIT_TEST_EXPECT_TRUE(config.GetScanFolderCount() == 11);
         UNIT_TEST_EXPECT_FALSE(config.GetScanFolderAt(0).IsRoot());
@@ -151,7 +151,7 @@ void PlatformConfigurationTests::StartTest()
         UNIT_TEST_EXPECT_TRUE(config.GetOverridingFile("rootfile3.txt", tempPath.absolutePath()) == tempPath.absoluteFilePath("subfolder3/rootfile3.txt"));
         UNIT_TEST_EXPECT_TRUE(config.GetOverridingFile("subfolder1/whatever.txt", tempPath.filePath("subfolder1")) == QString());
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(config.GetOverridingFile("subfolder1/override.txt", tempPath.filePath("subfolder1"))) == AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder2/subfolder1/override.txt")));
-        UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(config.GetOverridingFile("b/c/a/testfile.txt", tempPath.filePath("subfolder6"))) == AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder5/a/testfile.txt")));
+        UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(config.GetOverridingFile("a/testfile.txt", tempPath.filePath("subfolder6"))) == AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder4/a/testfile.txt")));
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(config.GetOverridingFile("a/testfile.txt", tempPath.filePath("subfolder7"))) == AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder4/a/testfile.txt")));
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(config.GetOverridingFile("a/testfile.txt", tempPath.filePath("subfolder8/x"))) == AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder4/a/testfile.txt")));
 
@@ -183,7 +183,6 @@ void PlatformConfigurationTests::StartTest()
         // different regex rule should not interfere
         UNIT_TEST_EXPECT_TRUE(config.FindFirstMatchingFile("test/test.format") == tempPath.filePath("subfolder1/test/test.format"));
 
-        UNIT_TEST_EXPECT_TRUE(config.FindFirstMatchingFile("b/c/a/testfile.txt") == tempPath.filePath("subfolder5/a/testfile.txt"));
         UNIT_TEST_EXPECT_TRUE(config.FindFirstMatchingFile("a/testfile.txt") == tempPath.filePath("subfolder4/a/testfile.txt"));
 
         // ---------------------------- GetScanFolderForFile -----------------
@@ -197,15 +196,6 @@ void PlatformConfigurationTests::StartTest()
         // test of root files in actual root folder:
         UNIT_TEST_EXPECT_TRUE(config.GetScanFolderForFile(tempPath.filePath("rootfile2.txt")));
         UNIT_TEST_EXPECT_TRUE(config.GetScanFolderForFile(tempPath.filePath("rootfile2.txt"))->ScanPath() == tempPath.absolutePath());
-
-        // test of output prefix lookup
-        UNIT_TEST_EXPECT_TRUE(config.GetScanFolderForFile(tempPath.filePath("subfolder1/whatever.txt"))->GetOutputPrefix() == "subfolder1");
-
-        // make sure that it does not mistake the GameName folder and the GameNameWithExtra folder for each other.
-
-        UNIT_TEST_EXPECT_TRUE(config.GetScanFolderForFile(tempPath.filePath("GameNameButWithExtra/somefile.meo"))->GetOutputPrefix() == "WithExtra");
-        UNIT_TEST_EXPECT_TRUE(config.GetScanFolderForFile(tempPath.filePath("GameName/otherfile.meo"))->GetOutputPrefix() == "");
-
 
         // -------------------------- ConvertToRelativePath  ------------------------------
 
@@ -238,9 +228,9 @@ void PlatformConfigurationTests::StartTest()
         UNIT_TEST_EXPECT_TRUE(fileName == "aaa/bbb/ccc/ddd/basefile.txt");
         UNIT_TEST_EXPECT_TRUE(scanFolderPath == tempPath.filePath("subfolder2"));
 
-        // verify that output relative paths include output prefix
+        // verify that output relative paths
         UNIT_TEST_EXPECT_TRUE(config.ConvertToRelativePath(tempPath.absoluteFilePath("subfolder1/whatever.txt"), fileName, scanFolderPath));
-        UNIT_TEST_EXPECT_TRUE(fileName == "subfolder1/whatever.txt");
+        UNIT_TEST_EXPECT_TRUE(fileName == "whatever.txt");
         UNIT_TEST_EXPECT_TRUE(scanFolderPath == tempPath.filePath("subfolder1"));
     }
 

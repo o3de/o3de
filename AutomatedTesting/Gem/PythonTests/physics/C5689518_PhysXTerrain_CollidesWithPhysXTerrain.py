@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5689518
 # Test Case Title : PhysX entities collide with PhysX Terrain
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689518
+
 # A ball is suspended slightly over PhysX Terrain to check that it collides when dropped
 
 
@@ -58,8 +58,8 @@ def C5689518_PhysXTerrain_CollidesWithPhysXTerrain():
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     # Global time out
     TIME_OUT = 1.0
@@ -120,5 +120,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5689518_PhysXTerrain_CollidesWithPhysXTerrain)

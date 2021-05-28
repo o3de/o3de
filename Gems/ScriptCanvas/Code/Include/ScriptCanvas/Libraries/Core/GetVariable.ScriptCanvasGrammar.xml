@@ -6,7 +6,7 @@
 	       PreferredClassName="Get Variable"
            Uuid="{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Version="0"
            GeneratePropertyFriend="True"
            Description="Node for referencing a property within the graph">

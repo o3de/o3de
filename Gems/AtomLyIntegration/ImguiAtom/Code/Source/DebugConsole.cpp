@@ -126,7 +126,12 @@ namespace AZ
         SetFilter(inputFilter);
 
         // Bind our custom log handler.
-        AZ::Interface<AZ::ILogger>::Get()->BindLogHandler(m_logHandler);
+        AZ::ILogger* loggerInstance = AZ::Interface<AZ::ILogger>::Get();
+        AZ_Assert(loggerInstance, "Failed to get ILogger instance. Log handler not bound.")
+        if (loggerInstance)
+        {
+            loggerInstance->BindLogHandler(m_logHandler);
+        }
 
         // Connect to receive render tick events.
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();

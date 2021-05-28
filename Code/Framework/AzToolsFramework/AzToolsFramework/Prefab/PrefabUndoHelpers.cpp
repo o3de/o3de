@@ -32,6 +32,28 @@ namespace AzToolsFramework
                 state->SetParent(undoBatch);
                 state->Redo();
             }
+
+            LinkId CreateLink(
+                TemplateId sourceTemplateId, TemplateId targetTemplateId, PrefabDom patch,
+                const InstanceAlias& instanceAlias, UndoSystem::URSequencePoint* undoBatch)
+            {
+                auto linkAddUndo = aznew PrefabUndoInstanceLink("Create Link");
+                linkAddUndo->Capture(targetTemplateId, sourceTemplateId, instanceAlias, AZStd::move(patch), InvalidLinkId);
+                linkAddUndo->SetParent(undoBatch);
+                linkAddUndo->Redo();
+
+                return linkAddUndo->GetLinkId();
+            }
+
+            void RemoveLink(
+                TemplateId sourceTemplateId, TemplateId targetTemplateId, const InstanceAlias& instanceAlias, LinkId linkId,
+                PrefabDom linkPatches, UndoSystem::URSequencePoint* undoBatch)
+            {
+                auto linkRemoveUndo = aznew PrefabUndoInstanceLink("Remove Link");
+                linkRemoveUndo->Capture(targetTemplateId, sourceTemplateId, instanceAlias, AZStd::move(linkPatches), linkId);
+                linkRemoveUndo->SetParent(undoBatch);
+                linkRemoveUndo->Redo();
+            }
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

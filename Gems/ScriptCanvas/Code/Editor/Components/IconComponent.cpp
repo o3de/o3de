@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
 {
     AZStd::string IconComponent::LookupClassIcon(const AZ::Uuid& classId)
     {
-        AZStd::string iconPath  = "Editor/Icons/ScriptCanvas/Placeholder.png";
+        AZStd::string iconPath  = "Icons/ScriptCanvas/Placeholder.png";
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);

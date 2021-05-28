@@ -11,6 +11,8 @@
 */
 #pragma once
 
+#include <ITimer.h>
+
 //! Simple stub timer that exposes a single simple interface for setting the current time.
 class StubTimer
     : public ITimer

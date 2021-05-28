@@ -507,6 +507,7 @@ namespace ScriptCanvas
 
             static UserInParseTopologyResult ParseUserInTolopology(size_t nodelingsOutCount, size_t leavesWithoutNodelingsCount);
 
+            size_t m_outIndexCount = 0;
             ExecutionTreePtr m_start;
             AZStd::vector<const Nodes::Core::Start*> m_startNodes;
             ScopePtr m_graphScope;

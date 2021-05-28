@@ -18,7 +18,6 @@
  * rather than transmit.
  **/
 
-#include <Atom/Features/PBR/Surface.azsli>
 #include <Atom/RPI/Math.azsli>
 #include "Ggx.azsli"
 #include "Fresnel.azsli"
@@ -79,9 +78,6 @@ float3 DiffuseTitanfall(float roughnessA, float3 albedo, float3 normal, float3 d
 
     return albedo * (single + albedo * multi) * NdotL;
 }
-
-
-
 
 
 // ------- Specular Lighting -------

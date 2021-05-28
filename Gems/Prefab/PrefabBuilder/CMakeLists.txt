@@ -38,23 +38,6 @@ ly_add_target(
             Gem::PrefabBuilder.Static
 )
 
-ly_add_target(
-    NAME PrefabBuilder.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-    NAMESPACE Gem
-    FILES_CMAKE
-        prefabbuilder_tests_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzTest
-            Gem::PrefabBuilder.Static
-)
-ly_add_googletest(
-    NAME Gem::PrefabBuilder.Tests
-)
-
 ly_add_target_dependencies(
     TARGETS
         AssetBuilder
@@ -63,3 +46,22 @@ ly_add_target_dependencies(
     DEPENDENT_TARGETS
         Gem::PrefabBuilder
 )
+
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME PrefabBuilder.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            prefabbuilder_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                Gem::PrefabBuilder.Static
+    )
+    ly_add_googletest(
+        NAME Gem::PrefabBuilder.Tests
+    )
+endif()

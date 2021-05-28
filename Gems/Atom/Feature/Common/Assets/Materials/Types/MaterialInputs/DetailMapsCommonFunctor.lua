@@ -35,16 +35,16 @@ end
 function Process(context)
     local isFeatureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailLayer")
     
-    local blendMaskTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.blendDetailMask")
+    local blendMaskTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.blendDetailMask")
     local blendMaskTextureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailMaskTexture")
     context:SetShaderOptionValue_bool("o_detail_blendMask_useTexture", isFeatureEnabled and blendMaskTextureEnabled and blendMaskTexture ~= nil)
 
     local baseColorDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableBaseColor")
-    local baseColorDetailTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.baseColorDetailMap")
+    local baseColorDetailTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.baseColorDetailMap")
     context:SetShaderOptionValue_bool("o_detail_baseColor_useTexture", isFeatureEnabled and baseColorDetailEnabled and baseColorDetailTexture ~= nil)
     
     local normalDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableNormals")
-    local normalDetailTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.normalDetailMap")
+    local normalDetailTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.normalDetailMap")
     context:SetShaderOptionValue_bool("o_detail_normal_useTexture", isFeatureEnabled and normalDetailEnabled and normalDetailTexture ~= nil)
 end
 
@@ -78,7 +78,7 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("detailUV.rotateDegrees", mainVisibility)
     context:SetMaterialPropertyVisibility("detailUV.scale", mainVisibility)
     
-    local blendMaskTexture = context:GetMaterialPropertyValue_image("detailLayerGroup.blendDetailMask")
+    local blendMaskTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.blendDetailMask")
     if(nil == blendMaskTexture) then
         context:SetMaterialPropertyVisibility("detailLayerGroup.enableDetailMaskTexture", MaterialPropertyVisibility_Hidden)
         context:SetMaterialPropertyVisibility("detailLayerGroup.blendDetailMaskUv", MaterialPropertyVisibility_Hidden)

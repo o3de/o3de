@@ -26,4 +26,5 @@ end
 function Process(context)
     local enable = context:GetMaterialPropertyValue_bool("clearCoat.enable")
     context:SetShaderOptionValue_bool("o_clearCoat_feature_enabled", enable)
+    context:SetShaderOptionValue_bool("o_materialUseForwardPassIBLSpecular", enable)
 end

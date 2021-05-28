@@ -32,8 +32,7 @@ namespace AzToolsFramework
 
         void ThumbnailerComponent::Activate()
         {
-            int thumbnailSize = qApp->style()->pixelMetric(QStyle::PM_SmallIconSize);
-            RegisterContext(ThumbnailContext::DefaultContext, thumbnailSize);
+            RegisterContext(ThumbnailContext::DefaultContext);
             BusConnect();
         }
 
@@ -62,10 +61,10 @@ namespace AzToolsFramework
             provided.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
         }
 
-        void ThumbnailerComponent::RegisterContext(const char* contextName, int thumbnailSize)
+        void ThumbnailerComponent::RegisterContext(const char* contextName)
         {
             AZ_Assert(m_thumbnails.find(contextName) == m_thumbnails.end(), "Context %s already registered", contextName);
-            m_thumbnails[contextName] = AZStd::make_shared<ThumbnailContext>(thumbnailSize);
+            m_thumbnails[contextName] = AZStd::make_shared<ThumbnailContext>();
         }
 
         void ThumbnailerComponent::UnregisterContext(const char* contextName)

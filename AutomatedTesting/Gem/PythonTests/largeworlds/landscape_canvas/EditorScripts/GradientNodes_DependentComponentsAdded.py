@@ -21,8 +21,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 newEntityId = None
@@ -33,6 +33,27 @@ class TestGradientNodeComponentDependency(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="GradientNodeComponentDependency", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that the Landscape Canvas nodes can be added to a graph, and correctly create entities with
+        proper dependent components.
+
+        Expected Behavior:
+        All expected component dependencies are met when adding a Gradient Modifier node to a graph.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Drag each of the Gradient Modifier nodes to the graph area, and ensure the proper dependent components are
+         added
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         def onEntityCreated(parameters):
             global newEntityId

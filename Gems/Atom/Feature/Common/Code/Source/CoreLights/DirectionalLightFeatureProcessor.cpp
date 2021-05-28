@@ -203,7 +203,7 @@ namespace AZ
             if (m_shadowingLightHandle.IsValid())
             {
                 uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
-                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{"o_directional_shadow_filtering_method"}, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
@@ -306,7 +306,7 @@ namespace AZ
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 if (m_renderPipelineIdsForPersistentView.find(view.get()) != m_renderPipelineIdsForPersistentView.end() &&
-                    (view->GetUsageFlags() & RPI::View::UsageCamera))
+                    (RHI::CheckBitsAny(view->GetUsageFlags(), RPI::View::UsageCamera | RPI::View::UsageReflectiveCubeMap)))
                 {
                     RPI::ShaderResourceGroup* viewSrg = view->GetShaderResourceGroup().get();
 
@@ -656,6 +656,7 @@ namespace AZ
             CacheRenderPipelineIdsForPersistentView();
             SetConfigurationToPasses();
             SetCameraViewNameToPass();
+            UpdateViewsOfCascadeSegments();
         }
 
         void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass() {
@@ -731,11 +732,12 @@ namespace AZ
                     }
                 }
             }
-
+            
             // Remove unnecessary camera views in shadow properties
-            for (uint16_t lightIndex = 0; lightIndex < aznumeric_cast<uint16_t>(m_shadowProperties.GetDataCount()); ++lightIndex)
+            auto& shadowPropertiesVector = m_shadowProperties.GetDataVector();
+            for (ShadowProperty& shadowProperty : shadowPropertiesVector)
             {
-                AZStd::unordered_map<const RPI::View*, AZStd::fixed_vector<CascadeSegment, Shadow::MaxNumberOfCascades>>& cascades = m_shadowProperties.GetData(lightIndex).m_segments;
+                auto& cascades = shadowProperty.m_segments;
                 for (auto it = cascades.begin(); it != cascades.end();)
                 {
                     if (AZStd::find(cameraViews.begin(), cameraViews.end(), it->first) != cameraViews.end())
@@ -1238,6 +1240,8 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetFilterParameterToPass(LightHandle handle, const RPI::View* cameraView)
         {
+            AZ_ATOM_PROFILE_FUNCTION("DirectionalLightFeatureProcessor", "DirectionalLightFeatureProcessor::SetFilterParameterToPass");
+
             if (handle != m_shadowingLightHandle)
             {
                 return;
@@ -1338,6 +1342,15 @@ namespace AZ
                         segment.m_view->SetViewToClipMatrix(viewToClipMatrix);
                     }
                 }
+            }
+        }
+
+        void DirectionalLightFeatureProcessor::UpdateViewsOfCascadeSegments()
+        {
+            if (m_shadowingLightHandle.IsValid())
+            {
+                const uint16_t cascadeCount = GetCascadeCount(m_shadowingLightHandle);
+                UpdateViewsOfCascadeSegments(m_shadowingLightHandle, cascadeCount);
             }
         }
 
@@ -1484,7 +1497,6 @@ namespace AZ
             float depthNear,
             float depthFar) const
         {
-            // For calculation, refer https://wiki.agscollab.com/display/ATOM/Cascaded+Shadowmaps
             // This calculates the center of bounding sphere for a camera view frustum.
             // By this, on the camera view (2D), the bounding sphere's center
             // shifts to the remarkable point.

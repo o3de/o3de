@@ -125,19 +125,24 @@ namespace PhysX::Benchmarks
         return GetTPose(AZ::Vector3::CreateZero(), simulationType);
     }
 
-    AZStd::unique_ptr<PhysX::Ragdoll> CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
+    PhysX::Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
         Physics::RagdollConfiguration* configuration =
             AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetEngineRootPath() + "/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
 
-        Physics::RagdollState initialState = GetTPose();
-        PhysX::ParentIndices parentIndices;
+        configuration->m_initialState = GetTPose();
+        configuration->m_parentIndices.reserve(configuration->m_nodes.size());
         for (int i = 0; i < configuration->m_nodes.size(); i++)
         {
-            parentIndices.push_back(RagdollTestData::ParentIndices[i]);
+            configuration->m_parentIndices.push_back(RagdollTestData::ParentIndices[i]);
         }
 
-        return PhysX::Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices, sceneHandle);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, configuration);
+            return azdynamic_cast<Ragdoll*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, bodyHandle));
+        }
+        return nullptr;
     }
 
     //! BM_Ragdoll_AtRest - This test just spawns the requested number of ragdolls and places them near the terrain
@@ -148,7 +153,7 @@ namespace PhysX::Benchmarks
         const int numRagdolls = static_cast<const int>(state.range(0));
 
         //create ragdolls
-        AZStd::vector<AZStd::unique_ptr<PhysX::Ragdoll>> ragdolls;
+        AZStd::vector<PhysX::Ragdoll*> ragdolls;
         ragdolls.reserve(numRagdolls);
         for (int i = 0; i < numRagdolls; i++)
         {
@@ -218,7 +223,7 @@ namespace PhysX::Benchmarks
             washingMachineCentre, RagdollConstants::WashingMachine::BladeRPM);
 
         //create ragdolls
-        AZStd::vector<AZStd::unique_ptr<PhysX::Ragdoll>> ragdolls;
+        AZStd::vector<PhysX::Ragdoll*> ragdolls;
         ragdolls.reserve(numRagdolls);
         for (int i = 0; i < numRagdolls; i++)
         {

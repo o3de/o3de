@@ -286,8 +286,6 @@ AZ::u32 CReflectedVarGenericProperty::handler()
     {
     case ePropertyShader:
         return AZ_CRC("ePropertyShader", 0xc40932f1);
-    case ePropertyMaterial:
-        return AZ_CRC("ePropertyMaterial", 0xf324dffa);
     case ePropertyEquip:
         return AZ_CRC("ePropertyEquip", 0x66ffd290);
     case ePropertyReverbPreset:
@@ -308,8 +306,6 @@ AZ::u32 CReflectedVarGenericProperty::handler()
         return AZ_CRC("ePropertyLightAnimation", 0x277097da);
     case ePropertyParticleName:
         return AZ_CRC("ePropertyParticleName", 0xf44c7133);
-    case ePropertyFlare:
-        return AZ_CRC("ePropertyFlare", 0x5ce803df);
     default:
         AZ_Assert(false, "No property handlers defined for the property type");
         return AZ_CRC("Default", 0xe35e00df);

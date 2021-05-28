@@ -34,6 +34,7 @@ namespace AZ
                 constexpr uint32_t StreamCountMax = 12;
                 constexpr uint32_t StreamChannelCountMax = 16;
                 constexpr uint32_t DrawListTagCountMax = 64;
+                constexpr uint32_t DrawFilterTagCountMax = 32;
                 constexpr uint32_t MultiSampleCustomLocationsCountMax = 16;
                 constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
                 constexpr uint32_t SubpassCountMax = 10;

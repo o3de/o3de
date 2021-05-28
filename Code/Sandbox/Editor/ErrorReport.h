@@ -19,7 +19,6 @@
 #pragma once
 
 // forward declarations.
-class CMaterial;
 class CParticleItem;
 
 #include "BaseLibraryItem.h"

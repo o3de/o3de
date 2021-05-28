@@ -25,7 +25,6 @@
 // Editor
 #include "GenericSelectItemDialog.h"
 #include "QtViewPaneManager.h"
-#include "LensFlareEditor/LensFlareEditor.h"
 
 
 UserPropertyEditor::UserPropertyEditor(QWidget *pParent /*= nullptr*/)
@@ -146,79 +145,6 @@ bool UserPopupWidgetHandler::ReadValuesIntoGUI(size_t index, UserPropertyEditor*
 }
 
 #include <Controls/ReflectedPropertyControl/moc_PropertyMiscCtrl.cpp>
-
-LensFlarePropertyWidget::LensFlarePropertyWidget(QWidget *pParent /*= nullptr*/)
-    :QWidget(pParent)
-{
-    m_valueEdit = new QLineEdit;
-
-    QToolButton *mainButton = new QToolButton;
-    mainButton->setText("D");
-    connect(mainButton, &QToolButton::clicked, this, &LensFlarePropertyWidget::OnEditClicked);
-    connect(m_valueEdit, &QLineEdit::editingFinished, m_valueEdit, [this] () {emit ValueChanged(m_valueEdit->text());});
-
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->addWidget(m_valueEdit, 1);
-    mainLayout->addWidget(mainButton);
-    mainLayout->setContentsMargins(1, 1, 1, 1);
-}
-
-void LensFlarePropertyWidget::SetValue(const QString &value)
-{
-    m_valueEdit->setText(value);
-}
-
-QString LensFlarePropertyWidget::GetValue() const
-{
-    return m_valueEdit->text();
-}
-
-void LensFlarePropertyWidget::OnEditClicked()
-{
-    const QtViewPane *lensFlarePane = GetIEditor()->OpenView(CLensFlareEditor::s_pLensFlareEditorClassName);
-    if (!lensFlarePane)
-        return;
-
-    CLensFlareEditor *editor = FindViewPane<CLensFlareEditor>(QtUtil::ToQString(CLensFlareEditor::s_pLensFlareEditorClassName));
-    if (editor)
-        QTimer::singleShot(0, editor, SLOT(OnUpdateTreeCtrl()));
-}
-
-QWidget* LensFlareHandler::CreateGUI(QWidget *pParent)
-{
-    LensFlarePropertyWidget* newCtrl = aznew LensFlarePropertyWidget(pParent);
-    connect(newCtrl, &LensFlarePropertyWidget::ValueChanged, newCtrl, [newCtrl]()
-    {
-        EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-    });
-
-    return newCtrl;
-}
-
-void LensFlareHandler::ConsumeAttribute(LensFlarePropertyWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName)
-{
-        Q_UNUSED(GUI); Q_UNUSED(attrib); Q_UNUSED(attrValue); Q_UNUSED(debugName);
-}
-
-void LensFlareHandler::WriteGUIValuesIntoProperty(size_t index, LensFlarePropertyWidget* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node)
-{
-        Q_UNUSED(index);
-        Q_UNUSED(node);
-        CReflectedVarGenericProperty val = instance;
-        val.m_value = GUI->GetValue().toUtf8().data();
-        instance = static_cast<property_t>(val);
-}
-
-bool LensFlareHandler::ReadValuesIntoGUI(size_t index, LensFlarePropertyWidget* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)
-{
-    Q_UNUSED(index);
-    Q_UNUSED(node);
-    CReflectedVarGenericProperty val = instance;
-    GUI->SetValue(val.m_value.c_str());
-    return false;
-}
-
-
 
 QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 {

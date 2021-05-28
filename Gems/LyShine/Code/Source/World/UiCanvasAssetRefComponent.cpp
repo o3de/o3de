@@ -170,8 +170,8 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/UiCanvasAssetRef.svg")
-                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/UiCanvasRef.png")
+                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/UiCanvasAssetRef.svg")
+                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/UiCanvasRef.png")
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-ui-canvas-asset-ref.html")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
 

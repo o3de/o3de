@@ -10,3 +10,6 @@
 *
 */
 #pragma once
+
+#include <xcb/xcb.h>
+#include <xcb/xcbext.h>

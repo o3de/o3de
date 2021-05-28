@@ -104,7 +104,7 @@ namespace PhysX
         }
     }
 
-    void BaseColliderComponent::SetShapeConfigurationList(const Physics::ShapeConfigurationList& shapeConfigList)
+    void BaseColliderComponent::SetShapeConfigurationList(const AzPhysics::ShapeColliderPairList& shapeConfigList)
     {
         if (GetEntity()->GetState() == AZ::Entity::State::Active)
         {
@@ -115,7 +115,7 @@ namespace PhysX
         m_shapeConfigList = shapeConfigList;
     }
 
-    Physics::ShapeConfigurationList BaseColliderComponent::GetShapeConfigurations()
+    AzPhysics::ShapeColliderPairList BaseColliderComponent::GetShapeConfigurations()
     {
         return m_shapeConfigList;
     }
@@ -319,7 +319,7 @@ namespace PhysX
     {
         AZ_Assert(IsMeshCollider(), "InitMeshCollider called for a non-mesh collider.");
 
-        const Physics::ShapeConfigurationPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
+        const AzPhysics::ShapeColliderPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
         const Physics::ColliderConfiguration& componentColliderConfiguration = *(shapeConfigurationPair.first.get());
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = 
             *(static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfigurationPair.second.get()));
@@ -330,10 +330,8 @@ namespace PhysX
         }
 
         const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
-        // the value for the subdivision level doesn't matter in the runtime, because any approximation of primitives will already have
-        // happened in the editor, so can pass an arbitrary value here
-        AZ::u8 subdivisionLevel = 0;
-        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale, subdivisionLevel, m_shapes);
+        Utils::GetShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
+            physicsAssetConfiguration.m_subdivisionLevel, m_shapes);
 
         return true;
     }

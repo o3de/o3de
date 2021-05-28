@@ -1,0 +1,12 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "010_OcclusionBase.material",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "occlusion": {
+            "specularFactor": 2.0,
+            "specularTextureMap": "TestData/Textures/cc0/Tiles009_1K_Displacement.jpg"
+        }
+    }
+}

@@ -15,7 +15,7 @@
 #include "EditorCommon.h"
 
 ViewportCanvasBackground::ViewportCanvasBackground()
-    : m_canvasBackground(new ViewportIcon("Editor/Plugins/UiCanvasEditor/CanvasIcons/Canvas_Background.tif"))
+    : m_canvasBackground(new ViewportIcon("Editor/Icons/Viewport/Canvas_Background.tif"))
 {
 }
 

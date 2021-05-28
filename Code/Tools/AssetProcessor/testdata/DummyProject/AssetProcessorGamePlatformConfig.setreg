@@ -1,0 +1,21 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platform provo": {
+                    "tags": "console, renderer"
+                },
+                "Platforms": {
+                    "server": "disabled",
+                    "provo": "enabled"
+                },
+                "RC i_caf": {
+                    "provo": "copy"
+                },
+                "RC mov": {
+                    "ignore": true
+                }
+            }
+        }
+    }
+}

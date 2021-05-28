@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C18981526
 # Test Case Title : Verify when two objects with different materials collide, the restitution combine priority works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/18981526
+
 
 
 # fmt: off
@@ -135,9 +135,8 @@ def C18981526_Material_RestitutionCombinePriority():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr
     import azlmbr.legacy.general as general
@@ -425,5 +424,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C18981526_Material_RestitutionCombinePriority)

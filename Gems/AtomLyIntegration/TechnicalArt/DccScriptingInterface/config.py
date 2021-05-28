@@ -26,7 +26,6 @@ import re
 # our framework for dcc tools need to run in apps like Maya that may still be
 # on py27 so we need to import and use after some boostrapping
 
-
 # -------------------------------------------------------------------+------
 #os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
@@ -78,6 +77,10 @@ _DCCSI_PYTHON_LIB_PATH = azpy.config_utils.bootstrap_dccsi_py_libs(_DCCSIG_PATH)
 
 # Now we should be able to just carry on with pth lib and dynaconf
 from dynaconf import Dynaconf
+try:
+    import pathlib
+except:
+    import pathlib2 as pathlib
 from pathlib import Path
 
 _DCCSIG_PATH = Path(_DCCSIG_PATH).resolve()
@@ -106,11 +109,11 @@ def init_ly_pyside(LY_DEV=None):
                                     'bin',
                                     'profile').resolve()
 
-    # allows to retreive from settings.QTFORPYTHON_PATH
-    from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
-    QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
-    os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
-    site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
+    # # allows to retreive from settings.QTFORPYTHON_PATH
+    # from azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
+    # QTFORPYTHON_PATH = Path(STR_QTFORPYTHON_PATH.format(LY_DEV)).resolve()
+    # os.environ["DYNACONF_QTFORPYTHON_PATH"] = str(QTFORPYTHON_PATH)
+    # site.addsitedir(str(QTFORPYTHON_PATH))  # PYTHONPATH
 
     QT_PLUGIN_PATH = Path.joinpath(LY_BIN_PATH,
                                    'EditorPlugins').resolve()
@@ -128,15 +131,15 @@ def init_ly_pyside(LY_DEV=None):
 
     # add Qt binaries to the Windows path to handle findings DLL file dependencies
     if sys.platform.startswith('win'):
-        path = os.environ['PATH']
-        newPath = ''
-        newPath += str(LY_BIN_PATH) + os.pathsep
-        newPath += str(Path.joinpath(QTFORPYTHON_PATH,
-                                     'shiboken2').resolve()) + os.pathsep
-        newPath += str(Path.joinpath(QTFORPYTHON_PATH,
-                                     'PySide2').resolve()) + os.pathsep
-        newPath += path
-        os.environ['PATH']=newPath
+        # path = os.environ['PATH']
+        # newPath = ''
+        # newPath += str(LY_BIN_PATH) + os.pathsep
+        # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
+        #                              'shiboken2').resolve()) + os.pathsep
+        # newPath += str(Path.joinpath(QTFORPYTHON_PATH,
+        #                              'PySide2').resolve()) + os.pathsep
+        # newPath += path
+        # os.environ['PATH']=newPath
         _LOGGER.debug('PySide2 bootstrapped PATH for Windows.')
 
     try:
@@ -218,10 +221,10 @@ os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 
 # search up to get \dev
 _LY_DEV = azpy.config_utils.get_stub_check_path(in_path=_DCCSIG_PATH,
-                                                check_stub='engineroot.txt')
+                                                check_stub='engine.json')
 os.environ["DYNACONF_LY_DEV"] = str(_LY_DEV.resolve())
-_LY_PROJECT = azpy.config_utils.get_current_project(_LY_DEV)
-os.environ["DYNACONF_LY_PROJECT"] = _LY_PROJECT
+_LY_PROJECT = azpy.config_utils.get_current_project()
+os.environ["DYNACONF_LY_PROJECT"] = str(_LY_PROJECT.resolve())
 _LY_PROJECT_PATH = Path(_LY_DEV, _LY_PROJECT)
 os.environ["DYNACONF_LY_PROJECT_PATH"] = str(_LY_PROJECT_PATH)
 os.environ["DYNACONF_DCCSIG_PATH"] = str(_DCCSIG_PATH)
@@ -316,7 +319,7 @@ if __name__ == '__main__':
 
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
-    _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
+    #_LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
     _LOGGER.info('LY_BIN_PATH: {}'.format(settings.LY_BIN_PATH))
     _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
     _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))

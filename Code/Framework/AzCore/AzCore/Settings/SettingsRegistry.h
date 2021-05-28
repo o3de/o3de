@@ -26,6 +26,7 @@
 
 namespace AZ
 {
+    struct JsonApplyPatchSettings;
     //! The Settings Registry is the central storage for global settings. Having application-wide settings
     //! stored in a central location allows different tools such as command lines, consoles, configuration
     //! files, etc. to work in a universal way.
@@ -256,25 +257,24 @@ namespace AZ
 
         //! Remove the value at the provided path 
         //! @param path The path to a value that should be removed
-        //! @return Whether or not the value was stored at the provided path. An invalid path will return false;
+        //! @return Whether or not the path was found and removed. An invalid path will return false;
         virtual bool Remove(AZStd::string_view path) = 0;
 
         //! Structure which contains configuration settings for how to parse a single command line argument
-        //! It supports supplying a functor for determining if a character is a delimiter
+        //! It supports supplying a functor for splitting a line into JSON path and JSON value
         struct CommandLineArgumentSettings
         {
-            inline static constexpr AZStd::string_view CommandLineArgumentDelimiters{ "=:"};
-            CommandLineArgumentSettings()
+            struct JsonPathValue
             {
-                m_delimiterFunc = [](const char delimiter) -> bool
-                {
-                    return CommandLineArgumentDelimiters.find_first_of(delimiter) != AZStd::string_view::npos;
-                };
-            }
-            
-            //! Callback function which is invoked to determine whether a delimiter has been found
-            //! return value of true indicates that a delimiter has been found 
-            using DelimiterFunc = AZStd::function<bool(const char delimiter)>;
+                AZStd::string_view m_path;
+                AZStd::string_view m_value;
+            };
+
+            CommandLineArgumentSettings();
+
+            //! Callback function which is invoked to determine how to split a command line argument
+            //! into a JSON path and a JSON value
+            using DelimiterFunc = AZStd::function<JsonPathValue(AZStd::string_view line)>;
             DelimiterFunc m_delimiterFunc;
         };
         //! Merges a single command line argument into the settings registry. Command line arguments
@@ -322,6 +322,14 @@ namespace AZ
         //! @return True if the registry folder was successfully merged, otherwise false.
         virtual bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform = {}, AZStd::string_view rootKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
+
+        //! Stores the settings structure which is used when merging settings to the Settings Registry
+        //! using JSON Merge Patch or JSON Merge Patch.
+        //! The settings contain an issue reporting callback which can be used to track patching process.
+        //! Potential application of the reporting callback could be to update a UI whenever a key receives an updated value
+        //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
+        virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+        virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
     };
 
     inline SettingsRegistryInterface::Visitor::~Visitor() = default;

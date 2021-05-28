@@ -389,29 +389,6 @@ namespace ScriptCanvas
             return AZ::Utils::IsVectorContainerType(ToAZType(type));
         }
 
-        bool IsAllowedBehaviorClassVariableType(const AZ::Uuid& id)
-        {
-            AZ::BehaviorContext* behaviorContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-            AZ_Assert(behaviorContext, "Unable to retrieve behavior context.");
-
-            const auto& classIterator = behaviorContext->m_typeToClassMap.find(id);
-            if (classIterator != behaviorContext->m_typeToClassMap.end())
-            {
-                AZ::BehaviorClass* behaviorClass = classIterator->second;
-                if (behaviorClass->FindAttribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
-        }
-
         bool IsSetContainerType(const AZ::Uuid& type)
         {
             return AZ::Utils::IsSetContainerType(type);

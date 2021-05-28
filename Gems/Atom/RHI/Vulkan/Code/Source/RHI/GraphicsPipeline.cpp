@@ -285,11 +285,6 @@ namespace AZ
                 // This is not 100% correct, but in most cases it will give us the correct result.
                 info.depthClampEnable = rasterState.m_depthClipEnable ? VK_FALSE : VK_TRUE;
             }
-            else if (!rasterState.m_depthClipEnable)
-            {
-                AZ_Error("Vulkan", false, "Depth clipping is being used but it's not supported on this device");
-                return RHI::ResultCode::InvalidArgument;
-            }
 
             switch (rasterState.m_fillMode)
             {

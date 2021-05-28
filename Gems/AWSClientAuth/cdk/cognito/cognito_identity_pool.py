@@ -58,7 +58,7 @@ class CognitoIdentityPool:
         self._identity_pool.add_depends_on(cognito_user_pool.get_user_pool())
         self._identity_pool.add_depends_on(cognito_user_pool.get_user_pool_client())
 
-        # Create roles to associate with Cognito Idenity pool
+        # Create roles to associate with Cognito Identity pool
         self._auth_role = CognitoIdentityPoolRole(scope, feature_name, project_name, env,
                                                   self._identity_pool, authenticated=True)
         self._unauth_role = CognitoIdentityPoolRole(scope, feature_name, project_name, env,

@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15096735
 # Test Case Title : Verify that default material library works consistently across all systems that use it
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096735
+
 
 
 # fmt:off
@@ -149,8 +149,8 @@ def C15096735_Materials_DefaultLibraryConsistency():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -424,5 +424,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15096735_Materials_DefaultLibraryConsistency)

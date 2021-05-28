@@ -139,7 +139,6 @@ namespace AZ
 
             GetLightDataFromFeatureProcessor();
             SetLightBuffersToSRG();
-            SetLightListToSRG();
             SetLightsCountToSRG();
             SetConstantdataToSRG();
 
@@ -185,13 +184,6 @@ namespace AZ
                 m_shaderResourceGroup->SetBuffer(elem.m_lightBufferIndex, elem.m_lightBuffer.get());
                 elem.m_lightBufferIndex.AssertValid();
             }
-        }
-
-        void LightCullingPass::SetLightListToSRG()
-        {
-            auto inputIndex = m_shaderResourceGroup->FindShaderInputBufferIndex(AZ::Name("m_lightList"));
-            [[maybe_unused]] bool succeeded = m_shaderResourceGroup->SetBuffer(inputIndex, m_lightList);
-            AZ_Assert(succeeded, "SetImage failed for light list");
         }
 
         void LightCullingPass::SetLightsCountToSRG()

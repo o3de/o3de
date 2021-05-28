@@ -205,10 +205,13 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
         # Copy test assets to new folder in dev folder
         # This new folder will be created outside the default project folder and will not be added as a scan folder
-        # by default, instead we'll modify the temporary AssetProcessorPlatformConfig.ini to add it
         test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C4874115",
                                                                                     relative_asset_root='',
                                                                                     add_scan_folder=False)
+        # The AssetProcessor internal _cache_folder path is updated to point at the cache root in order
+        # to allow the comparison between the source asset path of "<source asset path>/C4874115" to match the cache assets
+        # in <cache-folder>
+        asset_processor._cache_folder = os.path.dirname(cache_folder)
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Run AP Batch
@@ -226,7 +229,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         test_scan_folder_root_key = f"{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/ScanFolder C4874115"
         test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/watch=@ROOT@/C4874115"')
-        test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/output=C4874115"')
         test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/recursive=1"')
         test_scan_folder_params.append(f'--regset="{test_scan_folder_root_key}/order=5000"')
 

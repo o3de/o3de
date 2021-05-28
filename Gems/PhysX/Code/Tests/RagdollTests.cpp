@@ -63,19 +63,24 @@ namespace PhysX
         return ragdollState;
     }
 
-    AZStd::unique_ptr<Ragdoll> CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
+    Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
         Physics::RagdollConfiguration* configuration =
             AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetCurrentExecutablePath() + "/Test.Assets/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
 
-        Physics::RagdollState initialState = GetTPose();
-        ParentIndices parentIndices;
+        configuration->m_initialState = GetTPose();
+        configuration->m_parentIndices.reserve(configuration->m_nodes.size());
         for (int i = 0; i < configuration->m_nodes.size(); i++)
         {
-            parentIndices.push_back(RagdollTestData::ParentIndices[i]);
+            configuration->m_parentIndices.push_back(RagdollTestData::ParentIndices[i]);
         }
 
-        return Utils::Characters::CreateRagdoll(*configuration, initialState, parentIndices, sceneHandle);
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, configuration);
+            return azdynamic_cast<Ragdoll*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, bodyHandle));
+        }
+        return nullptr;
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS

@@ -172,7 +172,7 @@ namespace ScriptCanvasEditor
                     {
                         ScriptCanvas::Datum datum = ScriptCanvas::Datum(entityId);
 
-                        AZ::Outcome<ScriptCanvas::VariableId, AZStd::string > addVariableOutcome = variableManagerRequests->AddVariable(variableName, datum);
+                        AZ::Outcome<ScriptCanvas::VariableId, AZStd::string > addVariableOutcome = variableManagerRequests->AddVariable(variableName, datum, false);
 
                         if (addVariableOutcome.IsSuccess())
                         {

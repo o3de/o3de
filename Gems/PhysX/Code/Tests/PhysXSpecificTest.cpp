@@ -312,7 +312,7 @@ namespace PhysX
     {
         // set up a trigger box
         auto triggerBox = TestUtils::CreateTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 12.0f));
-        auto triggerBody = triggerBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* triggerBody = azdynamic_cast<PhysX::StaticRigidBody*>(triggerBox->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
         auto triggerShape = triggerBody->GetShape(0);
 
         TestTriggerAreaNotificationListener testTriggerAreaNotificationListener(triggerBox->GetId());
@@ -445,7 +445,7 @@ namespace PhysX
         auto obj02 = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f), "TestBox01");
 
         auto body01 = obj01->FindComponent<RigidBodyComponent>()->GetRigidBody();
-        auto body02 = obj02->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* body02 = azdynamic_cast<PhysX::StaticRigidBody*>(obj02->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         auto shape01 = body01->GetShape(0).get();
         auto shape02 = body02->GetShape(0).get();
@@ -539,14 +539,14 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, RigidBody_CenterOfMassOffsetComputed)
     {
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-        Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
+        auto shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(halfExtents * 2.0f);
+        auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+        colliderConfig->m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
 
         AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
         rigidBodyConfiguration.m_computeCenterOfMass = true;
         rigidBodyConfiguration.m_computeInertiaTensor = true;
-        rigidBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+        rigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
         AzPhysics::RigidBody* rigidBody = nullptr;
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -562,15 +562,15 @@ namespace PhysX
     TEST_F(PhysXSpecificTest, RigidBody_CenterOfMassOffsetSpecified)
     {
         AZ::Vector3 halfExtents(1.0f, 2.0f, 3.0f);
-        Physics::BoxShapeConfiguration shapeConfig(halfExtents * 2.0f);
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
+        auto shapeConfig = AZStd::make_shared<Physics::BoxShapeConfiguration>(halfExtents * 2.0f);
+        auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+        colliderConfig->m_rotation = AZ::Quaternion::CreateRotationX(AZ::Constants::HalfPi);
 
         AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
         rigidBodyConfiguration.m_computeCenterOfMass = false;
         rigidBodyConfiguration.m_centerOfMassOffset = AZ::Vector3::CreateOne();
         rigidBodyConfiguration.m_computeInertiaTensor = true;
-        rigidBodyConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+        rigidBodyConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
 
         AzPhysics::RigidBody* rigidBody = nullptr;
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -588,7 +588,7 @@ namespace PhysX
     {
         // set up a trigger box
         auto triggerBox = TestUtils::CreateTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 0.0f));
-        auto triggerBody = triggerBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* triggerBody = azdynamic_cast<PhysX::StaticRigidBody*>(triggerBox->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         // Create a test box above the trigger so when it falls down it'd enter and leave the trigger box
         auto testBox = TestUtils::AddUnitTestObject(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 1.5f), "TestBox");
@@ -628,7 +628,7 @@ namespace PhysX
     {
         // Set up a static non trigger box
         auto staticBox = TestUtils::AddStaticUnitTestObject<BoxColliderComponent>(m_testSceneHandle, AZ::Vector3(0.0f, 0.0f, 0.0f));
-        auto staticBody = staticBox->FindComponent<StaticRigidBodyComponent>()->GetStaticRigidBody();
+        auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(staticBox->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         // Create a test trigger box above the static box so when it falls down it'd enter and leave the trigger box
         auto dynamicTrigger = TestUtils::CreateDynamicTriggerAtPosition<BoxColliderComponent>(AZ::Vector3(0.0f, 0.0f, 5.0f));
@@ -882,7 +882,6 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_testSceneHandle, rigidBodyHandle);
-            rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
         rigidBody = nullptr;
     }
@@ -1114,15 +1113,15 @@ namespace PhysX
         auto CreateBoxRigidBody = [this](const AZ::Vector3& position, bool simulatedFlag, bool triggerFlag) -> AzPhysics::RigidBody*
         {
 
-            Physics::ColliderConfiguration colliderConfig;
-            colliderConfig.m_isSimulated = simulatedFlag;
-            colliderConfig.m_isTrigger = triggerFlag;
-            Physics::BoxShapeConfiguration shapeConfig;
+            auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+            colliderConfig->m_isSimulated = simulatedFlag;
+            colliderConfig->m_isTrigger = triggerFlag;
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_entityId = AZ::EntityId(0); // Set entity ID to avoid warnings in OnTriggerEnter 
             rigidBodyConfig.m_position = position;
-            rigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfig);
+            rigidBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+                colliderConfig, AZStd::make_shared<Physics::BoxShapeConfiguration>());
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {

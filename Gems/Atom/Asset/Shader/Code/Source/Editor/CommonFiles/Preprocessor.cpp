@@ -25,6 +25,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -54,6 +55,35 @@ namespace AZ
                     ->Field("predefinedMacros", &PreprocessorOptions::m_predefinedMacros)
                     ->Field("projectIncludePaths", &PreprocessorOptions::m_projectIncludePaths)
                     ;
+            }
+        }
+
+        void PreprocessorOptions::RemovePredefinedMacros(const AZStd::vector<AZStd::string>& macroNames)
+        {
+            for (const auto& macroName : macroNames)
+            {
+                m_predefinedMacros.erase(
+                    AZStd::remove_if(
+                        m_predefinedMacros.begin(), m_predefinedMacros.end(),
+                        [&](const AZStd::string& predefinedMacro) {
+                            //                                       Haystack,        needle,    bCaseSensitive
+                            if (!AzFramework::StringFunc::StartsWith(predefinedMacro, macroName, true))
+                            {
+                                return false;
+                            }
+                            // If found, let's make sure it is not just a substring.
+                            if (predefinedMacro.size() == macroName.size())
+                            {
+                                return true;
+                            }
+                            // The predefinedMacro can be a string like "macro=value". If we find '=' it is a match.
+                            if (predefinedMacro.c_str()[macroName.size()] == '=')
+                            {
+                                return true;
+                            }
+                            return false;
+                        }),
+                    m_predefinedMacros.end());
             }
         }
 
@@ -285,7 +315,8 @@ namespace AZ
         }
 
         // populate options with scan folders and contents of parsing shader_global_build_options.json
-        void InitializePreprocessorOptions(PreprocessorOptions& options, [[maybe_unused]] const char* builderName)
+        void InitializePreprocessorOptions(
+            PreprocessorOptions& options, [[maybe_unused]] const char* builderName, const char* optionalIncludeFolder)
         {
             AZ_TraceContext("Init include-paths lookup options", "preprocessor");
 
@@ -299,6 +330,13 @@ namespace AZ
 
             // we transfer to a set, to order the folders, uniquify them, and ensure deterministic build behavior
             AZStd::set<AZStd::string> scanFoldersSet;
+            // Add the project path to list of include paths
+            AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+            scanFoldersSet.emplace(projectPath.c_str(), projectPath.size());
+            if (optionalIncludeFolder)
+            {
+                scanFoldersSet.emplace(optionalIncludeFolder, strnlen(optionalIncludeFolder, AZ::IO::MaxPathLength));
+            }
             // but while we transfer to the set, we're going to keep only folders where +/ShaderLib exists
             for (AZStd::string folder : scanFoldersVector)
             {
@@ -310,14 +348,12 @@ namespace AZ
             } // the folders constructed this fashion constitute the base of automatic include search paths
 
             // get the engine root:
-            AZStd::string engineRoot;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AzFramework::StringFunc::Path::Normalize(engineRoot);
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
             // add optional additional options
             for (AZStd::string& path : options.m_projectIncludePaths)
             {
-                AzFramework::StringFunc::Path::Join(engineRoot.c_str(), path.c_str(), path);
+                path = (engineRoot / path).String();
                 DeleteFromSet(path, scanFoldersSet);  // no need to add a path two times.
             }
             // back-insert the default paths (after the config-read paths we just read)

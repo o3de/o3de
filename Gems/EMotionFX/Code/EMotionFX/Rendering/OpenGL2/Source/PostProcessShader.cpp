@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/IO/Path/Path.h>
 #include "PostProcessShader.h"
 #include "GraphicsManager.h"
 
@@ -82,7 +83,7 @@ namespace RenderGL
 
 
     // Init
-    bool PostProcessShader::Init(const char* filename)
+    bool PostProcessShader::Init(AZ::IO::PathView filename)
     {
         MCore::Array<AZStd::string> defines;
         return GLSLShader::Init(nullptr, filename, defines);

@@ -17,7 +17,7 @@
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
@@ -45,7 +45,6 @@ namespace AZ
                 , public TickBus::Handler
                 , public AzFramework::WindowNotificationBus::Handler
                 , public AzFramework::AssetCatalogEventBus::Handler
-                , private AzFramework::SceneSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemRequestBus::Handler
                 , public Render::Bootstrap::DefaultWindowBus::Handler
@@ -90,9 +89,6 @@ namespace AZ
                 // AzFramework::AssetCatalogEventBus::Handler overrides ...
                 void OnCatalogLoaded(const char* catalogFile) override;
 
-                // AzFramework::SceneSystemNotificationBus::Handler overrides ...
-                void SceneAboutToBeRemoved(AzFramework::Scene& scene) override;
-
                 // AzFramework::WindowSystemNotificationBus::Handler overrides ...
                 void OnWindowCreated(AzFramework::NativeWindowHandle windowHandle) override;
 
@@ -104,12 +100,14 @@ namespace AZ
 
                 void CreateWindowContext();
 
+                AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
+
                 AZStd::unique_ptr<AzFramework::NativeWindow> m_nativeWindow;
                 AzFramework::NativeWindowHandle m_windowHandle = nullptr;
                 RPI::ViewportContextPtr m_viewportContext;
 
                 RPI::ScenePtr m_defaultScene = nullptr;
-                AzFramework::Scene* m_defaultFrameworkScene = nullptr;
+                AZStd::shared_ptr<AzFramework::Scene> m_defaultFrameworkScene = nullptr;
 
                 float m_simulateTime = 0;
                 float m_deltaTime = 0.016f;
@@ -127,6 +125,7 @@ namespace AZ
                 Data::Instance<RPI::AttachmentImage> m_brdfTexture;
 
                 bool m_createDefaultScene = true;
+                bool m_defaultSceneReady = false;
 
                 // Maps AZ scenes to RPI scene weak pointers to allow looking up a ScenePtr instead of a raw Scene*
                 AZStd::unordered_map<AzFramework::Scene*, AZStd::weak_ptr<AZ::RPI::Scene>> m_azSceneToAtomSceneMap;

@@ -103,7 +103,7 @@ namespace Overlap {
     //  Checks if a point is inside a sphere.
     // Example:
     //  bool result=Overlap::Point_Sphere( point, sphere );
-    ILINE bool  Point_Sphere(const Vec3& p, const Sphere& s)
+    ILINE bool  Point_Sphere(const Vec3& p, const ::Sphere& s)
     {
         Vec3 distc  =   p - s.center;
         f32 sqrad       =   s.radius * s.radius;
@@ -407,7 +407,7 @@ namespace Overlap {
 
 
     //! check if a Lineseg and a Sphere overlap
-    inline bool Lineseg_Sphere(const Lineseg& ls, const Sphere& s)
+    inline bool Lineseg_Sphere(const Lineseg& ls, const ::Sphere& s)
     {
         float radius2 = s.radius * s.radius;
 
@@ -729,7 +729,7 @@ namespace Overlap {
     * 0 = no overlap
     * 1 = overlap
     *----------------------------------------------------------------------------------*/
-    ILINE bool Sphere_AABB(const Sphere& s, const AABB& aabb)
+    ILINE bool Sphere_AABB(const ::Sphere& s, const AABB& aabb)
     {
         Vec3 center(s.center);
 
@@ -746,7 +746,7 @@ namespace Overlap {
     }
 
     // As Sphere_AABB but ignores z parts
-    ILINE bool Sphere_AABB2D(const Sphere& s, const AABB& aabb)
+    ILINE bool Sphere_AABB2D(const ::Sphere& s, const AABB& aabb)
     {
         Vec3 center(s.center);
 
@@ -776,7 +776,7 @@ namespace Overlap {
     * 0x01 = Sphere and AABB overlap
     * 0x02 = Sphere in inside AABB
     */
-    ILINE char Sphere_AABB_Inside(const Sphere& s, const AABB& aabb)
+    ILINE char Sphere_AABB_Inside(const ::Sphere& s, const AABB& aabb)
     {
         if (Sphere_AABB(s, aabb))
         {
@@ -819,7 +819,7 @@ namespace Overlap {
     //--- 0 = no overlap                                     ---------------------------
     //--- 1 = overlap                                                  -----------------
     //----------------------------------------------------------------------------------
-    inline bool Sphere_OBB(const Sphere& s, const OBB& obb)
+    inline bool Sphere_OBB(const ::Sphere& s, const OBB& obb)
     {
         //first we transform the sphere-center into the AABB-space of the OBB
         Vec3 SphereInOBBSpace   =   s.center * obb.m33;
@@ -861,7 +861,7 @@ namespace Overlap {
     //--- 0 = no overlap                                     ---------------------------
     //--- 1 = overlap                                                  -----------------
     //----------------------------------------------------------------------------------
-    inline bool Sphere_Sphere(const Sphere& s1, const Sphere& s2)
+    inline bool Sphere_Sphere(const ::Sphere& s1, const ::Sphere& s2)
     {
         Vec3 distc  =   s1.center - s2.center;
         f32 sqrad       =   (s1.radius + s2.radius) * (s1.radius + s2.radius);
@@ -884,7 +884,7 @@ namespace Overlap {
     //--- 1 = overlap                                                  -----------------
     //----------------------------------------------------------------------------------
     template<typename F>
-    ILINE bool Sphere_Triangle(const Sphere& s, const Triangle_tpl<F>& t)
+    ILINE bool Sphere_Triangle(const ::Sphere& s, const Triangle_tpl<F>& t)
     {
         //create a "bouding sphere" around triangle for fast rejection test
         Vec3_tpl<F> middle = (t.v0 + t.v1 + t.v2) * (1 / 3.0f);
@@ -899,7 +899,7 @@ namespace Overlap {
         SqRad0 = (F)fsel(SqRad0 - SqRad2, SqRad0, SqRad2);
 
         //first simple rejection-test...
-        if (Sphere_Sphere(s, Sphere(middle, sqrt_tpl(SqRad0))) == 0)
+        if (Sphere_Sphere(s, ::Sphere(middle, sqrt_tpl(SqRad0))) == 0)
         {
             return 0;                                                        //overlap not possible
         }
@@ -944,29 +944,6 @@ namespace Overlap {
             return SIMDFLessThanEqualB(fDistToTriangleSq, fRadiusSq);
         }
     }
-
-
-    /*!
-    *
-    * we use the SEPARATING-AXIS-TEST for OBB/Plane overlap.
-    *
-    * Example:
-    *  bool result=Overlap::OBB_Plane( pos,obb, plane );
-    *
-    */
-    inline bool OBB_Plane(const Vec3& pos, const OBB& obb, const Plane& plane)
-    {
-        //the new center-position in world-space
-        Vec3 p  =   obb.m33 * obb.c + pos;
-        //extract the orientation-vectors from the columns of the 3x3 matrix
-        //and scale them by the half-lengths
-        Vec3 ax = Vec3(obb.m33.m00, obb.m33.m10, obb.m33.m20) * obb.h.x;
-        Vec3 ay = Vec3(obb.m33.m01, obb.m33.m11, obb.m33.m21) * obb.h.y;
-        Vec3 az = Vec3(obb.m33.m02, obb.m33.m12, obb.m33.m22) * obb.h.z;
-        //check OBB against Plane, using the plane-normal as separating axis
-        return fabsf(plane | p) < (fabsf(plane.n | ax) + fabsf(plane.n | ay) + fabsf(plane.n | az));
-    }
-
 
     /*!
     *
@@ -1214,7 +1191,7 @@ namespace Overlap {
 
         //test if the box intersects the plane of the triangle
         //compute plane equation of triangle: normal*x+d=0
-        Plane plane = Plane::CreatePlane((e0 % e1), v0);
+        Plane_tpl<f32> plane = Plane_tpl<f32>::CreatePlane((e0 % e1), v0);
 
         Vec3 vmin, vmax;
         if (plane.n.x > 0.0f)
@@ -1505,7 +1482,7 @@ namespace Overlap {
 
         //test if the box overlaps the plane of the triangle
         //compute plane equation of triangle: normal*x+d=0
-        Plane plane = Plane::CreatePlane((e0 % e1), v0);
+        Plane_tpl<f32> plane = Plane_tpl<f32>::CreatePlane((e0 % e1), v0);
 
         Vec3 vmin, vmax;
         if (plane.n.x > 0.0f)

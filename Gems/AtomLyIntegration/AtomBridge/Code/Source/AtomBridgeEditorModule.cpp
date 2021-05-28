@@ -13,7 +13,6 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 #include <AtomBridgeModule.h>
-#include <BuilderComponent.h>
 
 #include "./Editor/AssetCollectionAsyncLoaderTestComponent.h"
 
@@ -33,7 +32,6 @@ namespace AZ
             {
                 // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
                 m_descriptors.insert(m_descriptors.end(), {
-                    BuilderComponent::CreateDescriptor(),
                     AssetCollectionAsyncLoaderTestComponent::CreateDescriptor(),
                     });
             }

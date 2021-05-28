@@ -16,7 +16,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/fixed_vector.h>
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzCore/Interface/Interface.h>
 
 namespace AzQtComponents

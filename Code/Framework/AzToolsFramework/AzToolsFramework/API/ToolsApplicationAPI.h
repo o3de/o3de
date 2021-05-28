@@ -240,6 +240,11 @@ namespace AzToolsFramework
         virtual int RemoveDirtyEntity(AZ::EntityId target) = 0;
 
         /*!
+         * Clears the dirty entity set.
+         */
+        virtual void ClearDirtyEntities() = 0;
+
+        /*!
          * \return true if an undo/redo operation is in progress.
          */
         virtual bool IsDuringUndoRedo() = 0;
@@ -347,6 +352,11 @@ namespace AzToolsFramework
          * Returns true if any entities are selected, false if no entities are selected.
          */
         virtual bool AreAnyEntitiesSelected() = 0;
+
+        /*!
+         * Returns the number of selected entities.
+         */
+        virtual int GetSelectedEntitiesCount() = 0;
 
         /*!
          * Retrieves the set of selected entities.
@@ -578,16 +588,6 @@ namespace AzToolsFramework
          */
         virtual bool IsEditorInIsolationMode() = 0;
 
-        /*!
-        * Get the engine root path that the current tool is running under.  
-        */
-        virtual const char* GetEngineRootPath() const = 0;
-
-        /**
-        * Get the version of the engine the current tools application is running under
-        */
-        virtual const char* GetEngineVersion() const = 0;
-
         /**
         * Creates and adds a new entity to the tools application from components which match at least one of the requiredTags
         * The tag matching occurs on AZ::Edit::SystemComponentTags attribute from the reflected class data in the serialization context
@@ -766,16 +766,6 @@ namespace AzToolsFramework
         /// If the view pane was not registered with the ViewPaneOptions.isDeletable set to true, the view pane will be hidden instead.
         virtual void CloseViewPane(const char* /*paneName*/) {}
 
-        /// Request generation of all level cubemaps.
-        virtual void GenerateAllCubemaps() {}
-
-        /// Regenerate cubemap for a particular entity.
-        /// \param entityId ID of the entity that the cubemap is for
-        /// \param cubemapOutputPath path to a image file to generate
-        /// \param hideEntity Indicates whether the entity should be hidden during cubemap generation. Controls whether the entity's current cubemap output is baked into the new cubemap.
-        virtual void GenerateCubemapForEntity(AZ::EntityId /*entityId*/, AZStd::string* /*cubemapOutputPath*/, bool /*hideEntity*/) {}
-        virtual void GenerateCubemapWithIDForEntity(AZ::EntityId /*entityId*/, AZ::Uuid /*cubemapId*/, AZStd::string* /*cubemapOutputPath*/, bool /*hideEntity*/, bool /*hasCubemapId*/) {}
-
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
@@ -824,8 +814,6 @@ namespace AzToolsFramework
 
         /// Hide or show the circular dependency error when saving slices
         virtual void SetShowCircularDependencyError(const bool& /*showCircularDependencyError*/) {}
-
-        virtual void SetEditTool(const char* /*tool*/) {}
 
         /// Launches the Lua editor and opens the specified (space separated) files.
         virtual void LaunchLuaEditor(const char* /*files*/) {}

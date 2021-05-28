@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C5932041
 # Test Case Title : Check that force region exerts local space force on rigid bodies
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5932041
+
 # Sphere drops and is acted upon in an upward and positive x-ward direction by a force
 # with a magnitude close to the assigned force region magnitude when it reaches the force region.
 
@@ -74,9 +74,8 @@ def C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -169,5 +168,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5932041_PhysXForceRegion_LocalSpaceForceOnRigidBodies)

@@ -18,13 +18,14 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <Editor/ConfigStringLineEditCtrl.h>
-#include <Editor/EditorJointConfiguration.h>
 
-#include <I3DEngine.h>
 #include <IEditor.h>
 #include <ISurfaceType.h>
 
+#include <Editor/ConfigStringLineEditCtrl.h>
+#include <Editor/EditorJointConfiguration.h>
+#include <Editor/EditorWindow.h>
+#include <Editor/PropertyTypes.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -42,35 +43,6 @@ namespace PhysX
             Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData());
             if (materialLibraryAsset)
             {
-                IEditor* editor = nullptr;
-                AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-
-                ISurfaceTypeEnumerator* surfaceTypeEnumerator = nullptr;
-                if (editor)
-                {
-                    surfaceTypeEnumerator = editor->Get3DEngine()->GetMaterialManager()->GetSurfaceTypeManager()->GetEnumerator();
-                }
-
-                if (surfaceTypeEnumerator)
-                {
-                    // Enumerate through CryEngine surface types and create a Physics API material for each of them
-                    for (ISurfaceType* pSurfaceType = surfaceTypeEnumerator->GetFirst(); pSurfaceType != nullptr;
-                        pSurfaceType = surfaceTypeEnumerator->GetNext())
-                    {
-                        const ISurfaceType::SPhysicalParams& physicalParams = pSurfaceType->GetPhyscalParams();
-
-                        Physics::MaterialFromAssetConfiguration configuration;
-                        configuration.m_configuration = Physics::MaterialConfiguration();
-                        configuration.m_configuration.m_dynamicFriction = AZ::GetMax(0.0f, physicalParams.friction);
-                        configuration.m_configuration.m_staticFriction = AZ::GetMax(0.0f, physicalParams.friction);
-                        configuration.m_configuration.m_restitution = AZ::GetClamp(physicalParams.bouncyness, 0.0f, 1.0f);
-                        configuration.m_configuration.m_surfaceType = pSurfaceType->GetType();
-                        configuration.m_id = Physics::MaterialId::Create();
-
-                        materialLibraryAsset->AddMaterialData(configuration);
-                    }
-                }
-
                 // check it out in the source control system
                 AzToolsFramework::SourceControlCommandBus::Broadcast(
                     &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, targetFilePath.c_str(), true,
@@ -116,18 +88,20 @@ namespace PhysX
         {
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
             editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
-            editorWorldConfiguration.m_sceneName = "EditorScene";
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
         }
 
         PhysX::RegisterConfigStringLineEditHandler(); // Register custom unique string line edit control
+        PhysX::Editor::RegisterPropertyTypes();
 
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     }
 
     void EditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         Physics::EditorWorldBus::Handler::BusDisconnect();
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -162,6 +136,16 @@ namespace PhysX
                 scene->SetEnabled(true);
             }
         }
+    }
+
+    void EditorSystemComponent::PopulateEditorGlobalContextMenu([[maybe_unused]] QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    {
+
+    }
+
+    void EditorSystemComponent::NotifyRegisterViews()
+    {
+        PhysX::Editor::EditorWindow::RegisterViewClass();
     }
 
     AZ::Data::AssetId EditorSystemComponent::GenerateSurfaceTypesLibrary()

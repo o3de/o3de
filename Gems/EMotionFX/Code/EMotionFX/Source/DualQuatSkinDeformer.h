@@ -12,12 +12,12 @@
 
 #pragma once
 
-// include the required headers
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/Outcome/Outcome.h>
 #include "EMotionFXConfig.h"
 #include <MCore/Source/DualQuaternion.h>
 #include "Mesh.h"
 #include "MeshDeformer.h"
-
 
 namespace EMotionFX
 {
@@ -101,37 +101,47 @@ namespace EMotionFX
          * This is the number of different bones that the skinning information of the mesh where this deformer works on uses.
          * @result The number of bones.
          */
-        MCORE_INLINE uint32 GetNumLocalBones() const                        { return mBones.GetLength(); }
+        MCORE_INLINE uint32 GetNumLocalBones() const                        { return static_cast<uint32>(m_bones.size()); }
 
         /**
          * Get the node number of a given local bone.
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE uint32 GetLocalBone(uint32 index) const                { return mBones[index].mNodeNr; }
+        MCORE_INLINE uint32 GetLocalBone(uint32 index) const                { return m_bones[index].mNodeNr; }
 
         /**
          * Pre-allocate space for a given number of local bones.
          * This does not alter the value returned by GetNumLocalBones().
          * @param numBones The number of bones to pre-allocate space for.
          */
-        MCORE_INLINE void ReserveLocalBones(uint32 numBones)                { mBones.Reserve(numBones); }
-
+        MCORE_INLINE void ReserveLocalBones(uint32 numBones)                { m_bones.reserve(numBones); }
 
     protected:
         /**
-         * Structure used for precalculating the skinning matrices.
+         * Structure used for pre-calculating the skinning matrices.
          */
         struct EMFX_API BoneInfo
         {
             uint32                  mNodeNr;        /**< The node number. */
-            MCore::DualQuaternion   mDualQuat;      /**< The dual quat of the precalculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
+            MCore::DualQuaternion   mDualQuat;      /**< The dual quat of the pre-calculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
 
             MCORE_INLINE BoneInfo()
                 : mNodeNr(MCORE_INVALIDINDEX32) {}
         };
+        AZStd::vector<BoneInfo> m_bones; /**< The array of bone information used for pre-calculation. */
 
-        MCore::Array<BoneInfo>  mBones; /**< The array of bone information used for precalculation. */
+        /**
+         * Skin a part of the mesh.
+         * @param mesh The mesh to be skinned.
+         * @param startVertex The start vertex index to start skinning.
+         * @param endVertex The end vertex index for the range to be skinned.
+         * @param boneInfos The pre-calculated skinning matrices shared across the skinning process.
+         */
+        static void SkinRange(Mesh* mesh, AZ::u32 startVertex, AZ::u32 endVertex, const AZStd::vector<BoneInfo>& boneInfos);
+
+        //! Number of vertices per batch/job used for multi-threaded software skinning.
+        static constexpr AZ::u32 s_numVerticesPerBatch = 10000;
 
         /**
          * Default constructor.
@@ -149,18 +159,6 @@ namespace EMotionFX
          * @param nodeIndex The node number to search for.
          * @result The index inside the mBones member array, which uses the given node.
          */
-        MCORE_INLINE uint32 FindLocalBoneIndex(uint32 nodeIndex) const
-        {
-            const uint32 numBones = mBones.GetLength();
-            for (uint32 i = 0; i < numBones; ++i)
-            {
-                if (mBones[i].mNodeNr == nodeIndex)
-                {
-                    return i;
-                }
-            }
-
-            return MCORE_INVALIDINDEX32;
-        }
+        AZ::Outcome<size_t> FindLocalBoneIndex(uint32 nodeIndex) const;
     };
 } // namespace EMotionFX

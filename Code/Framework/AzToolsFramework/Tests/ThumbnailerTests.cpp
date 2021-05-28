@@ -85,8 +85,6 @@ namespace UnitTest
     {
         constexpr const char* contextName1 = "Context1";
         constexpr const char* contextName2 = "Context2";
-        constexpr int thumbnailSize1 = 128;
-        constexpr int thumbnailSize2 = 256;
 
         auto checkHasContext = [](const char* contextName)
         {
@@ -98,12 +96,12 @@ namespace UnitTest
         EXPECT_FALSE(checkHasContext(contextName1));
         EXPECT_FALSE(checkHasContext(contextName2));
 
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1, thumbnailSize1);
+        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
 
         EXPECT_TRUE(checkHasContext(contextName1));
         EXPECT_FALSE(checkHasContext(contextName2));
 
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName2, thumbnailSize2);
+        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName2);
 
         EXPECT_TRUE(checkHasContext(contextName1));
         EXPECT_TRUE(checkHasContext(contextName2));
@@ -123,8 +121,6 @@ namespace UnitTest
     {
         constexpr const char* contextName1 = "Context1";
         constexpr const char* contextName2 = "Context2";
-        constexpr int thumbnailSize1 = 128;
-        constexpr int thumbnailSize2 = 256;
 
         auto checkHasContext = [](const char* contextName)
         {
@@ -133,8 +129,8 @@ namespace UnitTest
             return hasContext;
         };
 
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1, thumbnailSize1);
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName2, thumbnailSize2);
+        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
+        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName2);
 
         EXPECT_TRUE(checkHasContext(contextName1));
         EXPECT_TRUE(checkHasContext(contextName2));
@@ -149,12 +145,11 @@ namespace UnitTest
     TEST_F(ThumbnailerTests, ThumbnailerComponent_RegisterContextTwice_Assert)
     {
         constexpr const char* contextName1 = "Context1";
-        constexpr int thumbnailSize1 = 128;
 
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1, thumbnailSize1);
+        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
 
         AZ_TEST_START_TRACE_SUPPRESSION;
-        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1, thumbnailSize1);
+        AzToolsFramework::Thumbnailer::ThumbnailerRequestBus::Broadcast(&AzToolsFramework::Thumbnailer::ThumbnailerRequests::RegisterContext, contextName1);
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 

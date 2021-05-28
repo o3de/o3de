@@ -41,7 +41,7 @@ public:
     int GetAnimationLayerIndex() const { return m_iAnimationLayer; }
     void SetAnimationLayerIndex(int index) { m_iAnimationLayer = index; }
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 private:
     int m_iAnimationLayer;
 };

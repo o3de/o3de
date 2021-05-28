@@ -17,6 +17,8 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -96,6 +98,7 @@ namespace MaterialEditor
     void MaterialEditorViewportInputController::SetTargetPosition(const AZ::Vector3& targetPosition)
     {
         m_targetPosition = targetPosition;
+        m_isCameraCentered = false;
     }
 
     float MaterialEditorViewportInputController::GetDistanceToTarget() const
@@ -109,6 +112,11 @@ namespace MaterialEditor
     {
         distanceMin = m_distanceMin;
         distanceMax = m_distanceMax;
+    }
+
+    float MaterialEditorViewportInputController::GetRadius() const
+    {
+        return m_radius;
     }
 
     void MaterialEditorViewportInputController::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
@@ -134,6 +142,11 @@ namespace MaterialEditor
         const InputChannelId& inputChannelId = event.m_inputChannel.GetInputChannelId();
         const InputChannel::State state = event.m_inputChannel.GetState();
         const KeyMask keysOld = m_keys;
+
+        bool mouseOver = false;
+        AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::EventResult(
+            mouseOver, GetViewportId(),
+            &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::IsMouseOver);
 
         if (!m_behavior)
         {
@@ -177,7 +190,10 @@ namespace MaterialEditor
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {
-                m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                if (mouseOver)
+                {
+                    m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                }
             }
             break;
         case InputChannel::State::Ended:
@@ -221,7 +237,10 @@ namespace MaterialEditor
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {
-                m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                if (mouseOver)
+                {
+                    m_behavior->MoveZ(event.m_inputChannel.GetValue());
+                }
             }
             break;
         }
@@ -246,6 +265,7 @@ namespace MaterialEditor
         cameraPosition = cameraRotation.TransformVector(cameraPosition);
         AZ::Transform cameraTransform = AZ::Transform::CreateFromQuaternionAndTranslation(cameraRotation, cameraPosition);
         AZ::TransformBus::Event(m_cameraEntityId, &AZ::TransformBus::Events::SetLocalTM, cameraTransform);
+        m_isCameraCentered = true;
 
         // reset model
         AZ::Transform modelTransform = AZ::Transform::CreateIdentity();
@@ -258,11 +278,22 @@ namespace MaterialEditor
         AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
         auto skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
+
+        if (m_behavior)
+        {
+            m_behavior->End();
+            m_behavior->Start();
+        }
     }
 
     void MaterialEditorViewportInputController::SetFieldOfView(float value)
     {
         Camera::CameraRequestBus::Event(m_cameraEntityId, &Camera::CameraRequestBus::Events::SetFovDegrees, value);
+    }
+
+    bool MaterialEditorViewportInputController::IsCameraCentered() const
+    {
+        return m_isCameraCentered;
     }
 
     void MaterialEditorViewportInputController::CalculateExtents()
@@ -280,11 +311,10 @@ namespace MaterialEditor
             if (modelAsset.IsReady())
             {
                 const AZ::Aabb& aabb = modelAsset->GetAabb();
-                float radius;
-                aabb.GetAsSphere(m_modelCenter, radius);
+                aabb.GetAsSphere(m_modelCenter, m_radius);
 
                 m_distanceMin = 0.5f * AZ::GetMin(AZ::GetMin(aabb.GetExtents().GetX(), aabb.GetExtents().GetY()), aabb.GetExtents().GetZ()) + DepthNear;
-                m_distanceMax = radius * MaxDistanceMultiplier;
+                m_distanceMax = m_radius * MaxDistanceMultiplier;
             }
         }
     }

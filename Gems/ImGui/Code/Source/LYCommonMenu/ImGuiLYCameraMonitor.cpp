@@ -115,7 +115,7 @@ namespace ImGui
                 ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "Previous Cam %d:  %s %s", i, camInfo.m_camId.ToString().c_str(), camInfo.m_camName.c_str());
                 ImGui::TextColored(ImGui::Colors::s_NiceLabelColor, "  Active Cam frames/time:  %d / %.02f", camInfo.m_activeFrames, camInfo.m_activeTime);
 
-                if (ImGui::IsMouseHoveringWindow())
+                if (ImGui::IsWindowHovered())
                 {
                     ImGui::BeginTooltip();
                     ImGui::BeginChild(AZStd::string::format("cameraInfoTooltip%d", i).c_str(), ImVec2(500.0f, 140.0f), true);

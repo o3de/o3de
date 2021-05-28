@@ -128,7 +128,6 @@ namespace AssetProcessor
             AZ::IO::Path m_watchPath{ AZ::IO::PosixPathSeparator };
             AZStd::vector<AZStd::string> m_includeIdentifiers;
             AZStd::vector<AZStd::string> m_excludeIdentifiers;
-            AZStd::string m_outputPrefix;
             int m_scanOrder{};
             bool m_isRecursive{};
         };
@@ -290,10 +289,9 @@ namespace AssetProcessor
         //! ----> [textures/texture1.tga] found under [c:/dev/mygame]
         //! c:/dev/engine/models/box01.mdl
         //! ----> [models/box01.mdl] found under[c:/dev/engine]
-        //! note that this does return a database source path by default, which includes the output prefix of the scan folder if present
-        //! You can override this by setting includeOutputPrefix = false;
-        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName, bool includeOutputPrefix = true) const;
-        static bool ConvertToRelativePath(const QString& fullFileName, const ScanFolderInfo* scanFolderInfo, QString& databaseSourceName, bool includeOutputPrefix = true);
+        //! note that this does return a database source path by default
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const;
+        static bool ConvertToRelativePath(const QString& fullFileName, const ScanFolderInfo* scanFolderInfo, QString& databaseSourceName);
 
         //! given a full file name (assumed already fed through the normalization funciton), return the first matching scan folder
         const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const;

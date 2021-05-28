@@ -59,24 +59,9 @@ protected:
     virtual void OnOK() {};
     virtual void OnCancel() {};
 
-    void OnVectorUpdate(bool followTerrain);
-
-    // this gets called by stepper or text edit changes
-    void OnVectorChanged();
-
-    void SetVector(const Vec3& v);
-    void SetVectorRange(float min, float max);
-    Vec3 GetVector();
-    void EnableVector(bool enable);
-
-    void SetVectorLock(bool bVectorLock);
-
     void OnBnClickedSyncplayer();
     void OnBnClickedGotoPosition();
 
-    void OnVectorLock();
-    void OnLockSelection();
-    void OnBnClickedSetVector();
     void OnSpeedComboBoxEnter();
     void OnUpdateMoveSpeedText(const QString&);
     void OnBnClickedTerrainCollision();
@@ -98,13 +83,10 @@ protected:
     void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
     void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
-    bool m_enabledVector;
-
     float m_width, m_height;
     //int m_heightMapX,m_heightMapY;
     double m_fieldWidthMultiplier = 1.8;
 
-    int m_prevEditMode;
     int m_numSelected;
     float m_prevMoveSpeed;
 
@@ -117,14 +99,11 @@ protected:
     // Speed presets
     float m_speedPresetValues[3] = { 0.1f, 1.0f, 10.0f };
 
-    bool m_bVectorLock;
-    bool m_bSelectionLocked;
     bool m_bSelectionChanged;
 
     bool m_bDragMode;
     QString m_sLastText;
 
-    CEditTool* m_editTool;
     Vec3 m_lastValue;
     Vec3 m_currValue;
     float m_oldMainVolume;

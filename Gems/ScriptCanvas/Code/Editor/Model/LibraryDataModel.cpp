@@ -100,7 +100,7 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    QString defaultIcon = QStringLiteral("Editor/Icons/ScriptCanvas/Libraries/All.png");
+                    QString defaultIcon = QStringLiteral("Icons/ScriptCanvas/Libraries/All.png");
                     return QVariant(QIcon(defaultIcon));
                 }
 

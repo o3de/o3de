@@ -1,1 +1,0 @@
-<CacheBuildConfiguration Name="Game (fast decode, Z-up)" UpAxis="Z" MeshPrediction="1" UseBFrames="1" IndexFrameDistance="10" BlockCompressionFormat="lz4hc" PlaybackFromMemory="0" PositionPrecision="1" UVmax="0"/>

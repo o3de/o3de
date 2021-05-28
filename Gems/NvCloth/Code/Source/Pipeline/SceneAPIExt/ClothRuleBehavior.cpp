@@ -15,7 +15,6 @@
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 
 #include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
-#include <EMotionFX/Pipeline/SceneAPIExt/Groups/IActorGroup.h>
 
 #include <Pipeline/SceneAPIExt/ClothRuleBehavior.h>
 #include <Pipeline/SceneAPIExt/ClothRule.h>
@@ -100,9 +99,8 @@ namespace NvCloth
 
         bool ClothRuleBehavior::IsValidGroupType(const AZ::SceneAPI::DataTypes::ISceneNodeGroup& group) const
         {
-            // Cloth rules are available in Mesh and Actor Groups
-            return group.RTTI_IsTypeOf(AZ::SceneAPI::DataTypes::IMeshGroup::TYPEINFO_Uuid())
-                || group.RTTI_IsTypeOf(EMotionFX::Pipeline::Group::IActorGroup::TYPEINFO_Uuid());
+            // Cloth rules are available in Mesh Groups
+            return group.RTTI_IsTypeOf(AZ::SceneAPI::DataTypes::IMeshGroup::TYPEINFO_Uuid());
         }
 
         bool ClothRuleBehavior::UpdateClothRules(AZ::SceneAPI::Containers::Scene& scene)

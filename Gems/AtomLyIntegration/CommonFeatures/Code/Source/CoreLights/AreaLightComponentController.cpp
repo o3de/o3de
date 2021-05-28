@@ -234,6 +234,11 @@ namespace AZ::Render
                 !(m_configuration.m_lightType == AreaLightComponentConfig::LightType::Polygon && m_configuration.m_shapeType != PoylgonShapeTypeId),
                 "The light type is a polygon, but the shape component is not.");
         }
+
+        if (m_configuration.m_lightType == AreaLightComponentConfig::LightType::SimpleSpot)
+        {
+            m_configuration.m_enableShutters = true; // Simple spot always has shutters.
+        }
     }
 
     void AreaLightComponentController::ConfigurationChanged()
@@ -619,6 +624,10 @@ namespace AZ::Render
             }
             break;
         }
+        }
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetConfig(&m_configuration);
         }
     }
 

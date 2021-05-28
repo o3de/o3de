@@ -113,5 +113,13 @@ namespace AZ
 
         //! Checks if a value is an explicit default. This means the value is an object with no members.
         static bool IsExplicitDefault(const rapidjson::Value& value);
+
+    private:
+        static JsonSerializationResult::ResultCode DeserializerDefaultCheck(
+            BaseJsonSerializer* serializer,
+            void* object,
+            const Uuid& typeId,
+            const rapidjson::Value& value,
+            JsonDeserializerContext& context);
     };
 } // namespace AZ

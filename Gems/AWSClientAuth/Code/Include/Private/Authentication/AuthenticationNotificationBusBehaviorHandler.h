@@ -12,6 +12,7 @@
 #pragma once
 
 #include <Authentication/AuthenticationProviderBus.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace AWSClientAuth
 {
@@ -28,74 +29,104 @@ namespace AWSClientAuth
                 OnPasswordGrantMultiFactorConfirmSignInSuccess, OnPasswordGrantMultiFactorConfirmSignInFail,
                 OnDeviceCodeGrantSignInSuccess, OnDeviceCodeGrantSignInFail,
                 OnDeviceCodeGrantConfirmSignInSuccess, OnDeviceCodeGrantConfirmSignInFail,
-                OnRefreshTokensSuccess, OnRefreshTokensFail,
-                OnSignOut
+                OnRefreshTokensSuccess, OnRefreshTokensFail
             );
 
         void OnPasswordGrantSingleFactorSignInSuccess(const AuthenticationTokens& authenticationToken) override
         {
-            Call(FN_OnPasswordGrantSingleFactorSignInSuccess, authenticationToken);
+            AZ::TickBus::QueueFunction([authenticationToken, this]()
+            {
+                Call(FN_OnPasswordGrantSingleFactorSignInSuccess, authenticationToken);
+            });
         }
 
         void OnPasswordGrantSingleFactorSignInFail(const AZStd::string& error) override
         {
-            Call(FN_OnPasswordGrantSingleFactorSignInFail, error);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnPasswordGrantSingleFactorSignInFail, error);
+            });
         }
 
         void OnPasswordGrantMultiFactorSignInSuccess() override
         {
-            Call(FN_OnPasswordGrantMultiFactorSignInSuccess);
+            AZ::TickBus::QueueFunction([this]()
+            {
+                Call(FN_OnPasswordGrantMultiFactorSignInSuccess);
+            });
         }
 
         void OnPasswordGrantMultiFactorSignInFail(const AZStd::string& error) override
         {
-            Call(FN_OnPasswordGrantMultiFactorSignInFail, error);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnPasswordGrantMultiFactorSignInFail, error);
+            });
         }
 
         void OnPasswordGrantMultiFactorConfirmSignInSuccess(const AuthenticationTokens& authenticationToken) override
         {
-            Call(FN_OnPasswordGrantMultiFactorConfirmSignInSuccess, authenticationToken);
+            AZ::TickBus::QueueFunction([authenticationToken, this]()
+            {
+                Call(FN_OnPasswordGrantMultiFactorConfirmSignInSuccess, authenticationToken);
+            });
         }
 
         void OnPasswordGrantMultiFactorConfirmSignInFail(const AZStd::string& error) override
         {
-            Call(FN_OnPasswordGrantMultiFactorConfirmSignInFail, error);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnPasswordGrantMultiFactorConfirmSignInFail, error);
+            });
         }
 
         void OnDeviceCodeGrantSignInSuccess(
             const AZStd::string& userCode, const AZStd::string& verificationUrl, const int codeExpiresInSeconds) override
         {
-            Call(FN_OnDeviceCodeGrantSignInSuccess, userCode, verificationUrl, codeExpiresInSeconds);
+            AZ::TickBus::QueueFunction([userCode, verificationUrl, codeExpiresInSeconds, this]()
+            {
+                Call(FN_OnDeviceCodeGrantSignInSuccess, userCode, verificationUrl, codeExpiresInSeconds);
+            });
         }
 
         void OnDeviceCodeGrantSignInFail(const AZStd::string& error) override
         {
-            Call(FN_OnDeviceCodeGrantSignInFail, error);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnDeviceCodeGrantSignInFail, error);
+            });
         }
 
         void OnDeviceCodeGrantConfirmSignInSuccess(const AuthenticationTokens& authenticationToken) override
         {
-            Call(FN_OnDeviceCodeGrantConfirmSignInSuccess, authenticationToken);
+            AZ::TickBus::QueueFunction([authenticationToken, this]()
+            {
+                Call(FN_OnDeviceCodeGrantConfirmSignInSuccess, authenticationToken);
+            });
         }
 
         void OnDeviceCodeGrantConfirmSignInFail(const AZStd::string& error) override
         {
-            Call(FN_OnDeviceCodeGrantConfirmSignInFail, error);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnDeviceCodeGrantConfirmSignInFail, error);
+            });
         }
 
         void OnRefreshTokensSuccess(const AuthenticationTokens& authenticationToken) override
         {
-            Call(FN_OnRefreshTokensSuccess, authenticationToken);
+            AZ::TickBus::QueueFunction([authenticationToken, this]()
+            {
+                Call(FN_OnRefreshTokensSuccess, authenticationToken);
+            });
         }
 
         void OnRefreshTokensFail(const AZStd::string& error) override
         {
-            Call(FN_OnRefreshTokensFail, error);
-        }
-
-        void OnSignOut(const ProviderNameEnum& provideName) override
-        {
-            Call(FN_OnSignOut, provideName);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnRefreshTokensFail, error);
+            });
         }
     };
 } // namespace AWSClientAuth

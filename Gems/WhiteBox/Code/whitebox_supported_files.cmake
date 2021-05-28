@@ -40,8 +40,6 @@ set(FILES
     Source/Rendering/Atom/WhiteBoxAtomRenderMesh.h
     Source/Rendering/Atom/WhiteBoxAttributeBuffer.h
     Source/Rendering/Atom/WhiteBoxBuffer.h
-    Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
-    Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.h
     Source/Util/WhiteBoxMathUtil.h
     Source/Util/WhiteBoxMathUtil.cpp
 )

@@ -43,7 +43,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.shader"
                 },
-                "StencilRef": 1,
+                "StencilRef": 128, // See RenderCommon.h and DiffuseGlobalFullscreen.shader
                 "PipelineViewTag": "MainCamera"
             }
         }

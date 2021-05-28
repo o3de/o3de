@@ -11,8 +11,8 @@
 */
 
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -46,6 +46,71 @@ namespace AZ
                     ->Property("materialAssetId", BehaviorValueProperty(&MaterialAssignmentId::m_materialAssetId))
                     ;
             }
+        }
+
+        MaterialAssignmentId::MaterialAssignmentId(MaterialAssignmentLodIndex lodIndex, const AZ::Data::AssetId& materialAssetId)
+            : m_lodIndex(lodIndex)
+            , m_materialAssetId(materialAssetId)
+        {
+        }
+
+        MaterialAssignmentId MaterialAssignmentId::CreateDefault()
+        {
+            return MaterialAssignmentId(NonLodIndex, AZ::Data::AssetId());
+        }
+
+        MaterialAssignmentId MaterialAssignmentId::CreateFromAssetOnly(AZ::Data::AssetId materialAssetId)
+        {
+            return MaterialAssignmentId(NonLodIndex, materialAssetId);
+        }
+
+        MaterialAssignmentId MaterialAssignmentId::CreateFromLodAndAsset(
+            MaterialAssignmentLodIndex lodIndex, AZ::Data::AssetId materialAssetId)
+        {
+            return MaterialAssignmentId(lodIndex, materialAssetId);
+        }
+
+        bool MaterialAssignmentId::IsDefault() const
+        {
+            return m_lodIndex == NonLodIndex && !m_materialAssetId.IsValid();
+        }
+
+        bool MaterialAssignmentId::IsAssetOnly() const
+        {
+            return m_lodIndex == NonLodIndex && m_materialAssetId.IsValid();
+        }
+
+        bool MaterialAssignmentId::IsLodAndAsset() const
+        {
+            return m_lodIndex != NonLodIndex && m_materialAssetId.IsValid();
+        }
+
+        AZStd::string MaterialAssignmentId::ToString() const
+        {
+            AZStd::string assetPathString;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetPathString, &AZ::Data::AssetCatalogRequests::GetAssetPathById, m_materialAssetId);
+            AZ::StringFunc::Path::StripPath(assetPathString);
+            AZ::StringFunc::Path::StripExtension(assetPathString);
+            return AZStd::string::format("%s:%llu", assetPathString.c_str(), m_lodIndex);
+        }
+
+        size_t MaterialAssignmentId::GetHash() const
+        {
+            size_t seed = 0;
+            AZStd::hash_combine(seed, m_lodIndex);
+            AZStd::hash_combine(seed, m_materialAssetId.m_subId);
+            return seed;
+        }
+
+        bool MaterialAssignmentId::operator==(const MaterialAssignmentId& rhs) const
+        {
+            return m_lodIndex == rhs.m_lodIndex && m_materialAssetId.m_subId == rhs.m_materialAssetId.m_subId;
+        }
+
+        bool MaterialAssignmentId::operator!=(const MaterialAssignmentId& rhs) const
+        {
+            return !(*this == rhs);
         }
     } // namespace Render
 } // namespace AZ

@@ -17,6 +17,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Aabb.h>
+#include <DiffuseProbeGrid/DiffuseProbeGridTextureReadback.h>
 
 namespace AZ
 {
@@ -26,10 +27,12 @@ namespace AZ
 
         struct DiffuseProbeGridRenderData
         {
+            // [GFX TODO][ATOM-15650] Change DiffuseProbeGrid Classification texture to R8_UINT
             static const RHI::Format RayTraceImageFormat = RHI::Format::R32G32B32A32_FLOAT;
             static const RHI::Format IrradianceImageFormat = RHI::Format::R16G16B16A16_UNORM;
             static const RHI::Format DistanceImageFormat = RHI::Format::R32G32_FLOAT;
             static const RHI::Format RelocationImageFormat = RHI::Format::R16G16B16A16_FLOAT;
+            static const RHI::Format ClassificationImageFormat = RHI::Format::R32_FLOAT;
 
             // image pool
             RHI::Ptr<RHI::ImagePool> m_imagePool;
@@ -43,6 +46,7 @@ namespace AZ
             RHI::ImageViewDescriptor m_probeIrradianceImageViewDescriptor;
             RHI::ImageViewDescriptor m_probeDistanceImageViewDescriptor;
             RHI::ImageViewDescriptor m_probeRelocationImageViewDescriptor;
+            RHI::ImageViewDescriptor m_probeClassificationImageViewDescriptor;
 
             // render pipeline state
             RPI::Ptr<RPI::PipelineStateForDraw> m_pipelineState;
@@ -59,7 +63,7 @@ namespace AZ
         class DiffuseProbeGrid final
         {
         public:
-            DiffuseProbeGrid() = default;
+            DiffuseProbeGrid();
             ~DiffuseProbeGrid();
 
             void Init(RPI::Scene* scene, DiffuseProbeGridRenderData* diffuseProbeGridRenderData);
@@ -94,6 +98,9 @@ namespace AZ
             bool GetUseDiffuseIbl() const { return m_useDiffuseIbl; }
             void SetUseDiffuseIbl(bool useDiffuseIbl) { m_useDiffuseIbl = useDiffuseIbl; }
 
+            DiffuseProbeGridMode GetMode() const { return m_mode; }
+            void SetMode(DiffuseProbeGridMode mode);
+
             uint32_t GetNumRaysPerProbe() const { return m_numRaysPerProbe; }
 
             uint32_t GetRemainingRelocationIterations() const { return aznumeric_cast<uint32_t>(m_remainingRelocationIterations); }
@@ -118,6 +125,7 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateRowDistanceSrg() const { return m_borderUpdateRowDistanceSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetBorderUpdateColumnDistanceSrg() const { return m_borderUpdateColumnDistanceSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetRelocationSrg() const { return m_relocationSrg; }
+            const Data::Instance<RPI::ShaderResourceGroup>& GetClassificationSrg() const { return m_classificationSrg; }
             const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
 
             // Srg updates
@@ -126,25 +134,39 @@ namespace AZ
             void UpdateBlendDistanceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
             void UpdateBorderUpdateSrgs(const Data::Asset<RPI::ShaderResourceGroupAsset>& rowSrgAsset, const Data::Asset<RPI::ShaderResourceGroupAsset>& columnSrgAsset);
             void UpdateRelocationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
+            void UpdateClassificationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
             void UpdateRenderObjectSrg();
 
             // textures
-            const RHI::Ptr<RHI::Image>& GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
-            const RHI::Ptr<RHI::Image>& GetIrradianceImage() { return m_irradianceImage[m_currentImageIndex]; }
-            const RHI::Ptr<RHI::Image>& GetDistanceImage() { return m_distanceImage[m_currentImageIndex]; }
-            const RHI::Ptr<RHI::Image>& GetRelocationImage() { return m_relocationImage[m_currentImageIndex]; }
+            const RHI::Ptr<RHI::Image> GetRayTraceImage() { return m_rayTraceImage[m_currentImageIndex]; }
+            const RHI::Ptr<RHI::Image> GetIrradianceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_irradianceImage[m_currentImageIndex] : m_bakedIrradianceImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::Image> GetDistanceImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_distanceImage[m_currentImageIndex] : m_bakedDistanceImage->GetRHIImage(); }
+            const RHI::Ptr<RHI::Image> GetRelocationImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_relocationImage[m_currentImageIndex] : m_bakedRelocationImage; }
+            const RHI::Ptr<RHI::Image> GetClassificationImage() { return m_mode == DiffuseProbeGridMode::RealTime ? m_classificationImage[m_currentImageIndex] : m_bakedClassificationImage; }
+
+            const AZStd::string& GetBakedIrradianceRelativePath() const { return m_bakedIrradianceRelativePath; }
+            const AZStd::string& GetBakedDistanceRelativePath() const { return m_bakedDistanceRelativePath; }
+            const AZStd::string& GetBakedRelocationRelativePath() const { return m_bakedRelocationRelativePath; }
+            const AZStd::string& GetBakedClassificationRelativePath() const { return m_bakedClassificationRelativePath; }
 
             // attachment Ids
             const RHI::AttachmentId GetRayTraceImageAttachmentId() const { return m_rayTraceImageAttachmentId; }
             const RHI::AttachmentId GetIrradianceImageAttachmentId() const { return m_irradianceImageAttachmentId; }
             const RHI::AttachmentId GetDistanceImageAttachmentId() const { return m_distanceImageAttachmentId; }
             const RHI::AttachmentId GetRelocationImageAttachmentId() const { return m_relocationImageAttachmentId; }
+            const RHI::AttachmentId GetClassificationImageAttachmentId() const { return m_classificationImageAttachmentId; }
 
             const DiffuseProbeGridRenderData* GetRenderData() const { return m_renderData; }
 
             // the irradiance image needs to be manually cleared after it is resized in the editor
             bool GetIrradianceClearRequired() const { return m_irradianceClearRequired; }
             void ResetIrradianceClearRequired() { m_irradianceClearRequired = false; }
+
+            // texture readback
+            DiffuseProbeGridTextureReadback& GetTextureReadback() { return m_textureReadback; }
+
+            void SetBakedTextures(const DiffuseProbeGridBakedTextures& bakedTextures);
+            bool HasValidBakedTextures() const;
 
             static constexpr uint32_t DefaultNumIrradianceTexels = 6;
             static constexpr uint32_t DefaultNumDistanceTexels = 14;
@@ -215,16 +237,39 @@ namespace AZ
             // culling
             RPI::Cullable m_cullable;
 
-            // textures
+            // grid mode (RealTime or Baked)
+            DiffuseProbeGridMode m_mode = DiffuseProbeGridMode::RealTime;
+
+            // real-time textures
             static const uint32_t MaxTextureDimension = 8192;
             static const uint32_t ImageFrameCount = 3;
             RHI::Ptr<RHI::Image> m_rayTraceImage[ImageFrameCount];
             RHI::Ptr<RHI::Image> m_irradianceImage[ImageFrameCount];
             RHI::Ptr<RHI::Image> m_distanceImage[ImageFrameCount];
             RHI::Ptr<RHI::Image> m_relocationImage[ImageFrameCount];
+            RHI::Ptr<RHI::Image> m_classificationImage[ImageFrameCount];
             uint32_t m_currentImageIndex = 0;
             bool m_updateTextures = false;
             bool m_irradianceClearRequired = true;
+
+            // baked textures
+            Data::Instance<RPI::Image> m_bakedIrradianceImage;
+            Data::Instance<RPI::Image> m_bakedDistanceImage;
+            RHI::Ptr<RHI::Image> m_bakedRelocationImage;
+            RHI::Ptr<RHI::Image> m_bakedClassificationImage;
+
+            // baked texture relative paths
+            AZStd::string m_bakedIrradianceRelativePath;
+            AZStd::string m_bakedDistanceRelativePath;
+            AZStd::string m_bakedRelocationRelativePath;
+            AZStd::string m_bakedClassificationRelativePath;
+
+            // baked texture data (only needed for the relocation and classification textures)
+            AZStd::vector<uint8_t> m_bakedRelocationImageData;
+            AZStd::vector<uint8_t> m_bakedClassificationImageData;
+
+            // texture readback
+            DiffuseProbeGridTextureReadback m_textureReadback;
 
             // Srgs
             Data::Instance<RPI::ShaderResourceGroup> m_rayTraceSrg;
@@ -235,6 +280,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_borderUpdateRowDistanceSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_borderUpdateColumnDistanceSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_relocationSrg;
+            Data::Instance<RPI::ShaderResourceGroup> m_classificationSrg;
             Data::Instance<RPI::ShaderResourceGroup> m_renderObjectSrg;
             bool m_updateRenderObjectSrg = true;
 
@@ -243,6 +289,7 @@ namespace AZ
             RHI::AttachmentId m_irradianceImageAttachmentId;
             RHI::AttachmentId m_distanceImageAttachmentId;
             RHI::AttachmentId m_relocationImageAttachmentId;
+            RHI::AttachmentId m_classificationImageAttachmentId;
         };
     }   // namespace Render
 }   // namespace AZ

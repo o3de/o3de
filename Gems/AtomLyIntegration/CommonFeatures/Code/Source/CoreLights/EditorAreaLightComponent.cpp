@@ -49,8 +49,8 @@ namespace AZ
                         "Light", "A light which emits from a point or goemetric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Atom")
-                            ->Attribute(Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg")
-                            ->Attribute(Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png")
+                            ->Attribute(Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
+                            ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-light.html")
@@ -67,50 +67,56 @@ namespace AZ
                     editContext->Class<AreaLightComponentConfig>(
                         "AreaLightComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_lightType, "Light Type", "Which type of light this component represents.")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Unknown, "Choose a Light Type")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::Sphere, "Point (Sphere)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimplePoint, "Point (Simple)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::SpotDisk, "Spot (Disk)")
-                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimpleSpot, "Spot (Simple)")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_lightType, "Light type", "Which type of light this component represents.")
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Unknown, "Choose a light type")
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::Sphere, "Point (sphere)")
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimplePoint, "Point (simple punctual)")
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::SpotDisk, "Spot (disk)")
+                            ->EnumAttribute(AreaLightComponentConfig::LightType::SimpleSpot, "Spot (simple punctual)")
                             ->EnumAttribute(AreaLightComponentConfig::LightType::Capsule, "Capsule")
                             ->EnumAttribute(AreaLightComponentConfig::LightType::Quad, "Quad")
                             ->EnumAttribute(AreaLightComponentConfig::LightType::Polygon, "Polygon")
                         ->DataElement(Edit::UIHandlers::Color, &AreaLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                             ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetLinearRgbEditorConfig())
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode, "Intensity Mode", "Allows specifying which photometric unit to work in.")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying which photometric unit to work in.")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, &AreaLightComponentConfig::GetValidPhotometricUnits)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
                             ->Attribute(Edit::Attributes::Min, &AreaLightComponentConfig::GetIntensityMin)
                             ->Attribute(Edit::Attributes::Max, &AreaLightComponentConfig::GetIntensityMax)
                             ->Attribute(Edit::Attributes::SoftMin, &AreaLightComponentConfig::GetIntensitySoftMin)
                             ->Attribute(Edit::Attributes::SoftMax, &AreaLightComponentConfig::GetIntensitySoftMax)
                             ->Attribute(Edit::Attributes::Suffix, &AreaLightComponentConfig::GetIntensitySuffix)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightEmitsBothDirections, "Both Directions", "Whether light should emit from both sides of the surface or just the front")
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_lightEmitsBothDirections, "Both directions", "Whether light should emit from both sides of the surface or just the front")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsBothDirections)
-                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_useFastApproximation, "Fast Approximation", "Whether the light should use the default high quality linear transformed cosine technique or a faster approximation.")
+                        ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_useFastApproximation, "Fast approximation", "Whether the light should use the default high quality linear transformed cosine technique or a faster approximation.")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsFastApproximation)
-                        ->ClassElement(Edit::ClassElements::Group, "Attenuation Radius")
+                        ->ClassElement(Edit::ClassElements::Group, "Attenuation radius")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                         ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode, "Mode", "Controls whether the attenation radius is calculated automatically or set explicitly.")
                             ->EnumAttribute(LightAttenuationRadiusMode::Automatic, "Automatic")
                             ->EnumAttribute(LightAttenuationRadiusMode::Explicit, "Explicit")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
                         ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_attenuationRadius, "Radius", "The distance at which this light no longer has an affect.")
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsAttenuationRadiusModeAutomatic)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
 
                         ->ClassElement(Edit::ClassElements::Group, "Shutters")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
-                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShutters, "Enable Shutters", "Restrict the light to a specific beam angle depending on shape.")
+                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShutters, "Enable shutters", "Restrict the light to a specific beam angle depending on shape.")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::ShuttersMustBeEnabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_innerShutterAngleDegrees, "Inner Angle", "The inner angle of the shutters where the light beam begins to be occluded.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_innerShutterAngleDegrees, "Inner angle", "The inner angle of the shutters where the light beam begins to be occluded.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 180.0f)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShuttersDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_outerShutterAngleDegrees, "Outer Angle", "The outer angle of the shutters where the light beam is completely occluded.")
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_outerShutterAngleDegrees, "Outer angle", "The outer angle of the shutters where the light beam is completely occluded.")
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 180.0f)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
@@ -119,9 +125,9 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::Group, "Shadows")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShadow, "Enable Shadow", "Enable shadow for the light")
+                        ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShadow, "Enable shadow", "Enable shadow for the light")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowmapMaxSize, "Shadowmap Size", "Width/Height of shadowmap")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowmapMaxSize, "Shadowmap size", "Width and height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")
                             ->EnumAttribute(ShadowmapSize::Size1024, "1024")
@@ -129,13 +135,13 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowFilterMethod, "Shadow Filter Method",
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_shadowFilterMethod, "Shadow filter method",
                             "Filtering method of edge-softening of shadows.\n"
                             "  None: no filtering\n"
-                            "  PCF: Percentage-Closer Filtering\n"
-                            "  ESM: Exponential Shadow Maps\n"
+                            "  PCF: Percentage-closer Filtering\n"
+                            "  ESM: Exponential shadow maps\n"
                             "  ESM+PCF: ESM with a PCF fallback\n"
-                            "For BehaviorContext (or TrackView), None=0, PCF=1, ESM=2, ESM+PCF=3")
+                            "For BehaviorContext (or track view), None=0, PCF=1, ESM=2, ESM+PCF=3")
                             ->EnumAttribute(ShadowFilterMethod::None, "None")
                             ->EnumAttribute(ShadowFilterMethod::Pcf, "PCF")
                             ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
@@ -143,7 +149,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_boundaryWidthInDegrees, "Softening Boundary Width",
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_boundaryWidthInDegrees, "Softening boundary width",
                             "Width of the boundary between shadowed area and lit one. "
                             "Units are in degrees. "
                             "If this is 0, softening edge is disabled.")
@@ -152,26 +158,27 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Suffix, " deg")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_predictionSampleCount, "Prediction Sample Count",
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
                             "Sample Count for prediction of whether the pixel is on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 16)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsPcfBoundarySearchDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering Sample Count",
+                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "It is used only when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
                             ->Attribute(Edit::Attributes::Max, 64)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "Pcf Method",
-                            "Type of Pcf to use.\n"
-                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n"
-                            "  Bicubic: a smooth, fixed-size kernel \n")
-                            ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary Search")
+                            Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_pcfMethod, "Pcf method",
+                            "Type of PCF to use.\n"
+                            "  Bicubic: a smooth, fixed-size kernel \n"
+                            "  Boundary search: do several taps to first determine if we are on a shadow boundary\n")
                             ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
+                            ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary search")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled);
                         ;
                 }
@@ -329,6 +336,7 @@ namespace AZ
             bool needsFullRefresh = HandleLightTypeChange();
 
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColor, m_controller.m_configuration.m_color);
+            LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeWireframeColor, m_controller.m_configuration.m_color);
 
             // If photometric unit changes, convert the intensities so the actual intensity doesn't change.
             m_controller.ConvertToIntensityMode(m_controller.m_configuration.m_intensityMode);

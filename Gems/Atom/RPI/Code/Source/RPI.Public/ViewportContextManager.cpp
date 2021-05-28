@@ -57,9 +57,14 @@ namespace AZ
                     return;
                 }
                 viewportData.context = viewportContext;
-                auto onSizeChanged = [contextName, viewportId](AzFramework::WindowSize size)
+                auto onSizeChanged = [this, viewportId](AzFramework::WindowSize size)
                 {
-                    ViewportContextNotificationBus::Event(contextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
+                    // Ensure we emit OnViewportSizeChanged with the correct name.
+                    auto viewportContext = this->GetViewportContextById(viewportId);
+                    if (viewportContext)
+                    {
+                        ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
+                    }
                     ViewportContextIdNotificationBus::Event(viewportId, &ViewportContextIdNotificationBus::Events::OnViewportSizeChanged, size);
                 };
                 viewportContext->m_name = contextName;
@@ -174,6 +179,8 @@ namespace AZ
             GetOrCreateViewStackForContext(newContextName);
             viewportContext->m_name = newContextName;
             UpdateViewForContext(newContextName);
+            // Ensure anyone listening on per-name viewport size updates gets notified.
+            ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());
         }
 
         void ViewportContextManager::EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction)

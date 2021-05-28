@@ -46,7 +46,7 @@ namespace AzQtComponents
     Text::Config Text::defaultConfig()
     {
         Config config;
-        config.hyperlinkColor = QStringLiteral("#44B2F8");
+        config.hyperlinkColor = QStringLiteral("#94D2FF");
 
         return config;
     }

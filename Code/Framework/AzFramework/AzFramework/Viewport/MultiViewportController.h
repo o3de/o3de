@@ -37,6 +37,7 @@ namespace AzFramework
 
         // ViewportControllerInterface ...
         bool HandleInputChannelEvent(const ViewportControllerInputEvent& event) override;
+        void ResetInputChannels() override;
         void UpdateViewport(const ViewportControllerUpdateEvent& event) override;
         void RegisterViewportContext(ViewportId viewport) override;
         void UnregisterViewportContext(ViewportId viewport) override;
@@ -47,21 +48,29 @@ namespace AzFramework
     };
 
     //! The interface used by MultiViewportController to manage individual instances.
+    template <class TController>
     class MultiViewportControllerInstanceInterface
     {
     public:
-        explicit MultiViewportControllerInstanceInterface(ViewportId viewport)
+        using ControllerType = TController;
+
+        MultiViewportControllerInstanceInterface(ViewportId viewport, ControllerType* controller)
             : m_viewportId(viewport)
+            , m_controller(controller)
         {
         }
 
         ViewportId GetViewportId() const { return m_viewportId; }
+        ControllerType* GetController() { return m_controller; }
+        const ControllerType* GetController() const { return m_controller; }
 
         virtual bool HandleInputChannelEvent([[maybe_unused]]const ViewportControllerInputEvent& event) { return false; }
+        virtual void ResetInputChannels() {}
         virtual void UpdateViewport([[maybe_unused]]const ViewportControllerUpdateEvent& event) {}
 
     private:
         ViewportId m_viewportId;
+        ControllerType* m_controller;
     };
 } //namespace AzFramework
 

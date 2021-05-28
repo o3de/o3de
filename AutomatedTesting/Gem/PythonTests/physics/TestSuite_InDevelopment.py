@@ -50,7 +50,7 @@ class TestAutomation(TestAutomationBase):
         unexpected_lines = ["Assert"]
         self._run_test(request, workspace, editor, test_module, expected_lines, unexpected_lines)
 
-    # BUG: https://jira.agscollab.com/browse/LY-107723")
+    # BUG: LY-107723")
     def test_C14976308_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor):
         from . import C14976308_ScriptCanvas_SetKinematicTargetTransform as test_module
 

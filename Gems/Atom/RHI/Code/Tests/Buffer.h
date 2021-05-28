@@ -30,6 +30,8 @@ namespace UnitTest
         void ShutdownInternal() override;
     };
 
+    class BufferPool;
+
     class Buffer
         : public AZ::RHI::Buffer
     {

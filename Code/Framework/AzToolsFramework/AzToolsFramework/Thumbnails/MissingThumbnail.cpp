@@ -10,19 +10,22 @@
 *
 */
 
+#include <AzCore/Utils/Utils.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Thumbnails/MissingThumbnail.h>
 
 namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-        static const char* MISSING_ICON_PATH = "Editor/Icons/AssetBrowser/Default_16.svg";
+        static constexpr const char* MissingIconPath = "Assets/Editor/Icons/AssetBrowser/Default_16.svg";
 
-        MissingThumbnail::MissingThumbnail(int thumbnailSize)
-            : Thumbnail(MAKE_TKEY(ThumbnailKey), thumbnailSize)
+        MissingThumbnail::MissingThumbnail()
+            : Thumbnail(MAKE_TKEY(ThumbnailKey))
         {
-            m_icon = QIcon(MISSING_ICON_PATH);
-            m_state = State::Ready;
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / MissingIconPath;
+            m_pixmap.load(absoluteIconPath.c_str());
+            m_state = m_pixmap.isNull() ? State::Failed : State::Ready;
         }
 
     } // namespace Thumbnailer

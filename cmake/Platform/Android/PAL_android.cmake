@@ -19,6 +19,7 @@ ly_set(PAL_TRAIT_BUILD_TESTS_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_BUILD_UNITY_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_BUILD_UNITY_EXCLUDE_EXTENSIONS)
 ly_set(PAL_TRAIT_BUILD_EXCLUDE_ALL_TEST_RUNS_FROM_IDE TRUE)
+ly_set(PAL_TRAIT_BUILD_CPACK_SUPPORTED FALSE)
 
 # Test library support
 ly_set(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED FALSE)
@@ -34,11 +35,11 @@ else()
 endif()
 
 # Set the default asset type for deployment
-set(LY_ASSET_DEPLOY_ASSET_TYPE "es3" CACHE STRING "Set the asset type for deployment.")
+set(LY_ASSET_DEPLOY_ASSET_TYPE "android" CACHE STRING "Set the asset type for deployment.")
 
 # Set the python cmd tool
 if(PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")
-    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/Tools/Python/python3.cmd)
+    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.cmd)
 else()
-    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/Tools/Python/python3.sh)
+    ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)
 endif()

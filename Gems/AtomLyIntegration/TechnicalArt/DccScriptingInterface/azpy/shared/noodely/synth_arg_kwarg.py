@@ -22,9 +22,9 @@ from synth import synthesize
 # -------------------------------------------------------------------------
 
 
-def setSynthArgKwarg(inst, argPosIndex=None, argTag=None, defaultValue=None,
-                     inArgs=None, inKwargs=None, removeKwarg=True,
-                     setAnyway=True):
+def set_synth_arg_kwarg(inst, arg_pos_index=None, arg_tag=None, default_value=None,
+                     in_args=None, in_kwargs=None, remove_kwarg=True,
+                     set_anyway=True):
     """
     Uses find_arg and sets a property on a object.
 
@@ -34,44 +34,44 @@ def setSynthArgKwarg(inst, argPosIndex=None, argTag=None, defaultValue=None,
     If the arg/property doesn't exist we synthesize it
     """
 
-    foundArg = None
-    argValueDict = {}
+    found_arg = None
+    arg_value_dict = {}
 
     # find the argument, or set to default value
-    foundArg, inKwargs = find_arg(argPosIndex, argTag, removeKwarg,
-                                  inArgs, inKwargs,
-                                  defaultValue)
+    found_arg, in_kwargs = find_arg(arg_pos_index, arg_tag, remove_kwarg,
+                                  in_args, in_kwargs,
+                                  default_value)
 
-    if foundArg:
-        argTag = foundArg
+    if found_arg:
+        arg_tag = found_arg
 
     # single arg first
     # make sure the object doesn't arealdy have this property
     try:
-        hasattr(inst, argTag)  # check if property exists
-        if setAnyway:
+        hasattr(inst, arg_tag)  # check if property exists
+        if set_anyway:
             try:
-                setattr(inst, argTag, defaultValue)  # try to set
+                setattr(inst, arg_tag, default_value)  # try to set
             except Exception as e:
                 raise e
     except:
         pass
 
     # make it a synthetic property
-    if argTag:
+    if arg_tag:
         try:
-            argValue = synthesize(inst, argTag, defaultValue)
-            argValueDict[argTag] = argValue
+            arg_value = synthesize(inst, arg_tag, default_value)
+            arg_value_dict[arg_tag] = arg_value
         except Exception as e:
             raise e
 
     # multiple and/or remaining kwards next
-    if inKwargs:
-        if len(inKwargs) > 0:
-            for k, v in inKwargs.items():
+    if in_kwargs:
+        if len(in_kwargs) > 0:
+            for k, v in in_kwargs.items():
                 try:
                     hasattr(inst, k)  # check if property exists
-                    if setAnyway:
+                    if set_anyway:
                         try:
                             setattr(inst, k, v)  # try to set
                         except Exception as e:
@@ -81,12 +81,12 @@ def setSynthArgKwarg(inst, argPosIndex=None, argTag=None, defaultValue=None,
 
                 if k:
                     try:
-                        argValue = synthesize(inst, k, v)
-                        argValueDict[k] = argValue
+                        arg_value = synthesize(inst, k, v)
+                        arg_value_dict[k] = arg_value
                     except Exception as e:
                         raise e
 
-    return argValueDict
+    return arg_value_dict
 # --------------------------------------------------------------------------
 
 
@@ -98,28 +98,28 @@ if __name__ == '__main__':
     from test_foo import Foo
 
     # define a arg/property tag we know doesn't exist
-    synthArgTag = 'syntheticArg'
+    synth_arg_tag = 'synthetic_arg'
 
     # create a test object
     print('~ creating the test foo object...')
-    myFoo = Foo()
+    my_foo = Foo()
 
     print('~ Starting - single synthetic arg test...')
     # find and set existing, or create and set
-    argValueDict = setSynthArgKwarg(myFoo,
-                                    argTag=synthArgTag,
-                                    defaultValue='kablooey')
+    arg_value_dict = set_synth_arg_kwarg(my_foo,
+                                    arg_tag=synth_arg_tag,
+                                    default_value='kablooey')
 
     # what was returned
     print('~ single value returned...')
-    for k, v in argValueDict.items():
+    for k, v in arg_value_dict.items():
         print("Arg '{0}':'{1}'".format(k, v))
 
     # attempt to access the new synthetic property directly
     print('~ direct property access test...')
     try:
-        myFoo.syntheticArg
-        print('myFoo.{0}: {1}'.format(synthArgTag, myFoo.syntheticArg))
+        my_foo.synthetic_arg
+        print('myFoo.{0}: {1}'.format(synth_arg_tag, my_foo.synthetic_arg))
     except Exception as e:
         raise e
 
@@ -128,31 +128,31 @@ if __name__ == '__main__':
     newKwargs = {'fooey': 'chop suey', 'success': True}
 
     # find and set existing, or create and set
-    argValueDict = setSynthArgKwarg(myFoo,
-                                    inKwargs=newKwargs,
-                                    defaultValue='kablooey')
+    arg_value_dict = set_synth_arg_kwarg(my_foo,
+                                    in_kwargs=newKwargs,
+                                    default_value='kablooey')
 
     # what was returned
     print('~ multiple values returned...')
-    for k, v in argValueDict.items():
+    for k, v in arg_value_dict.items():
         print("Arg '{0}':'{1}'".format(k, v))
 
     print('~ multiple direct property access test...')
     try:
-        myFoo.fooey
-        print('myFoo.{0}: {1}'.format('fooey', myFoo.fooey))
+        my_foo.fooey
+        print('myFoo.{0}: {1}'.format('fooey', my_foo.fooey))
     except Exception as e:
         raise e
 
     try:
-        myFoo.success
-        print('myFoo.{0}: {1}'.format('success', myFoo.success))
+        my_foo.success
+        print('myFoo.{0}: {1}'.format('success', my_foo.success))
     except Exception as e:
         raise e
 
     print('~ Starting - known failure test...')
     try:
-        myFoo.knownBad
+        my_foo.knownBad
     except Exception as e:
         print(e)
         print('Test failed as expected!!!')

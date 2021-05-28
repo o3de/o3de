@@ -90,6 +90,16 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseRawBehaviorProperties");
+}
+
+TEST_F(ScriptCanvasTestFixture, StringSanitization)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_StringSanitization");
+}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
 {
     RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
@@ -98,6 +108,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
 TEST_F(ScriptCanvasTestFixture, InterpretedReadEnumConstant)
 {
     RunUnitTestGraph("LY_SC_UnitTest_ReadEnumConstant");
+}
+
+TEST_F(ScriptCanvasTestFixture, UserBranchSanityCheck)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UserBranchSanityCheck");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerNoDisconnect)
@@ -128,6 +143,16 @@ TEST_F(ScriptCanvasTestFixture, InterpretedEventHandlerDisconnect)
     };
 
     RunUnitTestGraph("LY_SC_UnitTest_EventHandlerDisconnect", runSpec);
+}
+
+TEST_F(ScriptCanvasTestFixture, FunctionLocalStaticsUnique)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_FunctionLocalStaticsUnique");
+}
+
+TEST_F(ScriptCanvasTestFixture, FunctionContainerInputTest)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_FunctionContainerInputTest");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedFixBoundMultipleResults)
@@ -281,6 +306,16 @@ TEST_F(ScriptCanvasTestFixture, InterpretedUnhandledEventReturnValueTypeChangeTu
 TEST_F(ScriptCanvasTestFixture, NodeableDurationFunction)
 {
     ExpectParse("LY_SC_UnitTest_NodeableDurationFunction");
+}
+
+TEST_F(ScriptCanvasTestFixture, LatentCallOfPureUserFunction)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_LatentCallOfPureUserFunction", ExecutionMode::Interpreted, DurationSpec::Ticks(3));
+}
+
+TEST_F(ScriptCanvasTestFixture, LatentCallOfNotPureUserFunction)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_LatentCallOfNotPureUserFunction", ExecutionMode::Interpreted, DurationSpec::Ticks(3));
 }
 
 TEST_F(ScriptCanvasTestFixture, NodeableDurationSubgraph)
@@ -885,6 +920,11 @@ TEST_F(ScriptCanvasTestFixture, InterpretedBranchInputValuePointerReferenceType)
 TEST_F(ScriptCanvasTestFixture, InterpretedNodeableInputMethodSharedDataSlot)
 {
     RunUnitTestGraph("LY_SC_UnitTest_NodeableInputMethodSharedDataSlot", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, InterpretedExecutionOutPerformance)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_ExecutionOutPerformance", ExecutionMode::Interpreted);
 }
 
 #if defined(FUNCTION_LEGACY_SUPPORT_ENABLED)

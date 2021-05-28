@@ -80,11 +80,11 @@ namespace UnitTest
             m_indexBufferView = RHI::IndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
         }
 
-        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemKeyPair itemKeyPair) const
+        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemProperties itemProperties) const
         {
-            const RHI::DrawItem* drawItem = itemKeyPair.m_item;
+            const RHI::DrawItem* drawItem = itemProperties.m_item;
 
-            EXPECT_EQ(itemKeyPair.m_sortKey, drawItemData.m_sortKey);
+            EXPECT_EQ(itemProperties.m_sortKey, drawItemData.m_sortKey);
             EXPECT_EQ(drawItem->m_stencilRef, drawItemData.m_stencilRef);
             EXPECT_EQ(drawItem->m_pipelineState, drawItemData.m_pipelineState);
 

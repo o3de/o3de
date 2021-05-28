@@ -107,10 +107,13 @@ void CCommentNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmpty
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCommentNode::Reflect(AZ::SerializeContext* serializeContext)
+void CCommentNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CCommentNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CCommentNode, CAnimNode>()
+            ->Version(1);
+    }
 }
 
 //-----------------------------------------------------------------------------

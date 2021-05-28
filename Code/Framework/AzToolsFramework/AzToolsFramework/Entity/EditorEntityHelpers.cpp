@@ -136,6 +136,48 @@ namespace AzToolsFramework
         return entity->GetName();
     }
 
+    EntityList EntityIdListToEntityList(const EntityIdList& inputEntityIds)
+    {
+        EntityList entities;
+        entities.reserve(inputEntityIds.size());
+
+        for (AZ::EntityId entityId : inputEntityIds)
+        {
+            if (!entityId.IsValid())
+            {
+                continue;
+            }
+
+            if (auto entity = GetEntityById(entityId))
+            {
+                entities.emplace_back(entity);
+            }
+        }
+
+        return entities;
+    }
+
+    EntityList EntityIdSetToEntityList(const EntityIdSet& inputEntityIds)
+    {
+        EntityList entities;
+        entities.reserve(inputEntityIds.size());
+
+        for (AZ::EntityId entityId : inputEntityIds)
+        {
+            if (!entityId.IsValid())
+            {
+                continue;
+            }
+
+            if (auto entity = GetEntityById(entityId))
+            {
+                entities.emplace_back(entity);
+            }
+        }
+
+        return entities;
+    }
+
     void GetAllComponentsForEntity(const AZ::Entity* entity, AZ::Entity::ComponentArrayType& componentsOnEntity)
     {
         if (entity)
@@ -1066,6 +1108,45 @@ namespace AzToolsFramework
         }
 
         return !allEntityClonesContainer.m_entities.empty();
+    }
+
+    EntityIdSet GetCulledEntityHierarchy(const EntityIdList& entities)
+    {
+        EntityIdSet culledEntities;
+
+        for (const AZ::EntityId& entityId : entities)
+        {
+            bool selectionIncludesTransformHeritage = false;
+            AZ::EntityId parentEntityId = entityId;
+            do
+            {
+                AZ::EntityId nextParentId;
+                AZ::TransformBus::EventResult(
+                    /*result*/ nextParentId,
+                    /*address*/ parentEntityId,
+                    &AZ::TransformBus::Events::GetParentId);
+                parentEntityId = nextParentId;
+                if (!parentEntityId.IsValid())
+                {
+                    break;
+                }
+                for (const AZ::EntityId& parentCheck : entities)
+                {
+                    if (parentCheck == parentEntityId)
+                    {
+                        selectionIncludesTransformHeritage = true;
+                        break;
+                    }
+                }
+            } while (parentEntityId.IsValid() && !selectionIncludesTransformHeritage);
+
+            if (!selectionIncludesTransformHeritage)
+            {
+                culledEntities.insert(entityId);
+            }
+        }
+
+        return culledEntities;
     }
 
     namespace Internal

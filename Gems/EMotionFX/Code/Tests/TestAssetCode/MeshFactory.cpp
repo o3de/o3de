@@ -24,7 +24,6 @@ namespace EMotionFX
         const AZStd::vector<AZ::Vector3>& vertices,
         const AZStd::vector<AZ::Vector3>& normals,
         const AZStd::vector<AZ::Vector2>& uvs,
-        const AZStd::vector<AZ::Color>& clothData,
         const AZStd::vector<VertexSkinInfluences>& skinningInfo
     ) {
         const AZ::u32 vertCount = aznumeric_cast<AZ::u32>(vertices.size());
@@ -88,16 +87,6 @@ namespace EMotionFX
             mesh->AddVertexAttributeLayer(uvsLayer);
             AZStd::copy(uvs.begin(), uvs.end(), static_cast<AZ::Vector2*>(uvsLayer->GetOriginalData()));
             uvsLayer->ResetToOriginalData();
-        }
-
-        // The cloth layer.
-        EMotionFX::VertexAttributeLayerAbstractData* clothLayer = nullptr;
-        if (!clothData.empty() && clothData.size() == vertices.size())
-        {
-            clothLayer = EMotionFX::VertexAttributeLayerAbstractData::Create(vertCount, EMotionFX::Mesh::ATTRIB_CLOTH_DATA, sizeof(AZ::u32), false);
-            mesh->AddVertexAttributeLayer(clothLayer);
-            AZStd::transform(clothData.begin(), clothData.end(), static_cast<AZ::u32*>(clothLayer->GetOriginalData()), [](const AZ::Color& color) { return color.ToU32(); });
-            clothLayer->ResetToOriginalData();
         }
 
         auto* subMesh = EMotionFX::SubMesh::Create(

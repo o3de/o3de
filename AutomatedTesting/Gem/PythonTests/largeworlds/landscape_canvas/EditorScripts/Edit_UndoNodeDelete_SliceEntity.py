@@ -9,17 +9,6 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-
-"""
-C30813586 - Editor remains stable after Undoing deletion of a node on a slice entity
-
-1. Open level with instantiated slice.
-2. Open the graph.
-3. Find the BushSpawner's Vegetation Layer Spawner node.
-4. Delete the node.
-5. Undo to restore the node.
-"""
-
 import os
 import sys
 
@@ -35,8 +24,8 @@ import azlmbr.slice as slice
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestUndoNodeDeleteSlice(EditorTestHelper):
@@ -44,7 +33,26 @@ class TestUndoNodeDeleteSlice(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="UndoNodeDeleteSlice", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies Editor stability after undoing the deletion of nodes on a slice entity.
 
+        Expected Behavior:
+        Editor remains stable and free of crashes.
+
+        Test Steps:
+         1) Create a new level
+         2) Instantiate a slice with a Landscape Canvas setup
+         3) Find a specific node on the graph, and delete it
+         4) Restore the node with Undo
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
         # Create a new empty level and instantiate LC_BushFlowerBlender.slice
         self.test_success = self.create_level(
             self.args["level"],

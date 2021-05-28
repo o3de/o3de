@@ -50,8 +50,6 @@
 #include "Include/IObjectManager.h"
 #include "CryEditDoc.h"
 #include "QtViewPaneManager.h"
-#include "AzAssetBrowser/Preview/LegacyPreviewerFactory.h"
-
 
 namespace AzAssetBrowserRequestHandlerPrivate
 {
@@ -139,8 +137,20 @@ namespace AzAssetBrowserRequestHandlerPrivate
                     entityName = AZStd::string::format("Entity%d", GetIEditor()->GetObjectManager()->GetObjectCount());
                 }
 
-                AZ::Entity* newEntity = aznew AZ::Entity(entityName.c_str());
-                EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::AddRequiredComponents, *newEntity);
+                AZ::EntityId targetEntityId;
+                EditorRequests::Bus::BroadcastResult(targetEntityId, &EditorRequests::CreateNewEntityAtPosition, worldTransform.GetTranslation(), AZ::EntityId());
+
+                AZ::Entity* newEntity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(newEntity, &AZ::ComponentApplicationRequests::FindEntity, targetEntityId);
+
+                if (newEntity == nullptr)
+                {
+                    return;
+                }
+
+                newEntity->SetName(entityName);
+
+                newEntity->Deactivate();
 
                 // Create component.
                 AZ::Component* newComponent = newEntity->CreateComponent(componentTypeId);
@@ -153,15 +163,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
                     newEntity->AddComponent(newComponent);
                 }
 
-                //  Set entity position.
-                auto* transformComponent = newEntity->FindComponent<Components::TransformComponent>();
-                if (transformComponent)
-                {
-                    transformComponent->SetWorldTM(worldTransform);
-                }
-
-                // Add the entity to the editor context, which activates it and creates the sandbox object.
-                EditorEntityContextRequestBus::Broadcast(&EditorEntityContextRequests::AddEditorEntity, newEntity);
+                newEntity->Activate();
 
                 // set asset after components have been activated in AddEditorEntity method
                 if (newComponent)
@@ -230,18 +232,15 @@ namespace AzAssetBrowserRequestHandlerPrivate
 }
 
 AzAssetBrowserRequestHandler::AzAssetBrowserRequestHandler()
-    : m_previewerFactory(aznew LegacyPreviewerFactory)
 {
     using namespace AzToolsFramework::AssetBrowser;
 
     AssetBrowserInteractionNotificationBus::Handler::BusConnect();
     AzQtComponents::DragAndDropEventsBus::Handler::BusConnect(AzQtComponents::DragAndDropContexts::EditorViewport);
-    AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusConnect();
 }
 
 AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
 {
-    AzToolsFramework::AssetBrowser::PreviewerRequestBus::Handler::BusDisconnect();
     AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
     AzQtComponents::DragAndDropEventsBus::Handler::BusDisconnect();
 }
@@ -525,15 +524,6 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     {
         ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, spawnedEntities);
     }
-}
-
-const AzToolsFramework::AssetBrowser::PreviewerFactory* AzAssetBrowserRequestHandler::GetPreviewerFactory(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
-{
-    if (m_previewerFactory->IsEntrySupported(entry))
-    {
-        return m_previewerFactory.get();
-    }
-    return nullptr;
 }
 
 void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)

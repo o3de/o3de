@@ -6,7 +6,7 @@
 	       PreferredClassName="For Each"
            Uuid="{31823035-A3FF-4B8D-A3A6-819519478B7C}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Containers"
            Version="2"
            VersionConverter="ScriptCanvas::VersionConverters::ForEachVersionConverter"

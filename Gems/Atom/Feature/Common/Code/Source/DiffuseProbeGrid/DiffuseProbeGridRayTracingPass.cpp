@@ -49,11 +49,6 @@ namespace AZ
             }
         }
 
-        DiffuseProbeGridRayTracingPass::~DiffuseProbeGridRayTracingPass()
-        {
-            delete m_rayTracingScopeProducerShaderTable;
-        }
-
         void DiffuseProbeGridRayTracingPass::CreateRayTracingPipelineState()
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
@@ -118,88 +113,36 @@ namespace AZ
 
         void DiffuseProbeGridRayTracingPass::FrameBeginInternal(FramePrepareParams params)
         {
+            RPI::Scene* scene = m_pipeline->GetScene();
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (!rayTracingFeatureProcessor)
+            {
+                return;
+            }
+
             if (!m_initialized)
             {
                 CreateRayTracingPipelineState();
-                CreateShaderTableScope();
                 m_initialized = true;
             }
 
             if (!m_rayTracingShaderTable)
             {
+                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+                RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+
                 m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
+                m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
             }
 
-            RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetProbeGrids().empty())
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids().empty())
             {
                 // no diffuse probe grids
                 return;
             }
 
-            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            uint32_t rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
-            if (m_rayTracingRevision != rayTracingRevision)
-            {
-                // scene changed, need to rebuild the shader table
-                m_rayTracingRevision = rayTracingRevision;
-
-                // [GFX TODO][ATOM-13575] Move the RHI::RayTracingShaderTable build into the RHI frame and remove this scope
-                params.m_frameGraphBuilder->ImportScopeProducer(*m_rayTracingScopeProducerShaderTable);
-            }
-
             RenderPass::FrameBeginInternal(params);
-        }
-
-        void DiffuseProbeGridRayTracingPass::CreateShaderTableScope()
-        {
-            struct ScopeData { };
-            const auto prepareFunction = [this]([[maybe_unused]] RHI::FrameGraphInterface& scopeBuilder, [[maybe_unused]] ScopeData& scopeData) {};
-
-            const auto compileFunction = [this]([[maybe_unused]] const RHI::FrameGraphCompileContext& context, [[maybe_unused]] const ScopeData& scopeData) {};
-
-            const auto executeFunction = [this]([[maybe_unused]] const RHI::FrameGraphExecuteContext& context, [[maybe_unused]] const ScopeData& scopeData)
-            {
-                RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-                RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_pipeline->GetScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
-                RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
-
-                if (!rayTracingFeatureProcessor->GetSubMeshCount())
-                {
-                    m_rayTracingShaderTable = nullptr;
-                    return;
-                }
-
-                // build the ray tracing shader table descriptor
-                RHI::RayTracingShaderTableDescriptor descriptor;
-                RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor.Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
-                    ->RayGenerationRecord(AZ::Name("RayGen"))
-                    ->MissRecord(AZ::Name("Miss"));
-
-                // add a hit group for each mesh to the shader table
-                for (uint32_t i = 0; i < rayTracingFeatureProcessor->GetSubMeshCount(); ++i)
-                {
-                    descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
-                }
-
-                m_rayTracingShaderTable->Init(*device.get(), &descriptor, rayTracingBufferPools);
-            };
-
-            AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-            AZStd::string scopeName = AZStd::string::format("DiffuseProbeRayTracingBuildShaderTable_%s", uuidString.c_str());
-
-            m_rayTracingScopeProducerShaderTable =
-                aznew RHI::ScopeProducerFunction<
-                ScopeData,
-                decltype(prepareFunction),
-                decltype(compileFunction),
-                decltype(executeFunction)>(
-                    RHI::ScopeId{ scopeName },
-                    ScopeData{ },
-                    prepareFunction,
-                    compileFunction,
-                    executeFunction);
         }
 
         void DiffuseProbeGridRayTracingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -210,10 +153,9 @@ namespace AZ
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
 
-            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetProbeGrids().size()));
-            frameGraph.ExecuteAfter(m_rayTracingScopeProducerShaderTable->GetScopeId());
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids().size()));
 
-            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
+            for (const auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
             {
                 // TLAS
                 {
@@ -291,6 +233,19 @@ namespace AZ
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
+
+                // probe classification
+                {
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetClassificationImageAttachmentId(), diffuseProbeGrid->GetClassificationImage());
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeClassificationImage");
+
+                    RHI::ImageScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetClassificationImageAttachmentId();
+                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeClassificationImageViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                }
             }
         }
 
@@ -305,13 +260,38 @@ namespace AZ
                 rayTracingFeatureProcessor->GetMeshInfoBuffer() &&
                 rayTracingFeatureProcessor->GetSubMeshCount())
             {
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
                 {
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                     diffuseProbeGrid->UpdateRayTraceSrg(m_globalSrgAsset);
                     diffuseProbeGrid->GetRayTraceSrg()->Compile();
                 }
+            }
+
+            uint32_t rayTracingRevision = rayTracingFeatureProcessor->GetRevision();
+            if (m_rayTracingRevision != rayTracingRevision)
+            {
+                // scene changed, need to rebuild the shader table
+                m_rayTracingRevision = rayTracingRevision;
+
+                AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
+
+                if (rayTracingFeatureProcessor->GetSubMeshCount())
+                {
+                    // build the ray tracing shader table descriptor
+                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
+                        ->RayGenerationRecord(AZ::Name("RayGen"))
+                        ->MissRecord(AZ::Name("Miss"));
+
+                    // add a hit group for each mesh to the shader table
+                    for (uint32_t i = 0; i < rayTracingFeatureProcessor->GetSubMeshCount(); ++i)
+                    {
+                        descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
+                    }
+                }
+
+                m_rayTracingShaderTable->Build(descriptor);
             }
         }
     
@@ -328,7 +308,7 @@ namespace AZ
                 m_rayTracingShaderTable)
             {
                 // submit the DispatchRaysItem for each DiffuseProbeGrid
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetProbeGrids())
+                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
                 {
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),

@@ -80,9 +80,9 @@ def return_stub_dir(stub_file='dccsi_stub'):
 
 
 # -------------------------------------------------------------------------
-def get_stub_check_path(in_path=os.getcwd(), check_stub='engineroot.txt'):
+def get_stub_check_path(in_path=os.getcwd(), check_stub='engine.json'):
     '''
-    Returns the branch root directory of the dev\\'engineroot.txt'
+    Returns the branch root directory of the dev\\'engine.json'
     (... or you can pass it another known stub)
 
     so we can safely build relative filepaths within that branch.
@@ -137,8 +137,9 @@ def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
 
 
 # -------------------------------------------------------------------------
-def get_current_project(dev_folder=get_stub_check_path()):
-    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str"""
+def get_current_project_cfg(dev_folder=get_stub_check_path()):
+    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str
+    Note: boostrap.cfg will be deprecated.  Don't use this method anymore."""
     boostrap_filepath = Path(dev_folder, "bootstrap.cfg")
     if boostrap_filepath.exists():
         bootstrap = open(str(boostrap_filepath), "r")
@@ -154,11 +155,37 @@ def get_current_project(dev_folder=get_stub_check_path()):
 
 
 # -------------------------------------------------------------------------
+def get_current_project():
+    """Gets o3de project via .o3de data in user directory"""
+
+    from azpy.constants import PATH_USER_O3DE_BOOTSTRAP
+    from collections import OrderedDict
+    from box import Box
+    
+    bootstrap_box = None
+
+    try:
+        bootstrap_box = Box.from_json(filename=PATH_USER_O3DE_BOOTSTRAP,
+                                     encoding="utf-8",
+                                     errors="strict",
+                                     object_pairs_hook=OrderedDict)
+    except FileExistsError as e:
+        _LOGGER.error('File does not exist: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+
+    if bootstrap_box:
+        # this seems fairly hard coded - what if the data changes?
+        project_path=Path(bootstrap_box.Amazon.AzCore.Bootstrap.project_path)
+        return project_path.resolve()
+    else:
+        return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
     """Builds and adds local site dir libs based on py version"""
 
     from azpy.constants import STR_DCCSI_PYTHON_LIB_PATH  # a path string constructor
-    #_DCCSI_PYTHON_LIB_PATH = "E:\\P4\\jromnoa_spectra_atom_2\\dev\\Tools\\Python\\3.7.5\\windows\\Lib\\site-packages"
     _DCCSI_PYTHON_LIB_PATH = STR_DCCSI_PYTHON_LIB_PATH.format(dccsi_dirpath,
                                                               sys.version_info[0],
                                                               sys.version_info[1])
@@ -193,9 +220,13 @@ if __name__ == '__main__':
     _config = get_dccsi_config()
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
-    _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engineroot.txt')))
+    _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engine.json')))
 
-    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('engineroot.txt'))))
+    # this will be deprecated and shouldn't work soon (returns None)
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project_cfg(get_stub_check_path('bootstrap.cfg'))))
+
+    # new o3de version
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project()))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

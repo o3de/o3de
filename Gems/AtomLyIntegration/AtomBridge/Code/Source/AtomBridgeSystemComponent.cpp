@@ -13,6 +13,7 @@
 #include <AtomBridgeSystemComponent.h>
 #include <AtomDebugDisplayViewportInterface.h>
 #include <FlyCameraInputComponent.h>
+#include <PerViewportDynamicDrawManager.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -62,12 +63,10 @@ namespace AZ
 
         AtomBridgeSystemComponent::AtomBridgeSystemComponent()
         {
-            AZ::Interface<AzFramework::AtomActiveInterface>::Register(this);
         }
 
         AtomBridgeSystemComponent::~AtomBridgeSystemComponent()
         {
-            AZ::Interface<AzFramework::AtomActiveInterface>::Unregister(this);
         }
 
         void AtomBridgeSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -93,13 +92,9 @@ namespace AZ
             AZ_UNUSED(dependent);
         }
 
-        static const AZ::Crc32 mainViewportEntityDebugDisplayId = AZ_CRC_CE("MainViewportEntityDebugDisplayId");
-
         void AtomBridgeSystemComponent::Init()
         {
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusConnect();
-#endif
         }
 
         void AtomBridgeSystemComponent::Activate()
@@ -110,13 +105,13 @@ namespace AZ
             AzFramework::GameEntityContextRequestBus::BroadcastResult(m_entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 
             AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
+            m_dynamicDrawManager = AZStd::make_unique<PerViewportDynamicDrawManager>();
         }
 
         void AtomBridgeSystemComponent::Deactivate()
         { 
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
+            m_dynamicDrawManager.reset();
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
-#endif
             RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
             // Check if scene is emptry since scene might be released already when running AtomSampleViewer 
             if (scene)
@@ -146,15 +141,6 @@ namespace AZ
         {
             static const AZ::Uuid legacyRenderComponentUuids[] = {
                 AZ::Uuid("{FC315B86-3280-4D03-B4F0-5553D7D08432}"), // EditorMeshComponent
-                AZ::Uuid("{4B85E77D-91F9-40C5-8FCB-B494000A9E69}"), // EditorLensFlareComponent
-                AZ::Uuid("{7C18B273-5BA3-4E0F-857D-1F30BD6B0733}"), // EditorLightComponent
-                AZ::Uuid("{00818135-138D-42AD-8657-FF3FD38D9E7A}"), // EditorPointLightComponent
-                AZ::Uuid("{1DE624B1-876F-4E0A-96A6-7B248FA2076F}"), // EditorAreaLightComponent
-                AZ::Uuid("{41928E34-B558-4559-82CF-8B5795A38CB4}"), // EditorProjectorLightComponent
-                AZ::Uuid("{BA3890BD-D2E7-4DB6-95CD-7E7D5525567A}"), // EditorDecalComponent
-                AZ::Uuid("{8DBD6035-583E-409F-AFD9-F36829A0655D}"), // EditorEnvProbeComponent
-                AZ::Uuid("{9C86E09D-0727-476E-A4A1-25989CDBF9C6}"), // EditorHighQualityShadowComponent
-                AZ::Uuid("{045C0C58-C13E-49B0-A471-D4AC5D3FC6BD}"), // EditorGeometryCacheComponent
             };
 
             const AZStd::string deprecatedString = "  (DEPRECATED By Atom)";
@@ -175,65 +161,22 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
-            AZStd::shared_ptr<AZ::RPI::WindowContext> windowContext;
-            AZ::Render::Bootstrap::DefaultWindowBus::BroadcastResult(windowContext, &AZ::Render::Bootstrap::DefaultWindowInterface::GetDefaultWindowContext);
-
-            if (!windowContext)
-            {
-                AZ_Warning("Atom", false, "Cannot initialize Atom because no window context is available");
-                return;
-            }
-
-            AZ::RPI::RenderPipelinePtr renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
-
-            // If RenderPipeline doesn't have a default view, create a view and make it the default view.
-            // These settings will be overridden by the editor or game camera.
-            if (renderPipeline->GetDefaultView() == nullptr)
-            {
-                auto viewContextManager = AZ::Interface<RPI::ViewportContextRequestsInterface>::Get();
-                m_view = AZ::RPI::View::CreateView(AZ::Name("AtomSystem Default View"), RPI::View::UsageCamera);
-                viewContextManager->PushView(viewContextManager->GetDefaultViewportContextName(), m_view);
-                const auto& viewport = windowContext->GetViewport();
-                const float aspectRatio = viewport.m_maxX / viewport.m_maxY;
-
-                // Note: This is projection assumes a setup for reversed depth
-                AZ::Matrix4x4 viewToClipMatrix;
-                AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, aspectRatio, 0.1f, 100.f, true);
-
-                m_view->SetViewToClipMatrix(viewToClipMatrix);
-
-                renderPipeline = bootstrapScene->GetDefaultRenderPipeline();
-                renderPipeline->SetDefaultView(m_view);
-
-                auto auxGeomFP = bootstrapScene->GetFeatureProcessor<RPI::AuxGeomFeatureProcessorInterface>();
-                if (auxGeomFP)
-                {
-                    auxGeomFP->GetOrCreateDrawQueueForView(m_view.get());
-                }
-
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
-                // Make default AtomDebugDisplayViewportInterface for the scene
-                AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(mainViewportEntityDebugDisplayId);
-                m_activeViewportsList[mainViewportEntityDebugDisplayId] = mainEntityDebugDisplay;
-#endif
-            }
+            AZ_UNUSED(bootstrapScene);
+            // Make default AtomDebugDisplayViewportInterface
+            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId);
+            m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }
 
         void AtomBridgeSystemComponent::OnViewportContextAdded(AZ::RPI::ViewportContextPtr viewportContext)
         {
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
                 AZStd::shared_ptr<AtomDebugDisplayViewportInterface> viewportDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(viewportContext);
                 m_activeViewportsList[viewportContext->GetId()] = viewportDebugDisplay;
-#endif
         }
 
         void AtomBridgeSystemComponent::OnViewportContextRemoved(AzFramework::ViewportId viewportId)
         {
-#if defined(ENABLE_ATOM_DEBUG_DISPLAY) && ENABLE_ATOM_DEBUG_DISPLAY
+            AZ_Assert(viewportId != AzFramework::g_defaultSceneEntityDebugDisplayId, "Error trying to remove the default scene draw instance");
             m_activeViewportsList.erase(viewportId);
-#else
-            AZ_UNUSED(viewportId);
-#endif
         }
 
 

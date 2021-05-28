@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/NetworkEntity/NetworkEntityUpdateMessage.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzCore/Console/ILogger.h>
@@ -131,7 +131,7 @@ namespace Multiplayer
         }
 
         // 2-byte size header + the actual blob payload itself
-        const uint32_t sizeOfBlob = (m_data != nullptr) ? sizeof(uint16_t) + m_data->GetSize() : 0;
+        const uint32_t sizeOfBlob = (m_data != nullptr) ? sizeof(PropertyIndex) + m_data->GetSize() : 0;
 
         if (m_hasValidPrefabId)
         {

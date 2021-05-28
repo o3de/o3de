@@ -12,23 +12,27 @@
 
 #pragma once
 
+// ------------------------------------------------------------------------------
+// NOTE: The following must be included or defined before including this file:
+//       - Surface
+// ---------------------------------------------------------------------------------
+
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/Features/Decals/DecalTextureUtil.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
-#include <Atom/Features/PBR/Surface.azsli>
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
     tileIterator.LoadAdvance();
-                
-    while( !tileIterator.IsDone() ) 
-    { 
-        uint currDecalIndex = tileIterator.GetValue(); 
+    
+    while( !tileIterator.IsDone() )
+    {
+        uint currDecalIndex = tileIterator.GetValue();
         tileIterator.LoadAdvance();
         
-        ApplyDecal(currDecalIndex, surface);                  
+        ApplyDecal(currDecalIndex, surface);
     }    
 }
 
@@ -44,13 +48,13 @@ float GetDecalAttenuation(float3 surfNormal, float3 decalUp, float decalAngleAtt
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface)
 {
-    ViewSrg::Decal decal = ViewSrg::m_decals[currDecalIndex];            
+    ViewSrg::Decal decal = ViewSrg::m_decals[currDecalIndex];
 
     float3x3 decalRot = MatrixFromQuaternion(decal.m_quaternion);
 
-    float3 localPos = surface.position - decal.m_position;    
+    float3 localPos = surface.position - decal.m_position;
     localPos = mul(localPos, decalRot);
-              
+
     float3 decalUVW = localPos * rcp(decal.m_halfSize);
     if(decalUVW.x >= -1.0f && decalUVW.x <= 1.0f &&
        decalUVW.y >= -1.0f && decalUVW.y <= 1.0f &&
@@ -70,25 +74,23 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         switch(textureArrayIndex)
         {
             case 0:
-                baseMap = ViewSrg::m_decalTextureArray0.Sample(PassSrg::LinearSampler, decalUV);    
+                baseMap = ViewSrg::m_decalTextureArray0.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 1:
-                baseMap = ViewSrg::m_decalTextureArray1.Sample(PassSrg::LinearSampler, decalUV);    
+                baseMap = ViewSrg::m_decalTextureArray1.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 2:
-                baseMap = ViewSrg::m_decalTextureArray2.Sample(PassSrg::LinearSampler, decalUV);    
+                baseMap = ViewSrg::m_decalTextureArray2.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 3:
-                baseMap = ViewSrg::m_decalTextureArray3.Sample(PassSrg::LinearSampler, decalUV);    
+                baseMap = ViewSrg::m_decalTextureArray3.Sample(PassSrg::LinearSampler, decalUV);
             break;
             case 4:
-                baseMap = ViewSrg::m_decalTextureArray4.Sample(PassSrg::LinearSampler, decalUV);    
+                baseMap = ViewSrg::m_decalTextureArray4.Sample(PassSrg::LinearSampler, decalUV);
             break;
         }
         
-        float opacity = baseMap.a * decal.m_opacity * GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);                
-        surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);        
-    }   
+        float opacity = baseMap.a * decal.m_opacity * GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
+        surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);
+    }
 }
-
-

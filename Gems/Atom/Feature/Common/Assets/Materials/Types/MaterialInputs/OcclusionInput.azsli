@@ -12,19 +12,23 @@
 
 #pragma once
 
-// This file provides utilities for common handling of inputs for ambient occlusion maps for PBR materials.
+// This file provides utilities for common handling of inputs for baked occlusion maps for PBR materials.
 
 // These macros can be used to declare common shader inputs for this feature. 
 // Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
 // You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
 
 #define COMMON_SRG_INPUTS_OCCLUSION(prefix)        \
-float       prefix##m_ambientOcclusionFactor;      \
-Texture2D   prefix##m_ambientOcclusionMap;         \
-uint        prefix##m_ambientOcclusionMapUvIndex;
+float       prefix##m_diffuseOcclusionFactor;      \
+Texture2D   prefix##m_diffuseOcclusionMap;         \
+uint        prefix##m_diffuseOcclusionMapUvIndex;  \
+float       prefix##m_specularOcclusionFactor;     \
+Texture2D   prefix##m_specularOcclusionMap;        \
+uint        prefix##m_specularOcclusionMapUvIndex;
 
 #define COMMON_OPTIONS_OCCLUSION(prefix) \
-option bool prefix##o_ambientOcclusion_useTexture; 
+option bool prefix##o_diffuseOcclusion_useTexture; \
+option bool prefix##o_specularOcclusion_useTexture; 
 
 float GetOcclusionInput(Texture2D map, sampler mapSampler, float2 uv, float factor, bool useTexture)
 {

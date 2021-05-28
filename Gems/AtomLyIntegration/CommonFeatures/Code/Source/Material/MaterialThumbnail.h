@@ -36,7 +36,7 @@ namespace AZ
             {
                 Q_OBJECT
             public:
-                MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key, int thumbnailSize);
+                MaterialThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
                 ~MaterialThumbnail() override;
 
                 //! AzToolsFramework::ThumbnailerRendererNotificationBus::Handler overrides...

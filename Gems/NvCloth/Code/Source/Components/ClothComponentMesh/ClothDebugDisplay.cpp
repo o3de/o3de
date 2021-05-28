@@ -13,7 +13,6 @@
 #include <AzCore/Console/IConsole.h>
 
 #include <AzFramework/Viewport/ViewportColors.h>
-#include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 
 #include <Components/ClothComponentMesh/ClothDebugDisplay.h>
 #include <Components/ClothComponentMesh/ActorClothColliders.h>
@@ -285,29 +284,11 @@ namespace NvCloth
         AzFramework::DebugDisplayRequests& debugDisplay,
         float radius, float height,
         const AZ::Transform& transform,
-        const AZ::Color& color)
+        [[maybe_unused]] const AZ::Color& color)
     {
-        debugDisplay.PushMatrix(transform);
+        const float heightStraightSection = AZStd::max(AZ::Constants::FloatEpsilon, height - 2.0f * radius);
 
-        AZStd::vector<AZ::Vector3> capsuleVertexBuffer;
-        AZStd::vector<AZ::u32> capsuleIndexBuffer;
-        AZStd::vector<AZ::Vector3> capsuleLineBuffer;
-        const AZ::u32 sides = 16;
-        const AZ::u32 capSegments = 8;
-
-        LmbrCentral::CapsuleGeometrySystemRequestBus::Broadcast(
-            &LmbrCentral::CapsuleGeometrySystemRequestBus::Events::GenerateCapsuleMesh,
-            radius,
-            height,
-            sides, capSegments,
-            capsuleVertexBuffer,
-            capsuleIndexBuffer,
-            capsuleLineBuffer
-        );
-
-        debugDisplay.DrawTrianglesIndexed(capsuleVertexBuffer, capsuleIndexBuffer, color);
-        debugDisplay.DrawLines(capsuleLineBuffer, AzFramework::ViewportColors::WireColor);
-
-        debugDisplay.PopMatrix();
+        debugDisplay.SetColor(AzFramework::ViewportColors::WireColor);
+        debugDisplay.DrawWireCapsule(transform.GetTranslation(), transform.GetBasisZ(), radius, heightStraightSection);
     }
 } // namespace NvCloth

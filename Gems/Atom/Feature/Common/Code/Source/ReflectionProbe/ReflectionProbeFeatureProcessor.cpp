@@ -178,9 +178,9 @@ namespace AZ
 
                 if (assetId.IsValid())
                 {
-                    Data::AssetBus::MultiHandler::BusConnect(assetId);
                     notificationEntry.m_assetId = assetId;
                     notificationEntry.m_asset.Create(assetId, true);
+                    Data::AssetBus::MultiHandler::BusConnect(assetId);
                 }
             }
 
@@ -257,10 +257,10 @@ namespace AZ
             m_probeSortRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage)
+        void ReflectionProbeFeatureProcessor::SetProbeCubeMap(const ReflectionProbeHandle& probe, Data::Instance<RPI::Image>& cubeMapImage, const AZStd::string& relativePath)
         {
             AZ_Assert(probe.get(), "SetProbeCubeMap called with an invalid handle");
-            probe->SetCubeMapImage(cubeMapImage);
+            probe->SetCubeMapImage(cubeMapImage, relativePath);
         }
 
         void ReflectionProbeFeatureProcessor::SetProbeTransform(const ReflectionProbeHandle& probe, const AZ::Transform& transform)
@@ -270,14 +270,11 @@ namespace AZ
             m_probeSortRequired = true;
         }
 
-        void ReflectionProbeFeatureProcessor::BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback)
+        void ReflectionProbeFeatureProcessor::BakeProbe(const ReflectionProbeHandle& probe, BuildCubeMapCallback callback, const AZStd::string& relativePath)
         {
             AZ_Assert(probe.get(), "BakeProbe called with an invalid handle");
             probe->BuildCubeMap(callback);
-        }
 
-        void ReflectionProbeFeatureProcessor::NotifyCubeMapAssetReady(const AZStd::string relativePath, NotifyCubeMapAssetReadyCallback callback)
-        {
             // check to see if this is an existing asset
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
@@ -287,13 +284,44 @@ namespace AZ
                 azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
                 false);
 
-            bool existingAsset = assetId.IsValid();
-            m_notifyCubeMapAssets.push_back({ relativePath, assetId, existingAsset, callback });
-
-            if (existingAsset)
+            // we only track notifications for new cubemap assets, existing assets are automatically reloaded by the RPI
+            if (!assetId.IsValid())
             {
-                Data::AssetBus::MultiHandler::BusConnect(assetId);
+                m_notifyCubeMapAssets.push_back({ relativePath, assetId });
             }
+        }
+
+        bool ReflectionProbeFeatureProcessor::CheckCubeMapAssetNotification(const AZStd::string& relativePath, Data::Asset<RPI::StreamingImageAsset>& outCubeMapAsset, CubeMapAssetNotificationType& outNotificationType)
+        {
+            for (NotifyCubeMapAssetVector::iterator itNotification = m_notifyCubeMapAssets.begin(); itNotification != m_notifyCubeMapAssets.end(); ++itNotification)
+            {
+                if (itNotification->m_relativePath == relativePath)
+                {
+                    outNotificationType = itNotification->m_notificationType;
+                    if (outNotificationType != CubeMapAssetNotificationType::None)
+                    {
+                        outCubeMapAsset = itNotification->m_asset;
+                        m_notifyCubeMapAssets.erase(itNotification);
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool ReflectionProbeFeatureProcessor::IsCubeMapReferenced(const AZStd::string& relativePath)
+        {
+            for (auto& reflectionProbe : m_reflectionProbes)
+            {
+                if (reflectionProbe->GetCubeMapRelativePath() == relativePath)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         void ReflectionProbeFeatureProcessor::ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization)
@@ -509,17 +537,9 @@ namespace AZ
             {
                 if (itNotification->m_assetId == asset.GetId())
                 {
-                    if (itNotification->m_existingAsset && notificationType == CubeMapAssetNotificationType::Ready)
-                    {
-                        // existing cubemap assets only notify on reload or error
-                        break;
-                    }
-
-                    // notify
-                    itNotification->m_callback(Data::static_pointer_cast<RPI::StreamingImageAsset>(asset), notificationType);
-
-                    // remove the entry from the list
-                    m_notifyCubeMapAssets.erase(itNotification);
+                    // store the cubemap asset
+                    itNotification->m_asset = Data::static_pointer_cast<RPI::StreamingImageAsset>(asset);
+                    itNotification->m_notificationType = notificationType;
 
                     // stop notifications on this asset
                     Data::AssetBus::MultiHandler::BusDisconnect(itNotification->m_assetId);
@@ -540,11 +560,5 @@ namespace AZ
 
             HandleAssetNotification(asset, CubeMapAssetNotificationType::Error);
         }
-
-        void ReflectionProbeFeatureProcessor::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            HandleAssetNotification(asset, CubeMapAssetNotificationType::Reloaded);
-        }
-
     } // namespace Render
 } // namespace AZ

@@ -25,7 +25,7 @@
 #include "QtViewPaneManager.h"
 
 
-#define TOOLBOX_FILE "Editor/ToolBox.xml"
+#define TOOLBOX_FILE "ToolBox.xml"
 #define TOOLBOX_NODE "ToolBox"
 
 CSettingsManager::CSettingsManager(EditorSettingsManagerType managerType)

@@ -25,7 +25,6 @@
 #include "../EMStudioManager.h"
 #include "../MainWindow.h"
 #include <MCore/Source/AzCoreConversions.h>
-#include <MysticQt/Source/KeyboardShortcutManager.h>
 
 
 namespace EMStudio
@@ -75,7 +74,6 @@ namespace EMStudio
         delete mCamera;
         delete mAxisFakeCamera;
     }
-
 
     // start view closeup flight
     void RenderWidget::ViewCloseup(const MCore::AABB& aabb, float flightTime, uint32 viewCloseupWaiting)
@@ -723,72 +721,6 @@ namespace EMStudio
         );
 
         mCamera->Update();
-    }
-
-
-    // called when a key got pressed
-    void RenderWidget::OnKeyPressEvent(QWidget* renderWidget, QKeyEvent* event)
-    {
-        MCORE_UNUSED(renderWidget);
-        MysticQt::KeyboardShortcutManager* shortcutManger = GetMainWindow()->GetShortcutManager();
-
-        if (shortcutManger->Check(event, "Show Selected", "Render Window"))
-        {
-            mPlugin->ViewCloseup(true, this);
-            event->accept();
-            return;
-        }
-
-        if (shortcutManger->Check(event, "Show Entire Scene", "Render Window"))
-        {
-            mPlugin->ViewCloseup(false, this);
-            event->accept();
-            return;
-        }
-
-        if (shortcutManger->Check(event, "Toggle Selection Box Rendering", "Render Window"))
-        {
-            mPlugin->GetRenderOptions()->SetRenderSelectionBox(mPlugin->GetRenderOptions()->GetRenderSelectionBox() ^ true);
-            event->accept();
-            return;
-        }
-
-        if (event->key() == Qt::Key_Delete)
-        {
-            CommandSystem::RemoveSelectedActorInstances();
-            event->accept();
-            return;
-        }
-
-        event->ignore();
-    }
-
-
-    // called when a key got released
-    void RenderWidget::OnKeyReleaseEvent(QWidget* renderWidget, QKeyEvent* event)
-    {
-        MCORE_UNUSED(renderWidget);
-        MysticQt::KeyboardShortcutManager* shortcutManger = GetMainWindow()->GetShortcutManager();
-
-        if (shortcutManger->Check(event, "Show Selected", "Render Window"))
-        {
-            event->accept();
-            return;
-        }
-
-        if (shortcutManger->Check(event, "Show Entire Scene", "Render Window"))
-        {
-            event->accept();
-            return;
-        }
-
-        if (event->key() == Qt::Key_Delete)
-        {
-            event->accept();
-            return;
-        }
-
-        event->ignore();
     }
 
 

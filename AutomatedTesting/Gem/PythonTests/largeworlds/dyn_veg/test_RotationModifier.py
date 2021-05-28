@@ -16,7 +16,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip("ly_test_tools")
 
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 import ly_test_tools.environment.file_system as file_system
 
 logger = logging.getLogger(__name__)
@@ -42,6 +42,7 @@ class TestRotationModifier(object):
 
     @pytest.mark.test_case_id("C4896922")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_modifier
     def test_RotationModifier_InstancesRotateWithinRange(self, request, editor, level, launcher_platform) -> None:
         """
         Launches editor and run test script to test that rotation modifier works for all axis.
@@ -71,6 +72,7 @@ class TestRotationModifier(object):
 
     @pytest.mark.test_case_id("C4814460")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.dynveg_modifier
     def test_RotationModifierOverrides_InstancesRotateWithinRange(self, request, editor, level, launcher_platform) -> None:
 
         expected_lines = [

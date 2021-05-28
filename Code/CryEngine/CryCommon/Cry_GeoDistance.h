@@ -1168,17 +1168,6 @@ namespace Distance {
         return fDist2;
     }
 
-    // Compute both the min and max distances of a box to a plane, in the sense of the plane normal.
-    inline void AABB_Plane(float* pfDistMin, float* pfDistMax, const AABB& box, const Plane& pl)
-    {
-        float fDist0 = pl.DistFromPlane(box.min),
-              fDistX = (box.max.x - box.min.x) * pl.n.x,
-              fDistY = (box.max.y - box.min.y) * pl.n.y,
-              fDistZ = (box.max.z - box.min.z) * pl.n.z;
-        *pfDistMin = fDist0 + min(fDistX, 0.f) + min(fDistY, 0.f) + min(fDistZ, 0.f);
-        *pfDistMax = fDist0 + max(fDistX, 0.f) + max(fDistY, 0.f) + max(fDistZ, 0.f);
-    }
-
     //----------------------------------------------------------------------------------
     // Distance: Sphere_Triangle
     //----------------------------------------------------------------------------------
@@ -1190,7 +1179,7 @@ namespace Distance {
     //  float result = Distance::Point_TriangleSq( pos, triangle );
     //----------------------------------------------------------------------------------
     template<typename F>
-    ILINE F Sphere_TriangleSq(const Sphere& s, const Triangle_tpl<F>& t)
+    ILINE F Sphere_TriangleSq(const ::Sphere& s, const Triangle_tpl<F>& t)
     {
         F sqdistance =  Distance::Point_TriangleSq(s.center, t) - (s.radius * s.radius);
         if (sqdistance < 0)
@@ -1201,7 +1190,7 @@ namespace Distance {
     }
 
     template<typename F>
-    ILINE F Sphere_TriangleSq(const Sphere& s, const Triangle_tpl<F>& t, Vec3_tpl<F>& output)
+    ILINE F Sphere_TriangleSq(const ::Sphere& s, const Triangle_tpl<F>& t, Vec3_tpl<F>& output)
     {
         F sqdistance =  Distance::Point_TriangleSq(s.center, t, output) - (s.radius * s.radius);
         if (sqdistance < 0)

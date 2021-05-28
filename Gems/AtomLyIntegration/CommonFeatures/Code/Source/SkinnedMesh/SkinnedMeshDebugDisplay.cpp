@@ -14,7 +14,7 @@
 #include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 

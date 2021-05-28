@@ -472,6 +472,42 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator+(const Matrix3x4& rhs) const
+    {
+        return Matrix3x4
+        (
+            Simd::Vec4::Add(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue()),
+            Simd::Vec4::Add(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4& Matrix3x4::operator+=(const Matrix3x4& rhs)
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator-(const Matrix3x4& rhs) const
+    {
+        return Matrix3x4
+        (
+            Simd::Vec4::Sub(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue()),
+            Simd::Vec4::Sub(m_rows[1].GetSimdValue(), rhs.m_rows[1].GetSimdValue()),
+            Simd::Vec4::Sub(m_rows[2].GetSimdValue(), rhs.m_rows[2].GetSimdValue())
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4& Matrix3x4::operator-=(const Matrix3x4& rhs)
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+
+
     AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator*(const Matrix3x4& rhs) const
     {
         Matrix3x4 result;
@@ -484,6 +520,56 @@ namespace AZ
     {
         *this = *this * rhs;
         return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator*(float multiplier) const
+    {
+        const Simd::Vec4::FloatType mulVec = Simd::Vec4::Splat(multiplier);
+        return Matrix3x4
+        (
+            Simd::Vec4::Mul(m_rows[0].GetSimdValue(), mulVec),
+            Simd::Vec4::Mul(m_rows[1].GetSimdValue(), mulVec),
+            Simd::Vec4::Mul(m_rows[2].GetSimdValue(), mulVec)
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4& Matrix3x4::operator*=(float multiplier)
+    {
+        *this = *this * multiplier;
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator/(float divisor) const
+    {
+        const Simd::Vec4::FloatType divVec = Simd::Vec4::Splat(divisor);
+        return Matrix3x4
+        (
+            Simd::Vec4::Div(m_rows[0].GetSimdValue(), divVec),
+            Simd::Vec4::Div(m_rows[1].GetSimdValue(), divVec),
+            Simd::Vec4::Div(m_rows[2].GetSimdValue(), divVec)
+        );
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4& Matrix3x4::operator/=(float divisor)
+    {
+        *this = *this / divisor;
+        return *this;
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::operator-() const
+    {
+        const Simd::Vec4::FloatType zeroVec = Simd::Vec4::ZeroFloat();
+        return Matrix3x4
+        (
+            Simd::Vec4::Sub(zeroVec, m_rows[0].GetSimdValue()),
+            Simd::Vec4::Sub(zeroVec, m_rows[1].GetSimdValue()),
+            Simd::Vec4::Sub(zeroVec, m_rows[2].GetSimdValue())
+        );
     }
 
 
@@ -583,6 +669,12 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Vector3 Matrix3x4::RetrieveScaleSq() const
+    {
+        return Vector3(GetColumn(0).GetLengthSq(), GetColumn(1).GetLengthSq(), GetColumn(2).GetLengthSq());
+    }
+
+
     AZ_MATH_INLINE Vector3 Matrix3x4::ExtractScale()
     {
         const Vector3 scale = RetrieveScale();
@@ -597,6 +689,14 @@ namespace AZ
         m_rows[0].Set(Simd::Vec4::Mul(m_rows[0].GetSimdValue(), vector4Scale));
         m_rows[1].Set(Simd::Vec4::Mul(m_rows[1].GetSimdValue(), vector4Scale));
         m_rows[2].Set(Simd::Vec4::Mul(m_rows[2].GetSimdValue(), vector4Scale));
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::GetReciprocalScaled() const
+    {
+        Matrix3x4 result = *this;
+        result.MultiplyByScale(RetrieveScaleSq().GetReciprocal());
+        return result;
     }
 
 
@@ -659,5 +759,11 @@ namespace AZ
     AZ_MATH_INLINE Simd::Vec4::FloatType* Matrix3x4::GetSimdValues()
     {
         return reinterpret_cast<Simd::Vec4::FloatType*>(m_rows);
+    }
+
+
+    AZ_MATH_INLINE Matrix3x4 operator*(float lhs, const Matrix3x4& rhs)
+    {
+        return rhs * lhs;
     }
 } // namespace AZ

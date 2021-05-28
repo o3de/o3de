@@ -81,7 +81,7 @@ namespace AzFramework
 
     const char* SpawnableAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/Viewport/EntityInSlice.png";
+        return "Icons/Components/Viewport/EntityInSlice.png";
     }
 
     void SpawnableAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)

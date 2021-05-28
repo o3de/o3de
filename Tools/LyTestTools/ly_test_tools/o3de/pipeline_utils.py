@@ -87,7 +87,10 @@ def copy_assets_to_project(assets: List[str], source_directory: str, target_asse
     for asset in assets:
         full_name = os.path.join(source_directory, asset)
         destination_fullname = os.path.join(target_asset_dir, asset)
-        shutil.copyfile(full_name, destination_fullname)
+        if os.path.isdir(full_name):
+            shutil.copytree(full_name, destination_fullname)
+        else:
+            shutil.copyfile(full_name, destination_fullname)
         os.chmod(destination_fullname, 0o0777)
 
 

@@ -54,13 +54,6 @@ namespace AssetProcessor
         QDir scanFolder(file->m_scanFolderInfo.m_scanFolder.c_str());
         QString sourceName = file->m_sourceInfo.m_sourceName.c_str();
 
-        // If a scan folder has a prefix, then source files in those scan folders will have that
-        // prefix prepended in the asset database. Strip that prefix off for building the actual absolute path to the file.
-        if (!file->m_scanFolderInfo.m_outputPrefix.empty())
-        {
-            QRegExp prefixRemovalRegex(QString("^%1/").arg(file->m_scanFolderInfo.m_outputPrefix.c_str()));
-            sourceName.remove(prefixRemovalRegex);
-        }
         return scanFolder.filePath(sourceName);
     }
 

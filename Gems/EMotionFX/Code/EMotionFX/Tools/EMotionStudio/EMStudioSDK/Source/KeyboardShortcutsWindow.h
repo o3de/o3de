@@ -41,12 +41,9 @@ namespace EMStudio
         virtual ~ShortcutReceiverDialog() {}
 
         void keyPressEvent(QKeyEvent* event) override;
-        void focusOutEvent(QFocusEvent* event) override;
         void UpdateInterface();
 
-        int                                         mKey;
-        bool                                        mCtrl;
-        bool                                        mAlt;
+        QKeySequence                                mKey;
         bool                                        mConflictDetected;
         MysticQt::KeyboardShortcutManager::Action*  mConflictAction;
 
@@ -74,7 +71,7 @@ namespace EMStudio
         void Init();
         void ReInit();
 
-        static QString ConstructStringFromShortcut(int key, bool ctrl, bool alt);
+        static QString ConstructStringFromShortcut(QKeySequence key);
         MysticQt::KeyboardShortcutManager::Group* GetCurrentGroup() const;
 
         void setVisible(bool visible) override;
@@ -95,6 +92,5 @@ namespace EMStudio
         ShortcutReceiverDialog*                     mShortcutReceiverDialog;
 
         void contextMenuEvent(QContextMenuEvent* event) override;
-        void hideEvent(QHideEvent* event) override;
     };
 } // namespace EMStudio

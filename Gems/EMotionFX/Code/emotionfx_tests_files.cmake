@@ -22,6 +22,7 @@ set(FILES
     Tests/AnimGraphActionCommandTests.cpp
     Tests/AnimGraphActionTests.cpp
     Tests/AnimGraphComponentBusTests.cpp
+    Tests/AnimGraphNetworkingBusTests.cpp
     Tests/AnimGraphCopyPasteTests.cpp
     Tests/AnimGraphDeferredInitTests.cpp
     Tests/AnimGraphEventHandlerCounter.h

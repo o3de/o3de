@@ -53,7 +53,7 @@ namespace UnitTest
 
     void EditorWhiteBoxPhysicsTestEnvironment::AddGemsAndComponents()
     {
-        AddDynamicModulePaths({"PhysX.Editor"});
+        AddDynamicModulePaths({"PhysX.Editor.Gem"});
         AddComponentDescriptors(
             {AzToolsFramework::EditorEntityContextComponent::CreateDescriptor(),
              WhiteBox::EditorWhiteBoxComponent::CreateDescriptor(), WhiteBox::WhiteBoxComponent::CreateDescriptor(),

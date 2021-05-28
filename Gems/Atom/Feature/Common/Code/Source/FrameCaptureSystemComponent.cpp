@@ -31,12 +31,52 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/Preprocessor/EnumReflectUtils.h>
+#include <AzCore/Console/Console.h>
+
+#if defined(OPEN_IMAGE_IO_ENABLED)
+#include <OpenImageIO/imageio.h>
+#endif
 
 namespace AZ
 {
     namespace Render
     {
         AZ_ENUM_DEFINE_REFLECT_UTILITIES(FrameCaptureResult);
+
+#if defined(OPEN_IMAGE_IO_ENABLED)
+        AZ_CVAR(unsigned int,
+            r_pngCompressionLevel,
+            3, // A compression level of 3 seems like the best default in terms of file size and saving speeds
+            nullptr,
+            ConsoleFunctorFlags::Null,
+            "Sets the compression level for saving png screenshots. Valid values are from 0 to 8"
+        );
+
+        FrameCaptureOutputResult PngFrameCaptureOutput(
+            const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
+        {
+            using namespace OIIO;
+            AZStd::unique_ptr<ImageOutput> out = ImageOutput::create(outputFilePath.c_str());
+            if (out)
+            {
+                ImageSpec spec(
+                    readbackResult.m_imageDescriptor.m_size.m_width,
+                    readbackResult.m_imageDescriptor.m_size.m_height,
+                    AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format)
+                );
+                spec.attribute("png:compressionLevel", r_pngCompressionLevel);
+
+                if (out->open(outputFilePath.c_str(), spec))
+                {
+                    out->write_image(TypeDesc::UINT8, readbackResult.m_dataBuffer->data());
+                    out->close();
+                    return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
+                }
+            }
+
+            return FrameCaptureOutputResult{FrameCaptureResult::InternalError, "Unable to save frame capture output to " + outputFilePath};
+        }
+#endif
 
         FrameCaptureOutputResult DdsFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
@@ -377,7 +417,6 @@ namespace AZ
                 if (readbackResult.m_attachmentType == AZ::RHI::AttachmentType::Buffer)
                 {
                     // write buffer data to the data file
-
                     AZ::IO::FileIOStream fileStream(m_outputFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
                     if (fileStream.IsOpen())
                     {
@@ -418,6 +457,18 @@ namespace AZ
                         m_result = ddsFrameCapture.m_result;
                         m_latestCaptureInfo = ddsFrameCapture.m_errorMessage.value_or("");
                     }
+#if defined(OPEN_IMAGE_IO_ENABLED)
+                    else if (extension == "png")
+                    {
+                        AZStd::string folderPath;
+                        AzFramework::StringFunc::Path::GetFolderPath(m_outputFilePath.c_str(), folderPath);
+                        AZ::IO::SystemFile::CreateDir(folderPath.c_str());
+
+                        const auto frameCaptureResult = PngFrameCaptureOutput(m_outputFilePath, readbackResult);
+                        m_result = frameCaptureResult.m_result;
+                        m_latestCaptureInfo = frameCaptureResult.m_errorMessage.value_or("");
+                    }
+#endif
                     else
                     {
                         m_latestCaptureInfo = AZStd::string::format("Only supports saving image to ppm or dds files");

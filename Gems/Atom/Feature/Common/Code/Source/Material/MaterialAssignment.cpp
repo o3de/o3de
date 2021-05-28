@@ -11,8 +11,8 @@
 */
 
 #include <Atom/Feature/Material/MaterialAssignment.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -66,6 +66,102 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "render");
 
             }
+        }
+
+        MaterialAssignment::MaterialAssignment(const AZ::Data::AssetId& materialAssetId)
+            : m_materialInstance()
+        {
+            m_materialAsset.Create(materialAssetId);
+        }
+
+        MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset)
+            : m_materialAsset(asset)
+            , m_materialInstance()
+        {
+        }
+
+        MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset, const Data::Instance<RPI::Material>& instance)
+            : m_materialAsset(asset)
+            , m_materialInstance(instance)
+        {
+        }
+
+        void MaterialAssignment::RebuildInstance()
+        {
+            if (m_materialAsset.IsReady())
+            {
+                m_materialInstance =
+                    m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+                AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+            }
+        }
+
+        AZStd::string MaterialAssignment::ToString() const
+        {
+            AZStd::string assetPathString;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetPathString, &AZ::Data::AssetCatalogRequests::GetAssetPathById, m_materialAsset.GetId());
+            return assetPathString;
+        }
+
+        const MaterialAssignment& GetMaterialAssignmentFromMap(const MaterialAssignmentMap& materials, const MaterialAssignmentId& id)
+        {
+            const auto& materialItr = materials.find(id);
+            return materialItr != materials.end() ? materialItr->second : DefaultMaterialAssignment;
+        }
+
+        const MaterialAssignment& GetMaterialAssignmentFromMapWithFallback(
+            const MaterialAssignmentMap& materials, const MaterialAssignmentId& id)
+        {
+            const MaterialAssignment& lodAssignment = GetMaterialAssignmentFromMap(materials, id);
+            if (lodAssignment.m_materialInstance.get())
+            {
+                return lodAssignment;
+            }
+
+            const MaterialAssignment& assetAssignment =
+                GetMaterialAssignmentFromMap(materials, MaterialAssignmentId::CreateFromAssetOnly(id.m_materialAssetId));
+            if (assetAssignment.m_materialInstance.get())
+            {
+                return assetAssignment;
+            }
+
+            const MaterialAssignment& defaultAssignment = GetMaterialAssignmentFromMap(materials, DefaultMaterialAssignmentId);
+            if (defaultAssignment.m_materialInstance.get())
+            {
+                return defaultAssignment;
+            }
+
+            return DefaultMaterialAssignment;
+        }
+
+        MaterialAssignmentMap GetMaterialAssignmentsFromModel(Data::Instance<AZ::RPI::Model> model)
+        {
+            MaterialAssignmentMap materials;
+            materials[DefaultMaterialAssignmentId] = MaterialAssignment();
+
+            if (model)
+            {
+                size_t lodIndex = 0;
+                for (const Data::Instance<AZ::RPI::ModelLod>& lod : model->GetLods())
+                {
+                    for (const AZ::RPI::ModelLod::Mesh& mesh : lod->GetMeshes())
+                    {
+                        if (mesh.m_material)
+                        {
+                            const MaterialAssignmentId generalId = MaterialAssignmentId::CreateFromAssetOnly(mesh.m_material->GetAssetId());
+                            materials[generalId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
+
+                            const MaterialAssignmentId specificId =
+                                MaterialAssignmentId::CreateFromLodAndAsset(lodIndex, mesh.m_material->GetAssetId());
+                            materials[specificId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
+                        }
+                    }
+                    ++lodIndex;
+                }
+            }
+
+            return materials;
         }
     } // namespace Render
 } // namespace AZ

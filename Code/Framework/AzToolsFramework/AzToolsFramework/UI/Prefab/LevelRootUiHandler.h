@@ -34,7 +34,9 @@ namespace AzToolsFramework
 
         // EditorEntityUiHandler...
         QPixmap GenerateItemIcon(AZ::EntityId entityId) const override;
+        QString GenerateItemInfoString(AZ::EntityId entityId) const override;
         bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
+        bool CanRename(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
     private:

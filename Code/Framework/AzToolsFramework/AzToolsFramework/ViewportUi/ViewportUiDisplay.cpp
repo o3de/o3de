@@ -18,6 +18,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
 
@@ -40,6 +41,28 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
+    static Qt::Alignment GetQtAlignment(Alignment align)
+    {
+        switch (align)
+        {
+        case Alignment::TopRight:
+            return Qt::AlignTop | Qt::AlignRight;
+        case Alignment::TopLeft:
+            return Qt::AlignTop | Qt::AlignLeft;
+        case Alignment::BottomRight:
+            return Qt::AlignBottom | Qt::AlignRight;
+        case Alignment::BottomLeft:
+            return Qt::AlignBottom | Qt::AlignLeft;
+        case Alignment::Top:
+            return Qt::AlignTop;
+        case Alignment::Bottom:
+            return Qt::AlignBottom;
+        }
+
+        AZ_Assert(false, "ViewportUI", "Unhandled ViewportUI Alignment %d", static_cast<int>(align));
+        return Qt::AlignTop;
+    }
+
     ViewportUiDisplay::ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay)
         : m_renderOverlay(renderOverlay)
         , m_uiMainWindow(parent)
@@ -55,17 +78,17 @@ namespace AzToolsFramework::ViewportUi::Internal
         UnparentWidgets(m_viewportUiElements);
     }
 
-    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<Cluster> cluster)
+    void ViewportUiDisplay::AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, const Alignment align)
     {
-        if (!cluster.get())
+        if (!buttonGroup.get())
         {
             return;
         }
 
-        auto viewportUiCluster = AZStd::make_shared<ViewportUiCluster>(cluster);
+        auto viewportUiCluster = AZStd::make_shared<ViewportUiCluster>(buttonGroup);
         auto id = AddViewportUiElement(viewportUiCluster);
-        cluster->SetViewportUiElementId(id);
-        PositionViewportUiElementAnchored(id, Qt::AlignTop | Qt::AlignLeft);
+        buttonGroup->SetViewportUiElementId(id);
+        PositionViewportUiElementAnchored(id, GetQtAlignment(align));
     }
 
     void ViewportUiDisplay::AddClusterButton(
@@ -90,6 +113,51 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto cluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {
             cluster->Update();
+        }
+    }
+
+    void ViewportUiDisplay::AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, const Alignment align)
+    {
+        if (!buttonGroup.get())
+        {
+            return;
+        }
+
+        auto viewportUiSwitcher = AZStd::make_shared<ViewportUiSwitcher>(buttonGroup);
+        auto id = AddViewportUiElement(viewportUiSwitcher);
+        buttonGroup->SetViewportUiElementId(id);
+        PositionViewportUiElementAnchored(id, GetQtAlignment(align));
+    }
+
+    void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId clusterId, Button* button)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiSwitcher->AddButton(button);
+        }
+    }
+
+    void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    {
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            cluster->RemoveButton(buttonId);
+        }
+    }
+
+    void ViewportUiDisplay::UpdateSwitcher(ViewportUiElementId clusterId)
+    {
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            cluster->Update();
+        }
+    }
+
+    void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    {
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiSwitcher->SetActiveButton(buttonId);
         }
     }
 

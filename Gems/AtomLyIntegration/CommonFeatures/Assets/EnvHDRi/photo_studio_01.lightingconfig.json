@@ -1,7 +1,6 @@
 {
     "configurations": [
         {
-            "autoSelect": false,
             "displayName": "Photo Studio 01",
             "skyboxImageAsset": {
                 "assetId": {
@@ -64,7 +63,6 @@
             "shadowCatcherOpacity": 0.25
         },
         {
-            "autoSelect": false,
             "displayName": "Photo Studio 01 (Alt)",
             "skyboxImageAsset": {
                 "assetId": {

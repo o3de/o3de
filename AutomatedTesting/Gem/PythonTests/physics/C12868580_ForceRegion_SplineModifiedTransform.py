@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12868580
 # Test Case Title : Check that spline follow force works if transform components of entity are altered
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12868580
+
 
 
 # fmt: off
@@ -83,8 +83,8 @@ def C12868580_ForceRegion_SplineModifiedTransform():
     imports.init()
 
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import itertools
     import azlmbr
@@ -175,5 +175,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C12868580_ForceRegion_SplineModifiedTransform)

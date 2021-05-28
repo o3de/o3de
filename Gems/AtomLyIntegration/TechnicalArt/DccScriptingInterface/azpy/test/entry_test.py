@@ -25,6 +25,7 @@ from pathlib import Path
 
 # -------------------------------------------------------------------------
 _BOOT_CHECK = False  # set true to test breakpoint in this module directly
+
 import azpy
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
@@ -48,13 +49,13 @@ _LOGGER.debug('Starting:: {}.'.format({_MODULENAME}))
 
 
 # -------------------------------------------------------------------------
-def main(verbose=_G_DEBUG, connectDebugger=True):
+def main(verbose=_G_DEBUG, connect_debugger=True):
     _LOGGER.info('{}'.format('-' * 74))
     _LOGGER.info('entry_test.main()')
     _LOGGER.info('Root test import successful:')
     _LOGGER.info('~   {}'.format(__file__))
 
-    if connectDebugger:
+    if connect_debugger:
         status = connect_wing()
         _LOGGER.info(status)
 # -------------------------------------------------------------------------
@@ -137,4 +138,4 @@ def connect_wing():
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     _G_DEBUG = True
-    main(verbose=_G_DEBUG, connectDebugger=_G_DEBUG)
+    main(verbose=_G_DEBUG, connect_debugger=_G_DEBUG)

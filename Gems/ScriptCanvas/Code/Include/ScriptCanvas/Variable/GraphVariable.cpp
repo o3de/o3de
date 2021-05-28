@@ -43,20 +43,12 @@ namespace ScriptCanvas
     {
         const char* GetScopeDisplayLabel(Scope scopeType)
         {
-            switch (scopeType)
-            {
-            case Scope::Graph:
-                return "Graph";
-            case Scope::Function:
-                return "Function";
-            default:
-                return "?";
-            }
+            return GraphVariable::s_ScopeNames[static_cast<int>(scopeType)];
         }
 
         Scope GetScopeFromLabel(const char* label)
         {
-            if (strcmp("Function", label) == 0)
+            if (strcmp(GraphVariable::s_ScopeNames[static_cast<int>(VariableFlags::Scope::Function)], label) == 0)
             {
                 return Scope::Function;
             }
@@ -71,6 +63,7 @@ namespace ScriptCanvas
             case Scope::Graph:
                 return "Variable is accessible in the entire graph.";
             case Scope::Function:
+            case Scope::FunctionReadOnly:
                 return "Variable is accessible only in the execution path of the function that defined it";
             default:
                 return "?";
@@ -162,6 +155,14 @@ namespace ScriptCanvas
         "From Component"
     };
 
+    const char* GraphVariable::s_ScopeNames[static_cast<int>(VariableFlags::Scope::COUNT)] =
+    {
+        "Graph",
+        "Function",
+        "Function",
+    };
+
+
     void GraphVariable::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -197,6 +198,13 @@ namespace ScriptCanvas
                     return choices;
                 };
 
+                auto scopeChoices = [] {
+                    AZStd::vector< AZStd::pair<VariableFlags::Scope, AZStd::string>> choices;
+                    choices.emplace_back(AZStd::make_pair(VariableFlags::Scope::Graph, s_ScopeNames[0]));
+                    choices.emplace_back(AZStd::make_pair(VariableFlags::Scope::Function, s_ScopeNames[1]));
+                    return choices;
+                };
+
                 editContext->Class<GraphVariable>("Variable", "Represents a Variable field within a Script Canvas Graph")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetVisibility)
@@ -215,8 +223,8 @@ namespace ScriptCanvas
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnValueChanged)
 
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GraphVariable::m_scope, "Scope", "Controls the scope of this variable. i.e. If this is exposed as input to this script, or output from this script, or if the variable is just locally scoped.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetInputControlVisibility)
-                    ->Attribute(AZ::Edit::Attributes::GenericValueList, &GraphVariable::GetScopes)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &GraphVariable::GetScopeControlVisibility)
+                    ->Attribute(AZ::Edit::Attributes::GenericValueList, scopeChoices)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &GraphVariable::OnScopeTypedChanged)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &GraphVariable::m_networkProperties, "Network Properties", "Enables whether or not this value should be network synchronized")
@@ -382,6 +390,16 @@ namespace ScriptCanvas
         m_inputControlVisibility = inputControlVisibility;
     }
 
+    AZ::Crc32 GraphVariable::GetScopeControlVisibility() const
+    {
+        if (m_scope == VariableFlags::Scope::FunctionReadOnly)
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        return GetInputControlVisibility();
+    }
+
     AZ::Crc32 GraphVariable::GetInputControlVisibility() const
     {
         return m_inputControlVisibility;
@@ -462,6 +480,8 @@ namespace ScriptCanvas
             return m_scope == VariableFlags::Scope::Graph;
             // All graph variables are in function local scope
         case VariableFlags::Scope::Function:
+        case VariableFlags::Scope::FunctionReadOnly:
+
             return true;
         }
 

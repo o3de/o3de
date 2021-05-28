@@ -62,7 +62,7 @@ namespace AZ
             bool m_enableShadow = false;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
-            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
+            PcfMethod m_pcfMethod = PcfMethod::Bicubic;
             float m_boundaryWidthInDegrees = 0.25f;
             uint16_t m_predictionSampleCount = 4;
             uint16_t m_filteringSampleCount = 12;
@@ -72,6 +72,9 @@ namespace AZ
             AZStd::vector<Edit::EnumConstant<PhotometricUnit>> GetValidPhotometricUnits() const;
 
             bool RequiresShapeComponent() const;
+
+            //! Returns true if the light type is anything other than unknown.
+            bool LightTypeIsSelected() const;
 
             //! Returns true if m_attenuationRadiusMode is set to LightAttenuationRadiusMode::Automatic
             bool IsAttenuationRadiusModeAutomatic() const;

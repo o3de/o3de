@@ -61,7 +61,6 @@ struct IIconManager
     virtual IStatObj*   GetObject(EStatObject object) = 0;
     virtual int GetIconTexture(EIcon icon) = 0;
     virtual int GetIconTexture(const char* iconName) = 0;
-    virtual _smart_ptr<IMaterial> GetHelperMaterial() = 0;
     virtual QImage* GetIconBitmap(const char* filename, bool& haveAlpha, uint32 effects = 0) = 0;
     // Register an Icon for the specific command
     virtual void RegisterCommandIcon([[maybe_unused]] const char* filename, [[maybe_unused]] int nCommandId) {}

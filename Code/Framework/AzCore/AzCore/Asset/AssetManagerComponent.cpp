@@ -13,7 +13,7 @@
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -24,6 +24,11 @@
 
 namespace AZ
 {
+    namespace Data
+    {
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(AssetLoadBehavior);
+    }
+
     //=========================================================================
     // AssetDatabaseComponent
     // [6/25/2012]
@@ -99,6 +104,8 @@ namespace AZ
 
         if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
+            AZ::Data::AssetLoadBehaviorReflect(*serializeContext);
+
             serializeContext->RegisterGenericType<Data::Asset<Data::AssetData>>();
 
             serializeContext->Class<AssetManagerComponent, AZ::Component>()

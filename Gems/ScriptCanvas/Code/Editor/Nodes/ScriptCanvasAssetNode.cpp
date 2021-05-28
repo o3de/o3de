@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
         {
             editContext->Class<ScriptCanvasAssetNode>("ScriptCanvas Asset", "Script Canvas Asset Node which contains a reference to another ScriptCanvas graph")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Placeholder.png")
+                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Placeholder.png")
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                 ;
         }

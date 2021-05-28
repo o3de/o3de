@@ -36,15 +36,4 @@ namespace O3DELauncher
 #endif
         return { LY_PROJECT_NAME };
     }
-
-    AZStd::string_view GetProjectPath()
-    {
-        // The Project CMake path optional and not required
-        // It is used as fall back project root path
-#if defined LY_PROJECT_CMAKE_PATH
-        return { LY_PROJECT_CMAKE_PATH };
-#else
-        return {};
-#endif
-    }
 }

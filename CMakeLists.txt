@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# Cmake version 3.17 is the minimum version needed for all of Open 3D Engine's supported platforms
+# Cmake version 3.19 is the minimum version needed for all of Open 3D Engine's supported platforms
 cmake_minimum_required(VERSION 3.19)
 
 # CMP0111 introduced in 3.19 has a bug that produces the policy to warn every time there is an
@@ -21,9 +21,13 @@ if(CMAKE_VERSION VERSION_EQUAL 3.19)
     cmake_policy(SET CMP0111 OLD)
 endif()
 
+include(cmake/LySet.cmake)
 include(cmake/Version.cmake)
+include(cmake/OutputDirectory.cmake)
 
-set(INSTALLED_ENGINE TRUE)
+# Set the engine_path and engine_json
+set(o3de_engine_path ${CMAKE_CURRENT_LIST_DIR})
+set(o3de_engine_json ${o3de_engine_path}/engine.json)
 
 if(NOT PROJECT_NAME)
     project(O3DE
@@ -31,10 +35,28 @@ if(NOT PROJECT_NAME)
         VERSION ${LY_VERSION_STRING}
     )
 
-    set(INSTALLED_ENGINE FALSE)
+    # o3de manifest
+    include(cmake/o3de_manifest.cmake)
 endif()
 
-include(cmake/Initialize.cmake)
+################################################################################
+# Resolve this engines name and restricted path
+################################################################################
+o3de_engine_name(${o3de_engine_json} o3de_engine_name)
+o3de_restricted_path(${o3de_engine_json} o3de_engine_restricted_path)
+message(STATUS "O3DE Engine Name: ${o3de_engine_name}")
+message(STATUS "O3DE Engine Path: ${o3de_engine_path}")
+if(o3de_engine_restricted_path)
+    message(STATUS "O3DE Engine Restricted Path: ${o3de_engine_restricted_path}")
+endif()
+
+# add the engines cmake folder to the CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${o3de_engine_path}/cmake")
+
+################################################################################
+# Initialize
+################################################################################
+include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
@@ -62,25 +84,23 @@ include(cmake/Projects.cmake)
 if(NOT INSTALLED_ENGINE)
     # Add the rest of the targets
     add_subdirectory(Code)
-    add_subdirectory(Gems)
 else()
     ly_find_o3de_packages()
 endif()
+
+# Add external subdirectories listed in the manifest
+list(APPEND LY_EXTERNAL_SUBDIRS ${o3de_engine_external_subdirectories})
 
 set(enabled_platforms
     ${PAL_PLATFORM_NAME}
     ${LY_PAL_TOOLS_ENABLED})
 
-foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
-    if(restricted_platform IN_LIST enabled_platforms)
-        add_subdirectory(restricted/${restricted_platform})
-    endif()
-endforeach()
+# Add any engine restricted platforms as external subdirs
+o3de_add_engine_restricted_platform_external_subdirs()
 
-# Recurse into directory of general python test scripts
-add_subdirectory(ctest_scripts)
-
-add_subdirectory(scripts)
+if(NOT INSTALLED_ENGINE)
+    add_subdirectory(scripts)
+endif()
 
 # SPEC-1417 will investigate and fix this
 if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
@@ -104,13 +124,17 @@ foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
     string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
     # Use the last directory as the suffix path to use for the Binary Directory
     get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
+    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
 endforeach()
 
 # The following steps have to be done after all targets are registered:
+# Defer generation of the StaticModules.inl file which is needed to create the AZ::Module derived class in monolithic
+# builds until after all the targets are known
+ly_delayed_generate_static_modules_inl()
+
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
-#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
+#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
 # 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
@@ -125,7 +149,10 @@ endif()
 include(cmake/RuntimeDependencies.cmake)
 # 5. Perform test impact framework post steps once all of the targets have been enumerated
 ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine 
+# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(NOT INSTALLED_ENGINE)
     ly_setup_o3de_install()
+
+    # IMPORTANT: must be included last
+    include(cmake/Packaging.cmake)
 endif()

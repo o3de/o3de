@@ -13,7 +13,6 @@
 
 #include <ATLControlsResourceDialog.h>
 #include <AudioControlsEditorPlugin.h>
-#include <Events/EventManager.h>
 #include <IEditor.h>
 #include <Include/IResourceSelectorHost.h>
 #include <QAudioControlEditorIcons.h>

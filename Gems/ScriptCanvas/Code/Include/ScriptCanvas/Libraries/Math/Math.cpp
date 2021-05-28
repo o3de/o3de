@@ -32,7 +32,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<Math>("Math", "")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Math.png")->
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Math.png")->
                         Attribute(AZ::Edit::Attributes::CategoryStyle, ".math")->
                         Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "MathNodeTitlePalette")
                         ;

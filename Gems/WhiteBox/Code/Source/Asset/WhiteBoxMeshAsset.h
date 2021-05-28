@@ -51,12 +51,12 @@ namespace WhiteBox
                 return AZStd::move(m_mesh);
             }
 
-            void SetWhiteBoxData(AZStd::vector<AZ::u8> whiteBoxData)
+            void SetWhiteBoxData(Api::WhiteBoxMeshStream whiteBoxData)
             {
                 m_whiteBoxData = AZStd::move(whiteBoxData);
             }
 
-            const AZStd::vector<AZ::u8>& GetWhiteBoxData() const
+            const Api::WhiteBoxMeshStream& GetWhiteBoxData() const
             {
                 return m_whiteBoxData;
             }
@@ -73,7 +73,7 @@ namespace WhiteBox
             }
 
             Api::WhiteBoxMeshPtr m_mesh;
-            AZStd::vector<AZ::u8> m_whiteBoxData; //! Data used for creating undo commands.
+            Api::WhiteBoxMeshStream m_whiteBoxData; //! Data used for creating undo commands.
         };
     } // namespace Pipeline
 } // namespace WhiteBox

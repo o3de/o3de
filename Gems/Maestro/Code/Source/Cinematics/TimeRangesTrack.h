@@ -39,8 +39,7 @@ public:
 
     int GetActiveKeyIndexForTime(const float time);
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
-
+    static void Reflect(AZ::ReflectContext* context);
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_TIMERANGESTRACK_H

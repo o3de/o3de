@@ -43,6 +43,8 @@ namespace EMStudio
         RenderViewWidget(RenderPlugin* parentPlugin, QWidget* parentWidget);
         virtual ~RenderViewWidget();
 
+        void CreateActions();
+
         enum ERenderFlag
         {
             RENDER_SOLID                    = 0,

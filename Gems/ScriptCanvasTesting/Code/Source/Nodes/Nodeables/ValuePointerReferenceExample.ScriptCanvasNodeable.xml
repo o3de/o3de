@@ -4,7 +4,7 @@
             QualifiedName="ScriptCanvasTesting::Nodeables::ReturnTypeExample"
             PreferredClassName="Return Type Example"
             Base="ScriptCanvas::Nodeable"
-            Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+            Icon="Icons/ScriptCanvas/Placeholder.png"
             Category="Tests"
             GeneratePropertyFriend="True"
             Namespace="None"
@@ -23,7 +23,7 @@
             QualifiedName="ScriptCanvasTesting::Nodeables::BranchInputTypeExample"
             PreferredClassName="Branch Input Type Example"
             Base="ScriptCanvas::Nodeable"
-            Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+            Icon="Icons/ScriptCanvas/Placeholder.png"
             Category="Tests"
             GeneratePropertyFriend="True"
             Namespace="None"
@@ -32,7 +32,7 @@
       <Return Name="Result" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" />
     </Input>
     <Input Name="Branches On Input Type" Description="" DisplayGroup="Branches On Input Type">
-      <Parameter Name="Input Type" Type="AZStd::string" Input="True"/>
+      <Parameter Name="Input Type" Type="AZStd::string"/>
       <Branch Name="By Value" Description="" DisplayGroup="Branches On Input Type">
         <Return Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;" DisplayGroup="Branches On Input Type"/>
       </Branch>
@@ -45,19 +45,33 @@
             QualifiedName="ScriptCanvasTesting::Nodeables::InputTypeExample"
             PreferredClassName="Input Type Example"
             Base="ScriptCanvas::Nodeable"
-            Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+            Icon="Icons/ScriptCanvas/Placeholder.png"
             Category="Tests"
             GeneratePropertyFriend="True"
             Namespace="None"
             Description="Example of passing as input by value, pointer and reference.">
     <Input Name="Clear By Value" Description="">
-      <Parameter Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;" Input="True"/>
+      <Parameter Name="Value Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>
     </Input>
     <Input Name="Clear By Pointer" Description="">
-      <Parameter Name="Pointer Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*" Input="True"/>
+      <Parameter Name="Pointer Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;*"/>
     </Input>
     <Input Name="Clear By Reference" Description="">
-      <Parameter Name="Reference Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;" Input="True"/>
+      <Parameter Name="Reference Input" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;&amp;"/>
     </Input>
+  </Class>
+  <Class Name="PropertyExample"
+            QualifiedName="ScriptCanvasTesting::Nodeables::PropertyExample"
+            PreferredClassName="Property Example"
+            Base="ScriptCanvas::Nodeable"
+            Icon="Icons/ScriptCanvas/Placeholder.png"
+            Category="Tests"
+            GeneratePropertyFriend="True"
+            Namespace="None"
+            Description="Example of using properties.">
+    <Input Name="In" Description=""/>
+    <Property Name="Numbers" Type="AZStd::vector&lt;ScriptCanvas::Data::NumberType&gt;"/>
+    <Property Name="Slang" Type="ScriptCanvas::Data::StringType"/>
+    <Property Name="Position" Type="ScriptCanvas::Data::Vector3Type"/>
   </Class>
 </ScriptCanvas>

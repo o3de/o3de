@@ -11,7 +11,14 @@
             "FileMasks": [
                 "_sss",
                 "_trans",
-                "_opac"
+                "_opac",
+                "_opacity",
+                "_o",
+                "_opac",
+                "_op",
+                "_mask",
+                "_msk",
+                "_blend"
             ],
             "PixelFormat": "BC4",
             "IsPowerOf2": true,
@@ -20,7 +27,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
                 "Name": "Opacity",
                 "SourceColor": "Linear",
@@ -28,7 +35,14 @@
                 "FileMasks": [
                     "_sss",
                     "_trans",
-                    "_opac"
+                    "_opac",
+                    "_opacity",
+                    "_o",
+                    "_opac",
+                    "_op",
+                    "_mask",
+                    "_msk",
+                    "_blend"
                 ],
                 "PixelFormat": "EAC_R11",
                 "IsPowerOf2": true,
@@ -59,7 +73,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
                 "Name": "Opacity",
                 "SourceColor": "Linear",
@@ -67,7 +81,14 @@
                 "FileMasks": [
                     "_sss",
                     "_trans",
-                    "_opac"
+                    "_opac",
+                    "_opacity",
+                    "_o",
+                    "_opac",
+                    "_op",
+                    "_mask",
+                    "_msk",
+                    "_blend"
                 ],
                 "PixelFormat": "BC4",
                 "IsPowerOf2": true,
@@ -83,7 +104,14 @@
                 "FileMasks": [
                     "_sss",
                     "_trans",
-                    "_opac"
+                    "_opac",
+                    "_opacity",
+                    "_o",
+                    "_opac",
+                    "_op",
+                    "_mask",
+                    "_msk",
+                    "_blend"
                 ],
                 "PixelFormat": "BC4",
                 "IsPowerOf2": true,

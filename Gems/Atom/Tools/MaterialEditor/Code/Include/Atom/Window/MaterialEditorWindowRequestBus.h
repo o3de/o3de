@@ -28,6 +28,9 @@ namespace MaterialEditor
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
+        //! Bring main window to foreground
+        virtual void ActivateWindow() = 0;
+
         //! Add dockable widget in main window
         //! @param name title of the dockable window
         //! @param widget docked window content

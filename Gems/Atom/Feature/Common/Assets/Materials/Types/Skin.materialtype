@@ -24,9 +24,9 @@
                 "description": "Properties related to configuring surface normal."
             },
             {
-                "id": "ambientOcclusion",
-                "displayName": "Ambient Occlusion",
-                "description": "Properties for baked AO texture."
+                "id": "occlusion",
+                "displayName": "Occlusion",
+                "description": "Properties for baked textures that represent geometric occlusion of light."
             },
             {
                 "id": "subsurfaceScattering",
@@ -288,6 +288,13 @@
                     }
                 },
                 {
+                    "id": "useTexture",
+                    "displayName": "Use Texture",
+                    "description": "Whether to use the texture map, or just default to the Factor value.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
                     "id": "textureMapUv",
                     "displayName": "UV",
                     "description": "Specular reflection texture map UV set",
@@ -299,13 +306,7 @@
                         "id": "m_specularF0MapUvIndex"
                     }
                 },
-                {
-                    "id": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
+                // Consider moving this to the "general" group to be consistent with StandardMultilayerPBR
                 {
                     "id": "enableMultiScatterCompensation",
                     "displayName": "Multiscattering Compensation",
@@ -383,48 +384,89 @@
                     }
                 }
             ],
-
-            "ambientOcclusion": [
+            "occlusion": [
                 {
-                    "id": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the ambient occlusion feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
-                    "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining ambient occlusion area.",
+                    "id": "diffuseTextureMap",
+                    "displayName": "Diffuse AO",
+                    "description": "Texture map for defining occlusion area for diffuse ambient lighting.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMap"
+                        "id": "m_diffuseOcclusionMap"
                     }
                 },
                 {
-                    "id": "textureMapUv",
-                    "displayName": "UV",
-                    "description": "Ambient occlusion texture map UV set",
+                    "id": "diffuseUseTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the Diffuse AO texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "diffuseTextureMapUv",
+                    "displayName": "    UV",
+                    "description": "Diffuse AO texture map UV set.",
                     "type": "Enum",
                     "enumIsUv": true,
-                    "defaultValue": "Unwrapped",
+                    "defaultValue": "Tiled",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionMapUvIndex"
+                        "id": "m_diffuseOcclusionMapUvIndex"
                     }
                 },
                 {
-                    "id": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
+                    "id": "diffuseFactor",
+                    "displayName": "    Factor",
+                    "description": "Strength factor for scaling the values of Diffuse AO",
                     "type": "Float",
                     "defaultValue": 1.0,
                     "min": 0.0,
-                    "max": 2.0,
+                    "softMax": 2.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_ambientOcclusionFactor"
+                        "id": "m_diffuseOcclusionFactor"
+                    }
+                },
+                {
+                    "id": "specularTextureMap",
+                    "displayName": "Specular Cavity",
+                    "description": "Texture map for defining occlusion area for specular lighting.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionMap"
+                    }
+                },
+                {
+                    "id": "specularUseTexture",
+                    "displayName": "    Use Texture",
+                    "description": "Whether to use the Specular Cavity texture map.",
+                    "type": "Bool",
+                    "defaultValue": true
+                },
+                {
+                    "id": "specularTextureMapUv",
+                    "displayName": "    UV",
+                    "description": "Specular Cavity texture map UV set.",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionMapUvIndex"
+                    }
+                },
+                {
+                    "id": "specularFactor",
+                    "displayName": "    Factor",
+                    "description": "Strength factor for scaling the values of Specular Cavity",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "softMax": 2.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_specularOcclusionFactor"
                     }
                 }
             ],
@@ -575,7 +617,7 @@
                     "type": "float",
                     "defaultValue": 6.0,
                     "min": 0.0,
-                    "softMax":  20.0
+                    "softMax": 20.0
                 },
                 {
                     "id": "transmissionDistortion",
@@ -868,7 +910,7 @@
                     "description": "Center point for scaling and rotation transformations.",
                     "type": "vector2",
                     "vectorLabels": [ "U", "V" ],
-                    "defaultValue": [ 0.0, 0.0 ]
+                    "defaultValue": [ 0.5, 0.5 ]
                 },
                 {
                     "id": "tileU",
@@ -946,15 +988,6 @@
         {
             "file": "Shaders/MotionVector/SkinnedMeshMotionVector.shader",
             "tag": "SkinnedMeshMotionVector"
-        },
-        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
-        },
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
         }
     ],
     "functors": [
@@ -979,18 +1012,18 @@
             "type": "HandleSubsurfaceScatteringParameters",
             "args": {
                 "mode": "subsurfaceScattering.transmissionMode",
-                "scale" : "subsurfaceScattering.transmissionScale",
-                "power" : "subsurfaceScattering.transmissionPower",
-                "distortion" : "subsurfaceScattering.transmissionDistortion",
-                "attenuation" : "subsurfaceScattering.transmissionAttenuation",
-                "tintColor" : "subsurfaceScattering.transmissionTint",
-                "thickness" : "subsurfaceScattering.thickness",
+                "scale": "subsurfaceScattering.transmissionScale",
+                "power": "subsurfaceScattering.transmissionPower",
+                "distortion": "subsurfaceScattering.transmissionDistortion",
+                "attenuation": "subsurfaceScattering.transmissionAttenuation",
+                "tintColor": "subsurfaceScattering.transmissionTint",
+                "thickness": "subsurfaceScattering.thickness",
                 "enabled": "subsurfaceScattering.enableSubsurfaceScattering",
-                "scatterDistanceColor" : "subsurfaceScattering.scatterColor",
-                "scatterDistanceIntensity" : "subsurfaceScattering.scatterDistance",
-                "scatterDistanceShaderInput" : "m_scatterDistance",
-                "parametersShaderInput" : "m_transmissionParams",
-                "tintThickenssShaderInput" : "m_transmissionTintThickness"
+                "scatterDistanceColor": "subsurfaceScattering.scatterColor",
+                "scatterDistanceIntensity": "subsurfaceScattering.scatterDistance",
+                "scatterDistanceShaderInput": "m_scatterDistance",
+                "parametersShaderInput": "m_transmissionParams",
+                "tintThickenssShaderInput": "m_transmissionTintThickness"
             }
         },
         {
@@ -1006,8 +1039,8 @@
             "type": "UseTexture",
             "args": {
                 "textureProperty": "specularF0.textureMap",
-                "dependentProperties": ["specularF0.textureMapUv"],
                 "useTextureProperty": "specularF0.useTexture",
+                "dependentProperties": ["specularF0.textureMapUv"],
                 "shaderOption": "o_specularF0_useTexture"
             }
         },
@@ -1021,9 +1054,21 @@
             }
         },
         {
-            "type": "Lua",
+            "type": "UseTexture",
             "args": {
-                "file": "StandardPBR_AoState.lua"
+                "textureProperty": "occlusion.diffuseTextureMap",
+                "useTextureProperty": "occlusion.diffuseUseTexture",
+                "dependentProperties": ["occlusion.diffuseTextureMapUv", "occlusion.diffuseFactor"],
+                "shaderOption": "o_diffuseOcclusion_useTexture"    
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "occlusion.specularTextureMap",
+                "useTextureProperty": "occlusion.specularUseTexture",
+                "dependentProperties": ["occlusion.specularTextureMapUv", "occlusion.specularFactor"],
+                "shaderOption": "o_specularOcclusion_useTexture"    
             }
         },
         {

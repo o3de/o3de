@@ -49,40 +49,25 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/GizmoManager.h"
 #include "Objects/AxisGizmo.h"
 #include "DisplaySettings.h"
-#include "ShaderEnum.h"
 #include "KeyboardCustomizationSettings.h"
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
-#include "Material/MaterialManager.h"
-#include "Material/MaterialPickTool.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
-#include "Alembic/AlembicCompiler.h"
-#include "LensFlareEditor/LensFlareManager.h"
 #include "UIEnumsDatabase.h"
-#include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
-#include "PickObjectTool.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
-#include "RotateTool.h"
-#include "NullEditTool.h"
-
-#include "BackgroundTaskManager.h"
-#include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
-#include "EditMode/VertexSnappingModeTool.h"
-#include "Mission.h"
 #include "MainStatusBar.h"
 
-#include "SettingsBlock.h"
 #include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
@@ -106,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 #ifdef _RELEASE
 #undef _RELEASE
 #endif
-#include <CrtDebugStats.h>
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
@@ -124,34 +108,10 @@ static CCryEditDoc * theDocument;
 
 #undef GetCommandLine
 
-namespace
-{
-    bool SelectionContainsComponentEntities()
-    {
-        bool result = false;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection)
-        {
-            CBaseObject* selectedObj = nullptr;
-            for (int selectionCounter = 0; selectionCounter < pSelection->GetCount(); ++selectionCounter)
-            {
-                selectedObj = pSelection->GetObject(selectionCounter);
-                if (selectedObj->GetType() == OBJTYPE_AZENTITY)
-                {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-}
-
 const char* CEditorImpl::m_crashLogFileName = "SessionStatus/editor_statuses.json";
 
 CEditorImpl::CEditorImpl()
-    : m_currEditMode(eEditModeSelect)
-    , m_operationMode(eOperationModeNone)
+    : m_operationMode(eOperationModeNone)
     , m_pSystem(nullptr)
     , m_pFileUtil(nullptr)
     , m_pClassFactory(nullptr)
@@ -167,25 +127,20 @@ CEditorImpl::CEditorImpl()
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
-    , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
-    , m_pPickTool(nullptr)
     , m_pAxisGizmo(nullptr)
     , m_pGameEngine(nullptr)
     , m_pAnimationContext(nullptr)
     , m_pSequenceManager(nullptr)
     , m_pToolBoxManager(nullptr)
-    , m_pMaterialManager(nullptr)
     , m_pMusicManager(nullptr)
-    , m_pLensFlareManager(nullptr)
     , m_pErrorReport(nullptr)
     , m_pLasLoadedLevelErrorReport(nullptr)
     , m_pErrorsDlg(nullptr)
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pUIEnumsDatabase(nullptr)
-    , m_pRuler(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
@@ -217,11 +172,8 @@ CEditorImpl::CEditorImpl()
     regCtx.pCommandManager = m_pCommandManager;
     regCtx.pClassFactory = m_pClassFactory;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
-    m_pBackgroundTaskManager.reset(new BackgroundTaskManager::CTaskManager);
-    m_pBackgroundScheduleManager.reset(new BackgroundScheduleManager::CScheduleManager);
     m_pUIEnumsDatabase = new CUIEnumsDatabase;
     m_pDisplaySettings = new CDisplaySettings;
-    m_pShaderEnum = new CShaderEnum;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
 
@@ -232,29 +184,13 @@ CEditorImpl::CEditorImpl()
     m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pMaterialManager = new CMaterialManager(regCtx);
-    m_pAlembicCompiler = new CAlembicCompiler();
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pLensFlareManager = new CLensFlareManager;
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
-    m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
-    ZeroStruct(m_lastAxis);
-    m_lastAxis[eEditModeSelect] = AXIS_TERRAIN;
-    m_lastAxis[eEditModeSelectArea] = AXIS_TERRAIN;
-    m_lastAxis[eEditModeMove] = AXIS_TERRAIN;
-    m_lastAxis[eEditModeRotate] = AXIS_Z;
-    m_lastAxis[eEditModeScale] = AXIS_XY;
-    ZeroStruct(m_lastCoordSys);
-    m_lastCoordSys[eEditModeSelect] = COORDS_LOCAL;
-    m_lastCoordSys[eEditModeSelectArea] = COORDS_LOCAL;
-    m_lastCoordSys[eEditModeMove] = COORDS_WORLD;
-    m_lastCoordSys[eEditModeRotate] = COORDS_WORLD;
-    m_lastCoordSys[eEditModeScale] = COORDS_WORLD;
     DetectVersion();
     RegisterTools();
 
@@ -263,8 +199,6 @@ CEditorImpl::CEditorImpl()
     m_pAssetDatabaseLocationListener = nullptr;
     m_pAssetBrowserRequestHandler = nullptr;
     m_assetEditorRequestsHandler = nullptr;
-
-    AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
 
     AZ::IO::SystemFile::CreateDir("SessionStatus");
     QFile::setPermissions(m_crashLogFileName, QFileDevice::ReadOther | QFileDevice::WriteOther);
@@ -289,8 +223,6 @@ void CEditorImpl::Initialize()
 
     // Activate QT immediately so that its available as soon as CEditorImpl is (and thus GetIEditor())
     InitializeEditorCommon(GetIEditor());
-
-    LoadSettings();
 }
 
 //The only purpose of that function is to be called at the very begining of the shutdown sequence so that we can instrument and track
@@ -305,8 +237,6 @@ void CEditorImpl::OnEarlyExitShutdownSequence()
 
 void CEditorImpl::Uninitialize()
 {
-    SaveSettings();
-
     if (m_pSystem)
     {
         UninitializeEditorCommonISystem(m_pSystem);
@@ -367,14 +297,10 @@ void CEditorImpl::LoadPlugins()
 
 CEditorImpl::~CEditorImpl()
 {
-    AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-
     gSettings.Save();
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pMaterialManager)
-    SAFE_DELETE(m_pAlembicCompiler)
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
@@ -394,8 +320,6 @@ CEditorImpl::~CEditorImpl()
     }
 
     SAFE_DELETE(m_pDisplaySettings)
-    SAFE_DELETE(m_pRuler)
-    SAFE_DELETE(m_pShaderEnum)
     SAFE_DELETE(m_pToolBoxManager)
     SAFE_DELETE(m_pCommandManager)
     SAFE_DELETE(m_pClassFactory)
@@ -443,7 +367,6 @@ void CEditorImpl::SetGameEngine(CGameEngine* ge)
     m_pObjectManager->LoadClassTemplates("Editor");
     m_pObjectManager->RegisterCVars();
 
-    m_pMaterialManager->Set3DEngine();
     m_pAnimationContext->Init();
 }
 
@@ -453,12 +376,6 @@ void CEditorImpl::RegisterTools()
 
     rc.pCommandManager = m_pCommandManager;
     rc.pClassFactory = m_pClassFactory;
-
-    CObjectMode::RegisterTool(rc);
-    CMaterialPickTool::RegisterTool(rc);
-    CVertexSnappingModeTool::RegisterTool(rc);
-    CRotateTool::RegisterTool(rc);
-    NullEditTool::RegisterTool(rc);
 }
 
 void CEditorImpl::ExecuteCommand(const char* sCommand, ...)
@@ -485,7 +402,6 @@ void CEditorImpl::Update()
     m_bUpdates = false;
 
     FUNCTION_PROFILER(GetSystem(), PROFILE_EDITOR);
-    m_pRuler->Update();
 
     //@FIXME: Restore this latter.
     //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
@@ -504,24 +420,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-I3DEngine* CEditorImpl::Get3DEngine()
-{
-    if (gEnv)
-    {
-        return gEnv->p3DEngine;
-    }
-    return nullptr;
-}
-
-IRenderer*  CEditorImpl::GetRenderer()
-{
-    if (gEnv)
-    {
-        return gEnv->pRenderer;
-    }
-    return nullptr;
 }
 
 IEditorClassFactory* CEditorImpl::GetClassFactory()
@@ -663,53 +561,6 @@ IMainStatusBar* CEditorImpl::GetMainStatusBar()
     return MainWindow::instance()->StatusBar();
 }
 
-int CEditorImpl::GetEditMode()
-{
-    return m_currEditMode;
-}
-
-void CEditorImpl::SetEditMode(int editMode)
-{
-    bool isEditorInGameMode = false;
-    EBUS_EVENT_RESULT(isEditorInGameMode, AzToolsFramework::EditorEntityContextRequestBus, IsEditorRunningGame);
-
-    if (isEditorInGameMode)
-    {
-        if (editMode != eEditModeSelect)
-        {
-            if (SelectionContainsComponentEntities())
-            {
-                return;
-            }
-        }
-    }
-
-    if ((EEditMode)editMode == eEditModeRotate)
-    {
-        if (GetEditTool() && GetEditTool()->IsCircleTypeRotateGizmo())
-        {
-            editMode = eEditModeRotateCircle;
-        }
-    }
-
-    EEditMode newEditMode = (EEditMode)editMode;
-    if (m_currEditMode == newEditMode)
-    {
-        return;
-    }
-
-    m_currEditMode = newEditMode;
-    AABB box(Vec3(0, 0, 0), Vec3(0, 0, 0));
-    SetSelectedRegion(box);
-
-    if (GetEditTool() && !GetEditTool()->IsNeedMoveTool())
-    {
-        SetEditTool(0, true);
-    }
-
-    Notify(eNotify_OnEditModeChange);
-}
-
 void CEditorImpl::SetOperationMode(EOperationMode mode)
 {
     m_operationMode = mode;
@@ -719,144 +570,6 @@ void CEditorImpl::SetOperationMode(EOperationMode mode)
 EOperationMode CEditorImpl::GetOperationMode()
 {
     return m_operationMode;
-}
-
-bool CEditorImpl::HasCorrectEditTool() const
-{
-    if (!m_pEditTool)
-    {
-        return false;
-    }
-
-    switch (m_currEditMode)
-    {
-    case eEditModeRotate:
-        return qobject_cast<CRotateTool*>(m_pEditTool) != nullptr;
-    default:
-        return qobject_cast<CObjectMode*>(m_pEditTool) != nullptr && qobject_cast<CRotateTool*>(m_pEditTool) == nullptr;
-    }
-}
-
-CEditTool* CEditorImpl::CreateCorrectEditTool()
-{
-    if (m_currEditMode == eEditModeRotate)
-    {
-        CBaseObject* selectedObj = nullptr;
-        CSelectionGroup* pSelection = GetIEditor()->GetObjectManager()->GetSelection();
-        if (pSelection && pSelection->GetCount() > 0)
-        {
-            selectedObj = pSelection->GetObject(0);
-        }
-
-        return (new CRotateTool(selectedObj));
-    }
-
-    return (new CObjectMode);
-}
-
-void CEditorImpl::SetEditTool(CEditTool* tool, bool bStopCurrentTool)
-{
-    CViewport* pViewport = GetIEditor()->GetActiveView();
-    if (pViewport)
-    {
-        pViewport->SetCurrentCursor(STD_CURSOR_DEFAULT);
-    }
-
-    if (!tool)
-    {
-        if (HasCorrectEditTool())
-        {
-            return;
-        }
-        else
-        {
-            tool = CreateCorrectEditTool();
-        }
-    }
-
-    if (!tool->Activate(m_pEditTool))
-    {
-        return;
-    }
-
-    if (bStopCurrentTool)
-    {
-        if (m_pEditTool && m_pEditTool != tool)
-        {
-            m_pEditTool->EndEditParams();
-            SetStatusText("Ready");
-        }
-    }
-
-    m_pEditTool = tool;
-    if (m_pEditTool)
-    {
-        m_pEditTool->BeginEditParams(this, 0);
-    }
-
-    // Make sure pick is aborted.
-    if (tool != m_pPickTool)
-    {
-        m_pPickTool = nullptr;
-    }
-    Notify(eNotify_OnEditToolChange);
-}
-
-void CEditorImpl::ReinitializeEditTool()
-{
-    if (m_pEditTool)
-    {
-        m_pEditTool->EndEditParams();
-        m_pEditTool->BeginEditParams(this, 0);
-    }
-}
-
-void CEditorImpl::SetEditTool(const QString& sEditToolName, [[maybe_unused]] bool bStopCurrentTool)
-{
-    CEditTool* pTool = GetEditTool();
-    if (pTool && pTool->GetClassDesc())
-    {
-        // Check if already selected.
-        if (QString::compare(pTool->GetClassDesc()->ClassName(), sEditToolName, Qt::CaseInsensitive) == 0)
-        {
-            return;
-        }
-    }
-
-    IClassDesc* pClass = GetIEditor()->GetClassFactory()->FindClass(sEditToolName.toUtf8().data());
-    if (!pClass)
-    {
-        Warning("Editor Tool %s not registered.", sEditToolName.toUtf8().data());
-        return;
-    }
-    if (pClass->SystemClassID() != ESYSTEM_CLASS_EDITTOOL)
-    {
-        Warning("Class name %s is not a valid Edit Tool class.", sEditToolName.toUtf8().data());
-        return;
-    }
-
-    QScopedPointer<QObject> o(pClass->CreateQObject());
-    if (CEditTool* pEditTool = qobject_cast<CEditTool*>(o.data()))
-    {
-        GetIEditor()->SetEditTool(pEditTool);
-        o.take();
-        return;
-    }
-    else
-    {
-        Warning("Class name %s is not a valid Edit Tool class.", sEditToolName.toUtf8().data());
-        return;
-    }
-}
-
-CEditTool* CEditorImpl::GetEditTool()
-{
-    if (m_isNewViewportInteractionModelEnabled)
-    {
-        return nullptr;
-    }
-    
-    return m_pEditTool;
 }
 
 ITransformManipulator* CEditorImpl::ShowTransformManipulator(bool bShow)
@@ -892,7 +605,6 @@ ITransformManipulator* CEditorImpl::GetTransformManipulator()
 void CEditorImpl::SetAxisConstraints(AxisConstrains axisFlags)
 {
     m_selectedAxis = axisFlags;
-    m_lastAxis[m_currEditMode] = m_selectedAxis;
     m_pViewManager->SetAxisConstrain(axisFlags);
     SetTerrainAxisIgnoreObjects(false);
 
@@ -918,7 +630,6 @@ bool CEditorImpl::IsTerrainAxisIgnoreObjects()
 void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
 {
     m_refCoordsSys = refCoords;
-    m_lastCoordSys[m_currEditMode] = m_refCoordsSys;
 
     // Update all views.
     UpdateViews(eUpdateObjects, NULL);
@@ -1069,34 +780,6 @@ bool CEditorImpl::IsSelectionLocked()
     return m_bSelectionLocked;
 }
 
-void CEditorImpl::PickObject(IPickObjectCallback* callback, const QMetaObject* targetClass, const char* statusText, bool bMultipick)
-{
-    m_pPickTool = new CPickObjectTool(callback, targetClass);
-
-    static_cast<CPickObjectTool*>(m_pPickTool.get())->SetMultiplePicks(bMultipick);
-    if (statusText)
-    {
-        m_pPickTool.get()->SetStatusText(statusText);
-    }
-
-    SetEditTool(m_pPickTool);
-}
-
-void CEditorImpl::CancelPick()
-{
-    SetEditTool(0);
-    m_pPickTool = 0;
-}
-
-bool CEditorImpl::IsPicking()
-{
-    if (GetEditTool() == m_pPickTool && m_pPickTool != 0)
-    {
-        return true;
-    }
-    return false;
-}
-
 CViewManager* CEditorImpl::GetViewManager()
 {
     return m_pViewManager;
@@ -1150,16 +833,6 @@ void CEditorImpl::ResetViews()
 IIconManager* CEditorImpl::GetIconManager()
 {
     return m_pIconManager;
-}
-
-IBackgroundTaskManager* CEditorImpl::GetBackgroundTaskManager()
-{
-    return m_pBackgroundTaskManager.get();
-}
-
-IBackgroundScheduleManager* CEditorImpl::GetBackgroundScheduleManager()
-{
-    return m_pBackgroundScheduleManager.get();
 }
 
 IEditorFileMonitor* CEditorImpl::GetFileMonitor()
@@ -1252,37 +925,9 @@ void CEditorImpl::CloseView(const GUID& classId)
     }
 }
 
-IDataBaseManager* CEditorImpl::GetDBItemManager(EDataBaseItemType itemType)
+IDataBaseManager* CEditorImpl::GetDBItemManager([[maybe_unused]] EDataBaseItemType itemType)
 {
-    switch (itemType)
-    {
-    case EDB_TYPE_MATERIAL:
-        return m_pMaterialManager;
-    }
     return 0;
-}
-
-void CEditorImpl::OpenMaterialLibrary(IDataBaseItem* item)
-{
-    EDataBaseItemType type = item ? item->GetType() : EDB_TYPE_MATERIAL;
-    AZ_Assert(type == EDB_TYPE_MATERIAL, "Call to OpenMaterialLibrary with non-material data base item");
-
-    if (type == EDB_TYPE_MATERIAL)
-    {
-        QtViewPaneManager::instance()->OpenPane(LyViewPane::MaterialEditor);
-
-        // This is a workaround for a timing issue where the material editor
-        // gets in a bad state while it is being polished for the first time
-        // while loading a material at the same time, so delay the setting
-        // of the material until the next event queue check
-        QTimer::singleShot(0, [this, item] {
-                IDataBaseManager* pManager = GetDBItemManager(EDB_TYPE_MATERIAL);
-                if (pManager)
-                {
-                    pManager->SetSelectedItem(item);
-                }
-            });
-    }
 }
 
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
@@ -1498,11 +1143,6 @@ XmlNodeRef CEditorImpl::FindTemplate(const QString& templateName)
 void CEditorImpl::AddTemplate(const QString& templateName, XmlNodeRef& tmpl)
 {
     m_templateRegistry.AddTemplate(templateName, tmpl);
-}
-
-CShaderEnum* CEditorImpl::GetShaderEnum()
-{
-    return m_pShaderEnum;
 }
 
 bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputText, [[maybe_unused]] bool bNoTimeOut, bool bShowWindow)
@@ -1887,7 +1527,6 @@ void CEditorImpl::ReduceMemory()
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
-    gEnv->pRenderer->FreeResources(FRR_TEXTURES);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();
@@ -1942,16 +1581,9 @@ void CEditorImpl::AddUIEnums()
     m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
 }
 
-void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform)
+void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, [[maybe_unused]]ESystemConfigPlatform platform)
 {
     gSettings.editorConfigSpec = spec;
-    if (m_pSystem->GetConfigSpec(true) != spec || m_pSystem->GetConfigPlatform() != platform)
-    {
-        m_pSystem->SetConfigSpec(spec, platform, true);
-        gSettings.editorConfigSpec = m_pSystem->GetConfigSpec(true);
-        GetObjectManager()->SendEvent(EVENT_CONFIG_SPEC_CHANGE);
-        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::OnEditorSpecChange);
-    }
 }
 
 ESystemConfigSpec CEditorImpl::GetEditorConfigSpec() const
@@ -1966,8 +1598,6 @@ ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const
 
 void CEditorImpl::InitFinished()
 {
-    SProjectSettingsBlock::Load();
-
     if (!m_bInitialized)
     {
         m_bInitialized = true;
@@ -2024,13 +1654,6 @@ void CEditorImpl::RegisterObjectContextMenuExtension(TContextMenuExtensionFunc f
     m_objectContextMenuExtensions.push_back(func);
 }
 
-void CEditorImpl::SetCurrentMissionTime(float time)
-{
-    if (CMission* pMission = GetIEditor()->GetDocument()->GetCurrentMission())
-    {
-        pMission->SetTime(time);
-    }
-}
 // Vladimir@Conffx
 SSystemGlobalEnvironment* CEditorImpl::GetEnv()
 {
@@ -2047,13 +1670,13 @@ SEditorSettings* CEditorImpl::GetEditorSettings()
 // Vladimir@Conffx
 IBaseLibraryManager* CEditorImpl::GetMaterialManagerLibrary()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 // Vladimir@Conffx
 IEditorMaterialManager* CEditorImpl::GetIEditorMaterialManager()
 {
-    return m_pMaterialManager;
+    return nullptr;
 }
 
 IImageUtil* CEditorImpl::GetImageUtil()
@@ -2069,65 +1692,6 @@ QMimeData* CEditorImpl::CreateQMimeData() const
 void CEditorImpl::DestroyQMimeData(QMimeData* data) const
 {
     delete data;
-}
-
-bool CEditorImpl::IsNewViewportInteractionModelEnabled() const
-{
-    return m_isNewViewportInteractionModelEnabled;
-}
-
-void CEditorImpl::OnStartPlayInEditor()
-{
-    if (SelectionContainsComponentEntities())
-    {
-        SetEditMode(eEditModeSelect);
-    }
-}
-
-namespace
-{
-    const std::vector<std::pair<EEditMode, QString>> s_editModeNames = {
-        { eEditModeSelect, QStringLiteral("Select") },
-        { eEditModeSelectArea, QStringLiteral("SelectArea") },
-        { eEditModeMove, QStringLiteral("Move") },
-        { eEditModeRotate, QStringLiteral("Rotate") },
-        { eEditModeScale, QStringLiteral("Scale") }
-    };
-}
-
-void CEditorImpl::LoadSettings()
-{
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
-
-    settings.beginGroup(QStringLiteral("Editor"));
-    settings.beginGroup(QStringLiteral("CoordSys"));
-
-    for (const auto& editMode : s_editModeNames)
-    {
-        if (settings.contains(editMode.second))
-        {
-            m_lastCoordSys[editMode.first] = static_cast<RefCoordSys>(settings.value(editMode.second).toInt());
-        }
-    }
-
-    settings.endGroup(); // CoordSys
-    settings.endGroup(); // Editor
-}
-
-void CEditorImpl::SaveSettings() const
-{
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
-
-    settings.beginGroup(QStringLiteral("Editor"));
-    settings.beginGroup(QStringLiteral("CoordSys"));
-
-    for (const auto& editMode : s_editModeNames)
-    {
-        settings.setValue(editMode.second, static_cast<int>(m_lastCoordSys[editMode.first]));
-    }
-
-    settings.endGroup(); // CoordSys
-    settings.endGroup(); // Editor
 }
 
 IEditorPanelUtils* CEditorImpl::GetEditorPanelUtils()

@@ -75,6 +75,14 @@ namespace AZ
             //! Finalizes the ModelLodAsset and assigns ownership of the asset to result if successful, otherwise returns false and result is left untouched.
             bool End(Data::Asset<ModelLodAsset>& result);
 
+            //! Clone the given source model lod asset.
+            //! @param sourceAsset The source model lod asset to clone.
+            //! @param clonedResult The resulting, cloned model lod asset.
+            //! @param inOutLastCreatedAssetId The asset id from the model asset that owns the cloned model lod asset. The sub id will be increased and
+            //!                                used as the asset id for the cloned asset.
+            //! @result True in case the asset got cloned successfully, false in case an error happened and the clone process got cancelled.
+            static bool Clone(const Data::Asset<ModelLodAsset>& sourceAsset, Data::Asset<ModelLodAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId);
+
         private:
             bool m_meshBegan = false;
 

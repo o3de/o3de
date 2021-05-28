@@ -21,6 +21,7 @@
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 
 AZ_CVAR(
     bool, ed_visibility_showAggregateEntitySelectionBounds, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -68,6 +69,7 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
+        const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
         AzFramework::EntityDebugDisplayEventBus::Event(
             entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
             viewportInfo, debugDisplay);
@@ -84,10 +86,9 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityTransformedLocalBounds)
         {
-            AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
+            AZ::Transform worldFromLocal = entity->GetTransform()->GetWorldTM();
 
-            if (const AZ::Aabb localAabb = AzFramework::CalculateEntityLocalBoundsUnion(entityId); localAabb.IsValid())
+            if (const AZ::Aabb localAabb = AzFramework::CalculateEntityLocalBoundsUnion(entity); localAabb.IsValid())
             {
                 const AZ::Aabb worldAabb = localAabb.GetTransformedAabb(worldFromLocal);
                 debugDisplay.SetColor(AZ::Colors::Turquoise);
@@ -97,7 +98,7 @@ namespace AzToolsFramework
 
         if (ed_visibility_showAggregateEntityWorldBounds)
         {
-            if (const AZ::Aabb worldAabb = AzFramework::CalculateEntityWorldBoundsUnion(entityId); worldAabb.IsValid())
+            if (const AZ::Aabb worldAabb = AzFramework::CalculateEntityWorldBoundsUnion(entity); worldAabb.IsValid())
             {
                 debugDisplay.SetColor(AZ::Colors::Magenta);
                 debugDisplay.DrawWireBox(worldAabb.GetMin(), worldAabb.GetMax());
@@ -141,16 +142,16 @@ namespace AzToolsFramework
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
                     // selecting based on 2d icon - should only do it when visible and not selected
-                    const QPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
+                    const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, entityPosition);
 
                     const float distSqFromCamera = cameraState.m_position.GetDistanceSq(entityPosition);
                     const auto iconRange = static_cast<float>(GetIconScale(distSqFromCamera) * s_iconSize * 0.5f);
                     const auto screenCoords = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
 
-                    if (    screenCoords.m_x >= screenPosition.x() - iconRange
-                        &&  screenCoords.m_x <= screenPosition.x() + iconRange
-                        &&  screenCoords.m_y >= screenPosition.y() - iconRange
-                        &&  screenCoords.m_y <= screenPosition.y() + iconRange)
+                    if (    screenCoords.m_x >= screenPosition.m_x - iconRange
+                        &&  screenCoords.m_x <= screenPosition.m_x + iconRange
+                        &&  screenCoords.m_y >= screenPosition.m_y - iconRange
+                        &&  screenCoords.m_y <= screenPosition.m_y + iconRange)
                     {
                         entityIdUnderCursor = entityId;
                         break;
@@ -232,10 +233,14 @@ namespace AzToolsFramework
                     return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
                 }();
 
-                debugDisplay.SetColor(iconHighlight);
-                debugDisplay.DrawTextureLabel(
-                    iconTextureId, entityPosition, iconSize, iconSize,
-                    /*DisplayContext::ETextureIconFlags::TEXICON_ON_TOP=*/ 0x0008);
+                EditorViewportIconDisplay::Get()->DrawIcon({
+                    viewportInfo.m_viewportId,
+                    iconTextureId,
+                    iconHighlight,
+                    entityPosition,
+                    EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
+                    AZ::Vector2{iconSize, iconSize}
+                });
             }
         }
     }

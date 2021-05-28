@@ -208,6 +208,7 @@ namespace AZ::Data
     void AssetDataStream::Close()
     {
         AZ_Assert(m_isOpen, "Attempting to close a stream that hasn't been opened.");
+        AZ_Assert(m_curReadRequest == nullptr, "Attempting to close a stream with a read request in flight.");
 
         // Destroy the asset buffer and unlock the allocator, so the allocator itself knows that it is no longer needed.
         if (m_buffer != m_preloadedData.data())
@@ -220,6 +221,16 @@ namespace AZ::Data
 
         // End the load time timespan marker for this asset.
         AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::AzCore, this);
+    }
+
+    void AssetDataStream::RequestCancel()
+    {
+        AZStd::scoped_lock<AZStd::mutex> lock(m_readRequestMutex);
+        if (m_curReadRequest)
+        {
+            auto streamer = Interface<IO::IStreamer>::Get();
+            m_curReadRequest = streamer->Cancel(m_curReadRequest);
+        }
     }
 
     void AssetDataStream::Seek(AZ::IO::OffsetType bytes, AZ::IO::GenericStream::SeekMode mode)

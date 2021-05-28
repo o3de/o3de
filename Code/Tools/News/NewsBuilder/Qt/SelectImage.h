@@ -48,4 +48,4 @@ namespace News {
 
         void ImageSelected(ImageItem* imageItem);
     };
-} // namespace News 
+} // namespace News

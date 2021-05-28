@@ -6,8 +6,8 @@ AssetProcessorTemp/**
 [Cc]ache/
 Editor/EditorEventLog.xml
 Editor/EditorLayout.xml
-Tools/**/*egg-info/**
-Tools/**/*egg-link
+**/*egg-info/**
+**/*egg-link
 UserSettings.xml
 [Uu]ser/
 FrameCapture/**

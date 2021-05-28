@@ -826,9 +826,6 @@ void CBaseLibraryManager::OnEditorNotifyEvent(EEditorNotifyEvent event)
         SetSelectedItem(0);
         ClearAll();
         break;
-    case eNotify_OnMissionChange:
-        SetSelectedItem(0);
-        break;
     case eNotify_OnCloseScene:
         SetSelectedItem(0);
         ClearAll();

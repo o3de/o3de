@@ -26,12 +26,31 @@ namespace Physics
                 ->Field("Scale", &ShapeConfiguration::m_scale)
                 ;
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            #define REFLECT_SHAPETYPE_ENUM_VALUE(EnumValue)                                                                                            \
+                behaviorContext->EnumProperty<(int)Physics::ShapeType::EnumValue>("ShapeType_"#EnumValue)                                                      \
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)                                         \
+                    ->Attribute(AZ::Script::Attributes::Module, "physics");
+
+            // Note: Here we only expose the types that are available to the user in the editor
+            REFLECT_SHAPETYPE_ENUM_VALUE(Box);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Sphere);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Cylinder);
+            REFLECT_SHAPETYPE_ENUM_VALUE(PhysicsAsset);
+
+            #undef REFLECT_SHAPETYPE_ENUM_VALUE
+        }
     }
 
     void SphereShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<SphereShapeConfiguration>>();
+
             serializeContext->Class<SphereShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Radius", &SphereShapeConfiguration::m_radius)
@@ -60,6 +79,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<BoxShapeConfiguration>>();
+
             serializeContext->Class<BoxShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Configuration", &BoxShapeConfiguration::m_dimensions)
@@ -88,6 +110,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<CapsuleShapeConfiguration>>();
+
             serializeContext->Class<CapsuleShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Height", &CapsuleShapeConfiguration::m_height)
@@ -137,11 +162,15 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<PhysicsAssetShapeConfiguration>>();
+
             serializeContext->Class<PhysicsAssetShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
                 ->Field("AssetScale", &PhysicsAssetShapeConfiguration::m_assetScale)
                 ->Field("UseMaterialsFromAsset", &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset)
+                ->Field("SubdivisionLevel", &PhysicsAssetShapeConfiguration::m_subdivisionLevel)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -168,6 +197,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<NativeShapeConfiguration>>();
+
             serializeContext->Class<NativeShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("Scale", &NativeShapeConfiguration::m_nativeShapeScale)
@@ -191,6 +223,9 @@ namespace Physics
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<CookedMeshShapeConfiguration>>();
+
             serializeContext->Class<CookedMeshShapeConfiguration, ShapeConfiguration>()
                 ->Version(1)
                 ->Field("CookedData", &CookedMeshShapeConfiguration::m_cookedData)

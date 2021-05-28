@@ -18,8 +18,6 @@
 #include "Include/IIconManager.h"
 #include "Include/IDisplayViewport.h"
 
-#include <I3DEngine.h>
-
 #include <QDateTime>
 #include <QPoint>
 
@@ -32,7 +30,6 @@ DisplayContext::DisplayContext()
 {
     view = 0;
     renderer = 0;
-    engine = 0;
     flags = 0;
     settings = 0;
     pIconManager = 0;
@@ -40,7 +37,7 @@ DisplayContext::DisplayContext()
 
     m_currentMatrix = 0;
     m_matrixStack[m_currentMatrix].SetIdentity();
-    pRenderAuxGeom = gEnv->pRenderer ? gEnv->pRenderer->GetIRenderAuxGeom() : nullptr;
+    pRenderAuxGeom = nullptr; // ToDo: Remove DisplayContext or update to work with Atom: LYN-3670
     m_thickness = 0;
 
     m_width = 0;
@@ -981,27 +978,8 @@ void DisplayContext::RenderObject(int objectType, const Vec3& pos, float scale)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void DisplayContext::RenderObject(int objectType, const Matrix34& tm)
+void DisplayContext::RenderObject(int, const Matrix34&)
 {
-    IStatObj* object = pIconManager ? pIconManager->GetObject((EStatObject)objectType) : 0;
-    if (object)
-    {
-        float color[4];
-        color[0] = m_color4b.r * (1.0f / 255.0f);
-        color[1] = m_color4b.g * (1.0f / 255.0f);
-        color[2] = m_color4b.b * (1.0f / 255.0f);
-        color[3] = m_color4b.a * (1.0f / 255.0f);
-
-        SRenderingPassInfo passInfo = SRenderingPassInfo::CreateGeneralPassRenderingInfo(GetIEditor()->GetSystem()->GetViewCamera());
-
-        Matrix34 xform = m_matrixStack[m_currentMatrix] * tm;
-        SRendParams rp;
-        rp.pMatrix = &xform;
-        rp.AmbientColor = ColorF(color[0], color[1], color[2], 1);
-        rp.fAlpha = color[3];
-
-        object->Render(rp, passInfo);
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -1127,85 +1105,6 @@ void DisplayContext::Draw2dTextLabel(float x, float y, float size, const char* t
     renderer->Draw2dLabel(x, y, size, col, bCenter, "%s", text);
 }
 
-void DisplayContext::DrawTextOn2DBox(const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor)
-{
-    Vec3 worldPos = ToWorldSpacePosition(pos);
-    int vx, vy, vw, vh;
-    gEnv->pRenderer->GetViewport(&vx, &vy, &vw, &vh);
-    uint32 backupstate = GetState();
-
-    SetState(backupstate | e_DepthTestOff);
-
-    const CCamera& renderCamera = gEnv->pRenderer->GetCamera();
-    Vec3 screenPos;
-
-    renderCamera.Project(worldPos, screenPos, Vec2i(0, 0), Vec2i(0, 0));
-
-    //! Font size information doesn't seem to exist so the proper size is used
-    int textlen = strlen(text);
-    float fontsize = 7.5f * textScale;
-    float textwidth = fontsize * textlen;
-    float textheight = 16.0f * textScale;
-
-    screenPos.x = screenPos.x - (textwidth * 0.5f);
-
-    Vec3 textregion[4] = {
-        Vec3(screenPos.x, screenPos.y, screenPos.z),
-        Vec3(screenPos.x + textwidth, screenPos.y, screenPos.z),
-        Vec3(screenPos.x + textwidth, screenPos.y + textheight, screenPos.z),
-        Vec3(screenPos.x, screenPos.y + textheight, screenPos.z)
-    };
-
-    Vec3 textworldreign[4];
-    Matrix34 dcInvTm = GetMatrix().GetInverted();
-
-    Matrix44A mProj, mView;
-    mathMatrixPerspectiveFov(&mProj, renderCamera.GetFov(), renderCamera.GetProjRatio(), renderCamera.GetNearPlane(), renderCamera.GetFarPlane());
-    mathMatrixLookAt(&mView, renderCamera.GetPosition(), renderCamera.GetPosition() + renderCamera.GetViewdir(), Vec3(0, 0, 1));
-    Matrix44A mInvViewProj = (mView * mProj).GetInverted();
-
-    if (vw == 0)
-    {
-        vw = 1;
-    }
-
-    if (vh == 0)
-    {
-        vh = 1;
-    }
-
-    for (int i = 0; i < 4; ++i)
-    {
-        Vec4 projectedpos = Vec4((textregion[i].x - vx) / vw * 2.0f - 1.0f,
-                -((textregion[i].y - vy) / vh) * 2.0f + 1.0f,
-                textregion[i].z,
-                1.0f);
-
-        Vec4 wp = projectedpos * mInvViewProj;
-
-        if (wp.w == 0.0f)
-        {
-            wp.w = 0.0001f;
-        }
-
-        wp.x /= wp.w;
-        wp.y /= wp.w;
-        wp.z /= wp.w;
-        textworldreign[i] = dcInvTm.TransformPoint(Vec3(wp.x, wp.y, wp.z));
-    }
-
-    ColorB backupcolor = GetColor();
-
-    SetColor(TextBackColor);
-    SetDrawInFrontMode(true);
-    DrawQuad(textworldreign[3], textworldreign[2], textworldreign[1], textworldreign[0]);
-    SetColor(TextColor);
-    DrawTextLabel(pos, textScale, text);
-    SetDrawInFrontMode(false);
-    SetColor(backupcolor);
-    SetState(backupstate);
-}
-
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::SetLineWidth(float width)
 {
@@ -1241,28 +1140,6 @@ uint32 DisplayContext::SetState(uint32 state)
 {
     uint32 old = m_renderState;
     m_renderState = state;
-    pRenderAuxGeom->SetRenderFlags(m_renderState);
-    return old;
-}
-
-//! Set a new render state flags.
-//! @param returns previous render state.
-uint32 DisplayContext::SetStateFlag(uint32 state)
-{
-    uint32 old = m_renderState;
-    m_renderState |= state;
-    m_renderState = pRenderAuxGeom->GetRenderFlags().m_renderFlags;
-    pRenderAuxGeom->SetRenderFlags(m_renderState);
-    return old;
-}
-
-//! Clear specified flags in render state.
-//! @param returns previous render state.
-uint32 DisplayContext::ClearStateFlag(uint32 state)
-{
-    uint32 old = m_renderState;
-    m_renderState &= ~state;
-    m_renderState = pRenderAuxGeom->GetRenderFlags().m_renderFlags;
     pRenderAuxGeom->SetRenderFlags(m_renderState);
     return old;
 }

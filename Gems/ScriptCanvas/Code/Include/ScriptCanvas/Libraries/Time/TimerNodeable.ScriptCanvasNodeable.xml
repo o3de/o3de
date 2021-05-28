@@ -5,7 +5,7 @@
            QualifiedName="Nodeables::Time::TimerNodeable"
            PreferredClassName="Timer"
            Base="ScriptCanvas::Nodeable"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Timing"
            GeneratePropertyFriend="True"
            Namespace="ScriptCanvas"

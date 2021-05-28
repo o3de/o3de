@@ -55,8 +55,8 @@ namespace Blast
                       "Blast Slice Storage Component", "Used process blast slice data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Physics")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Box.png")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Box.png")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box.png")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::AddableByUser, false)
@@ -339,7 +339,7 @@ namespace Blast
 
     const char* EditorBlastSliceAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/Components/Box.png";
+        return "Icons/Components/Box.png";
     }
 
     void EditorBlastSliceAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)

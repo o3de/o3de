@@ -30,7 +30,7 @@ namespace Internal
 {
     AZStd::string GetComponentIconPath(const AZ::SerializeContext::ClassData& componentClassData)
     {
-        AZStd::string iconPath = "Editor/Icons/Components/Component_Placeholder.svg";
+        AZStd::string iconPath = "Icons/Components/Component_Placeholder.svg";
 
         auto editorElementData = componentClassData.m_editData->FindElementData(AZ::Edit::ClassElements::EditorData);
         if (auto iconAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::Icon))

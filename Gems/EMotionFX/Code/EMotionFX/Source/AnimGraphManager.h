@@ -66,7 +66,7 @@ namespace EMotionFX
         bool RemoveAnimGraphInstance(AnimGraphInstance* animGraphInstance, bool delFromMemory = true);
         void RemoveAnimGraphInstances(AnimGraph* animGraph, bool delFromMemory = true);
         void RemoveAllAnimGraphInstances(bool delFromMemory = true);
-        void UpdateInstancesUniqueDataUsingMotionSet(EMotionFX::MotionSet* motionSet);
+        void InvalidateInstanceUniqueDataUsingMotionSet(EMotionFX::MotionSet* motionSet);
 
         size_t GetNumAnimGraphInstances() const                        { MCore::LockGuardRecursive lock(mAnimGraphInstanceLock); return mAnimGraphInstances.size(); }
         AnimGraphInstance* GetAnimGraphInstance(size_t index) const    { MCore::LockGuardRecursive lock(mAnimGraphInstanceLock); return mAnimGraphInstances[index]; }

@@ -12,8 +12,6 @@
 
 #include <AzTest/AzTest.h>
 
-#include <ISystem.h>
-
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -25,47 +23,13 @@
 
 namespace UnitTest
 {
-    //! Sets up a mock global environment to
-    //! change between server and client.
     class NvClothComponent
         : public ::testing::Test
     {
-    public:
-        static void SetUpTestCase();
-        static void TearDownTestCase();
-
     protected:
         AZStd::unique_ptr<AZ::Entity> CreateClothActorEntity(const NvCloth::ClothConfiguration& clothConfiguration);
         bool IsConnectedToMeshComponentNotificationBus(NvCloth::ClothComponent* clothComponent) const;
-
-    private:
-        static AZStd::unique_ptr<SSystemGlobalEnvironment> s_mockGEnv;
-        static SSystemGlobalEnvironment* s_previousGEnv;
     };
-
-    AZStd::unique_ptr<SSystemGlobalEnvironment> NvClothComponent::s_mockGEnv;
-    SSystemGlobalEnvironment* NvClothComponent::s_previousGEnv = nullptr;
-
-    void NvClothComponent::SetUpTestCase()
-    {
-        // override global environment
-        s_previousGEnv = gEnv;
-        s_mockGEnv = AZStd::make_unique<SSystemGlobalEnvironment>();
-        gEnv = s_mockGEnv.get();
-
-#if !defined(CONSOLE)
-        // Set environment to not be a server by default.
-        gEnv->SetIsDedicated(false);
-#endif
-    }
-
-    void NvClothComponent::TearDownTestCase()
-    {
-        // restore global environment
-        gEnv = s_previousGEnv;
-        s_mockGEnv.reset();
-        s_previousGEnv = nullptr;
-    }
 
     AZStd::unique_ptr<AZ::Entity> NvClothComponent::CreateClothActorEntity(const NvCloth::ClothConfiguration& clothConfiguration)
     {
@@ -101,10 +65,35 @@ namespace UnitTest
         EXPECT_TRUE(sortOutcome.IsSuccess());
     }
 
-#if !defined(CONSOLE)
-    TEST_F(NvClothComponent, ClothComponent_OnServer_DoesNotConnectToMeshComponentNotificationBusOnActivation)
+    TEST_F(NvClothComponent, ClothComponent_WithoutMultiplayerGem_ConnectsToMeshComponentNotificationBusOnActivation)
     {
-        gEnv->SetIsDedicated(true);
+        AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
+        entity->Activate();
+
+        auto* clothComponent = entity->FindComponent<NvCloth::ClothComponent>();
+
+        EXPECT_TRUE(IsConnectedToMeshComponentNotificationBus(clothComponent));
+    }
+
+    TEST_F(NvClothComponent, ClothComponent_WithMultiplayerGem_Game_ConnectsToMeshComponentNotificationBusOnActivation)
+    {
+        // Fake that multiplayer gem is enabled by creating a local sv_isDedicated AZ_CVAR
+        AZ::ConsoleDataWrapper<bool, ConsoleThreadSafety<bool>> sv_isDedicated(false,
+            nullptr, "sv_isDedicated", "", AZ::ConsoleFunctorFlags::DontReplicate);
+
+        AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
+        entity->Activate();
+
+        auto* clothComponent = entity->FindComponent<NvCloth::ClothComponent>();
+
+        EXPECT_TRUE(IsConnectedToMeshComponentNotificationBus(clothComponent));
+    }
+
+    TEST_F(NvClothComponent, ClothComponent_WithMultiplayerGem_Server_DoesNotConnectToMeshComponentNotificationBusOnActivation)
+    {
+        // Fake that multiplayer gem is enabled by creating a local sv_isDedicated AZ_CVAR
+        AZ::ConsoleDataWrapper<bool, ConsoleThreadSafety<bool>> sv_isDedicated(true,
+            nullptr, "sv_isDedicated", "", AZ::ConsoleFunctorFlags::DontReplicate);
 
         AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
         entity->Activate();
@@ -112,10 +101,7 @@ namespace UnitTest
         auto* clothComponent = entity->FindComponent<NvCloth::ClothComponent>();
 
         EXPECT_FALSE(IsConnectedToMeshComponentNotificationBus(clothComponent));
-
-        gEnv->SetIsDedicated(false);
     }
-#endif
 
     TEST_F(NvClothComponent, ClothComponent_OneEntityWithTwoClothComponents_BothConnectToMeshComponentNotificationBusOnActivation)
     {
@@ -196,7 +182,7 @@ namespace UnitTest
         {
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             auto meshNodeIndex = actor->AddJoint(meshNodeName);
-            actor->SetMesh(lodLevel, meshNodeIndex, CreateEMotionFXMesh(meshVertices, meshIndices, meshSkinningInfo, meshUVs, meshClothData));
+            actor->SetMesh(lodLevel, meshNodeIndex, CreateEMotionFXMesh(meshVertices, meshIndices, meshSkinningInfo, meshUVs/*, meshClothData*/));
             actor->FinishSetup();
 
             actorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));

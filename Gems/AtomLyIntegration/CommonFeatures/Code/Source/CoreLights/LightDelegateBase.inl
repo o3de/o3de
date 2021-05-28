@@ -59,6 +59,12 @@ namespace AZ
                 m_featureProcessor->SetRgbIntensity(m_lightHandle, m_photometricValue.GetCombinedRgb<FeatureProcessorType::PhotometricUnitType>());
             }
         }
+        
+        template <typename FeatureProcessorType>
+        void LightDelegateBase<FeatureProcessorType>::SetConfig(const AreaLightComponentConfig* config)
+        {
+            m_componentConfig = config;
+        }
 
         template <typename FeatureProcessorType>
         void LightDelegateBase<FeatureProcessorType>::SetChroma(const AZ::Color& color)
@@ -95,6 +101,7 @@ namespace AZ
         template <typename FeatureProcessorType>
         void LightDelegateBase<FeatureProcessorType>::OnShapeChanged(ShapeChangeReasons changeReason)
         {
+            AZ_Assert(m_shapeBus, "OnShapeChanged called without a shape bus present.");
             if (changeReason == ShapeChangeReasons::TransformChanged)
             {
                 AZ::Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
@@ -127,7 +134,11 @@ namespace AZ
             {
                 // now visible, acquire light handle and update values.
                 m_lightHandle = m_featureProcessor->AcquireLight();
-                OnShapeChanged(ShapeChangeReasons::TransformChanged);
+                if (m_shapeBus)
+                {
+                    // For lights that get their transform from the shape bus, force an OnShapeChanged to update the transform.
+                    OnShapeChanged(ShapeChangeReasons::TransformChanged);
+                }
             }
         }
 

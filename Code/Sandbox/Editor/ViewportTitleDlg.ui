@@ -28,7 +28,7 @@
     <height>29</height>
    </size>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,2,0,0,0,0,0,0,0,0">
+  <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0,0,0,0,0,0,0">
    <property name="leftMargin">
     <number>10</number>
    </property>
@@ -57,28 +57,6 @@
      </property>
      <property name="indent">
       <number>11</number>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="AzQtComponents::SearchLineEdit" name="m_viewportSearch">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>147</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>147</width>
-       <height>22</height>
-      </size>
      </property>
     </widget>
    </item>
@@ -207,11 +185,6 @@
    <extends>QWidget</extends>
    <header>AzQtComponents/Components/ButtonDivider.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>AzQtComponents::SearchLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>AzQtComponents/Components/SearchLineEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

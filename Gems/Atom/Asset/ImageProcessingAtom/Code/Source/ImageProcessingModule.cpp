@@ -14,6 +14,7 @@
 #include <AzCore/Module/Module.h>
 #include "ImageProcessingSystemComponent.h"
 #include "ImageBuilderComponent.h"
+#include "Thumbnail/ImageThumbnailSystemComponent.h"
 
 namespace ImageProcessingAtom
 {
@@ -28,8 +29,9 @@ namespace ImageProcessingAtom
         {
             // Push results of the components' ::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
-                    ImageProcessingSystemComponent::CreateDescriptor(), //system component for editor
-                    BuilderPluginComponent::CreateDescriptor(), //builder component for AP
+                    Thumbnails::ImageThumbnailSystemComponent::CreateDescriptor(),
+                    ImageProcessingSystemComponent::CreateDescriptor(), // system component for editor
+                    BuilderPluginComponent::CreateDescriptor(), // builder component for AP
                 });
         }
 
@@ -40,6 +42,7 @@ namespace ImageProcessingAtom
         {
             return AZ::ComponentTypeList{
                 azrtti_typeid<ImageProcessingSystemComponent>(),
+                azrtti_typeid<Thumbnails::ImageThumbnailSystemComponent>(),
             };
         }
     };

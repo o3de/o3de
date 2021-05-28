@@ -31,7 +31,7 @@ namespace AssetProcessor
         };
 
         virtual ~RCCompiler() = default;
-        virtual bool Initialize(const QString& systemRoot, const QString& rcExecutableFullPath) = 0;
+        virtual bool Initialize() = 0;
         virtual bool Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params,
             const QString& dest, const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const = 0;
         virtual void RequestQuit() = 0;
@@ -44,7 +44,7 @@ namespace AssetProcessor
     public:
         NativeLegacyRCCompiler();
 
-        bool Initialize(const QString& systemRoot, const QString& rcExecutableFullPath) override;
+        bool Initialize() override;
         bool Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params, const QString& dest,
             const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const override;
         static QString BuildCommand(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params, const QString& dest);
@@ -53,8 +53,6 @@ namespace AssetProcessor
         static const int            s_maxSleepTime;
         static const unsigned int   s_jobMaximumWaitTime;
         bool                        m_resourceCompilerInitialized;
-        QDir                        m_systemRoot;
-        QString                     m_rcExecutableFullPath;
         volatile bool               m_requestedQuit;
     };
 

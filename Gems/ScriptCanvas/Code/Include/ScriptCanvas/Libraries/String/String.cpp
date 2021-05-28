@@ -34,7 +34,7 @@ namespace ScriptCanvas
                 {
                     editContext->Class<String>("String", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/String.png")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/String.png")
                         ->Attribute(AZ::Edit::Attributes::CategoryStyle, ".string")
                         ->Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "StringNodeTitlePalette")
                         ;

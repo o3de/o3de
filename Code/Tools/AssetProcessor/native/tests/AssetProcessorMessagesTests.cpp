@@ -265,6 +265,9 @@ namespace AssetProcessorMessagesTests
 
         addPairFunc(new GetFullSourcePathFromRelativeProductPathRequest(), new GetFullSourcePathFromRelativeProductPathResponse());
         addPairFunc(new GetRelativeProductPathFromFullSourceOrProductPathRequest(), new GetRelativeProductPathFromFullSourceOrProductPathResponse());
+        addPairFunc(
+            new GenerateRelativeSourcePathRequest(),
+            new GenerateRelativeSourcePathResponse());
         addPairFunc(new SourceAssetInfoRequest(), new SourceAssetInfoResponse());
         addPairFunc(new SourceAssetProductsInfoRequest(), new SourceAssetProductsInfoResponse());
         addPairFunc(new GetScanFoldersRequest(), new GetScanFoldersResponse());
@@ -317,7 +320,7 @@ namespace AssetProcessorMessagesTests
         using namespace AzToolsFramework::AssetDatabase;
 
         // Setup the database with all needed info
-        ScanFolderDatabaseEntry scanfolder1("scanfolder1", "scanfolder1", "scanfolder1", "");
+        ScanFolderDatabaseEntry scanfolder1("scanfolder1", "scanfolder1", "scanfolder1");
         ASSERT_TRUE(m_dbConn.SetScanFolder(scanfolder1));
 
         SourceDatabaseEntry source1(scanfolder1.m_scanFolderID, "source1.png", AZ::Uuid::CreateRandom(), "Fingerprint");

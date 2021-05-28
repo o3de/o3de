@@ -91,6 +91,9 @@ namespace LmbrCentral
         //! Note that spawning is not instant, if a slice hasn't finished spawning then none of its entities are returned.
         //! If an entity has been destroyed since it was spawned, its ID is not returned.
         virtual AZStd::vector<AZ::EntityId> GetAllCurrentlySpawnedEntities() = 0;
+
+        //! Returns whether or not the spawner is in a state that's ready to spawn.
+        virtual bool IsReadyToSpawn() = 0;
     };
 
     using SpawnerComponentRequestBus = AZ::EBus<SpawnerComponentRequests>;

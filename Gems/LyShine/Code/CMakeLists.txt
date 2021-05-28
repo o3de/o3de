@@ -86,13 +86,14 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::LyShine.Static
                 Legacy::CryCommon
                 Gem::LmbrCentral
-                Gem::TextureAtlas
+                Gem::TextureAtlas.Editor
                 Gem::AtomToolsFramework.Static
                 Gem::AtomToolsFramework.Editor
                 ${additional_dependencies}
             PUBLIC
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
+                Gem::Atom_Bootstrap.Headers
     )
 
     ly_add_target(
@@ -117,10 +118,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::LyShine.Editor.Static
                 Gem::LmbrCentral
-                Gem::TextureAtlas
+                Gem::TextureAtlas.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
-            Gem::TextureAtlas
+            Gem::TextureAtlas.Editor
 )
 endif()
 
@@ -175,7 +176,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
                     Gem::LmbrCentral
-                    Gem::TextureAtlas
+                    Gem::TextureAtlas.Editor
                     Gem::LyShine.Editor.Static
         )
         ly_add_googletest(

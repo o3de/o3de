@@ -186,7 +186,6 @@ EXCLUDED_VALIDATION_PATTERNS = [
     'python/runtime',
     'restricted/*/Tools/*RemoteControl',
     'Tools/3dsmax',
-    'Tools/Crashpad',
     '*/user/Cache/*',
     '*/user/log/*',
 ]

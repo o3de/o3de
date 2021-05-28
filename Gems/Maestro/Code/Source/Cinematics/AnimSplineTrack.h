@@ -370,7 +370,7 @@ public:
         m_id = id;
     }
 
-    static void Reflect(AZ::SerializeContext* serializeContext) {}
+    static void Reflect([[maybe_unused]] AZ::ReflectContext* context) {}
 
 protected:
 

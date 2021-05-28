@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 layout = {
-    'path': r'Software\Amazon\Lumberyard\Editor\fancyWindowLayouts',
+    'path': r'Software\Amazon\O3DE\Editor\fancyWindowLayouts',
     'value': 'last'
 }
 restore_camera = {

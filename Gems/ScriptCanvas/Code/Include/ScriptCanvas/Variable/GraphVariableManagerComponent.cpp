@@ -225,7 +225,7 @@ namespace ScriptCanvas
     }
 
     // #functions2 slot<->variable add this to the graph, using the old datum
-    AZ::Outcome<VariableId, AZStd::string> GraphVariableManagerComponent::AddVariable(AZStd::string_view name, const Datum& value)
+    AZ::Outcome<VariableId, AZStd::string> GraphVariableManagerComponent::AddVariable(AZStd::string_view name, const Datum& value, bool functionScope)
     {
         if (FindVariable(name))
         {
@@ -245,6 +245,10 @@ namespace ScriptCanvas
 
         GraphVariable* variable = m_variableData.FindVariable(newId);
         variable->SetOwningScriptCanvasId(GetScriptCanvasId());
+        if (functionScope)
+        {
+            variable->SetScope(VariableFlags::Scope::FunctionReadOnly);
+        }
 
         VariableRequestBus::MultiHandler::BusConnect(GraphScopedVariableId(m_scriptCanvasId, newId));
         GraphVariableManagerNotificationBus::Event(GetScriptCanvasId(), &GraphVariableManagerNotifications::OnVariableAddedToGraph, newId, name);
@@ -254,7 +258,7 @@ namespace ScriptCanvas
 
     AZ::Outcome<VariableId, AZStd::string> GraphVariableManagerComponent::AddVariablePair(const AZStd::pair<AZStd::string_view, Datum>& keyValuePair)
     {
-        return AddVariable(keyValuePair.first, keyValuePair.second);
+        return AddVariable(keyValuePair.first, keyValuePair.second, false);
     }
 
     VariableValidationOutcome GraphVariableManagerComponent::IsNameValid(AZStd::string_view varName)

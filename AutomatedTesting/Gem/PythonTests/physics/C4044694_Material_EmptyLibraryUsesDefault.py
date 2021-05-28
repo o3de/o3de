@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C4044694
 # Test Case Title : Verify that if we add an empty Material library in Collider Component, the object continues to use Default material values
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/4044694
+
 
 
 # fmt: off
@@ -75,15 +75,14 @@ def C4044694_Material_EmptyLibraryUsesDefault():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.bus as bus
     import azlmbr.components
     import azlmbr.physics
     import azlmbr.math as lymath
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     FORCE_IMPULSE = lymath.Vector3(5.0, 0.0, 0.0)
     TIMEOUT = 3.0
@@ -197,5 +196,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4044694_Material_EmptyLibraryUsesDefault)

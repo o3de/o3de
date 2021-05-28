@@ -18,6 +18,7 @@
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 
 namespace AZ
 {
@@ -50,7 +51,12 @@ namespace AZ
                 {
                     AZStd::vector<AZ::Color> clothData;
 
-                    const char* meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
+                    AZStd::string_view meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
+
+                    if (meshNodeName.ends_with(Utilities::OptimizedMeshSuffix))
+                    {
+                        meshNodeName.remove_suffix(Utilities::OptimizedMeshSuffix.size());
+                    }
 
                     for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
                     {

@@ -16,11 +16,11 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
 
-#include <AzFramework/Network/NetSystemBus.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -48,7 +48,6 @@ namespace AzFramework
         : public AZ::ComponentApplication
         , public AZ::UserSettingsFileLocatorBus::Handler
         , public ApplicationRequests::Bus::Handler
-        , public NetSystemRequestBus::Handler
     {
     public:
         // Base class for platform specific implementations of the application.
@@ -137,11 +136,6 @@ namespace AzFramework
         // Convenience function that should be called instead of the standard exit() function to ensure platform requirements are met.
         static void Exit(int errorCode) { ApplicationRequests::Bus::Broadcast(&ApplicationRequests::TerminateOnError, errorCode); }
 
-        //////////////////////////////////////////////////////////////////////////
-        //! NetSystemEventBus::Handler
-        //////////////////////////////////////////////////////////////////////////
-        NetworkContext* GetNetworkContext() override;
-
     protected:
 
         /**
@@ -187,6 +181,7 @@ namespace AzFramework
         AZStd::unique_ptr<AZ::IO::FileIOBase> m_archiveFileIO; ///> The Default file IO instance is a ArchiveFileIO.
         AZStd::unique_ptr<AZ::IO::Archive> m_archive; ///> The AZ::IO::Instance
         AZStd::unique_ptr<Implementation> m_pimpl;
+        AZStd::unique_ptr<AZ::NativeUI::NativeUIRequests> m_nativeUI;
         bool m_ownsConsole = false;
 
         bool m_exitMainLoopRequested = false;

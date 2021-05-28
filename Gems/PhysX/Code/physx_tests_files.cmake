@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    Source/SystemComponent.cpp
-    Source/SystemComponent.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
     Tests/PhysXComponentBusTests.cpp

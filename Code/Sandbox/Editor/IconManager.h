@@ -51,7 +51,6 @@ public:
 
     virtual IStatObj*   GetObject(EStatObject object);
     virtual int GetIconTexture(const char* iconName);
-    virtual _smart_ptr<IMaterial> GetHelperMaterial();
 
     //////////////////////////////////////////////////////////////////////////
     // Icon bitmaps.
@@ -64,13 +63,10 @@ public:
     virtual void OnNewDocument() { Reset(); };
     virtual void OnLoadDocument() { Reset(); };
     virtual void OnCloseDocument() { Reset(); };
-    virtual void OnMissionChange() { Reset(); };
     //////////////////////////////////////////////////////////////////////////
 
 private:
     StdMap<QString, int> m_textures;
-
-    _smart_ptr<IMaterial> m_pHelperMtl;
 
     IStatObj*   m_objects[eStatObject_COUNT];
     int m_icons[eIcon_COUNT];

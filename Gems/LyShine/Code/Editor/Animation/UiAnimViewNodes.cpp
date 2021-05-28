@@ -680,26 +680,7 @@ void CUiAnimViewNodesCtrl::UpdateUiAnimNodeRecord(CRecord* pRecord, CUiAnimViewA
     }
     else if (nodeType == eUiAnimNodeType_Material)
     {
-        // Check if a valid material can be found by the node name.
-        _smart_ptr<IMaterial>  pMaterial = nullptr;
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
-        pMaterial = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        if (pMaterial)
-        {
-            bool bMultiMat = pMaterial->GetSubMtlCount() > 0;
-            bool bMultiMatWithoutValidIndex = bMultiMat && (subMtlIndex < 0 || subMtlIndex >= pMaterial->GetSubMtlCount());
-            bool bLeafMatWithIndex = !bMultiMat && subMtlIndex != -1;
-            if (bMultiMatWithoutValidIndex || bLeafMatWithIndex)
-            {
-                pMaterial = nullptr;
-            }
-        }
-
-        if (!pMaterial)
-        {
-            pRecord->setForeground(0, TEXT_COLOR_FOR_INVALID_MATERIAL);
-        }
+        pRecord->setForeground(0, TEXT_COLOR_FOR_INVALID_MATERIAL);
     }
 
     // Mark the active director and other directors properly.
@@ -1307,44 +1288,6 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
         contextMenu.main.addAction("Edit Events...")->setData(eMI_EditEvents);
         bAppended = true;
-    }
-
-
-    // Sub material menu
-    if (bOnNode && pAnimNode->GetType() == eUiAnimNodeType_Material)
-    {
-        QString matName;
-        int subMtlIndex = GetMatNameAndSubMtlIndexFromName(matName, pAnimNode->GetName());
-        _smart_ptr<IMaterial>  pMtl = gEnv->p3DEngine->GetMaterialManager()->FindMaterial(matName.toUtf8().data());
-        bool bMultMatNode = pMtl ? pMtl->GetSubMtlCount() > 0 : false;
-
-        bool bMatAppended = false;
-
-        if (bMultMatNode)
-        {
-            for (int k = 0; k < pMtl->GetSubMtlCount(); ++k)
-            {
-                _smart_ptr<IMaterial>  pSubMaterial = pMtl->GetSubMtl(k);
-
-                if (pSubMaterial)
-                {
-                    QString subMaterialName = pSubMaterial->GetName();
-
-                    if (!subMaterialName.isEmpty())
-                    {
-                        AddMenuSeperatorConditional(contextMenu.main, bAppended);
-                        QString subMatName = QString("[%1] %2").arg(k + 1).arg(subMaterialName);
-                        QAction* a = contextMenu.main.addAction(subMatName);
-                        a->setData(eMI_SelectSubmaterialBase + k);
-                        a->setCheckable(true);
-                        a->setChecked(k == subMtlIndex);
-                        bMatAppended = true;
-                    }
-                }
-            }
-        }
-
-        bAppended = bAppended || bMatAppended;
     }
 
 #if UI_ANIMATION_REMOVED

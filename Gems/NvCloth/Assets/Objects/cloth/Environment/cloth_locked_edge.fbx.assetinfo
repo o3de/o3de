@@ -7,7 +7,8 @@
                 "selectedNodes": [
                     "RootNode",
                     "RootNode.pPlane1",
-                    "RootNode.pPlane1.colorSet1",
+                    "RootNode.pPlane1.Col0",
+                    "RootNode.pPlane1.transform",
                     "RootNode.pPlane1.map1",
                     "RootNode.pPlane1.lambert1"
                 ]
@@ -24,7 +25,7 @@
                     {
                         "$type": "ClothRule",
                         "meshNodeName": "RootNode.pPlane1",
-                        "inverseMassesStreamName": "colorSet1",
+                        "inverseMassesStreamName": "Col0",
                         "motionConstraintsStreamName": "Default: 1.0",
                         "backstopStreamName": "None"
                     }

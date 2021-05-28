@@ -47,8 +47,8 @@ namespace EMotionFX
                         "Simple LOD Distance", "The Simple LOD distance component alters the actor skeleton LOD level based on camera distance.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Animation")
-                            ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/SimpleLODDistance.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/Mannequin.png")
+                            ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleLODDistance.svg")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Mannequin.png")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorSimpleLODComponent::m_configuration, "LOD Configuration", "");

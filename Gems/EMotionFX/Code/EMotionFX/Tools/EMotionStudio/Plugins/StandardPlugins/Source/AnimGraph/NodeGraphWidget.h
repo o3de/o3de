@@ -65,9 +65,9 @@ namespace EMStudio
 
         uint32 CalcNumSelectedNodes() const;
 
-        QPoint LocalToGlobal(const QPoint& inPoint);
-        QPoint GlobalToLocal(const QPoint& inPoint);
-        QPoint SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize = 10);
+        QPoint LocalToGlobal(const QPoint& inPoint) const;
+        QPoint GlobalToLocal(const QPoint& inPoint) const;
+        QPoint SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize = 10) const;
 
         void CalcSelectRect(QRect& outRect);
 
@@ -105,6 +105,9 @@ namespace EMStudio
 
         const QString& GetTitleBarText() const { return m_titleBarText; }
         void SetTitleBarText(const QString& text) { m_titleBarText = text; }
+
+    signals:
+        void ActiveGraphChanged();
 
     protected:
         //virtual void paintEvent(QPaintEvent* event);
@@ -160,4 +163,4 @@ namespace EMStudio
         float                       m_borderOverwriteWidth;
         QString                     m_titleBarText;
     };
-}   // namespace EMStudio
+} // namespace EMStudio

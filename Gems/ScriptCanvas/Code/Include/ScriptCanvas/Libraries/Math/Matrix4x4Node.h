@@ -41,7 +41,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Matrix4x4>("Matrix4x4", "A 4x4 matrix value")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Matrix4x4.png")
+                                ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Matrix4x4.png")
                                 ;
                         }
                     }

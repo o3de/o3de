@@ -195,9 +195,12 @@ namespace AZ
                 SetSrgsForDraw(commandList);
             }
 
-            for (const RHI::DrawItemKeyPair& drawItemKeyPair : drawListViewPartition)
+            for (const RHI::DrawItemProperties& drawItemProperties : drawListViewPartition)
             {
-                commandList->Submit(*drawItemKeyPair.m_item);
+                if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
+                {
+                    commandList->Submit(*drawItemProperties.m_item);
+                }
             }
         }
 

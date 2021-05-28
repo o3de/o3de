@@ -19,6 +19,9 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
 {
@@ -184,8 +187,16 @@ namespace Gestures
             return;
         }
 
-        const AZ::Vector2 eventScreenPositionPixels = positionData2D->ConvertToScreenSpaceCoordinates(static_cast<float>(gEnv->pRenderer->GetWidth()),
-                                                                                                      static_cast<float>(gEnv->pRenderer->GetHeight()));
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        AZ::RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
+        if (viewportContext == nullptr)
+        {
+            return;
+        }
+
+        AzFramework::WindowSize windowSize = viewportContext->GetViewportSize();
+        const AZ::Vector2 eventScreenPositionPixels = positionData2D->ConvertToScreenSpaceCoordinates(static_cast<float>(windowSize.m_width),
+                                                                                                      static_cast<float>(windowSize.m_height));
         if (inputChannel.IsStateBegan())
         {
             o_hasBeenConsumed = OnPressedEvent(eventScreenPositionPixels, pointerIndex);
@@ -225,8 +236,16 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline void IRecognizer::UpdateNormalizedPositionAndDeltaFromScreenPosition(const AZ::Vector2& screenPositionPixels)
     {
-        const AZ::Vector2 normalizedPosition(screenPositionPixels.GetX() / static_cast<float>(gEnv->pRenderer->GetWidth()),
-                                             screenPositionPixels.GetY() / static_cast<float>(gEnv->pRenderer->GetHeight()));
+        auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        AZ::RPI::ViewportContextPtr viewportContext = atomViewportRequests->GetDefaultViewportContext();
+        if (viewportContext == nullptr)
+        {
+            return;
+        }
+
+        AzFramework::WindowSize windowSize = viewportContext->GetViewportSize();
+        const AZ::Vector2 normalizedPosition(screenPositionPixels.GetX() / static_cast<float>(windowSize.m_width),
+                                             screenPositionPixels.GetY() / static_cast<float>(windowSize.m_height));
         AzFramework::InputChannel::PositionData2D::UpdateNormalizedPositionAndDelta(normalizedPosition);
     }
 }

@@ -1,15 +1,12 @@
 {
     "description": "",
-    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "010_OcclusionBase.material",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "factor": 1.25,
-            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_ao.png"
-        },
-        "baseColor": {
-            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png"
+        "occlusion": {
+            "diffuseFactor": 2.0,
+            "diffuseTextureMap": "TestData/Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg"
         }
     }
 }

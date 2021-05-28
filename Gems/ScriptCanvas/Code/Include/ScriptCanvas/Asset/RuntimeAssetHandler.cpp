@@ -58,7 +58,7 @@ namespace ScriptCanvas
 
     const char* RuntimeAssetHandler::GetBrowserIcon() const
     {
-        return "Editor/Icons/ScriptCanvas/Viewport/ScriptCanvas.png";
+        return "Icons/ScriptCanvas/Viewport/ScriptCanvas.png";
     }
 
     AZ::Uuid RuntimeAssetHandler::GetComponentTypeId() const

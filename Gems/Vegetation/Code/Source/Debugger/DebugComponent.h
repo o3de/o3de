@@ -116,7 +116,6 @@ namespace Vegetation
 
     protected:
         void PrepareNextReport();
-        void DrawSectorTimingData();
         void CopyReportToSortedList();
         void AddConsoleVariables();
         void RemoveConsoleVariables();

@@ -25,4 +25,4 @@ namespace ScriptCanvas
     // this may never have to be necessary
     bool UnregisterNativeGraphStart(AZStd::string_view name);
 
-} 
+}

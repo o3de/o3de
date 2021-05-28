@@ -32,11 +32,12 @@
                             "Attachment": "SpecularInputOutput"
                         }
                     },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "SpecularInputOutput"
+                    },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "MultisampleState": {
-                            "samples": 4
-                        },
                         "SharedQueueMask": "Graphics"
                     }
                 }

@@ -91,6 +91,13 @@ namespace AtomToolsFramework
         propertyConfig.m_vectorLabels = propertyDefinition.m_vectorLabels;
         propertyConfig.m_visible = propertyDefinition.m_visibility != AZ::RPI::MaterialPropertyVisibility::Hidden;
         propertyConfig.m_readOnly = propertyDefinition.m_visibility == AZ::RPI::MaterialPropertyVisibility::Disabled;
+
+        // Update the description for material properties to include script name assuming id is set beforehand
+        propertyConfig.m_description = AZStd::string::format(
+            "%s%s(Script Name = '%s')",
+            propertyConfig.m_description.c_str(),
+            propertyConfig.m_description.empty() ? "" : "\n",
+            propertyConfig.m_id.GetCStr());
     }
 
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData)

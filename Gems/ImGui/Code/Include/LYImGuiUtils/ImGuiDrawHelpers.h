@@ -15,6 +15,8 @@
 #ifdef IMGUI_ENABLED
 #include "imgui/imgui.h"
 
+#include <IConsole.h>
+
 namespace ImGui
 {
     namespace LYImGuiUtils

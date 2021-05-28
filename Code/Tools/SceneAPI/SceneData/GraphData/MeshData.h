@@ -49,9 +49,6 @@ namespace AZ
                 SCENE_DATA_API void AddFace(const AZ::SceneAPI::DataTypes::IMeshData::Face& face,
                     unsigned int faceMaterialId = AZ::SceneAPI::DataTypes::IMeshData::s_invalidMaterialId);
 
-                SCENE_DATA_API void SetSdkMeshIndex(int sdkMeshIndex);
-                SCENE_DATA_API int GetSdkMeshIndex() const;
-
                 SCENE_DATA_API void SetVertexIndexToControlPointIndexMap(int vertexIndex, int controlPointIndex);
                 SCENE_DATA_API size_t GetUsedControlPointCount() const override;
                 SCENE_DATA_API int GetControlPointIndex(int vertexIndex) const override;
@@ -80,8 +77,6 @@ namespace AZ
 
                 AZStd::unordered_map<int, int>                          m_vertexIndexToControlPointIndexMap;
                 AZStd::unordered_map<int, int>                          m_controlPointToUsedVertexIndexMap;
-
-                int                                                     m_sdkMeshIndex = -1;
             };
         }
     }

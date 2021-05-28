@@ -32,20 +32,21 @@ TEST_F(AssetValidationTest, DefaultSeedList_ReturnsExpectedSeedLists)
 {
     AZStd::vector<AzFramework::GemInfo> gemInfo;
 
-    AZStd::string gemSeedList, engineSeedList, projectSeedList;
+    AZ::IO::Path gemSeedList, engineSeedList, projectSeedList;
 
-    ASSERT_TRUE(CreateDummyFile((AZ::IO::Path("mockGem") / AzFramework::GemInfo::GetGemAssetFolder()).c_str(), "seedList", "Mock Gem Seed List", gemSeedList));
-    ASSERT_TRUE(CreateDummyFile("Engine", "SeedAssetList", "Engine Seed List", engineSeedList));
+    ASSERT_TRUE(CreateDummyFile((AZ::IO::Path("mockGem") / AzFramework::GemInfo::GetGemAssetFolder()).c_str(), "seedList", "Mock Gem Seed List", gemSeedList.Native()));
+    ASSERT_TRUE(CreateDummyFile((AZ::IO::Path("Assets") / "Engine").c_str(), "SeedAssetList", "Engine Seed List", engineSeedList.Native()));
 
     AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
     ASSERT_FALSE(projectName.empty());
-    ASSERT_TRUE(CreateDummyFile(projectName.c_str(), "SeedAssetList", "Project Seed List", projectSeedList));
+    ASSERT_TRUE(CreateDummyFile(projectName.c_str(), "SeedAssetList", "Project Seed List", projectSeedList.Native()));
 
     AzFramework::GemInfo mockGem("MockGem");
     mockGem.m_absoluteSourcePaths.push_back((m_tempDir / "mockGem").string().c_str());
     gemInfo.push_back(mockGem);
 
-    AZStd::vector<AZStd::string> defaultSeedLists = AssetValidation::AssetSeed::GetDefaultSeedListFiles(gemInfo, AzFramework::PlatformFlags::Platform_PC);
+    AZStd::vector<AZStd::string> defaultSeedStringList = AssetValidation::AssetSeed::GetDefaultSeedListFiles(gemInfo, AzFramework::PlatformFlags::Platform_PC);
+    AZStd::vector<AZ::IO::Path> defaultSeedLists{ AZStd::make_move_iterator(defaultSeedStringList.begin()), AZStd::make_move_iterator(defaultSeedStringList.end()) };
 
     ASSERT_THAT(defaultSeedLists, ::testing::UnorderedElementsAre(gemSeedList, engineSeedList, projectSeedList));
 }

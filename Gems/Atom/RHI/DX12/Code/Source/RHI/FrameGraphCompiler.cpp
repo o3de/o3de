@@ -404,6 +404,12 @@ namespace AZ
             Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer());
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
 
+            if (scopeAttachment == nullptr)
+            {
+                AZ_WarningOnce("RHI", false, "Imported BufferFrameAttachment isn't used in any Scope");
+                return;
+            }
+
             D3D12_RESOURCE_TRANSITION_BARRIER transition;
             transition.pResource = buffer.GetMemoryView().GetMemory();
             transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
@@ -470,6 +476,12 @@ namespace AZ
 
             Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
+
+            if (scopeAttachment == nullptr)
+            {
+                AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
+                return;
+            }
 
             D3D12_RESOURCE_TRANSITION_BARRIER transition;
             transition.pResource = image.GetMemoryView().GetMemory();

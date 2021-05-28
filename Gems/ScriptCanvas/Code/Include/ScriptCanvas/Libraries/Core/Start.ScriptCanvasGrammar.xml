@@ -6,7 +6,7 @@
 	       PreferredClassName="On Graph Start"
            Uuid="{F200B22A-5903-483A-BF63-5241BC03632B}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Start.png"
+           Icon="Icons/ScriptCanvas/Start.png"
            Category="Timing"
            Version="2"
            GraphEntryPoint="True"

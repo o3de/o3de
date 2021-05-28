@@ -12,7 +12,6 @@
 *
 */
 
-#include <RC/ResourceCompilerScene/Common/ExportContextGlobal.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Utilities/CoordinateSystemConverter.h>
@@ -21,6 +20,16 @@
 
 namespace AZ
 {
+    namespace RC
+    {
+        enum class Phase
+        {
+            Construction,   // The target is created.
+            Filling,        // Data is added to the target.
+            Finalizing      // Work on the target has completed.
+        };
+    }
+
     namespace SceneAPI
     {
         namespace Events

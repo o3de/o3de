@@ -11,8 +11,6 @@
 
 set(FILES
     Source/Module.cpp
-    Source/SystemComponent.cpp
-    Source/SystemComponent.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
 )

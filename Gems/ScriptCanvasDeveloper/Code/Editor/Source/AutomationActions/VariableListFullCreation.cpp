@@ -63,7 +63,7 @@ namespace ScriptCanvasDeveloperEditor
                 ScriptCanvas::Datum datum(dataType, ScriptCanvas::Datum::eOriginality::Original);
 
                 AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> outcome = AZ::Failure(AZStd::string());
-                m_variableRequests->AddVariable(variableName, datum);
+                m_variableRequests->AddVariable(variableName, datum, false);
 
                 ++m_variableCounter;
             }

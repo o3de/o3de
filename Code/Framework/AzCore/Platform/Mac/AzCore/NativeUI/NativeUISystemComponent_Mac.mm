@@ -26,7 +26,7 @@ namespace AZ
 {
     namespace NativeUI
     {
-        AZStd::string NativeUISystemComponent::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
+        AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
             __block NSModalResponse response = -1;
             

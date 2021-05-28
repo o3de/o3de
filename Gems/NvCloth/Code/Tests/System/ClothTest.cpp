@@ -506,7 +506,7 @@ namespace UnitTest
 
         EXPECT_EQ(initialParticles.size(), nvClothCurrentParticles.size());
         EXPECT_EQ(initialParticles.size(), nvClothPreviousParticles.size());
-        for (size_t i = 0; i < nvClothCurrentParticles.size(); ++i)
+        for (size_t i = 0; i < initialParticles.size(); ++i)
         {
             ExpectEq(initialParticles[i], nvClothCurrentParticles[i]);
             ExpectEq(initialParticles[i], nvClothPreviousParticles[i]);

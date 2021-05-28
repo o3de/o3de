@@ -33,6 +33,7 @@
 #include <LyShine/Bus/UiEntityContextBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/UiSerializeHelpers.h>
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/Memory.h>
@@ -256,13 +257,13 @@ namespace
     UiRenderer* GetUiRendererForGame()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRenderer();
+        return lyShine ? lyShine->GetUiRenderer() : nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
         CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine->GetUiRendererForEditor();
+        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -2224,13 +2225,13 @@ void UiCanvasComponent::DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LySh
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayElemBounds(IDraw2d* draw2d) const
+void UiCanvasComponent::DebugDisplayElemBounds(CDraw2d* draw2d) const
 {
     DebugDisplayChildElemBounds(draw2d, m_rootElement);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiCanvasComponent::DebugDisplayChildElemBounds(IDraw2d* draw2d, const AZ::EntityId entity) const
+void UiCanvasComponent::DebugDisplayChildElemBounds(CDraw2d* draw2d, const AZ::EntityId entity) const
 {
     AZ::u64 time = AZStd::GetTimeUTCMilliSecond();
     uint32 fractionsOfOneSecond = time % 1000;
@@ -4254,8 +4255,8 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
     // Initialize the target canvas size and uniform scale
     // This should be done before calling InGamePostActivate so that the
     // canvas space rects of the elements are accurate
-    AZ_Assert(gEnv->pRenderer, "Attempting to access IRenderer before it has been initialized");
-    if (gEnv->pRenderer)
+    UiRenderer* uiRenderer = forEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer) // can be null in automated testing
     {
         AZ::Vector2 targetCanvasSize;
         if (canvasSize)
@@ -4264,8 +4265,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
         }
         else
         {
-            targetCanvasSize.SetX(static_cast<float>(gEnv->pRenderer->GetOverlayWidth()));
-            targetCanvasSize.SetY(static_cast<float>(gEnv->pRenderer->GetOverlayHeight()));
+            targetCanvasSize = uiRenderer->GetViewportSize();
         }
         canvasComponent->SetTargetCanvasSizeAndUniformScale(!forEditor, targetCanvasSize);
     }

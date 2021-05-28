@@ -18,6 +18,9 @@
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzCore/Asset/AssetManagerBus.h>
+
 namespace AZ::RPI
 {
     using namespace AZ::SceneAPI;
@@ -114,7 +117,7 @@ namespace AZ::RPI
                         meshNodeName, sourceMesh.m_name.GetCStr());
 
                     const DataTypes::MatrixType globalTransform = Utilities::BuildWorldTransform(sceneGraph, sceneNodeIndex);
-                    BuildMorphTargetMesh(vertexOffset, sourceMesh, productMesh, metaAssetCreator, blendShapeName, blendShapeData, globalTransform, coordSysConverter);
+                    BuildMorphTargetMesh(vertexOffset, sourceMesh, productMesh, metaAssetCreator, blendShapeName, blendShapeData, globalTransform, coordSysConverter, scene.GetSourceFilename());
                 }
             }
         }
@@ -157,7 +160,8 @@ namespace AZ::RPI
         const AZStd::string& blendShapeName,
         const AZStd::shared_ptr<const DataTypes::IBlendShapeData>& blendShapeData,
         const DataTypes::MatrixType& globalTransform,
-        const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter)
+        const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter,
+        const AZStd::string& sourceSceneFilename)
     {
         const float tolerance = CalcPositionDeltaTolerance(sourceMesh);
         AZ::Aabb deltaPositionAabb = AZ::Aabb::CreateNull();
@@ -288,6 +292,8 @@ namespace AZ::RPI
             metaData.m_maxPositionDelta = maxValue;
         }
 
+        metaData.m_wrinkleMask = GetWrinkleMask(sourceSceneFilename, blendShapeName);
+
         metaAssetCreator.AddMorphTarget(metaData);
 
         AZ_Assert(uncompressedPositionDeltas.size() == compressedDeltas.size(), "Number of uncompressed (%d) and compressed position delta components (%d) do not match.",
@@ -311,5 +317,48 @@ namespace AZ::RPI
 
         AZ_Assert((packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex) == numMorphedVertices, "Vertex index range (%d) in morph target meta data does not match number of morphed vertices (%d).",
             packedCompressedMorphTargetVertexData.size() - metaData.m_startIndex, numMorphedVertices);
+    }
+
+    Data::Asset<RPI::StreamingImageAsset> MorphTargetExporter::GetWrinkleMask(const AZStd::string& sourceSceneFullFilePath, const AZStd::string& blendShapeName) const
+    {
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset;
+
+        // See if there is a wrinkle map mask for this mesh
+        AZStd::string sceneRelativeFilePath;
+        bool relativePathFound = true;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(relativePathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetRelativeProductPathFromFullSourceOrProductPath, sourceSceneFullFilePath, sceneRelativeFilePath);
+
+        if (relativePathFound)
+        {
+            AZ::StringFunc::Path::StripFullName(sceneRelativeFilePath);
+
+            // Get the folder the masks are supposed to be in
+            AZStd::string folderName;
+            AZ::StringFunc::Path::GetFileName(sourceSceneFullFilePath.c_str(), folderName);
+            folderName += "_wrinklemasks";
+
+            // Note: for now, we're assuming the mask is always authored as a .tif
+            AZStd::string blendMaskFileName = blendShapeName + "_wrinklemask.tif.streamingimage";
+
+            AZStd::string maskFolderAndFile;
+            AZ::StringFunc::Path::Join(folderName.c_str(), blendMaskFileName.c_str(), maskFolderAndFile);
+
+            AZStd::string maskRelativePath;
+            AZ::StringFunc::Path::Join(sceneRelativeFilePath.c_str(), maskFolderAndFile.c_str(), maskRelativePath);
+            AZ::StringFunc::Path::Normalize(maskRelativePath);
+
+            // Now see if the file exists
+            AZ::Data::AssetId maskAssetId;
+            Data::AssetCatalogRequestBus::BroadcastResult(maskAssetId, &Data::AssetCatalogRequests::GetAssetIdByPath, maskRelativePath.c_str(), AZ::Data::s_invalidAssetType, false);
+
+            if (maskAssetId.IsValid())
+            {
+                // Flush asset manager events to ensure no asset references are held by closures queued on Ebuses.
+                AZ::Data::AssetManager::Instance().DispatchEvents();
+
+                imageAsset.Create(maskAssetId, AZ::Data::AssetLoadBehavior::PreLoad, false);
+            }
+        }
+        return imageAsset;
     }
 } // namespace AZ::RPI

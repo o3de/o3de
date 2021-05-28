@@ -66,6 +66,8 @@ namespace AzFramework
          */
         virtual EntityContextId GetGameEntityContextId() = 0;
 
+        virtual EntityContext* GetGameEntityContextInstance() = 0;
+
         /**
          * Creates an entity in the game context.
          * @param name A name for the new entity.

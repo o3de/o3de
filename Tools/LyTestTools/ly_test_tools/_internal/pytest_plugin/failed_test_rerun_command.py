@@ -22,7 +22,7 @@ def _get_test_launcher_cmd(build_dir=None):
     """
     build_arg = ""
     if build_dir:
-        build_arg = f"--build-directory {build_dir} "
+        build_arg = f" --build-directory {build_dir} "
 
     python_runner = "python.cmd"
     if not WINDOWS:

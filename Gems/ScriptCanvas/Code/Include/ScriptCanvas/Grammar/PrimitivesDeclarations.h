@@ -110,7 +110,7 @@ namespace ScriptCanvas
 
         constexpr const char* k_InitializeStaticsName = "InitializeStatics";
         constexpr const char* k_InitializeNodeableOutKeys = "InitializeNodeableOutKeys";
-
+        constexpr const char* k_InitializeExecutionOutByRequiredCountName = "InitializeExecutionOutByRequiredCount";
         constexpr const char* k_InterpretedConfigurationPerformance = "SCRIPT_CANVAS_GLOBAL_PERFORMANCE";
         constexpr const char* k_InterpretedConfigurationRelease = "SCRIPT_CANVAS_GLOBAL_RELEASE";
         

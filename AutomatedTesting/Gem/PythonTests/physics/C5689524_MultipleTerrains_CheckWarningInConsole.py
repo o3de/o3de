@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5689524
 # Test Case Title : Create multiple entities each with one or more terrain components and verify that you are
 # able to successfully add the PhysX Terrain components to them.
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689524
+
 
 
 # fmt: off
@@ -72,9 +72,9 @@ def C5689524_MultipleTerrains_CheckWarningInConsole():
 
     import azlmbr.legacy.general as general
 
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     import azlmbr.bus
 
@@ -114,5 +114,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5689524_MultipleTerrains_CheckWarningInConsole)

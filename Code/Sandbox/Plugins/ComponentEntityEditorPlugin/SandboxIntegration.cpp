@@ -16,12 +16,15 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Interface/Interface.h>
@@ -30,8 +33,9 @@
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/API/AtomActiveInterface.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -57,10 +61,15 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
+#include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <MathConversion.h>
 
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
+
+
 #include "Objects/ComponentEntityObject.h"
-#include "ComponentEntityDebugPrinter.h"
 #include "ISourceControl.h"
 #include "UI/QComponentEntityEditorMainWindow.h"
 
@@ -73,11 +82,11 @@
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
-#include <Editor/Util/CubemapUtils.h>
 #include <Editor/IconManager.h>
 #include <Editor/Settings.h>
 #include <Editor/StringDlg.h>
 #include <Editor/QtViewPaneManager.h>
+#include <Editor/EditorViewportSettings.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 
@@ -142,7 +151,6 @@ SandboxIntegrationManager::SandboxIntegrationManager()
     , m_startedUndoRecordingNestingLevel(0)
     , m_dc(nullptr)
     , m_notificationWindowManager(new AzToolsFramework::SliceOverridesNotificationWindowManager())
-    , m_entityDebugPrinter(aznew ComponentEntityDebugPrinter())
 {
     // Required to receive events from the Cry Engine undo system
     GetIEditor()->GetUndoManager()->AddListener(this);
@@ -159,32 +167,11 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-
-    // if the new viewport interaction model is enabled, then object picking is handled via
-    // EditorPickEntitySelection and SandboxIntegrationManager is not required
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzFramework::EntityContextId pickModeEntityContextId = GetEntityContextId();
-        if (!pickModeEntityContextId.IsNull())
-        {
-            AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(pickModeEntityContextId);
-        }
-    }
-
     AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
-    // turn on the this debug display request bus implementation if no other implementation is active
-    if( !(AZ::Interface<AzFramework::AtomActiveInterface>::Get() && AzFramework::DebugDisplayRequestBus::HasHandlers()))
-    {
-        m_debugDisplayBusImplementationActive = true;
-        AzFramework::DebugDisplayRequestBus::Handler::BusConnect(
-            AzToolsFramework::ViewportInteraction::g_mainViewportEntityDebugDisplayId);
-    }
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-    SetupFileExtensionMap();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusConnect();
 
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_SLICE_TO_ROOT, [this]() {
         SaveSlice(false);
@@ -205,6 +192,9 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert(
         (m_prefabIntegrationInterface != nullptr),
         "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+
+    m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
+    AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
 
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusConnect();
 }
@@ -315,12 +305,15 @@ void SandboxIntegrationManager::OnCatalogAssetAdded(const AZ::Data::AssetId& ass
 // operation writing to shared resource is queued on main thread.
 void SandboxIntegrationManager::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
 {
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     // Check to see if the removed slice asset has any instance in the level, then check if 
     // those dangling instances are directly under the root slice (not sub-slices). If yes,
     // detach them and save necessary information so they can be restored when their slice asset
     // comes back.
 
-    if (assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
+    if (!isPrefabSystemEnabled && assetInfo.m_assetType == AZ::AzTypeInfo<AZ::SliceAsset>::Uuid())
     {
         AZ::SliceComponent* rootSlice = nullptr;
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(rootSlice,
@@ -388,22 +381,10 @@ void SandboxIntegrationManager::GetEntitiesInSlices(
 void SandboxIntegrationManager::Teardown()
 {
     AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler::BusDisconnect();
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
-    if( m_debugDisplayBusImplementationActive)
-    {
-        AzFramework::DebugDisplayRequestBus::Handler::BusDisconnect();
-        m_debugDisplayBusImplementationActive = false;
-    }
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
-
-    if (!IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
-    }
-
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -670,9 +651,13 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         action = menu->addAction(QObject::tr("Create layer"));
         QObject::connect(action, &QAction::triggered, [this] { ContextMenu_NewLayer(); });
 
+        AzToolsFramework::EntityIdList entities;
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            entities,
+            &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+
         SetupLayerContextMenu(menu);
-        AzToolsFramework::EntityIdSet flattenedSelection;
-        GetSelectedEntitiesSetWithFlattenedHierarchy(flattenedSelection);
+        AzToolsFramework::EntityIdSet flattenedSelection = AzToolsFramework::GetCulledEntityHierarchy(entities);
         AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
@@ -1220,14 +1205,29 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-    AzToolsFramework::EntityIdSet duplicationSet;
-    GetSelectedEntitiesSetWithFlattenedHierarchy(duplicationSet);
+    AzToolsFramework::EntityIdList entities;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        entities,
+        &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-    if (duplicationSet.size() > 0)
+    AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entities);
+
+    if (!duplicationSet.empty())
     {
-        AZStd::unordered_set<AZ::EntityId> clonedEntities;
-        handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
-        m_unsavedEntities.insert(clonedEntities.begin(), clonedEntities.end());
+        bool prefabSystemEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+        if (prefabSystemEnabled)
+        {
+            m_editorEntityAPI->DuplicateSelected();
+            handled = true;
+        }
+        else
+        {
+            AZStd::unordered_set<AZ::EntityId> clonedEntities;
+            handled = AzToolsFramework::CloneInstantiatedEntities(duplicationSet, clonedEntities);
+            m_unsavedEntities.insert(clonedEntities.begin(), clonedEntities.end());
+        }
     }
     else
     {
@@ -1235,21 +1235,14 @@ void SandboxIntegrationManager::CloneSelection(bool& handled)
     }
 }
 
-void SandboxIntegrationManager::DeleteSelectedEntities(const bool includeDescendants)
+void SandboxIntegrationManager::DeleteSelectedEntities([[maybe_unused]] const bool includeDescendants)
 {
-    if (IsNewViewportInteractionModelEnabled())
-    {
-        AzToolsFramework::EntityIdList selectedEntityIds;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+    AzToolsFramework::EntityIdList selectedEntityIds;
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
-    }
-    else
-    {
-        CCryEditApp::instance()->DeleteSelectedEntities(includeDescendants);
-    }
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, selectedEntityIds);
 }
 
 AZ::EntityId SandboxIntegrationManager::CreateNewEntity(AZ::EntityId parentId)
@@ -1375,11 +1368,6 @@ void SandboxIntegrationManager::SetShowCircularDependencyError(const bool& showC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SandboxIntegrationManager::SetEditTool(const char* tool)
-{
-    GetIEditor()->SetEditTool(tool);
-}
-
 void SandboxIntegrationManager::LaunchLuaEditor(const char* files)
 {
     CCryEditApp::instance()->OpenLUAEditor(files);
@@ -1707,32 +1695,77 @@ bool CollectEntityBoundingBoxesForZoom(const AZ::EntityId& entityId, AABB& selec
 //////////////////////////////////////////////////////////////////////////
 void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::EntityIdList& entityIds)
 {
-    if (entityIds.size() == 0)
+    if (entityIds.empty())
     {
         return;
     }
 
-    AABB selectionBounds;
-    selectionBounds.Reset();
-    bool entitiesAvailableForGoTo = false;
-
-    for (const AZ::EntityId& entityId : entityIds)
+    if (SandboxEditor::UsingNewCameraSystem())
     {
-        if(CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
+        const AZ::Aabb aabb = AZStd::accumulate(
+            AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
+                const AZ::Aabb aabb = AzFramework::CalculateEntityWorldBoundsUnion(AzToolsFramework::GetEntityById(entityId));
+                acc.AddAabb(aabb);
+                return acc;
+            });
+
+        float radius;
+        AZ::Vector3 center;
+        aabb.GetAsSphere(center, radius);
+
+        // minimum center size is 40cm
+        const float minSelectionRadius = 0.4f;
+        const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
+
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
         {
-            entitiesAvailableForGoTo = true;
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
+            {
+                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+                const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
+
+                // move camera 25% further back than required
+                const float centerScale = 1.25f;
+                // compute new camera transform
+                const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
+                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
+                const float distanceToTarget = selectionSize * fovScale * centerScale;
+                const AZ::Transform nextCameraTransform =
+                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
+
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(),
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+            }
         }
     }
-
-    if (entitiesAvailableForGoTo)
+    else
     {
-        int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-        for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+        AABB selectionBounds;
+        selectionBounds.Reset();
+        bool entitiesAvailableForGoTo = false;
+
+        for (const AZ::EntityId& entityId : entityIds)
         {
-            CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
-            if (viewport)
+            if (CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
             {
-                viewport->CenterOnAABB(selectionBounds);
+                entitiesAvailableForGoTo = true;
+            }
+        }
+
+        if (entitiesAvailableForGoTo)
+        {
+            int numViews = GetIEditor()->GetViewManager()->GetViewCount();
+            for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
+            {
+                CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
+                if (viewport)
+                {
+                    viewport->CenterOnAABB(selectionBounds);
+                }
             }
         }
     }
@@ -1958,30 +1991,6 @@ void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::En
     AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants, path, inheritSlices, setAsDynamic);
 }
 
-void SandboxIntegrationManager::SetupFileExtensionMap()
-{
-    // There's no central registry for geometry file types.
-    const char* geometryFileExtensions[] =
-    {
-        CRY_GEOMETRY_FILE_EXT,                  // .cgf
-        CRY_SKEL_FILE_EXT,                      // .chr
-        CRY_CHARACTER_DEFINITION_FILE_EXT,      // .cdf
-    };
-
-    // Cry geometry file extensions.
-    for (const char* extension : geometryFileExtensions)
-    {
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_GEOMETRY;
-    }
-
-    // Cry image file extensions.
-    for (size_t i = 0; i < IResourceCompilerHelper::GetNumSourceImageFormats(); ++i)
-    {
-        const char* extension = IResourceCompilerHelper::GetSourceImageFormat(i, false);
-        m_extensionToFileType[AZ::Crc32(extension)] = IFileUtil::EFILE_TYPE_TEXTURE;
-    }
-}
-
 void SandboxIntegrationManager::RegisterViewPane(const char* name, const char* category, const AzToolsFramework::ViewPaneOptions& viewOptions, const WidgetCreationFunc& widgetCreationFunc)
 {
     QtViewPaneManager::instance()->RegisterPane(name, category, widgetCreationFunc, viewOptions);
@@ -2025,798 +2034,6 @@ void SandboxIntegrationManager::CloseViewPane(const char* paneName)
 void SandboxIntegrationManager::BrowseForAssets(AssetSelectionModel& selection)
 {
     AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, GetMainWindow());
-}
-
-void SandboxIntegrationManager::GenerateCubemapForEntity(AZ::EntityId entityId, AZStd::string* cubemapOutputPath, bool hideEntity)
-{
-    GenerateCubemapWithIDForEntity(entityId, AZ::Uuid::CreateNull(), cubemapOutputPath, hideEntity, false);
-}
-
-void SandboxIntegrationManager::GenerateCubemapWithIDForEntity(AZ::EntityId entityId, AZ::Uuid cubemapId,
-                                                         AZStd::string* cubemapOutputPath, bool hideEntity, bool hasCubemapId)
-{
-    AZ::u32 resolution = 0;
-    EBUS_EVENT_ID_RESULT(resolution, entityId, LmbrCentral::EditorLightComponentRequestBus, GetCubemapResolution);
-
-    if (resolution > 0)
-    {
-        CComponentEntityObject* componentEntity = CComponentEntityObject::FindObjectForEntity(entityId);
-
-        if (componentEntity)
-        {
-            QString levelfolder = GetIEditor()->GetGameEngine()->GetLevelPath();
-            QString levelname = Path::GetFile(levelfolder).toLower();
-            QString fullGameFolder = QString(Path::GetEditingGameDataFolder().c_str());
-            QString texturename;
-            if (hasCubemapId)
-            {
-                texturename = QStringLiteral("%1_cm.tif").arg(cubemapId.ToString<QString>(false, false));
-            }
-            else
-            {
-                texturename = QStringLiteral("%1_cm.tif").arg(static_cast<qulonglong>(componentEntity->GetAssociatedEntityId()));
-            }
-            texturename = texturename.toLower();
-
-            QString fullFolder = Path::SubDirectoryCaseInsensitive(fullGameFolder, {"textures", "cubemaps", levelname});
-            QString fullFilename = QDir(fullFolder).absoluteFilePath(texturename);
-            QString relFilename = QDir(fullGameFolder).relativeFilePath(fullFilename);
-
-            bool directlyExists = CFileUtil::CreateDirectory(fullFolder.toUtf8().data());
-            if (!directlyExists)
-            {
-                QMessageBox::warning(GetMainWindow(), QObject::tr("Cubemap Generation Failed"), QString(QObject::tr("Failed to create destination path '%1'")).arg(fullFolder));
-                return;
-            }
-
-            if (CubemapUtils::GenCubemapWithObjectPathAndSize(fullFilename, componentEntity, static_cast<int>(resolution), hideEntity))
-            {
-                AZStd::string assetPath = relFilename.toUtf8().data();
-                AzFramework::StringFunc::Path::ReplaceExtension(assetPath, ".dds");
-
-                EBUS_EVENT_ID(entityId, LmbrCentral::EditorLightComponentRequestBus, SetCubemap, assetPath);
-
-                if (cubemapOutputPath)
-                {
-                    *cubemapOutputPath = AZStd::move(assetPath);
-                }
-            }
-            else
-            {
-                QMessageBox::warning(GetMainWindow(), QObject::tr("Cubemap Generation Failed"), QObject::tr("Unspecified error"));
-            }
-        }
-    }
-}
-
-void SandboxIntegrationManager::GenerateAllCubemaps()
-{
-    AZStd::string cubemapOutputPath;
-
-    std::vector<CBaseObject*> results;
-    results.reserve(128);
-    GetIEditor()->GetObjectManager()->FindObjectsOfType(OBJTYPE_AZENTITY, results);
-    for (std::vector<CBaseObject*>::iterator end = results.end(), item = results.begin(); item != end; ++item)
-    {
-        CComponentEntityObject* componentEntity = static_cast<CComponentEntityObject*>(*item);
-
-        //check if it's customized cubemap, only generate it if it's not.
-        bool isCustomizedCubemap = true;
-        EBUS_EVENT_ID_RESULT(isCustomizedCubemap, componentEntity->GetAssociatedEntityId(), LmbrCentral::EditorLightComponentRequestBus, UseCustomizedCubemap);
-
-        if (isCustomizedCubemap)
-        {
-            continue;
-        }
-
-        GenerateCubemapForEntity(componentEntity->GetAssociatedEntityId(), nullptr, true);
-    }
-}
-
-void SandboxIntegrationManager::SetColor(float r, float g, float b, float a)
-{
-    if (m_dc)
-    {
-        m_dc->SetColor(Vec3(r, g, b), a);
-    }
-}
-
-void SandboxIntegrationManager::SetColor(const AZ::Color& color)
-{
-    if (m_dc)
-    {
-        m_dc->SetColor(AZColorToLYColorF(color));
-    }
-}
-
-void SandboxIntegrationManager::SetColor(const AZ::Vector4& color)
-{
-    if (m_dc)
-    {
-        m_dc->SetColor(AZVec3ToLYVec3(color.GetAsVector3()), color.GetW());
-    }
-}
-
-void SandboxIntegrationManager::SetAlpha(float a)
-{
-    if (m_dc)
-    {
-        m_dc->SetAlpha(a);
-    }
-}
-
-void SandboxIntegrationManager::DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4)
-{
-    if (m_dc)
-    {
-        m_dc->DrawQuad(
-            AZVec3ToLYVec3(p1),
-            AZVec3ToLYVec3(p2),
-            AZVec3ToLYVec3(p3),
-            AZVec3ToLYVec3(p4));
-    }
-}
-
-void SandboxIntegrationManager::DrawQuad(float width, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawQuad(width, height);
-    }
-}
-
-void SandboxIntegrationManager::DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireQuad(
-            AZVec3ToLYVec3(p1),
-            AZVec3ToLYVec3(p2),
-            AZVec3ToLYVec3(p3),
-            AZVec3ToLYVec3(p4));
-    }
-}
-
-void SandboxIntegrationManager::DrawWireQuad(float width, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireQuad(width, height);
-    }
-}
-
-void SandboxIntegrationManager::DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor)
-{
-    if (m_dc)
-    {
-        m_dc->DrawQuadGradient(
-            AZVec3ToLYVec3(p1),
-            AZVec3ToLYVec3(p2),
-            AZVec3ToLYVec3(p3),
-            AZVec3ToLYVec3(p4),
-            ColorF(AZVec3ToLYVec3(firstColor.GetAsVector3()), firstColor.GetW()),
-            ColorF(AZVec3ToLYVec3(secondColor.GetAsVector3()), secondColor.GetW()));
-    }
-}
-
-void SandboxIntegrationManager::DrawTri(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTri(
-            AZVec3ToLYVec3(p1),
-            AZVec3ToLYVec3(p2),
-            AZVec3ToLYVec3(p3));
-    }
-}
-
-void SandboxIntegrationManager::DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color)
-{
-    if (m_dc)
-    {
-        // transform to world space
-        const auto vecTransform = [this](const AZ::Vector3& vec)
-        {
-            return m_dc->GetMatrix() * AZVec3ToLYVec3(vec);
-        };
-
-        AZStd::vector<Vec3> cryVertices;
-        cryVertices.reserve(vertices.size());
-        AZStd::transform(vertices.begin(), vertices.end(), AZStd::back_inserter(cryVertices), vecTransform);
-        m_dc->DrawTriangles(
-            cryVertices,
-            AZColorToLYColorF(color));
-    }
-}
-
-void SandboxIntegrationManager::DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color)
-{
-    if (m_dc)
-    {
-        // transform to world space
-        const auto vecTransform = [this](const AZ::Vector3& vec)
-        {
-            return m_dc->GetMatrix() * AZVec3ToLYVec3(vec);
-        };
-
-        AZStd::vector<Vec3> cryVertices;
-        cryVertices.reserve(vertices.size());
-        AZStd::transform(vertices.begin(), vertices.end(), AZStd::back_inserter(cryVertices), vecTransform);
-        m_dc->DrawTrianglesIndexed(
-            cryVertices,
-            indices,
-            AZColorToLYColorF(color));
-    }
-}
-
-void SandboxIntegrationManager::DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireBox(
-            AZVec3ToLYVec3(min),
-            AZVec3ToLYVec3(max));
-    }
-}
-
-void SandboxIntegrationManager::DrawSolidBox(const AZ::Vector3& min, const AZ::Vector3& max)
-{
-    if (m_dc)
-    {
-        m_dc->DrawSolidBox(
-            AZVec3ToLYVec3(min),
-            AZVec3ToLYVec3(max));
-    }
-}
-
-void SandboxIntegrationManager::DrawSolidOBB(const AZ::Vector3& center, const AZ::Vector3& axisX, const AZ::Vector3& axisY, const AZ::Vector3& axisZ, const AZ::Vector3& halfExtents)
-{
-    if (m_dc)
-    {
-        m_dc->DrawSolidOBB(AZVec3ToLYVec3(center), AZVec3ToLYVec3(axisX), AZVec3ToLYVec3(axisY), AZVec3ToLYVec3(axisZ), AZVec3ToLYVec3(halfExtents));
-    }
-}
-
-void SandboxIntegrationManager::DrawPoint(const AZ::Vector3& p, int nSize)
-{
-    if (m_dc)
-    {
-        m_dc->DrawPoint(AZVec3ToLYVec3(p), nSize);
-    }
-}
-
-void SandboxIntegrationManager::DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2)
-{
-    if (m_dc)
-    {
-        m_dc->DrawLine(
-            AZVec3ToLYVec3(p1),
-            AZVec3ToLYVec3(p2));
-    }
-}
-
-void SandboxIntegrationManager::DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2)
-{
-    if (m_dc)
-    {
-        m_dc->DrawLine(
-            AZVec3ToLYVec3(p1),
-            AZVec3ToLYVec3(p2),
-            ColorF(AZVec3ToLYVec3(col1.GetAsVector3()), col1.GetW()),
-            ColorF(AZVec3ToLYVec3(col2.GetAsVector3()), col2.GetW()));
-    }
-}
-
-void SandboxIntegrationManager::DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color)
-{
-    if (m_dc)
-    {
-        // transform to world space
-        const auto vecTransform = [this](const AZ::Vector3& vec)
-        {
-            return m_dc->GetMatrix() * AZVec3ToLYVec3(vec);
-        };
-
-        AZStd::vector<Vec3> cryLines;
-        cryLines.reserve(cryLines.size());
-        AZStd::transform(lines.begin(), lines.end(), AZStd::back_inserter(cryLines), vecTransform);
-        m_dc->DrawLines(cryLines, AZColorToLYColorF(color));
-    }
-}
-
-void SandboxIntegrationManager::DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled)
-{
-    if (m_dc)
-    {
-        Vec3* points = new Vec3[numPoints];
-        for (int i = 0; i < numPoints; ++i)
-        {
-            points[i] = AZVec3ToLYVec3(pnts[i]);
-        }
-
-        m_dc->DrawPolyLine(points, numPoints, cycled);
-
-        delete[] points;
-    }
-}
-
-void SandboxIntegrationManager::DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireQuad2d(
-            QPoint(static_cast<int>(p1.GetX()), static_cast<int>(p1.GetY())),
-            QPoint(static_cast<int>(p2.GetX()), static_cast<int>(p2.GetY())),
-            z);
-    }
-}
-
-void SandboxIntegrationManager::DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z)
-{
-    if (m_dc)
-    {
-        m_dc->DrawLine2d(
-            QPoint(static_cast<int>(p1.GetX()), static_cast<int>(p1.GetY())),
-            QPoint(static_cast<int>(p2.GetX()), static_cast<int>(p2.GetY())),
-            z);
-    }
-}
-
-void SandboxIntegrationManager::DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor)
-{
-    if (m_dc)
-    {
-        m_dc->DrawLine2dGradient(
-            QPoint(static_cast<int>(p1.GetX()), static_cast<int>(p1.GetY())),
-            QPoint(static_cast<int>(p2.GetX()), static_cast<int>(p2.GetY())),
-            z,
-            ColorF(AZVec3ToLYVec3(firstColor.GetAsVector3()), firstColor.GetW()),
-            ColorF(AZVec3ToLYVec3(secondColor.GetAsVector3()), secondColor.GetW()));
-    }
-}
-
-void SandboxIntegrationManager::DrawWireCircle2d(const AZ::Vector2& center, float radius, float z)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireCircle2d(
-            QPoint(static_cast<int>(center.GetX()), static_cast<int>(center.GetY())),
-            radius, z);
-    }
-}
-
-void SandboxIntegrationManager::DrawTerrainCircle(const AZ::Vector3& worldPos, float radius, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTerrainCircle(
-            AZVec3ToLYVec3(worldPos), radius, height);
-    }
-}
-
-void SandboxIntegrationManager::DrawTerrainCircle(const AZ::Vector3& center, float radius, float angle1, float angle2, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTerrainCircle(
-            AZVec3ToLYVec3(center), radius, angle1, angle2, height);
-    }
-}
-
-void SandboxIntegrationManager::DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, int referenceAxis)
-{
-    if (m_dc)
-    {
-        m_dc->DrawArc(
-            AZVec3ToLYVec3(pos),
-            radius,
-            startAngleDegrees,
-            sweepAngleDegrees,
-            angularStepDegrees,
-            referenceAxis);
-    }
-}
-
-void SandboxIntegrationManager::DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, const AZ::Vector3& fixedAxis)
-{
-    if (m_dc)
-    {
-        m_dc->DrawArc(
-            AZVec3ToLYVec3(pos),
-            radius,
-            startAngleDegrees,
-            sweepAngleDegrees,
-            angularStepDegrees,
-            AZVec3ToLYVec3(fixedAxis));
-    }
-}
-
-void SandboxIntegrationManager::DrawCircle(const AZ::Vector3& pos, float radius, int nUnchangedAxis)
-{
-    if (m_dc)
-    {
-        m_dc->DrawCircle(
-            AZVec3ToLYVec3(pos),
-            radius,
-            nUnchangedAxis);
-    }
-}
-
-void SandboxIntegrationManager::DrawHalfDottedCircle(const AZ::Vector3& pos, float radius, const AZ::Vector3& viewPos, int nUnchangedAxis)
-{
-    if (m_dc)
-    {
-        m_dc->DrawHalfDottedCircle(
-            AZVec3ToLYVec3(pos),
-            radius,
-            AZVec3ToLYVec3(viewPos),
-            nUnchangedAxis);
-    }
-}
-
-void SandboxIntegrationManager::DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded)
-{
-    if (m_dc)
-    {
-        m_dc->DrawCone(
-            AZVec3ToLYVec3(pos),
-            AZVec3ToLYVec3(dir),
-            radius,
-            height,
-            drawShaded);
-    }
-}
-
-void SandboxIntegrationManager::DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireCylinder(
-            AZVec3ToLYVec3(center),
-            AZVec3ToLYVec3(axis),
-            radius,
-            height);
-    }
-}
-
-void SandboxIntegrationManager::DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded)
-{
-    if (m_dc)
-    {
-        m_dc->DrawSolidCylinder(
-            AZVec3ToLYVec3(center),
-            AZVec3ToLYVec3(axis),
-            radius,
-            height,
-            drawShaded);
-    }
-}
-
-void SandboxIntegrationManager::DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireCapsule(
-            AZVec3ToLYVec3(center),
-            AZVec3ToLYVec3(axis),
-            radius,
-            height);
-    }
-}
-
-void SandboxIntegrationManager::DrawTerrainRect(float x1, float y1, float x2, float y2, float height)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTerrainRect(x1, y1, x2, y2, height);
-    }
-}
-
-void SandboxIntegrationManager::DrawTerrainLine(AZ::Vector3 worldPos1, AZ::Vector3 worldPos2)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTerrainLine(
-            AZVec3ToLYVec3(worldPos1),
-            AZVec3ToLYVec3(worldPos2));
-    }
-}
-
-void SandboxIntegrationManager::DrawWireSphere(const AZ::Vector3& pos, float radius)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireSphere(AZVec3ToLYVec3(pos), radius);
-    }
-}
-
-void SandboxIntegrationManager::DrawWireSphere(const AZ::Vector3& pos, const AZ::Vector3 radius)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireSphere(
-            AZVec3ToLYVec3(pos),
-            AZVec3ToLYVec3(radius));
-    }
-}
-
-void SandboxIntegrationManager::DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius)
-{
-    if (m_dc)
-    {
-        m_dc->DrawWireDisk(
-            AZVec3ToLYVec3(pos),
-            AZVec3ToLYVec3(dir),
-            radius);
-    }
-}
-
-void SandboxIntegrationManager::DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded)
-{
-    if (m_dc)
-    {
-        m_dc->DrawBall(AZVec3ToLYVec3(pos), radius, drawShaded);
-    }
-}
-
-void SandboxIntegrationManager::DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius)
-{
-    if (m_dc)
-    {
-        m_dc->DrawDisk(
-            AZVec3ToLYVec3(pos),
-            AZVec3ToLYVec3(dir),
-            radius);
-    }
-}
-
-void SandboxIntegrationManager::DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float fHeadScale, bool b2SidedArrow)
-{
-    if (m_dc)
-    {
-        m_dc->DrawArrow(
-            AZVec3ToLYVec3(src),
-            AZVec3ToLYVec3(trg),
-            fHeadScale,
-            b2SidedArrow);
-    }
-}
-
-void SandboxIntegrationManager::DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter, int srcOffsetX, int srcOffsetY)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTextLabel(
-            AZVec3ToLYVec3(pos),
-            size,
-            text,
-            bCenter,
-            srcOffsetX,
-            srcOffsetY);
-    }
-}
-
-void SandboxIntegrationManager::Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter)
-{
-    if (m_dc)
-    {
-        m_dc->Draw2dTextLabel(x, y, size, text, bCenter);
-    }
-}
-
-void SandboxIntegrationManager::DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& textColor, const AZ::Vector4& textBackColor)
-{
-    if (m_dc)
-    {
-        m_dc->DrawTextOn2DBox(
-            AZVec3ToLYVec3(pos),
-            text,
-            textScale,
-            ColorF(AZVec3ToLYVec3(textColor.GetAsVector3()), textColor.GetW()),
-            ColorF(AZVec3ToLYVec3(textBackColor.GetAsVector3()), textBackColor.GetW()));
-    }
-}
-
-void SandboxIntegrationManager::DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags)
-{
-    if (m_dc)
-    {
-        if (texture)
-        {
-            float textureWidth = aznumeric_caster(texture->GetWidth());
-            float textureHeight = aznumeric_caster(texture->GetHeight());
-
-            // resize the label in proportion to the actual texture size
-            if (textureWidth > textureHeight)
-            {
-                sizeY = sizeX * (textureHeight / textureWidth);
-            }
-            else
-            {
-                sizeX = sizeY * (textureWidth / textureHeight);
-            }
-
-            m_dc->DrawTextureLabel(AZVec3ToLYVec3(pos), sizeX, sizeY, texture->GetTextureID(), texIconFlags);
-        }
-    }
-}
-
-void SandboxIntegrationManager::DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags)
-{
-    ITexture* texture = GetIEditor()->GetRenderer()->EF_GetTextureByID(textureId);
-    DrawTextureLabel(texture, pos, sizeX, sizeY, texIconFlags);
-}
-
-void SandboxIntegrationManager::SetLineWidth(float width)
-{
-    if (m_dc)
-    {
-        m_dc->SetLineWidth(width);
-    }
-}
-
-bool SandboxIntegrationManager::IsVisible(const AZ::Aabb& bounds)
-{
-    if (m_dc)
-    {
-        const AABB aabb(
-            AZVec3ToLYVec3(bounds.GetMin()),
-            AZVec3ToLYVec3(bounds.GetMax()));
-
-        return m_dc->IsVisible(aabb);
-    }
-
-    return 0;
-}
-
-int SandboxIntegrationManager::SetFillMode(int nFillMode)
-{
-    if (m_dc)
-    {
-        return m_dc->SetFillMode(nFillMode);
-    }
-
-    return 0;
-}
-
-float SandboxIntegrationManager::GetLineWidth()
-{
-    if (m_dc)
-    {
-        return m_dc->GetLineWidth();
-    }
-
-    return 0.f;
-}
-
-float SandboxIntegrationManager::GetAspectRatio()
-{
-    if (m_dc && m_dc->GetView())
-    {
-        return m_dc->GetView()->GetAspectRatio();
-    }
-
-    return 0.f;
-}
-
-void SandboxIntegrationManager::DepthTestOff()
-{
-    if (m_dc)
-    {
-        m_dc->DepthTestOff();
-    }
-}
-
-void SandboxIntegrationManager::DepthTestOn()
-{
-    if (m_dc)
-    {
-        m_dc->DepthTestOn();
-    }
-}
-
-void SandboxIntegrationManager::DepthWriteOff()
-{
-    if (m_dc)
-    {
-        m_dc->DepthWriteOff();
-    }
-}
-
-void SandboxIntegrationManager::DepthWriteOn()
-{
-    if (m_dc)
-    {
-        m_dc->DepthWriteOn();
-    }
-}
-
-void SandboxIntegrationManager::CullOff()
-{
-    if (m_dc)
-    {
-        m_dc->CullOff();
-    }
-}
-
-void SandboxIntegrationManager::CullOn()
-{
-    if (m_dc)
-    {
-        m_dc->CullOn();
-    }
-}
-
-bool SandboxIntegrationManager::SetDrawInFrontMode(bool bOn)
-{
-    if (m_dc)
-    {
-        return m_dc->SetDrawInFrontMode(bOn);
-    }
-
-    return 0.f;
-}
-
-AZ::u32 SandboxIntegrationManager::GetState()
-{
-    if (m_dc)
-    {
-        return m_dc->GetState();
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::SetState(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->SetState(state);
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::SetStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->SetStateFlag(state);
-    }
-
-    return 0;
-}
-
-AZ::u32 SandboxIntegrationManager::ClearStateFlag(AZ::u32 state)
-{
-    if (m_dc)
-    {
-        return m_dc->ClearStateFlag(state);
-    }
-
-    return 0;
-}
-
-void SandboxIntegrationManager::PushMatrix(const AZ::Transform& tm)
-{
-    if (m_dc)
-    {
-        const Matrix34 m = AZTransformToLYTransform(tm);
-        m_dc->PushMatrix(m);
-    }
-}
-
-void SandboxIntegrationManager::PopMatrix()
-{
-    if (m_dc)
-    {
-        m_dc->PopMatrix();
-    }
-}
-
-bool SandboxIntegrationManager::IsNewViewportInteractionModelEnabled()
-{
-    return GetIEditor()->IsNewViewportInteractionModelEnabled();
 }
 
 bool SandboxIntegrationManager::DisplayHelpersVisible()

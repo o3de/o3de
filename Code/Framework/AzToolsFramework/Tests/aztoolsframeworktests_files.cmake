@@ -54,6 +54,7 @@ set(FILES
     Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
     Prefab/PrefabInstanceToTemplatePropagatorTests.cpp
     Prefab/PrefabInstantiateTests.cpp
@@ -85,7 +86,9 @@ set(FILES
     Prefab/SpawnableSortEntitiesTestFixture.cpp
     Prefab/SpawnableSortEntitiesTestFixture.h
     Entity/EditorEntityContextComponentTests.cpp
+    Entity/EditorEntityHelpersTests.cpp
     Entity/EditorEntitySearchComponentTests.cpp
+    Entity/EditorEntitySelectionTests.cpp
     SliceStabilityTests/SliceStabilityTestFramework.h
     SliceStabilityTests/SliceStabilityTestFramework.cpp
     SliceStabilityTests/SliceStabilityCreateTests.cpp

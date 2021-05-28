@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 Test case ID : C12905528
 Test Case Title : Check that user is warned if non-trigger collider component is used with force region
-URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12905528
+
 """
 
 
@@ -50,11 +50,12 @@ def run():
     # Helper file Imports
     import ImportPathHelper as imports
 
+    from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report
+
     imports.init()
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
-    from editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     helper.init_idle()
     # 1) Load the empty level

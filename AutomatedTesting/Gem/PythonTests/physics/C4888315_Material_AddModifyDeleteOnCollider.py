@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test Case ID    : C4888315
 # Test Case Title : Check that any change (Add/Delete/Modify) made to the material surface in the material library reflects immediately in the PhysX Collider component
-# Test Case URL   : https://testrail.agscollab.com/index.php?/cases/view/4888315
+
 
 
 # fmt: off
@@ -99,13 +99,12 @@ def C4888315_Material_AddModifyDeleteOnCollider():
 
     imports.init()
 
-
     import azlmbr.legacy.general as general
     import azlmbr.math as lymath
 
     from Physmaterial_Editor import Physmaterial_Editor
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
     from AddModifyDelete_Utils import Box
 
     FORCE_IMPULSE = lymath.Vector3(5.0, 0.0, 0.0)
@@ -184,5 +183,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4888315_Material_AddModifyDeleteOnCollider)

@@ -20,6 +20,7 @@
 // AzCore
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -104,13 +105,9 @@ void AssetEditorWindow::SaveAssetAs(const AZStd::string_view assetPath)
         return;
     }
 
-    const char* engineRoot;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(engineRoot, &AzToolsFramework::ToolsApplicationRequests::GetEngineRootPath);
+    auto absoluteAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / assetPath;
 
-    AZStd::string absoluteAssetPath;
-    AzFramework::StringFunc::Path::Join(engineRoot, assetPath.data(), absoluteAssetPath);
-
-    if (!m_ui->m_assetEditorWidget->SaveAssetToPath(absoluteAssetPath))
+    if (!m_ui->m_assetEditorWidget->SaveAssetToPath(absoluteAssetPath.Native()))
     {
         AZ_Warning("Asset Editor", false, "File was not saved correctly via SaveAssetAs.");
     }

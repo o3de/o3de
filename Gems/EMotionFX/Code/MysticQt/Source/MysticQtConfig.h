@@ -39,14 +39,19 @@ enum
 // convert from a QString into an AZStd::string
 MCORE_INLINE AZStd::string FromQtString(const QString& s)
 {
-    return s.toUtf8().data();
+    return {s.toUtf8().data(), static_cast<size_t>(s.size())};
 }
 
 
 // convert from a QString into an AZStd::string
 MCORE_INLINE void FromQtString(const QString& s, AZStd::string* result)
 {
-    *result = s.toUtf8().data();
+    *result = AZStd::string{s.toUtf8().data(), static_cast<size_t>(s.size())};
+}
+
+inline QString FromStdString(AZStd::string_view s)
+{
+    return QString::fromUtf8(s.data(), static_cast<int>(s.size()));
 }
 
 // forward declare a MysticQt class

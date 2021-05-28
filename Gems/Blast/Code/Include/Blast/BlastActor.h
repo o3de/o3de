@@ -51,8 +51,8 @@ namespace Blast
         virtual AZ::Transform GetTransform() const = 0;
         virtual const BlastFamily& GetFamily() const = 0;
         virtual Nv::Blast::TkActor& GetTkActor() const = 0;
-        virtual AzPhysics::SimulatedBody* GetWorldBody() = 0;
-        virtual const AzPhysics::SimulatedBody* GetWorldBody() const = 0;
+        virtual AzPhysics::SimulatedBody* GetSimulatedBody() = 0;
+        virtual const AzPhysics::SimulatedBody* GetSimulatedBody() const = 0;
         virtual const AZ::Entity* GetEntity() const = 0;
         virtual const AZStd::vector<uint32_t>& GetChunkIndices() const = 0;
         virtual bool IsStatic() const = 0;

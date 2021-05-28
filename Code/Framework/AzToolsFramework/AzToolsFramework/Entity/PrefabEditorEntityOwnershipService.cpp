@@ -13,12 +13,16 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
@@ -94,6 +98,7 @@ namespace AzToolsFramework
             m_prefabSystemComponent->RemoveTemplate(templateId);
         }
         m_rootInstance->Reset();
+        m_rootInstance->SetContainerEntityName("Level");
 
         AzFramework::EntityOwnershipServiceNotificationBus::Event(
             m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::OnEntityOwnershipServiceReset);
@@ -198,6 +203,7 @@ namespace AzToolsFramework
 
         m_rootInstance->SetTemplateId(templateId);
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GetRelativePathToProject(filename));
+        m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
 
         return true;
@@ -218,12 +224,11 @@ namespace AzToolsFramework
         AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
 
         m_rootInstance->SetTemplateSourcePath(relativePath);
+
         if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
         {
-            // This has not been loaded yet, this is the case of being saved with a different name.
-            // Create it
             m_rootInstance->m_containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
-            HandleEntitiesAdded({m_rootInstance->m_containerEntity.get()});
+            HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
 
             AzToolsFramework::Prefab::PrefabDom dom;
             bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
@@ -232,25 +237,13 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
                 return false;
             }
-            templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(dom));
+            templateId = m_prefabSystemComponent->AddTemplate(relativePath, AZStd::move(dom));
+
             if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
             {
                 AZ_Error("Prefab", false, "Couldn't add new template id '%i' when saving file '%.*s'", templateId, AZ_STRING_ARG(filename));
                 return false;
             }
-        }
-        else  
-        {
-            // The template is already loaded, this is the case of either saving as same name or different name(loaded from before).
-            // Update the template with the changes
-            AzToolsFramework::Prefab::PrefabDom dom;
-            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
-            if (!success)
-            {
-                AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
-                return false;
-            }
-            m_prefabSystemComponent->UpdatePrefabTemplate(templateId, dom);
         }
 
         Prefab::TemplateId prevTemplateId = m_rootInstance->GetTemplateId();
@@ -272,25 +265,113 @@ namespace AzToolsFramework
         return false;
     }
 
+    void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename)
+    {
+        AZ::IO::Path relativePath = m_loaderInterface->GetRelativePathToProject(filename);
+        AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
+
+        m_rootInstance->SetTemplateSourcePath(relativePath);
+
+        AZStd::string watchFolder;
+        AZ::Data::AssetInfo assetInfo;
+        bool sourceInfoFound = false;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, templateFilename.c_str(),
+            assetInfo, watchFolder);
+
+        if (sourceInfoFound)
+        {
+            AZStd::string fullPath;
+            AZ::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), fullPath);
+
+            // Get the default prefab and copy the Dom over to the new template being saved
+            Prefab::TemplateId defaultId = m_loaderInterface->LoadTemplateFromFile(fullPath.c_str());
+            Prefab::PrefabDom& dom = m_prefabSystemComponent->FindTemplateDom(defaultId);
+
+            Prefab::PrefabDom levelDefaultDom;
+            levelDefaultDom.CopyFrom(dom, levelDefaultDom.GetAllocator());
+
+            Prefab::PrefabDomPath sourcePath("/Source");
+            sourcePath.Set(levelDefaultDom, relativePath.c_str());
+
+            templateId = m_prefabSystemComponent->AddTemplate(relativePath, AZStd::move(levelDefaultDom));
+        }
+        else
+        {
+            m_rootInstance->m_containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
+            HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
+
+            AzToolsFramework::Prefab::PrefabDom dom;
+            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
+            if (!success)
+            {
+                AZ_Error(
+                    "Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
+                return;
+            }
+            templateId = m_prefabSystemComponent->AddTemplate(relativePath, std::move(dom));
+        }
+
+        if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
+        {
+            AZ_Error("Prefab", false, "Couldn't create new template id '%i' when creating new level '%.*s'", templateId, AZ_STRING_ARG(filename));
+            return;
+        }
+
+        Prefab::TemplateId prevTemplateId = m_rootInstance->GetTemplateId();
+        m_rootInstance->SetTemplateId(templateId);
+
+        if (prevTemplateId != Prefab::InvalidTemplateId && templateId != prevTemplateId)
+        {
+            // Make sure we only have one level template loaded at a time
+            m_prefabSystemComponent->RemoveTemplate(prevTemplateId);
+        }
+
+        m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+    }
+
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::CreatePrefab(
         const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
         AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
         AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance =
-            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath);
-
-        if (!instanceToParentUnder)
-        {
-            instanceToParentUnder = *m_rootInstance;
-        }
+            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, false);
 
         if (createdPrefabInstance)
         {
+            if (!instanceToParentUnder)
+            {
+                instanceToParentUnder = *m_rootInstance;
+            }
+
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
+            AZ::Entity* containerEntity = addedInstance.m_containerEntity.get();
+            containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
+            HandleEntitiesAdded({containerEntity});
+            HandleEntitiesAdded(entities);
+            return addedInstance;
+        }
+
+        return AZStd::nullopt;
+    }
+
+    Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::InstantiatePrefab(
+        AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
+    {
+        AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance = m_prefabSystemComponent->InstantiatePrefab(filePath);
+
+        if (createdPrefabInstance)
+        {
+            if (!instanceToParentUnder)
+            {
+                instanceToParentUnder = *m_rootInstance;
+            }
+
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
             HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }
-        HandleEntitiesAdded(entities);
+
         return AZStd::nullopt;
     }
 
@@ -298,6 +379,11 @@ namespace AzToolsFramework
     {
         AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
         return *m_rootInstance;
+    }
+
+    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabEditorEntityOwnershipService::GetPlayInEditorAssetData()
+    {
+        return m_playInEditorData.m_assets;
     }
 
     void PrefabEditorEntityOwnershipService::OnEntityRemoved(AZ::EntityId entityId)
@@ -319,6 +405,65 @@ namespace AzToolsFramework
     void PrefabEditorEntityOwnershipService::SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback)
     {
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
+    }
+
+    void PrefabEditorEntityOwnershipService::LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    {
+        // Start our loads on all assets by calling GetAsset from the AssetManager
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        {
+            if (!asset.GetId().IsValid())
+            {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
+
+            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
+
+            if (loadBehavior == AZ::Data::AssetLoadBehavior::NoLoad)
+            {
+                continue;
+            }
+
+            AZ::Data::AssetId assetId = asset.GetId();
+            AZ::Data::AssetType assetType = asset.GetType();
+
+            asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, loadBehavior);
+
+            if (!asset.GetId().IsValid())
+            {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
+        }
+
+        // For all Preload assets we block until they're ready
+        // We do this as a seperate pass so that we don't interrupt queuing up all other asset loads
+        for (AZ::Data::Asset<AZ::Data::AssetData>& asset : referencedAssets)
+        {
+            if (!asset.GetId().IsValid())
+            {
+                AZ_Error("Prefab", false, "Invalid asset found referenced in scene while entering game mode");
+                continue;
+            }
+
+            const AZ::Data::AssetLoadBehavior loadBehavior = asset.GetAutoLoadBehavior();
+
+            if (loadBehavior != AZ::Data::AssetLoadBehavior::PreLoad)
+            {
+                continue;
+            }
+
+            asset.BlockUntilLoadComplete();
+
+            if (asset.IsError())
+            {
+                AZ_Error("Prefab", false, "Asset with id %s failed to preload while entering game mode",
+                    asset.GetId().ToString<AZStd::string>().c_str());
+
+                continue;
+            }
+        }
     }
 
     void PrefabEditorEntityOwnershipService::StartPlayInEditor()
@@ -360,16 +505,21 @@ namespace AzToolsFramework
                                 rootSpawnableIndex = m_playInEditorData.m_assets.size();
                             }
 
+                            LoadReferencedAssets(product.GetReferencedAssets());
+
                             AZ::Data::AssetInfo info;
                             info.m_assetId = product.GetAsset().GetId();
                             info.m_assetType = product.GetAssetType();
                             info.m_relativePath = product.GetId();
 
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
-                                &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, product.GetAsset().GetId(), info);
+                                &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
                         }
 
+                        // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
+                        // (load asset) -> (notify) -> (init) -> (activate)
+                        AZ::Data::AssetManager::Instance().DispatchEvents();
 
                         if (rootSpawnableIndex != NoRootSpawnable)
                         {

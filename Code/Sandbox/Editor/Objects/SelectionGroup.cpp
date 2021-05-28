@@ -20,8 +20,9 @@
 
 // Editor
 #include "ViewManager.h"
-#include "SurfaceInfoPicker.h"
+#include "Include/IObjectManager.h"
 
+#include <IStatObj.h>
 
 //////////////////////////////////////////////////////////////////////////
 CSelectionGroup::CSelectionGroup()
@@ -238,16 +239,6 @@ void CSelectionGroup::Move(const Vec3& offset, EMoveSelectionFlag moveFlag, [[ma
     }
 
     SRayHitInfo pickedInfo;
-    if (moveFlag == eMS_FollowGeometryPosNorm && bValidFollowGeometryMode)
-    {
-        CSurfaceInfoPicker::CExcludedObjects excludeObjects;
-        for (int i = 0; i < GetFilteredCount(); ++i)
-        {
-            excludeObjects.Add(GetFilteredObject(i));
-        }
-        CSurfaceInfoPicker surfacePicker;
-        bValidFollowGeometryMode = surfacePicker.Pick(point, pickedInfo, &excludeObjects);
-    }
 
     if (moveFlag == eMS_FollowGeometryPosNorm)
     {
@@ -351,7 +342,8 @@ void CSelectionGroup::Rotate(const Matrix34& rotateTM, int referenceCoordSys)
 
         if (referenceCoordSys == COORDS_USERDEFINED)
         {
-            Matrix34 userTM = GetIEditor()->GetViewManager()->GetGrid()->GetMatrix();
+            Matrix34 userTM;
+            userTM.SetIdentity();
             Matrix34 invUserTM = userTM.GetInvertedFast();
 
             ToOrigin = invUserTM * ToOrigin;
@@ -486,28 +478,6 @@ void CSelectionGroup::StartScaling()
     {
         CBaseObject* obj = GetFilteredObject(i);
         obj->StartScaling();
-    }
-}
-
-
-void CSelectionGroup::FinishScaling(const Vec3& scale, [[maybe_unused]] int referenceCoordSys)
-{
-    if (fabs(scale.x - scale.y) < 0.001f &&
-        fabs(scale.y - scale.z) < 0.001f &&
-        fabs(scale.z - scale.x) < 0.001f)
-    {
-        return;
-    }
-
-    for (int i = 0; i < GetFilteredCount(); ++i)
-    {
-        CBaseObject* obj = GetFilteredObject(i);
-        Vec3 OriginalScale;
-        if (obj->GetUntransformedScale(OriginalScale))
-        {
-            obj->TransformScale(scale);
-            obj->SetScale(OriginalScale);
-        }
     }
 }
 

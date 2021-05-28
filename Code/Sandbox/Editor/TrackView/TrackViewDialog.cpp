@@ -807,18 +807,11 @@ void CTrackViewDialog::UpdateActions()
         m_actions[ID_TRACKVIEW_MUTE_ALL]->setEnabled(true);
         m_actions[ID_ADDSCENETRACK]->setEnabled(true);
 
-        AzToolsFramework::EntityIdList entityIds;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-            entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        bool areAnyEntitiesSelected = false;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            areAnyEntitiesSelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
 
-        if (entityIds.empty())
-        {
-            m_actions[ID_ADDNODE]->setEnabled(false);
-        }
-        else
-        {
-            m_actions[ID_ADDNODE]->setEnabled(true);
-        }
+        m_actions[ID_ADDNODE]->setEnabled(areAnyEntitiesSelected);
     }
     else
     {
@@ -1512,12 +1505,6 @@ void CTrackViewDialog::OnEditorNotifyEvent(EEditorNotifyEvent event)
         m_bIgnoreUpdates = false;
         OnGameOrSimModeLock(false);
         break;
-    case eNotify_OnMissionChange:
-        if (!m_bIgnoreUpdates)
-        {
-            ReloadSequences();
-        }
-        break;
     case eNotify_OnReloadTrackView:
         if (!m_bIgnoreUpdates)
         {
@@ -1569,12 +1556,12 @@ void CTrackViewDialog::OnAddSelectedNode()
             sequence->MarkAsModified();
         }
 
-        AzToolsFramework::EntityIdList entityIds;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-            entityIds, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        int selectedEntitiesCount = 0;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
         // check to make sure all nodes were added and notify user if they weren't
-        if (addedNodes.GetCount() != entityIds.size())
+        if (addedNodes.GetCount() != selectedEntitiesCount)
         {
             IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 

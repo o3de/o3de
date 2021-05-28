@@ -14,13 +14,11 @@ set(FILES
     Tests/LmbrCentralReflectionTest.h
     Tests/LmbrCentralReflectionTest.cpp
     Tests/EditorBoxShapeComponentTests.cpp
-    Tests/EditorLensFlareComponentTests.cpp
     Tests/EditorSphereShapeComponentTests.cpp
     Tests/EditorCapsuleShapeComponentTests.cpp
     Tests/EditorCompoundShapeComponentTests.cpp
     Tests/EditorCylinderShapeComponentTests.cpp
     Tests/EditorPolygonPrismShapeComponentTests.cpp
-    Tests/EditorMeshComponentTests.cpp
     Tests/SpawnerComponentTest.cpp
     Tests/Builders/CopyDependencyBuilderTest.cpp
     Tests/Builders/SliceBuilderTests.cpp

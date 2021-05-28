@@ -48,6 +48,6 @@ namespace LmbrCentral
     }
     const char* TextureAssetTypeInfo::GetBrowserIcon() const
     {
-        return "Editor/Icons/PropertyEditor/image_icon.svg";
+        return "Icons/PropertyEditor/image_icon.svg";
     }
 } // namespace LmbrCentral

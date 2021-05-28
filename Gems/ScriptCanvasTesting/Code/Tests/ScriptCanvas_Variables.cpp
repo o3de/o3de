@@ -104,27 +104,27 @@ TEST_F(ScriptCanvasTestFixture, CreateVariableTest)
         auto stringArrayDatum = Datum(StringArray());
 
         AZ::Outcome<VariableId, AZStd::string> addPropertyOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector3", vector3Datum1);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector3", vector3Datum1, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "SecondVector3", vector3Datum2);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "SecondVector3", vector3Datum2, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector4", vector4Datum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector4", vector4Datum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "My String Array", stringArrayDatum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "My String Array", stringArrayDatum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
@@ -169,12 +169,12 @@ TEST_F(ScriptCanvasTestFixture, AddVariableFailTest)
     const AZStd::string_view propertyName = "SameName";
 
     AZ::Outcome<VariableId, AZStd::string> addPropertyOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, vector3Datum1);
+    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, vector3Datum1, false);
     EXPECT_TRUE(addPropertyOutcome);
     EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
     addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, vector3Datum2);
+    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, vector3Datum2, false);
     EXPECT_FALSE(addPropertyOutcome);
 
     propertyEntity.reset();
@@ -208,35 +208,35 @@ TEST_F(ScriptCanvasTestFixture, RemoveVariableTest)
 
         size_t numVariablesAdded = 0U;
         AZ::Outcome<VariableId, AZStd::string> addPropertyOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector3", vector3Datum1);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector3", vector3Datum1, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
         const VariableId firstVector3Id = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "SecondVector3", vector3Datum2);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "SecondVector3", vector3Datum2, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
         const VariableId secondVector3Id = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector4", vector4Datum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "FirstVector4", vector4Datum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
         const VariableId firstVector4Id = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
         const VariableId projectionMatrixId = addPropertyOutcome.GetValue();
         ++numVariablesAdded;
 
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "My String Array", stringArrayDatum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "My String Array", stringArrayDatum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
         const VariableId stringArrayId = addPropertyOutcome.GetValue();
@@ -294,7 +294,7 @@ TEST_F(ScriptCanvasTestFixture, RemoveVariableTest)
         {
             // Re-add removed Property
             addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-            GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum);
+            GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "ProjectionMatrix", behaviorMatrix4x4Datum, false);
             EXPECT_TRUE(addPropertyOutcome);
             EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
@@ -332,7 +332,7 @@ TEST_F(ScriptCanvasTestFixture, FindVariableTest)
     const AZStd::string_view propertyName = "StringProperty";
 
     AZ::Outcome<VariableId, AZStd::string> addPropertyOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, stringVariableDatum);
+    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, stringVariableDatum, false);
     EXPECT_TRUE(addPropertyOutcome);
     EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
     const VariableId stringVariableId = addPropertyOutcome.GetValue();
@@ -391,7 +391,7 @@ TEST_F(ScriptCanvasTestFixture, ModifyVariableTest)
     const AZStd::string_view propertyName = "StringProperty";
 
     AZ::Outcome<VariableId, AZStd::string> addPropertyOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, stringVariableDatum);
+    GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, propertyName, stringVariableDatum, false);
     EXPECT_TRUE(addPropertyOutcome);
     EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
     const VariableId stringVariableId = addPropertyOutcome.GetValue();
@@ -449,7 +449,7 @@ TEST_F(ScriptCanvasTestFixture, SerializationTest)
         auto stringArrayDatum = Datum(StringArray());
 
         AZ::Outcome<VariableId, AZStd::string> addPropertyOutcome(AZ::Failure(AZStd::string("Uninitialized")));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "My String Array", stringArrayDatum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "My String Array", stringArrayDatum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 
@@ -493,7 +493,7 @@ TEST_F(ScriptCanvasTestFixture, SerializationTest)
 
         auto identityMatrixDatum = Datum(Data::Matrix3x3Type::CreateIdentity());
         addPropertyOutcome = AZ::Failure(AZStd::string("Uninitialized"));
-        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "Super Matrix Bros", identityMatrixDatum);
+        GraphVariableManagerRequestBus::EventResult(addPropertyOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "Super Matrix Bros", identityMatrixDatum, false);
         EXPECT_TRUE(addPropertyOutcome);
         EXPECT_TRUE(addPropertyOutcome.GetValue().IsValid());
 

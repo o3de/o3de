@@ -40,7 +40,7 @@
 * Example:
 *   NodeDefinition(HelloWorld, "Hello World", "My HelloWorld Node.")
 *   NodeDefinition(HelloWorld, "Hello World", "My HelloWorld Node.",
-*                  NodeTags::Icon("Editor/Icons/ScriptCanvas/HelloWorld.png")
+*                  NodeTags::Icon("Icons/ScriptCanvas/HelloWorld.png")
 *                  NodeTags::Version(3, VersionConverter))
 *
 * ----------------------------------------------------------------------------------------------------------- */

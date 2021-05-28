@@ -233,6 +233,14 @@ namespace AZ
             AZ_Assert(handler->m_event == this, "Entry event does not match");
             handler->Disconnect();
         }
+
+        // Free up any owned memory
+        AZStd::vector<Handler*> freeHandlers;
+        m_handlers.swap(freeHandlers);
+        AZStd::vector<Handler*> freeAdds;
+        m_addList.swap(freeAdds);
+        AZStd::stack<size_t> freeFree;
+        m_freeList.swap(freeFree);
     }
 
 

@@ -12,7 +12,6 @@
 #pragma once
 
 #include <Actor/ShapesProvider.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
 #include <Blast/BlastActor.h>
 #include <Actor/BlastActorDesc.h>
 #include <PhysX/ColliderComponentBus.h>
@@ -45,8 +44,8 @@ namespace Blast
         const AZStd::vector<uint32_t>& GetChunkIndices() const override;
         bool IsStatic() const override;
 
-        AzPhysics::SimulatedBody* GetWorldBody() override;
-        const AzPhysics::SimulatedBody* GetWorldBody() const override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        const AzPhysics::SimulatedBody* GetSimulatedBody() const override;
 
     protected:
         //! We want to be able to override this function for testing purposes, because
@@ -78,5 +77,6 @@ namespace Blast
         AZ::Vector3 m_parentLinearVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_parentCenterOfMass = AZ::Vector3::CreateZero();
         AzPhysics::RigidBodyConfiguration m_bodyConfiguration;
+        float m_scale = 1.0f;
     };
 } // namespace Blast

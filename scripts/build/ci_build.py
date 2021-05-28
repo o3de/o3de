@@ -38,12 +38,13 @@ def parse_args():
 
 def build(build_config_filename, build_platform, build_type):
     # Read build_config and locate build_type
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    cwd_dir = os.path.abspath(os.path.join(current_dir, '../..')) # engine's root
-    config_dir = os.path.abspath(os.path.join(current_dir, 'Platform', build_platform))
+    cwd_dir = os.getcwd()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    engine_dir = os.path.abspath(os.path.join(script_dir, '../..')) 
+    config_dir = os.path.abspath(os.path.join(script_dir, 'Platform', build_platform))
     build_config_abspath = os.path.join(config_dir, build_config_filename)
     if not os.path.exists(build_config_abspath):
-        config_dir = os.path.abspath(os.path.join(cwd_dir, 'restricted', build_platform, os.path.relpath(current_dir, cwd_dir)))
+        config_dir = os.path.abspath(os.path.join(engine_dir, 'restricted', build_platform, os.path.relpath(script_dir, engine_dir)))
         build_config_abspath = os.path.join(config_dir, build_config_filename)
         if not os.path.exists(build_config_abspath):
             print('[ci_build] File: {} not found'.format(build_config_abspath))
@@ -66,9 +67,9 @@ def build(build_config_filename, build_platform, build_type):
     # Parameters are optional, so we could have none
 
     # build_cmd is relative to the folder where this file is
-    build_cmd_path = os.path.join(current_dir, 'Platform/{}/{}'.format(build_platform, build_cmd))
+    build_cmd_path = os.path.join(script_dir, 'Platform/{}/{}'.format(build_platform, build_cmd))
     if not os.path.exists(build_cmd_path):
-        config_dir = os.path.abspath(os.path.join(cwd_dir, 'restricted', build_platform, os.path.relpath(current_dir, cwd_dir)))
+        config_dir = os.path.abspath(os.path.join(engine_dir, 'restricted', build_platform, os.path.relpath(script_dir, engine_dir)))
         build_cmd_path = os.path.join(config_dir, build_cmd)
         if not os.path.exists(build_cmd_path):
             print('[ci_build] File: {} not found'.format(build_cmd_path))
@@ -76,8 +77,10 @@ def build(build_config_filename, build_platform, build_type):
 
     print('[ci_build] Executing \"{}\"'.format(build_cmd_path))
     print('  cwd = {}'.format(cwd_dir))
+    print('  engine_dir = {}'.format(engine_dir))
     print('  paramaters:')
     env_params = os.environ.copy()
+    env_params['ENGINE_DIR'] = engine_dir
     for v in build_params:
         if v[:6] == "FORCE:":
             env_params[v[6:]] = build_params[v] 

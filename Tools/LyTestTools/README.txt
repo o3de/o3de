@@ -19,6 +19,10 @@ the following tools:
      A library to manipulate Lumberyard installations
  * Launchers:
      A library to test the game in a variety of platforms
+ * O3DE:
+     Contains various modules to test o3de specific executables
+ * Environment:
+     Contains various modules to assist with environmental dependencies
 
 
 REQUIREMENTS
@@ -38,10 +42,6 @@ Assuming CMake is already setup on your operating system, below are some sample 
     mkdir windows_vs2019
     cd windows_vs2019
     cmake -E time cmake --build . --target ALL_BUILD --config profile
-NOTE:
-Using the above command also adds LyTestTools to the PYTHONPATH OS environment variable.
-Additionally, some CTest scripts will add the Python interpreter path to the PYTHON OS environment variable.
-There is some LyTestTools functionality that will search for these, so feel free to populate them manually.
 
 To manually install the project in development mode using your own installed Python interpreter:
     cd /path/to/lumberyard/dev/Tools/LyTestTools/

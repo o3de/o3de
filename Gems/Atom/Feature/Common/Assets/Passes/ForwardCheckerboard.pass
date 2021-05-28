@@ -107,14 +107,6 @@
                     }
                 },
                 {
-                    "Name": "ClearCoatNormalOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "LoadAction": "Clear"
-                    }
-                },
-                {
                     "Name": "ScatterDistanceOutput",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
@@ -226,22 +218,6 @@
                     "AssetRef": {
                         "FilePath": "Textures/BRDFTexture.attimage"
                     }
-                },
-                {
-                    "Name": "ClearCoatNormalImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R16G16B16A16_FLOAT",
-                        "MultisampleState": {
-                            "samples": 2
-                        },
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -292,13 +268,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
-                    }
-                },
-                {
-                    "LocalSlot": "ClearCoatNormalOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ClearCoatNormalImage"
                     }
                 }
             ]

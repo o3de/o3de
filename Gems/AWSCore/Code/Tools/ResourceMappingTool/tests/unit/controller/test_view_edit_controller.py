@@ -62,10 +62,12 @@ class TestViewEditController(TestCase):
         self._mocked_proxy_model: MagicMock = self._mocked_table_view.resource_proxy_model
 
         self._test_view_edit_controller: ViewEditController = ViewEditController()
+        self._test_view_edit_controller.set_notification_frame_text_sender = MagicMock()
+        self._test_view_edit_controller.set_notification_page_frame_text_sender = MagicMock()
         self._test_view_edit_controller.setup()
 
     def test_add_import_resources_expected_resource_gets_loaded_into_model(self) -> None:
-        self._test_view_edit_controller.add_import_resources([TestViewEditController._expected_resource])
+        self._test_view_edit_controller.add_import_resources_receiver([TestViewEditController._expected_resource])
 
         self._mocked_proxy_model.add_resource.assert_called_once()
         mocked_call_args: call = self._mocked_proxy_model.add_resource.call_args[0]  # mock call args index is 0
@@ -128,7 +130,7 @@ class TestViewEditController(TestCase):
         self._mocked_proxy_model.emit_source_model_layout_changed.assert_not_called()
         self._mocked_proxy_model.load_resource.assert_not_called()
         self._mocked_view_edit_page.set_table_view_page_interactions_enabled.assert_called_with(False)
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_view_edit_page.set_current_main_view_index.assert_called_with(
             ViewEditPageConstants.TABLE_VIEW_PAGE_INDEX)
 
@@ -189,7 +191,7 @@ class TestViewEditController(TestCase):
         mock_json_utils.validate_json_dict_according_to_json_schema.assert_called_once_with({})
         mock_json_utils.convert_json_dict_to_resources.assert_not_called()
         self._mocked_proxy_model.load_resource.assert_not_called()
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_view_edit_page.set_table_view_page_interactions_enabled.assert_called_with(False)
 
     @patch("controller.view_edit_controller.file_utils")
@@ -239,7 +241,7 @@ class TestViewEditController(TestCase):
         self._mocked_view_edit_page.config_file_combobox.currentText.assert_called_once()
         self._mocked_table_view.reset_view.assert_called_once()
         self._mocked_proxy_model.override_resource_status.assert_called_once()
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.emit_source_model_layout_changed.assert_has_calls([call(), call()])
         self._mocked_view_edit_page.set_current_main_view_index.assert_called_with(
             ViewEditPageConstants.TABLE_VIEW_PAGE_INDEX)
@@ -275,7 +277,7 @@ class TestViewEditController(TestCase):
 
         mocked_call_args[0]()  # triggering config_location_button connected function
         mock_file_dialog.getExistingDirectory.assert_called_once()
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_with(
+        self._test_view_edit_controller.set_notification_page_frame_text_sender.emit.assert_called_with(
             notification_label_text.NOTIFICATION_LOADING_MESSAGE)
         self._mocked_view_edit_page.set_current_main_view_index.assert_called_with(
             ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
@@ -303,7 +305,7 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == []
         self._mocked_view_edit_page.set_config_files.assert_called_with([])
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
+        self._test_view_edit_controller.set_notification_page_frame_text_sender.emit.assert_called_once_with(
             notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
     @patch("controller.view_edit_controller.ThreadManager")
@@ -325,7 +327,7 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == []
         self._mocked_view_edit_page.set_config_files.assert_called_with([])
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
+        self._test_view_edit_controller.set_notification_page_frame_text_sender.emit.assert_called_once_with(
             notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
     @patch("controller.view_edit_controller.ThreadManager")
@@ -348,7 +350,7 @@ class TestViewEditController(TestCase):
             expected_new_config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         assert self._mocked_configuration_manager.configuration.config_files == expected_new_config_files
         self._mocked_view_edit_page.set_config_files.assert_called_with(expected_new_config_files)
-        self._mocked_view_edit_page.set_notification_page_text.assert_called_once_with(
+        self._test_view_edit_controller.set_notification_page_frame_text_sender.emit.assert_called_once_with(
             notification_label_text.NOTIFICATION_LOADING_MESSAGE)
 
     def test_page_add_row_button_expected_resource_gets_loaded_into_model(self) -> None:
@@ -395,7 +397,7 @@ class TestViewEditController(TestCase):
 
         mocked_call_args[0]()  # triggering save_changes_button connected function
         self._mocked_proxy_model.override_resource_status.assert_called_once()
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.override_all_resources_status.assert_not_called()
 
     @patch("controller.view_edit_controller.json_utils")
@@ -451,7 +453,7 @@ class TestViewEditController(TestCase):
         mock_json_utils.convert_resources_to_json_dict.assert_called_once()
         mock_json_utils.write_into_json_file.assert_called_once_with(
             TestViewEditController._expected_config_file_full_path, expected_json_dict)
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
         self._mocked_proxy_model.override_all_resources_status.assert_not_called()
 
     def test_page_search_filter_input_invoke_proxy_model_with_expected_filter_text(self) -> None:
@@ -498,7 +500,7 @@ class TestViewEditController(TestCase):
         mock_file_utils.join_path.assert_called_once()
         mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
         mock_file_utils.find_files_with_suffix_under_directory.assert_not_called()
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
 
     @patch("controller.view_edit_controller.file_utils")
     def test_page_rescan_button_post_notification_when_find_files_throw_exception(
@@ -509,4 +511,4 @@ class TestViewEditController(TestCase):
 
         mocked_call_args[0]()  # triggering rescan_button connected function
         mock_file_utils.find_files_with_suffix_under_directory.assert_called_once()
-        self._mocked_view_edit_page.set_notification_frame_text.assert_called_once()
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()

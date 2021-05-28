@@ -17,7 +17,6 @@
 
 #include <AzCore/Component/Component.h>
 
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzFramework/Render/RenderSystemBus.h>
 #include <AzFramework/Components/DeprecatedComponentsBus.h>
 
@@ -34,10 +33,10 @@ namespace AZ
     {
         // forward declares
         class AtomDebugDisplayViewportInterface;
+        class PerViewportDynamicDrawManager;
 
         class AtomBridgeSystemComponent
             : public Component
-            , public AzFramework::AtomActiveInterface
             , public AzFramework::Render::RenderSystemRequestBus::Handler
             , public AzFramework::Components::DeprecatedComponentsRequestBus::Handler
             , public Render::Bootstrap::NotificationBus::Handler
@@ -84,6 +83,7 @@ namespace AZ
             RPI::ViewPtr m_view = nullptr;
 
             AZStd::unordered_map<AzFramework::ViewportId, AZStd::shared_ptr<AtomDebugDisplayViewportInterface> > m_activeViewportsList;
+            AZStd::unique_ptr<PerViewportDynamicDrawManager> m_dynamicDrawManager;
         };
     }
 } // namespace AZ

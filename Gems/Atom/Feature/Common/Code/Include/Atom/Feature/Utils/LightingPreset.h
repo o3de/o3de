@@ -61,13 +61,14 @@ namespace AZ
             AZ_TYPE_INFO(AZ::Render::LightConfig, "{02644F52-9483-47A8-9028-37671695C34E}");
             static void Reflect(AZ::ReflectContext* context);
 
-            AZ::Vector3 m_direction = AZ::Vector3::CreateAxisY();
+            // Setting default direction to produce a visible shadow
+            AZ::Vector3 m_direction = AZ::Vector3(1.0f / 3.0f, 1.0f / 3.0f, -1.0f / 3.0f);
             AZ::Color m_color = AZ::Color::CreateOne();
             float m_intensity = 1.0f;
-            uint16_t m_shadowCascadeCount = 1;
-            float m_shadowRatioLogarithmUniform = 0.5f;
+            uint16_t m_shadowCascadeCount = 4;
+            float m_shadowRatioLogarithmUniform = 1.0f;
             float m_shadowFarClipDistance = 20.0f;
-            ShadowmapSize m_shadowmapSize = ShadowmapSize::Size1024;
+            ShadowmapSize m_shadowmapSize = ShadowmapSize::Size2048;
             bool m_enableShadowDebugColoring = false;
         };
 
@@ -78,7 +79,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            bool m_autoSelect = false;
             AZStd::string m_displayName;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;

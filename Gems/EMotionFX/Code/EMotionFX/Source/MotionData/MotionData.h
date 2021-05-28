@@ -195,6 +195,7 @@ namespace EMotionFX
         virtual bool IsMorphAnimated(size_t morphDataIndex) const = 0;
         virtual bool IsFloatAnimated(size_t floatDataIndex) const = 0;
         virtual void UpdateDuration() {}
+        virtual bool VerifyIntegrity() const { return true; }
 
         void Resize(size_t numJoints, size_t numMorphs, size_t numFloats);
         void Clear();

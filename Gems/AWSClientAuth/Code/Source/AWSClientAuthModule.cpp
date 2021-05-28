@@ -39,4 +39,4 @@ namespace AWSClientAuth
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM
 // The first parameter should be GemName_GemIdLower
 // The second should be the fully qualified name of the class above
-AZ_DECLARE_MODULE_CLASS(AWSClientAuth_c74f2756f5874c0d8d29646dfc9cb0ad, AWSClientAuth::AWSClientAuthModule)
+AZ_DECLARE_MODULE_CLASS(Gem_AWSClientAuth, AWSClientAuth::AWSClientAuthModule)

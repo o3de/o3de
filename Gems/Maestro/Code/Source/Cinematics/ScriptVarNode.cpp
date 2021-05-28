@@ -107,8 +107,11 @@ void CAnimScriptVarNode::Animate(SAnimContext& ec)
     }
 }
 
-void CAnimScriptVarNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimScriptVarNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimScriptVarNode, CAnimNode>()
-        ->Version(1);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimScriptVarNode, CAnimNode>()
+            ->Version(1);
+    }
 }

@@ -13,7 +13,7 @@ import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.landscapecanvas as landscapecanvas
 
-from . import hydra_editor_utils as hydra
+import editor_python_test_tools.hydra_editor_utils as hydra
 
 
 def find_nodes_matching_entity_component(component_name, entity_id):

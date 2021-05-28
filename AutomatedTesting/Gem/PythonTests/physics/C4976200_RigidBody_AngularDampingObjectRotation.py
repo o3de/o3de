@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4976200
 # Test Case Title : Verify that with higher angular damping, the object in rotation comes to rest faster
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4976200
+
 
 # fmt: off
 class Tests:
@@ -69,9 +69,9 @@ def C4976200_RigidBody_AngularDampingObjectRotation():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import AngleHelper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import AngleHelper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -292,5 +292,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4976200_RigidBody_AngularDampingObjectRotation)

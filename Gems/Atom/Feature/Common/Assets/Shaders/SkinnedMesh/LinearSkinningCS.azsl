@@ -159,7 +159,8 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
         blendWeights.z = InstanceSrg::m_sourceBlendWeights[i * 4 + 2];
         blendWeights.w = InstanceSrg::m_sourceBlendWeights[i * 4 + 3];
 
-        // When all the blend weights of a vertex are zero it means its data is set by the CPU directly
+        // [TODO ATOM-15288]
+        // Temporary workaround. When all the blend weights of a vertex are zero it means its data is set by the CPU directly
         // and skinning must be skipped to not overwrite it (e.g. cloth simulation).
         if(!any(blendWeights))
         {

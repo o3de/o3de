@@ -90,7 +90,7 @@ public:
     virtual void PrecacheStatic(float startTime) override;
     virtual void PrecacheDynamic(float time) override;
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
     // Utility function to find the sequence associated with an ISequenceKey
     static IAnimSequence* GetSequenceFromSequenceKey(const ISequenceKey& sequenceKey);

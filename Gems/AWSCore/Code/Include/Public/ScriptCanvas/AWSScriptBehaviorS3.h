@@ -75,6 +75,16 @@ namespace AWSCore
     class AWSScriptBehaviorS3
         : public AWSScriptBehaviorBase
     {
+        static constexpr const char AWSScriptBehaviorS3Name[] = "AWSScriptBehaviorS3";
+        static constexpr const char OutputFileIsEmptyErrorMessage[] = "Request validation failed, output file is empty.";
+        static constexpr const char OutputFileMissFullPathErrorMessage[] = "Request validation failed, output file miss full path.";
+        static constexpr const char OutputFileIsDirectoryErrorMessage[] = "Request validation failed, output file is a directory.";
+        static constexpr const char OutputFileDirectoryNotExistErrorMessage[] = "Request validation failed, output file directory doesn't exist.";
+        static constexpr const char OutputFileIsReadOnlyErrorMessage[] = "Request validation failed, output file is read-only.";
+        static constexpr const char BucketNameIsEmptyErrorMessage[] = "Request validation failed, bucket name is empty";
+        static constexpr const char ObjectKeyNameIsEmptyErrorMessage[] = "Request validation failed, object key name is empty.";
+        static constexpr const char RegionNameIsEmptyErrorMessage[] = "Request validation failed, region name is empty.";
+
     public:
         AWS_SCRIPT_BEHAVIOR_DEFINITION(AWSScriptBehaviorS3, "{7F4E956C-7463-4236-B320-C992D36A9C6E}");
 
@@ -87,7 +97,7 @@ namespace AWSCore
     private:
         using S3NotificationFunctionType =  void(AWSScriptBehaviorS3Notifications::*)(const AZStd::string&);
         static bool ValidateGetObjectRequest(S3NotificationFunctionType notificationFunc,
-            const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, const AZStd::string& outFile);
+            const AZStd::string& bucket, const AZStd::string& objectKey, const AZStd::string& region, AZStd::string& outFile);
 
         static bool ValidateHeadObjectRequest(S3NotificationFunctionType notificationFunc,
             const AZStd::string& bucket, const AZStd::string& key, const AZStd::string& region);

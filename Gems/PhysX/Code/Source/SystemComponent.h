@@ -36,9 +36,6 @@
 #include <DefaultWorldComponent.h>
 #include <Material.h>
 
-#ifdef PHYSX_EDITOR
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
-#endif
 namespace AzPhysics
 {
     struct StaticRigidBodyConfiguration;
@@ -60,11 +57,6 @@ namespace PhysX
         : public AZ::Component
         , public Physics::SystemRequestBus::Handler
         , public PhysX::SystemRequestsBus::Handler
-        , public Physics::CharacterSystemRequestBus::Handler
-#ifdef PHYSX_EDITOR
-        , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-        , private AzToolsFramework::EditorEvents::Bus::Handler
-#endif
         , private Physics::CollisionRequestBus::Handler
         , private AZ::TickBus::Handler
     {
@@ -100,14 +92,8 @@ namespace PhysX
         bool CookTriangleMeshToMemory(const AZ::Vector3* vertices, AZ::u32 vertexCount,
             const AZ::u32* indices, AZ::u32 indexCount, AZStd::vector<AZ::u8>& result) override;
 
-        void AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration, bool addEditorComponents = false) override;
-
         physx::PxFilterData CreateFilterData(const AzPhysics::CollisionLayer& layer, const AzPhysics::CollisionGroup& group) override;
         physx::PxCooking* GetCooking() override;
-
-        // Physics::CharacterSystemRequestBus
-        virtual AZStd::unique_ptr<Physics::Character> CreateCharacter(const Physics::CharacterConfiguration& characterConfig,
-            const Physics::ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle) override;
 
         // CollisionRequestBus
         AzPhysics::CollisionLayer GetCollisionLayerByName(const AZStd::string& layerName) override;
@@ -124,13 +110,6 @@ namespace PhysX
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-
-#ifdef PHYSX_EDITOR
-
-        // AztoolsFramework::EditorEvents::Bus::Handler overrides
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
-        void NotifyRegisterViews() override;
-#endif
 
         // Physics::SystemRequestBus::Handler
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;

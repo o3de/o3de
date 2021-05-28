@@ -1020,17 +1020,6 @@ namespace EMStudio
     }
 
 
-    // register keyboard shortcuts used for the render plugin
-    void RenderPlugin::RegisterKeyboardShortcuts()
-    {
-        MysticQt::KeyboardShortcutManager* shortcutManger = GetMainWindow()->GetShortcutManager();
-
-        shortcutManger->RegisterKeyboardShortcut("Show Selected", "Render Window", Qt::Key_S, false, false, true);
-        shortcutManger->RegisterKeyboardShortcut("Show Entire Scene", "Render Window", Qt::Key_A, false, false, true);
-        shortcutManger->RegisterKeyboardShortcut("Toggle Selection Box Rendering", "Render Window", Qt::Key_J, false, false, true);
-    }
-
-
     // find the trajectory path for a given actor instance
     MCommon::RenderUtil::TrajectoryTracePath* RenderPlugin::FindTracePath(EMotionFX::ActorInstance* actorInstance)
     {

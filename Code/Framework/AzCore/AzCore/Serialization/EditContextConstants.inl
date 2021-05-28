@@ -53,6 +53,10 @@ namespace AZ
             //! RemoveableByUser : A bool which determines if the component can be removed by the user.
             //! Setting this to false prevents the user from removing this component. Default behavior is removeable by user.
             const static AZ::Crc32 RemoveableByUser = AZ_CRC("RemoveableByUser", 0x32c7fd50);
+            //! An int which, if specified, causes a component to be forced to a particular position in the sorted list of
+            //! components on an entity, and prevents dragging or moving operations which would affect that position.
+            const static AZ::Crc32 FixedComponentListIndex = AZ_CRC_CE("FixedComponentListIndex");
+
             const static AZ::Crc32 AppearsInAddComponentMenu = AZ_CRC("AppearsInAddComponentMenu", 0x53790e31);
             const static AZ::Crc32 ForceAutoExpand = AZ_CRC("ForceAutoExpand", 0x1a5c79d2); // Ignores expansion state set by user, enforces expansion.
             const static AZ::Crc32 AutoExpand = AZ_CRC("AutoExpand", 0x306ff5c0); // Expands automatically unless user changes expansion state.
@@ -118,6 +122,7 @@ namespace AZ
             const static AZ::Crc32 StringLineEditingCompleteNotify = AZ_CRC("StringLineEditingCompleteNotify", 0x139e5fa9);
 
             const static AZ::Crc32 NameLabelOverride = AZ_CRC("NameLabelOverride", 0x9ff79cab);
+            const static AZ::Crc32 AssetPickerTitle = AZ_CRC_CE("AssetPickerTitle");
             const static AZ::Crc32 ChildNameLabelOverride = AZ_CRC("ChildNameLabelOverride", 0x73dd2909);
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);

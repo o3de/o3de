@@ -140,16 +140,6 @@ namespace AzToolsFramework
         virtual void SetAxisConstraint(AZStd::string_view pConstrain) = 0;
 
         /*
-        * Gets edit mode.
-        */
-        virtual const char* GetEditMode() = 0;
-
-        /*
-        * Sets edit mode.
-        */
-        virtual void SetEditMode(AZStd::string_view pEditMode) = 0;
-
-        /*
         * Finds a pak file name for a given file.
         */
         virtual const char* GetPakFromFile(const char* filename) = 0;

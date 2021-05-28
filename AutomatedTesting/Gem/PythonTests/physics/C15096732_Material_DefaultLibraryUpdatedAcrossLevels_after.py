@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C15096732
 # Test Case Title : Verify Default material library works across different levels
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15096732
+
 
 # fmt: off
 class Tests:
@@ -108,9 +108,8 @@ def C15096732_Material_DefaultLibraryUpdatedAcrossLevels_after():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -293,5 +292,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15096732_Material_DefaultLibraryUpdatedAcrossLevels_after)

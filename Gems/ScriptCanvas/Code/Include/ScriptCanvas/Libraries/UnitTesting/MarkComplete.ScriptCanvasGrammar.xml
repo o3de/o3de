@@ -6,7 +6,7 @@
 	       PreferredClassName="Mark Complete"
            Uuid="{DC0BCFE9-3066-4232-AA68-AAFB206C917F}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/MarkComplete.png"
+           Icon="Icons/ScriptCanvas/MarkComplete.png"
            Version="0"
            GeneratePropertyFriend="True"
            DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"

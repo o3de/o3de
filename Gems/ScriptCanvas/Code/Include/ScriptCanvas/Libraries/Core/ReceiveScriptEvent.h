@@ -57,6 +57,7 @@ namespace ScriptCanvas
                 AZ::Outcome<AZStd::string> GetInternalOutKey(const Slot& slot) const override;
                 const Slot* GetEBusConnectSlot() const override;
                 const Slot* GetEBusDisconnectSlot() const override;
+                AZStd::optional<size_t> GetEventIndex(AZStd::string eventName) const override;
                 AZStd::vector<SlotId> GetEventSlotIds() const override;
                 AZStd::vector<SlotId> GetNonEventSlotIds() const override;
                 

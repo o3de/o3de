@@ -6,7 +6,7 @@
 	       PreferredClassName="BaseTimerNode"
            Uuid="{BAD6C904-6078-49E8-B461-CA4410B785A4}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+           Icon="Icons/ScriptCanvas/Placeholder.png"
            Category="Utilities"
            Version="0"
            GeneratePropertyFriend="True"

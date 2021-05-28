@@ -13,7 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C3510644
 # Test Case Title : Check that the collision layer and collision group of the terrain can be changed
 #     and the collision behavior of the terrain changes accordingly
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/3510644
 
 
 # fmt: off
@@ -100,8 +99,8 @@ def C3510644_Collider_CollisionGroups():
 
     imports.init()
 
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -370,5 +369,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C3510644_Collider_CollisionGroups)

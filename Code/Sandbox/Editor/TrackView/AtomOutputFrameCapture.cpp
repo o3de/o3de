@@ -22,7 +22,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Scene/Scene.h>
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 
 namespace TrackView
 {

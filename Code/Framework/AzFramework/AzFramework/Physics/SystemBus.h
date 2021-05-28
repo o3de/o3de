@@ -142,13 +142,6 @@ namespace Physics
 
         virtual AZStd::shared_ptr<Shape> CreateShape(const ColliderConfiguration& colliderConfiguration, const ShapeConfiguration& configuration) = 0;
 
-        /// Adds an appropriate collider component to the entity based on the provided shape configuration.
-        /// @param entity Entity where the component should be added to.
-        /// @param colliderConfiguration Configuration of the collider.
-        /// @param shapeConfiguration Configuration of the shape of the collider.
-        /// @param addEditorComponents Tells whether to add the Editor version of the collider component or the Game one.
-        virtual void AddColliderComponentToEntity(AZ::Entity* entity, const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& shapeConfiguration, bool addEditorComponents = false) = 0;
-
         /// Releases the mesh object created by the physics backend.
         /// @param nativeMeshObject Pointer to the mesh object.
         virtual void ReleaseNativeMeshObject(void* nativeMeshObject) = 0;
@@ -252,26 +245,6 @@ namespace Physics
 
     using SystemRequests = System;
     using SystemRequestBus = AZ::EBus<SystemRequests, SystemRequestsTraits>;
-
-    /// Physics character system global requests.
-    class CharacterSystemRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        // EBusTraits
-        // singleton pattern
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-
-        virtual ~CharacterSystemRequests() = default;
-
-        /// Creates the physics representation used to handle basic character interactions (also known as a character
-        /// controller).
-        virtual AZStd::unique_ptr<Character> CreateCharacter(const CharacterConfiguration& characterConfig,
-            const ShapeConfiguration& shapeConfig, AzPhysics::SceneHandle& sceneHandle) = 0;
-    };
-
-    typedef AZ::EBus<CharacterSystemRequests> CharacterSystemRequestBus;
 
     /// Physics system global debug requests.
     class SystemDebugRequests

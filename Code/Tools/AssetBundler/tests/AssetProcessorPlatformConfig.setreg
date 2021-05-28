@@ -1,0 +1,11 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platforms": {
+                    "android": "enabled"
+                }
+            }
+        }
+    }
+}

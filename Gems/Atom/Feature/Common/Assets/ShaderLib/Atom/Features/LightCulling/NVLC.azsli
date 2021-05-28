@@ -26,7 +26,7 @@
 //
 //----------------------------------------------------------------------------------
 
-#define Depth_to_Z(d, unprojectZ)                                      (unprojectZ.x / (d + unprojectZ.y))
+#define DepthBufferToViewSpace(d, unprojectZ)                                      (unprojectZ.x / (d + unprojectZ.y))
 
  
 #define NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN                256
@@ -187,7 +187,7 @@ float4 RemapZToUnit(float4 z, float2 minmaxz)
 
 uint DepthSamplesToBinMask2x(float2 d, float2 minmaxz, float2 unprojectZ)
 {
-    float2 z = Depth_to_Z(d, unprojectZ);
+    float2 z = DepthBufferToViewSpace(d, unprojectZ);
     
     // Tile_UnitValueToBit will convert that 0 to 1 value into 0.0 to 31.99999
     float2 bit = Tile_UnitValueToBit(RemapZToUnit(z, minmaxz));
@@ -207,7 +207,7 @@ uint DepthSamplesToBinMask2x(float2 d, float2 minmaxz, float2 unprojectZ)
 
 uint DepthSamplesToBinMask4x(float4 d, float2 minmaxz, float2 unprojectZ)
 {
-    float4 z = Depth_to_Z(d, unprojectZ);
+    float4 z = DepthBufferToViewSpace(d, unprojectZ);
     
     // Tile_UnitValueToBit will convert that 0 to 1 value into 0.0 to 31.99999
     float4 bit = Tile_UnitValueToBit(RemapZToUnit(z, minmaxz));

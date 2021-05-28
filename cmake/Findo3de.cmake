@@ -27,24 +27,19 @@ if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine_name' from '${current_path}/../engine.json', error: ${json_error}")
 endif()
 
-if(NOT this_engine_name STREQUAL LY_ENGINE_NAME_TO_USE)
-    set(o3de_FOUND FALSE)
-    set(o3de_NOT_FOUND_MESSAGE)
-    find_package_handle_standard_args(o3de
-        "Could not find an engine with matching ${LY_ENGINE_NAME_TO_USE}"
-        o3de_FOUND
-    )
-    return()
+set(found_matching_engine FALSE)
+if(this_engine_name STREQUAL LY_ENGINE_NAME_TO_USE)
+    set(found_matching_engine TRUE)
 endif()
 
+find_package_handle_standard_args(o3de
+        "Could not find an engine with matching ${LY_ENGINE_NAME_TO_USE}"
+        found_matching_engine
+)
+
 macro(o3de_initialize)
+    set(INSTALLED_ENGINE FALSE)
     set(LY_PROJECTS ${CMAKE_CURRENT_LIST_DIR})
     o3de_current_file_path(current_path)
     add_subdirectory(${current_path}/.. o3de)
 endmacro()
-
-message(STATUS "Found ${this_engine_name} in ${current_path}")
-set(o3de_FOUND FALSE)
-find_package_handle_standard_args(o3de
-    o3de_FOUND
-)

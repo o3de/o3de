@@ -6,7 +6,7 @@
 	       PreferredClassName="Expect False"
            Uuid="{3838E12C-CEAB-4CED-9958-B6C0399FCD92}"
            Base="ScriptCanvas::Node"
-           Icon="Editor/Icons/ScriptCanvas/ExpectFalse.png"
+           Icon="Icons/ScriptCanvas/ExpectFalse.png"
            Version="1"
            VersionConverter="ScriptCanvas::UnitTesting::ExpectBooleanVersioner"
            GeneratePropertyFriend="True"

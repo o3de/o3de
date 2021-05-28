@@ -36,7 +36,6 @@ class AWSCoreEditorSystemComponentTest
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
 
-        m_localFileIO->SetAlias("@engroot@", "dummy engine root");
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_serializeContext->CreateEditContext();
         m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
@@ -46,7 +45,9 @@ class AWSCoreEditorSystemComponentTest
 
         m_entity = aznew AZ::Entity();
         m_coreEditorSystemsComponent.reset(m_entity->CreateComponent<AWSCoreEditorSystemComponent>());
+        AZ_TEST_START_TRACE_SUPPRESSION;
         m_entity->Init();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
         m_entity->Activate();
     }
 

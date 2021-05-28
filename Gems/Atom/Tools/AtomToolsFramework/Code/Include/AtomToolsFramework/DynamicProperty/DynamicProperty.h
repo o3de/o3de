@@ -38,8 +38,8 @@ namespace AtomToolsFramework
         Count
     };
 
-    // Configures the initial state, data type, attributes, and values that describe
-    // the dynamic property and how it is presented
+    //! Configures the initial state, data type, attributes, and values that describe
+    //! the dynamic property and how it is presented
     struct DynamicPropertyConfig
     {
         AZ_TYPE_INFO(DynamicPropertyConfig, "{9CA40E92-7F03-42BE-B6AA-51F30EE5796C}");
@@ -49,6 +49,7 @@ namespace AtomToolsFramework
         AZ::Name m_id;
         AZStd::string m_nameId;
         AZStd::string m_displayName;
+        AZStd::string m_groupName;
         AZStd::string m_description;
         AZStd::any m_defaultValue;
         AZStd::any m_parentValue;
@@ -62,6 +63,7 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> m_vectorLabels;
         bool m_visible = true;
         bool m_readOnly = false;
+        bool m_showThumbnail = false;
     };
 
     //! Wraps an AZStd::any value and configuration so that it can be displayed and edited in a ReflectedPropertyEditor.
@@ -96,7 +98,7 @@ namespace AtomToolsFramework
         //! Returns true if the property has a valid value.
         bool IsValid() const;
 
-        //! Returns the ID of the  property.
+        //! Returns the ID of the property.
         const AZ::Name GetId() const;
 
         //! Returns the current property visibility.
@@ -108,6 +110,8 @@ namespace AtomToolsFramework
     private:
         // Functions used to configure edit data attributes.
         AZStd::string GetDisplayName() const;
+        AZStd::string GetGroupName() const;
+        AZStd::string GetAssetPickerTitle() const;
         AZStd::string GetDescription() const;
         AZStd::vector<AZ::Edit::EnumConstant<uint32_t>> GetEnumValues() const;
 

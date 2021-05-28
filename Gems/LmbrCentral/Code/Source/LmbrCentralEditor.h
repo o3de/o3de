@@ -13,13 +13,6 @@
 
 #include "LmbrCentral.h"
 
-#include <LmbrCentral/Rendering/EditorMeshBus.h>
-
-namespace Water
-{
-    class WaterVolumeConverter;
-}
-
 namespace LmbrCentral
 {
     /**
@@ -31,7 +24,6 @@ namespace LmbrCentral
      */
     class LmbrCentralEditorModule
         : public LmbrCentralModule
-        , public EditorMeshBus::Handler
     {
     public:
         AZ_RTTI(LmbrCentralEditorModule, "{1BF648D7-3703-4B52-A688-67C253A059F2}", LmbrCentralModule);
@@ -39,7 +31,5 @@ namespace LmbrCentral
         LmbrCentralEditorModule();
         ~LmbrCentralEditorModule();
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
-
-        bool AddMeshComponentWithAssetId(const AZ::EntityId& targetEntity, const AZ::Uuid& meshAssetId) override;
     };
 } // namespace LmbrCentral

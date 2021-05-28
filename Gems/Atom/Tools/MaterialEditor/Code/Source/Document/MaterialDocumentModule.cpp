@@ -13,7 +13,6 @@
 #include <Atom/Document/MaterialDocumentModule.h>
 #include <Document/MaterialDocumentSystemComponent.h>
 
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 
@@ -32,7 +31,6 @@ namespace MaterialEditor
         return AZ::ComponentTypeList{
             azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<MaterialDocumentSystemComponent>(),
-            azrtti_typeid<AzFramework::TargetManagementComponent>(),
         };
     }
 }

@@ -292,10 +292,26 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE void Aabb::MultiplyByScale(const Vector3& scale)
+    {
+        m_min *= scale;
+        m_max *= scale;
+        AZ_MATH_ASSERT(IsValid(), "Min must be less than Max");
+    }
+
+
     AZ_MATH_INLINE Aabb Aabb::GetTransformedAabb(const Transform& transform) const
     {
         Aabb aabb = Aabb::CreateFromMinMax(m_min, m_max);
         aabb.ApplyTransform(transform);
+        return aabb;
+    }
+
+
+    AZ_MATH_INLINE Aabb Aabb::GetTransformedAabb(const Matrix3x4& matrix3x4) const
+    {
+        Aabb aabb = Aabb::CreateFromMinMax(m_min, m_max);
+        aabb.ApplyMatrix3x4(matrix3x4);
         return aabb;
     }
 

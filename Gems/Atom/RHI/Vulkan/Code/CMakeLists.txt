@@ -188,11 +188,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                Gem::Atom_RHI.Edit
                 Gem::Atom_RHI.Reflect
                 Gem::Atom_RHI.Public
                 Gem::Atom_RHI_Vulkan.Reflect
                 Gem::Atom_RHI_Vulkan.Builders.Static
+                Gem::Atom_RHI.Edit
     )
 
 endif()

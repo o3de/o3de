@@ -38,8 +38,10 @@ namespace AzManipulatorTestFramework
         void SetGridSize(float size) override;
         void SetAngularStep(float step) override;
         int GetViewportId() const override;
-        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const QPoint& screenPosition, float depth) override;
-        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(const QPoint& screenPosition) override;
+        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
+        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+            const AzFramework::ScreenPoint& screenPosition) override;
+        float DeviceScalingFactor() override;
     private:
         // ViewportInteractionRequestBus ...
         bool GridSnappingEnabled();
@@ -47,7 +49,7 @@ namespace AzManipulatorTestFramework
         bool ShowGrid();
         bool AngleSnappingEnabled();
         float AngleStep();
-        QPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
+        AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition);
     private:
         AZStd::unique_ptr<NullDebugDisplayRequests> m_nullDebugDisplayRequests;
         const int m_viewportId = 1234; // Arbitrary viewport id for manipulator tests

@@ -226,8 +226,6 @@ public:
     //! Set one of name selections as current selection.
     void    SetSelection(const QString& name);
     void    RemoveSelection(const QString& name);
-    //! Checks for changes to the current selection and makes adjustments accordingly
-    void    CheckAndFixSelection() override;
 
     bool IsObjectDeletionAllowed(CBaseObject* pObject);
 
@@ -328,16 +326,10 @@ public:
     // Gathers all resources used by all objects.
     void GatherUsedResources(CUsedResources& resources);
 
-    // Called when object gets modified.
-    void OnObjectModified(CBaseObject* pObject, bool bDelete, bool boModifiedTransformOnly);
-
     virtual bool IsLightClass(CBaseObject* pObject);
 
     virtual void FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue);
     virtual void FindAndRenameProperty2If(const char* property2Name, const QString& oldValue, const QString& newValue, const char* otherProperty2Name, const QString& otherValue);
-
-    class CObjectPhysicsManager* GetPhysicsManager()
-    { return m_pPhysicsManager; }
 
     bool IsReloading() const { return m_bInReloading; }
     void SetSkipUpdate(bool bSkipUpdate) override { m_bSkipObjectUpdate = bSkipUpdate; }
@@ -434,8 +426,6 @@ private:
     int m_loadedObjects;
     int m_totalObjectsToLoad;
     //////////////////////////////////////////////////////////////////////////
-
-    class CObjectPhysicsManager* m_pPhysicsManager;
 
     //////////////////////////////////////////////////////////////////////////
     // Numbering for names.

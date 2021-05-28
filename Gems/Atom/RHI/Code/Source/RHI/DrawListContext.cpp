@@ -63,14 +63,14 @@ namespace AZ
 
                 if (m_drawListMask[drawListTag.GetIndex()])
                 {
-                    DrawItemKeyPair drawItem = drawPacket->GetDrawItem(i);
+                    DrawItemProperties drawItem = drawPacket->GetDrawItem(i);
                     drawItem.m_depth = depth;
                     threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
                 }
             }
         }
 
-        void DrawListContext::AddDrawItem(DrawListTag drawListTag, DrawItemKeyPair drawItemKeyPair)
+        void DrawListContext::AddDrawItem(DrawListTag drawListTag, DrawItemProperties drawItemProperties)
         {
             if (Validation::IsEnabled())
             {
@@ -84,7 +84,7 @@ namespace AZ
             if (m_drawListMask[drawListTag.GetIndex()])
             {
                 DrawListsByTag& drawListsByTag = m_threadListsByTag.GetStorage();
-                drawListsByTag[drawListTag.GetIndex()].push_back(drawItemKeyPair);
+                drawListsByTag[drawListTag.GetIndex()].push_back(drawItemProperties);
             }
         }
 

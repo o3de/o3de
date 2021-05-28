@@ -27,6 +27,11 @@
 
 namespace AZ
 {
+    namespace Render
+    {
+        class DisplayMapperFeatureProcessorInterface;
+    }
+
     class Entity;
     class Component;
 
@@ -71,6 +76,7 @@ namespace MaterialEditor
         void OnGridEnabledChanged(bool enable) override;
         void OnAlternateSkyboxEnabledChanged(bool enable) override;
         void OnFieldOfViewChanged(float fieldOfView) override;
+        void OnDisplayMapperOperationTypeChanged(AZ::Render::DisplayMapperOperationType operationType) override;
 
         // AZ::Data::AssetBus::Handler interface overrides...
         void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
@@ -92,6 +98,7 @@ namespace MaterialEditor
         AZ::RPI::RenderPipelinePtr m_renderPipeline;
         AZ::RPI::ScenePtr m_scene;
         AZ::Render::DirectionalLightFeatureProcessorInterface* m_directionalLightFeatureProcessor = nullptr;
+        AZ::Render::DisplayMapperFeatureProcessorInterface* m_displayMapperFeatureProcessor = nullptr;
 
         AZ::Entity* m_cameraEntity = nullptr;
         AZ::Component* m_cameraComponent = nullptr;

@@ -41,9 +41,9 @@ namespace UnitTest
             return FetchPythonTypeAndTraits(typeId, traits);
         }
 
-        AZStd::string_view FetchPythonTypeWrapper(const AZ::BehaviorParameter& param)
+        AZStd::string FetchPythonTypeWrapper(const AZ::BehaviorParameter& param)
         {
-            return FetchPythonType(param);
+            return FetchPythonTypeName(param);
         }
     };
 

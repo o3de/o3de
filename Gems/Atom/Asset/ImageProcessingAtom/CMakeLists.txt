@@ -10,6 +10,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_add_external_target_path(${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-
 add_subdirectory(Code)

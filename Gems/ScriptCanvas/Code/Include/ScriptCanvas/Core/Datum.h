@@ -208,7 +208,13 @@ namespace ScriptCanvas
             static const t_Value* Help(Datum& datum)
             {
                 static_assert(!AZStd::is_pointer<t_Value>::value, "no pointer types in the Datum::GetAsHelper<t_Value, false>");
-                if (datum.m_type.GetType() == Data::eType::BehaviorContextObject)
+
+                if (datum.m_storage.empty())
+                {
+                    // rare, but can be caused by removals or problems with reflection to BehaviorContext, so must be checked
+                    return nullptr;
+                }
+                else if (datum.m_type.GetType() == Data::eType::BehaviorContextObject)
                 {
                     return (*AZStd::any_cast<BehaviorContextObjectPtr>(&datum.m_storage))->CastConst<t_Value>();
                 }

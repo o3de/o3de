@@ -83,7 +83,7 @@ namespace ScriptCanvas
 
         int EBusHandlerCreateAndConnectTo(lua_State* lua)
         {
-            // Lua: executionState, (event name) string, (address aztypeid) string, (address) ?
+            // Lua: executionState, (ebus name) string, (address aztypeid) string, (address) ?
             auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
             auto ebusName = AZ::ScriptValue<const char*>::StackRead(lua, 2);
             EBusHandler* ebusHandler = aznew EBusHandler(executionState->WeakFromThis(), ebusName, AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext());
@@ -96,7 +96,7 @@ namespace ScriptCanvas
             ebusHandler->ConnectTo(address);
 
             AZ::Internal::LuaClassToStack(lua, ebusHandler, azrtti_typeid<EBusHandler>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::ScriptAcquire);
-            // Lua: executionState, (event name) string, (address aztypeid) string, (address) ?, handler
+            // Lua: executionState, (ebus name) string, (address aztypeid) string, (address) ?, handler
             return 1;
         }
 
@@ -114,27 +114,23 @@ namespace ScriptCanvas
             const int k_eventNameIndex = -2;
             const int k_lambdaIndex = -1;
 
-            AZ_Assert(lua_isuserdata(lua, k_nodeableIndex), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isstring(lua, k_eventNameIndex), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a string (Crc key)");
-            AZ_Assert(lua_isfunction(lua, k_lambdaIndex), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
+            AZ_Assert(lua_isuserdata(lua, k_nodeableIndex), "Error in compiled lua file, 1st argument to EBusHandlerHandleEvent is not userdata (EBusHandler)");
+            AZ_Assert(lua_isnumber(lua, k_eventNameIndex), "Error in compiled lua file, 2nd argument to EBusHandlerHandleEvent is not a number");
+            AZ_Assert(lua_isfunction(lua, k_lambdaIndex), "Error in compiled lua file, 3rd argument to EBusHandlerHandleEvent is not a function");
 
-            auto nodeable = AZ::ScriptValue<EBusHandler*>::StackRead(lua, k_nodeableIndex); // this won't be a BCO, because BCOs won't be necessary in the interpreted mode...most likely
+            auto nodeable = AZ::ScriptValue<EBusHandler*>::StackRead(lua, k_nodeableIndex);
             AZ_Assert(nodeable, "Failed to read EBusHandler");
-            const char* keyStr = lua_tostring(lua, k_eventNameIndex);
-            AZ_Assert(keyStr, "Failed to read key string");
-            const int eventIndex = nodeable->GetEventIndex(keyStr);
-            AZ_Assert(eventIndex != -1, "Event index was not found for %s-%s", nodeable->GetEBusName().data(), keyStr);
+            const int eventIndex = lua_tointeger(lua, k_eventNameIndex);
+            AZ_Assert(eventIndex != -1, "Event index was not found for %s", nodeable->GetEBusName().data());
             // install the generic hook for the event
             nodeable->HandleEvent(eventIndex);
             // Lua: nodeable, string, lambda
-
             lua_pushvalue(lua, k_lambdaIndex);
             // Lua: nodeable, string, lambda, lambda
 
             // route the event handling to the lambda on the top of the stack
             nodeable->SetExecutionOut(AZ::Crc32(eventIndex), OutInterpreted(lua));
             // Lua: nodeable, string, lambda
-
             return 0;
         }
 
@@ -145,16 +141,14 @@ namespace ScriptCanvas
             const int k_eventNameIndex = -2;
             const int k_lambdaIndex = -1;
 
-            AZ_Assert(lua_isuserdata(lua, k_nodeableIndex), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isstring(lua, k_eventNameIndex), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a string (Crc key)");
-            AZ_Assert(lua_isfunction(lua, k_lambdaIndex), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
+            AZ_Assert(lua_isuserdata(lua, k_nodeableIndex), "Error in compiled lua file, 1st argument to EBusHandlerHandleEventResult is not userdata (EBusHandler)");
+            AZ_Assert(lua_isnumber(lua, k_eventNameIndex), "Error in compiled lua file, 2nd argument to EBusHandlerHandleEventResult is not a number");
+            AZ_Assert(lua_isfunction(lua, k_lambdaIndex), "Error in compiled lua file, 3rd argument to EBusHandlerHandleEventResult is not a function");
 
-            auto nodeable = AZ::ScriptValue<EBusHandler*>::StackRead(lua, k_nodeableIndex); // this won't be a BCO, because BCOs won't be necessary in the interpreted mode...most likely
+            auto nodeable = AZ::ScriptValue<EBusHandler*>::StackRead(lua, k_nodeableIndex);
             AZ_Assert(nodeable, "Failed to read EBusHandler");
-            const char* keyStr = lua_tostring(lua, k_eventNameIndex);
-            AZ_Assert(keyStr, "Failed to read key string");
-            const int eventIndex = nodeable->GetEventIndex(keyStr);
-            AZ_Assert(eventIndex != -1, "Event index was not found for %s-%s", nodeable->GetEBusName().data(), keyStr);
+            const int eventIndex = lua_tointeger(lua, k_eventNameIndex);
+            AZ_Assert(eventIndex != -1, "Event index was not found for %s", nodeable->GetEBusName().data());
             // install the generic hook for the event
             nodeable->HandleEvent(eventIndex);
             // Lua: nodeable, string, lambda
@@ -165,7 +159,6 @@ namespace ScriptCanvas
             // route the event handling to the lambda on the top of the stack
             nodeable->SetExecutionOut(AZ::Crc32(eventIndex), OutInterpretedResult(lua));
             // Lua: nodeable, string, lambda
-
             return 0;
         }
 

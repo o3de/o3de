@@ -70,7 +70,7 @@ namespace AzToolsFramework
         m_tagLabel->setMinimumSize(24, 22);
         m_tagLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
-        QIcon closeIcon("Editor/Icons/animation/close.png");
+        QIcon closeIcon("Icons/animation/close.png");
 
         QPushButton* button = new QPushButton(this);
         button->setStyleSheet(button->styleSheet() + "border: 0px;");
@@ -233,14 +233,14 @@ namespace AzToolsFramework
         QPushButton* loadButton = new QPushButton(this);
         loadButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         loadButton->setFixedSize(QSize(24, 24));
-        loadButton->setIcon(QIcon("Editor/UI/Icons/toolbar/libraryLoad.png"));
+        loadButton->setIcon(QIcon("UI/Icons/toolbar/libraryLoad.png"));
         loadButton->setToolTip(tr("Load a saved filter"));
         loadButton->setProperty("iconButton", "true");
 
         m_saveButton = new QPushButton(this);
         m_saveButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_saveButton->setFixedSize(QSize(24, 24));
-        m_saveButton->setIcon(QIcon("Editor/UI/Icons/toolbar/librarySave.png"));
+        m_saveButton->setIcon(QIcon("UI/Icons/toolbar/librarySave.png"));
         m_saveButton->setToolTip(tr("Save the current filter"));
         m_saveButton->setEnabled(false);
         m_saveButton->setProperty("iconButton", "true");
@@ -248,7 +248,7 @@ namespace AzToolsFramework
         m_toggleAllFiltersButton = new QPushButton(this);
         m_toggleAllFiltersButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_toggleAllFiltersButton->setFixedSize(QSize(24, 24));
-        m_toggleAllFiltersButton->setIcon(QIcon("Editor/Icons/animation/filter_16.png"));
+        m_toggleAllFiltersButton->setIcon(QIcon("Icons/animation/filter_16.png"));
         m_toggleAllFiltersButton->setVisible(false);
         m_toggleAllFiltersButton->setToolTip(tr("Toggle all filters on/off"));
         m_toggleAllFiltersButton->setProperty("iconButton", "true");
@@ -267,7 +267,7 @@ namespace AzToolsFramework
         m_clearAllButton = new QPushButton(this);
         m_clearAllButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_clearAllButton->setFixedSize(QSize(24, 24));
-        m_clearAllButton->setIcon(QIcon("Editor/Icons/animation/close.png"));
+        m_clearAllButton->setIcon(QIcon("Icons/animation/close.png"));
         m_clearAllButton->setVisible(false);
         m_clearAllButton->setToolTip(tr("Clear all filters"));
         m_clearAllButton->setProperty("iconButton", "true");

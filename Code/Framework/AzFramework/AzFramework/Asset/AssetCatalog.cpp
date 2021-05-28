@@ -809,7 +809,7 @@ namespace AzFramework
     #if defined(AZ_ENABLE_TRACING)
                 if (message.m_assetType == AZ::Data::s_invalidAssetType)
                 {
-                    AZ_TracePrintf("AssetCatalog", "Registering asset \"%s\" via AssetSystem message, but type is not set.", relativePath.c_str());
+                    AZ_TracePrintf("AssetCatalog", "Registering asset \"%s\" via AssetSystem message, but type is not set.\n", relativePath.c_str());
                 }
     #endif
 

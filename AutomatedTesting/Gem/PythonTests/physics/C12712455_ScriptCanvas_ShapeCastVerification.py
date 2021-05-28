@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C12712455
 # Test Case Title : Verify shape cast nodes in SC
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/12712455
+
 
 # fmt: off
 class Tests:
@@ -76,9 +76,8 @@ def C12712455_ScriptCanvas_ShapeCastVerification():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -145,5 +144,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C12712455_ScriptCanvas_ShapeCastVerification)

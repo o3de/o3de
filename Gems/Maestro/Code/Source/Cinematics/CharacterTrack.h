@@ -51,7 +51,7 @@ public:
 
     float GetEndTime() const { return m_timeRange.end; }
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 private:
     int m_iAnimationLayer;

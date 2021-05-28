@@ -17,8 +17,8 @@ import azlmbr.entity as entity
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class TestGradientModifiersIncompatibilities(EditorTestHelper):
@@ -28,8 +28,21 @@ class TestGradientModifiersIncompatibilities(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        Verify that Entities are not active when a Gradient Modifier and incompatible component are both present
-        on the same Entity.
+        This test verifies that components are disabled when conflicting components are present on the same entity.
+
+        Expected Behavior:
+        Gradient Modifier components are incompatible with Vegetation area components.
+
+        Test Steps:
+         1) Create a new level
+         2) Create a new entity in the level
+         3) Add each Gradient Modifier component to an entity, and add a Vegetation Area component to the same entity
+         4) Verify that components are only enabled when entity is free of a conflicting component
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """

@@ -1,0 +1,43 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionScreenSpaceBlurMobilePassTemplate",
+            "PassClass": "ReflectionScreenSpaceBlurPass",
+            "Slots": [
+                {
+                    "Name": "PreviousFrameInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "PreviousFrameImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SpecularInput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8G8B8A8_SINT",
+                        "MipLevels": "8",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "PreviousFrameInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PreviousFrameImage"
+                    }
+                }
+            ]
+        }
+    }
+}

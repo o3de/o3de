@@ -13,11 +13,11 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QWidget>
@@ -25,8 +25,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 #endif
-
-
 
 namespace AzToolsFramework
 {
@@ -50,8 +48,8 @@ namespace MaterialEditor
     //! Provides a tree view of all available materials and other assets exposed by the MaterialEditor.
     class MaterialBrowserWidget
         : public QWidget
-        , public AzToolsFramework::AssetBrowser::AssetBrowserModelNotificationBus::Handler
-        , public MaterialDocumentNotificationBus::Handler
+        , protected AZ::TickBus::Handler
+        , protected MaterialDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -62,19 +60,19 @@ namespace MaterialEditor
         AzToolsFramework::AssetBrowser::FilterConstType CreateFilter() const;
         void OpenSelectedEntries();
 
+        // MaterialDocumentNotificationBus::Handler implementation
+        void OnDocumentOpened(const AZ::Uuid& documentId) override;
+
+        // AZ::TickBus::Handler
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        void OpenOptionsMenu();
+
         QScopedPointer<Ui::MaterialBrowserWidget> m_ui;
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_filterModel = nullptr;
 
         //! if new asset is being created with this path it will automatically be selected
         AZStd::string m_pathToSelect;
-
-        // AssetBrowserModelNotificationBus::Handler implementation
-        void EntryAdded(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) override;
-
-        // MaterialDocumentNotificationBus::Handler implementation
-        void OnDocumentOpened(const AZ::Uuid& documentId) override;
-
-        void OpenOptionsMenu();
 
         QByteArray m_materialBrowserState;
     };

@@ -10,6 +10,8 @@
 *
 */
 
+#include "Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h"
+
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
 
@@ -32,8 +34,8 @@ namespace AZ
                         "Display Mapper", "The display mapper applying on the look modification process.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Atom")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13), AZ_CRC("Game", 0x232b318c) }))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [GFX TODO][ATOM-2672][PostFX] need to create page for PostProcessing.
@@ -45,6 +47,76 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentController::m_configuration, "Configuration", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ;
+
+                    editContext->Class<AcesParameterOverrides>(
+                        "AcesParameterOverrides", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_overrideDefaults, "Override Defaults",
+                            "When enabled allows parameter overrides for ACES configuration")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_alterSurround, "Alter Surround",
+                            "Apply gamma adjustment to compensate for dim surround")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_applyDesaturation, "Alter Desaturation",
+                            "Apply desaturation to compensate for luminance difference")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_applyCATD60toD65, "Alter CAT D60 to D65",
+                            "Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        
+                        ->DataElement(
+                            Edit::UIHandlers::Default, &AcesParameterOverrides::m_cinemaLimitsBlack,
+                            "Cinema Limit (black)",
+                            "Reference black luminance value")
+                        ->DataElement(
+                            Edit::UIHandlers::Default, &AcesParameterOverrides::m_cinemaLimitsWhite,
+                            "Cinema Limit (white)",
+                            "Reference white luminance value")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_minPoint, "Min Point (luminance)",
+                            "Linear extension below this")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_midPoint, "Mid Point (luminance)",
+                            "Middle gray")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_maxPoint, "Max Point (luminance)",
+                            "Linear extension above this")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &AcesParameterOverrides::m_surroundGamma, "Surround Gamma",
+                            "Gamma adjustment to be applied to compensate for the condition of the viewing environment")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Default, &AcesParameterOverrides::m_gamma, "Gamma",
+                            "Optional gamma value that is applied as basic gamma curve OETF")
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        // Load preset group
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Load Preset")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(
+                            Edit::UIHandlers::ComboBox, &AcesParameterOverrides::m_preset, "Preset Selection",
+                            "Allows specifying default preset for different ODT modes")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_48Nits, "48 Nits")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_1000Nits, "1000 Nits")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_2000Nits, "2000 Nits")
+                        ->EnumAttribute(OutputDeviceTransformType::OutputDeviceTransformType_4000Nits, "4000 Nits")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Load", "Load default preset")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AcesParameterOverrides::LoadPreset)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Load")
                         ;
 
                     editContext->Class<DisplayMapperComponentConfig>("ToneMapperComponentConfig", "")
@@ -64,7 +136,10 @@ namespace AZ
                             &DisplayMapperComponentConfig::m_ldrColorGradingLutEnabled,
                             "Enable LDR color grading LUT",
                             "Enable LDR color grading LUT.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_ldrColorGradingLut, "LDR color Grading LUT", "LDR color grading LUT");
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_ldrColorGradingLut, "LDR color Grading LUT", "LDR color grading LUT")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_acesParameterOverrides, "ACES Parameters", "Parameter overrides for ACES.")
+                    ;
+
                 }
             }
 

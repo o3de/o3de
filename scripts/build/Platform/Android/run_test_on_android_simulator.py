@@ -20,7 +20,8 @@ import logging
 
 CURRENT_PATH = pathlib.Path(os.path.dirname(__file__)).absolute()
 
-ENGINE_ROOT = CURRENT_PATH.parent.parent.parent.parent.parent.parent
+# The engine root is based on the location of this file (<ENGINE_ROOT>/scripts/build/Platform/Android). Walk up to calculate the engine root
+ENGINE_ROOT = CURRENT_PATH.parents[3]
 
 
 class AndroidEmuError(Exception):
@@ -193,6 +194,14 @@ class AndroidEmulatorManager(object):
                 current_append_list.append(item_parts)
 
         return installed_packages, available_packages, available_updates
+
+    def update_installed_sdks(self):
+        """
+        Run an SDK Manager update to make sure the SDKs are all up-to-date
+        """
+        logging.info(f"Updating android SDK...")
+        self.sdk_manager_cmd.run(['--update'])
+
 
     def install_system_package_if_necessary(self):
         """
@@ -502,6 +511,9 @@ def process_unit_test_on_simulator(base_android_sdk_path, build_path, build_conf
     # Prepare the emulator manager
     manager = AndroidEmulatorManager(base_android_sdk_path=base_android_sdk_path,
                                      force_avd_creation=True)
+
+    # Make sure that the android SDK is up to date
+    manager.update_installed_sdks()
 
     # First Install or overwrite the unit test emulator
     manager.install_unit_test_avd()

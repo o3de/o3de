@@ -50,7 +50,7 @@ public:
     void SetLastTextureID(int nTextureID){ m_lastTextureID = nTextureID; };
     bool SetActiveTexture(int index);
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 
 private:
     void ReleasePreloadedTextures();

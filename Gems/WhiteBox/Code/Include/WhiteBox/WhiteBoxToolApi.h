@@ -102,6 +102,9 @@ namespace WhiteBox
         //! Alias for a collection of faces.
         using Faces = AZStd::vector<Face>;
 
+        //! Underlying representation of the White Box mesh (serialized halfedge data).
+        using WhiteBoxMeshStream = AZStd::vector<AZ::u8>;
+
         //! Represents the vertex handles to be used to form a new face.
         struct FaceVertHandles
         {
@@ -726,19 +729,33 @@ namespace WhiteBox
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Serialization
 
+        //! The result of attempting to deserialize a white box mesh from a white box mesh stream.
+        enum class ReadResult
+        {
+            Full, //!< The white box mesh stream was full and was read into white box mesh (it is now initialized).
+            Empty, //!< The white box mesh stream was empty so no white box mesh was loaded.
+            Error //!< An error occurred while trying to deserialize white box mesh stream.
+        };
+
         //! Take an input stream of bytes and create a white box mesh from the deserialized data.
-        //! @return Will return false if any error was encountered during deserialization, true otherwise.
+        //! @return Will return ReadResult::Full if the white box mesh stream was filled with data and
+        //! the white box mesh was initialized, ReadResult::Empty if white box mesh stream did not contain
+        //! any data (white box mesh will be left empty) or ReadResult::Error if any error was encountered
+        //! during deserialization.
         //! @note A white box mesh must have been created first.
-        bool ReadMesh(WhiteBoxMesh& whiteBox, const AZStd::vector<AZ::u8>& input);
+        ReadResult ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input);
 
         //! Take an input stream and create a white box mesh from the deserialized data.
-        //! @return Will return false if any error was encountered during deserialization, true otherwise.
+        //! @return Will return ReadResult::Full if the white box mesh stream was filled with data and
+        //! the white box mesh was initialized, ReadResult::Empty if white box mesh stream did not contain
+        //! any data (white box mesh will be left empty) or ReadResult::Error if any error was encountered
+        //! during deserialization.
         //! @note The input stream must not skip white space characters (std::noskipws must be set on the stream).
-        bool ReadMesh(WhiteBoxMesh& whiteBox, std::istream& input);
+        ReadResult ReadMesh(WhiteBoxMesh& whiteBox, std::istream& input);
 
         //! Take a white box mesh and write it out to a stream of bytes.
         //! @return Will return false if any error was encountered during serialization, true otherwise.
-        bool WriteMesh(const WhiteBoxMesh& whiteBox, AZStd::vector<AZ::u8>& output);
+        bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output);
 
         //! Clones the white box mesh object into a new mesh.
         //! @return Will return null if any error was encountered during serialization, otherwise the cloned mesh.

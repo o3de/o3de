@@ -268,8 +268,6 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     case ePropertyUser:
         m_reflectedVarAdapter = new ReflectedVarUserAdapter;
         break;
-    case ePropertyShader:
-    case ePropertyMaterial:
     case ePropertyEquip:
     case ePropertyReverbPreset:
     case ePropertyGameToken:
@@ -279,7 +277,6 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     case ePropertyLocalString:
     case ePropertyLightAnimation:
     case ePropertyParticleName:
-    case ePropertyFlare:
         m_reflectedVarAdapter = new ReflectedVarGenericPropertyAdapter(desc.m_type);
         break;
     case ePropertyTexture:
@@ -577,7 +574,6 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
 
     case ePropertyTexture:
     case ePropertyModel:
-    case ePropertyMaterial:
         value.replace('\\', '/');
         break;
     }
@@ -587,7 +583,6 @@ void ReflectedPropertyItem::SetValue(const QString& sValue, bool bRecordUndo, bo
     {
     case ePropertyTexture:
     case ePropertyModel:
-    case ePropertyMaterial:
     case ePropertyFile:
         if (value.length() >= MAX_PATH)
         {

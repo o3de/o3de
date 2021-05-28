@@ -651,12 +651,15 @@ void CAnimComponentNode::AddPropertyToParamInfoMap(const CAnimParamType& paramTy
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CAnimComponentNode::Reflect(AZ::SerializeContext* serializeContext)
+void CAnimComponentNode::Reflect(AZ::ReflectContext* context)
 {
-    serializeContext->Class<CAnimComponentNode, CAnimNode>()
-        ->Version(1)
-        ->Field("ComponentID", &CAnimComponentNode::m_componentId)
-        ->Field("ComponentTypeID", &CAnimComponentNode::m_componentTypeId);
+    if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+    {
+        serializeContext->Class<CAnimComponentNode, CAnimNode>()
+            ->Version(1)
+            ->Field("ComponentID", &CAnimComponentNode::m_componentId)
+            ->Field("ComponentTypeID", &CAnimComponentNode::m_componentTypeId);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

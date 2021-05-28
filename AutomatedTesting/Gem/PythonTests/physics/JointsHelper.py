@@ -13,7 +13,7 @@ import ImportPathHelper as imports
 
 imports.init()
 
-from utils import Report
+from editor_python_test_tools.utils import Report
 import azlmbr.legacy.general as general
 import azlmbr.bus
 
@@ -26,6 +26,13 @@ def vector3LargerThanScalar(vec3Value, scalarValue):
     return (vec3Value.x > scalarValue and 
         vec3Value.y > scalarValue and 
         vec3Value.z > scalarValue)
+
+def getRelativeVector(vecA, vecB):
+    relativeVec = vecA
+    relativeVec.x = relativeVec.x - vecB.x
+    relativeVec.y = relativeVec.y - vecB.y
+    relativeVec.z = relativeVec.z - vecB.z
+    return relativeVec
 
 
 # Entity class for joints tests

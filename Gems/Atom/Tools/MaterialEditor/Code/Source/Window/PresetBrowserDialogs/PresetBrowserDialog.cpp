@@ -35,6 +35,7 @@ namespace MaterialEditor
         SetupPresetList();
         SetupSearchWidget();
         SetupDialogButtons();
+        setModal(true);
     }
 
     void PresetBrowserDialog::SetupPresetList()

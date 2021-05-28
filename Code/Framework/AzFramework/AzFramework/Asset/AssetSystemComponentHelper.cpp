@@ -220,7 +220,7 @@ namespace AzFramework
             {
                 // Read the wait for connection boolean from the Settings Registry
                 AZ::s64 waitForConnect64{};
-                if (!AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, waitForConnect64, AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::WaitForConnect))
+                if (AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, waitForConnect64, AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, AzFramework::AssetSystem::WaitForConnect))
                 {
                     outputConnectionSettings.m_waitForConnect = waitForConnect64 != 0;
                 }

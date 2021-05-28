@@ -12,6 +12,7 @@
 #pragma once
 
 #include <Authorization/AWSCognitoAuthorizationBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AWSClientAuth
@@ -28,12 +29,18 @@ namespace AWSClientAuth
 
         void OnRequestAWSCredentialsSuccess(const ClientAuthAWSCredentials& awsCredentials) override
         {
-            Call(FN_OnRequestAWSCredentialsSuccess, awsCredentials);
+            AZ::TickBus::QueueFunction([awsCredentials, this]()
+            {
+                Call(FN_OnRequestAWSCredentialsSuccess, awsCredentials);
+            });
         }
 
         void OnRequestAWSCredentialsFail(const AZStd::string& error) override
         {
-            Call(FN_OnRequestAWSCredentialsFail, error);
+            AZ::TickBus::QueueFunction([error, this]()
+            {
+                Call(FN_OnRequestAWSCredentialsFail, error);
+            });
         }
     };
 } // namespace AWSClientAuth

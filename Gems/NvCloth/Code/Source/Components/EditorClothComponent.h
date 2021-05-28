@@ -39,6 +39,7 @@ namespace NvCloth
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         const MeshNodeList& GetMeshNodeList() const;
         const AZStd::unordered_set<AZStd::string>& GetMeshNodesWithBackstopData() const;
@@ -70,7 +71,7 @@ namespace NvCloth
         // This list is not serialized, it's compiled when the asset has been received via MeshComponentNotificationBus.
         MeshNodeList m_meshNodeList;
 
-        AZStd::string m_previousMeshNode;
+        AZStd::string m_lastKnownMeshNode;
 
         AZStd::unordered_set<AZStd::string> m_meshNodesWithBackstopData;
 

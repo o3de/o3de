@@ -82,11 +82,6 @@ namespace LmbrCentral
         void OnCrySystemShutdown(ISystem& system) override;
         ////////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetManagerNotificationBus::Handler
-        //////////////////////////////////////////////////////////////////////////
-        void OnAssetEventsDispatchEnd() override;
-
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;
         AZStd::vector<AZStd::unique_ptr<AZ::AssetTypeInfoBus::Handler> > m_unhandledAssetInfo;
         AZStd::vector<AZStd::function<void()>> m_allocatorShutdowns;

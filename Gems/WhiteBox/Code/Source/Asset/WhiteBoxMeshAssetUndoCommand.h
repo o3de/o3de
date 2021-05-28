@@ -34,8 +34,8 @@ namespace WhiteBox
         ~WhiteBoxMeshAssetUndoCommand() override = default;
 
         void SetAsset(AZ::Data::Asset<Pipeline::WhiteBoxMeshAsset> asset);
-        void SetUndoState(const AZStd::vector<AZ::u8>& undoState);
-        void SetRedoState(const AZStd::vector<AZ::u8>& redoState);
+        void SetUndoState(const Api::WhiteBoxMeshStream& undoState);
+        void SetRedoState(const Api::WhiteBoxMeshStream& redoState);
 
         // AzToolsFramework::UndoSystem::URSequencePoint ...
         void Undo() override;
@@ -44,7 +44,7 @@ namespace WhiteBox
 
     protected:
         AZ::Data::Asset<Pipeline::WhiteBoxMeshAsset> m_asset;
-        AZStd::vector<AZ::u8> m_undoState;
-        AZStd::vector<AZ::u8> m_redoState;
+        Api::WhiteBoxMeshStream m_undoState;
+        Api::WhiteBoxMeshStream m_redoState;
     };
 } // namespace WhiteBox

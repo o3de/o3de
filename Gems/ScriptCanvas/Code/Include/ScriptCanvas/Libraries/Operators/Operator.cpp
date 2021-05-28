@@ -393,14 +393,6 @@ namespace ScriptCanvas
                 AZ_UNUSED(sourceType);
             }
 
-            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> OperatorBase::GetReplacementSlotsMap() const
-            {
-                AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotsMap;
-                slotsMap.emplace("In", AZStd::vector<AZStd::string>{ "In" });
-                slotsMap.emplace("Out", AZStd::vector<AZStd::string>{ "Out" });
-                return slotsMap;
-            }
-
             void OperatorBase::CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const
             {
                 auto newDataInSlots = replacementNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn);

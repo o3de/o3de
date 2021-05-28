@@ -184,7 +184,7 @@ namespace UnitTest
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
 
-        EXPECT_EQ(meshNodeList.size(), 1);
+        ASSERT_EQ(meshNodeList.size(), 1);
         EXPECT_TRUE(meshNodeList[0] == NvCloth::Internal::StatusMessageNoAsset);
     }
 
@@ -208,7 +208,7 @@ namespace UnitTest
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
 
-        EXPECT_EQ(meshNodeList.size(), 1);
+        ASSERT_EQ(meshNodeList.size(), 1);
         EXPECT_TRUE(meshNodeList[0] == NvCloth::Internal::StatusMessageNoClothNodes);
     }
 
@@ -234,7 +234,7 @@ namespace UnitTest
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
 
-        EXPECT_EQ(meshNodeList.size(), 1);
+        ASSERT_EQ(meshNodeList.size(), 1);
         EXPECT_TRUE(meshNodeList[0] == NvCloth::Internal::StatusMessageNoClothNodes);
     }
 
@@ -253,7 +253,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -261,7 +261,7 @@ namespace UnitTest
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
 
-        EXPECT_EQ(meshNodeList.size(), 2);
+        ASSERT_EQ(meshNodeList.size(), 2);
         EXPECT_TRUE(meshNodeList[0] == NvCloth::Internal::StatusMessageSelectNode);
         EXPECT_TRUE(meshNodeList[1] == MeshNodeName);
     }
@@ -284,7 +284,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, meshClothDataNoBackstop));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, meshClothDataNoBackstop*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -310,7 +310,7 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
@@ -322,9 +322,11 @@ namespace UnitTest
         EXPECT_TRUE(meshNodesWithBackstopData.find(MeshNodeName) != meshNodesWithBackstopData.end());
     }
 
-    // [TODO LYN-2252]
-    // Enable test once OnModelDestroyed is available.
-    TEST_F(NvClothEditorClothComponent, DISABLED_EditorClothComponent_OnMeshDestroyed_ReturnsMeshNodeListWithNoAssetMessage)
+    // [TODO LYN-1891]
+    // Revisit when Cloth Component Mesh works with Actors adapted to Atom models.
+    // Editor Cloth component now uses the new AZ::Render::MeshComponentNotificationBus::OnModelReady
+    // notification and this test does not setup a model yet.
+    TEST_F(NvClothEditorClothComponent, DISABLED_EditorClothComponent_OnModelPreDestroy_ReturnsMeshNodeListWithNoAssetMessage)
     {
         auto editorEntity = CreateInactiveEditorEntity("ClothComponentEditorEntity");
         auto* editorClothComponent = editorEntity->CreateComponent<NvCloth::EditorClothComponent>();
@@ -335,18 +337,18 @@ namespace UnitTest
             auto actor = AZStd::make_unique<ActorHelper>("actor_test");
             actor->AddJoint(JointRootName);
             auto meshNodeIndex = actor->AddJoint(MeshNodeName, AZ::Transform::CreateIdentity(), JointRootName);
-            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs, MeshClothData));
+            actor->SetMesh(LodLevel, meshNodeIndex, CreateEMotionFXMesh(MeshVertices, MeshIndices, {}, MeshUVs/*, MeshClothData*/));
             actor->FinishSetup();
 
             editorActorComponent->SetActorAsset(CreateAssetFromActor(AZStd::move(actor)));
         }
 
-        //editorClothComponent->OnModelDestroyed();
+        editorClothComponent->OnModelPreDestroy();
 
         const NvCloth::MeshNodeList& meshNodeList = editorClothComponent->GetMeshNodeList();
         const auto& meshNodesWithBackstopData = editorClothComponent->GetMeshNodesWithBackstopData();
 
-        EXPECT_EQ(meshNodeList.size(), 1);
+        ASSERT_EQ(meshNodeList.size(), 1);
         EXPECT_TRUE(meshNodeList[0] == NvCloth::Internal::StatusMessageNoAsset);
         EXPECT_TRUE(meshNodesWithBackstopData.empty());
     }

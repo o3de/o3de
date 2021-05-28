@@ -203,7 +203,7 @@ namespace RenderGL
 
 
     // try to initialize the graphics system
-    bool GraphicsManager::Init(const char* shaderPath)
+    bool GraphicsManager::Init(AZ::IO::PathView shaderPath)
     {
         initializeOpenGLFunctions();
 
@@ -364,7 +364,7 @@ namespace RenderGL
 
 
     // try to load a texture
-    Texture* GraphicsManager::LoadTexture([[maybe_unused]] const char* filename, [[maybe_unused]] bool createMipMaps)
+    Texture* GraphicsManager::LoadTexture([[maybe_unused]] AZ::IO::PathView filename, [[maybe_unused]] bool createMipMaps)
     {
         //Texture Library is no longer used
         //temporarily blank
@@ -373,19 +373,19 @@ namespace RenderGL
 
 
     // try to load a texture
-    Texture* GraphicsManager::LoadTexture(const char* filename)
+    Texture* GraphicsManager::LoadTexture(AZ::IO::PathView filename)
     {
         return LoadTexture(filename, mCreateMipMaps);
     }
 
 
     // LoadPostProcessShader
-    PostProcessShader* GraphicsManager::LoadPostProcessShader(const char* cFileName)
+    PostProcessShader* GraphicsManager::LoadPostProcessShader(AZ::IO::PathView cFileName)
     {
-        AZStd::string filename = mShaderPath + AZStd::string(cFileName);
+        AZ::IO::PathView filename = mShaderPath / cFileName;
 
         // check if the shader is already in the cache
-        Shader* s = mShaderCache.FindShader(filename.c_str());
+        Shader* s = mShaderCache.FindShader(filename.Native());
         if (s)
         {
             return (PostProcessShader*)s;
@@ -393,19 +393,19 @@ namespace RenderGL
 
         // load the shader from disk
         PostProcessShader* shader = new PostProcessShader();
-        if (!shader->Init(filename.c_str()))
+        if (!shader->Init(filename))
         {
             delete shader;
             return nullptr;
         }
 
-        mShaderCache.AddShader(filename.c_str(), shader);
+        mShaderCache.AddShader(filename.Native(), shader);
         return shader;
     }
 
 
     // LoadShader
-    GLSLShader* GraphicsManager::LoadShader(const char* vertexFileName, const char* pixelFileName)
+    GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName)
     {
         MCore::Array<AZStd::string> defines;
         return LoadShader(vertexFileName, pixelFileName, defines);
@@ -413,34 +413,21 @@ namespace RenderGL
 
 
     // LoadShader
-    GLSLShader* GraphicsManager::LoadShader(const char* vFile, const char* pFile, MCore::Array<AZStd::string>& defines)
+    GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines)
     {
-        AZStd::string vStr;
-        AZStd::string pStr;
-
-        if (vFile)
-        {
-            vStr = AZStd::string::format("%s%s", mShaderPath.c_str(), vFile);
-        }
-
-        if (pFile)
-        {
-            pStr = AZStd::string::format("%s%s", mShaderPath.c_str(), pFile);
-        }
+        const AZ::IO::Path vertexPath {vertexFileName.empty() ? AZ::IO::Path{} : mShaderPath / vertexFileName};
+        const AZ::IO::Path pixelPath {pixelFileName.empty() ? AZ::IO::Path{} : mShaderPath / pixelFileName};
 
         // construct the lookup string for the shader cache
-        AZStd::string dStr;
+        AZStd::string cacheLookupStr = vertexPath.Native() + pixelPath.Native();
         const uint32 numDefines = defines.GetLength();
         for (uint32 n = 0; n < numDefines; n++)
         {
-            dStr += AZStd::string::format("#%s", defines[n].c_str());
+            cacheLookupStr += AZStd::string::format("#%s", defines[n].c_str());
         }
 
-        AZStd::string cStr;
-        cStr = AZStd::string::format("%s%s%s", vStr.c_str(), pStr.c_str(), dStr.c_str());
-
         // check if the shader is already in the cache
-        Shader* cShader = mShaderCache.FindShader(cStr.c_str());
+        Shader* cShader = mShaderCache.FindShader(cacheLookupStr);
         if (cShader)
         {
             return (GLSLShader*)cShader;
@@ -448,13 +435,13 @@ namespace RenderGL
 
         // load the shader from disk
         GLSLShader* shader = new GLSLShader();
-        if (!shader->Init(vFile ? vStr.c_str() : nullptr, pFile ? pStr.c_str() : nullptr, defines))
+        if (!shader->Init(vertexPath, pixelPath, defines))
         {
             delete shader;
             return nullptr;
         }
 
-        mShaderCache.AddShader(cStr.c_str(), shader);
+        mShaderCache.AddShader(cacheLookupStr, shader);
         return shader;
     }
 

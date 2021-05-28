@@ -1,3 +1,0 @@
-<EngineDependencies versionnumber="1.0.0">
-    <Dependency path="scripts/effects/gameeffects.xml" optional="true" />
-</EngineDependencies>

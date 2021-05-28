@@ -223,7 +223,7 @@ namespace PhysX
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             buttonId, AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton, clusterId,
-            AZStd::string::format("Editor/Icons/PhysX/%s.svg", iconName));
+            AZStd::string::format("Icons/PhysX/%s.svg", iconName));
 
         return buttonId;
     }
@@ -240,7 +240,7 @@ namespace PhysX
         // create the cluster for changing transform mode
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
             m_modeSelectionClusterId, AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster);
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
         m_dimensionsModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Scale");

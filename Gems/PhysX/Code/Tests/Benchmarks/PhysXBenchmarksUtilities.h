@@ -40,7 +40,7 @@ namespace PhysX::Benchmarks
     namespace Utils
     {
         //! Function pointer to allow Shape configuration customization rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
-        using GenerateColliderFuncPtr = AZStd::function<Physics::ShapeConfiguration*(int)>;
+        using GenerateColliderFuncPtr = AZStd::function<AZStd::shared_ptr<Physics::ShapeConfiguration>(int)>;
         //! Function pointer to allow spawn position customization rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
         using GenerateSpawnPositionFuncPtr = AZStd::function<const AZ::Vector3(int)>;
         //! Function pointer to allow spawn orientation customization rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)

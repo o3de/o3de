@@ -16,7 +16,7 @@ with Lumberyard. Note: this boostrap is only designed fo be py3 compatible.
 If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
 to implement your own boostrapper module. Currently this is boostrapped
 from add_dccsi.py, as a temporty measure related to this Jira:
-https://jira.agscollab.com/browse/SPEC-2581"""
+SPEC-2581"""
 # standard imports
 import sys
 import os
@@ -81,8 +81,8 @@ settings = config.get_config_settings()
 if __name__ == '__main__':
     """Run this file as main"""
 
-    _G_DEBUG = True
-    _G_TEST_PYSIDE = True
+    _G_DEBUG = False
+    _G_TEST_PYSIDE = False
     
     _config = get_dccsi_config()
     _settings = config.get_config_settings()
@@ -121,7 +121,6 @@ if __name__ == '__main__':
             import PySide2
 
         _LOGGER.info(f'PySide2: {PySide2}')
-        _LOGGER.info(f'QTFORPYTHON_PATH: {_settings.QTFORPYTHON_PATH}')
         _LOGGER.info(f'LY_BIN_PATH: {_settings.LY_BIN_PATH}')
         _LOGGER.info(f'QT_PLUGIN_PATH: {_settings.QT_PLUGIN_PATH}')
         _LOGGER.info(f'QT_QPA_PLATFORM_PLUGIN_PATH: {_settings.QT_QPA_PLATFORM_PLUGIN_PATH}')

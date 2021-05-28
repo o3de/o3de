@@ -1,5 +1,7 @@
 {
     "template_name": "DefaultProject",
+    "restricted": "o3de",
+    "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "DefaultProject",
@@ -266,12 +268,6 @@
             "file": "Config/shader_global_build_options.json",
             "origin": "Config/shader_global_build_options.json",
             "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "EngineFinder.cmake",
-            "origin": "EngineFinder.cmake",
-            "isTemplated": true,
             "isOptional": false
         },
         {
@@ -565,6 +561,12 @@
         {
             "file": "Resources/Platform/iOS/Info.plist",
             "origin": "Resources/Platform/iOS/Info.plist",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "ShaderLib/raytracingscenesrg.srgi",
+            "origin": "ShaderLib/raytracingscenesrg.srgi",
             "isTemplated": true,
             "isOptional": false
         },

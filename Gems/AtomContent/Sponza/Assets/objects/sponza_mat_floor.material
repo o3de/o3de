@@ -4,9 +4,8 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "ambientOcclusion": {
-            "enable": true,
-            "textureMap": "Textures/floor_1k_ao.png"
+        "occlusion": {
+            "diffuseTextureMap": "Textures/floor_1k_ao.png"
         },
         "baseColor": {
             "color": [
@@ -44,7 +43,8 @@
             "algorithm": "POM",
             "factor": 0.012000000104308129,
             "pdo": true,
-            "textureMap": "Textures/floor_1k_height.png"
+            "textureMap": "Textures/floor_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/floor_1k_roughness.png"

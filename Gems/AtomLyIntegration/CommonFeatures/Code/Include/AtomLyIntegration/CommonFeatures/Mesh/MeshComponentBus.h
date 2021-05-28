@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             virtual void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) = 0;
-            virtual const Data::Asset<RPI::ModelAsset>& GetModelAsset() const = 0;
+            virtual Data::Asset<const RPI::ModelAsset> GetModelAsset() const = 0;
 
             virtual void SetModelAssetId(Data::AssetId modelAssetId) = 0;
             virtual Data::AssetId GetModelAssetId() const = 0;
@@ -35,7 +35,7 @@ namespace AZ
             virtual void SetModelAssetPath(const AZStd::string& path) = 0;
             virtual AZStd::string GetModelAssetPath() const = 0;
 
-            virtual const Data::Instance<RPI::Model> GetModel() const = 0;
+            virtual Data::Instance<RPI::Model> GetModel() const = 0;
 
             virtual void SetSortKey(RHI::DrawItemSortKey sortKey) = 0;
             virtual RHI::DrawItemSortKey GetSortKey() const = 0;
@@ -78,12 +78,15 @@ namespace AZ
                 {
                     AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
+                    Data::Asset<RPI::ModelAsset> modelAsset;
+                    MeshComponentRequestBus::EventResult(modelAsset, id, &MeshComponentRequestBus::Events::GetModelAsset);
                     Data::Instance<RPI::Model> model;
                     MeshComponentRequestBus::EventResult(model, id, &MeshComponentRequestBus::Events::GetModel);
+
                     if (model &&
-                        model->GetModelAsset().GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
+                        modelAsset.GetStatus() == AZ::Data::AssetData::AssetStatus::Ready)
                     {
-                        handler->OnModelReady(model->GetModelAsset(), model);
+                        handler->OnModelReady(modelAsset, model);
                     }
                 }
             };

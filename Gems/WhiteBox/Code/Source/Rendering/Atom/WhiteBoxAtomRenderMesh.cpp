@@ -120,9 +120,7 @@ namespace WhiteBox
         modelLodCreator.SetMeshAabb(meshData.GetAabb());
 
         // set the default material
-        auto materialAsset =
-            AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data());
-        if (materialAsset)
+        if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
         {
             modelLodCreator.SetMeshMaterialAsset(materialAsset);
         }

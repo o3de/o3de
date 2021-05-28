@@ -144,7 +144,7 @@ namespace ScriptCanvasDeveloper
                 {
                     ScriptCanvasEditor::SceneCounterRequestBus::EventResult(variableCounter, m_scriptCanvasId, &ScriptCanvasEditor::SceneCounterRequests::GetNewVariableCounter);
 
-                    // Cribbed from VariableDockWidget. Shuld always be in sync with that.
+                    // From VariableDockWidget, Should always be in sync with that.
                     variableName = AZStd::string::format("Variable %u", variableCounter);
 
                     ScriptCanvas::GraphVariableManagerRequestBus::EventResult(nameAvailable, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::IsNameAvailable, variableName);
@@ -154,7 +154,7 @@ namespace ScriptCanvasDeveloper
             ScriptCanvas::Datum datum(m_dataType, ScriptCanvas::Datum::eOriginality::Original);
 
             AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> outcome = AZ::Failure(AZStd::string());
-            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, datum);
+            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, datum, false);
 
             if (outcome)
             {

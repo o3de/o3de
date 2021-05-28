@@ -20,7 +20,6 @@
 #pragma once
 
 #include "Cry_Geo.h"
-#include "Grid.h"
 #include "Viewport.h"
 #include "Include/IViewPane.h"
 #include "QtViewPaneManager.h"
@@ -66,10 +65,6 @@ public:
 
     void SetUpdateRegion(const AABB& updateRegion) { m_updateRegion = updateRegion; };
     const AABB& GetUpdateRegion() { return m_updateRegion; };
-
-    /** Retrieve Grid used for viewes.
-    */
-    CGrid* GetGrid() { return &m_grid; };
 
     /** Get 2D viewports origin.
     */
@@ -137,7 +132,6 @@ private:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB m_updateRegion;
 
-    CGrid m_grid;
     //! Origin of 2d viewports.
     Vec3 m_origin2D;
     //! Zoom of 2d viewports.

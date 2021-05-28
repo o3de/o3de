@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C15308217
 # Test Case Title : Verify that the Terrain texture layer doesn't crash when changing
 # from on a level with a terrain component to another level without a terrain component
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/15308217
+
 
 
 # fmt: off
@@ -71,9 +71,8 @@ def C15308217_NoCrash_LevelSwitch():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr.legacy.general as general
     import azlmbr.bus
@@ -114,5 +113,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C15308217_NoCrash_LevelSwitch)

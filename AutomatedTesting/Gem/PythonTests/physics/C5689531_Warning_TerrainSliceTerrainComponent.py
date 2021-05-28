@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # Test case ID : C5689531
 # Test Case Title : Check that when you add a spawner component to a level to spawn a
 # terrain and also add a terrain component explicitly, no crash happens
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/5689531
+
 
 
 # fmt: off
@@ -74,10 +74,9 @@ def C5689531_Warning_TerrainSliceTerrainComponent():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import Tracer
 
     import azlmbr.legacy.general as general
 
@@ -123,5 +122,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C5689531_Warning_TerrainSliceTerrainComponent)

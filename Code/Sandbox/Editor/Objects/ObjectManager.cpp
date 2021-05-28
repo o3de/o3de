@@ -22,12 +22,9 @@
 #include "Settings.h"
 #include "DisplaySettings.h"
 #include "EntityObject.h"
-#include "NullEditTool.h"
 #include "Viewport.h"
 #include "GizmoManager.h"
 #include "AxisGizmo.h"
-#include "ObjectPhysicsManager.h"
-#include "EditMode/ObjectMode.h"
 #include "GameEngine.h"
 #include "WaitProgress.h"
 #include "Util/Image.h"
@@ -111,7 +108,6 @@ CObjectManager::CObjectManager()
     , m_pLoadProgress(nullptr)
     , m_loadedObjects(0)
     , m_totalObjectsToLoad(0)
-    , m_pPhysicsManager(new CObjectPhysicsManager())
     , m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
@@ -140,7 +136,6 @@ CObjectManager::~CObjectManager()
     DeleteAllObjects();
 
     delete m_gizmoManager;
-    delete m_pPhysicsManager;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -404,8 +399,6 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
         }
         CUndo::Record(new CUndoBaseObjectDelete(obj));
     }
-
-    OnObjectModified(obj, true, false);
 
     AABB objAAB;
     obj->GetBoundBox(objAAB);
@@ -838,15 +831,11 @@ void CObjectManager::Update()
 
     QWidget* prevActiveWindow = QApplication::activeWindow();
 
-    CheckAndFixSelection();
-
     // Restore focus if it changed.
     if (prevActiveWindow && QApplication::activeWindow() != prevActiveWindow)
     {
         prevActiveWindow->setFocus();
     }
-
-    m_pPhysicsManager->Update();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1230,60 +1219,6 @@ void CObjectManager::RemoveSelection(const QString& name)
     }
 }
 
-//! Checks the state of the current selection and fixes it if necessary - Used when AZ Code modifies the selection
-void CObjectManager::CheckAndFixSelection()
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    bool bObjectMode = qobject_cast<CObjectMode*>(GetIEditor()->GetEditTool()) != nullptr;
-
-    if (m_currSelection->GetCount() == 0)
-    {
-        // Nothing selected.
-        EndEditParams();
-        if (bObjectMode)
-        {
-            GetIEditor()->ShowTransformManipulator(false);
-        }
-    }
-    else if (m_currSelection->GetCount() == 1)
-    {
-        if (!m_bSingleSelection)
-        {
-            EndEditParams();
-        }
-
-        CBaseObject* newSelObject = m_currSelection->GetObject(0);
-        // Single object selected.
-        if (m_currEditObject != m_currSelection->GetObject(0))
-        {
-            m_bSelectionChanged = false;
-            if (!m_currEditObject || (m_currEditObject->metaObject() != newSelObject->metaObject()))
-            {
-                // If old object and new objects are of different classes.
-                EndEditParams();
-            }
-            if (GetIEditor()->GetEditTool() && GetIEditor()->GetEditTool()->IsUpdateUIPanel())
-            {
-                BeginEditParams(newSelObject, OBJECT_EDIT);
-            }
-
-            //AfxGetMainWnd()->SetFocus();
-        }
-    }
-    else if (m_currSelection->GetCount() > 1)
-    {
-        // Multiple objects are selected.
-        if (m_bSelectionChanged && bObjectMode)
-        {
-            m_bSelectionChanged = false;
-            m_nLastSelCount = m_currSelection->GetCount();
-            EndEditParams();
-
-            m_currEditObject = m_currSelection->GetObject(0);
-        }
-    }
-}
-
 void CObjectManager::SelectCurrent()
 {
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
@@ -1377,7 +1312,7 @@ void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
     FindDisplayableObjects(dc, false);
 }
 
-void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
+void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]] bool bDisplay)
 {
     // if the new IVisibilitySystem is being used, do not run this logic
     if (ed_visibility_use)
@@ -1404,10 +1339,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
     pDispayedViewObjects->ClearObjects();
     pDispayedViewObjects->Reserve(m_visibleObjects.size());
 
-    CEditTool* pEditTool = GetIEditor()->GetEditTool();
-
-    const bool newViewportInteractionModelEnabled = GetIEditor()->IsNewViewportInteractionModelEnabled();
-
     if (dc.flags & DISPLAY_2D)
     {
         int numVis = m_visibleObjects.size();
@@ -1419,19 +1350,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
             if (dc.box.IsIntersectBox(bbox))
             {
                 pDispayedViewObjects->AddObject(obj);
-
-                if (bDisplay && dc.settings->IsDisplayHelpers() && (gSettings.viewports.nShowFrozenHelpers || !obj->IsFrozen()))
-                {
-                    if (!newViewportInteractionModelEnabled)
-                    {
-                        obj->Display(dc);
-                    }
-
-                    if (pEditTool)
-                    {
-                        pEditTool->DrawObjectHelpers(obj, dc);
-                    }
-                }
             }
         }
     }
@@ -1469,19 +1387,6 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, bool bDisplay)
                 if (visRatio > m_maxObjectViewDistRatio || (dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
                 {
                     pDispayedViewObjects->AddObject(obj);
-
-                    if (bDisplay && dc.settings->IsDisplayHelpers() && (gSettings.viewports.nShowFrozenHelpers || !obj->IsFrozen()) && !obj->CheckFlags(OBJFLAG_HIDE_HELPERS))
-                    {
-                        if (!newViewportInteractionModelEnabled)
-                        {
-                            obj->Display(dc);
-                        }
-
-                        if (pEditTool)
-                        {
-                            pEditTool->DrawObjectHelpers(obj, dc);
-                        }
-                    }
                 }
             }
         }
@@ -1736,12 +1641,6 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
         else if (!obj->HitTestRect(hc))
         {
             return false;
-        }
-
-        CEditTool* pEditTool = GetIEditor()->GetEditTool();
-        if (pEditTool && pEditTool->HitTest(obj, hc))
-        {
-            return true;
         }
     }
 
@@ -2437,10 +2336,7 @@ void CObjectManager::UpdateVisibilityList()
         // in the view (frustum) to the visible objects list so we can draw feedback for
         // entities being hidden in the viewport when selected in the  entity outliner
         // (EditorVisibleEntityDataCache must be populated even if entities are 'hidden')
-        if (visible || GetIEditor()->IsNewViewportInteractionModelEnabled())
-        {
-            m_visibleObjects.push_back(obj);
-        }
+        m_visibleObjects.push_back(obj);
     }
 
     m_isUpdateVisibilityList = false;
@@ -2577,17 +2473,6 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
 IGizmoManager* CObjectManager::GetGizmoManager()
 {
     return m_gizmoManager;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void CObjectManager::OnObjectModified(CBaseObject* pObject, [[maybe_unused]] bool bDelete, [[maybe_unused]] bool boModifiedTransformOnly)
-{
-    if (IRenderNode* pRenderNode = pObject->GetEngineNode())
-    {
-        GetIEditor()->Get3DEngine()->OnObjectModified(pRenderNode, pRenderNode->GetRndFlags());
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2742,10 +2627,6 @@ void CObjectManager::SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitC
 
 void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
 {
-    // provide an EditTool that does nothing.
-    // note: will hide rotation gizmo when active (CRotateTool)
-    GetIEditor()->SetEditTool(new NullEditTool());
-
     // hide current gizmo for entity (translate/rotate/scale)
     IGizmoManager* gizmoManager = GetGizmoManager();
     const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
@@ -2757,9 +2638,6 @@ void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*compo
 
 void CObjectManager::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
 {
-    // return to default EditTool (in whatever transform mode is set)
-    GetIEditor()->SetEditTool(nullptr);
-
     // show translate/rotate/scale gizmo again
     if (IGizmoManager* gizmoManager = GetGizmoManager())
     {

@@ -10,7 +10,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import logging
-from PySide2.QtCore import (QCoreApplication, QModelIndex, QObject, Slot)
+from PySide2.QtCore import (QCoreApplication, QModelIndex, QObject, Signal, Slot)
 from PySide2.QtWidgets import QFileDialog
 from typing import (Dict, List)
 
@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 
 
 class ViewEditController(QObject):
+    set_notification_frame_text_sender: Signal = Signal(str)
+    set_notification_page_frame_text_sender: Signal = Signal(str)
+
     """
     ViewEditController is the place to bind ViewEdit view with its
     corresponding behavior
@@ -45,6 +48,10 @@ class ViewEditController(QObject):
         self._view_manager: ViewManager = ViewManager.get_instance()
         # Initialize view and model related references
         self._view_edit_page: ViewEditPage = self._view_manager.get_view_edit_page()
+        self.set_notification_frame_text_sender.connect(
+            self._view_edit_page.notification_frame.set_frame_text_receiver)
+        self.set_notification_page_frame_text_sender.connect(
+            self._view_edit_page.notification_page_frame.set_frame_text_receiver)
         self._table_view: ResourceTableView = self._view_edit_page.table_view
         self._proxy_model: ResourceProxyModel = self._table_view.resource_proxy_model
 
@@ -78,7 +85,7 @@ class ViewEditController(QObject):
             return True
         except IOError as e:
             logger.exception(e)
-            self._view_edit_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
             return False
 
     def _convert_and_load_into_model(self, config_file_name: str) -> None:
@@ -92,7 +99,7 @@ class ViewEditController(QObject):
             resources = json_utils.convert_json_dict_to_resources(self._config_file_json_source)
         except (IOError, ValueError, KeyError) as e:
             logger.exception(e)
-            self._view_edit_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
             self._view_edit_page.set_table_view_page_interactions_enabled(False)
 
         # load resources into model
@@ -109,7 +116,7 @@ class ViewEditController(QObject):
                 new_config_file_path, configuration.account_id, configuration.region)
         except IOError as e:
             logger.exception(e)
-            self._view_edit_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
             return
 
         self._rescan_config_directory()
@@ -145,7 +152,7 @@ class ViewEditController(QObject):
                 self._start_search_config_files_async(new_config_directory)
             except RuntimeError as e:
                 logger.exception(e)
-                self._view_edit_page.set_notification_frame_text(str(e))
+                self.set_notification_frame_text_sender.emit(str(e))
 
     def _rescan_config_directory(self) -> None:
         configuration: Configuration = self._configuration_manager.configuration
@@ -155,14 +162,14 @@ class ViewEditController(QObject):
                 configuration.config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         except FileNotFoundError as e:
             logger.exception(e)
-            self._view_edit_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
             return
 
         self._configuration_manager.configuration.config_files = config_files
         self._view_edit_page.set_config_files(config_files)
 
     def _reset_page(self) -> None:
-        self._view_edit_page.hide_notification_frame()
+        self._view_edit_page.notification_frame.setVisible(False)
         self._view_edit_page.set_table_view_page_interactions_enabled(True)
 
     def _save_changes(self) -> None:
@@ -178,14 +185,14 @@ class ViewEditController(QObject):
         self._proxy_model.override_all_resources_status(
             ResourceMappingAttributesStatus(ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE,
                                             [ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE]))
-        self._view_edit_page.set_notification_frame_text(
+        self.set_notification_frame_text_sender.emit(
             notification_label_text.VIEW_EDIT_PAGE_SAVING_SUCCEED_MESSAGE.format(config_file))
 
     def _search_complete_callback(self) -> None:
         self._reset_page()
 
     def _start_search_config_files_async(self, config_directory: str) -> None:
-        self._view_edit_page.set_notification_page_text(notification_label_text.NOTIFICATION_LOADING_MESSAGE)
+        self.set_notification_page_frame_text_sender.emit(notification_label_text.NOTIFICATION_LOADING_MESSAGE)
         self._view_edit_page.set_current_main_view_index(ViewEditPageConstants.NOTIFICATION_PAGE_INDEX)
         self._config_file_json_source.clear()
         self._table_view.reset_view()
@@ -202,7 +209,7 @@ class ViewEditController(QObject):
                 config_directory, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
         except FileNotFoundError as e:
             logger.exception(e)
-            self._view_edit_page.set_notification_frame_text(str(e))
+            self.set_notification_frame_text_sender.emit(str(e))
 
     def _select_config_file(self) -> None:
         if self._view_edit_page.config_file_combobox.currentIndex() == -1:
@@ -219,7 +226,7 @@ class ViewEditController(QObject):
                 self._proxy_model.emit_source_model_layout_changed()
         else:
             self._view_edit_page.set_table_view_page_interactions_enabled(False)
-            self._view_edit_page.set_notification_frame_text(
+            self.set_notification_frame_text_sender.emit(
                 error_messages.VIEW_EDIT_PAGE_READ_FROM_JSON_FAILED_WITH_UNEXPECTED_FILE_ERROR_MESSAGE.format(config_file_name))
         self._view_edit_page.set_current_main_view_index(ViewEditPageConstants.TABLE_VIEW_PAGE_INDEX)
 
@@ -262,13 +269,13 @@ class ViewEditController(QObject):
                                                     invalid_details))
             
             invalid_proxy_rows: List[int] = self._proxy_model.map_from_source_rows(list(invalid_sources.keys()))
-            self._view_edit_page.set_notification_frame_text(
+            self.set_notification_frame_text_sender.emit(
                 error_messages.VIEW_EDIT_PAGE_SAVING_FAILED_WITH_INVALID_ROW_ERROR_MESSAGE.format(invalid_proxy_rows))
             return False
         return True
 
     @Slot(list)
-    def add_import_resources(self, resources: List[BasicResourceAttributes]) -> None:
+    def add_import_resources_receiver(self, resources: List[BasicResourceAttributes]) -> None:
         resource: BasicResourceAttributes
         for resource in resources:
             resource_builder: ResourceMappingAttributesBuilder = ResourceMappingAttributesBuilder() \

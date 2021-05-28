@@ -39,7 +39,7 @@ namespace ScriptCanvas
                         {
                             editContext->Class<Less>("Less Than (<)", "Checks if Value A is less than Value B")
                                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Placeholder.png")
+                                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Placeholder.png")
                                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                                 ;
                         }

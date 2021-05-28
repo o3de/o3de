@@ -19,7 +19,7 @@ import azlmbr.legacy.general as general
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 newRootEntityId = None
@@ -31,6 +31,26 @@ class TestGraphClosedOnEntityDelete(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="GraphClosedOnEntityDelete", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that Landscape Canvas graphs are auto-closed when the corresponding entity is deleted.
+
+        Expected Behavior:
+        When a Landscape Canvas root entity is deleted, the corresponding graph automatically closes.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Delete the automatically created entity
+         4) Verify the open graph is closed
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         def onEntityCreated(parameters):
             global newRootEntityId

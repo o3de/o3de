@@ -22,13 +22,31 @@ namespace AZ
         {
             const uint32_t None = 0x00;
 
-            // The MeshFeatureProcessor sets this stencil bit on any geometry that should receive IBL specular in the reflections pass,
-            // otherwise IBL specular is rendered in the Forward pass.
-            // The Reflections pass only renders to areas with this stencil bit set.
+            // UseIBLSpecularPass
             //
-            // Pass Range: Forward -> Reflections.
-            // Note: The Reflections pass may also overwrite other bits in the stencil buffer.
-            const uint32_t UseIBLSpecularPass = 0xF;
+            // The MeshFeatureProcessor sets the UseIBLSpecularPass stencil value on any geometry that should receive IBL Specular
+            // in the Reflections pass, otherwise IBL specular is rendered in the Forward pass.  The Reflections pass only renders
+            // to areas with these stencil bits set.
+            //
+            // Used in pass range: Forward -> Reflections
+            // 
+            // Notes:
+            // - Two bits are needed here (0x3) so that the ReflectionProbeStencilPass can use "Less" on its stencil test to
+            //   properly handle the DecrSat on the FrontFace stencil operation depth-fail.
+            // - The ReflectionProbeStencilPass pass may overwrite other bits in the stencil buffer, depending on the amount of
+            //   reflection probe volume nesting in the content.
+            // - New stencil bits for other purposes should be added to the most signficant bits and masked out of the Reflection passes.
+            //   This is necessary to allow the most amount of bits to be used by the ReflectionProbeStencilPass for nested probe volumes.
+            // - The Reflection passes currently use 0x7F for the ReadMask and WriteMask to exclude the UseDiffuseGIPass stencil bit (see below).
+            //   If other stencil bits are added then these masks will need to be updated.
+            const uint32_t UseIBLSpecularPass = 0x3;
+
+            // UseDiffuseGIPass
+            // 
+            // The MeshFeatureProcessor sets this stencil bit on any geometry that should receive Diffuse GI in the DiffuseGlobalIllumination pass.
+            //
+            // Used in pass range: Forward -> DiffuseGlobalIllumination
+            const uint32_t UseDiffuseGIPass = 0x80;
         }
     }
 }

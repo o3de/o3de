@@ -232,7 +232,7 @@ namespace ScriptCanvas
             bool operator==(const SubgraphInterface& rhs) const;
 
             // Populates the list of out keys
-            void Parse();
+            AZ::Outcome<void, AZStd::string> Parse();
 
             bool RequiresConstructionParameters() const;
 
@@ -266,7 +266,7 @@ namespace ScriptCanvas
             AZStd::vector<AZ::Crc32> m_outKeys;
             NamespacePath m_namespacePath;
 
-            void AddOutKey(const AZStd::string& name);
+            bool AddOutKey(const AZStd::string& name);
             const Out* FindImmediateOut(const AZStd::string& in, const AZStd::string& out) const;
             const In* FindIn(const AZStd::string& inSlotId) const;
             const Out* FindLatentOut(const AZStd::string& latent) const;

@@ -122,8 +122,8 @@ namespace ScriptCanvasEditor
 
         for (const AZ::Uuid& objectId : objectTypes)
         {
-            // Verify whether this is an allowed BC variable type
-            if (!ScriptCanvas::Data::IsAllowedBehaviorClassVariableType(objectId))
+            ScriptCanvas::Data::Type type = dataRegistry->m_typeIdTraitMap[ScriptCanvas::Data::eType::BehaviorContextObject].m_dataTraits.GetSCType(objectId);
+            if (!type.IsValid() || !dataRegistry->m_creatableTypes.contains(type))
             {
                 continue;
             }

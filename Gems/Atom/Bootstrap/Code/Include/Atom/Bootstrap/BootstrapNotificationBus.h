@@ -13,7 +13,7 @@
 
 #include <AzCore/EBus/EBus.h>
 
-#include <AzFramework/Scene/SceneSystemBus.h>
+#include <AzFramework/Scene/SceneSystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 namespace AZ
 {
@@ -43,15 +43,15 @@ namespace AZ
                         EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
                         // Check if bootstrap scene already exists and fire notifications if it does
-                        AZStd::vector<AzFramework::Scene*> scenes;
-                        AzFramework::SceneSystemRequestBus::BroadcastResult(scenes, &AzFramework::SceneSystemRequests::GetAllScenes);
-                        AZ_Assert(scenes.size() > 0, "AzFramework didn't set up any scenes.");
+                        auto sceneSystem = AzFramework::SceneSystemInterface::Get();
+                        AZ_Assert(sceneSystem, "Notification bus called before the scene system has been initialized.");
+                        AZStd::shared_ptr<AzFramework::Scene> mainScene = sceneSystem->GetScene(AzFramework::Scene::MainSceneName);
+                        AZ_Assert(mainScene, "AzFramework didn't set up any scenes.");
 
-                        // Assume first scene is the default scene
-                        AZ::RPI::Scene* defaultScene = scenes.at(0)->GetSubsystem<AZ::RPI::Scene>();
-                        if (defaultScene && defaultScene->GetDefaultRenderPipeline())
+                        AZ::RPI::ScenePtr* defaultScene = mainScene->FindSubsystem<AZ::RPI::ScenePtr>();
+                        if (defaultScene && *defaultScene && (*defaultScene)->GetDefaultRenderPipeline())
                         {
-                            handler->OnBootstrapSceneReady(defaultScene);
+                            handler->OnBootstrapSceneReady(defaultScene->get());
                         }
                     }
                 };

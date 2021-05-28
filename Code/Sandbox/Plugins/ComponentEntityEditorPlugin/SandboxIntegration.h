@@ -77,6 +77,7 @@ class CHyperGraph;
 
 namespace AzToolsFramework
 {
+    class EditorEntityAPI;
     class EditorEntityUiInterface;
 
     namespace AssetBrowser
@@ -99,12 +100,10 @@ class SandboxIntegrationManager
     , private AzToolsFramework::EditorEvents::Bus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
-    , private AzFramework::DebugDisplayRequestBus::Handler
     , private AzFramework::DisplayContextRequestBus::Handler
     , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
-    , private AzToolsFramework::NewViewportInteractionModelEnabledRequestBus::Handler
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
 {
 public:
@@ -144,9 +143,6 @@ private:
     QDockWidget* InstanceViewPane(const char* paneName) override;
     void CloseViewPane(const char* paneName) override;
     void BrowseForAssets(AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override;
-    void GenerateAllCubemaps() override;
-    void GenerateCubemapForEntity(AZ::EntityId entityId, AZStd::string* cubemapOutputPath, bool hideEntity) override;
-    void GenerateCubemapWithIDForEntity(AZ::EntityId entityId, AZ::Uuid cubemapId, AZStd::string* cubemapOutputPath, bool hideEntity, bool hasCubemapId) override;
     void HandleObjectModeSelection(const AZ::Vector2& point, int flags, bool& handled) override;
     void UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr) override;
     void CreateEditorRepresentation(AZ::Entity* entity) override;
@@ -162,7 +158,6 @@ private:
     bool GetUndoSliceOverrideSaveValue() override;
     bool GetShowCircularDependencyError() override;
     void SetShowCircularDependencyError(const bool& showCircularDependencyError) override;
-    void SetEditTool(const char* tool) override;
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
@@ -206,80 +201,10 @@ private:
         const AzFramework::SliceInstantiationTicket& ticket) override;
     //////////////////////////////////////////////////////////////////////////
 
-    // AzToolsFramework::DebugDisplayRequestBus
-    void SetColor(float r, float g, float b, float a) override;
-    void SetColor(const AZ::Color& color) override;
-    void SetColor(const AZ::Vector4& color) override;
-    void SetAlpha(float a) override;
-    void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-    void DrawQuad(float width, float height) override;
-    void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-    void DrawWireQuad(float width, float height) override;
-    void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
-    void DrawTri(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3) override;
-    void DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color) override;
-    void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) override;
-    void DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max) override;
-    void DrawSolidBox(const AZ::Vector3& min, const AZ::Vector3& max) override;
-    void DrawSolidOBB(const AZ::Vector3& center, const AZ::Vector3& axisX, const AZ::Vector3& axisY, const AZ::Vector3& axisZ, const AZ::Vector3& halfExtents) override;
-    void DrawPoint(const AZ::Vector3& p, int nSize) override;
-    void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2) override;
-    void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2) override;
-    void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) override;
-    void DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled) override;
-    void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
-    void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
-    void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
-    void DrawWireCircle2d(const AZ::Vector2& center, float radius, float z) override;
-    void DrawTerrainCircle(const AZ::Vector3& worldPos, float radius, float height) override;
-    void DrawTerrainCircle(const AZ::Vector3& center, float radius, float angle1, float angle2, float height) override;
-    void DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, int referenceAxis) override;
-    void DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, const AZ::Vector3& fixedAxis) override;
-    void DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded = true) override;
-    void DrawCircle(const AZ::Vector3& pos, float radius, int nUnchangedAxis) override;
-    void DrawHalfDottedCircle(const AZ::Vector3& pos, float radius, const AZ::Vector3& viewPos, int nUnchangedAxis) override;
-    void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
-    void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded = true) override;
-    void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
-    void DrawTerrainRect(float x1, float y1, float x2, float y2, float height) override;
-    void DrawTerrainLine(AZ::Vector3 worldPos1, AZ::Vector3 worldPos2) override;
-    void DrawWireSphere(const AZ::Vector3& pos, float radius) override;
-    void DrawWireSphere(const AZ::Vector3& pos, const AZ::Vector3 radius) override;
-    void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
-    void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded = true) override;
-    void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
-    void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float fHeadScale, bool b2SidedArrow) override;
-    void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter, int srcOffsetX, int scrOffsetY) override;
-    void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter) override;
-    void DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& TextColor, const AZ::Vector4& TextBackColor) override;
-    void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-    void DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-    void SetLineWidth(float width) override;
-    bool IsVisible(const AZ::Aabb& bounds) override;
-    int SetFillMode(int nFillMode) override;
-    float GetLineWidth() override;
-    float GetAspectRatio() override;
-    void DepthTestOff() override;
-    void DepthTestOn() override;
-    void DepthWriteOff() override;
-    void DepthWriteOn() override;
-    void CullOff() override;
-    void CullOn() override;
-    bool SetDrawInFrontMode(bool bOn) override;
-    AZ::u32 GetState() override;
-    AZ::u32 SetState(AZ::u32 state) override;
-    AZ::u32 SetStateFlag(AZ::u32 state) override;
-    AZ::u32 ClearStateFlag(AZ::u32 state) override;
-    void PushMatrix(const AZ::Transform& tm) override;
-    void PopMatrix() override;
-
     // AzFramework::DisplayContextRequestBus (and @deprecated EntityDebugDisplayRequestBus)
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
-
-    // NewViewportInteractionModelEnabledRequestBus
-    bool IsNewViewportInteractionModelEnabled() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();
@@ -330,12 +255,10 @@ private:
     void OnLayerComponentDeactivated(AZ::EntityId entityId) override;
 
 private:
-    void SetupFileExtensionMap();
     // Right click context menu when a layer is included in the selection.
     void SetupLayerContextMenu(QMenu* menu);
     void SetupSliceContextMenu(QMenu* menu);
     void SetupSliceContextMenu_Modify(QMenu* menu, const AzToolsFramework::EntityIdList& selectedEntities, const AZ::u32 numEntitiesInSlices);
-    void SetupScriptCanvasContextMenu(QMenu* menu);
     void SaveSlice(const bool& QuickPushToFirstLevel);
     void GetEntitiesInSlices(const AzToolsFramework::EntityIdList& selectedEntities, AZ::u32& entitiesInSlices, AZStd::vector<AZ::SliceComponent::SliceInstanceAddress>& sliceInstances);
 
@@ -359,9 +282,6 @@ private:
     };
 
 private:
-    typedef AZStd::unordered_map<AZ::u32, IFileUtil::ECustomFileType> ExtensionMap;
-    ExtensionMap m_extensionToFileType;
-
     AZ::Vector2 m_contextMenuViewPoint;
     AZ::Vector3 m_sliceWorldPos;
 
@@ -372,16 +292,14 @@ private:
 
     DisplayContext* m_dc;
 
-    AZStd::unique_ptr<class ComponentEntityDebugPrinter> m_entityDebugPrinter;
-
     AZStd::vector<SliceAssetDeletionErrorInfo> m_sliceAssetDeletionErrorRestoreInfos;
 
     // Tracks new entities that have not yet been saved.
     AZStd::unordered_set<AZ::EntityId> m_unsavedEntities;
 
-    const AZStd::string m_defaultComponentIconLocation = "Editor/Icons/Components/Component_Placeholder.svg";
-    const AZStd::string m_defaultComponentViewportIconLocation = "Editor/Icons/Components/Viewport/Component_Placeholder.png";
-    const AZStd::string m_defaultEntityIconLocation = "Editor/Icons/Components/Viewport/Transform.png";
+    const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
+    const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.png";
+    const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.png";
 
     bool m_debugDisplayBusImplementationActive = false;
 
@@ -389,6 +307,7 @@ private:
 
     AzToolsFramework::EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
     AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
+    AzToolsFramework::EditorEntityAPI* m_editorEntityAPI = nullptr;
 
     // Overrides UI styling and behavior for Layer Entities
     AzToolsFramework::LayerUiHandler m_layerUiOverrideHandler;

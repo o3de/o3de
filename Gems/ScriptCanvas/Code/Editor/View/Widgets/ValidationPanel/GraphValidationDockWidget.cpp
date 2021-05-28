@@ -1011,7 +1011,7 @@ namespace ScriptCanvasEditor
             ScriptCanvas::Datum datum(variableType, ScriptCanvas::Datum::eOriginality::Original);
 
             AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> outcome = AZ::Failure(AZStd::string());
-            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_activeGraphIds.scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, varName, datum);
+            ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_activeGraphIds.scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, varName, datum, false);
 
             if (outcome.IsSuccess())
             {

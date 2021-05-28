@@ -10,7 +10,7 @@
 *
 */
 
-#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Thumbnails/LoadingThumbnail.h>
 #include <AzFramework/Application/Application.h>
 
@@ -18,23 +18,21 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
+        static constexpr const int LoadingThumbnailSize = 128;
+
         //////////////////////////////////////////////////////////////////////////
         // LoadingThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static const char* LoadingIconPath = "Editor/Icons/AssetBrowser/in_progress.gif";
+        static constexpr const char* LoadingIconPath = "Assets/Editor/Icons/AssetBrowser/in_progress.gif";
 
-        LoadingThumbnail::LoadingThumbnail(int thumbnailSize)
-            : Thumbnail(MAKE_TKEY(ThumbnailKey), thumbnailSize)
+        LoadingThumbnail::LoadingThumbnail()
+            : Thumbnail(MAKE_TKEY(ThumbnailKey))
             , m_angle(0)
         {
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            AZ_Assert(engineRoot, "Engine Root not initialized");
-            AZStd::string iconPath;
-            AZ::StringFunc::Path::Join(engineRoot, LoadingIconPath, iconPath);
-            m_loadingMovie.setFileName(iconPath.c_str());
+            auto absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / LoadingIconPath;
+            m_loadingMovie.setFileName(absoluteIconPath.c_str());
             m_loadingMovie.setCacheMode(QMovie::CacheMode::CacheAll);
-            m_loadingMovie.setScaledSize(QSize(m_thumbnailSize, m_thumbnailSize));
+            m_loadingMovie.setScaledSize(QSize(LoadingThumbnailSize, LoadingThumbnailSize));
             m_loadingMovie.start();
             m_pixmap = m_loadingMovie.currentPixmap();
             m_state = State::Ready;

@@ -200,7 +200,7 @@ namespace AzToolsFramework
             }
 
             return context.Report(result,
-                result.GetProcessing() == JSR::Processing::Completed ? "Succesfully loaded instance information for prefab." :
+                result.GetProcessing() == JSR::Processing::Completed ? "Successfully loaded instance information for prefab." :
                 "Failed to load instance information for prefab");
         }
 

@@ -10,8 +10,6 @@
 #
 
 set(FILES
-    Source/Pipeline/RCExt/CgfClothExporter.h
-    Source/Pipeline/RCExt/CgfClothExporter.cpp
     Source/Pipeline/SceneAPIExt/ClothRule.h
     Source/Pipeline/SceneAPIExt/ClothRule.cpp
     Source/Pipeline/SceneAPIExt/ClothRuleBehavior.h

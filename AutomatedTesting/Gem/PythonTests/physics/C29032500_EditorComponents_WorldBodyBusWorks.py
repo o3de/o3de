@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C29032500
 # Test Case Title : Check that WorldRequestBus works with editor components
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/29032500
+
 
 
 # fmt: off
@@ -94,9 +94,9 @@ def C29032500_EditorComponents_WorldBodyBusWorks():
     import azlmbr.legacy.general as general
     import azlmbr.bus
     import math
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import vector3_str, aabb_str
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
+    from editor_python_test_tools.utils import vector3_str, aabb_str
 
     AABB_THRESHOLD = 0.01 # Entities won't move in the simulation 
                                                       
@@ -161,5 +161,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C29032500_EditorComponents_WorldBodyBusWorks)

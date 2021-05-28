@@ -1,0 +1,173 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+/************** General (MainWindow) **************/
+
+QTabWidget:pane {
+    border: none;
+}
+
+QLabel#activeProjectLabel {
+    font-size: 18px;
+    font-family: "Amazon Ember Light";
+    margin-bottom: 5px;
+}
+
+QTreeView#logTableView {
+    border: 1px solid #1B1B1B;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+QTreeView#logTableView QHeaderView::section {
+    background-color: #1B1B1B;
+}
+
+/************** General (Tabs) **************/
+
+QFrame#fileTableFrame,
+QFrame#fileContentsFrame {
+    border: 1px solid #1B1B1B;
+}
+
+QFrame#fileTableFrame {
+    margin-right: 10px;
+}
+
+QFrame#fileTableHeaderFrame,
+QFrame#fileContentsHeaderFrame,
+QFrame#fileTableHeaderFrame QLabel,
+QFrame#fileContentsHeaderFrame QLabel{
+    background-color: #1B1B1B;
+}
+
+QFrame#fileTableHeaderFrame QLabel,
+QFrame#fileContentsHeaderFrame QLabel{
+    background-color: #1B1B1B;
+    margin-left: 5px;
+}
+
+QTabWidget QTreeView QHeaderView::section {
+    background-color: rgb(77, 77, 77);
+}
+
+QWidget#PlatformSelectionWidget QLabel#platformSelectionLabel {
+    margin-right: 10px;
+}
+
+QDialog#NewFileDialog QPushButton#browseFileButton,
+QDialog#NewFileDialog QPushButton#createFileButton,
+QDialog#NewFileDialog QPushButton#cancelButton {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/************** Seeds Tab **************/
+
+QWidget#SeedTabWidget QPushButton#generateAssetListsButton,
+QWidget#SeedTabWidget QPushButton#browseFileButton,
+QWidget#SeedTabWidget QPushButton#cancelButton,
+QWidget#SeedTabWidget QPushButton#addSeedButton,
+QWidget#SeedTabWidget QPushButton#applyChangesButton {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+QCheckBox#selectDefaultSeedListsCheckBox {
+    margin: 5px;
+}
+
+QWidget#seedListContentsFilteredSearchWidget {
+    margin-left: 5px;
+}
+
+QDialog QFrame#inputValuesFrame {
+    border: none;
+    margin: 10px;
+    padding: 10px;
+}
+
+QDialog QFrame#lineFrame {
+    border: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+QDialog QFrame#inputValuesFrame,
+QDialog QFrame#lineFrame,
+QDialog#AddSeedDialog QLabel,
+QDialog#AddSeedDialog QCheckBox,
+QDialog#EditSeedDialog QLabel,
+QDialog#EditSeedDialog QCheckBox,
+QDialog#NewFileDialog QLabel,
+QDialog#NewFileDialog QCheckBox {
+    background-color: #555555;
+}
+
+/************** Asset List Tab **************/
+
+QLabel#assetListContentsLabel {
+    margin-right: 10px;
+}
+
+QWidget#fileFilteredSearchWidget,
+QWidget#assetListContentsFilteredSearchWidget {
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+QPushButton#generateBundleButton {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/************** Generate Bundles Modal **************/
+
+QFrame#bundleSettingsFrame {
+    border: none;
+    margin-bottom: 10px;
+}
+
+QFrame#outputBundleLocationFrame,
+QFrame#bundleSettingsFileFrame {
+    border: none;
+    margin: 10px;
+}
+
+QFrame#bundleSettingsFrame,
+QFrame#outputBundleLocationFrame,
+QFrame#bundleSettingsFileFrame,
+QFrame#bundleSettingsFrame QLabel {
+    background-color: #555555;
+}
+
+QWidget#GenerateBundlesModal QPushButton {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+/************** Rules Tab **************/
+
+QPushButton#runRuleButton,
+QPushButton#addComparisonStepButton {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+QScrollArea#comparisonDataList {
+    border: none;
+}
+
+QFrame#comparisonDataFrame {
+    padding: 10px;
+}

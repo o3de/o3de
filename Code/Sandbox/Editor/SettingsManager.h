@@ -19,8 +19,8 @@
 
 class QByteArray;
 
-#define EDITOR_LAYOUT_FILE_PATH "@engroot@/Editor/EditorLayout.xml"
-#define EDITOR_SETTINGS_FILE_PATH "@engroot@/Editor/EditorSettings.xml"
+#define EDITOR_LAYOUT_FILE_PATH "@user@/Editor/EditorLayout.xml"
+#define EDITOR_SETTINGS_FILE_PATH "@user@/Editor/EditorSettings.xml"
 #define EDITOR_LAYOUT_ROOT_NODE "EditorLayout"
 #define EDITOR_SETTINGS_ROOT_NODE "EditorSettings"
 #define EDITOR_SETTINGS_CONTENT_NODE "EditorSettingsContent"
@@ -30,7 +30,7 @@ class QByteArray;
 #define CVARS_NODE "CVars"
 #define CVAR_NODE "CVar"
 
-#define EDITOR_EVENT_LOG_FILE_PATH "@engroot@/Editor/EditorEventLog.xml"
+#define EDITOR_EVENT_LOG_FILE_PATH "@user@/Editor/EditorEventLog.xml"
 #define EDITOR_EVENT_LOG_ROOT_NODE "EventRecorder"
 #define EVENT_LOG_EVENT_NAME "eventName"
 #define EDITOR_EVENT_LOG_ATTRIB_NAME "value"

@@ -37,4 +37,4 @@ namespace ScriptCanvas
         using EventBus = AZ::EBus<EventTraits>;
     } 
 
-} 
+}

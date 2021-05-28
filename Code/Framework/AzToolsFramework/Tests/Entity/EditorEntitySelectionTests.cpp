@@ -81,12 +81,17 @@ namespace UnitTest
         ToolsApplicationRequestBus::BroadcastResult(
             anyEntitySelected, &ToolsApplicationRequests::AreAnyEntitiesSelected);
 
+        int selectedEntitiesCount = 0;
+        ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesCount, &ToolsApplicationRequests::GetSelectedEntitiesCount);
+
         EntityIdList selectedEntityIds;
         ToolsApplicationRequestBus::BroadcastResult(
             selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
         EXPECT_TRUE(testEntitySelected);
         EXPECT_TRUE(anyEntitySelected);
+        EXPECT_EQ(selectedEntitiesCount, 1);
         EXPECT_EQ(selectedEntityIds.size(), 1);
         EXPECT_EQ(selectedEntityIds.front(), testEntityId);
 
@@ -101,10 +106,14 @@ namespace UnitTest
             anyEntitySelected, &ToolsApplicationRequests::AreAnyEntitiesSelected);
 
         ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesCount, &ToolsApplicationRequests::GetSelectedEntitiesCount);
+
+        ToolsApplicationRequestBus::BroadcastResult(
             selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
         EXPECT_FALSE(testEntitySelected);
         EXPECT_FALSE(anyEntitySelected);
+        EXPECT_EQ(selectedEntitiesCount, 0);
         EXPECT_TRUE(selectedEntityIds.empty());
     }
 
@@ -141,11 +150,16 @@ namespace UnitTest
         ToolsApplicationRequestBus::BroadcastResult(
             anyEntitySelected, &ToolsApplicationRequests::AreAnyEntitiesSelected);
 
+        int selectedEntitiesCount = 0;
+        ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesCount, &ToolsApplicationRequests::GetSelectedEntitiesCount);
+
         EntityIdList actualSelectedEntityIds;
         ToolsApplicationRequestBus::BroadcastResult(
             actualSelectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
         EXPECT_TRUE(anyEntitySelected);
+        EXPECT_EQ(selectedEntitiesCount, expectedSelectedEntityIds.size());
         EXPECT_EQ(actualSelectedEntityIds.size(), expectedSelectedEntityIds.size());
         for (auto& id : expectedSelectedEntityIds)
         {
@@ -161,9 +175,13 @@ namespace UnitTest
             anyEntitySelected, &ToolsApplicationRequests::AreAnyEntitiesSelected);
 
         ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntitiesCount, &ToolsApplicationRequests::GetSelectedEntitiesCount);
+
+        ToolsApplicationRequestBus::BroadcastResult(
             actualSelectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
 
         EXPECT_TRUE(anyEntitySelected);
+        EXPECT_EQ(selectedEntitiesCount, expectedSelectedEntityIds.size());
         EXPECT_EQ(actualSelectedEntityIds.size(), expectedSelectedEntityIds.size());
         for (auto& id : expectedSelectedEntityIds)
         {

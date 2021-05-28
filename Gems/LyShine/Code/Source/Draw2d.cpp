@@ -10,16 +10,25 @@
 *
 */
 #include "LyShine_precompiled.h"
-#include "Draw2d.h"
 #include "IFont.h"
-#include "IRenderer.h"
+#include <IRenderer.h> // for SVF_P3F_C4B_T2F which will be removed in a coming PR
+
+#include <LyShine/Draw2d.h>
 
 #include <AzCore/Math/Matrix3x3.h>
+#include <AzCore/Math/MatrixUtils.h>
+#include <AzFramework/Font/FontInterface.h>
+
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 static const int g_defaultBlendState = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
 static const int g_defaultBaseState = GS_NODEPTHTEST;
-
-static const int g_2dModeNotStarted = -1;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // LOCAL STATIC FUNCTIONS
@@ -37,9 +46,9 @@ static AZ::u32 PackARGB8888(const AZ::Color& color)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CDraw2d::CDraw2d()
+CDraw2d::CDraw2d(AZ::RPI::ViewportContextPtr viewportContext)
     : m_deferCalls(false)
-    , m_nestLevelAtWhichStarted2dMode(g_2dModeNotStarted)
+    , m_viewportContext(viewportContext)
 {
     // These default options are set here and never change. They are stored so that if a null options
     // structure is passed into the draw functions then this default one can be used instead
@@ -48,7 +57,7 @@ CDraw2d::CDraw2d()
     m_defaultImageOptions.pixelRounding = Rounding::Nearest;
     m_defaultImageOptions.baseState = g_defaultBaseState;
 
-    m_defaultTextOptions.font = (gEnv && gEnv->pCryFont != nullptr) ? gEnv->pCryFont->GetFont("default") : nullptr;
+    m_defaultTextOptions.fontName = "default";
     m_defaultTextOptions.effectIndex = 0;
     m_defaultTextOptions.color.Set(1.0f, 1.0f, 1.0f);
     m_defaultTextOptions.horizontalAlignment = HAlign::Left;
@@ -57,78 +66,75 @@ CDraw2d::CDraw2d()
     m_defaultTextOptions.dropShadowColor.Set(0.0f, 0.0f, 0.0f, 0.0f);
     m_defaultTextOptions.rotation = 0.0f;
     m_defaultTextOptions.baseState = g_defaultBaseState;
+
+    AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 CDraw2d::~CDraw2d()
 {
+    AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::BeginDraw2d(bool deferCalls)
+void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
 {
-    IRenderer* renderer = gEnv->pRenderer;
-    AZ::Vector2 viewportSize(
-        static_cast<float>(renderer->GetOverlayWidth()),
-        static_cast<float>(renderer->GetOverlayHeight()));
-    BeginDraw2d(viewportSize, deferCalls);
-}
+    // At this point the RPI is ready for use
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::BeginDraw2d(AZ::Vector2 viewportSize, bool deferCalls)
-{
-    // So that nested calls to BeginDraw2d/EndDraw2d do not end 2D drawmode prematurely we only
-    // switch to 2D mode once and do not do it again until the corresponding call to EndDraw2d
-    // is processed.
-    // It may seem overkill to allow nested calls rather than just asserting in that case. But
-    // a) it is more flexible to do so
-    // b) it can be useful to draw some debug primitives in deferred mode while rendering a
-    //    canvas in non-deferred mode for example
+    // Load the shader to be used for 2d drawing
+    const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
+    AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
 
-    // Push the current state of the m_deferCalls onto a stack to support nested calls
-    m_deferCallsFlagStack.push(m_deferCalls);
-
-    m_deferCalls = deferCalls;
-
-    // if this is the outermost call with non-deferred rendering then switch to 2D mode
-    if (!m_deferCalls && m_nestLevelAtWhichStarted2dMode == g_2dModeNotStarted)
+    // Set scene to be associated with the dynamic draw context
+    AZ::RPI::ScenePtr scene;
+    if (m_viewportContext)
     {
-        IRenderer* renderer = gEnv->pRenderer;
-
-        renderer->SetCullMode(R_CULL_DISABLE);
-
-        renderer->Set2DMode(static_cast<uint32>(viewportSize.GetX()), static_cast<uint32>(viewportSize.GetY()), m_backupSceneMatrices);
-
-        renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
-        renderer->SetState(g_defaultBlendState | g_defaultBaseState);
-
-        // remember the nesting level that we turned on 2D mode so we can turn it off as
-        // we unwind the stack
-        m_nestLevelAtWhichStarted2dMode = m_deferCallsFlagStack.size();
+        // Use scene associated with the specified viewport context
+        scene = m_viewportContext->GetRenderScene();
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::EndDraw2d()
-{
-    // if we are ending a non-deferred series of calls and we turned on 2D draw mode when we started
-    // this series then turn it off.
-    if (!m_deferCalls && m_nestLevelAtWhichStarted2dMode == m_deferCallsFlagStack.size())
+    else
     {
-        IRenderer* renderer = gEnv->pRenderer;
-        renderer->Unset2DMode(m_backupSceneMatrices);
-        m_nestLevelAtWhichStarted2dMode = -1;
+        // No viewport context specified, use default scene
+        scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
     }
+    AZ_Assert(scene != nullptr, "Attempting to create a DynamicDrawContext for a viewport context that has not been associated with a scene yet.");
 
-    // unwind the nesting stack
-    m_deferCalls = m_deferCallsFlagStack.top();
-    m_deferCallsFlagStack.pop();
+    // Create and initialize a DynamicDrawContext for 2d drawing
+    m_dynamicDraw = AZ::RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene.get());
+    AZ::RPI::ShaderOptionList shaderOptions;
+    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("true")));
+    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("false")));
+    m_dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
+    m_dynamicDraw->InitVertexFormat(
+        { {"POSITION", AZ::RHI::Format::R32G32B32_FLOAT},
+        {"COLOR", AZ::RHI::Format::B8G8R8A8_UNORM},
+        {"TEXCOORD0", AZ::RHI::Format::R32G32_FLOAT} });
+    m_dynamicDraw->AddDrawStateOptions(AZ::RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
+        | AZ::RPI::DynamicDrawContext::DrawStateOptions::BlendMode);
+    m_dynamicDraw->EndInit();
+
+    AZ::RHI::TargetBlendState targetBlendState;
+    targetBlendState.m_enable = true;
+    targetBlendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+    targetBlendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
+    m_dynamicDraw->SetTarget0BlendState(targetBlendState);
+
+    // Cache draw srg input indices for later use
+    static const char textureIndexName[] = "m_texture";
+    static const char worldToProjIndexName[] = "m_worldToProj";
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+    m_shaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
+    AZ_Error("Draw2d", m_shaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        textureIndexName);
+    m_shaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(worldToProjIndexName));
+    AZ_Error("Draw2d", m_shaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
+        worldToProjIndexName);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Draw a textured quad with the top left corner at the given position.
-void CDraw2d::DrawImage(int texId, AZ::Vector2 position, AZ::Vector2 size, float opacity,
+void CDraw2d::DrawImage(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vector2 position, AZ::Vector2 size, float opacity,
     float rotation, const AZ::Vector2* pivotPoint, const AZ::Vector2* minMaxTexCoords,
     ImageOptions* imageOptions)
 {
@@ -169,7 +175,7 @@ void CDraw2d::DrawImage(int texId, AZ::Vector2 position, AZ::Vector2 size, float
         quad.m_texCoords[3].Set(0.0f, 1.0f);
     }
 
-    quad.m_texId = texId;
+    quad.m_image = image;
 
     // add the blendMode flags to the base state
     quad.m_state = blendMode | actualImageOptions->baseState;
@@ -185,17 +191,17 @@ void CDraw2d::DrawImage(int texId, AZ::Vector2 position, AZ::Vector2 size, float
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawImageAligned(int texId, AZ::Vector2 position, AZ::Vector2 size,
+void CDraw2d::DrawImageAligned(AZ::Data::Instance<AZ::RPI::Image> image, AZ::Vector2 position, AZ::Vector2 size,
     HAlign horizontalAlignment, VAlign verticalAlignment,
     float opacity, float rotation, const AZ::Vector2* minMaxTexCoords, ImageOptions* imageOptions)
 {
     AZ::Vector2 alignedPosition = Align(position, size, horizontalAlignment, verticalAlignment);
 
-    DrawImage(texId, alignedPosition, size, opacity, rotation, &position, minMaxTexCoords, imageOptions);
+    DrawImage(image, alignedPosition, size, opacity, rotation, &position, minMaxTexCoords, imageOptions);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawQuad(int texId, VertexPosColUV* verts, int blendMode, Rounding pixelRounding, int baseState)
+void CDraw2d::DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, int blendMode, Rounding pixelRounding, int baseState)
 {
     int actualBlendMode = (blendMode == -1) ? g_defaultBlendState : blendMode;
     int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
@@ -208,7 +214,7 @@ void CDraw2d::DrawQuad(int texId, VertexPosColUV* verts, int blendMode, Rounding
         quad.m_texCoords[i] = verts[i].uv;
         quad.m_packedColors[i] = PackARGB8888(verts[i].color);
     }
-    quad.m_texId = texId;
+    quad.m_image = image;
 
     // add the blendMode flags to the base state
     quad.m_state = actualBlendMode | actualBaseState;
@@ -221,9 +227,7 @@ void CDraw2d::DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, int 
 {
     int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
 
-    IRenderer* renderer = gEnv->pRenderer;
-
-    int texId = renderer->GetWhiteTextureId();
+    auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
 
     int actualBlendMode = (blendMode == -1) ? g_defaultBlendState : blendMode;
 
@@ -231,7 +235,7 @@ void CDraw2d::DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, int 
     uint32 packedColor = PackARGB8888(color);
 
     DeferredLine line;
-    line.m_texId = texId;
+    line.m_image = image;
 
     line.m_points[0] = Draw2dHelper::RoundXY(start, pixelRounding);
     line.m_points[1] = Draw2dHelper::RoundXY(end, pixelRounding);
@@ -250,7 +254,7 @@ void CDraw2d::DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, int 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawLineTextured(int texId, VertexPosColUV* verts, int blendMode, Rounding pixelRounding, int baseState)
+void CDraw2d::DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image, VertexPosColUV* verts, int blendMode, Rounding pixelRounding, int baseState)
 {
     int actualBaseState = (baseState == -1) ? g_defaultBaseState : baseState;
 
@@ -258,7 +262,7 @@ void CDraw2d::DrawLineTextured(int texId, VertexPosColUV* verts, int blendMode, 
 
     // define line
     DeferredLine line;
-    line.m_texId = texId;
+    line.m_image = image;
 
     for (int i = 0; i < 2; ++i)
     {
@@ -281,13 +285,20 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
 {
     TextOptions* actualTextOptions = (textOptions) ? textOptions : &m_defaultTextOptions;
 
+    AzFramework::FontId fontId = AzFramework::InvalidFontId;
+    AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+    if (fontQueryInterface)
+    {
+        fontId = fontQueryInterface->GetFontId(actualTextOptions->fontName);
+    }
+
     // render the drop shadow, if needed
     if ((actualTextOptions->dropShadowColor.GetA() > 0.0f) &&
         (actualTextOptions->dropShadowOffset.GetX() || actualTextOptions->dropShadowOffset.GetY()))
     {
         // calculate the drop shadow pos and render it
         AZ::Vector2 dropShadowPosition(position + actualTextOptions->dropShadowOffset);
-        DrawTextInternal(textString, actualTextOptions->font, actualTextOptions->effectIndex,
+        DrawTextInternal(textString, fontId, actualTextOptions->effectIndex,
             dropShadowPosition, pointSize, actualTextOptions->dropShadowColor,
             actualTextOptions->rotation,
             actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
@@ -296,11 +307,99 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
 
     // draw the text string
     AZ::Color textColor = AZ::Color::CreateFromVector3AndFloat(actualTextOptions->color, opacity);
-    DrawTextInternal(textString, actualTextOptions->font, actualTextOptions->effectIndex,
+    DrawTextInternal(textString, fontId, actualTextOptions->effectIndex,
         position, pointSize, textColor,
         actualTextOptions->rotation,
         actualTextOptions->horizontalAlignment, actualTextOptions->verticalAlignment,
         actualTextOptions->baseState);
+}
+
+void CDraw2d::DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
+    UiTransformInterface::RectPoints points,
+    AZ::Vector2 rightVec,
+    AZ::Vector2 downVec,
+    AZ::Color color,
+    uint32_t lineThickness)
+{
+    // since the rect can be transformed we have to add the offsets by multiplying them
+    // by unit vectors parallel with the edges of the rect. However, the rect could be
+    // zero width and/or height so we can't use "points" to compute these unit vectors.
+    // So we instead get two transformed unit vectors and then normalize them
+    rightVec.NormalizeSafe();
+    downVec.NormalizeSafe();
+
+    // calculate the transformed width and height of the rect
+    // (in case it is smaller than the texture height)
+    AZ::Vector2 widthVec = points.TopRight() - points.TopLeft();
+    AZ::Vector2 heightVec = points.BottomLeft() - points.TopLeft();
+    float rectWidth = widthVec.GetLength();
+    float rectHeight = heightVec.GetLength();
+
+    if (lineThickness == 0 && image)
+    {
+        lineThickness = image->GetDescriptor().m_size.m_height;
+    }
+
+    if (lineThickness == 0)
+    {
+        AZ_Assert(false, "Attempting to draw a rect outline with of zero thickness.");
+        return;
+    }
+
+    // the outline is centered on the element rect so half the outline is outside
+    // the rect and half is inside the rect
+    float offset = aznumeric_cast<float>(lineThickness);
+    float outerOffset = -offset * 0.5f;
+    float innerOffset = offset * 0.5f;
+    float outerV = 0.0f;
+    float innerV = 1.0f;
+
+    // if the rect is small there may not be space for the half of the outline that
+    // is inside the rect. If this is the case reduce the innerOffset so the inner
+    // points are coincident. Adjust the UVs according to keep a 1-1 texel to pixel ratio.
+    float minDimension = min(rectWidth, rectHeight);
+    if (innerOffset > minDimension * 0.5f)
+    {
+        float oldInnerOffset = innerOffset;
+        innerOffset = minDimension * 0.5f;
+        // note oldInnerOffset can't be zero because of early return if lineThickness is zero
+        innerV = 0.5f + 0.5f * innerOffset / oldInnerOffset;
+    }
+
+    DeferredRectOutline rectOutline;
+
+    // fill out the 8 verts to define the 2 rectangles - outer and inner
+    // The vertices are in the order of outer rect then inner rect. e.g.:
+    //  0        1
+    //     4  5
+    //     6  7
+    //  2        3
+    //
+    // four verts of outer rect
+    rectOutline.m_verts2d[0] = points.pt[0] + rightVec * outerOffset + downVec * outerOffset;
+    rectOutline.m_verts2d[1] = points.pt[1] - rightVec * outerOffset + downVec * outerOffset;
+    rectOutline.m_verts2d[2] = points.pt[3] + rightVec * outerOffset - downVec * outerOffset;
+    rectOutline.m_verts2d[3] = points.pt[2] - rightVec * outerOffset - downVec * outerOffset;
+    // four verts of inner rect
+    rectOutline.m_verts2d[4] = points.pt[0] + rightVec * innerOffset + downVec * innerOffset;
+    rectOutline.m_verts2d[5] = points.pt[1] - rightVec * innerOffset + downVec * innerOffset;
+    rectOutline.m_verts2d[6] = points.pt[3] + rightVec * innerOffset - downVec * innerOffset;
+    rectOutline.m_verts2d[7] = points.pt[2] - rightVec * innerOffset - downVec * innerOffset;
+
+    // and define the UV coordinates for these 8 verts
+    rectOutline.m_uvs[0] = AZ::Vector2(0.0f, outerV);
+    rectOutline.m_uvs[1] = AZ::Vector2(1.0f, outerV);
+    rectOutline.m_uvs[2] = AZ::Vector2(1.0f, outerV);
+    rectOutline.m_uvs[3] = AZ::Vector2(0.0f, outerV);
+    rectOutline.m_uvs[4] = AZ::Vector2(0.0f, innerV);
+    rectOutline.m_uvs[5] = AZ::Vector2(1.0f, innerV);
+    rectOutline.m_uvs[6] = AZ::Vector2(1.0f, innerV);
+    rectOutline.m_uvs[7] = AZ::Vector2(0.0f, innerV);
+
+    rectOutline.m_image = image;
+    rectOutline.m_color = color;
+
+    DrawOrDeferRectOutline(&rectOutline);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -308,34 +407,53 @@ void CDraw2d::DrawText(const char* textString, AZ::Vector2 position, float point
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZ::Vector2 CDraw2d::GetTextSize(const char* textString, float pointSize, TextOptions* textOptions)
 {
-    TextOptions* actualTextOptions = (textOptions) ? textOptions : &m_defaultTextOptions;
-
-    if (!actualTextOptions->font)
+    AzFramework::FontDrawInterface* fontDrawInterface = nullptr;
+    AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+    if (fontQueryInterface)
+    {
+        TextOptions* actualTextOptions = (textOptions) ? textOptions : &m_defaultTextOptions;
+        AzFramework::FontId fontId = fontQueryInterface->GetFontId(actualTextOptions->fontName);
+        fontDrawInterface = fontQueryInterface->GetFontDrawInterface(fontId);
+    }
+    if (!fontDrawInterface)
     {
         return AZ::Vector2(0.0f, 0.0f);
     }
 
-    STextDrawContext fontContext;
-    fontContext.SetEffect(actualTextOptions->effectIndex);
-    fontContext.SetSizeIn800x600(false);
-    fontContext.SetSize(vector2f(pointSize, pointSize));
+    // Set up draw parameters
+    AzFramework::TextDrawParameters drawParams;
+    drawParams.m_drawViewportId = GetViewportContext()->GetId();
+    drawParams.m_position = AZ::Vector3(0.0f, 0.0f, 1.0f);
+    drawParams.m_effectIndex = 0;
+    drawParams.m_textSizeFactor = pointSize;
+    drawParams.m_scale = AZ::Vector2(1.0f, 1.0f);
+    drawParams.m_lineSpacing = 1.0f;
+    drawParams.m_monospace = false;
+    drawParams.m_depthTest = false;
+    drawParams.m_virtual800x600ScreenSize = false;
+    drawParams.m_scaleWithWindow = false;
+    drawParams.m_multiline = true;
 
-    Vec2 textSize = actualTextOptions->font->GetTextSize(textString, true, fontContext);
-    return AZ::Vector2(textSize.x, textSize.y);
+    AZ::Vector2 textSize = fontDrawInterface->GetTextSize(drawParams, textString);
+    return textSize;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 float CDraw2d::GetViewportWidth() const
 {
-    IRenderer* renderer = gEnv->pRenderer;
-    return (float)renderer->GetOverlayWidth();
+    auto windowContext = GetViewportContext()->GetWindowContext();
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    return viewWidth;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 float CDraw2d::GetViewportHeight() const
 {
-    IRenderer* renderer = gEnv->pRenderer;
-    return (float)renderer->GetOverlayHeight();
+    auto windowContext = GetViewportContext()->GetWindowContext();
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    return viewHeight;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,27 +471,33 @@ const CDraw2d::TextOptions& CDraw2d::GetDefaultTextOptions() const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CDraw2d::RenderDeferredPrimitives()
 {
-    IRenderer* renderer = gEnv->pRenderer;
-
-    // Set up the 2D drawing state
-    renderer->SetCullMode(R_CULL_DISABLE);
-
-    renderer->Set2DMode(renderer->GetOverlayWidth(), renderer->GetOverlayHeight(), m_backupSceneMatrices);
-    renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
-    renderer->SetState(g_defaultBlendState | g_defaultBaseState);
-
     // Draw and delete the deferred primitives
+    AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
     for (auto primIter : m_deferredPrimitives)
     {
-        primIter->Draw();
+        primIter->Draw(m_dynamicDraw, m_shaderData, viewportContext);
         delete primIter;
     }
 
     // clear the list of deferred primitives
     m_deferredPrimitives.clear();
+}
 
-    // Reset the render state
-    renderer->Unset2DMode(m_backupSceneMatrices);
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void CDraw2d::SetDeferPrimitives(bool deferPrimitives)
+{
+    m_deferCalls = deferPrimitives;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CDraw2d::GetDeferPrimitives()
+{
+    return m_deferCalls;
+}
+
+void CDraw2d::SetSortKey(int64_t key)
+{
+    m_dynamicDraw->SetSortKey(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -415,6 +539,30 @@ AZ::Vector2 CDraw2d::Align(AZ::Vector2 position, AZ::Vector2 size,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Data::Instance<AZ::RPI::Image> CDraw2d::LoadTexture(const AZStd::string& pathName)
+{
+    AZStd::string sourceRelativePath(pathName);
+    AZStd::string cacheRelativePath = sourceRelativePath + ".streamingimage";
+
+    // The file may not be in the AssetCatalog at this point if it is still processing or doesn't exist on disk.
+    // Use GenerateAssetIdTEMP instead of GetAssetIdByPath so that it will return a valid AssetId anyways
+    AZ::Data::AssetId streamingImageAssetId;
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+        streamingImageAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP,
+        sourceRelativePath.c_str());
+    streamingImageAssetId.m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
+
+    auto streamingImageAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::RPI::StreamingImageAsset>(streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+    AZ::Data::Instance<AZ::RPI::Image> image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
+    if (!image)
+    {
+        AZ_Error("Draw2d", false, "Failed to find or create an image instance from image asset '%s'", streamingImageAsset.GetHint().c_str());
+    }
+
+    return image;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // PROTECTED MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -435,100 +583,89 @@ void CDraw2d::RotatePointsAboutPivot(AZ::Vector2* points, [[maybe_unused]] int n
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DrawTextInternal(const char* textString, IFFont* font, unsigned int effectIndex,
+void CDraw2d::DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
     AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
-    HAlign horizontalAlignment, VAlign verticalAlignment, int baseState)
+    HAlign horizontalAlignment, VAlign verticalAlignment, [[maybe_unused]] int baseState)
 {
-    if (!font)
-    {
-        return;
-    }
-
-    STextDrawContext fontContext;
-    fontContext.SetEffect(effectIndex);
-    fontContext.SetSizeIn800x600(false);
-    fontContext.SetSize(vector2f(pointSize, pointSize));
-    fontContext.SetColor(ColorF(color.GetR(), color.GetG(), color.GetB(), color.GetA()));
-    fontContext.m_baseState = baseState;
-    fontContext.SetOverrideViewProjMatrices(false);
-
     // FFont.cpp uses the alpha value of the color to decide whether to use the color, if the alpha value is zero
     // (in a ColorB format) then the color set via SetColor is ignored and it usually ends up drawing with an alpha of 1.
     // This is not what we want so in this case do not draw at all.
-    if (!fontContext.IsColorOverridden())
+    if (AZ::IsClose(color.GetA(), 0.0f))
     {
         return;
     }
 
-    AZ::Vector2 alignedPosition;
-    if (horizontalAlignment == HAlign::Left && verticalAlignment == VAlign::Top)
+    // Convert Draw2d alignment to text alignment
+    AzFramework::TextHorizontalAlignment hAlignment = AzFramework::TextHorizontalAlignment::Left;
+    switch (horizontalAlignment)
     {
-        alignedPosition = position;
+    case HAlign::Left:
+        hAlignment = AzFramework::TextHorizontalAlignment::Left;
+        break;
+    case HAlign::Center:
+        hAlignment = AzFramework::TextHorizontalAlignment::Center;
+        break;
+    case HAlign::Right:
+        hAlignment = AzFramework::TextHorizontalAlignment::Right;
+        break;
+    default:
+        AZ_Assert(false, "Attempting to draw text with unsupported horizontal alignment.");
+        break;
     }
-    else
+
+    AzFramework::TextVerticalAlignment vAlignment = AzFramework::TextVerticalAlignment::Top;
+    switch (verticalAlignment)
     {
-        // we align based on the size of the default font effect, because we do not want the
-        // text to move when the font effect is changed
-        unsigned int fontEffectIndex = fontContext.m_fxIdx;
-        fontContext.SetEffect(0);
-        Vec2 textSize = font->GetTextSize(textString, true, fontContext);
-        fontContext.SetEffect(fontEffectIndex);
-
-        alignedPosition = Align(position, AZ::Vector2(textSize.x, textSize.y), horizontalAlignment, verticalAlignment);
+    case VAlign::Top:
+        vAlignment = AzFramework::TextVerticalAlignment::Top;
+        break;
+    case VAlign::Center:
+        vAlignment = AzFramework::TextVerticalAlignment::Center;
+        break;
+    case VAlign::Bottom:
+        vAlignment = AzFramework::TextVerticalAlignment::Bottom;
+        break;
+    default:
+        AZ_Assert(false, "Attempting to draw text with unsupported vertical alignment.");
+        break;
     }
 
-    int flags = 0;
+    // Set up draw parameters for font interface
+    AzFramework::TextDrawParameters drawParams;
+    drawParams.m_drawViewportId = GetViewportContext()->GetId();
+    drawParams.m_position = AZ::Vector3(position.GetX(), position.GetY(), 1.0f);
+    drawParams.m_color = color;
+    drawParams.m_effectIndex = effectIndex;
+    drawParams.m_textSizeFactor = pointSize;
+    drawParams.m_scale = AZ::Vector2(1.0f, 1.0f);
+    drawParams.m_lineSpacing = 1.0f; //!< Spacing between new lines, as a percentage of m_scale.
+    drawParams.m_hAlign = hAlignment;
+    drawParams.m_vAlign = vAlignment;
+    drawParams.m_monospace = false;
+    drawParams.m_depthTest = false;
+    drawParams.m_virtual800x600ScreenSize = false;
+    drawParams.m_scaleWithWindow = false;
+    drawParams.m_multiline = true;
+
     if (rotation != 0.0f)
     {
         // rotate around the position (if aligned to center will rotate about center etc)
         float rotRad = DEG2RAD(rotation);
-        Vec3 pivot(position.GetX(), position.GetY(), 0.0f);
-        Matrix34A moveToPivotSpaceMat = Matrix34A::CreateTranslationMat(-pivot);
-        Matrix34A rotMat = Matrix34A::CreateRotationZ(rotRad);
-        Matrix34A moveFromPivotSpaceMat = Matrix34A::CreateTranslationMat(pivot);
+        AZ::Vector3 pivot(position.GetX(), position.GetY(), 0.0f);
+        AZ::Matrix3x4 moveToPivotSpaceMat = AZ::Matrix3x4::CreateTranslation(-pivot);
+        AZ::Matrix3x4 rotMat = AZ::Matrix3x4::CreateRotationZ(rotRad);
+        AZ::Matrix3x4 moveFromPivotSpaceMat = AZ::Matrix3x4::CreateTranslation(pivot);
 
-        Matrix34A transform = moveFromPivotSpaceMat * rotMat * moveToPivotSpaceMat;
-        fontContext.SetTransform(transform);
-        flags |= eDrawText_UseTransform;
+        drawParams.m_transform = moveFromPivotSpaceMat * rotMat * moveToPivotSpaceMat;
+        drawParams.m_useTransform = true;
     }
 
-    // The font system uses these alignment flags to force text to be in the safe zone
-    // depending on overscan etc
-    if (horizontalAlignment == HAlign::Center)
-    {
-        flags |= eDrawText_Center;
-    }
-    else if (horizontalAlignment == HAlign::Right)
-    {
-        flags |= eDrawText_Right;
-    }
+    DeferredText newText;
+    newText.m_drawParameters = drawParams;
+    newText.m_fontId = fontId;
+    newText.m_string = textString;
 
-    if (verticalAlignment == VAlign::Center)
-    {
-        flags |= eDrawText_CenterV;
-    }
-    else if (verticalAlignment == VAlign::Bottom)
-    {
-        flags |= eDrawText_Bottom;
-    }
-
-    fontContext.SetFlags(flags);
-
-    if (m_deferCalls)
-    {
-        DeferredText* newText = new DeferredText;
-
-        newText->m_fontContext = fontContext;
-        newText->m_font = font;
-        newText->m_position = alignedPosition;
-        newText->m_string = textString;
-
-        m_deferredPrimitives.push_back(newText);
-    }
-    else
-    {
-        font->DrawString(alignedPosition.GetX(), alignedPosition.GetY(), textString, true, fontContext);
-    }
+    DrawOrDeferTextString(&newText);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -542,7 +679,7 @@ void CDraw2d::DrawOrDeferQuad(const DeferredQuad* quad)
     }
     else
     {
-        quad->Draw();
+        quad->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
     }
 }
 
@@ -557,8 +694,50 @@ void CDraw2d::DrawOrDeferLine(const DeferredLine* line)
     }
     else
     {
-        line->Draw();
+        line->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
     }
+}
+
+void CDraw2d::DrawOrDeferTextString(const DeferredText* text)
+{
+    if (m_deferCalls)
+    {
+        DeferredText* newText = new DeferredText;
+        *newText = *text;
+        m_deferredPrimitives.push_back(newText);
+    }
+    else
+    {
+        text->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
+    }
+}
+
+void CDraw2d::DrawOrDeferRectOutline(const DeferredRectOutline* rectOutline)
+{
+    if (m_deferCalls)
+    {
+        DeferredRectOutline* newRectOutline = new DeferredRectOutline;
+        *newRectOutline = *rectOutline;
+        m_deferredPrimitives.push_back(newRectOutline);
+    }
+    else
+    {
+        rectOutline->Draw(m_dynamicDraw, m_shaderData, GetViewportContext());
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RPI::ViewportContextPtr CDraw2d::GetViewportContext() const
+{
+    if (!m_viewportContext)
+    {
+        // Return the default viewport context
+        auto viewContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        return viewContextManager->GetDefaultViewportContext();
+    }
+
+    // Return the user specified viewport context
+    return m_viewportContext;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -566,7 +745,9 @@ void CDraw2d::DrawOrDeferLine(const DeferredLine* line)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DeferredQuad::Draw() const
+void CDraw2d::DeferredQuad::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+    const Draw2dShaderData& shaderData,
+    AZ::RPI::ViewportContextPtr viewportContext) const
 {
     const int32 NUM_VERTS = 6;
 
@@ -585,17 +766,41 @@ void CDraw2d::DeferredQuad::Draw() const
         vertices[i].st = Vec2(m_texCoords[j].GetX(), m_texCoords[j].GetY());
     }
 
-    IRenderer* renderer = gEnv->pRenderer;
-    renderer->SetTexture(m_texId);
+    // Set up per draw SRG
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
-    // Set the render state, can't rely on this being right because font rendering changes it
-    renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
+    // Set texture
+    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    if (!imageView)
+    {
+        // Default to white texture
+        auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+        imageView = image->GetImageView();
+    }
 
-    // set the desired render state
-    renderer->SetState(m_state);
+    if (imageView)
+    {
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+    }
 
-    // This will end up using DrawPrimitive to render the quad
-    renderer->DrawDynVB(vertices, nullptr, NUM_VERTS, 0, prtTriangleList);
+    // Set projection matrix
+    auto windowContext = viewportContext->GetWindowContext();
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewX = viewport.m_minX;
+    const float viewY = viewport.m_minY;
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    const float zf = viewport.m_minZ;
+    const float zn = viewport.m_maxZ;
+    AZ::Matrix4x4 modelViewProjMat;
+    AZ::MakeOrthographicMatrixRH(modelViewProjMat, viewX, viewX + viewWidth, viewY + viewHeight, viewY, zn, zf);
+    drawSrg->SetConstant(shaderData.m_viewProjInputIndex, modelViewProjMat);
+
+    drawSrg->Compile();
+
+    // Add the primitive to the dynamic draw context for drawing
+    dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::TriangleList);
+    dynamicDraw->DrawLinear(vertices, NUM_VERTS, drawSrg);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -603,7 +808,9 @@ void CDraw2d::DeferredQuad::Draw() const
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DeferredLine::Draw() const
+void CDraw2d::DeferredLine::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+    const Draw2dShaderData& shaderData,
+    AZ::RPI::ViewportContextPtr viewportContext) const
 {
     const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
 
@@ -618,25 +825,136 @@ void CDraw2d::DeferredLine::Draw() const
         vertices[i].st = Vec2(m_texCoords[i].GetX(), m_texCoords[i].GetY());
     }
 
-    IRenderer* renderer = gEnv->pRenderer;
-    renderer->SetTexture(m_texId);
+    // Set up per draw SRG
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
 
-    // Set the render state, can't rely on this being right because font rendering changes it
-    renderer->SetColorOp(eCO_MODULATE, eCO_MODULATE, DEF_TEXARG0, DEF_TEXARG0);
-    renderer->SetState(m_state);
+    // Set texture
+    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    if (!imageView)
+    {
+        // Default to white texture
+        auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+        imageView = image->GetImageView();
+    }
 
-    // This will end up using DrawPrimitive to render the quad
-    renderer->DrawDynVB(vertices, nullptr, NUM_VERTS, 0, prtLineList);
+    if (imageView)
+    {
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+    }
+
+    // Set projection matrix
+    auto windowContext = viewportContext->GetWindowContext();
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewX = viewport.m_minX;
+    const float viewY = viewport.m_minY;
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    const float zf = viewport.m_minZ;
+    const float zn = viewport.m_maxZ;
+    AZ::Matrix4x4 modelViewProjMat;
+    AZ::MakeOrthographicMatrixRH(modelViewProjMat, viewX, viewX + viewWidth, viewY + viewHeight, viewY, zn, zf);
+    drawSrg->SetConstant(shaderData.m_viewProjInputIndex, modelViewProjMat);
+
+    drawSrg->Compile();
+
+    // Add the primitive to the dynamic draw context for drawing
+    dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::LineList);
+    dynamicDraw->DrawLinear(vertices, NUM_VERTS, drawSrg);
 }
 
+void CDraw2d::DeferredRectOutline::Draw(AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+    const Draw2dShaderData& shaderData,
+    AZ::RPI::ViewportContextPtr viewportContext) const
+{
+    // Create the 8 verts in the right vertex format for the dynamic draw context
+    SVF_P3F_C4B_T2F vertices[NUM_VERTS];
+    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
+    uint32 packedColor = (m_color.GetA8() << 24) | (m_color.GetR8() << 16) | (m_color.GetG8() << 8) | m_color.GetB8();
+    for (int i = 0; i < NUM_VERTS; ++i)
+    {
+        vertices[i].xyz = Vec3(m_verts2d[i].GetX(), m_verts2d[i].GetY(), z);
+        vertices[i].color.dcolor = packedColor;
+        vertices[i].st = Vec2(m_uvs[i].GetX(), m_uvs[i].GetY());
+    }
+
+    // The indices are for four quads (one for each side of the rect).
+    // The quads are drawn using a triangle list (simpler than a tri-strip)
+    // We draw each quad in the same order that the image component draws quads to
+    // maximize chances of things lining up so each quad is drawn as two triangles:
+    // top-left, top-right, bottom-left / bottom-left, top-right, bottom-right
+    // e.g. for a quad like this:
+    //
+    // 0   1
+    //  |/|
+    // 2   3
+    //
+    // The two triangles would be 0,1,2 and 2,1,3
+    //
+    static constexpr int32 NUM_INDICES = 24;
+    uint16 indices[NUM_INDICES] =
+    {
+        0, 1, 4,    4, 1, 5,    // top quad
+        6, 7, 2,    2, 7, 3,    // bottom quad
+        0, 4, 2,    2, 4, 6,    // left quad
+        5, 1, 7,    1, 7, 3,    // right quad
+    };
+
+    // Set up per draw SRG
+    AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
+
+    // Set texture
+    const AZ::RHI::ImageView* imageView = m_image ? m_image->GetImageView() : nullptr;
+    if (!imageView)
+    {
+        // Default to white texture
+        auto image = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::White);
+        imageView = image->GetImageView();
+    }
+
+    if (imageView)
+    {
+        drawSrg->SetImageView(shaderData.m_imageInputIndex, imageView, 0);
+    }
+
+    // Set projection matrix
+    auto windowContext = viewportContext->GetWindowContext();
+    const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
+    const float viewX = viewport.m_minX;
+    const float viewY = viewport.m_minY;
+    const float viewWidth = viewport.m_maxX - viewport.m_minX;
+    const float viewHeight = viewport.m_maxY - viewport.m_minY;
+    const float zf = viewport.m_minZ;
+    const float zn = viewport.m_maxZ;
+    AZ::Matrix4x4 modelViewProjMat;
+    AZ::MakeOrthographicMatrixRH(modelViewProjMat, viewX, viewX + viewWidth, viewY + viewHeight, viewY, zn, zf);
+    drawSrg->SetConstant(shaderData.m_viewProjInputIndex, modelViewProjMat);
+
+    drawSrg->Compile();
+
+    // Add the primitive to the dynamic draw context for drawing
+    dynamicDraw->SetPrimitiveType(AZ::RHI::PrimitiveTopology::TriangleList);
+    dynamicDraw->DrawIndexed(vertices, NUM_VERTS, indices, NUM_INDICES, AZ::RHI::IndexFormat::Uint16, drawSrg);
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // CDraw2d::DeferredText
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::DeferredText::Draw() const
+void CDraw2d::DeferredText::Draw([[maybe_unused]] AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw,
+    [[maybe_unused]] const Draw2dShaderData& shaderData,
+    [[maybe_unused]] AZ::RPI::ViewportContextPtr viewportContext) const
 {
-    m_font->DrawString(m_position.GetX(), m_position.GetY(), m_string.c_str(), true, m_fontContext);
+    AzFramework::FontDrawInterface* fontDrawInterface = nullptr;
+    AzFramework::FontQueryInterface* fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+    if (fontQueryInterface)
+    {
+        fontDrawInterface = fontQueryInterface->GetFontDrawInterface(m_fontId);
+        if (fontDrawInterface)
+        {
+            fontDrawInterface->DrawScreenAlignedText2d(m_drawParameters, m_string.c_str());
+        }
+    }
 }
 

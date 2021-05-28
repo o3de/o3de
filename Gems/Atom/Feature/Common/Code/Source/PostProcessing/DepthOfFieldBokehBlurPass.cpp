@@ -194,7 +194,6 @@ namespace AZ
             // calculate sampling texcoords.
             // sample 6 points around center pixel.
             // Similarly, sample around it as 12,18,24 points.
-            // Please refer to "https://wiki.agscollab.com/display/ATOM/Pencil+Map" for details.
 
             AZ_Assert(radialDivisionCount >= 1 && radialDivisionCount <= 4, "DepthOfFieldBokehBlurPass : radialDivisionCount is illegal value.");
 

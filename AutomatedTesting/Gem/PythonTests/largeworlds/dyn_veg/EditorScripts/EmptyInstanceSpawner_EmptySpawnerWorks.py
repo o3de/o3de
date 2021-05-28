@@ -18,8 +18,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
 
 
@@ -43,6 +43,7 @@ class TestEmptyInstanceSpawner(EditorTestHelper):
             use_terrain=False,
         )
         general.idle_wait(1.0)
+        general.set_current_view_position(512.0, 480.0, 38.0)
 
         # Grab the UUID that we need for creating an Empty Spawner
         empty_spawner_uuid = azlmbr.math.Uuid_CreateString('{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}', 0)
@@ -99,21 +100,15 @@ class TestEmptyInstanceSpawner(EditorTestHelper):
 
         # This should result in 400 instances, since our box is 16 m x 16 m and by default the veg system plants
         # 20 instances per 16 meters
-        general.idle_wait(2.0)
         num_expected_instances = 20 * 20
-        box = azlmbr.shape.ShapeComponentRequestsBus(bus.Event, 'GetEncompassingAabb', spawner_entity.id)
-        num_found = azlmbr.areasystem.AreaSystemRequestBus(bus.Broadcast, 'GetInstanceCountInAabb', box)
-        property_tree_success = property_tree_success and (num_found == num_expected_instances)
+        property_tree_success = property_tree_success and self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
         self.test_success = self.test_success and property_tree_success
-        self.log(f'Found {num_found} instances -- Expected {num_expected_instances} instances')
         self.log(f'Property Tree spawner type test: {property_tree_success}')
 
         # 6) Validate that the "Allow Empty Assets" setting doesn't affect the EmptyInstanceSpawner
         allow_empty_assets_success = True
         spawner_entity.get_set_test(0, 'Configuration|Allow Empty Assets', False)
-        general.idle_wait(2.0)
-        num_found = azlmbr.areasystem.AreaSystemRequestBus(bus.Broadcast, 'GetInstanceCountInAabb', box)
-        allow_empty_assets_success = allow_empty_assets_success and (num_found == num_expected_instances)
+        allow_empty_assets_success = allow_empty_assets_success and self.wait_for_condition(lambda: dynveg.validate_instance_count_in_entity_shape(spawner_entity.id, num_expected_instances), 5.0)
         self.test_success = self.test_success and allow_empty_assets_success
         self.log(f'Allow Empty Assets test: {allow_empty_assets_success}')
 

@@ -1,6 +1,5 @@
 {
     "@lyengine": {
-        "**/*.pdb": "#include",
-        "Tools/Crashpad/**": "#exclude"
+        "**/*.pdb": "#include"
     }
 }

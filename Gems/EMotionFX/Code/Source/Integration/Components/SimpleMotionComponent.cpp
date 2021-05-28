@@ -43,6 +43,7 @@ namespace EMotionFX
                     ->Field("BlendIn", &Configuration::m_blendInTime)
                     ->Field("BlendOut", &Configuration::m_blendOutTime)
                     ->Field("PlayOnActivation", &Configuration::m_playOnActivation)
+                    ->Field("InPlace", &Configuration::m_inPlace)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -61,7 +62,9 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_blendOutTime, "Blend Out Time", "Determines the blend out time in seconds")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playOnActivation, "Play on active", "Playing animation immediately after activition.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playOnActivation, "Play on active", "Playing animation immediately after activation.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_inPlace, "In-place",
+                            "Plays the animation in-place and removes any positional and rotational changes from root joints.")
                         ;
                 }
             }
@@ -128,6 +131,7 @@ namespace EMotionFX
             , m_blendInTime(0.0f)
             , m_blendOutTime(0.0f)
             , m_playOnActivation(true)
+            , m_inPlace(false)
         {
         }
 
@@ -235,7 +239,7 @@ namespace EMotionFX
 
         void SimpleMotionComponent::PlayMotion()
         {
-            m_motionInstance = PlayMotionInternal(m_actorInstance.get(), m_configuration, /*deleteOnZeroWeight*/true, /*inPlace*/false);
+            m_motionInstance = PlayMotionInternal(m_actorInstance.get(), m_configuration, /*deleteOnZeroWeight*/true);
         }
 
         void SimpleMotionComponent::RemoveMotionInstanceFromActor(EMotionFX::MotionInstance* motionInstance)
@@ -425,7 +429,7 @@ namespace EMotionFX
             return m_configuration.m_blendOutTime;
         }
 
-        EMotionFX::MotionInstance* SimpleMotionComponent::PlayMotionInternal(const EMotionFX::ActorInstance* actorInstance, const SimpleMotionComponent::Configuration& cfg, bool deleteOnZeroWeight, bool inPlace)
+        EMotionFX::MotionInstance* SimpleMotionComponent::PlayMotionInternal(const EMotionFX::ActorInstance* actorInstance, const SimpleMotionComponent::Configuration& cfg, bool deleteOnZeroWeight)
         {
             if (!actorInstance || !cfg.m_motionAsset.IsReady())
             {
@@ -439,6 +443,7 @@ namespace EMotionFX
 
             auto* motionAsset = cfg.m_motionAsset.GetAs<MotionAsset>();
             if (!motionAsset)
+
             {
                 AZ_Error("EMotionFX", motionAsset, "Motion asset is not valid.");
                 return nullptr;
@@ -456,7 +461,7 @@ namespace EMotionFX
             info.mCanOverwrite = false;
             info.mBlendInTime = cfg.m_blendInTime;
             info.mBlendOutTime = cfg.m_blendOutTime;
-            info.mInPlace = inPlace;
+            info.mInPlace = cfg.m_inPlace;
             return actorInstance->GetMotionSystem()->PlayMotion(motionAsset->m_emfxMotion.get(), &info);
         }
 

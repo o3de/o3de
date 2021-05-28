@@ -141,6 +141,7 @@ namespace Physics
         AZ::Data::Asset<AZ::Data::AssetData> m_asset{ AZ::Data::AssetLoadBehavior::PreLoad };
         AZ::Vector3 m_assetScale = AZ::Vector3::CreateOne();
         bool m_useMaterialsFromAsset = true;
+        AZ::u8 m_subdivisionLevel = 4; ///< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
     };
 
     class NativeShapeConfiguration : public ShapeConfiguration

@@ -81,8 +81,9 @@ namespace AZ
             SceneData::SceneNodeSelectionList::Reflect(context);
 
             // Graph objects
-            context->Class<AZ::SceneData::GraphData::AnimationData>()->Version(1);
-            context->Class<AZ::SceneData::GraphData::BlendShapeData>()->Version(1);
+            AZ::SceneData::GraphData::AnimationData::Reflect(context);
+            AZ::SceneData::GraphData::BlendShapeAnimationData::Reflect(context);
+            AZ::SceneData::GraphData::BlendShapeData::Reflect(context);
             AZ::SceneData::GraphData::BoneData::Reflect(context);
             AZ::SceneData::GraphData::MaterialData::Reflect(context);
             AZ::SceneData::GraphData::MeshData::Reflect(context);
@@ -107,6 +108,9 @@ namespace AZ
             AZ::SceneData::GraphData::MeshVertexUVData::Reflect(context);
             AZ::SceneData::GraphData::MeshVertexTangentData::Reflect(context);
             AZ::SceneData::GraphData::MeshVertexBitangentData::Reflect(context);
+            AZ::SceneData::GraphData::AnimationData::Reflect(context);
+            AZ::SceneData::GraphData::BlendShapeAnimationData::Reflect(context);
+            AZ::SceneData::GraphData::BlendShapeData::Reflect(context);
         }
     } // namespace SceneAPI
 } // namespace AZ

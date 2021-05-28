@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Test case ID : C4044456
 # Test Case Title : Verify that when two objects with different materials collide, the friction combine works
-# URL of the test case : https://testrail.agscollab.com/index.php?/cases/view/4044456
+
 
 
 # fmt: off
@@ -100,9 +100,8 @@ def C4044456_Material_FrictionCombine():
 
     imports.init()
 
-
-    from utils import Report
-    from utils import TestHelper as helper
+    from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.utils import TestHelper as helper
 
     import azlmbr
     import azlmbr.legacy.general as general
@@ -221,5 +220,5 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
     imports.init()
 
-    from utils import Report
+    from editor_python_test_tools.utils import Report
     Report.start_test(C4044456_Material_FrictionCombine)

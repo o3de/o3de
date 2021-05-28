@@ -11,6 +11,8 @@
 */
 
 #include <SceneAPI/SceneData/GraphData/AnimationData.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 namespace AZ
 {
@@ -18,6 +20,31 @@ namespace AZ
     {
         namespace GraphData
         {
+            void AnimationData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<AnimationData, SceneAPI::DataTypes::IAnimationData>()
+                        ->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<SceneAPI::DataTypes::IAnimationData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetKeyFrameCount", &SceneAPI::DataTypes::IAnimationData::GetKeyFrameCount)
+                        ->Method("GetKeyFrame", &SceneAPI::DataTypes::IAnimationData::GetKeyFrame)
+                        ->Method("GetTimeStepBetweenFrames", &SceneAPI::DataTypes::IAnimationData::GetTimeStepBetweenFrames);
+
+                    behaviorContext->Class<AnimationData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene");
+                }
+            }
+
             AnimationData::AnimationData()
                 : m_timeStepBetweenFrames(1.0/30.0) // default value
             {
@@ -60,6 +87,32 @@ namespace AZ
                 output.Write("TimeStepBetweenFrames", m_timeStepBetweenFrames);
             }
 
+
+            void BlendShapeAnimationData::Reflect(ReflectContext* context)
+            {
+                SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
+                if (serializeContext)
+                {
+                    serializeContext->Class<BlendShapeAnimationData, SceneAPI::DataTypes::IBlendShapeAnimationData>()
+                        ->Version(1);
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeAnimationData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetBlendShapeName", &SceneAPI::DataTypes::IBlendShapeAnimationData::GetBlendShapeName)
+                        ->Method("GetKeyFrameCount", &SceneAPI::DataTypes::IBlendShapeAnimationData::GetKeyFrameCount)
+                        ->Method("GetKeyFrame", &SceneAPI::DataTypes::IBlendShapeAnimationData::GetKeyFrame)
+                        ->Method("GetTimeStepBetweenFrames", &SceneAPI::DataTypes::IBlendShapeAnimationData::GetTimeStepBetweenFrames);
+
+                    behaviorContext->Class<BlendShapeAnimationData>()
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene");
+                }
+            }
 
             BlendShapeAnimationData::BlendShapeAnimationData()
                 : m_timeStepBetweenFrames(1 / 30.0) // default value

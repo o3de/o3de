@@ -55,7 +55,7 @@ public:
 
     bool UsesMute() const override { return true; }
 
-    static void Reflect(AZ::SerializeContext* serializeContext);
+    static void Reflect(AZ::ReflectContext* context);
 };
 
 #endif // CRYINCLUDE_CRYMOVIE_SOUNDTRACK_H

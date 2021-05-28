@@ -244,7 +244,7 @@
     <bool>false</bool>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="action_ViewNodePalette">

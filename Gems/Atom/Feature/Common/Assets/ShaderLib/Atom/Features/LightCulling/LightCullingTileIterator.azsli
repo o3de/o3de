@@ -25,7 +25,7 @@ class LightCullingTileIterator
         
         float viewz = abs(svPosition.w);
 
-        // https://jira.agscollab.com/browse/ATOM-4198
+        // ATOM-4198
         // Replace GetDimensions() with a cbuffer uint read. Reading it from a cbuffer should be faster
         uint tileWidth, tileHeight;
         tileLightDataTex.GetDimensions(tileWidth, tileHeight);

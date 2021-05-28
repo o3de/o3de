@@ -22,8 +22,8 @@ import azlmbr.math as math
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 newEntityId = None
@@ -34,6 +34,27 @@ class TestGradientMixerNodeConstruction(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="GradientMixerNodeConstruction", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies a Gradient Mixer vegetation setup can be constructed through Landscape Canvas.
+
+        Expected Behavior:
+        Entities contain all required components and component references after creating nodes and setting connections
+        on a Landscape Canvas graph.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Add all necessary nodes to the graph and set connections to form a Gradient Mixer setup
+         4) Verify all components and component references were properly set during graph construction
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         def onEntityCreated(parameters):
             global newEntityId

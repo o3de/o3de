@@ -35,7 +35,7 @@ namespace ScriptCanvas
                     editContext->Class<Comparison>("Comparisons", "Provides mathematical equality operations")->
                         ClassElement(AZ::Edit::ClassElements::EditorData, "")->
                         Attribute(AZ::Edit::Attributes::Category, "Math/Comparisons")->
-                        Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/ScriptCanvas/Libraries/Logic.png")->
+                        Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/Libraries/Logic.png")->
                         Attribute(AZ::Edit::Attributes::CategoryStyle, ".comparison")->
                         Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "ComparisonNodeTitlePalette")
                         ;

@@ -37,7 +37,7 @@ namespace DebugDraw
                     "DebugDraw Line", "Draws debug line on the screen from this entity's location to specified end entity's location.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Debugging")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/DebugDrawLine.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/DebugDrawLine.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->DataElement(0, &EditorDebugDrawLineComponent::m_element, "Line element settings", "Settings for the line element.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDebugDrawLineComponent::OnPropertyUpdate)

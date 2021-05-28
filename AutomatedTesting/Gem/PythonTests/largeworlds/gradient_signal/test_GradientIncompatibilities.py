@@ -19,7 +19,7 @@ import pytest
 pytest.importorskip('ly_test_tools')
 
 import ly_test_tools.environment.file_system as file_system
-import automatedtesting_shared.hydra_test_utils as hydra
+import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
 

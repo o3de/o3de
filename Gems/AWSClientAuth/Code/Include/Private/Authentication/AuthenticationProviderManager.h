@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <Authentication/AuthenticationProviderBus.h>
+#include <Authentication/AuthenticationProviderScriptCanvasBus.h>
 #include <Authentication/AuthenticationProviderInterface.h>
 #include <Authentication/AuthenticationTokens.h>
 
@@ -23,7 +24,8 @@ namespace AWSClientAuth
 {
      //! Manages various authentication provider implementations and implements AuthenticationProvider Request bus.
     class AuthenticationProviderManager
-        : AuthenticationProviderRequestBus::Handler
+        : public AuthenticationProviderRequestBus::Handler
+        , public AuthenticationProviderScriptCanvasRequestBus::Handler
     {
     public:
         AZ_RTTI(AuthenticationProviderManager, "{45813BA5-9A46-4A2A-A923-C79CFBA0E63D}", IAuthenticationProviderRequests);
@@ -43,6 +45,22 @@ namespace AWSClientAuth
         bool IsSignedIn(const ProviderNameEnum& providerName) override;
         bool SignOut(const ProviderNameEnum& providerName) override;
         AuthenticationTokens GetAuthenticationTokens(const ProviderNameEnum& providerName) override;
+        
+        // AuthenticationProviderScriptCanvasRequest interface
+        bool Initialize(const AZStd::vector<AZStd::string>& providerNames, const AZStd::string& settingsRegistryPath) override;
+        void PasswordGrantSingleFactorSignInAsync(
+            const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& password) override;
+        void PasswordGrantMultiFactorSignInAsync(
+            const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& password) override;
+        void PasswordGrantMultiFactorConfirmSignInAsync(
+            const AZStd::string& providerName, const AZStd::string& username, const AZStd::string& confirmationCode) override;
+        void DeviceCodeGrantSignInAsync(const AZStd::string& providerName) override;
+        void DeviceCodeGrantConfirmSignInAsync(const AZStd::string& providerName) override;
+        void RefreshTokensAsync(const AZStd::string& providerName) override;
+        void GetTokensWithRefreshAsync(const AZStd::string& providerName) override;
+        bool IsSignedIn(const AZStd::string& providerName) override;
+        bool SignOut(const AZStd::string& providerName) override;
+        AuthenticationTokens GetAuthenticationTokens(const AZStd::string& providerName) override;
 
         virtual AZStd::unique_ptr<AuthenticationProviderInterface> CreateAuthenticationProviderObject(const ProviderNameEnum& providerName);
         AZStd::map<ProviderNameEnum, AZStd::unique_ptr<AuthenticationProviderInterface>> m_authenticationProvidersMap;
@@ -50,9 +68,9 @@ namespace AWSClientAuth
     private:
         bool IsProviderInitialized(const ProviderNameEnum& providerName);
         void ResetProviders();
+        ProviderNameEnum GetProviderNameEnum(AZStd::string name);
 
         AZStd::shared_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
-
     };
 
 } // namespace AWSClientAuth

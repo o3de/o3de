@@ -43,7 +43,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Application/Application.h>
-#include <AzFramework/API/AtomActiveInterface.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 

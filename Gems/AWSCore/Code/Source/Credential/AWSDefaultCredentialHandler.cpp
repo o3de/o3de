@@ -84,7 +84,7 @@ namespace AWSCore
         {
             AZ_Warning("AWSDefaultCredentialHandler", false, "Failed to get profile name, use default profile name instead");
             SetProfileCredentialsProvider(Aws::MakeShared<Aws::Auth::ProfileConfigFileAWSCredentialsProvider>(
-                AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG, AWSCoreConfiguration::AWSCORE_DEFAULT_PROFILE_NAME));
+                AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG, AWSCoreConfiguration::AWSCoreDefaultProfileName));
         }
         else
         {

@@ -9,13 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_add_bundle_resources(
-    TARGET AssetProcessor
-    FILES
-        ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/xmlfilter.txt
-        ${CMAKE_SOURCE_DIR}/Code/Tools/RC/Config/rc/rc.ini
-)
-
 # Set resources directory for app icons
 target_sources(AssetProcessor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Mac/Images.xcassets)
 set_target_properties(AssetProcessor PROPERTIES

@@ -3155,6 +3155,11 @@ namespace ScriptCanvas
         return {};
     }
 
+    AZStd::optional<size_t> Node::GetEventIndex([[maybe_unused]] AZStd::string eventName) const
+    {
+        return AZStd::nullopt;
+    }
+
     AZStd::vector<SlotId> Node::GetEventSlotIds() const
     {
         return {};
@@ -3402,6 +3407,45 @@ namespace ScriptCanvas
     const Slot* Node::GetIfBranchTrueOutSlot() const
     {
         return GetSlotByName("True");
+    }
+
+    size_t Node::GetOutIndex(const Slot& slot) const
+    {
+        size_t index = 0;
+        auto slotId = slot.GetId();
+
+        if (auto map = GetSlotExecutionMap())
+        {
+            auto& ins = map->GetIns();
+            for (auto& in : ins)
+            {
+                for (auto& out : in.outs)
+                {
+                    // only count branches
+                    if (in.outs.size() > 1)
+                    {
+                        if (out.slotId == slotId)
+                        {
+                            return index;
+                        }
+
+                        ++index;
+                    }
+                }
+            }
+
+            for (auto& latent : map->GetLatents())
+            {
+                if (latent.slotId == slotId)
+                {
+                    return index;
+                }
+
+                ++index;
+            }
+        }
+
+        return std::numeric_limits<size_t>::max();
     }
 
     AZ::Outcome<AZStd::string> Node::GetInternalOutKey(const Slot& slot) const

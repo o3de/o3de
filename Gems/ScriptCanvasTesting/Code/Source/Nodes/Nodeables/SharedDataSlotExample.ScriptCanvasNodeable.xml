@@ -4,7 +4,7 @@
          QualifiedName="ScriptCanvasTesting::Nodeables::InputMethodSharedDataSlotExample"
          PreferredClassName="InputMethodSharedDataSlotExample"
          Base="ScriptCanvas::Nodeable"
-         Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+         Icon="Icons/ScriptCanvas/Placeholder.png"
          Category="Tests"
          GeneratePropertyFriend="True"
          Namespace="None"
@@ -29,7 +29,7 @@
          QualifiedName="ScriptCanvasTesting::Nodeables::BranchMethodSharedDataSlotExample"
          PreferredClassName="BranchMethodSharedDataSlotExample"
          Base="ScriptCanvas::Nodeable"
-         Icon="Editor/Icons/ScriptCanvas/Placeholder.png"
+         Icon="Icons/ScriptCanvas/Placeholder.png"
          Category="Tests"
          GeneratePropertyFriend="True"
          Description="Branch Test">

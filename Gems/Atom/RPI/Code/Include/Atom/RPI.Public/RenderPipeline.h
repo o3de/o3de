@@ -184,6 +184,12 @@ namespace AZ
             //! Get current render mode
             RenderMode GetRenderMode() const;
 
+            //! Get draw filter tag
+            RHI::DrawFilterTag GetDrawFilterTag() const;
+
+            //! Get draw filter mask
+            RHI::DrawFilterMask GetDrawFilterMask() const;
+
         private:
             RenderPipeline() = default;
 
@@ -210,6 +216,8 @@ namespace AZ
             // Find all the persistent views in this pipeline and add them and their DrawListMasks to the output map.
             // if the view already exists in map, its DrawListMask will be combined to the existing one's
             void CollectPersistentViews(AZStd::map<ViewPtr, RHI::DrawListMask>& outViewMasks) const;
+
+            void SetDrawFilterTag(RHI::DrawFilterTag);
 
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
@@ -250,6 +258,13 @@ namespace AZ
 
             // Original settings from RenderPipelineDescriptor, used to revert active render settings to original settings from RenderPipelineDescriptor
             PipelineRenderSettings m_originalRenderSettings;
+
+            // A tag to filter draw items submitted by passes of this render pipeline.
+            // This tag is allocated when it's added to a scene. It's set to invalid when it's removed to the scene.
+            RHI::DrawFilterTag m_drawFilterTag;
+            // A mask to filter draw items submitted by passes of this render pipeline.
+            // This mask is created from the value of m_drawFilterTag.
+            RHI::DrawFilterMask m_drawFilterMask = 0; 
         };
 
     } // namespace RPI

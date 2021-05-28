@@ -59,7 +59,7 @@ namespace AZ
             void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
             void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
-            void SetPcfMethod(LightHandle handle, PcfMethod method);
+            void SetPcfMethod(LightHandle handle, PcfMethod method) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
 
@@ -84,7 +84,7 @@ namespace AZ
             template <typename Functor, typename ParamType>
             void SetShadowSetting(LightHandle handle, Functor&&, ParamType&& param);
 
-            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor;
+            ProjectedShadowFeatureProcessor* m_shadowFeatureProcessor = nullptr;
 
             IndexedDataVector<DiskLightData> m_diskLightData;
             GpuBufferHandler m_lightBufferHandler;

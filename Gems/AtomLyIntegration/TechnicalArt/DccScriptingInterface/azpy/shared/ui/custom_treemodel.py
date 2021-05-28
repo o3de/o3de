@@ -20,7 +20,10 @@ import os
 # from io import StringIO  # for handling unicode strings
 
 #  azpy
-from azpy import initialize_logger
+import azpy
+from azpy.env_bool import env_bool
+from azpy.constants import ENVAR_DCCSI_GDEBUG
+from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # 3rd Party
 from unipath import Path
@@ -28,22 +31,22 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 # -------------------------------------------------------------------------
-#  global space debug flag
-_G_DEBUG = os.getenv('DCCSI_GDEBUG', False)
-
-#  global space debug flag
-_DCCSI_DEV_MODE = os.getenv('DCCSI_DEV_MODE', False)
+#  global space
+# To Do: update to dynaconf dynamic env and settings?
+_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULE_PATH = Path(__file__)
 
-_ORG_TAG = 'Amazon_Lumberyard'
-_APP_TAG = 'DCCsi'
-_TOOL_TAG = 'azpy.shared.ui.custom_treemodel'
-_TYPE_TAG = 'test'
+_MODULENAME = 'azpy.shared.ui.custom_treemodel'
 
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = _TOOL_TAG
+_log_level = int(20)
+if _G_DEBUG:
+    _log_level = int(10)
+_LOGGER = azpy.initialize_logger(_MODULENAME,
+                                 log_to_file=False,
+                                 default_log_level=_log_level)
+_LOGGER.debug('Starting:: {}.'.format({_MODULENAME}))
 
 _UI_FILE = Path(_MODULE_PATH.parent, 'resources', 'example.ui')
 # -------------------------------------------------------------------------
@@ -75,15 +78,15 @@ class CustomFileTreeModel(QtCore.QAbstractItemModel):
         # TODO: need to make sure we are getting path objects
 
         # build the root node
-        self._root_node = self.buildRootNode('root', None, self._rootFilePath)
+        self._root_node = self.build_rootnode('root', None, self._root_filepath)
 
-        # master selection
-        self._masterSelection = masterSelection
+        # prime selection
+        self._prime_selection = prime_selection
 
-        # build the master selection node
-        self._masterNode = self.buildMasterNode('master', None, self._masterSelection, self._rootNode.path())
+        # build the prime selection node
+        self._primenode = self.build_primenode('prime', None, self._prime_selection, self._rootnode.path())
 
         # want to store off a couple lists in the model, for retreival later
-        self._nodeList = None
-        self._depNodesList = None
+        self._nodelist = None
+        self._dep_nodelist = None
 

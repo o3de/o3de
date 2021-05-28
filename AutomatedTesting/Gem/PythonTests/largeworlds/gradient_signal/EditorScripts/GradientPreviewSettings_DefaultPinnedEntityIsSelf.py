@@ -18,8 +18,8 @@ import azlmbr.entity as entity
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
-import automatedtesting_shared.hydra_editor_utils as hydra
-from automatedtesting_shared.editor_test_helper import EditorTestHelper
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 
 class Scoped:
@@ -44,7 +44,21 @@ class TestGradientPreviewSettings(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        Verify if the current entity is set to the pin preview to shape entity by default for several components.
+        This test verifies default values for the pinned entity for Gradient Preview settings.
+
+        Expected Behavior:
+        Pinned entity is self for all gradient generator/modifiers.
+
+        Test Steps:
+         1) Create a new level
+         2) Create a new entity in the level
+         3) Add each Gradient Generator component to an entity, and verify the Pin Preview to Shape property is set to
+         self
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
         :return: None
         """

@@ -15,7 +15,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
-#include <ImageProcessing/PixelFormats.h>
+#include <Atom/ImageProcessing/PixelFormats.h>
 
 namespace AZ
 {
@@ -42,7 +42,7 @@ namespace GradientSignal
         AZ::u32 m_imageWidth = 0;
         AZ::u32 m_imageHeight = 0;
         AZ::u8 m_bytesPerPixel = 0;
-        ImageProcessing::EPixelFormat m_imageFormat = ImageProcessing::EPixelFormat::ePixelFormat_Unknown;
+        ImageProcessingAtom::EPixelFormat m_imageFormat = ImageProcessingAtom::EPixelFormat::ePixelFormat_Unknown;
         AZStd::vector<AZ::u8> m_imageData;
     };
 

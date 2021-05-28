@@ -42,7 +42,9 @@ namespace UnitTest
         AZStd::string testFilePath = TestDataFolder + AZStd::string("HelloWorld.txt");
         AZ::Outcome<AZStd::string, AZStd::string> outcome = AZ::RHI::LoadFileString(testFilePath.c_str());
         EXPECT_TRUE(outcome.IsSuccess());
-        EXPECT_EQ(AZStd::string("Hello World!"), outcome.GetValue());
+        auto& str = outcome.GetValue();
+        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        EXPECT_EQ(AZStd::string("Hello World!\n"), str);
     }
 
     TEST_F(UtilsTests, LoadFileBytes)
@@ -50,13 +52,17 @@ namespace UnitTest
         AZStd::string testFilePath = TestDataFolder + AZStd::string("HelloWorld.txt");
         AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> outcome = AZ::RHI::LoadFileBytes(testFilePath.c_str());
         EXPECT_TRUE(outcome.IsSuccess());
-        AZStd::string expectedText = "Hello World!";
-        EXPECT_EQ(AZStd::vector<uint8_t>(expectedText.begin(), expectedText.end()), outcome.GetValue());
+        AZStd::string expectedText = "Hello World!\n";
+        auto& str = outcome.GetValue();
+        str.erase(AZStd::remove(str.begin(), str.end(), '\r'));
+        EXPECT_EQ(AZStd::vector<uint8_t>(expectedText.begin(), expectedText.end()), str);
     }
 
     TEST_F(UtilsTests, LoadFileString_Error_DoesNotExist)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto outcome = AZ::RHI::LoadFileString("FileDoesNotExist");
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         EXPECT_FALSE(outcome.IsSuccess());
         EXPECT_TRUE(outcome.GetError().find("Could not open file") != AZStd::string::npos);
         EXPECT_TRUE(outcome.GetError().find("FileDoesNotExist") != AZStd::string::npos);
@@ -64,7 +70,9 @@ namespace UnitTest
 
     TEST_F(UtilsTests, LoadFileBytes_Error_DoesNotExist)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto outcome = AZ::RHI::LoadFileBytes("FileDoesNotExist");
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         EXPECT_FALSE(outcome.IsSuccess());
         EXPECT_TRUE(outcome.GetError().find("Could not open file") != AZStd::string::npos);
         EXPECT_TRUE(outcome.GetError().find("FileDoesNotExist") != AZStd::string::npos);

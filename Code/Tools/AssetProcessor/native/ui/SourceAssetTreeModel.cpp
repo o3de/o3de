@@ -14,6 +14,7 @@
 #include "SourceAssetTreeItemData.h"
 
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
 
 
@@ -62,19 +63,8 @@ namespace AssetProcessor
         }
 
 
-        AZStd::string fullPath = source.m_sourceName;
+        auto fullPath = AZ::IO::Path(scanFolder.m_scanFolder) / source.m_sourceName;
 
-        // The source assets should look like they do on disk.
-        // If the scan folder has an output prefix, strip it from the source file's path in the database, before
-        // the scan folder path is prepended to the source file.
-        if (!scanFolder.m_outputPrefix.empty())
-        {
-            AZStd::string prefixPath = scanFolder.m_outputPrefix;
-            AzFramework::StringFunc::Append(prefixPath, AZ_CORRECT_DATABASE_SEPARATOR);
-            AzFramework::StringFunc::Replace(fullPath, prefixPath.c_str(), "", false, true);
-        }
-
-        AzFramework::StringFunc::AssetDatabasePath::Join(scanFolder.m_scanFolder.c_str(), fullPath.c_str(), fullPath, true, false);
 
         // It's common for Open 3D Engine game projects and scan folders to be in a subfolder
         // of the engine install. To improve readability of the source files, strip out
@@ -85,7 +75,7 @@ namespace AssetProcessor
         }
         if (m_assetRootSet)
         {
-            AzFramework::StringFunc::Replace(fullPath, m_assetRoot.absolutePath().toUtf8(), "");
+            AzFramework::StringFunc::Replace(fullPath.Native(), m_assetRoot.absolutePath().toUtf8(), "");
         }
 
 

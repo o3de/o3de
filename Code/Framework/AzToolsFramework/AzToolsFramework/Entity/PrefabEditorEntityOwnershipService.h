@@ -170,6 +170,8 @@ namespace AzToolsFramework
         void StartPlayInEditor() override;
         void StopPlayInEditor() override;
 
+        void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
+
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
@@ -186,15 +188,22 @@ namespace AzToolsFramework
         PlayInEditorData m_playInEditorData;
 
         //////////////////////////////////////////////////////////////////////////
-        // PrefabSystemComponentInterface interface implementation
+        // PrefabEditorEntityOwnershipInterface implementation
         Prefab::InstanceOptionalReference CreatePrefab(
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
             AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
 
+        Prefab::InstanceOptionalReference InstantiatePrefab(
+            AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder) override;
+
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
+
+        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetPlayInEditorAssetData() override;
         //////////////////////////////////////////////////////////////////////////
 
         void OnEntityRemoved(AZ::EntityId entityId);
+
+        void LoadReferencedAssets(AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets);
 
         OnEntitiesAddedCallback m_entitiesAddedCallback;
         OnEntitiesRemovedCallback m_entitiesRemovedCallback;

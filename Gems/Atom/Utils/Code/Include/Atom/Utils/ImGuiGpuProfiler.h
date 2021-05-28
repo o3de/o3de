@@ -249,7 +249,7 @@ namespace AZ
             bool m_showTimeline = false;
 
             // Controls how often the timestamp data is refreshed
-            RefreshType m_refreshType = RefreshType::OncePerSecond;
+            RefreshType m_refreshType = RefreshType::Realtime;
             AZStd::sys_time_t m_lastUpdateTimeMicroSecond;
 
         };

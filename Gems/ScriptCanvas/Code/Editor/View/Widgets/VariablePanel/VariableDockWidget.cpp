@@ -812,7 +812,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Datum datum(varType, ScriptCanvas::Datum::eOriginality::Original);
 
         AZ::Outcome<ScriptCanvas::VariableId, AZStd::string> outcome = AZ::Failure(AZStd::string());
-        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, datum);
+        ScriptCanvas::GraphVariableManagerRequestBus::EventResult(outcome, m_scriptCanvasId, &ScriptCanvas::GraphVariableManagerRequests::AddVariable, variableName, datum, false);
 
         AZ_Warning("VariablePanel", outcome.IsSuccess(), "Could not create new variable: %s", outcome.GetError().c_str());
         GeneralRequestBus::Broadcast(&GeneralRequests::PostUndoPoint, m_scriptCanvasId);

@@ -16,7 +16,6 @@
 #include "UiEditorDLLBus.h"
 #include "UiAnimViewSequenceManager.h"
 #include "UiAnimViewUndo.h"
-#include "Material/MaterialManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
 #include <LyShine/Bus/UiCanvasBus.h>

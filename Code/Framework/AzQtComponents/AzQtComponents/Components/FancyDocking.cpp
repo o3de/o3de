@@ -159,6 +159,8 @@ namespace AzQtComponents
         // Timer for updating our hovered drop zone opacity
         QObject::connect(m_dropZoneHoverFadeInTimer, &QTimer::timeout, this, &FancyDocking::onDropZoneHoverFadeInUpdate);
         m_dropZoneHoverFadeInTimer->setInterval(g_FancyDockingConstants.dropZoneHoverFadeUpdateIntervalMS);
+        QIcon dragIcon = QIcon(QStringLiteral(":/Cursors/Grabbing.svg"));
+        m_dragCursor = QCursor(dragIcon.pixmap(16), 5, 2);
     }
 
     FancyDocking::~FancyDocking()
@@ -1884,6 +1886,8 @@ namespace AzQtComponents
             return;
         }
 
+        QApplication::setOverrideCursor(m_dragCursor);
+
         QPoint relativePressPos = pressPos;
 
         // If we are dragging a floating window, we need to grab a reference to its
@@ -2298,6 +2302,12 @@ namespace AzQtComponents
             OptimizedSetParent(dock, mainWindow);
             mainWindow->addDockWidget(Qt::LeftDockWidgetArea, dock);
             dock->show();
+
+            // Make sure we listen for events on the dock widget being put into a floating dock window
+            // because this might be called programmatically, so the dock widget might have never been
+            // parented to our m_mainWindow initially, so it won't already have an event filter,
+            // which will prevent the docking functionality from working.
+            dock->installEventFilter(this);
         }
     }
 
@@ -3559,6 +3569,11 @@ namespace AzQtComponents
      */
     void FancyDocking::clearDraggingState()
     {
+        if (QApplication::overrideCursor())
+        {
+            QApplication::restoreOverrideCursor();
+        }
+
         m_ghostWidget->hide();
 
         // Release the mouse and keyboard from our main window since we grab them when we start dragging

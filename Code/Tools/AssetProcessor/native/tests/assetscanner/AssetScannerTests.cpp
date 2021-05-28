@@ -74,10 +74,10 @@ namespace AssetProcessor
         m_platformConfig.reset(new AssetProcessor::PlatformConfiguration());
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         m_platformConfig.get()->PopulatePlatformsForScanFolder(platforms);
-        //                                                      PATH                     DisplayName  PortKey outputfolder  root recurse  platforms
-        m_platformConfig.get()->AddScanFolder(ScanFolderInfo(tempPath.absolutePath(),         "",        "ap1",    "",      true, false, platforms));
-        m_platformConfig.get()->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "",        "ap2",    "",      false, true,  platforms));
-        m_platformConfig.get()->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "",        "ap3",    "",      false, true,  platforms));
+        //                                                      PATH                     DisplayName  PortKey root recurse  platforms
+        m_platformConfig.get()->AddScanFolder(ScanFolderInfo(tempPath.absolutePath(), "", "ap1", true, false, platforms));
+        m_platformConfig.get()->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder1"), "", "ap2", false, true, platforms));
+        m_platformConfig.get()->AddScanFolder(ScanFolderInfo(tempPath.filePath("subfolder2"), "", "ap3", false, true, platforms));
 
         m_assetScanner.reset(new AssetScanner_Test(m_platformConfig.get()));
 
