@@ -413,7 +413,7 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::ContextMenu_DetachPrefab(AZ::EntityId containerEntity)
         {
             PrefabOperationResult detachPrefabResult =
-                s_prefabPublicInterface->DetachPrefabFromParent(containerEntity);
+                s_prefabPublicInterface->DetachPrefab(containerEntity);
 
             if (!detachPrefabResult.IsSuccess())
             {

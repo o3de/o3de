@@ -48,7 +48,6 @@ namespace AzToolsFramework
         using EntityAliasOptionalReference = AZStd::optional<AZStd::reference_wrapper<EntityAlias>>;
         using InstanceOptionalReference = AZStd::optional<AZStd::reference_wrapper<Instance>>;
         using InstanceOptionalConstReference = AZStd::optional<AZStd::reference_wrapper<const Instance>>;
-        using InstancePtrOptionalReference = AZStd::optional<AZStd::reference_wrapper<AZStd::unique_ptr<Instance>>>;
 
         using InstanceSet = AZStd::unordered_set<Instance*>;
         using InstanceSetConstReference = AZStd::optional<AZStd::reference_wrapper<const InstanceSet>>;

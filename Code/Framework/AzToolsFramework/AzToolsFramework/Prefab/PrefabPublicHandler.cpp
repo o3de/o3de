@@ -990,7 +990,7 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        PrefabOperationResult PrefabPublicHandler::DetachPrefabFromParent(const AZ::EntityId& entityId)
+        PrefabOperationResult PrefabPublicHandler::DetachPrefab(const AZ::EntityId& entityId)
         {
             if (!entityId.IsValid())
             {

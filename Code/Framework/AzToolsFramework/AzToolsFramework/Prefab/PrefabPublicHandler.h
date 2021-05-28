@@ -64,7 +64,7 @@ namespace AzToolsFramework
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
-            PrefabOperationResult DetachPrefabFromParent(const AZ::EntityId& entityId) override;
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& entityId) override;
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
