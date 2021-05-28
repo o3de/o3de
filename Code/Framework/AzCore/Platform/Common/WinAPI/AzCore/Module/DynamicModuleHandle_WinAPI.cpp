@@ -26,7 +26,7 @@ namespace AZ
     public:
         AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0)
 
-            DynamicModuleHandleWindows(const char* fullFileName)
+        DynamicModuleHandleWindows(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
         {
@@ -52,6 +52,7 @@ namespace AZ
                     if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
                     {
                         m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                        return;
                     }
                 }
             }
@@ -74,6 +75,14 @@ namespace AZ
                             m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
                         }
                     }
+                }
+            }
+            else
+            {
+                auto absPathOpt = AZ::Utils::ConvertToAbsolutePath(m_fileName);
+                if (absPathOpt.has_value())
+                {
+                    m_fileName.assign(absPathOpt.value().c_str(), absPathOpt.value().size());
                 }
             }
         }
