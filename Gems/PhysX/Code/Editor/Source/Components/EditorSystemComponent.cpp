@@ -31,7 +31,7 @@
 namespace PhysX
 {
     constexpr const char* DefaultAssetFilename = "SurfaceTypeMaterialLibrary";
-    constexpr const char* TemplateAssetFilename = "Physx/TemplateMaterialLibrary";
+    constexpr const char* TemplateAssetFilename = "PhysX/TemplateMaterialLibrary";
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> GetMaterialLibraryTemplate()
     {
@@ -51,7 +51,7 @@ namespace PhysX
 
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, false);
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, false /*autoRegisterIfNotFound*/);
 
             if (assetId.IsValid())
             {
@@ -71,17 +71,16 @@ namespace PhysX
             AZ::Data::AssetId assetId;
 
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true);
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true /*autoRegisterIfNotFound*/);
 
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
                 AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
-            if (Physics::MaterialLibraryAsset* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
+            if (auto* newMaterialLibraryData = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
-                auto templateLibraryOpt = GetMaterialLibraryTemplate();
-                if (templateLibraryOpt)
+                if (auto templateLibraryOpt = GetMaterialLibraryTemplate())
                 {
-                    if (const Physics::MaterialLibraryAsset* templateMaterialLibData = azrtti_cast<Physics::MaterialLibraryAsset*>(templateLibraryOpt->GetData()))
+                    if (const auto* templateMaterialLibData = azrtti_cast<Physics::MaterialLibraryAsset*>(templateLibraryOpt->GetData()))
                     {
                         templateLibraryOpt->QueueLoad();
                         templateLibraryOpt->BlockUntilLoadComplete();
@@ -94,7 +93,7 @@ namespace PhysX
 
                         // check it out in the source control system
                         AzToolsFramework::SourceControlCommandBus::Broadcast(
-                            &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, fullTargetFilePath.c_str(), true,
+                            &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, fullTargetFilePath.c_str(), true /*allowMultiCheckout*/,
                             [](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& /*info*/) {});
 
                         // Save the material library asset into a file
@@ -236,7 +235,8 @@ namespace PhysX
             AzFramework::StringFunc::Path::ReplaceExtension(relativePath, assetExtension.c_str());
 
             // Try to find an already existing material library
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(resultAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, relativePath.c_str(), azrtti_typeid<Physics::MaterialLibraryAsset>(), false);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(resultAssetId,
+                &AZ::Data::AssetCatalogRequests::GetAssetIdByPath, relativePath.c_str(), azrtti_typeid<Physics::MaterialLibraryAsset>(), false /*autoRegisterIfNotFound*/);
 
             if (!resultAssetId.IsValid())
             {
