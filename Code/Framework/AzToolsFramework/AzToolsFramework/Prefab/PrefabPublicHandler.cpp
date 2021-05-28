@@ -189,24 +189,7 @@ namespace AzToolsFramework
                     if (nestedInstanceLinkPatchesMap.contains(nestedInstance.get()))
                     {
                         previousPatch = AZStd::move(nestedInstanceLinkPatchesMap[nestedInstance.get()]);
-                        rapidjson::StringBuffer buffer;
-                        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                        previousPatch.Accept(writer);
-                        QString previousPatchString(buffer.GetString());
-
-                        for (AZ::Entity* entity : entities)
-                        {
-                            AZ::EntityId entityId = entity->GetId();
-                            AZStd::string oldEntityAlias = oldEntityAliases[entityId];
-                            EntityAliasOptionalReference newEntityAlias = instanceToCreate->get().GetEntityAlias(entityId);
-                            AZ_Assert(
-                                newEntityAlias.has_value(),
-                                "Could not fetch entity alias for entity with id '%llu' during prefab creation.",
-                                static_cast<AZ::u64>(entityId));
-                            ReplaceOldAliases(previousPatchString, oldEntityAlias, newEntityAlias->get());
-                        }
-
-                        previousPatch.Parse(previousPatchString.toUtf8().constData());
+                        UpdateLinkPatchForNewParent(previousPatch, oldEntityAliases, instanceToCreate->get());
                     }
 
                     // These link creations shouldn't be undone because that would put the template in a non-usable state if a user
@@ -1015,17 +998,20 @@ namespace AzToolsFramework
 
                 ScopedUndoBatch undoBatch("Detach Prefab");
 
-                InstanceOptionalReference parentInstance = owningInstance->get().GetParentInstance();
-                const auto parentTemplateId = parentInstance->get().GetTemplateId();
+                InstanceOptionalReference getParentInstanceResult = owningInstance->get().GetParentInstance();
+                AZ_Assert(getParentInstanceResult.has_value(), "Can't get parent Instance from Instance of given container entity.");
+
+                auto& parentInstance = getParentInstanceResult->get();
+                const auto parentTemplateId = parentInstance.GetTemplateId();
 
                 {
-                    auto instancePtr = parentInstance->get().DetachNestedInstance(owningInstance->get().GetInstanceAlias());
+                    auto instancePtr = parentInstance.DetachNestedInstance(owningInstance->get().GetInstanceAlias());
                     AZ_Assert(instancePtr, "Can't detach selected Instance from its parent Instance.");
 
                     RemoveLink(instancePtr, parentTemplateId, undoBatch.GetUndoBatch());
 
                     Prefab::PrefabDom instanceDomBefore;
-                    m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance->get());
+                    m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance);
 
                     AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
                     oldEntityAliases.emplace(entityId, instancePtr->GetEntityAlias(entityId)->get());
@@ -1039,7 +1025,7 @@ namespace AzToolsFramework
                     delete editorPrefabComponent;
                     containerEntity.Activate();
 
-                    const bool containerEntityAdded = parentInstance->get().AddEntity(containerEntity);
+                    const bool containerEntityAdded = parentInstance.AddEntity(containerEntity);
                     AZ_Assert(containerEntityAdded, "Add target Instance's container entity to its parent Instance failed.");
 
                     EntityIdList entityIds;
@@ -1056,14 +1042,14 @@ namespace AzToolsFramework
                         [&](AZStd::unique_ptr<AZ::Entity> entityPtr)
                     {
                         auto& entity = *entityPtr.release();
-                        const bool entityAdded = parentInstance->get().AddEntity(entity);
+                        const bool entityAdded = parentInstance.AddEntity(entity);
                         AZ_Assert(entityAdded, "Add target Instance's entity to its parent Instance failed.");
 
                         entityIds.emplace_back(entity.GetId());
                     });
 
                     Prefab::PrefabDom instanceDomAfter;
-                    m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, parentInstance->get());
+                    m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomAfter, parentInstance);
 
                     PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance detachment");
                     command->Capture(instanceDomBefore, instanceDomAfter, parentTemplateId);
@@ -1074,7 +1060,7 @@ namespace AzToolsFramework
                     }
 
                     const auto instanceTemplateId = instancePtr->GetTemplateId();
-                    auto parentContainerEntityId = parentInstance->get().GetContainerEntityId();
+                    auto parentContainerEntityId = parentInstance.GetContainerEntityId();
                     instancePtr->GetNestedInstances(
                         [&](AZStd::unique_ptr<Instance>& nestedInstancePtr)
                     {
@@ -1089,8 +1075,8 @@ namespace AzToolsFramework
                         linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
 
                         RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
-                        PrefabDomUtils::PrintPrefabDomValue("linkPatchesCopy", linkPatchesCopy);
 
+                        UpdateLinkPatchForNewParent(linkPatchesCopy, oldEntityAliases, parentInstance);
                         //update aliases
                         rapidjson::StringBuffer buffer;
                         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -1100,7 +1086,7 @@ namespace AzToolsFramework
                         for (AZ::EntityId entityId : entityIds)
                         {
                             AZStd::string oldEntityAlias = oldEntityAliases[entityId];
-                            EntityAliasOptionalReference newEntityAlias = parentInstance->get().GetEntityAlias(entityId);
+                            EntityAliasOptionalReference newEntityAlias = parentInstance.GetEntityAlias(entityId);
                             AZ_Assert(
                                 newEntityAlias.has_value(),
                                 "Could not fetch entity alias for entity with id '%llu' during prefab creation.",
@@ -1385,5 +1371,30 @@ namespace AzToolsFramework
 
             stringToReplace.replace(oldAliasPathRef, newAliasPathRef);
         }
+
+        void PrefabPublicHandler::UpdateLinkPatchForNewParent(
+            PrefabDom& linkPatch,
+            const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
+            Instance& newParent)
+        {
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            linkPatch.Accept(writer);
+            QString previousPatchString(buffer.GetString());
+
+            for (const auto& [entityId, oldEntityAlias] : oldEntityAliases)
+            {
+                EntityAliasOptionalReference newEntityAlias = newParent.GetEntityAlias(entityId);
+                AZ_Assert(
+                    newEntityAlias.has_value(),
+                    "Could not fetch entity alias for entity with id '%llu' during prefab creation.",
+                    static_cast<AZ::u64>(entityId));
+
+                ReplaceOldAliases(previousPatchString, oldEntityAlias, newEntityAlias->get());
+            }
+
+            linkPatch.Parse(previousPatchString.toUtf8().constData());
+        }
+
     } // namespace Prefab
 } // namespace AzToolsFramework
