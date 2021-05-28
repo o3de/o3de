@@ -12,5 +12,6 @@
           "type": "Compute"
         }
       ]
-    }
+    },
+    "DisabledRHIBackends": ["metal"]
 }
