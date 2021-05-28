@@ -21,6 +21,8 @@
 #include <Atom/Utils/PpmFile.h>
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Jobs/JobCompletion.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -59,14 +61,35 @@ namespace AZ
             AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer.begin());
 
             // convert bgra to rgba by swapping channels
-            int numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
+            const int numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
             if (readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
             {
-                int numPixels = buffer.size() / numChannels;
-                for (int pixel = 0; pixel < numPixels; ++pixel)
+                AZ::JobCompletion jobCompletion;
+                const int numThreads = 8;
+                const int numPixelsPerThread = buffer.size() / numChannels / numThreads;
+                for (int i = 0; i < numThreads; ++i)
                 {
-                    AZStd::swap(buffer[pixel * numChannels], buffer[pixel * numChannels + 2]);
+                    int startPixel = i * numPixelsPerThread;
+
+                    AZ::Job* job = AZ::CreateJobFunction(
+                        [&, startPixel, numPixelsPerThread]()
+                        {
+                            for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
+                            {
+                                if (startPixel * numChannels + numChannels < buffer.size())
+                                {
+                                    AZStd::swap(
+                                        buffer[(startPixel + pixelOffset) * numChannels],
+                                        buffer[(startPixel + pixelOffset) * numChannels + 2]
+                                    );
+                                }
+                            }
+                        }, true, nullptr);
+
+                    job->SetDependent(&jobCompletion);
+                    job->Start();
                 }
+                jobCompletion.StartAndWaitForCompletion();
             }
 
             using namespace OIIO;
