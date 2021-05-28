@@ -1209,6 +1209,8 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             addSeed=level_pak,
             assetListFile=helper["asset_info_file_request"],
         )
+
+        # Run Asset Processor GUI
         result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
