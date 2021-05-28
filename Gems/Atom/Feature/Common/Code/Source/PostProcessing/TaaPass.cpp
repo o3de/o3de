@@ -13,11 +13,11 @@
 #include <PostProcessing/TaaPass.h>
 
 #include <AzCore/Math/Random.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 
 namespace AZ::Render
@@ -39,6 +39,10 @@ namespace AZ::Render
         {
             numJitterPositions = taaPassData->m_numJitterPositions;
         }
+
+        // The coprimes 2, 3 are commonly used for halton sequences because they have an even distribution even for
+        // few samples. With larger primes you need to offset by some amount between each prime to have the same
+        // effect. We could allow this to be configurable in the future.
         SetupSubPixelOffsets(2, 3, numJitterPositions);
     }
 
@@ -173,7 +177,8 @@ namespace AZ::Render
         HaltonSequence<2> sequence = HaltonSequence<2>({haltonX, haltonY});
         sequence.FillHaltonSequence(m_subPixelOffsets.begin(), m_subPixelOffsets.end());
 
-        // Adjust to the -1.0 to 1.0 range.
+        // Adjust to the -1.0 to 1.0 range. This is done because the view needs offsets in clip
+        // space and is one less calculation that would need to be done in FrameBeginInternal()
         AZStd::for_each(m_subPixelOffsets.begin(), m_subPixelOffsets.end(),
             [](Offset& offset)
             {

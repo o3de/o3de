@@ -90,7 +90,7 @@ namespace AZ
             }
 
             //! Returns the FrameAttachment for a given AttachmentId, or nullptr if not found.
-            FrameAttachment* FindAttachment(const AttachmentId& attachmentId) const
+            const FrameAttachment* FindAttachment(const AttachmentId& attachmentId) const
             {
                 return m_attachmentDatabase.FindAttachment(attachmentId);
             }

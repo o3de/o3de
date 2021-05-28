@@ -68,7 +68,8 @@ void MainCS(
     // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
     color = max(0.0, color);
 
-    // Tonemap color
+    // Tonemap color so that the blend with history is in perceptual space. Without this, bright values can dominate
+    // against the history and increase aliasing.
     float luminance = GetLuminance(color);
     color = color / (1.0 + luminance);
 
