@@ -200,6 +200,7 @@ public:
     {
         return {};
     }
+    float DeviceScalingFactor() override { return 1.0f; }
 
     // AzToolsFramework::ViewportFreezeRequestBus
     bool IsViewportInputFrozen() override;

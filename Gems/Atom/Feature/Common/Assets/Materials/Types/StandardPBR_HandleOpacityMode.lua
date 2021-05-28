@@ -60,10 +60,13 @@ function Process(context)
 
     if(opacityMode == OpacityMode_Blended) then
         ConfigureAlphaBlending(context:GetShader(ForwardPassIndex))
+        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("transparent")
     elseif(opacityMode == OpacityMode_TintedTransparent) then
         ConfigureDualSourceBlending(context:GetShader(ForwardPassIndex))
+        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("transparent")
     else
         ResetAlphaBlending(context:GetShader(ForwardPassIndex))
+        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("") -- reset to default draw list
     end
 end
 
