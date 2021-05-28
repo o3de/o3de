@@ -43,6 +43,8 @@ namespace O3DE::ProjectManager
         void ValidateProjectPath();
 
     private:
+        QString GetDefaultProjectPath();
+
         FormLineEditWidget* m_projectName;
         FormBrowseEditWidget* m_projectPath;
         QButtonGroup* m_projectTemplateButtonGroup;

@@ -15,6 +15,7 @@
 #include <FormLineEditWidget.h>
 #include <FormBrowseEditWidget.h>
 #include <PathValidator.h>
+#include <EngineInfo.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -49,12 +50,14 @@ namespace O3DE::ProjectManager
         vLayout->setContentsMargins(0,0,0,0);
         vLayout->setAlignment(Qt::AlignTop);
         {
-            m_projectName = new FormLineEditWidget(tr("Project name"), tr("New Project"), this);
+            const QString defaultName{ "NewProject" };
+            const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
+
+            m_projectName = new FormLineEditWidget(tr("Project name"), defaultName, this);
             connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &NewProjectSettingsScreen::ValidateProjectPath);
             vLayout->addWidget(m_projectName);
 
-            m_projectPath =
-                new FormBrowseEditWidget(tr("Project Location"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
+            m_projectPath = new FormBrowseEditWidget(tr("Project Location"), defaultPath, this);
             m_projectPath->lineEdit()->setReadOnly(true);
             connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &NewProjectSettingsScreen::ValidateProjectPath);
             vLayout->addWidget(m_projectPath);
@@ -110,6 +113,21 @@ namespace O3DE::ProjectManager
         this->setLayout(hLayout);
     }
 
+    QString NewProjectSettingsScreen::GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
+    }
+
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::NewProjectSettings;
@@ -129,7 +147,7 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
-        projectInfo.m_path        = QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + projectInfo.m_projectName);
+        projectInfo.m_path = m_projectPath->lineEdit()->text();
         return projectInfo;
     }
 
@@ -155,20 +173,20 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QDir path(QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + m_projectName->lineEdit()->text()));
+            QDir path(m_projectPath->lineEdit()->text());
 
             // path validation with multiple locals and platforms is ... difficult. Prevent the usual suspects.
-            QRegExp illegalCharacterRegex("[<>:\"|?*]");
+            QRegExp illegalCharacterRegex("[^A-Za-z0-9_]");
             const int result = illegalCharacterRegex.indexIn(m_projectName->lineEdit()->text());
             if (result > -1)
             {
                 projectNameIsValid = false;
-                m_projectName->setErrorLabelText(tr("Project names must not contain any of the following characters <>:\"|?*"));
+                m_projectName->setErrorLabelText(tr("Project names must only contain alphanumeric characters or the '_' character"));
             }
             else if (path.exists() && !path.isEmpty())
             {
                 projectNameIsValid = false;
-                m_projectName->setErrorLabelText(tr("A folder with this name already exists in this location.  Please choose a different name or location."));
+                m_projectName->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different name or location."));
             }
         }
 
