@@ -185,8 +185,8 @@ namespace O3DE::ProjectManager
             }
             else if (path.exists() && !path.isEmpty())
             {
-                projectNameIsValid = false;
-                m_projectName->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different name or location."));
+                projectPathIsValid = false;
+                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different name or location."));
             }
         }
 
