@@ -21,6 +21,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <Blast/BlastActor.h>
@@ -265,16 +266,29 @@ namespace Blast
         auto solverPtr = Nv::Blast::ExtStressSolver::create(
             const_cast<NvBlastFamily&>(*m_family->GetTkFamily()->getFamilyLL()), stressSolverSettings);
         m_solver = physx::unique_ptr<Nv::Blast::ExtStressSolver>(solverPtr);
-        Physics::MaterialFromAssetConfiguration material;
-        AZ::Interface<AzPhysics::SystemInterface>::Get()->GetDefaultMaterialLibrary()->GetDataForMaterialId(
-            m_physicsMaterialId, material);
-        m_solver->setAllNodesInfoFromLL(material.m_configuration.m_density);
+
+        AZStd::shared_ptr<Physics::Material> physicsMaterial;
+        Physics::PhysicsMaterialRequestBus::BroadcastResult(
+            physicsMaterial,
+            &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
+            m_physicsMaterialId);
+        if (!physicsMaterial)
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Material Id %s was not found, using default material instead.",
+                m_physicsMaterialId.GetUuid().ToString<AZStd::string>().c_str());
+
+            Physics::PhysicsMaterialRequestBus::BroadcastResult(
+                physicsMaterial,
+                &Physics::PhysicsMaterialRequestBus::Events::GetGenericDefaultMaterial);
+            AZ_Assert(physicsMaterial, "BlastFamilyComponent: Invalid default physics material");
+        }
+        m_solver->setAllNodesInfoFromLL(physicsMaterial->GetDensity());
 
         // Create damage and actor render managers
         m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
         m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
             AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
-            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), transform.GetScale());
+            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
 
         // Spawn the family
         m_family->Spawn(transform);

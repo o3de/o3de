@@ -32,6 +32,10 @@
                     "Name": "LightListRemapped",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "InputLinearDepth",
+                    "SlotType": "Input"
+                },
                 // Input/Outputs...
                 {
                     "Name": "DepthStencil",
@@ -89,6 +93,13 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "LightListRemapped"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputLinearDepth"
                             }
                         },
                         // Input/Outputs...

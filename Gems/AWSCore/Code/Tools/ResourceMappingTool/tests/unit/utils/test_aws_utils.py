@@ -37,13 +37,12 @@ class TestAWSUtils(TestCase):
         .build()
 
     def setUp(self) -> None:
-        client_patcher: patch = patch("boto3.client")
-        self.addCleanup(client_patcher.stop)
-        self._mock_client: MagicMock = client_patcher.start()
-
         session_patcher: patch = patch("boto3.session.Session")
         self.addCleanup(session_patcher.stop)
         self._mock_session: MagicMock = session_patcher.start()
+        self._mock_client: MagicMock = self._mock_session.return_value.client
+
+        aws_utils.setup_default_session("default")
 
     def test_get_default_account_id_return_expected_account_id(self) -> None:
         mocked_sts_client: MagicMock = self._mock_client.return_value

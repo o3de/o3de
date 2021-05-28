@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         painter->setRenderHint(QPainter::Antialiasing);
 
         QRect fullRect, itemRect, contentRect;
-        CalcRects(options, modelIndex, fullRect, itemRect, contentRect);
+        CalcRects(options, fullRect, itemRect, contentRect);
 
         QFont standardFont(options.font);
         standardFont.setPixelSize(s_fontSize);
@@ -99,7 +99,7 @@ namespace O3DE::ProjectManager
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 4, contentRect.height());
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 3, contentRect.height());
         const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
 
         painter->setFont(standardFont);
@@ -134,12 +134,10 @@ namespace O3DE::ProjectManager
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
 
-    void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, const QModelIndex& modelIndex, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const
+    void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const
     {
-        const bool isFirst = modelIndex.row() == 0;
-
         outFullRect = QRect(option.rect);
-        outItemRect = QRect(outFullRect.adjusted(s_itemMargins.left(), isFirst ? s_itemMargins.top() * 2 : s_itemMargins.top(), -s_itemMargins.right(), -s_itemMargins.bottom()));
+        outItemRect = QRect(outFullRect.adjusted(s_itemMargins.left(), s_itemMargins.top(), -s_itemMargins.right(), -s_itemMargins.bottom()));
         outContentRect = QRect(outItemRect.adjusted(s_contentMargins.left(), s_contentMargins.top(), -s_contentMargins.right(), -s_contentMargins.bottom()));
     }
 
@@ -194,12 +192,12 @@ namespace O3DE::ProjectManager
             painter->setBrush(m_buttonEnabledColor);
             painter->setPen(m_buttonEnabledColor);
 
-            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius, 1);
+            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
             buttonText = "Added";
         }
         else
         {
-            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius + 1, 1);
+            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius, 1);
             buttonText = "Get";
         }
 
