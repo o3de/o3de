@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/array.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -145,11 +146,23 @@ namespace AZ::Render
         }
 
         // Initialize our shader
-        auto viewportSize = viewportContext->GetViewportSize();
+        AZ::Vector2 viewportSize;
+        {
+            AzFramework::WindowSize viewportWindowSize = viewportContext->GetViewportSize();
+            viewportSize = AZ::Vector2{aznumeric_cast<float>(viewportWindowSize.m_width), aznumeric_cast<float>(viewportWindowSize.m_height)};
+        }
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-        drawSrg->SetConstant(m_viewportSizeIndex, AZ::Vector2(aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)));
+        drawSrg->SetConstant(m_viewportSizeIndex,viewportSize);
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
+
+        // Scale icons by screen DPI
+        float scalingFactor = 1.0f;
+        {
+            using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+            ViewportRequestBus::EventResult(
+                scalingFactor, drawParameters.m_viewport, &ViewportRequestBus::Events::DeviceScalingFactor);
+        }
 
         AZ::Vector3 screenPosition;
         if (drawParameters.m_positionSpace == CoordinateSpace::ScreenSpace)
@@ -158,9 +171,11 @@ namespace AZ::Render
         }
         else if (drawParameters.m_positionSpace == CoordinateSpace::WorldSpace)
         {
-            using ViewportRequestBus = AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
-            AzFramework::ScreenPoint position;
-            ViewportRequestBus::EventResult(position, drawParameters.m_viewport, &ViewportRequestBus::Events::ViewportWorldToScreen, drawParameters.m_position);
+            // Calculate our screen space position using the viewport size
+            // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
+            AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
+                drawParameters.m_position, viewportContext->GetCameraViewMatrix(), viewportContext->GetCameraProjectionMatrix(),
+                viewportSize);
             screenPosition.SetX(aznumeric_cast<float>(position.m_x));
             screenPosition.SetY(aznumeric_cast<float>(position.m_y));
         }
@@ -179,8 +194,8 @@ namespace AZ::Render
         {
             Vertex vertex;
             screenPosition.StoreToFloat3(vertex.m_position);
-            vertex.m_position[0] += offsetX * drawParameters.m_size.GetX();
-            vertex.m_position[1] += offsetY * drawParameters.m_size.GetY();
+            vertex.m_position[0] += offsetX * drawParameters.m_size.GetX() * scalingFactor;
+            vertex.m_position[1] += offsetY * drawParameters.m_size.GetY() * scalingFactor;
             vertex.m_color = drawParameters.m_color.ToU32();
             vertex.m_uv[0] = u;
             vertex.m_uv[1] = v;
@@ -197,8 +212,15 @@ namespace AZ::Render
         dynamicDraw->DrawIndexed(&vertices, vertices.size(), &indices, indices.size(), RHI::IndexFormat::Uint16, drawSrg);
     }
 
-    QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& sourceRelativePath) const
+    QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& path) const
     {
+        // If we get an absolute path, just use it.
+        QFileInfo pathInfo(path);
+        if (pathInfo.isAbsolute())
+        {
+            return path;
+        }
+
         bool found = false;
         AZStd::vector<AZStd::string> scanFolders;
         AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
@@ -212,9 +234,9 @@ namespace AZ::Render
         for (const auto& folder : scanFolders)
         {
             QDir dir(folder.data());
-            if (dir.exists(sourceRelativePath))
+            if (dir.exists(path))
             {
-                return dir.absoluteFilePath(sourceRelativePath);
+                return dir.absoluteFilePath(path);
             }
         }
 
@@ -256,10 +278,6 @@ namespace AZ::Render
     AzToolsFramework::EditorViewportIconDisplayInterface::IconId AtomViewportDisplayIconsSystemComponent::GetOrLoadIconForPath(
         AZStd::string_view path)
     {
-        AZ_Error(
-            "AtomViewportDisplayIconsSystemComponent", AzFramework::StringFunc::Path::IsRelative(path.data()),
-            "GetOrLoadIconForPath assumes that it will always be given a relative path, but got '%s'", path.data());
-
         // Check our cache to see if the image is already loaded
         auto existingEntryIt = AZStd::find_if(m_iconData.begin(), m_iconData.end(), [&path](const auto& iconData)
         {

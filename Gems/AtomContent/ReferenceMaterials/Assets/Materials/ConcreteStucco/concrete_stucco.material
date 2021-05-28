@@ -19,7 +19,8 @@
         },
         "parallax": {
             "factor": 0.0010101000079885126,
-            "textureMap": "Materials/ConcreteStucco/concrete_stucco_height.jpg"
+            "textureMap": "Materials/ConcreteStucco/concrete_stucco_height.jpg",
+            "useTexture": false
         },
         "specularF0": {
             "factor": 0.5050504803657532
