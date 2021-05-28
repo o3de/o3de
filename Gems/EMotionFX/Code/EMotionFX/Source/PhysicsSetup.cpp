@@ -198,13 +198,13 @@ namespace EMotionFX
         return m_config.m_simulatedObjectColliderConfig;
     }
 
-    AZ::Outcome<Physics::ShapeConfigurationPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId)
+    AZ::Outcome<AzPhysics::ShapeColliderPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId)
     {
         AZStd::string outResult;
         return CreateColliderByType(typeId, outResult);
     }
 
-    AZ::Outcome<Physics::ShapeConfigurationPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId, AZStd::string& outResult)
+    AZ::Outcome<AzPhysics::ShapeColliderPair> PhysicsSetup::CreateColliderByType(const AZ::TypeId& typeId, AZStd::string& outResult)
     {
         if (typeId.IsNull())
         {
@@ -227,14 +227,16 @@ namespace EMotionFX
             return AZ::Failure();
         }
 
-        Physics::ShapeConfiguration* shapeConfig = reinterpret_cast<Physics::ShapeConfiguration*>(classData->m_factory->Create(classData->m_name));
+        AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig(
+            reinterpret_cast<Physics::ShapeConfiguration*>(classData->m_factory->Create(classData->m_name)));
+
         if (!shapeConfig)
         {
             outResult = AZStd::string::format("Could not create collider with type '%s'.", typeId.ToString<AZStd::string>().c_str());
             return AZ::Failure();
         }
         
-        Physics::ShapeConfigurationPair pair(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
+        AzPhysics::ShapeColliderPair pair(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
         if (pair.first->m_materialSelection.GetMaterialIdsAssignedToSlots().empty())
         {
             pair.first->m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
@@ -242,7 +244,7 @@ namespace EMotionFX
         return AZ::Success(pair);
     }
 
-    void PhysicsSetup::AutoSizeCollider(Physics::ShapeConfigurationPair& collider, const Actor* actor, const Node* joint)
+    void PhysicsSetup::AutoSizeCollider(AzPhysics::ShapeColliderPair& collider, const Actor* actor, const Node* joint)
     {
         if (!collider.second || !actor || !joint)
         {
@@ -417,7 +419,7 @@ namespace EMotionFX
                         nodeConfig = &hitDetectionConfig.m_nodes.back();
                     }
 
-                    Physics::ShapeConfigurationList& collisionShapes = nodeConfig->m_shapes;
+                    AzPhysics::ShapeColliderPairList& collisionShapes = nodeConfig->m_shapes;
 
                     Physics::ColliderConfiguration* colliderConfig = aznew Physics::ColliderConfiguration();
                     colliderConfig->m_position = position;

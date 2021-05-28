@@ -14,6 +14,7 @@
 #include "CrySystem_precompiled.h"
 #include "System.h"
 #include <AZCrySystemInitLogSink.h>
+#include "DebugCallStack.h"
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -86,6 +87,16 @@ CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& startupPar
     {
         startupParams.pUserCallback->OnSystemConnect(pSystem);
     }
+
+#if defined(WIN32)
+    // Environment Variable to signal we don't want to override our exception handler - our crash report system will set this
+    auto envVar = AZ::Environment::FindVariable<bool>("ExceptionHandlerIsSet");
+    const bool handlerIsSet = (envVar && *envVar);
+    if (!handlerIsSet)
+    {
+        ((DebugCallStack*)IDebugCallStack::instance())->installErrorHandler(pSystem);
+    }
+#endif
 
     bool retVal = false;
     {

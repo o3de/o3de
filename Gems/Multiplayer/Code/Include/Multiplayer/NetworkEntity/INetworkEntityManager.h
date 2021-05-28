@@ -78,6 +78,12 @@ namespace Multiplayer
             const AZ::Transform& transform
         ) = 0;
 
+        //! Configures new networked entity
+        //! @param netEntity the entity to setup
+        //! @param prefabEntryId the name of the spawnable the entity originated from
+        //! @param netEntityRole the net role the entity should be setup for
+        virtual void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) = 0;
+
         //! Returns an ConstEntityPtr for the provided entityId.
         //! @param netEntityId the netEntityId to get an ConstEntityPtr for
         //! @return the requested ConstEntityPtr

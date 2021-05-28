@@ -50,7 +50,11 @@ namespace AzFramework
         //! Called from any type of 'handle event' function.
         ClickOutcome DetectClick(ClickEvent clickEvent, const ScreenVector& cursorDelta);
 
+        //! Override the default double click interval.
+        //! @note Default is 400ms - system default.
         void SetDoubleClickInterval(float doubleClickInterval);
+        //! Override the dead zone before a 'move' outcome will be triggered.
+        void SetDeadZone(float deadZone);
 
     private:
         //! Internal state of ClickDetector based on incoming events.
@@ -71,5 +75,10 @@ namespace AzFramework
     inline void ClickDetector::SetDoubleClickInterval(const float doubleClickInterval)
     {
         m_doubleClickInterval = doubleClickInterval;
+    }
+
+    inline void ClickDetector::SetDeadZone(const float deadZone)
+    {
+        m_deadZone = deadZone;
     }
 } // namespace AzFramework

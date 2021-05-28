@@ -143,6 +143,17 @@ namespace ScriptCanvas
 
         };
 
+        struct Spawning : public LibraryDefinition
+        {
+            AZ_RTTI(Spawning, "{41E910AE-FBD2-41AD-9173-5105141F0466}", LibraryDefinition);
+
+            static void Reflect(AZ::ReflectContext*);
+            static void InitNodeRegistry(NodeRegistry& nodeRegistry);
+            static AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors();
+
+            ~Spawning() override = default;
+        };
+
         struct String : public LibraryDefinition
         {
             AZ_RTTI(String, "{5B700838-21A2-4579-9303-F4A4822AFEF4}", LibraryDefinition);

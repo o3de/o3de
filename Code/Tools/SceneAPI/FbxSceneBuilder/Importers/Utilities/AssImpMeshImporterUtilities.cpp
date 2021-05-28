@@ -13,6 +13,7 @@
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <SceneAPI/FbxSceneBuilder/FbxSceneSystem.h>
 #include <SceneAPI/FbxSceneBuilder/ImportContexts/AssImpImportContexts.h>
@@ -24,7 +25,7 @@
 
 namespace AZ::SceneAPI::FbxSceneBuilder
 {
-    bool BuildSceneMeshFromAssImpMesh(aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
+    bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const FbxSceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
         const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc)
     {
         AZStd::unordered_map<int, int> assImpMatIndexToLYIndex;
@@ -34,17 +35,18 @@ namespace AZ::SceneAPI::FbxSceneBuilder
         {
             return false;
         }
+        auto newMesh = makeMeshFunc();
 
+        newMesh->SetUnitSizeInMeters(sceneSystem.GetUnitSizeInMeters());
+        newMesh->SetOriginalUnitSizeInMeters(sceneSystem.GetOriginalUnitSizeInMeters());
+
+        // AssImp separates meshes that have multiple materials.
+        // This code re-combines them to match previous FBX SDK behavior,
+        // so they can be separated by engine code instead.
+        int vertOffset = 0;
         for (int m = 0; m < currentNode->mNumMeshes; ++m)
         {
-            auto newMesh = makeMeshFunc();
-
-            newMesh->SetUnitSizeInMeters(sceneSystem.GetUnitSizeInMeters());
-            newMesh->SetOriginalUnitSizeInMeters(sceneSystem.GetOriginalUnitSizeInMeters());
-
-            newMesh->SetSdkMeshIndex(m);
-
-            aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
+            const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
 
             // Lumberyard materials are created in order based on mesh references in the scene
             if (assImpMatIndexToLYIndex.find(mesh->mMaterialIndex) == assImpMatIndexToLYIndex.end())
@@ -59,7 +61,7 @@ namespace AZ::SceneAPI::FbxSceneBuilder
                 sceneSystem.SwapVec3ForUpAxis(vertex);
                 sceneSystem.ConvertUnit(vertex);
                 newMesh->AddPosition(vertex);
-                newMesh->SetVertexIndexToControlPointIndexMap(vertIdx, vertIdx);
+                newMesh->SetVertexIndexToControlPointIndexMap(vertIdx + vertOffset, vertIdx + vertOffset);
 
                 if (mesh->HasNormals())
                 {
@@ -86,14 +88,15 @@ namespace AZ::SceneAPI::FbxSceneBuilder
                 }
                 for (int idx = 0; idx < face.mNumIndices; ++idx)
                 {
-                    meshFace.vertexIndex[idx] = face.mIndices[idx];
+                    meshFace.vertexIndex[idx] = face.mIndices[idx] + vertOffset;
                 }
 
                 newMesh->AddFace(meshFace, assImpMatIndexToLYIndex[mesh->mMaterialIndex]);
             }
+            vertOffset += mesh->mNumVertices;
 
-            meshes.push_back(newMesh);
         }
+        meshes.push_back(newMesh);
 
         return true;
     }
@@ -126,5 +129,14 @@ namespace AZ::SceneAPI::FbxSceneBuilder
         const SceneData::GraphData::MeshData* const parentMeshData =
             azrtti_cast<const SceneData::GraphData::MeshData* const>(parentData);
         return AZ::Success(parentMeshData);
+    }
+
+    uint64_t GetVertexCountForAllMeshesOnNode(const aiNode& node, const aiScene& scene)
+    {
+        return AZStd::accumulate(node.mMeshes, node.mMeshes + node.mNumMeshes, uint64_t{ 0u },
+            [&scene](auto runningTotal, unsigned int meshIndex)
+            {
+                return runningTotal + scene.mMeshes[meshIndex]->mNumVertices;
+            });
     }
 }

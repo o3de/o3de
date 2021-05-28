@@ -13,6 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <ProjectInfo.h>
 #endif
 
 namespace Ui
@@ -29,6 +30,11 @@ namespace O3DE::ProjectManager
         explicit ProjectSettingsScreen(QWidget* parent = nullptr);
         ~ProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
+
+        ProjectInfo GetProjectInfo();
+        void SetProjectInfo();
+
+        bool Validate();
 
     protected slots:
         void HandleGemsButton();

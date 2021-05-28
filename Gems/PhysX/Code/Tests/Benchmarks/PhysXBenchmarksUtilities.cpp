@@ -13,6 +13,7 @@
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
 
 #include <algorithm>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -34,9 +35,9 @@ namespace PhysX::Benchmarks
 
             AzPhysics::RigidBodyConfiguration rigidBodyConfig;
             rigidBodyConfig.m_ccdEnabled = enableCCD;
-            Physics::ColliderConfiguration rigidBodyColliderConfig;
+            auto rigidBodyColliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
 
-            Physics::BoxShapeConfiguration defaultShapeConfiguration = Physics::BoxShapeConfiguration(AZ::Vector3::CreateOne());
+            auto defaultShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne());
             for (int i = 0; i < numRigidBodies; i++)
             {
                 //call the optional function pointers, otherwise assign a default
@@ -57,16 +58,16 @@ namespace PhysX::Benchmarks
                     rigidBodyConfig.m_orientation = (*genSpawnOriFuncPtr)(i);
                 }
 
-                Physics::ShapeConfiguration* shapeConfig = nullptr;
+                AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = nullptr;
                 if (genColliderFuncPtr != nullptr)
                 {
                     shapeConfig = (*genColliderFuncPtr)(i);
                 }
                 if (shapeConfig == nullptr)
                 {
-                    shapeConfig = &defaultShapeConfiguration;
+                    shapeConfig = defaultShapeConfiguration;
                 }
-                rigidBodyConfig.m_colliderAndShapeData = AZStd::make_pair(&rigidBodyColliderConfig, shapeConfig);
+                rigidBodyConfig.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(rigidBodyColliderConfig, shapeConfig);
 
                 AzPhysics::SimulatedBodyHandle simBodyHandle = scene->AddSimulatedBody(&rigidBodyConfig);
                 rigidBodies.push_back(simBodyHandle);

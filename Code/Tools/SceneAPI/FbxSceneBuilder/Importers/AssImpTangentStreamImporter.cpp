@@ -11,6 +11,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpTangentStreamImporter.h>
@@ -44,7 +45,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpTangentStreamImporter, SceneCore::LoadingComponent>()->Version(2); // LYN-2576
+                    serializeContext->Class<AssImpTangentStreamImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-3250
                 }
             }
 
@@ -55,62 +56,79 @@ namespace AZ
                 {
                     return Events::ProcessingResult::Ignored;
                 }
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
-
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
+                
+                const auto meshHasTangentsAndBitangents = [&scene](const unsigned int meshIndex)
                 {
-                    return meshDataResult.GetError();
-                }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
+                    return scene->mMeshes[meshIndex]->HasTangentsAndBitangents();
+                };
 
-                size_t vertexCount = parentMeshData->GetVertexCount();
-
-                int sdkMeshIndex = parentMeshData->GetSdkMeshIndex();
-                if (sdkMeshIndex < 0 || sdkMeshIndex >= currentNode->mNumMeshes)
-                {
-                    AZ_Error(Utilities::ErrorWindow, false,
-                        "Tried to construct tangent stream attribute for invalid or non-mesh parent data, mesh index is invalid");
-                    return Events::ProcessingResult::Failure;
-                }
-
-                aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-
-                if (!mesh->HasTangentsAndBitangents())
+                // If there are no tangents on any meshes, there's nothing to import in this function.
+                const bool anyMeshHasTangentsAndBitangents = AZStd::any_of(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, meshHasTangentsAndBitangents);
+                if (!anyMeshHasTangentsAndBitangents)
                 {
                     return Events::ProcessingResult::Ignored;
                 }
 
+                // AssImp nodes with multiple meshes on them occur when AssImp split a mesh on material.
+                // This logic recombines those meshes to minimize the changes needed to replace FBX SDK with AssImp, FBX SDK did not separate meshes,
+                // and the engine has code to do this later.
+                const bool allMeshesHaveTangentsAndBitangents = AZStd::all_of(currentNode->mMeshes, currentNode->mMeshes + currentNode->mNumMeshes, meshHasTangentsAndBitangents);
+                if (!allMeshesHaveTangentsAndBitangents)
+                {
+                    AZ_Error(
+                        Utilities::ErrorWindow, false,
+                        "Node with name %s has meshes with and without tangents. "
+                            "Placeholder incorrect tangents will be generated to allow the data to process, "
+                            "but the source art needs to be fixed to correct this. Either apply tangents to all meshes on this node, "
+                            "or remove all tangents from all meshes on this node.",
+                        currentNode->mName.C_Str());
+                }
+
+                const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
+
                 AZStd::shared_ptr<SceneData::GraphData::MeshVertexTangentData> tangentStream =
                     AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexTangentData>();
-
                 // AssImp only has one tangentStream per mesh.
                 tangentStream->SetTangentSetIndex(0);
 
                 tangentStream->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
                 tangentStream->ReserveContainerSpace(vertexCount);
-
-                for (int v = 0; v < mesh->mNumVertices; ++v)
+                for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                 {
-                    // Vector4's constructor that takes in a vector3 sets w to 1.0f automatically.
-                    const Vector4 tangent(AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mTangents[v]));
-                    tangentStream->AppendTangent(tangent);
+                    const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
+
+                    for (int v = 0; v < mesh->mNumVertices; ++v)
+                    {
+                        if (!mesh->HasTangentsAndBitangents())
+                        {
+                            // This node has mixed meshes with and without tangents.
+                            // An error was already thrown above. Output stub tangents so
+                            // the mesh can still be output in some form, even if the data isn't correct.
+                            // The tangent count needs to match the vertex count on the associated mesh node.
+                            tangentStream->AppendTangent(Vector4(0.f, 1.f, 0.f, 1.f));
+                        }
+                        else
+                        {
+                            const Vector4 tangent(
+                                AssImpSDKWrapper::AssImpTypeConverter::ToVector3(mesh->mTangents[v]));
+                            tangentStream->AppendTangent(tangent);
+                        }
+                    }
                 }
 
-                AZStd::string nodeName(AZStd::string::format("%s", m_defaultNodeName));
                 Containers::SceneGraph::NodeIndex newIndex =
-                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, nodeName.c_str());
+                    context.m_scene.GetGraph().AddChild(context.m_currentGraphPosition, m_defaultNodeName);
 
                 Events::ProcessingResult tangentResults;
-                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, tangentStream, newIndex, nodeName.c_str());
+                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, tangentStream, newIndex, m_defaultNodeName);
                 tangentResults = Events::Process(dataPopulated);
 
                 if (tangentResults != Events::ProcessingResult::Failure)
                 {
                     tangentResults = AddAttributeDataNodeWithContexts(dataPopulated);
                 }
-
                 return tangentResults;
             }
 

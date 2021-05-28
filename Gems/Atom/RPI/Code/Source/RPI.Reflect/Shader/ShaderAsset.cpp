@@ -32,6 +32,25 @@ namespace AZ
 
         const ShaderVariantStableId ShaderAsset::RootShaderVariantStableId{ 0 };
 
+        uint32_t ShaderAsset::MakeAssetProductSubId(uint32_t rhiApiUniqueIndex, uint32_t subProductType)
+        {
+            static constexpr uint32_t RhiIndexBitPosition = 30;
+            static constexpr uint32_t RhiIndexNumBits = 32 - RhiIndexBitPosition;
+            static constexpr uint32_t RhiIndexMaxValue = (1 << RhiIndexNumBits) - 1;
+
+            static constexpr uint32_t SubProductTypeBitPosition = 0;
+            static constexpr uint32_t SubProductTypeNumBits = RhiIndexBitPosition - SubProductTypeBitPosition;
+            static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
+
+            static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
+            AZ_Assert(rhiApiUniqueIndex <= RhiIndexMaxValue, "Invalid rhiApiUniqueIndex [%u]", rhiApiUniqueIndex);
+            AZ_Assert(subProductType <= SubProductTypeMaxValue, "Invalid subProductType [%u]", subProductType);
+
+            const uint32_t assetProductSubId = (rhiApiUniqueIndex << RhiIndexBitPosition) |
+                (subProductType << SubProductTypeBitPosition);
+            return assetProductSubId;
+        }
+
         void ShaderAsset::ShaderApiDataContainer::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -428,116 +447,6 @@ namespace AZ
             return Data::AssetHandler::LoadResult::Error;
         }
 
-        ///////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // Deprecated System
-        //////////////////////////////////////////////////////////////////////////
-
-        const char* ToString(ShaderStageType shaderStageType)
-        {
-            switch (shaderStageType)
-            {
-            case ShaderStageType::Vertex: return "Vertex";
-            case ShaderStageType::Geometry: return "Geometry";
-            case ShaderStageType::TessellationControl: return "TessellationControl";
-            case ShaderStageType::TessellationEvaluation: return "TessellationEvaluation";
-            case ShaderStageType::Fragment: return "Fragment";
-            case ShaderStageType::Compute: return "Compute";
-            case ShaderStageType::RayTracing: return "RayTracing";
-            default:
-                AZ_Assert(false, "Unhandled type");
-                return "<Unknown>";
-            }
-        }
-
-        void ReflectShaderStageType(ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Enum<ShaderStageType>()
-                    ->Value(ToString(ShaderStageType::Vertex), ShaderStageType::Vertex)
-                    ->Value(ToString(ShaderStageType::Geometry), ShaderStageType::Geometry)
-                    ->Value(ToString(ShaderStageType::TessellationControl), ShaderStageType::TessellationControl)
-                    ->Value(ToString(ShaderStageType::TessellationEvaluation), ShaderStageType::TessellationEvaluation)
-                    ->Value(ToString(ShaderStageType::Fragment), ShaderStageType::Fragment)
-                    ->Value(ToString(ShaderStageType::Compute), ShaderStageType::Compute)
-                    ->Value(ToString(ShaderStageType::RayTracing), ShaderStageType::RayTracing)
-                    ;
-            }
-        }
-
-        ShaderAssetSubId ShaderStageToSubId(ShaderStageType stageType)
-        {
-            switch (stageType)
-            {
-            case RPI::ShaderStageType::Vertex:
-                return ShaderAssetSubId::AzVertexShader;
-            case RPI::ShaderStageType::Geometry:
-                return ShaderAssetSubId::AzGeometryShader;
-            case RPI::ShaderStageType::TessellationControl:
-                return ShaderAssetSubId::AzTessellationControlShader;
-            case RPI::ShaderStageType::TessellationEvaluation:
-                return ShaderAssetSubId::AzTessellationEvaluationShader;
-            case RPI::ShaderStageType::Fragment:
-                return ShaderAssetSubId::AzFragmentShader;
-            case RPI::ShaderStageType::Compute:
-                return ShaderAssetSubId::AzComputeShader;
-            case RPI::ShaderStageType::RayTracing:
-                return ShaderAssetSubId::AzRayTracingShader;
-            default:
-                AZ_Assert(false, "Trying to get a ShaderAssetSubId from an unknown ShaderStageType. Defaulting to a vertex shader.");
-                break;
-            }
-
-            return ShaderAssetSubId::AzVertexShader;
-        }
-        void ShaderStageDescriptor::Reflect(ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ShaderStageDescriptor>()
-                    ->Version(1)
-                    ->Field("m_stageType", &ShaderStageDescriptor::m_stageType)
-                    ->Field("m_byteCode", &ShaderStageDescriptor::m_byteCode)
-                    ;
-            }
-        }
-
-
-        ///////////////////////////////////////////////////////////////////////
-        // ShaderStageAsset
-
-        void ShaderStageAsset::Reflect(ReflectContext* context)
-        {
-            ShaderStageDescriptor::Reflect(context);
-
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ShaderStageAsset>()
-                    ->Version(1)
-                    ->Field("m_descriptor", &ShaderStageAsset::m_descriptor)
-                    ->Field("m_srgLayouts", &ShaderStageAsset::m_srgLayouts)
-                    ;
-            }
-        }
-
-        ShaderStageAsset::ShaderStageAsset(const ShaderStageAsset& rhs)
-        {
-            *this = rhs;
-        }
-
-        ShaderStageAsset::ShaderStageAsset(ShaderStageAsset&& rhs)
-            : m_descriptor(AZStd::move(rhs.m_descriptor))
-            , m_srgLayouts(AZStd::move(rhs.m_srgLayouts))
-        {}
-
-        ShaderStageAsset& ShaderStageAsset::operator= (const ShaderStageAsset& rhs)
-        {
-            m_descriptor = rhs.m_descriptor;
-            m_srgLayouts = rhs.m_srgLayouts;
-            return *this;
-        }
         ///////////////////////////////////////////////////////////////////////
 
     } // namespace RPI

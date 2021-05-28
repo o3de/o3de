@@ -11,6 +11,11 @@
 
 set(ICON_FILE ${project_real_path}/Gem/Resources/GameSDK.ico)
 if(NOT EXISTS ${ICON_FILE})
+    # Try another project-relative path
+    set(ICON_FILE ${project_real_path}/Resources/GameSDK.ico)
+endif()
+
+if(NOT EXISTS ${ICON_FILE})
     # Try the common LauncherUnified icon instead
     set(ICON_FILE Resources/GameSDK.ico)
 endif()

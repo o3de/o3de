@@ -69,7 +69,6 @@ namespace AZ
 
             if (m_shouldUpdatePassParameters)
             {
-                UpdateEyeAdaptationPass();
                 UpdateLuminanceHeatmap();
 
                 m_shouldUpdatePassParameters = false;
@@ -195,30 +194,6 @@ namespace AZ
             {
                 m_autoExposureSpeedDown = speedDown;
                 m_shouldUpdateShaderParameters = true;
-            }
-        }
-
-        void ExposureControlSettings::UpdateEyeAdaptationPass()
-        {
-            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-
-            // [GFX-TODO][ATOM-13224] Remove UpdateLuminanceHeatmap and UpdateEyeAdaptationPass
-            auto passTemplateName = m_eyeAdaptationPassTemplateNameId;
-
-            if (passSystem->HasPassesForTemplateName(passTemplateName))
-            {
-                const AZStd::vector<RPI::Pass*>& eyeAdaptationPasses = passSystem->GetPassesForTemplateName(passTemplateName);
-                for (RPI::Pass* pass : eyeAdaptationPasses)
-                {
-                    auto* eyeAdaptationPass = azrtti_cast<AZ::Render::EyeAdaptationPass*>(pass);
-                    auto* renderPipeline = eyeAdaptationPass->GetRenderPipeline();
-
-                    if (renderPipeline && renderPipeline->GetScene() == GetParentScene())
-                    {
-                        // update eye adaptation pass's enable state
-                        eyeAdaptationPass->UpdateEnable();
-                    }
-                }
             }
         }
 

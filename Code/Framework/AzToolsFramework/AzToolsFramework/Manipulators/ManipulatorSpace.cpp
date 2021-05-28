@@ -39,7 +39,7 @@ namespace AzToolsFramework
         AZ::Transform result;
         result.SetRotation(m_space.GetRotation() * localTransform.GetRotation());
         result.SetTranslation(m_space.TransformPoint(m_nonUniformScale * localTransform.GetTranslation()));
-        result.SetScale(m_space.GetScale() * localTransform.GetScale());
+        result.SetUniformScale(m_space.GetUniformScale() * localTransform.GetUniformScale());
         return result;
     }
 

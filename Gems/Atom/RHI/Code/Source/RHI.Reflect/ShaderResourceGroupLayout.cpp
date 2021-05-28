@@ -22,7 +22,8 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderResourceGroupLayout>()
-                    ->Version(6)
+                    ->Version(7)
+                    ->Field("m_name", &ShaderResourceGroupLayout::m_name)
                     ->Field("m_staticSamplers", &ShaderResourceGroupLayout::m_staticSamplers)
                     ->Field("m_inputsForBuffers", &ShaderResourceGroupLayout::m_inputsForBuffers)
                     ->Field("m_inputsForImages", &ShaderResourceGroupLayout::m_inputsForImages)

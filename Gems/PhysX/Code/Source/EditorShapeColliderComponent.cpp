@@ -44,11 +44,14 @@ namespace PhysX
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
-        , m_onDefaultMaterialLibraryChangedEventHandler(
+        , m_onMaterialLibraryChangedEventHandler(
             [this](const AZ::Data::AssetId& defaultMaterialLibrary)
             {
-                m_colliderConfig.m_materialSelection.OnDefaultMaterialLibraryChanged(defaultMaterialLibrary);
+                m_colliderConfig.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
                 Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {
@@ -205,7 +208,7 @@ namespace PhysX
         }
 
         AZ::Transform transform = GetWorldTM();
-        transform.ExtractScale();
+        transform.ExtractUniformScale();
         const size_t numPoints = m_geometryCache.m_cachedSamplePoints.size();
         for (size_t pointIndex = 0; pointIndex < numPoints; ++pointIndex)
         {
@@ -226,7 +229,7 @@ namespace PhysX
     void EditorShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* shapeColliderComponent = gameEntity->CreateComponent<ShapeColliderComponent>();
-        Physics::ShapeConfigurationList shapeConfigurationList;
+        AzPhysics::ShapeColliderPairList shapeConfigurationList;
         shapeConfigurationList.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
@@ -257,11 +260,12 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
-        AZStd::vector<AzPhysics::ShapeColliderPair> colliderShapePairs;
+        AzPhysics::ShapeColliderPairList colliderShapePairs;
         colliderShapePairs.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
-            colliderShapePairs.emplace_back(&m_colliderConfig, shapeConfig.get());
+            colliderShapePairs.emplace_back(
+                AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig);
         }
         configuration.m_colliderAndShapeData = colliderShapePairs;
 
@@ -693,16 +697,16 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onDefaultMaterialLibraryChangedEventHandler.IsConnected())
+            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
             {
-                physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
             }
         }
     }
 
     void EditorShapeColliderComponent::OnDeselected()
     {
-        m_onDefaultMaterialLibraryChangedEventHandler.Disconnect();
+        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 

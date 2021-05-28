@@ -896,7 +896,7 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> AZ::AtomFont::GetOrCreateDynamicDrawFo
     shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
     shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
     dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
-    dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::R8G8B8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
+    dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::B8G8R8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
     dynamicDraw->EndInit();
 
     // exclusive lock while writing

@@ -97,7 +97,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 // Callback function for ParallaxMapping.azsli
 DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
-    return SampleDepthOrHeightMap(MaterialSrg::m_depthInverted, MaterialSrg::m_depthMap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
 }
 
 
@@ -106,7 +106,7 @@ COMMON_OPTIONS_PARALLAX()
 bool ShouldHandleParallax()
 {
     // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
-    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useDepthMap;
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
 }
 
 bool ShouldHandleParallaxInDepthShaders()

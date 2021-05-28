@@ -54,7 +54,7 @@ namespace UnitTest
         };
 
         void SetUp() override
-        {
+        {            
             m_appDescriptor.m_allocationRecords = true;
             m_appDescriptor.m_allocationRecordsSaveNames = true;
             m_appDescriptor.m_recordingMode = AZ::Debug::AllocationRecords::Mode::RECORD_FULL;

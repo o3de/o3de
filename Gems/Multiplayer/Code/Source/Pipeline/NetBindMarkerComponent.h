@@ -13,6 +13,9 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 namespace Multiplayer
 {
@@ -34,6 +37,15 @@ namespace Multiplayer
         void Deactivate() override;
         //! @}
 
+        size_t GetNetEntityIndex() const;
+        void SetNetEntityIndex(size_t val);
+
+        void SetNetworkSpawnableAsset(AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset);
+        AZ::Data::Asset<AzFramework::Spawnable> GetNetworkSpawnableAsset() const;
+
     private:
+        AZ::Data::Asset<AzFramework::Spawnable> m_networkSpawnableAsset{AZ::Data::AssetLoadBehavior::PreLoad};
+        size_t m_netEntityIndex = 0;
+        AzFramework::EntitySpawnTicket m_netSpawnTicket;
     };
 } // namespace Multiplayer

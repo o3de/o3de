@@ -14,6 +14,7 @@
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
 #include <Atom/RHI/DrawItem.h>
 
@@ -108,6 +109,7 @@ namespace AZ
                 const MaterialUvNameMap& materialUvNameMap = {}) const;
 
             //! Fills a InputStreamLayout and StreamBufferViewList for the set of streams that satisfy a ShaderInputContract.
+            // @param uvStreamTangentBitmaskOut a mask processed during UV stream matching, and later to determine which tangent/bitangent stream to use.
             // @param contract the contract that defines the expected inputs for a shader, used to determine which streams are optional.
             // @param meshIndex the index of the mesh to search in.
             // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
@@ -115,6 +117,7 @@ namespace AZ
             bool GetStreamsForMesh(
                 RHI::InputStreamLayout& layoutOut,
                 ModelLod::StreamBufferViewList& streamBufferViewsOut,
+                UvStreamTangentBitmask* uvStreamTangentBitmaskOut,
                 const ShaderInputContract& contract,
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap = {},
@@ -130,6 +133,8 @@ namespace AZ
                 const ModelLodAsset::Mesh::StreamBufferInfo& streamBufferInfo,
                 Mesh& meshInstance);
 
+            StreamInfoList::const_iterator FindFirstUvStreamFromMesh(size_t meshIndex) const;
+
             StreamInfoList::const_iterator FindDefaultUvStream(size_t meshIndex, const MaterialUvNameMap& materialUvNameMap) const;
 
             // Finds a mesh vertex input stream that is the best match for a contracted stream channel.
@@ -137,12 +142,16 @@ namespace AZ
             // @param materialModelUvMap a map of UV name overrides, which can be supplied to bind a specific mesh stream name to a different material shader stream name.
             // @param materialUvNameMap the UV name map that came from a MaterialTypeAsset, which defines the default set of material shader stream names.
             // @param defaultUv the default UV stream to use if a matching UV stream could not be found. Use FindDefaultUvStream() to populate this.
+            // @param firstUv the first UV stream from the mesh, which, by design, the tangent/bitangent stream belongs to.
+            // @param uvStreamTangentIndex a bitset indicating which tangent/bitangent stream (including generated ones) a UV stream will be using.
             StreamInfoList::const_iterator FindMatchingStream(
                 size_t meshIndex,
                 const MaterialModelUvOverrideMap& materialModelUvMap,
                 const MaterialUvNameMap& materialUvNameMap,
                 const ShaderInputContract::StreamChannelInfo& contractStreamChannel,
-                StreamInfoList::const_iterator defaultUv) const;
+                StreamInfoList::const_iterator defaultUv,
+                StreamInfoList::const_iterator firstUv,
+                UvStreamTangentBitmask* uvStreamTangentBitmaskOut) const;
 
             // Meshes may share index/stream buffers in an LOD or they may have 
             // unique buffers. Often the asset builder will prioritize shared buffers

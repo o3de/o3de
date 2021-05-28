@@ -14,6 +14,10 @@
 
 namespace AzFramework
 {
+    //
+    // SpawnableEntityContainerView
+    //
+
     SpawnableEntityContainerView::SpawnableEntityContainerView(AZ::Entity** begin, size_t length)
         : m_begin(begin)
         , m_end(begin + length)
@@ -52,6 +56,9 @@ namespace AzFramework
     }
 
 
+    //
+    // SpawnableConstEntityContainerView
+    //
 
     SpawnableConstEntityContainerView::SpawnableConstEntityContainerView(AZ::Entity** begin, size_t length)
         : m_begin(begin)
@@ -91,6 +98,136 @@ namespace AzFramework
     }
 
 
+    //
+    // SpawnableIndexEntityPair
+    //
+
+    SpawnableIndexEntityPair::SpawnableIndexEntityPair(AZ::Entity** entityIterator, size_t* indexIterator)
+        : m_entity(entityIterator)
+        , m_index(indexIterator)
+    {
+    }
+
+    AZ::Entity* SpawnableIndexEntityPair::GetEntity()
+    {
+        return *m_entity;
+    }
+
+    const AZ::Entity* SpawnableIndexEntityPair::GetEntity() const
+    {
+        return *m_entity;
+    }
+
+    size_t SpawnableIndexEntityPair::GetIndex() const
+    {
+        return *m_index;
+    }
+
+    //
+    // SpawnableIndexEntityIterator
+    //
+
+    SpawnableIndexEntityIterator::SpawnableIndexEntityIterator(AZ::Entity** entityIterator, size_t* indexIterator)
+        : m_value(entityIterator, indexIterator)
+    {
+    }
+
+    SpawnableIndexEntityIterator& SpawnableIndexEntityIterator::operator++()
+    {
+        ++m_value.m_entity;
+        ++m_value.m_index;
+        return *this;
+    }
+
+    SpawnableIndexEntityIterator SpawnableIndexEntityIterator::operator++(int)
+    {
+        SpawnableIndexEntityIterator result = *this;
+        ++m_value.m_entity;
+        ++m_value.m_index;
+        return result;
+    }
+
+    SpawnableIndexEntityIterator& SpawnableIndexEntityIterator::operator--()
+    {
+        --m_value.m_entity;
+        --m_value.m_index;
+        return *this;
+    }
+
+    SpawnableIndexEntityIterator SpawnableIndexEntityIterator::operator--(int)
+    {
+        SpawnableIndexEntityIterator result = *this;
+        --m_value.m_entity;
+        --m_value.m_index;
+        return result;
+    }
+
+    bool SpawnableIndexEntityIterator::operator==(const SpawnableIndexEntityIterator& rhs)
+    {
+        return m_value.m_entity == rhs.m_value.m_entity && m_value.m_index == rhs.m_value.m_index;
+    }
+
+    bool SpawnableIndexEntityIterator::operator!=(const SpawnableIndexEntityIterator& rhs)
+    {
+        return m_value.m_entity != rhs.m_value.m_entity || m_value.m_index != rhs.m_value.m_index;
+    }
+
+    SpawnableIndexEntityPair& SpawnableIndexEntityIterator::operator*()
+    {
+        return m_value;
+    }
+
+    const SpawnableIndexEntityPair& SpawnableIndexEntityIterator::operator*() const
+    {
+        return m_value;
+    }
+
+    SpawnableIndexEntityPair* SpawnableIndexEntityIterator::operator->()
+    {
+        return &m_value;
+    }
+
+    const SpawnableIndexEntityPair* SpawnableIndexEntityIterator::operator->() const
+    {
+        return &m_value;
+    }
+
+
+    //
+    // SpawnableConstIndexEntityContainerView
+    //
+
+    SpawnableConstIndexEntityContainerView::SpawnableConstIndexEntityContainerView(
+        AZ::Entity** beginEntity, size_t* beginIndices, size_t length)
+        : m_begin(beginEntity, beginIndices)
+        , m_end(beginEntity + length, beginIndices + length)
+    {
+    }
+
+    const SpawnableIndexEntityIterator& SpawnableConstIndexEntityContainerView::begin()
+    {
+        return m_begin;
+    }
+
+    const SpawnableIndexEntityIterator& SpawnableConstIndexEntityContainerView::end()
+    {
+        return m_end;
+    }
+
+    const SpawnableIndexEntityIterator& SpawnableConstIndexEntityContainerView::cbegin()
+    {
+        return m_begin;
+    }
+
+    const SpawnableIndexEntityIterator& SpawnableConstIndexEntityContainerView::cend()
+    {
+        return m_end;
+    }
+
+
+    //
+    // EntitySpawnTicket
+    //
 
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
         : m_payload(rhs.m_payload)

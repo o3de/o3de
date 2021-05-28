@@ -11,7 +11,7 @@
             "PixelFormat": "R16G16"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
                 "Name": "LUT_RG16",
                 "SourceColor": "Linear",
@@ -25,7 +25,7 @@
                 "DestColor": "Linear",
                 "PixelFormat": "R16G16"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{D55CBCD3-AF2D-4515-98AB-E278F6B3B5F6}",
                 "Name": "LUT_RG16",
                 "SourceColor": "Linear",
