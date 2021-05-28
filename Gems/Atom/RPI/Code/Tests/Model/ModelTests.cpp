@@ -1172,4 +1172,13 @@ namespace UnitTest
             m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(0.75f), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
         EXPECT_THAT(t, testing::FloatEq(0.025f));
     }
+
+    TEST_F(KdTreeIntersectsFixture, KdTreeIntersectionDoesNotScaleRayByStartingDistance)
+    {
+        float t = 10.0f; // starting distance (used to check it is not read from initially by RayIntersection)
+        AZ::Vector3 normal;
+
+        EXPECT_THAT(
+            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(), t, normal), testing::Eq(false));
+    }
 } // namespace UnitTest
