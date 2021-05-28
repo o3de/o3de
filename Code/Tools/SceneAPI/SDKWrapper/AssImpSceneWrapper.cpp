@@ -59,7 +59,9 @@ namespace AZ
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
             // Turn off the abort popup because it can disrupt automation.
             // AssImp calls abort when asserts are enabled, and an assert is encountered.
+#ifdef _WRITE_ABORT_MSG
             _set_abort_behavior(0, _WRITE_ABORT_MSG);
+#endif // #ifdef _WRITE_ABORT_MSG
             // Instead, capture any calls to abort with a signal handler, and report them.
             auto previous_handler = std::signal(SIGABRT, signal_handler);
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
@@ -79,7 +81,9 @@ namespace AZ
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
             // Reset abort behavior for anything else that may call abort.
             std::signal(SIGABRT, previous_handler);
+#ifdef _WRITE_ABORT_MSG
             _set_abort_behavior(1, _WRITE_ABORT_MSG);
+#endif // #ifdef _WRITE_ABORT_MSG
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
             if (!m_assImpScene)
