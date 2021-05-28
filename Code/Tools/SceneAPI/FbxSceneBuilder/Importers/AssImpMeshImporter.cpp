@@ -37,7 +37,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpMeshImporter, SceneCore::LoadingComponent>()->Version(1);
+                    serializeContext->Class<AssImpMeshImporter, SceneCore::LoadingComponent>()->Version(2);
                 }
             }
 
@@ -45,7 +45,7 @@ namespace AZ
             {
                 AZ_TraceContext("Importer", "Mesh");
 
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 if (!context.m_sourceNode.ContainsMesh() || IsSkinnedMesh(*currentNode, *scene))

@@ -98,7 +98,7 @@ namespace AZ
             //! List of shader options set for this specific draw packet
             typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
             typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
-            ShaderOptionVector m_shaderOptions;            
+            ShaderOptionVector m_shaderOptions;
         };
     } // namespace RPI
 } // namespace AZ

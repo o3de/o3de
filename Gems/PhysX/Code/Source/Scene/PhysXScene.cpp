@@ -489,6 +489,7 @@ namespace PhysX
                     // Disable simulation on body (not signaling OnSimulationBodySimulationDisabled event) 
                     DisableSimulationOfBodyInternal(*simulatedBody.second);
                 }
+                m_simulatedBodyRemovedEvent.Signal(m_sceneHandle, simulatedBody.second->m_bodyHandle);
                 delete simulatedBody.second;
             }
         }

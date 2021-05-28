@@ -57,6 +57,10 @@ namespace AtomToolsFramework
             const AZStd::string& groupDescription,
             QWidget* groupWidget) override;
 
+        void SetGroupVisible(const AZStd::string& groupNameId, bool visible) override;
+        bool IsGroupVisible(const AZStd::string& groupNameId) const override;
+        bool IsGroupHidden(const AZStd::string& groupNameId) const override;
+
         void RefreshGroup(const AZStd::string& groupNameId) override;
         void RebuildGroup(const AZStd::string& groupNameId) override;
 
@@ -79,6 +83,13 @@ namespace AtomToolsFramework
     private:
         QVBoxLayout* m_layout = nullptr;
         QScopedPointer<Ui::InspectorWidget> m_ui;
-        AZStd::unordered_map<AZStd::string, AZStd::pair<InspectorGroupHeaderWidget*, QWidget*>> m_groups;
+
+        struct GroupWidgetPair
+        {
+            InspectorGroupHeaderWidget* m_header;
+            QWidget* m_panel;
+        };
+
+        AZStd::unordered_map<AZStd::string, GroupWidgetPair> m_groups;
     };
 } // namespace AtomToolsFramework

@@ -21,6 +21,7 @@
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderInputContract.h>
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 #include <Atom/RPI.Reflect/Shader/IShaderVariantFinder.h>
 
@@ -54,6 +55,8 @@ namespace AZ
 
             //! The default shader variant (i.e. the one without any options set).
             static const ShaderVariantStableId RootShaderVariantStableId;
+            // @subProductType is one of ShaderAssetSubId, or (ShaderAssetSubId::GeneratedHlslSource + 1)+
+            static uint32_t MakeAssetProductSubId(uint32_t rhiApiUniqueIndex, uint32_t subProductType);
 
             ShaderAsset() = default;
             ~ShaderAsset();
@@ -218,83 +221,21 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // Deprecated System
-        enum class ShaderStageType : uint32_t
-        {
-            Vertex,
-            Geometry,
-            TessellationControl,
-            TessellationEvaluation,
-            Fragment,
-            Compute,
-            RayTracing
-        };
-
-        const char* ToString(ShaderStageType shaderStageType);
-
-        void ReflectShaderStageType(ReflectContext* context);
-
         enum class ShaderAssetSubId : uint32_t
         {
             ShaderAsset = 0,
-            StreamLayout,
-            GraphicsPipelineState,
-            OutputMergerState,
             RootShaderVariantAsset,
-            //[GFX TODO][LY-82895] (arsentuf) These shader stages are going to get reworked when virtual stages are implemented
-            AzVertexShader,
-            AzGeometryShader,
-            AzTessellationControlShader,
-            AzTessellationEvaluationShader,
-            AzFragmentShader,
-            AzComputeShader,
-            AzRayTracingShader,
-            DebugByProduct,
             PostPreprocessingPureAzsl, // .azslin
             IaJson,
             OmJson,
             SrgJson,
             OptionsJson,
             BindingdepJson,
-            GeneratedSource // This must be last because we use this as a base for adding the RHI::APIType when generating shadersource for multiple RHI APIs.
+            GeneratedHlslSource // This must be last because we use this as a base for adding the RHI::APIType when generating shadersource for multiple RHI APIs.
         };
 
-        ShaderAssetSubId ShaderStageToSubId(ShaderStageType stageType);
-
-        class ShaderStageDescriptor final
-        {
-        public:
-            AZ_TYPE_INFO(ShaderStageDescriptor, "{3E7822F7-B952-4379-B0A0-48507681845A}");
-            AZ_CLASS_ALLOCATOR(ShaderStageDescriptor, AZ::SystemAllocator, 0);
-
-            static void Reflect(ReflectContext* context);
-
-            ShaderStageType m_stageType;
-            AZStd::vector<uint8_t> m_byteCode;
-            AZStd::vector<char> m_sourceCode;
-            AZStd::string m_entryFunctionName;
-        };
-
-        //[GFX TODO][LY-82803] (arsentuf) Remove this when we've fleshed out Virtual Shader stages
-        class ShaderStageAsset final
-            : public AZ::Data::AssetData
-        {
-        public:
-            AZ_RTTI(ShaderStageAsset, "{975F48B5-1577-41C9-B8F5-A1024E2D01F1}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ShaderStageAsset, AZ::SystemAllocator, 0);
-
-            static void Reflect(ReflectContext* context);
-
-            ShaderStageAsset() = default;
-            ShaderStageAsset(const ShaderStageAsset&);
-            ShaderStageAsset& operator= (const ShaderStageAsset&);
-            ShaderStageAsset(ShaderStageAsset&& rhs);
-
-            AZStd::shared_ptr<ShaderStageDescriptor> m_descriptor;
-            AZStd::vector<Data::AssetId> m_srgLayouts;
-        };
 
         //////////////////////////////////////////////////////////////////////////
     } // namespace RPI
 
-    AZ_TYPE_INFO_SPECIALIZE(RPI::ShaderStageType, "{A6408508-748B-4963-B618-E1E6ECA3629A}");
 } // namespace AZ

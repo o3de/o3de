@@ -139,4 +139,21 @@ namespace UnitTest
         EXPECT_THAT(secondaryDownOutcome, Eq(ClickDetector::ClickOutcome::Nil)); // ignored double click
         EXPECT_THAT(secondaryUpOutcome, Eq(ClickDetector::ClickOutcome::Nil)); // click not registered
     }
+
+    // if the click detector registers a mouse down event, but then all intermediate calls are ignored
+    // (another system may start intercepting events and swallowing them) then when we do receive a mouse
+    // up event we should ensure we take into account the current delta - if the delta is large, then the
+    // outcome will be release
+    TEST_F(ClickDetectorFixture, ClickIsNotRegisteredAfterIgnoringMouseMovesBeforeMouseUpWithLargeDelta)
+    {
+        using ::testing::Eq;
+
+        const ClickDetector::ClickOutcome downOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Down, ScreenVector(0, 0));
+        const ClickDetector::ClickOutcome upOutcome =
+            m_clickDetector.DetectClick(ClickDetector::ClickEvent::Up, ScreenVector(50, 50));
+
+        EXPECT_THAT(downOutcome, Eq(ClickDetector::ClickOutcome::Nil));
+        EXPECT_THAT(upOutcome, Eq(ClickDetector::ClickOutcome::Release));
+    }
 } // namespace UnitTest

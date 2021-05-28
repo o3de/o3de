@@ -60,6 +60,12 @@ namespace AZ
             : public DisplayMapperFeatureProcessorInterface
         {
         public:
+            enum OutputDeviceTransformFlags
+            {
+                AlterSurround = 0x1, // Apply gamma adjustment to compensate for dim surround
+                ApplyDesaturation = 0x2, // Apply desaturation to compensate for luminance difference
+                ApplyCATD60toD65 = 0x4, // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
+            };
 
             AZ_RTTI(AZ::Render::AcesDisplayMapperFeatureProcessor, "{995C2B93-8B08-4313-89B0-02394F90F1B8}", AZ::Render::DisplayMapperFeatureProcessorInterface);
 
@@ -91,12 +97,6 @@ namespace AZ
             AcesDisplayMapperFeatureProcessor(const AcesDisplayMapperFeatureProcessor&) = delete;
             static void ApplyLdrOdtParameters(DisplayMapperParameters* pOutParameters);
             static void ApplyHdrOdtParameters(DisplayMapperParameters* pOutParameters, const OutputDeviceTransformType& odtType);
-
-            enum OutputDeviceTransformFlags {
-                AlterSurround = 0x1,        // Apply gamma adjustment to compensate for dim surround
-                ApplyDesaturation = 0x2,    // Apply desaturation to compensate for luminance difference
-                ApplyCATD60toD65 = 0x4,     // Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point
-            };
 
             enum OutputDeviceTransformMode {
                 Srgb = 0,

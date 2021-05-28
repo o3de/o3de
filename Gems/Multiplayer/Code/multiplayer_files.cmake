@@ -11,6 +11,8 @@
 
 set(FILES
     Include/Multiplayer/IMultiplayer.h
+    Include/Multiplayer/IMultiplayerTools.h
+    Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
@@ -31,8 +33,13 @@ set(FILES
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
+    Include/Multiplayer/NetworkTime/RewindableArray.h
+    Include/Multiplayer/NetworkTime/RewindableArray.inl
+    Include/Multiplayer/NetworkTime/RewindableFixedVector.h
+    Include/Multiplayer/NetworkTime/RewindableFixedVector.inl
     Include/Multiplayer/NetworkTime/RewindableObject.h
     Include/Multiplayer/NetworkTime/RewindableObject.inl
+    Include/Multiplayer/Physics/PhysicsUtils.h
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
@@ -46,6 +53,7 @@ set(FILES
     Source/AutoGen/AutoComponentTypes_Source.jinja
     Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
     Source/AutoGen/Multiplayer.AutoPackets.xml
+    Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/MultiplayerComponent.cpp
@@ -59,6 +67,8 @@ set(FILES
     Source/ConnectionData/ServerToClientConnectionData.cpp
     Source/ConnectionData/ServerToClientConnectionData.h
     Source/ConnectionData/ServerToClientConnectionData.inl
+    Source/Editor/MultiplayerEditorConnection.cpp
+    Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
@@ -98,6 +108,7 @@ set(FILES
     Source/Pipeline/NetBindMarkerComponent.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp
     Source/Pipeline/NetworkSpawnableHolderComponent.h
+    Source/Physics/PhysicsUtils.cpp
     Source/ReplicationWindows/NullReplicationWindow.cpp
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp

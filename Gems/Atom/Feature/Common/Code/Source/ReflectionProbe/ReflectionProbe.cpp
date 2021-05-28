@@ -209,7 +209,7 @@ namespace AZ
         void ReflectionProbe::SetTransform(const AZ::Transform& transform)
         {
             // retrieve previous scale and revert the scale on the inner/outer extents
-            AZ::Vector3 previousScale = m_transform.GetScale();
+            float previousScale = m_transform.GetUniformScale();
             m_outerExtents /= previousScale;
             m_innerExtents /= previousScale;
 
@@ -218,12 +218,12 @@ namespace AZ
 
             // avoid scaling the visualization sphere
             AZ::Transform visualizationTransform = m_transform;
-            visualizationTransform.ExtractScale();
+            visualizationTransform.ExtractUniformScale();
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, visualizationTransform);
 
             // update the inner/outer extents with the new scale
-            m_outerExtents *= m_transform.GetScale();
-            m_innerExtents *= m_transform.GetScale();
+            m_outerExtents *= m_transform.GetUniformScale();
+            m_innerExtents *= m_transform.GetUniformScale();
 
             m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
             m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
@@ -232,14 +232,14 @@ namespace AZ
 
         void ReflectionProbe::SetOuterExtents(const AZ::Vector3& outerExtents)
         {
-            m_outerExtents = outerExtents * m_transform.GetScale();
+            m_outerExtents = outerExtents * m_transform.GetUniformScale();
             m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
             m_updateSrg = true;
         }
 
         void ReflectionProbe::SetInnerExtents(const AZ::Vector3& innerExtents)
         {
-            m_innerExtents = innerExtents * m_transform.GetScale();
+            m_innerExtents = innerExtents * m_transform.GetUniformScale();
             m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
             m_updateSrg = true;
         }

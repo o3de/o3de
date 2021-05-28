@@ -23,6 +23,7 @@ namespace O3DE::ProjectManager
         : QScrollArea(parent)
         , m_model(model)
     {
+        setObjectName("GemCatalogInspector");
         setWidgetResizable(true);
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -70,8 +71,8 @@ namespace O3DE::ProjectManager
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
 
         // Depending and conflicting gems
-        m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGems(modelIndex));
-        m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGems(modelIndex));
+        m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
+        m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGemNames(modelIndex));
 
         // Additional information
         m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
@@ -85,7 +86,7 @@ namespace O3DE::ProjectManager
     QLabel* GemInspector::CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString)
     {
         QLabel* result = new QLabel();
-        result->setStyleSheet(QString("font-size: %1pt; color: %2;").arg(QString::number(fontSize), colorCodeString));
+        result->setStyleSheet(QString("font-size: %1px; color: %2;").arg(QString::number(fontSize), colorCodeString));
         layout->addWidget(result);
         return result;
     }
@@ -93,13 +94,13 @@ namespace O3DE::ProjectManager
     void GemInspector::InitMainWidget()
     {
         // Gem name, creator and summary
-        m_nameLabel = CreateStyledLabel(m_mainLayout, 17, s_headerColor);
+        m_nameLabel = CreateStyledLabel(m_mainLayout, 18, s_headerColor);
         m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_creatorColor);
         m_mainLayout->addSpacing(5);
 
         // TODO: QLabel seems to have issues determining the right sizeHint() for our font with the given font size.
         // This results into squeezed elements in the layout in case the text is a little longer than a sentence.
-        m_summaryLabel = new QLabel();//CreateLabel(m_mainLayout, 12, s_textColor);
+        m_summaryLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
         m_mainLayout->addWidget(m_summaryLabel);
         m_summaryLabel->setWordWrap(true);
         m_mainLayout->addSpacing(5);
@@ -146,9 +147,9 @@ namespace O3DE::ProjectManager
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
         additionalInfoLabel->setText("Additional Information");
 
-        m_versionLabel = CreateStyledLabel(m_mainLayout, 11, s_textColor);
-        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, 11, s_textColor);
-        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, 11, s_textColor);
+        m_versionLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
+        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
+        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
     }
 
     GemInspector::GemsSubWidget::GemsSubWidget(QWidget* parent)
@@ -159,8 +160,8 @@ namespace O3DE::ProjectManager
         m_layout->setMargin(0);
         setLayout(m_layout);
 
-        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 15, s_headerColor);
-        m_textLabel = GemInspector::CreateStyledLabel(m_layout, 9, s_textColor);
+        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 16, s_headerColor);
+        m_textLabel = GemInspector::CreateStyledLabel(m_layout, 10, s_textColor);
         m_textLabel->setWordWrap(true);
 
         m_tagWidget = new TagContainerWidget();

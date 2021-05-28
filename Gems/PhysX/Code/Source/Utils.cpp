@@ -607,48 +607,6 @@ namespace PhysX
             return true;
         }
 
-        void GetMaterialList(
-            AZStd::vector<physx::PxMaterial*>& pxMaterials, const AZStd::vector<int>& terrainSurfaceIdIndexMapping,
-            const Physics::TerrainMaterialSurfaceIdMap& terrainMaterialsToSurfaceIds)
-        {
-            pxMaterials.reserve(terrainSurfaceIdIndexMapping.size());
-
-            AZStd::shared_ptr<Material> defaultMaterial;
-            MaterialManagerRequestsBus::BroadcastResult(defaultMaterial, &MaterialManagerRequestsBus::Events::GetDefaultMaterial);
-
-            if (terrainSurfaceIdIndexMapping.empty())
-            {
-                pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                return;
-            }
-
-            AZStd::vector<physx::PxMaterial*> materials;
-
-            for (auto& surfaceId : terrainSurfaceIdIndexMapping)
-            {
-                const auto& userAssignedMaterials = terrainMaterialsToSurfaceIds;
-                const auto& matSelectionIterator = userAssignedMaterials.find(surfaceId);
-                if (matSelectionIterator != userAssignedMaterials.end())
-                {
-                    MaterialManagerRequestsBus::Broadcast(&MaterialManagerRequests::GetPxMaterials, matSelectionIterator->second, materials);
-
-                    if (!materials.empty())
-                    {
-                        pxMaterials.push_back(materials.front());
-                    }
-                    else
-                    {
-                        AZ_Error("PhysX", false, "Creating materials: array with materials can't be empty");
-                        pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                    }
-                }
-                else
-                {
-                    pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                }
-            }
-        }
-
         AZStd::string ReplaceAll(AZStd::string str, const AZStd::string& fromString, const AZStd::string& toString) {
             size_t positionBegin = 0;
             while ((positionBegin = str.find(fromString, positionBegin)) != AZStd::string::npos)
@@ -718,7 +676,7 @@ namespace PhysX
             const float boundsInflationFactor = 1.0f;
             AZ::Transform overallTransformNoScale = GetColliderWorldTransform(worldTransform,
                 colliderConfiguration.m_position, colliderConfiguration.m_rotation);
-            overallTransformNoScale.ExtractScale();
+            overallTransformNoScale.ExtractUniformScale();
             const physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(geometryHolder.any(),
                 PxMathConvert(overallTransformNoScale),
                 boundsInflationFactor);
@@ -1378,7 +1336,7 @@ namespace PhysX
             AZ::TransformBus::EventResult(worldTransformWithoutScale
                 , entityId
                 , &AZ::TransformInterface::GetWorldTM);
-            worldTransformWithoutScale.ExtractScale();
+            worldTransformWithoutScale.ExtractUniformScale();
             return worldTransformWithoutScale;
         }
 
@@ -1386,10 +1344,10 @@ namespace PhysX
             const AZ::Transform& entityWorldTransform)
         {
             AZ::Transform jointWorldTransformWithoutScale = jointWorldTransform;
-            jointWorldTransformWithoutScale.ExtractScale();
+            jointWorldTransformWithoutScale.ExtractUniformScale();
 
             AZ::Transform entityWorldTransformWithoutScale = entityWorldTransform;
-            entityWorldTransformWithoutScale.ExtractScale();
+            entityWorldTransformWithoutScale.ExtractUniformScale();
             AZ::Transform entityWorldTransformInverse = entityWorldTransformWithoutScale.GetInverse();
 
             return entityWorldTransformInverse * jointWorldTransformWithoutScale;
@@ -1399,10 +1357,10 @@ namespace PhysX
             const AZ::Transform& entityWorldTransform)
         {
             AZ::Transform jointLocalTransformWithoutScale = jointLocalTransform;
-            jointLocalTransformWithoutScale.ExtractScale();
+            jointLocalTransformWithoutScale.ExtractUniformScale();
 
             AZ::Transform entityWorldTransformWithoutScale = entityWorldTransform;
-            entityWorldTransformWithoutScale.ExtractScale();
+            entityWorldTransformWithoutScale.ExtractUniformScale();
 
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
         }

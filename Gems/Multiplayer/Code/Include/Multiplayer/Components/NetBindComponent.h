@@ -35,6 +35,7 @@ namespace Multiplayer
 
     using EntityStopEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using EntityDirtiedEvent = AZ::Event<>;
+    using EntitySyncRewindEvent = AZ::Event<>;
     using EntityMigrationStartEvent = AZ::Event<ClientInputId>;
     using EntityMigrationEndEvent = AZ::Event<>;
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
@@ -73,6 +74,7 @@ namespace Multiplayer
         NetworkEntityHandle GetEntityHandle();
 
         void SetOwningConnectionId(AzNetworking::ConnectionId connectionId);
+        AzNetworking::ConnectionId GetOwningConnectionId() const;
         void SetAllowAutonomy(bool value);
         MultiplayerComponentInputVector AllocateComponentInputs();
         bool IsProcessingInput() const;
@@ -91,12 +93,14 @@ namespace Multiplayer
 
         void MarkDirty();
         void NotifyLocalChanges();
+        void NotifySyncRewindState();
         void NotifyMigrationStart(ClientInputId migratedInputId);
         void NotifyMigrationEnd();
         void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
+        void AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler);
         void AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler);
         void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
@@ -144,6 +148,7 @@ namespace Multiplayer
 
         EntityStopEvent       m_entityStopEvent;
         EntityDirtiedEvent    m_dirtiedEvent;
+        EntitySyncRewindEvent m_syncRewindEvent;
         EntityMigrationStartEvent  m_entityMigrationStartEvent;
         EntityMigrationEndEvent    m_entityMigrationEndEvent;
         EntityServerMigrationEvent m_entityServerMigrationEvent;
@@ -156,6 +161,8 @@ namespace Multiplayer
         NetworkEntityHandle   m_netEntityHandle;
         NetEntityRole         m_netEntityRole   = NetEntityRole::InvalidRole;
         NetEntityId           m_netEntityId     = InvalidNetEntityId;
+
+        AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
 
         bool                  m_isProcessingInput    = false;
         bool                  m_isMigrationDataValid = false;

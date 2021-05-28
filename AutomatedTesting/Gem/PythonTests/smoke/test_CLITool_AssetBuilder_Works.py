@@ -20,7 +20,6 @@ import subprocess
 
 @pytest.mark.SUITE_smoke
 class TestCLIToolAssetBuilderWorks(object):
-    @pytest.mark.xfail(reason="Ignoring failure temporarily - SPEC-6905")
     def test_CLITool_AssetBuilder_Works(self, build_directory):
         file_path = os.path.join(build_directory, "AssetBuilder")
         help_message = "AssetBuilder is part of the Asset Processor"

@@ -27,6 +27,8 @@ namespace AZ
     struct OverloadVariance
     {
         AZStd::unordered_map<size_t, AZStd::vector<const BehaviorParameter*>> m_input;
+        // the indices of inputs that make selection of overload unambiguous
+        AZStd::unordered_set<size_t> m_unambiguousInput;
         AZStd::vector<const BehaviorParameter*> m_output;
     };
 

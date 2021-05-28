@@ -144,7 +144,7 @@ namespace UnitTest
         CreateCapsule(
             AZ::Transform::CreateTranslation(AZ::Vector3(-4.0f, -12.0f, -3.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(6.0f)),
+            AZ::Transform::CreateUniformScale(6.0f),
             0.25f, 1.5f, entity);
 
         bool rayHit = false;
@@ -208,7 +208,7 @@ namespace UnitTest
     TEST_F(CapsuleShapeTest, GetAabb3)
     {
         AZ::Entity entity;
-        CreateCapsule(AZ::Transform::CreateScale(AZ::Vector3(3.5f)), 2.0f, 4.0f, entity);
+        CreateCapsule(AZ::Transform::CreateUniformScale(3.5f), 2.0f, 4.0f, entity);
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -224,7 +224,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateCapsule(
             AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, 20.0f, 0.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f)), 1.0f, 5.0f, entity);
+            AZ::Transform::CreateUniformScale(2.5f), 1.0f, 5.0f, entity);
 
         AZ::Aabb aabb;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(
@@ -255,7 +255,7 @@ namespace UnitTest
         AZ::Transform transformIn = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::HalfPi) *
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(-10.0f, -10.0f, 0.0f));
-        transformIn.MultiplyByScale(AZ::Vector3(3.0f));
+        transformIn.MultiplyByUniformScale(3.0f);
         CreateCapsule(transformIn, 5.0f, 2.0f, entity);
 
         AZ::Transform transformOut;
@@ -273,7 +273,7 @@ namespace UnitTest
         AZ::Transform transformIn = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisX(), AZ::Constants::HalfPi) *
             AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3::CreateAxisY(), AZ::Constants::QuarterPi), AZ::Vector3(-10.0f, -10.0f, 0.0f));
-        transformIn.MultiplyByScale(AZ::Vector3(3.0f));
+        transformIn.MultiplyByUniformScale(3.0f);
         CreateCapsule(transformIn, 2.0f, 5.0f, entity);
 
         AZ::Transform transformOut;
@@ -291,7 +291,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateCapsule(
             AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f, 1.0f, 1.0f)), // test max scale
+            AZ::Transform::CreateUniformScale(2.5f),
             0.5f, 2.0f, entity);
 
         bool inside;
@@ -309,7 +309,7 @@ namespace UnitTest
             AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(0.5f)),
+            AZ::Transform::CreateUniformScale(0.5f),
             0.5f, 2.0f, entity);
 
         bool inside;
@@ -327,7 +327,7 @@ namespace UnitTest
             AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             0.5f, 4.0f, entity);
 
         float distance;
@@ -345,7 +345,7 @@ namespace UnitTest
             AZ::Transform::CreateTranslation(AZ::Vector3(27.0f, 28.0f, 38.0f)) *
             AZ::Transform::CreateRotationX(AZ::Constants::HalfPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             0.5f, 4.0f, entity);
 
         float distance;

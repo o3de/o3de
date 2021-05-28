@@ -16,8 +16,10 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
+#include <AzNetworking/DataStructures/ByteBuffer.h>
 
 namespace Multiplayer
 {
@@ -40,7 +42,7 @@ namespace Multiplayer
 
     //! This is a strong typedef for representing the number of application frames since application start.
     AZ_TYPE_SAFE_INTEGRAL(HostFrameId, uint32_t);
-    static constexpr HostFrameId InvalidHostFrameId = HostFrameId{ 0xFFFFFFFF };
+    static constexpr HostFrameId InvalidHostFrameId = HostFrameId{ AzPhysics::SimulatedBody::UndefinedFrameId };
 
     using LongNetworkString = AZ::CVarFixedString;
     using ReliabilityType = AzNetworking::ReliabilityType;
@@ -85,8 +87,7 @@ namespace Multiplayer
         Activate
     };
 
-    // This is just a placeholder
-    // The level/prefab cooking will devise the actual solution for identifying a dynamically spawnable entity within a prefab
+    // Structure for identifying a specific entity within a spawnable
     struct PrefabEntityId
     {
         AZ_TYPE_INFO(PrefabEntityId, "{EFD37465-CCAC-4E87-A825-41B4010A2C75}");
@@ -120,6 +121,13 @@ namespace Multiplayer
             serializer.Serialize(m_entityOffset, "entityOffset");
             return serializer.IsValid();
         }
+    };
+
+    struct EntityMigrationMessage
+    {
+        NetEntityId m_entityId;
+        PrefabEntityId m_prefabEntityId;
+        AzNetworking::PacketEncodingBuffer m_propertyUpdateData;
     };
 }
 

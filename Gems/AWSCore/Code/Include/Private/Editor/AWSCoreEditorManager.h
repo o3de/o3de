@@ -18,7 +18,7 @@ namespace AWSCore
     class AWSCoreEditorManager
     {
     public:
-        static constexpr const char CLOUD_SERVICES_MENU_TEXT[] = "&Cloud services";
+        static constexpr const char AWS_MENU_TEXT[] = "&AWS";
 
         AWSCoreEditorManager();
         virtual ~AWSCoreEditorManager();

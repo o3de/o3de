@@ -43,6 +43,7 @@ namespace MaterialEditor
         void SetTargetPosition(const AZ::Vector3& targetPosition) override;
         float GetDistanceToTarget() const override;
         void GetExtents(float& distanceMin, float& distanceMax) const override;
+        float GetRadius() const override;
         void Reset() override;
         void SetFieldOfView(float value) override;
         bool IsCameraCentered() const override;
@@ -96,6 +97,8 @@ namespace MaterialEditor
         float m_distanceMin = 1.0f;
         //! Maximum distance from camera to target
         float m_distanceMax = 10.0f;
+        //! Model radius
+        float m_radius = 1.0f;
         //! True if camera is centered on a model
         bool m_isCameraCentered = true;
 

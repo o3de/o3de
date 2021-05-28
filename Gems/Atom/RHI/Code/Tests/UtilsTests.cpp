@@ -60,7 +60,9 @@ namespace UnitTest
 
     TEST_F(UtilsTests, LoadFileString_Error_DoesNotExist)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto outcome = AZ::RHI::LoadFileString("FileDoesNotExist");
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         EXPECT_FALSE(outcome.IsSuccess());
         EXPECT_TRUE(outcome.GetError().find("Could not open file") != AZStd::string::npos);
         EXPECT_TRUE(outcome.GetError().find("FileDoesNotExist") != AZStd::string::npos);
@@ -68,7 +70,9 @@ namespace UnitTest
 
     TEST_F(UtilsTests, LoadFileBytes_Error_DoesNotExist)
     {
+        AZ_TEST_START_TRACE_SUPPRESSION;
         auto outcome = AZ::RHI::LoadFileBytes("FileDoesNotExist");
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         EXPECT_FALSE(outcome.IsSuccess());
         EXPECT_TRUE(outcome.GetError().find("Could not open file") != AZStd::string::npos);
         EXPECT_TRUE(outcome.GetError().find("FileDoesNotExist") != AZStd::string::npos);

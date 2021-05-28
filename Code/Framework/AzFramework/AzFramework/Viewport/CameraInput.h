@@ -18,7 +18,6 @@
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Viewport/ClickDetector.h>
-#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
@@ -35,9 +34,9 @@ namespace AzFramework
         AZ::Vector3 m_lookAt = AZ::Vector3::CreateZero(); //!< Position of camera when m_lookDist is zero,
                                                           //!< or position of m_lookAt when m_lookDist is greater
                                                           //!< than zero.
-        float m_yaw{0.0};
-        float m_pitch{0.0};
-        float m_lookDist{0.0}; //!< Zero gives first person free look, otherwise orbit about m_lookAt
+        float m_yaw{ 0.0 };
+        float m_pitch{ 0.0 };
+        float m_lookDist{ 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
 
         //! View camera transform (v in MVP).
         AZ::Transform View() const;
@@ -72,10 +71,15 @@ namespace AzFramework
 
     void UpdateCameraFromTransform(Camera& camera, const AZ::Transform& transform);
 
-    struct CursorEvent
+    //! Generic motion type
+    template<typename MotionTag>
+    struct MotionEvent
     {
-        ScreenPoint m_position;
+        int m_delta;
     };
+
+    using HorizontalMotionEvent = MotionEvent<struct HorizontalMotionTag>;
+    using VerticalMotionEvent = MotionEvent<struct VerticalMotionTag>;
 
     struct ScrollEvent
     {
@@ -88,7 +92,7 @@ namespace AzFramework
         InputChannel::State m_state; //!< Channel state. (e.g. Begin/update/end event).
     };
 
-    using InputEvent = AZStd::variant<AZStd::monostate, CursorEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
 
     class CameraInput
     {
@@ -149,7 +153,7 @@ namespace AzFramework
             ResetImpl();
         }
 
-        virtual void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
+        virtual bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
         virtual Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) = 0;
 
         virtual bool Exclusive() const
@@ -171,16 +175,34 @@ namespace AzFramework
     class Cameras
     {
     public:
-        void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta);
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime);
+
+        void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
+        //! Reset the state of all cameras.
         void Reset();
+        //! Remove all cameras that were added.
+        void Clear();
+        //! Is one of the cameras in the active camera inputs marked as 'exclusive'.
+        //! @note This implies no other sibling cameras can begin while the exclusive camera is running.
+        bool Exclusive() const;
 
     private:
         AZStd::vector<AZStd::shared_ptr<CameraInput>> m_activeCameraInputs;
         AZStd::vector<AZStd::shared_ptr<CameraInput>> m_idleCameraInputs;
     };
 
+    inline bool Cameras::Exclusive() const
+    {
+        return AZStd::any_of(
+            m_activeCameraInputs.begin(), m_activeCameraInputs.end(),
+            [](const auto& cameraInput)
+            {
+                return cameraInput->Exclusive();
+            });
+    }
+
+    //! Responsible for updating a series of cameras given various inputs.
     class CameraSystem
     {
     public:
@@ -190,8 +212,8 @@ namespace AzFramework
         Cameras m_cameras;
 
     private:
-        CursorState m_cursorState;
-        float m_scrollDelta = 0.0f;
+        ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
+        float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
     };
 
     class RotateCameraInput : public CameraInput
@@ -200,7 +222,7 @@ namespace AzFramework
         explicit RotateCameraInput(InputChannelId rotateChannelId);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
@@ -219,7 +241,7 @@ namespace AzFramework
     inline PanAxes LookPan(const Camera& camera)
     {
         const AZ::Matrix3x3 orientation = camera.Rotation();
-        return {orientation.GetBasisX(), orientation.GetBasisZ()};
+        return { orientation.GetBasisX(), orientation.GetBasisZ() };
     }
 
     inline PanAxes OrbitPan(const Camera& camera)
@@ -227,12 +249,13 @@ namespace AzFramework
         const AZ::Matrix3x3 orientation = camera.Rotation();
 
         const auto basisX = orientation.GetBasisX();
-        const auto basisY = [&orientation] {
+        const auto basisY = [&orientation]
+        {
             const auto forward = orientation.GetBasisY();
             return AZ::Vector3(forward.GetX(), forward.GetY(), 0.0f).GetNormalized();
         }();
 
-        return {basisX, basisY};
+        return { basisX, basisY };
     }
 
     class PanCameraInput : public CameraInput
@@ -241,7 +264,7 @@ namespace AzFramework
         PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
@@ -267,7 +290,8 @@ namespace AzFramework
         const AZ::Matrix3x3 orientation = camera.Rotation();
 
         const auto basisX = orientation.GetBasisX();
-        const auto basisY = [&orientation] {
+        const auto basisY = [&orientation]
+        {
             const auto forward = orientation.GetBasisY();
             return AZ::Vector3(forward.GetX(), forward.GetY(), 0.0f).GetNormalized();
         }();
@@ -282,7 +306,7 @@ namespace AzFramework
         explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
 
@@ -352,7 +376,7 @@ namespace AzFramework
     {
     public:
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
     };
 
@@ -362,7 +386,7 @@ namespace AzFramework
         explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
     private:
@@ -373,17 +397,17 @@ namespace AzFramework
     {
     public:
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
     };
 
     class OrbitCameraInput : public CameraInput
     {
     public:
-        using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>()>;
+        using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
         // CameraInput overrides ...
-        void HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
 
@@ -406,8 +430,6 @@ namespace AzFramework
         return true;
     }
 
-    struct WindowSize;
-
     //! Map from a generic InputChannel event to a camera specific InputEvent.
-    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
+    InputEvent BuildInputEvent(const InputChannel& inputChannel);
 } // namespace AzFramework

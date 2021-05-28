@@ -114,6 +114,11 @@ namespace MaterialEditor
         distanceMax = m_distanceMax;
     }
 
+    float MaterialEditorViewportInputController::GetRadius() const
+    {
+        return m_radius;
+    }
+
     void MaterialEditorViewportInputController::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
         if (m_keysChanged)
@@ -306,11 +311,10 @@ namespace MaterialEditor
             if (modelAsset.IsReady())
             {
                 const AZ::Aabb& aabb = modelAsset->GetAabb();
-                float radius;
-                aabb.GetAsSphere(m_modelCenter, radius);
+                aabb.GetAsSphere(m_modelCenter, m_radius);
 
                 m_distanceMin = 0.5f * AZ::GetMin(AZ::GetMin(aabb.GetExtents().GetX(), aabb.GetExtents().GetY()), aabb.GetExtents().GetZ()) + DepthNear;
-                m_distanceMax = radius * MaxDistanceMultiplier;
+                m_distanceMax = m_radius * MaxDistanceMultiplier;
             }
         }
     }
