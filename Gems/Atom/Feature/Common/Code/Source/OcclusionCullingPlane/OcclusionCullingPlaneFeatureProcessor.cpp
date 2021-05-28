@@ -47,10 +47,8 @@ namespace AZ
             DisableSceneNotification();
         }
 
-        void OcclusionCullingPlaneFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
-        {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
+        void OcclusionCullingPlaneFeatureProcessor::OnBeginPrepareRender()
+        {       
             AZStd::vector<AZ::Transform> occlusionCullingPlanes;
             for (auto& occlusionCullingPlane : m_occlusionCullingPlanes)
             {

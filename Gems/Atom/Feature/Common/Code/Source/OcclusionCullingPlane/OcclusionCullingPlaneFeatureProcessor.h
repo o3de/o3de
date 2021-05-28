@@ -58,7 +58,9 @@ namespace AZ
             // FeatureProcessor overrides
             void Activate() override;
             void Deactivate() override;
-            void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
+
+            // RPI::SceneNotificationBus overrides ...
+            void OnBeginPrepareRender() override;
 
             // retrieve the full list of occlusion planes
             using OcclusionCullingPlaneVector = AZStd::vector<AZStd::shared_ptr<OcclusionCullingPlane>>;
