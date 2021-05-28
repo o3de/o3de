@@ -12,6 +12,9 @@
 
 #include <Atom/RHI.Edit/ShaderCompilerArguments.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/std/string/regex.h>
+
+#include <Atom/RHI.Edit/Utils.h>
 
 namespace AZ
 {
@@ -49,6 +52,12 @@ namespace AZ
             }
         }
 
+        bool ShaderCompilerArguments::HasMacroDefinitionsInCommandLineArguments()
+        {
+            return CommandLineArgumentUtils::HasMacroDefinitions(m_azslcAdditionalFreeArguments) ||
+                CommandLineArgumentUtils::HasMacroDefinitions(m_dxcAdditionalFreeArguments);
+        }
+
         void ShaderCompilerArguments::Merge(const ShaderCompilerArguments& right)
         {
             if (right.m_azslcWarningLevel != LevelUnset)
@@ -56,7 +65,7 @@ namespace AZ
                 m_azslcWarningLevel = right.m_azslcWarningLevel;
             }
             m_azslcWarningAsError = m_azslcWarningAsError || right.m_azslcWarningAsError;
-            m_azslcAdditionalFreeArguments += " " + right.m_azslcAdditionalFreeArguments;
+            m_azslcAdditionalFreeArguments = CommandLineArgumentUtils::MergeCommandLineArguments(m_azslcAdditionalFreeArguments, right.m_azslcAdditionalFreeArguments);
             m_dxcDisableWarnings = m_dxcDisableWarnings || right.m_dxcDisableWarnings;
             m_dxcWarningAsError = m_dxcWarningAsError || right.m_dxcWarningAsError;
             m_dxcDisableOptimizations = m_dxcDisableOptimizations || right.m_dxcDisableOptimizations;
@@ -65,13 +74,14 @@ namespace AZ
             {
                 m_dxcOptimizationLevel = right.m_dxcOptimizationLevel;
             }
-            m_dxcAdditionalFreeArguments += " " + right.m_dxcAdditionalFreeArguments;
+            m_dxcAdditionalFreeArguments = CommandLineArgumentUtils::MergeCommandLineArguments(m_dxcAdditionalFreeArguments, right.m_dxcAdditionalFreeArguments);
             if (right.m_defaultMatrixOrder != MatrixOrder::Default)
             {
                 m_defaultMatrixOrder = right.m_defaultMatrixOrder;
             }
         }
 
+        //! [GFX TODO] [ATOM-15472] Remove this function.
         bool ShaderCompilerArguments::HasDifferentAzslcArguments(const ShaderCompilerArguments& right) const
         {
             auto isSet = +[](uint8_t level) { return level != LevelUnset; };
@@ -154,7 +164,7 @@ namespace AZ
                 arguments += " -Zi";  // Generate debug information
                 arguments += " -Zss"; // Compute Shader Hash considering source information
             }
-            arguments += m_dxcAdditionalFreeArguments;
+            arguments += " " + m_dxcAdditionalFreeArguments;
             return arguments;
         }
     }

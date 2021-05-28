@@ -70,6 +70,8 @@ namespace ScriptCanvas
 
                 AZ::Data::AssetId GetAssetId() const;
 
+                const AZStd::string& GetAssetHint() const;
+
                 const AZStd::string& GetName() const;
 
                 void Initialize(AZ::Data::AssetId assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId);

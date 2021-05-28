@@ -20,7 +20,6 @@
         },
         "parallax": {
             "algorithm": "ContactRefinement",
-            "enable": true,
             "factor": 0.004999999888241291,
             "quality": "Ultra",
             "textureMap": "Materials/Fabric001_8K/Fabric001_8K_Displacement.png"

@@ -234,5 +234,10 @@ namespace AzToolsFramework
             }
         }
 
+        PrefabDomValueReference Link::GetLinkPatches()
+        {
+            return PrefabDomUtils::FindPrefabDomValue(m_linkDom, PrefabDomUtils::PatchesName);
+        }
+
     } // namespace Prefab
 } // namespace AzToolsFramework

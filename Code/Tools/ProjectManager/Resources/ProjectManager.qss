@@ -1,29 +1,69 @@
 /************** General (MainWindow) **************/
 QMainWindow {
-    background-color: #333333;
+    background:#131313 url(:/o3de.svg) no-repeat top left;
+    /* position the logo using padding and background-origin, Qt does not support background-position pixels */
+    background-origin:content;
+    padding:25px 16px;
+    margin:0;
 }
-
 
 QPushButton:focus {
     outline: none;
     border:1px solid #1e70eb;
 }
 
+QTabBar {
+    background-color: transparent;
+}
+QTabWidget::tab-bar
+{
+    left: 78px; /* make room for the logo */
+}
+QTabBar::tab {
+    height:82px;
+    background-color: transparent;
+    font-size:24px;
+    min-width:100px;
+    margin-right:40px;
+    border-bottom: 3px solid transparent;
+}
+QTabBar::tab:text
+{
+    text-align:left;
+}
+QTabWidget::pane {
+    background-color: #333333;
+    border:0 none;
+}
+QTabBar::tab:selected
+{
+    border-bottom: 3px solid #1e70eb;
+    color: #1e70eb;
+}
+QTabBar::tab:hover
+{
+    color: #1e70eb;
+}
+QTabBar::tab:pressed
+{
+    color: #0e60eb;
+}
+
 /************** General (Forms) **************/
 
 #formLineEditWidget,
 #formBrowseEditWidget {
-    max-width: 780px;
+    max-width: 890px;
 }
 
 #formFrame {
-    max-width: 720px;
+    max-width: 840px;
     background-color: #444444;
     border:1px solid #dddddd;
     border-radius: 4px;
     padding: 0px 10px 2px 6px;
     margin-top:10px;
-    margin-left:30px;
+    margin-left:50px;
 }
 
 #formFrame[Focus="true"] {
@@ -59,15 +99,241 @@ QPushButton:focus {
     padding-top: -4px;
 }
 
+
 #formErrorLabel {
     color: #ec3030;
     font-size: 14px;
-    margin-left: 40px;
+    margin-left: 50px;
 }
 
 #formTitleLabel {
     font-size:21px;
     color:#ffffff;
-    margin: 10px 0 10px 30px;
+    margin: 24px 0 10px 50px;
 }
 
+/************** General (Modal windows) **************/
+
+#header {
+	background-color:#111111;
+    min-height:80px;
+    max-height:80px;
+}
+
+#header QPushButton {
+    /* settings min/max lets us use a fixed size */
+    min-width: 24px;
+    max-width: 24px;
+    min-height: 24px;
+    max-height: 24px;
+    margin: 20px 10px 0px 10px;
+    background:transparent url(:/ArrowBack.svg) no-repeat center;
+    background-origin:content;
+    qproperty-flat: true;
+    qproperty-iconSize: 50px;
+}
+
+#header QPushButton:focus {
+    border:none;
+}
+#header QPushButton:hover {
+    background:#333333 url(:/ArrowBack.svg) no-repeat center;
+}
+#header QPushButton:pressed {
+    background:#222222 url(:/ArrowBack.svg) no-repeat center;
+}
+
+#headerTitle {
+    font-size:14px;
+    text-align:left;
+    margin:0;
+    padding-top:10px;
+    padding-bottom:-5px;
+    min-height:15px;
+    max-height:15px;
+}
+#headerSubTitle {
+    font-size:24px;
+    text-align:left;
+    margin:0;
+    min-height:42px;
+    max-height:42px;
+}
+
+#body {
+    background-color:#333333;
+}
+#footer {
+    /* settings min/max lets us use a fixed size */
+    min-width: 50px;
+    min-height:54px;
+    max-height:54px;
+}
+
+#footer > QPushButton {
+    qproperty-flat: true;
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #0095f2, stop: 1.0 #1e70eb);
+    border-radius: 3px;
+    min-height: 28px;
+    max-height: 28px;
+    min-width: 150px;
+    margin-right:30px;
+}
+#footer > QPushButton:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+}
+#footer > QPushButton:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #0085e2, stop: 1.0 #0e60db);
+}
+
+#footer > QPushButton[secondary="true"] {
+    margin-right: 10px;
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #888888, stop: 1.0 #555555);
+}
+#footer > QPushButton[secondary="true"]:hover {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #999999, stop: 1.0 #666666);
+}
+#footer > QPushButton[secondary="true"]:pressed {
+	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+							stop: 0 #555555, stop: 1.0 #777777);
+}
+
+/************** Project Settings **************/
+#projectSettings {
+    margin-top:42px;
+}
+
+#projectTemplate {
+    margin: 55px 0 0 50px;
+    max-width: 780px;
+    min-height:200px;
+    max-height:200px;
+}
+#projectTemplateLabel {
+    font-size:16px;
+    font-weight:100;
+}
+
+#projectTemplateDetailsLabel {
+    font-size:14px;
+    min-height:40px;
+    margin-bottom:20px;
+}
+
+#projectTemplateDetails {
+    background-color:#444444;
+    max-width:240px;
+    min-width:240px;
+    margin-left:30px;
+}
+
+/************** Projects **************/
+#firstTimeContent > #titleLabel {
+    font-size:60px;
+    margin:73px 0px 0px 0px;
+    qproperty-indent: 0;
+}
+
+#firstTimeContent > #introLabel {
+    font-size:14px;
+    margin:10px 0 60px 0;
+    qproperty-indent: 0;
+}
+
+#firstTimeContent > QPushButton {
+    min-width: 210px;
+    max-width: 210px;
+    min-height: 276px;
+    max-height: 276px;
+    qproperty-flat: true;
+    background-origin:content;
+    font-size:14px;
+    border: 1px solid #ffffff;
+}
+
+#firstTimeContent > QPushButton:hover {
+    border: 1px solid #1e70eb;
+    color: #1e70eb;
+}
+
+#firstTimeContent > QPushButton:pressed {
+    border: 1px solid #0e60eb;
+    color: #0e60eb;
+}
+
+#createProjectButton {
+    background:rgba(0,0,0,180) url(:/AddOffset.svg) no-repeat center center;
+}
+#createProjectButton:hover,
+#createProjectButton:pressed {
+    background:rgba(0,0,0,180) url(:/AddOffset_Hover.svg) no-repeat center center;
+}
+
+#addProjectButton {
+    background:rgba(0,0,0,180) url(:/FolderOffset.svg) no-repeat center center;
+}
+#addProjectButton:hover,
+#addProjectButton:pressed {
+    background:rgba(0,0,0,180) url(:/FolderOffset_Hover.svg) no-repeat center center;
+}
+
+#projectsContent > QFrame  {
+    margin-top:60px;
+}
+
+#projectsContent > QFrame > #titleLabel {
+    font-size:24px;
+    qproperty-indent: 0;
+}
+
+#projectsContent > QScrollArea {
+    margin-top:40px;
+    margin-bottom:5px;
+}
+
+#projectButton > #labelButton  {
+    border:1px solid white;
+}
+#projectButton > #labelButton:hover,
+#projectButton > #labelButton:pressed  {
+    border:1px solid #1e70eb;
+}
+
+#projectButton > QFrame  {
+    margin-top:6px;
+}
+
+#projectButton > QFrame > QLabel {
+    font-weight:bold;
+    font-size:14px;
+    qproperty-indent: 0;
+}
+
+#projectMenuButton {
+    qproperty-flat: true;
+    background:transparent url(:/menu.svg) no-repeat center center;
+    max-width:30px;
+    min-width:30px;
+    max-height:14px;
+    min-height:14px;
+}
+
+#projectsContent > QFrame > #newProjectButton {
+    min-width:150px;
+    max-width:150px;
+    min-height:26px;
+    max-height:26px;
+}
+
+#labelButtonOverlay {
+    background-color: rgba(50,50,50,200);
+    min-width:210px;
+    max-width:210px;;
+    min-height:278px;
+    max-height:278px;
+}
