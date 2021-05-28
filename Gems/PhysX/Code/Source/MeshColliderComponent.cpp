@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/Utils.h>
 
@@ -85,11 +85,6 @@ namespace PhysX
         UpdateMeshAsset();
     }
 
-    void MeshColliderComponent::SetMaterialAsset(const AZ::Data::AssetId& id)
-    {
-        m_colliderConfiguration->m_materialSelection.SetMaterialLibrary(id);
-    }
-
     void MeshColliderComponent::SetMaterialId(const Physics::MaterialId& id)
     {
         m_colliderConfiguration->m_materialSelection.SetMaterialId(id);
@@ -111,8 +106,10 @@ namespace PhysX
         {
             m_shapeConfiguration->m_asset = asset;
 
-            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::UpdateMaterialSelection, 
-                *m_shapeConfiguration, *m_colliderConfiguration);
+            Physics::PhysicsMaterialRequestBus::Broadcast(
+                &Physics::PhysicsMaterialRequestBus::Events::UpdateMaterialSelectionFromPhysicsAsset,
+                *m_shapeConfiguration,
+                m_colliderConfiguration->m_materialSelection);
         }
     }
 
@@ -122,8 +119,10 @@ namespace PhysX
         {
             m_shapeConfiguration->m_asset = asset;
 
-            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::UpdateMaterialSelection,
-                *m_shapeConfiguration, *m_colliderConfiguration);
+            Physics::PhysicsMaterialRequestBus::Broadcast(
+                &Physics::PhysicsMaterialRequestBus::Events::UpdateMaterialSelectionFromPhysicsAsset,
+                *m_shapeConfiguration,
+                m_colliderConfiguration->m_materialSelection);
         }
     }
 

@@ -56,6 +56,10 @@ ly_add_source_properties(
     VALUES ${LY_PAL_TOOLS_DEFINES}
 )
 
+# the above module is for use in clients and servers
+ly_create_alias(NAME StartingPointInput.Servers  NAMESPACE Gem TARGETS Gem::StartingPointInput)
+ly_create_alias(NAME StartingPointInput.Clients  NAMESPACE Gem TARGETS Gem::StartingPointInput)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME StartingPointInput.Editor GEM_MODULE
@@ -74,6 +78,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 Gem::StartingPointInput.Static
     )
+
+    # by default, activate the ab ove module in builders and tools:
+    ly_create_alias(NAME StartingPointInput.Builders NAMESPACE Gem TARGETS Gem::StartingPointInput.Editor)
+    ly_create_alias(NAME StartingPointInput.Tools    NAMESPACE Gem TARGETS Gem::StartingPointInput.Editor)
+
 endif()
 
 ################################################################################

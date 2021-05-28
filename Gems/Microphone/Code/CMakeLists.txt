@@ -46,3 +46,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::AudioSystem
 )
+
+# The above "Microphone" target is used by all interactive applications
+ly_create_alias(NAME Microphone.Clients  NAMESPACE Gem TARGETS Gem::Microphone)
+ly_create_alias(NAME Microphone.Tools    NAMESPACE Gem TARGETS Gem::Microphone)

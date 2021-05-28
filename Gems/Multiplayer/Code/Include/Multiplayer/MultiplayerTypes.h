@@ -16,6 +16,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
@@ -41,7 +42,7 @@ namespace Multiplayer
 
     //! This is a strong typedef for representing the number of application frames since application start.
     AZ_TYPE_SAFE_INTEGRAL(HostFrameId, uint32_t);
-    static constexpr HostFrameId InvalidHostFrameId = HostFrameId{ 0xFFFFFFFF };
+    static constexpr HostFrameId InvalidHostFrameId = HostFrameId{ AzPhysics::SimulatedBody::UndefinedFrameId };
 
     using LongNetworkString = AZ::CVarFixedString;
     using ReliabilityType = AzNetworking::ReliabilityType;
