@@ -70,7 +70,7 @@ namespace PhysX
         , m_materialLibraryAssetHelper(
             [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
             {
-                OnMaterialLibraryReloaded(materialLibrary);
+                UpdateMaterialLibrary(materialLibrary);
             })
         , m_sceneInterface(this)
     {
@@ -371,15 +371,15 @@ namespace PhysX
     {
         // now that assets can be resolved, lets load the default material library.
         
-        if (!m_systemConfig.m_defaultMaterialLibrary.GetId().IsValid())
+        if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
-            m_onDefaultMaterialLoadErrorEvent.Signal();
+            m_onMaterialLoadErrorEvent.Signal();
         }
 
-        bool success = LoadDefaultMaterialLibrary();
+        bool success = LoadMaterialLibrary();
         if (!success)
         {
-            m_onDefaultMaterialLoadErrorEvent.Signal();
+            m_onMaterialLoadErrorEvent.Signal();
         }
     }
 
@@ -457,26 +457,6 @@ namespace PhysX
         return m_systemConfig;
     }
 
-    void PhysXSystem::OnMaterialLibraryReloaded(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-    {
-        if (m_systemConfig.m_materialLibraryAsset == materialLibrary)
-        {
-            // Same library asset, check if its data has changed.
-            if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
-            {
-                m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-            }
-        }
-        else
-        {
-            // New material library asset
-            m_systemConfig.m_materialLibraryAsset = materialLibrary;
-
-            LoadMaterialLibrary();
-            m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-        }
-    }
-
     void PhysXSystem::UpdateDefaultSceneConfiguration(const AzPhysics::SceneConfiguration& sceneConfiguration)
     {
         if (m_defaultSceneConfiguration != sceneConfiguration)
@@ -495,6 +475,29 @@ namespace PhysX
     const PhysXSettingsRegistryManager& PhysXSystem::GetSettingsRegistryManager() const
     {
         return m_registryManager;
+    }
+
+    void PhysXSystem::UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
+    {
+        if (m_systemConfig.m_materialLibraryAsset == materialLibrary)
+        {
+            // Same library asset, check if its data has changed.
+            const bool hasDifferentData = m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData();
+
+            m_systemConfig.m_materialLibraryAsset = materialLibrary;
+            if (hasDifferentData)
+            {
+                m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
+            }
+        }
+        else
+        {
+            // New material library asset
+            m_systemConfig.m_materialLibraryAsset = materialLibrary;
+
+            LoadMaterialLibrary();
+            m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
+        }
     }
 
     bool PhysXSystem::LoadMaterialLibrary()

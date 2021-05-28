@@ -66,7 +66,7 @@ namespace PhysX
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
         void NotifyRegisterViews() override;
 
-        AzPhysics::SystemEvents::OnDefaultMaterialLibraryLoadErrorEvent::Handler m_onDefaultMaterialLibraryLoadErrorEventHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler m_onMaterialLibraryLoadErrorEventHandler;
 
         AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> RetrieveDefaultMaterialLibrary();
 

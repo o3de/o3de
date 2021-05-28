@@ -89,15 +89,15 @@ namespace PhysX
     {
         Physics::EditorWorldBus::Handler::BusConnect();
 
-        m_onDefaultMaterialLibraryLoadErrorEventHandler = AzPhysics::SystemEvents::OnDefaultMaterialLibraryLoadErrorEvent::Handler(
+        m_onMaterialLibraryLoadErrorEventHandler = AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler(
             [this]()
             {
                 // Attempt to set/create the default material library if there was an error
-                if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+                if (auto* physxSystem = GetPhysXSystem())
                 {
                     if (auto retrievedMaterialLibrary = RetrieveDefaultMaterialLibrary())
                     {
-                        physicsSystem->UpdateDefaultMaterialLibrary(retrievedMaterialLibrary.value());
+                        physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
                     }
                 }
             }
@@ -108,7 +108,7 @@ namespace PhysX
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
             editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
-            physicsSystem->RegisterOnDefaultMaterialLibraryLoadErrorEventHandler(m_onDefaultMaterialLibraryLoadErrorEventHandler);
+            physicsSystem->RegisterOnMaterialLibraryLoadErrorEventHandler(m_onMaterialLibraryLoadErrorEventHandler);
         }
 
         PhysX::RegisterConfigStringLineEditHandler(); // Register custom unique string line edit control

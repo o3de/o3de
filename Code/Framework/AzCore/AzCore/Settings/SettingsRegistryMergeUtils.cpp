@@ -301,7 +301,8 @@ namespace AZ::SettingsRegistryMergeUtils
             return projectRoot;
         }
 
-        return {};
+
+        return "D:/o3de/branch_other/AutomatedTesting";
     }
 
     AZStd::string_view ConfigParserSettings::DefaultCommentPrefixFilter(AZStd::string_view line)
