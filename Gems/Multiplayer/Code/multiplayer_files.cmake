@@ -35,6 +35,7 @@ set(FILES
     Include/Multiplayer/NetworkTime/INetworkTime.h
     Include/Multiplayer/NetworkTime/RewindableObject.h
     Include/Multiplayer/NetworkTime/RewindableObject.inl
+    Include/Multiplayer/Physics/PhysicsUtils.h
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
     Source/Multiplayer_precompiled.cpp
     Source/Multiplayer_precompiled.h
@@ -103,6 +104,7 @@ set(FILES
     Source/Pipeline/NetBindMarkerComponent.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp
     Source/Pipeline/NetworkSpawnableHolderComponent.h
+    Source/Physics/PhysicsUtils.cpp
     Source/ReplicationWindows/NullReplicationWindow.cpp
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
