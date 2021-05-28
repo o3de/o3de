@@ -1077,25 +1077,7 @@ namespace AzToolsFramework
                         RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
 
                         UpdateLinkPatchForNewParent(linkPatchesCopy, oldEntityAliases, parentInstance);
-                        //update aliases
-                        rapidjson::StringBuffer buffer;
-                        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                        linkPatchesCopy.Accept(writer);
-                        QString previousPatchString(buffer.GetString());
-
-                        for (AZ::EntityId entityId : entityIds)
-                        {
-                            AZStd::string oldEntityAlias = oldEntityAliases[entityId];
-                            EntityAliasOptionalReference newEntityAlias = parentInstance.GetEntityAlias(entityId);
-                            AZ_Assert(
-                                newEntityAlias.has_value(),
-                                "Could not fetch entity alias for entity with id '%llu' during prefab creation.",
-                                static_cast<AZ::u64>(entityId));
-                            ReplaceOldAliases(previousPatchString, oldEntityAlias, newEntityAlias->get());
-                        }
-
-                        linkPatchesCopy.Parse(previousPatchString.toUtf8().constData());
-
+                        
                         CreateLink(*nestedInstancePtr, parentTemplateId, undoBatch.GetUndoBatch(),
                             AZStd::move(linkPatchesCopy), true);
                     });
