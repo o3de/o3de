@@ -777,6 +777,23 @@ namespace AzToolsFramework
             selection.SetDefaultDirectory(defaultDirectory);
         }
 
+        if (m_hideProductFilesInAssetPicker)
+        {
+            FilterConstType displayFilter = selection.GetDisplayFilter();
+
+            EntryTypeFilter* productsFilter = new EntryTypeFilter();
+            productsFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+
+            InverseFilter* noProductsFilter = new InverseFilter();
+            noProductsFilter->SetFilter(FilterConstType(productsFilter));
+
+            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            compFilter->AddFilter(FilterConstType(displayFilter));
+            compFilter->AddFilter(FilterConstType(noProductsFilter));
+
+            selection.SetDisplayFilter(FilterConstType(compFilter));
+        }
+
         AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
         if (selection.IsValid())
         {
@@ -1172,6 +1189,16 @@ namespace AzToolsFramework
         return m_showProductAssetName;
     }
 
+    void PropertyAssetCtrl::SetHideProductFilesInAssetPicker(bool hide)
+    {
+        m_hideProductFilesInAssetPicker = hide;
+    }
+
+    bool PropertyAssetCtrl::GetHideProductFilesInAssetPicker() const
+    {
+        return m_hideProductFilesInAssetPicker;
+    }
+
     void PropertyAssetCtrl::SetShowThumbnail(bool enable)
     {
         m_showThumbnail = enable;
@@ -1295,6 +1322,14 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(showProductAssetName))
             {
                 GUI->SetShowProductAssetName(showProductAssetName);
+            }
+        }
+        else if(attrib == AZ::Edit::Attributes::HideProductFilesInAssetPicker)
+        {
+            bool hideProductFilesInAssetPicker = false;
+            if (attrValue->Read<bool>(hideProductFilesInAssetPicker))
+            {
+                GUI->SetHideProductFilesInAssetPicker(hideProductFilesInAssetPicker);
             }
         }
         else if (attrib == AZ::Edit::Attributes::ClearNotify)
