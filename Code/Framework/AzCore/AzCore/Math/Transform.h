@@ -128,12 +128,8 @@ namespace AZ
         void SetUniformScale(const float scale);
 
         //! Sets the transform's scale to a unit value and returns the previous scale value.
-        Vector3 ExtractScale();
-
-        //! Sets the transform's scale to a unit value and returns the previous scale value.
         float ExtractUniformScale();
 
-        void MultiplyByScale(const AZ::Vector3& scale);
         void MultiplyByUniformScale(float scale);
 
         Transform operator*(const Transform& rhs) const;

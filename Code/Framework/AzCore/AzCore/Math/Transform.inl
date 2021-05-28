@@ -182,25 +182,11 @@ namespace AZ
         m_scale = Vector3(scale);
     }
 
-    AZ_MATH_INLINE Vector3 Transform::ExtractScale()
-    {
-        AZ_WarningOnce("Transform", false, "ExtractScale is deprecated, please use ExtractUniformScale instead.");
-        const Vector3 scale = m_scale;
-        m_scale = Vector3::CreateOne();
-        return scale;
-    }
-
     AZ_MATH_INLINE float Transform::ExtractUniformScale()
     {
         const float scale = m_scale.GetMaxElement();
         m_scale = Vector3::CreateOne();
         return scale;
-    }
-
-    AZ_MATH_INLINE void Transform::MultiplyByScale(const Vector3& scale)
-    {
-        AZ_WarningOnce("Transform", false, "MultiplyByScale is deprecated, please use MultiplyByUniformScale instead.");
-        m_scale *= scale;
     }
 
     AZ_MATH_INLINE void Transform::MultiplyByUniformScale(float scale)

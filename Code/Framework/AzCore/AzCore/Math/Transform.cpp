@@ -287,11 +287,8 @@ namespace AZ
                 Method("GetUniformScale", &Transform::GetUniformScale)->
                 Method("SetScale", &Transform::SetScale)->
                 Method("SetUniformScale", &Transform::SetUniformScale)->
-                Method("ExtractScale", &Transform::ExtractScale)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("ExtractUniformScale", &Transform::ExtractUniformScale)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
-                Method("MultiplyByScale", &Transform::MultiplyByScale)->
                 Method("MultiplyByUniformScale", &Transform::MultiplyByUniformScale)->
                 Method("GetInverse", &Transform::GetInverse)->
                 Method("Invert", &Transform::Invert)->
