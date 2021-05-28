@@ -44,21 +44,21 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        static bool IsDirectoryDecedent(const QString& possibleAncestorPath, const QString& possibleDecedentPath)
+        static bool IsDirectoryDescedent(const QString& possibleAncestorPath, const QString& possibleDecedentPath)
         {
             QDir ancestor(possibleAncestorPath);
-            QDir decendent(possibleDecedentPath);
+            QDir descendent(possibleDecedentPath);
 
             do
             {
-                if (ancestor == decendent)
+                if (ancestor == descendent)
                 {
                     return false;
                 }
 
-                decendent.cdUp();
+                descendent.cdUp();
             }
-            while (!decendent.isRoot());
+            while (!descendent.isRoot());
 
             return true;
         }
@@ -110,7 +110,7 @@ namespace O3DE::ProjectManager
         bool CopyProject(const QString& origPath, const QString& newPath)
         {
             // Disallow copying from or into subdirectory
-            if (!IsDirectoryDecedent(origPath, newPath) || !IsDirectoryDecedent(newPath, origPath))
+            if (!IsDirectoryDescedent(origPath, newPath) || !IsDirectoryDescedent(newPath, origPath))
             {
                 return false;
             }
