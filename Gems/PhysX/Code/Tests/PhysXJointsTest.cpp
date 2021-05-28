@@ -224,11 +224,11 @@ namespace PhysX
                 AzPhysics::RigidBodyConfiguration parentConfiguration;
                 AzPhysics::RigidBodyConfiguration childConfiguration;
 
-                Physics::ColliderConfiguration colliderConfig;
-                Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+                auto colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>();
+                auto shapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(1.0f, 1.0f, 1.0f));
 
-                parentConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
-                childConfiguration.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+                parentConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
+                childConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
                 
                 childConfiguration.m_position.SetX(childConfiguration.m_position.GetX() + 1);
                 m_childInitialPos = childConfiguration.m_position;
@@ -242,7 +242,8 @@ namespace PhysX
         {
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {
-                sceneInterface->RemoveSimulatedBodies(m_testSceneHandle, {m_parentBodyHandle, m_childBodyHandle});    
+                sceneInterface->RemoveSimulatedBody(m_testSceneHandle, m_parentBodyHandle);
+                sceneInterface->RemoveSimulatedBody(m_testSceneHandle, m_childBodyHandle);    
             }
 
             PhysX::GenericPhysicsInterfaceTest::TearDown();
