@@ -369,8 +369,17 @@ namespace PhysX
 
     void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
     {
-        //now that assets can be resolved, lets load the default material library.
-        LoadDefaultMaterialLibrary();
+        if (!m_systemConfig.m_defaultMaterialLibrary.GetId().IsValid())
+        {
+            m_onDefaultMaterialLoadErrorEvent.Signal();
+        }
+
+        // now that assets can be resolved, lets load the default material library.
+        bool success = LoadDefaultMaterialLibrary();
+        if (!success)
+        {
+            m_onDefaultMaterialLoadErrorEvent.Signal();
+        }
     }
 
     void PhysXSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization /*= false*/)
@@ -503,7 +512,7 @@ namespace PhysX
         AZ_Warning("PhysX", (materialLibrary.GetData() != nullptr),
             "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
         
-        return materialLibrary.GetData() != nullptr;
+        return materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
     }
 
     //TEMP -- until these are fully moved over here

@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzPhysics
@@ -65,7 +66,10 @@ namespace PhysX
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
         void NotifyRegisterViews() override;
 
-        AZ::Data::AssetId GenerateSurfaceTypesLibrary();
+        AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
+        AzPhysics::SystemEvents::OnDefaultMaterialLibraryLoadErrorEvent::Handler m_onDefaultMaterialLibraryLoadErrorEventHandler;
+
+        AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> RetrieveDefaultMaterialLibrary();
 
         AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
     };
