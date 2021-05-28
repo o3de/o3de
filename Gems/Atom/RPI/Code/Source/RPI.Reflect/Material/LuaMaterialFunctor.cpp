@@ -296,6 +296,7 @@ namespace AZ
                 ->Method("GetShaderCount", &LuaMaterialFunctorRuntimeContext::GetShaderCount)
                 ->Method("GetShader", &LuaMaterialFunctorRuntimeContext::GetShader)
                 ->Method("GetShaderByTag", &LuaMaterialFunctorRuntimeContext::GetShaderByTag)
+                ->Method("HasShaderWithTag", &LuaMaterialFunctorRuntimeContext::HasShaderWithTag)
                 ;
         }
 
@@ -423,6 +424,11 @@ namespace AZ
                     "GetShaderByTag('%s') is invalid: Could not find a shader with the tag '%s'.", tag.GetCStr(), tag.GetCStr()));
                 return LuaMaterialFunctorShaderItem{nullptr};
             }
+        }
+        
+        bool LuaMaterialFunctorRuntimeContext::HasShaderWithTag(const char* shaderTag)
+        {
+            return m_runtimeContextImpl->m_shaderCollection->HasShaderTag(AZ::Name{shaderTag});
         }
 
         void LuaMaterialFunctorEditorContext::LuaMaterialFunctorEditorContext::Reflect(BehaviorContext* behaviorContext)

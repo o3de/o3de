@@ -41,7 +41,8 @@
             "factor": 0.04600000008940697,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/vaseHanging_1k_height.png"
+            "textureMap": "Textures/vaseHanging_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/vaseHanging_1k_roughness.png"

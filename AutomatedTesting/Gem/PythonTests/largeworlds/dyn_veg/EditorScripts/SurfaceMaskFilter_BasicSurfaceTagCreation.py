@@ -23,6 +23,25 @@ class TestSurfaceMaskFilter_BasicSurfaceTagCreation(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="TestSurfaceMaskFilter_BasicSurfaceTagCreation", args=["level"])
         
     def run_test(self):
+        """
+        Summary:
+        Verifies basic surface tag value equality
+
+        Expected Behavior:
+        Surface tags of the same name are equal, and different names aren't.
+
+        Test Steps:
+         1) Open level
+         2) Create 2 new surface tags of identical names and verify they resolve as equal.
+         3) Create another new tag of a different name and verify they resolve as different.
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
         self.log("SurfaceTag test started")
         
         # Create a level
