@@ -16,7 +16,7 @@
 namespace AWSCore
 {
     AWSCoreEditorManager::AWSCoreEditorManager()
-        : m_awsCoreEditorMenu(new AWSCoreEditorMenu(CLOUD_SERVICES_MENU_TEXT))
+        : m_awsCoreEditorMenu(new AWSCoreEditorMenu(AWS_MENU_TEXT))
     {
     }
 
