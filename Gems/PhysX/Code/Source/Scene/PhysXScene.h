@@ -98,6 +98,10 @@ namespace PhysX
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
 
+        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::ApiJoint*>> m_joints;
+        AZStd::vector<AzPhysics::ApiJoint*> m_deferredDeletionsJoints;
+        AZStd::queue<AzPhysics::ApiJointIndex> m_freeJointSlots;
+
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsSystemConfigChanged;
 
         static thread_local AZStd::vector<physx::PxRaycastHit> s_rayCastBuffer; //!< thread local structure to hold hits for a single raycast or shapecast.
