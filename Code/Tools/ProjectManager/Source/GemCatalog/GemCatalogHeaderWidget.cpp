@@ -25,10 +25,12 @@ namespace O3DE::ProjectManager
         hLayout->setMargin(0);
         setLayout(hLayout);
 
-        setStyleSheet("background-color: #1E252F;");
+        setObjectName("GemCatalogHeaderWidget");
+
+        hLayout->addSpacing(7);
 
         QLabel* titleLabel = new QLabel(tr("Gem Catalog"));
-        titleLabel->setStyleSheet("font-size: 21px;");
+        titleLabel->setObjectName("GemCatalogTitle");
         hLayout->addWidget(titleLabel);
 
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
@@ -42,7 +44,7 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(filterLineEdit);
 
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
-        hLayout->addSpacerItem(new QSpacerItem(220, 0, QSizePolicy::Fixed));
+        hLayout->addSpacerItem(new QSpacerItem(140, 0, QSizePolicy::Fixed));
         
         setFixedHeight(60);
     }
