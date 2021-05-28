@@ -272,5 +272,5 @@ namespace TestImpact
                 return ReturnCode::UnknownError;
             }
         }
-    }
-}
+    } // namespace Console 
+} // namespace TestImpact
