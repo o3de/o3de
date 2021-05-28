@@ -119,13 +119,13 @@ namespace AWSCore
         if (m_isDebug)
         {
             return AZStd::string::format(
-                "%s debug %s --binaries_path %s --debug --aws_profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
+                "%s debug %s --binaries_path %s --debug --profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
                 m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(), profileName.c_str(), configPath.c_str());
         }
         else
         {
             return AZStd::string::format(
-                "%s %s --binaries_path %s --aws_profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
+                "%s %s --binaries_path %s --profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
                 m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(), profileName.c_str(), configPath.c_str());
         }
     }
