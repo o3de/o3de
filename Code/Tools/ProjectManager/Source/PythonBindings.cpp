@@ -466,7 +466,7 @@ namespace O3DE::ProjectManager
             [&]
             {
                 pybind11::str projectPath = path.toStdString();
-                auto pythonRegistrationResult = m_registration.attr("register")(pybind11::none(), projectPath);
+                auto pythonRegistrationResult = m_register.attr("register")(pybind11::none(), projectPath);
 
                 // Returns an exit code so boolify it then invert result
                 registrationResult = !pythonRegistrationResult.cast<bool>();
@@ -482,7 +482,7 @@ namespace O3DE::ProjectManager
             [&]
             {
                 pybind11::str projectPath = path.toStdString();
-                auto pythonRegistrationResult = m_registration.attr("register")(
+                auto pythonRegistrationResult = m_register.attr("register")(
                     pybind11::none(),   // engine_path
                     projectPath,        // project_path
                     pybind11::none(),   // gem_path
