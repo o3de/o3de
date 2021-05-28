@@ -170,6 +170,23 @@ namespace AzToolsFramework
 
                 return true;
             }
+
+            bool EditorTransformDataConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+            {
+                if (classElement.GetVersion() < 3)
+                {
+                    // version 3 replaces vector scale with uniform scale but does not yet delete the legacy scale data
+                    // in order to allow for migration
+                    AZ::Vector3 vectorScale;
+                    if (classElement.FindSubElementAndGetData<AZ::Vector3>(AZ_CRC_CE("Scale"), vectorScale))
+                    {
+                        const float uniformScale = vectorScale.GetMaxElement();
+                        classElement.AddElementWithData(context, "UniformScale", uniformScale);
+                    }
+                }
+
+                return true;
+            }
         } // namespace Internal
 
         TransformComponent::TransformComponent()
@@ -1123,6 +1140,8 @@ namespace AzToolsFramework
             return AZ::Edit::PropertyRefreshLevels::EntireTree;
         }
 
+
+
         void TransformComponent::Reflect(AZ::ReflectContext* context)
         {
             // reflect data for script, serialization, editing..
@@ -1133,7 +1152,8 @@ namespace AzToolsFramework
                     Field("Rotate", &EditorTransform::m_rotate)->
                     Field("Scale", &EditorTransform::m_scale)->
                     Field("Locked", &EditorTransform::m_locked)->
-                    Version(2);
+                    Field("UniformScale", &EditorTransform::m_uniformScale)->
+                    Version(3, &Internal::EditorTransformDataConverter);
 
                 serializeContext->Class<Components::TransformComponent, EditorComponentBase>()->
                     Field("Parent Entity", &TransformComponent::m_parentEntityId)->
@@ -1192,7 +1212,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::Suffix, " deg")->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
-                        DataElement(TransformScaleHandler, &EditorTransform::m_scale, "Scale", "Local Scale")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_uniformScale, "Uniform Scale", "Local Uniform Scale")->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)
                         ;

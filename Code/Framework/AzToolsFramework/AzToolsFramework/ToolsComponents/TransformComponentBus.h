@@ -42,6 +42,7 @@ namespace AzToolsFramework
 
             AZ::Vector3 m_translate; //! Translation in engine units (meters)
             AZ::Vector3 m_scale;
+            float m_uniformScale;
             AZ::Vector3 m_rotate; //! Rotation in degrees
             bool m_locked;
         };
