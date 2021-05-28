@@ -603,25 +603,30 @@ namespace AzToolsFramework
 
             if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
-                if (beforeParentId != afterParentId)
-                {
-                    GenerateUndoNodeForReparenting(parentUndoBatch, entity, beforeParentId, afterParentId);
-
-                    m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
-
-                    m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
-                    m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
-                }
 
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
+                bool isGettingReparented = beforeParentId != afterParentId;
 
                 if (isInstanceContainerEntity)
                 {
                     GenerateUndoNodeForContainerOverride(parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+
+                    if (isGettingReparented)
+                    {
+                        GenerateUndoNodeForReparenting(parentUndoBatch, entity, beforeParentId, afterParentId);
+
+                        // The link's patch will need refreshing since aliases have changed
+                        RefreshEntityPatchOnLink(parentUndoBatch, owningInstance->get().GetLinkId(), entity);
+                    }
                 }
                 else
                 {
                     GenerateUndoNodeForEntityChange(parentUndoBatch, entityId, beforeState, afterState);
+
+                    if (isGettingReparented)
+                    {
+                        GenerateUndoNodeForReparenting(parentUndoBatch, entity, beforeParentId, afterParentId);
+                    }
                 }
             }
 
@@ -657,7 +662,6 @@ namespace AzToolsFramework
             InstanceOptionalReference beforeOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(beforeParentId);
             InstanceOptionalReference afterOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(afterParentId);
 
-            // TODO - See if we need to error out / do something special if either instance can't be found.
             if (!beforeOwningInstance.has_value() || !afterOwningInstance.has_value() ||
                 (&beforeOwningInstance->get() == &afterOwningInstance->get()))
             {
@@ -743,6 +747,91 @@ namespace AzToolsFramework
                 PrefabUndoHelpers::UpdatePrefabInstance(
                     afterOwningInstance->get(), "Update new prefab instance", afterInstanceDomBeforeAdd, undoBatch);
             }
+        }
+
+        void PrefabPublicHandler::RefreshEntityPatchOnLink(UndoSystem::URSequencePoint* undoBatch, const LinkId linkId, AZ::Entity* entity)
+        {
+            if (!entity)
+            {
+                return;
+            }
+
+            AZ::EntityId entityId = entity->GetId();
+
+            // Get source template id from the link provided.
+            auto link = m_prefabSystemComponentInterface->FindLink(linkId);
+
+            if (!link.has_value())
+            {
+                return;
+            }
+
+            TemplateId sourceTemplateId = link->get().GetSourceTemplateId();
+
+            // Retrieve the instance owning the container entity provided.
+            auto sourceInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+
+            // Find an instance of the source template in the hierarchy - either owningInstance, or one of its ancestors.
+            while (sourceInstance.has_value() && sourceInstance->get().GetTemplateId() != sourceTemplateId)
+            {
+                sourceInstance = sourceInstance->get().GetParentInstance();
+            }
+
+            if (!sourceInstance.has_value())
+            {
+                return;
+            }
+
+            // If link doesn't match, input was incorrect.
+            if (sourceInstance->get().GetLinkId() != linkId)
+            {
+                return;
+            }
+
+            // Generate Paths to the dom of the entity
+            AZStd::string sourcePath = "/";
+            if (entityId == sourceInstance->get().GetContainerEntityId())
+            {
+                sourcePath += PrefabDomUtils::ContainerEntityName;
+            }
+            else
+            {
+                EntityAliasOptionalReference entityAliasRef = sourceInstance->get().GetEntityAlias(entityId);
+                sourcePath += AZStd::string(PrefabDomUtils::EntitiesName) + "/" + entityAliasRef->get();
+            }
+
+            AZStd::string targetPath =
+                AZStd::string("/") + PrefabDomUtils::InstancesName + "/" + sourceInstance->get().GetInstanceAlias() + sourcePath;
+
+            // Generate the path pointers
+            PrefabDomPath sourcePathPtr(sourcePath.c_str());
+            PrefabDomPath targetPathPtr(targetPath.c_str());
+
+            // Generate the instance doms, and retrieve the entity doms from them
+            PrefabDom sourceInstanceDom;
+            m_instanceToTemplateInterface->GenerateDomForInstance(sourceInstanceDom, sourceInstance->get());
+
+            PrefabDom sourceEntityDom;
+            sourceEntityDom.CopyFrom(*sourcePathPtr.Get(sourceInstanceDom), sourceEntityDom.GetAllocator());
+
+            auto targetInstance = sourceInstance->get().GetParentInstance();
+            PrefabDom targetInstanceDom;
+            m_instanceToTemplateInterface->GenerateDomForInstance(targetInstanceDom, targetInstance->get());
+
+            PrefabDom targetEntityDom;
+            targetEntityDom.CopyFrom(*targetPathPtr.Get(targetInstanceDom), targetEntityDom.GetAllocator());
+
+            // Create a patch to turn the dom in the source into the dom in the target
+            PrefabDom patch;
+            m_instanceToTemplateInterface->GeneratePatch(patch, sourceEntityDom, targetEntityDom);
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
+
+            // Update the link with this patch. UpdateLink node should take care of merging the patches properly.
+            PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
+            linkUpdate->SetParent(undoBatch);
+            linkUpdate->Capture(patch, linkId);
+
+            linkUpdate->Redo();
         }
 
         bool PrefabPublicHandler::IsInstanceContainerEntity(AZ::EntityId entityId) const
