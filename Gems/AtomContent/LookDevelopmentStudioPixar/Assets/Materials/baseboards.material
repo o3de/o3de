@@ -30,7 +30,8 @@
             "factor": 0.02500000037252903,
             "pdo": true,
             "quality": "Ultra",
-            "textureMap": "Materials/Bricks038_8K/Bricks038_8K_Displacement.png"
+            "textureMap": "Materials/Bricks038_8K/Bricks038_8K_Displacement.png",
+            "useTexture": false
         },
         "roughness": {
             "factor": 0.4343433976173401,

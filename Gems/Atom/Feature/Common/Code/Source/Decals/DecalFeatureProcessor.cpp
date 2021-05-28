@@ -279,7 +279,7 @@ namespace AZ
             if (handle.IsValid())
             {
                 Quaternion orientation = world.GetRotation();
-                Vector3 scale = world.GetScale() * nonUniformScale;
+                Vector3 scale = world.GetUniformScale() * nonUniformScale;
 
                 SetDecalHalfSize(handle, scale);
                 SetDecalPosition(handle, world.GetTranslation());

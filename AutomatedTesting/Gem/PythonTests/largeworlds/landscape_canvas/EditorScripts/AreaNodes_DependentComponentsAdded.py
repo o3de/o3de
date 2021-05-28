@@ -33,6 +33,26 @@ class TestAreaNodeComponentDependency(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="AreaNodeComponentDependency", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that the Landscape Canvas nodes can be added to a graph, and correctly create entities with
+        proper dependent components.
+
+        Expected Behavior:
+        All expected component dependencies are met when adding an area node to a graph.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Drag each of the area nodes to the graph area, and ensure the proper dependent components are added
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         def onEntityCreated(parameters):
             global newEntityId
