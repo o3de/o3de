@@ -46,6 +46,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
         AZ::Outcome<ProjectInfo> GetProject(const QString& path) override;
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
+        bool AddProject(const QString& path) override;
+        bool RemoveProject(const QString& path) override;
         bool UpdateProject(const ProjectInfo& projectInfo) override;
         bool AddGemToProject(const QString& gemPath, const QString& projectPath) override;
         bool RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;

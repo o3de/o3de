@@ -30,12 +30,21 @@ class TestLandscapeCanvasSliceCreateInstantiate(EditorTestHelper):
     def run_test(self):
         """
         Summary:
-        C22602016 A slice containing the LandscapeCanvas component can be created/instantiated.
+        A slice containing the LandscapeCanvas component can be created/instantiated.
 
         Expected Result:
-        Slice is created and processed successfully and free of errors/warnings.
-        Another copy of the slice is instantiated.
+        Slice is created/processed/instantiated successfully and free of errors/warnings.
 
+        Test Steps:
+         1) Create a new level
+         2) Create a new entity with a Landscape Canvas component
+         3) Create a slice of the new entity
+         4) Instantiate a new copy of the slice
+
+         Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
         :return: None
         """
 

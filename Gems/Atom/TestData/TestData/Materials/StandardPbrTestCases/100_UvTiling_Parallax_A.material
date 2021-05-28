@@ -13,7 +13,6 @@
         },
         "parallax": {
             "algorithm": "POM",
-            "enable": true,
             "factor": 0.10000000149011612,
             "quality": "High",
             "textureMap": "TestData/Objects/cube/cube_diff.tif"
