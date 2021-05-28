@@ -106,6 +106,22 @@ namespace AzToolsFramework
         World, //!< World space (space aligned to world axes - identity).
     };
 
+    //! Grouping of viewport ui related state for controlling the current reference space of the Editor.
+    struct SpaceCluster
+    {
+        SpaceCluster() = default;
+        // disable copying and moving (implicit)
+        SpaceCluster(const SpaceCluster&) = delete;
+        SpaceCluster& operator=(const SpaceCluster&) = delete;
+
+        ViewportUi::ClusterId m_spaceClusterId; //!< The id identifying the reference space cluster.
+        ViewportUi::ButtonId m_localButtonId; //!< Local reference space button id.
+        ViewportUi::ButtonId m_parentButtonId; //!< Parent reference space button id.
+        ViewportUi::ButtonId m_worldButtonId; //!< World reference space button id.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler; //!< Callback for when a space cluster button is pressed.
+        AZStd::optional<ReferenceFrame> m_spaceLock; //!< Locked reference frame to use if set.
+    };
+
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
@@ -160,6 +176,7 @@ namespace AzToolsFramework
         void RegenerateManipulators();
 
         void CreateTransformModeSelectionCluster();
+        void CreateSpaceSelectionCluster();
 
         void ClearManipulatorTranslationOverride();
         void ClearManipulatorOrientationOverride();
@@ -253,6 +270,9 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
 
+        // Responsible for keeping the space cluster in sync with the current reference frame.
+        void UpdateSpaceCluster(ReferenceFrame referenceFrame);
+
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
         AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
         AZ::EntityId m_editorCameraComponentEntityId; //!< The EditorCameraComponent EntityId if it is set.
@@ -285,6 +305,7 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
+        SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
     };
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by

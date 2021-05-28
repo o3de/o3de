@@ -112,7 +112,7 @@ namespace JsonSerializationTests
         AZ::Transform testTransform = AZ::Transform::CreateIdentity();
         AZ::Transform expectedTransform = 
             AZ::Transform::CreateFromQuaternion(AZ::Quaternion(0.25f, 0.5f, 0.75f, 1.0f));
-        expectedTransform.SetScale(AZ::Vector3(5.5f));
+        expectedTransform.SetUniformScale(5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Rotation": [ 0.25, 0.5, 0.75, 1.0 ], "Scale": 5.5 })");
@@ -128,7 +128,7 @@ namespace JsonSerializationTests
     {
         AZ::Transform testTransform = AZ::Transform::CreateIdentity();
         AZ::Transform expectedTransform = AZ::Transform::CreateTranslation(AZ::Vector3(2.25f, 3.5f, 4.75f));
-        expectedTransform.SetScale(AZ::Vector3(5.5f));
+        expectedTransform.SetUniformScale(5.5f);
 
         rapidjson::Document json;
         json.Parse(R"({ "Translation": [ 2.25, 3.5, 4.75 ], "Scale": 5.5 })");

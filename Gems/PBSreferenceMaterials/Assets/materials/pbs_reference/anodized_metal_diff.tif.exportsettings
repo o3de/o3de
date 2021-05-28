@@ -1,1 +1,1 @@
-/autooptimizefile=0 /M=50,50,0,50,50,50 /preset=Albedo /reduce="es3:0,ios:0,osx_gl:0,pc:2,provo:0,wiiu:0"
+/autooptimizefile=0 /M=50,50,0,50,50,50 /preset=Albedo /reduce="android:0,ios:0,mac:0,pc:2,provo:0,wiiu:0"

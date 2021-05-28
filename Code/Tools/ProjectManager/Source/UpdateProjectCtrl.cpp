@@ -108,7 +108,7 @@ namespace O3DE::ProjectManager
             auto result = PythonBindingsInterface::Get()->UpdateProject(m_projectInfo);
             if (result)
             {
-                emit ChangeScreenRequest(ProjectManagerScreen::ProjectsHome);
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
             {

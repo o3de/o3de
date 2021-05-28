@@ -19,7 +19,6 @@
         },
         "parallax": {
             "algorithm": "ContactRefinement",
-            "enable": true,
             "factor": 0.009999999776482582,
             "pdo": true,
             "quality": "Ultra",

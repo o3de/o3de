@@ -128,6 +128,10 @@ foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
 endforeach()
 
 # The following steps have to be done after all targets are registered:
+# Defer generation of the StaticModules.inl file which is needed to create the AZ::Module derived class in monolithic
+# builds until after all the targets are known
+ly_delayed_generate_static_modules_inl()
+
 # 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
 #    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES

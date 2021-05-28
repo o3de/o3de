@@ -13,7 +13,6 @@
 #pragma once
 
 #include <IRenderer.h>
-#include <IFont.h>
 #include <LyShine/IRenderGraph.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/stack.h>
@@ -294,7 +293,10 @@ namespace LyShine
         void ValidateGraph();
 
         void GetDebugInfoRenderGraph(LyShineDebug::DebugInfoRenderGraph& info) const;
-        void GetDebugInfoRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, LyShineDebug::DebugInfoRenderGraph& info, AZStd::set<ITexture*>& uniqueTextures) const;
+        void GetDebugInfoRenderNodeList(
+            const AZStd::vector<RenderNode*>& renderNodeList,
+            LyShineDebug::DebugInfoRenderGraph& info,
+            AZStd::set<AZ::Data::Instance<AZ::RPI::Image>>& uniqueTextures) const;
 
         void DebugReportDrawCalls(AZ::IO::HandleType fileHandle, LyShineDebug::DebugInfoDrawCallReport& reportInfo, void* context) const;
         void DebugReportDrawCallsRenderNodeList(const AZStd::vector<RenderNode*>& renderNodeList, AZ::IO::HandleType fileHandle,

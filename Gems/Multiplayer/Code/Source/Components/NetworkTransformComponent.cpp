@@ -32,7 +32,7 @@ namespace Multiplayer
     NetworkTransformComponent::NetworkTransformComponent()
         : m_rotationEventHandler([this](const AZ::Quaternion& rotation) { OnRotationChangedEvent(rotation); })
         , m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
-        , m_scaleEventHandler([this](const AZ::Vector3& scale) { OnScaleChangedEvent(scale); })
+        , m_scaleEventHandler([this](float scale) { OnScaleChangedEvent(scale); })
         , m_resetCountEventHandler([this](const uint8_t&) { OnResetCountChangedEvent(); })
         , m_entityPreRenderEventHandler([this](float deltaTime, float blendFactor) { OnPreRender(deltaTime, blendFactor); })
     {
@@ -73,10 +73,10 @@ namespace Multiplayer
         m_targetTransform.SetTranslation(translation);
     }
 
-    void NetworkTransformComponent::OnScaleChangedEvent(const AZ::Vector3& scale)
+    void NetworkTransformComponent::OnScaleChangedEvent(float scale)
     {
-        m_previousTransform.SetScale(m_targetTransform.GetScale());
-        m_targetTransform.SetScale(scale);
+        m_previousTransform.SetUniformScale(m_targetTransform.GetUniformScale());
+        m_targetTransform.SetUniformScale(scale);
     }
 
     void NetworkTransformComponent::OnResetCountChangedEvent()
@@ -119,6 +119,6 @@ namespace Multiplayer
     {
         SetRotation(worldTm.GetRotation());
         SetTranslation(worldTm.GetTranslation());
-        SetScale(worldTm.GetScale());
+        SetScale(worldTm.GetUniformScale());
     }
 }
