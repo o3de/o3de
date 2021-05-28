@@ -1,0 +1,158 @@
+<ObjectStream version="3">
+	<Class name="Physics::MaterialLibraryAsset" version="2" type="{9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F}">
+		<Class name="AssetData" field="BaseClass1" version="1" type="{AF3F7D32-1536-422A-89F3-A11E1F5B5A9C}"/>
+		<Class name="AZStd::vector" field="Properties" type="{A8E59F8C-2F9A-525A-B549-A9E197EB9632}">
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Character" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.7000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.8000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="2" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="985.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.9183642 0.6973526 0.4447700 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{FDECD8B6-5BAF-42CB-AEFE-C66E1E1CF557}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Concrete" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.8000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.9000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.3800000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="2400.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.5918365 0.4927596 0.3795224 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{A9CACCFF-E0D2-4149-8891-E92319229B2D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Glass" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.4000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.5000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.7000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="2500.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.4825971 0.8975662 0.9523766 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Metal" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.4200000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.7800000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.4000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="8050.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.2312963 0.2312963 0.2312963 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{76CDC778-ACA9-449F-BFD7-C361F89F3207}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Plastic" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.3500000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.6900000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="900.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.9394675 1.0000000 0.2735485 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{E2FFB000-D15B-4760-A819-9E490D1D3741}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Rubber" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.8500000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="1200.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.1088426 0.1088426 0.1088426 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Terrain_Dirt" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.4000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.4000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="1600.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.3333333 0.2619974 0.1973144 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{303C5A49-22F2-45A8-B24C-9F2C3CA13402}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Terrain_Grass" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.2500000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.3500000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="1400.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="0.1483177 0.5986419 0.1073777 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{53733840-A095-40C4-B653-C40D233B3BE1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Vehicle" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.2000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.5000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.3000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="1" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="140.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="1.0000000 0.0000000 0.0000000 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{4080A6D4-AF4E-41CE-B7C9-7699C07123E7}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+			<Class name="Physics::MaterialFromAssetConfiguration" field="element" version="1" type="{FBD76628-DE57-435E-BE00-6FFAE64DDF1D}">
+				<Class name="Physics::MaterialConfiguration" field="Configuration" version="3" type="{8807CAA1-AD08-4238-8FDB-2154ADD084A1}">
+					<Class name="AZStd::string" field="SurfaceType" value="Wood" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="float" field="DynamicFriction" value="0.5000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="StaticFriction" value="0.6000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="float" field="Restitution" value="0.6000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="unsigned char" field="FrictionCombine" value="3" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="unsigned char" field="RestitutionCombine" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+					<Class name="float" field="Density" value="540.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+					<Class name="Color" field="DebugColor" value="1.0000000 0.7318379 0.3004501 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+				</Class>
+				<Class name="Physics::MaterialId" field="UID" version="1" type="{744CCE6C-9F69-4E2F-B950-DAB8514F870B}">
+					<Class name="AZ::Uuid" field="MaterialId" value="{6ACE67AA-CB32-41CD-8740-58371CCCD3F3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

@@ -118,7 +118,7 @@ namespace ScriptCanvas::Nodeables::Spawning
                 AZ::Vector3 rotationCopy = rotation;
                 AZ::Quaternion rotationQuat = AZ::Quaternion::CreateFromEulerAnglesDegrees(rotationCopy);
 
-                entityTransform->SetWorldTM(AZ::Transform(translation, rotationQuat, AZ::Vector3(scale, scale, scale)));
+                entityTransform->SetWorldTM(AZ::Transform(translation, rotationQuat, scale));
             }
         };
 
