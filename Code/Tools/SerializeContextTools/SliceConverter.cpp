@@ -244,7 +244,7 @@ namespace AZ
             }
             else
             {
-                return SavePrefab(templateId);
+                return SavePrefab(outputPath, templateId);
             }
         }
 
@@ -318,7 +318,7 @@ namespace AZ
                 nestedPrefabPath.ReplaceExtension("prefab");
 
                 auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-                nestedPrefabPath = prefabLoaderInterface->GetRelativePathToProject(nestedPrefabPath);
+                nestedPrefabPath = prefabLoaderInterface->GenerateRelativePath(nestedPrefabPath);
 
                 AzToolsFramework::Prefab::TemplateId nestedTemplateId =
                     prefabSystemComponentInterface->GetTemplateIdFromFilePath(nestedPrefabPath);
@@ -439,17 +439,31 @@ namespace AZ
             AZ::Debug::Trace::Instance().Output("", "\n");
         }
 
-        bool SliceConverter::SavePrefab(AzToolsFramework::Prefab::TemplateId templateId)
+        bool SliceConverter::SavePrefab(AZ::IO::PathView outputPath, AzToolsFramework::Prefab::TemplateId templateId)
         {
             auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
 
-            if (!prefabLoaderInterface->SaveTemplate(templateId))
+            AZStd::string out;
+            if (prefabLoaderInterface->SaveTemplateToString(templateId, out))
             {
-                AZ_Printf("Convert-Slice", "  Could not save prefab - internal error (Json write operation failure).\n");
-                return false;
+                IO::SystemFile outputFile;
+                if (!outputFile.Open(
+                    AZStd::string(outputPath.Native()).c_str(),
+                    IO::SystemFile::OpenMode::SF_OPEN_CREATE |
+                    IO::SystemFile::OpenMode::SF_OPEN_CREATE_PATH |
+                    IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY))
+                {
+                    AZ_Error("Convert-Slice", false, "  Unable to create output file '%.*s'.", AZ_STRING_ARG(outputPath.Native()));
+                    return false;
+                }
+
+                outputFile.Write(out.data(), out.size());
+                outputFile.Close();
+                return true;
             }
 
-            return true;
+            AZ_Printf("Convert-Slice", "  Could not save prefab - internal error (Json write operation failure).\n");
+            return false;
         }
 
         bool SliceConverter::ConnectToAssetProcessor()

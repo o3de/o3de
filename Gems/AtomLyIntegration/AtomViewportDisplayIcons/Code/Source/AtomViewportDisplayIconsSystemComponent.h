@@ -61,7 +61,7 @@ namespace AZ
             static constexpr QSize MinimumRenderedSvgSize = QSize(128, 128);
             static constexpr QImage::Format QtImageFormat = QImage::Format_RGBA8888;
 
-            QString FindAssetPath(const QString& sourceRelativePath) const;
+            QString FindAssetPath(const QString& path) const;
             QImage RenderSvgToImage(const QString& svgPath) const;
             AZ::Data::Instance<AZ::RPI::Image> ConvertToAtomImage(AZ::Uuid assetId, QImage image) const;
 

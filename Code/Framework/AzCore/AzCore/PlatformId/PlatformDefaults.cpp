@@ -35,7 +35,7 @@ namespace AZ
                 return "Android";
             case AZ::IOS:
                 return "iOS";
-            case AZ::MAC:
+            case AZ::MAC_ID:
                 return "Mac";
             case AZ::PROVO:
                 return "Provo";
@@ -213,7 +213,7 @@ namespace AZ
             case PlatformId::IOS:
                 platformCodes.emplace_back(PlatformCodeNameiOS);
                 break;
-            case PlatformId::MAC:
+            case PlatformId::MAC_ID:
                 platformCodes.emplace_back(PlatformCodeNameMac);
                 break;
             case PlatformId::PROVO:

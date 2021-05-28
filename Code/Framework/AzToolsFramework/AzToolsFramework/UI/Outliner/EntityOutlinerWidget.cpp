@@ -172,7 +172,7 @@ namespace AzToolsFramework
 
         const int autoExpandDelayMilliseconds = 2500;
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::EditKeyPressed);
+        SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setDropIndicatorShown(true);
@@ -850,6 +850,11 @@ namespace AzToolsFramework
         addAction(m_actionGoToEntitiesInViewport);
     }
 
+    void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
+    {
+        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
+    }
+
     void EntityOutlinerWidget::OnEntityPickModeStarted()
     {
         m_gui->m_objectTree->setDragEnabled(false);
@@ -862,7 +867,7 @@ namespace AzToolsFramework
     {
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+        SetDefaultTreeViewEditTriggers();
         m_inObjectPickMode = false;
     }
 
