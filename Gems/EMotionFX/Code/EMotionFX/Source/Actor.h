@@ -63,7 +63,6 @@ namespace EMotionFX
      * still share the same data from the Actor class. The Actor contains information about the hierarchy/structure of the characters.
      */
     class EMFX_API Actor
-        : private AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -885,19 +884,14 @@ namespace EMotionFX
         bool GetOptimizeSkeleton() const { return m_optimizeSkeleton; }
 
         void SetMeshAssetId(const AZ::Data::AssetId& assetId);
-        void CheckFinalizeActor();
-        void LoadMeshAssetsQueued();
-        void LoadRemainingAssets();
+        AZ::Data::AssetId GetMeshAssetId() const { return m_meshAssetId; };
 
         const AZ::Data::Asset<AZ::RPI::ModelAsset>& GetMeshAsset() const { return m_meshAsset; }
         const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& GetSkinMetaAsset() const { return m_skinMetaAsset; }
         const AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset>& GetMorphTargetMetaAsset() const { return m_morphTargetMetaAsset; }
 
         const AZStd::unordered_map<AZ::u16, AZ::u16>& GetSkinToSkeletonIndexMap() const { return m_skinToSkeletonIndexMap; }
-
-        void SetMeshAsset(AZ::Data::Asset<AZ::RPI::ModelAsset> asset) { m_meshAsset = asset; }
-        void SetSkinMetaAsset(AZ::Data::Asset<AZ::RPI::SkinMetaAsset> asset) { m_skinMetaAsset = asset; }
-        void SetMorphTargetMetaAsset(AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> asset) { m_morphTargetMetaAsset = asset; }
+        void Finalize();
 
         /**
         * Is the actor fully ready?
@@ -908,13 +902,10 @@ namespace EMotionFX
     private:
         void InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices);
 
-        // AZ::Data::AssetBus::Handler
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
         AZStd::unordered_map<AZ::u16, AZ::u16> ConstructSkinToSkeletonIndexMap(const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& skinMetaAsset);
-        void ConstructMeshes(const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap);
+        void ConstructMeshes();
         void ConstructMorphTargets();
+
         Node* FindJointByMeshName(const AZStd::string_view meshName) const;
 
         // per node info (shared between lods)

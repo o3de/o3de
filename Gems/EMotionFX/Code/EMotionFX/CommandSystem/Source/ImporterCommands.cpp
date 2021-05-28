@@ -94,8 +94,7 @@ namespace CommandSystem
             return false;
         }
 
-        actor->LoadRemainingAssets();
-        actor->CheckFinalizeActor();
+        actor->Finalize();
 
         // set the actor id in case we have specified it as parameter
         if (actorID != MCORE_INVALIDINDEX32)

@@ -117,21 +117,6 @@ namespace EMotionFX
 
             ExporterLib::SaveActor(filename, m_actor.get(), MCore::Endian::ENDIAN_LITTLE, GetMeshAssetId(context));
 
-#ifdef EMOTIONFX_ACTOR_DEBUG
-            // Use there line to create a log file and inspect detail debug info
-            AZStd::string folderPath;
-            AzFramework::StringFunc::Path::GetFolderPath(filename.c_str(), folderPath);
-            AZStd::string logFilename = folderPath;
-            logFilename += "EMotionFXExporter_Log.txt";
-            MCore::GetLogManager().CreateLogFile(logFilename.c_str());
-            EMotionFX::GetImporter().SetLogDetails(true);
-            filename += ".xac";
-
-            // use this line to load the actor from the saved actor file
-            EMotionFX::Actor* testLoadingActor = EMotionFX::GetImporter().LoadActor(AZStd::string(filename.c_str()));
-            MCore::Destroy(testLoadingActor);
-#endif // EMOTIONFX_ACTOR_DEBUG
-
             static AZ::Data::AssetType emotionFXActorAssetType("{F67CC648-EA51-464C-9F5D-4A9CE41A7F86}"); // from ActorAsset.h in EMotionFX Gem
             AZ::SceneAPI::Events::ExportProduct& product = context.m_products.AddProduct(AZStd::move(filename), context.m_group.GetId(), emotionFXActorAssetType,
                 AZStd::nullopt, AZStd::nullopt);
@@ -140,6 +125,21 @@ namespace EMotionFX
             {
                 product.m_legacyPathDependencies.emplace_back(AZStd::move(materialPathReference));
             }
+
+            // Mesh asset, skin meta asset and morph target meta asset are sub assets for actor asset.
+            // In here we set them as the dependency of the actor asset. That make sure those assets get automatically loaded before actor asset.
+            auto AddAssetAsDependency =
+                [](AZ::SceneAPI::Events::ExportProduct& product, ActorGroupExportContext& context, AZ::Data::AssetType type)
+            {
+                AZStd::optional<AZ::SceneAPI::Events::ExportProduct> result = GetFirstProducedByType(context, type);
+                if (result != AZStd::nullopt)
+                {
+                    product.m_productDependencies.emplace_back(result.value());
+                }
+            };
+            AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::ModelAsset>());
+            AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::SkinMetaAsset>());
+            AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::MorphTargetMetaAsset>());
 
             return SceneEvents::ProcessingResult::Success;
         }
@@ -167,6 +167,21 @@ namespace EMotionFX
             {
                 const AZ::SceneAPI::Events::ExportProduct& meshProduct = atomModelAssets[0];
                 return AZ::Data::AssetId(meshProduct.m_id, meshProduct.m_subId.value());
+            }
+
+            return AZStd::nullopt;
+        }
+
+        AZStd::optional<AZ::SceneAPI::Events::ExportProduct> ActorGroupExporter::GetFirstProducedByType(
+            const ActorGroupExportContext& context, AZ::Data::AssetType type)
+        {
+            const AZStd::vector<AZ::SceneAPI::Events::ExportProduct>& products = context.m_products.GetProducts();
+            for (const AZ::SceneAPI::Events::ExportProduct& product : products)
+            {
+                if (product.m_assetType == type)
+                {
+                    return product;
+                }
             }
 
             return AZStd::nullopt;

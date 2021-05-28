@@ -68,6 +68,10 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
+            // Finalize the actor with sub assets.
+            assetData->m_emfxActor->Finalize();
+
+            // Clear out the EMFX raw asset data.
             assetData->ReleaseEMotionFXData();
 
             if (!assetData->m_emfxActor)

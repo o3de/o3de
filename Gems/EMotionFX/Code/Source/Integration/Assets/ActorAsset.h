@@ -84,6 +84,13 @@ namespace EMotionFX
             const char* GetAssetTypeDisplayName() const override;
             const char* GetBrowserIcon() const override;
         };
+
+        class ActorAssetHelper
+        {
+        public:
+            static AZ::Data::AssetId ConstructSkinMetaAssetId(const AZ::Data::AssetId& meshAssetId);
+            static AZ::Data::AssetId ConstructMorphTargetMetaAssetId(const AZ::Data::AssetId& meshAssetId);
+        };
     } // namespace Integration
 } // namespace EMotionFX
 
