@@ -16,7 +16,9 @@ import pathlib
 import warnings
 from abc import ABCMeta, abstractmethod
 
+import ly_test_tools._internal.pytest_plugin
 from ly_test_tools.environment.file_system import find_ancestor_file
+
 
 def _find_engine_root(initial_path):
     # type: (str) -> str
@@ -34,11 +36,9 @@ def _find_engine_root(initial_path):
     # Assumes folder structure similar to: engine_root/dev/Tools/.../ly_test_tools/builtin
     for _ in range(15):
         if os.path.exists(os.path.join(current_dir, root_file)):
-            # The parent of the directory containing the engineroot.txt is the root directory
-            engine_root = current_dir
-            return engine_root
-        # Using an explicit else to avoid aberrant behavior from following filesystem links
-        else:
+            # parent of the directory containing root_file
+            return current_dir
+        else:  # explicit else avoids aberrant behavior from following filesystem links
             current_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
 
     raise OSError(f"Unable to find engine root directory. Verify root file '{root_file}' exists")
@@ -50,8 +50,10 @@ def _find_project_json(engine_root, project):
     Find the project.json file for this project.
     :return: Full path to the project.json file
     """
-    project_json = find_ancestor_file('project.json')
-    if not project_json:
+    # First check relative to defined build directory, for external projects which configure through SDK settings
+    project_json = find_ancestor_file(target_file_name='project.json',
+                                      start_path=ly_test_tools._internal.pytest_plugin.build_directory)
+    if not project_json:  # check internally for a project bundled with the engine
         project_json = os.path.join(engine_root, project, 'project.json')
 
     return project_json

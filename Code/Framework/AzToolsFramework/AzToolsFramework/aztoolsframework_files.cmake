@@ -293,8 +293,6 @@ set(FILES
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
-    ToolsComponents/TransformScalePropertyHandler.cpp
-    ToolsComponents/TransformScalePropertyHandler.h
     ToolsComponents/ScriptEditorComponent.cpp
     ToolsComponents/ScriptEditorComponent.h
     ToolsComponents/ToolsAssetCatalogComponent.cpp

@@ -220,7 +220,7 @@ namespace RedirectOutput
     }
 } // namespace RedirectOutput
 
-namespace O3DE::ProjectManager 
+namespace O3DE::ProjectManager
 {
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
@@ -283,8 +283,11 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManagerWindow", result != -1, "Append to sys path failed");
 
             // import required modules
-            m_registration = pybind11::module::import("cmake.Tools.registration");
-            m_engineTemplate = pybind11::module::import("cmake.Tools.engine_template");
+            m_register = pybind11::module::import("o3de.register");
+            m_manifest = pybind11::module::import("o3de.manifest");
+            m_engineTemplate = pybind11::module::import("o3de.engine_template");
+            m_enableGemProject = pybind11::module::import("o3de.enable_gem");
+            m_disableGemProject = pybind11::module::import("o3de.disable_gem");
 
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
@@ -326,30 +329,30 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()  
+    AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()
     {
         EngineInfo engineInfo;
         bool result = ExecuteWithLock([&] {
-            pybind11::str enginePath = m_registration.attr("get_this_engine_path")();
+            pybind11::str enginePath = m_manifest.attr("get_this_engine_path")();
 
-            auto o3deData = m_registration.attr("load_o3de_manifest")();
+            auto o3deData = m_manifest.attr("load_o3de_manifest")();
             if (pybind11::isinstance<pybind11::dict>(o3deData))
             {
-                engineInfo.m_path                    = Py_To_String(enginePath); 
-                engineInfo.m_defaultGemsFolder       = Py_To_String(o3deData["default_gems_folder"]); 
-                engineInfo.m_defaultProjectsFolder   = Py_To_String(o3deData["default_projects_folder"]); 
-                engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]); 
-                engineInfo.m_defaultTemplatesFolder  = Py_To_String(o3deData["default_templates_folder"]); 
-                engineInfo.m_thirdPartyPath          = Py_To_String_Optional(o3deData,"third_party_path",""); 
+                engineInfo.m_path                    = Py_To_String(enginePath);
+                engineInfo.m_defaultGemsFolder       = Py_To_String(o3deData["default_gems_folder"]);
+                engineInfo.m_defaultProjectsFolder   = Py_To_String(o3deData["default_projects_folder"]);
+                engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]);
+                engineInfo.m_defaultTemplatesFolder  = Py_To_String(o3deData["default_templates_folder"]);
+                engineInfo.m_thirdPartyPath          = Py_To_String_Optional(o3deData,"third_party_path","");
             }
 
-            auto engineData = m_registration.attr("get_engine_data")(pybind11::none(), enginePath);
+            auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);
             if (pybind11::isinstance<pybind11::dict>(engineData))
             {
                 try
                 {
-                    engineInfo.m_version = Py_To_String_Optional(engineData,"O3DEVersion","0.0.0.0"); 
-                    engineInfo.m_name    = Py_To_String_Optional(engineData,"engine_name","O3DE"); 
+                    engineInfo.m_version = Py_To_String_Optional(engineData,"O3DEVersion","0.0.0.0");
+                    engineInfo.m_name    = Py_To_String_Optional(engineData,"engine_name","O3DE");
                 }
                 catch ([[maybe_unused]] const std::exception& e)
                 {
@@ -364,13 +367,13 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            return AZ::Success(AZStd::move(engineInfo)); 
+            return AZ::Success(AZStd::move(engineInfo));
         }
 
         return AZ::Failure();
     }
 
-    bool PythonBindings::SetEngineInfo(const EngineInfo& engineInfo)  
+    bool PythonBindings::SetEngineInfo(const EngineInfo& engineInfo)
     {
         bool result = ExecuteWithLock([&] {
             pybind11::str enginePath             = engineInfo.m_path.toStdString();
@@ -378,17 +381,18 @@ namespace O3DE::ProjectManager
             pybind11::str defaultGemsFolder      = engineInfo.m_defaultGemsFolder.toStdString();
             pybind11::str defaultTemplatesFolder = engineInfo.m_defaultTemplatesFolder.toStdString();
 
-            auto registrationResult = m_registration.attr("register")(
+            auto registrationResult = m_register.attr("register")(
                 enginePath,       // engine_path 
                 pybind11::none(), // project_path 
-                pybind11::none(), // gem_path 
+                pybind11::none(), // gem_path
+                pybind11::none(), // external_subdir_path 
                 pybind11::none(), // template_path 
                 pybind11::none(), // restricted_path 
                 pybind11::none(), // repo_uri 
                 pybind11::none(), // default_engines_folder
                 defaultProjectsFolder,
-                defaultGemsFolder, 
-                defaultTemplatesFolder 
+                defaultGemsFolder,
+                defaultTemplatesFolder
                 );
 
             if (registrationResult.cast<int>() != 0)
@@ -396,13 +400,13 @@ namespace O3DE::ProjectManager
                 result = false;
             }
 
-            auto manifest = m_registration.attr("load_o3de_manifest")();
+            auto manifest = m_manifest.attr("load_o3de_manifest")();
             if (pybind11::isinstance<pybind11::dict>(manifest))
             {
                 try
                 {
                     manifest["third_party_path"] = engineInfo.m_thirdPartyPath.toStdString();
-                    m_registration.attr("save_o3de_manifest")(manifest);
+                    m_manifest.attr("save_o3de_manifest")(manifest);
                 }
                 catch ([[maybe_unused]] const std::exception& e)
                 {
@@ -415,12 +419,12 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::GetGem(const QString& path)  
+    AZ::Outcome<GemInfo> PythonBindings::GetGem(const QString& path)
     {
         GemInfo gemInfo = GemInfoFromPath(pybind11::str(path.toStdString()));
         if (gemInfo.IsValid())
         {
-            return AZ::Success(AZStd::move(gemInfo)); 
+            return AZ::Success(AZStd::move(gemInfo));
         }
         else
         {
@@ -428,19 +432,19 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<GemInfo>> PythonBindings::GetGems()  
+    AZ::Outcome<QVector<GemInfo>> PythonBindings::GetGems()
     {
         QVector<GemInfo> gems;
 
         bool result = ExecuteWithLock([&] {
-            // external gems 
-            for (auto path : m_registration.attr("get_gems")())
+            // external gems
+            for (auto path : m_manifest.attr("get_gems")())
             {
                 gems.push_back(GemInfoFromPath(path));
             }
 
-            // gems from the engine 
-            for (auto path : m_registration.attr("get_engine_gems")())
+            // gems from the engine
+            for (auto path : m_manifest.attr("get_engine_gems")())
             {
                 gems.push_back(GemInfoFromPath(path));
             }
@@ -452,11 +456,60 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            return AZ::Success(AZStd::move(gems)); 
+            return AZ::Success(AZStd::move(gems));
         }
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)  
+    bool PythonBindings::AddProject(const QString& path)
+    {
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                pybind11::str projectPath = path.toStdString();
+                auto pythonRegistrationResult = m_register.attr("register")(pybind11::none(), projectPath);
+
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
+    }
+
+    bool PythonBindings::RemoveProject(const QString& path)
+    {
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                pybind11::str projectPath = path.toStdString();
+                auto pythonRegistrationResult = m_register.attr("register")(
+                    pybind11::none(),   // engine_path
+                    projectPath,        // project_path
+                    pybind11::none(),   // gem_path
+                    pybind11::none(),   // external_subdir_path
+                    pybind11::none(),   // template_path
+                    pybind11::none(),   // restricted_path
+                    pybind11::none(),   // repo_uri
+                    pybind11::none(),   // default_engines_folder
+                    pybind11::none(),   // default_projects_folder
+                    pybind11::none(),   // default_gems_folder
+                    pybind11::none(),   // default_templates_folder
+                    pybind11::none(),   // default_restricted_folder
+                    pybind11::none(),   // external_subdir_engine_path
+                    pybind11::none(),   // external_subdir_project_path
+                    true,               // remove
+                    false               // force
+                );
+                
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
+    }
+
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)
     {
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
@@ -476,16 +529,16 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            return AZ::Success(AZStd::move(createdProjectInfo)); 
+            return AZ::Success(AZStd::move(createdProjectInfo));
         }
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::GetProject(const QString& path)  
+    AZ::Outcome<ProjectInfo> PythonBindings::GetProject(const QString& path)
     {
         ProjectInfo projectInfo = ProjectInfoFromPath(pybind11::str(path.toStdString()));
         if (projectInfo.IsValid())
         {
-            return AZ::Success(AZStd::move(projectInfo)); 
+            return AZ::Success(AZStd::move(projectInfo));
         }
         else
         {
@@ -496,30 +549,21 @@ namespace O3DE::ProjectManager
     GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path)
     {
         GemInfo gemInfo;
-        gemInfo.m_path = Py_To_String(path); 
+        gemInfo.m_path = Py_To_String(path);
 
-        auto data = m_registration.attr("get_gem_data")(pybind11::none(), path);
+        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
             {
                 // required
-                gemInfo.m_name        = Py_To_String(data["Name"]); 
-                gemInfo.m_uuid        = AZ::Uuid(Py_To_String(data["Uuid"]));
+                gemInfo.m_name        = Py_To_String(data["gem_name"]);
 
                 // optional
-                gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name); 
-                gemInfo.m_summary     = Py_To_String_Optional(data, "Summary", ""); 
-                gemInfo.m_version     = Py_To_String_Optional(data, "Version", ""); 
+                gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name);
+                gemInfo.m_summary     = Py_To_String_Optional(data, "Summary", "");
+                gemInfo.m_version     = Py_To_String_Optional(data, "Version", "");
 
-                if (data.contains("Dependencies"))
-                {
-                    for (auto dependency : data["Dependencies"])
-                    {
-                        const AZ::Uuid uuid = Py_To_String(dependency["Uuid"]);
-                        gemInfo.m_dependingGemUuids.push_back(uuid.ToString<AZStd::string>().c_str());
-                    }
-                }
                 if (data.contains("Tags"))
                 {
                     for (auto tag : data["Tags"])
@@ -543,13 +587,13 @@ namespace O3DE::ProjectManager
         projectInfo.m_path = Py_To_String(path);
         projectInfo.m_isNew = false;
 
-        auto projectData = m_registration.attr("get_project_data")(pybind11::none(), path);
+        auto projectData = m_manifest.attr("get_project_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(projectData))
         {
             try
             {
-                projectInfo.m_projectName = Py_To_String(projectData["project_name"]); 
-                projectInfo.m_displayName = Py_To_String_Optional(projectData,"display_name", projectInfo.m_projectName); 
+                projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
+                projectInfo.m_displayName = Py_To_String_Optional(projectData,"display_name", projectInfo.m_projectName);
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
@@ -560,19 +604,19 @@ namespace O3DE::ProjectManager
         return projectInfo;
     }
 
-    AZ::Outcome<QVector<ProjectInfo>> PythonBindings::GetProjects()  
+    AZ::Outcome<QVector<ProjectInfo>> PythonBindings::GetProjects()
     {
         QVector<ProjectInfo> projects;
 
         bool result = ExecuteWithLock([&] {
-            // external projects 
-            for (auto path : m_registration.attr("get_projects")())
+            // external projects
+            for (auto path : m_manifest.attr("get_projects")())
             {
                 projects.push_back(ProjectInfoFromPath(path));
             }
 
-            // projects from the engine 
-            for (auto path : m_registration.attr("get_engine_projects")())
+            // projects from the engine
+            for (auto path : m_manifest.attr("get_engine_projects")())
             {
                 projects.push_back(ProjectInfoFromPath(path));
             }
@@ -584,7 +628,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            return AZ::Success(AZStd::move(projects)); 
+            return AZ::Success(AZStd::move(projects));
         }
     }
 
@@ -594,13 +638,12 @@ namespace O3DE::ProjectManager
             pybind11::str pyGemPath     = gemPath.toStdString();
             pybind11::str pyProjectPath = projectPath.toStdString();
 
-            m_registration.attr("add_gem_to_project")(
+            m_enableGemProject.attr("enable_gem_in_project")(
                 pybind11::none(), // gem_name
                 pyGemPath,
-                pybind11::none(), // gem_target
                 pybind11::none(), // project_name
                 pyProjectPath
-                );
+            );
         });
 
         return result;
@@ -612,19 +655,18 @@ namespace O3DE::ProjectManager
             pybind11::str pyGemPath     = gemPath.toStdString();
             pybind11::str pyProjectPath = projectPath.toStdString();
 
-            m_registration.attr("remove_gem_to_project")(
+            m_disableGemProject.attr("disable_gem_in_project")(
                 pybind11::none(), // gem_name
                 pyGemPath,
-                pybind11::none(), // gem_target
                 pybind11::none(), // project_name
                 pyProjectPath
-                );
+            );
         });
 
         return result;
     }
 
-    bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)  
+    bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)
     {
         return false;
     }
@@ -632,18 +674,18 @@ namespace O3DE::ProjectManager
     ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
     {
         ProjectTemplateInfo templateInfo;
-        templateInfo.m_path = Py_To_String(path); 
+        templateInfo.m_path = Py_To_String(path);
 
-        auto data = m_registration.attr("get_template_data")(pybind11::none(), path);
+        auto data = m_manifest.attr("get_template_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
             {
                 // required
-                templateInfo.m_displayName = Py_To_String(data["display_name"]); 
-                templateInfo.m_name        = Py_To_String(data["template_name"]); 
-                templateInfo.m_summary     = Py_To_String(data["summary"]); 
-                
+                templateInfo.m_displayName = Py_To_String(data["display_name"]);
+                templateInfo.m_name        = Py_To_String(data["template_name"]);
+                templateInfo.m_summary     = Py_To_String(data["summary"]);
+
                 // optional
                 if (data.contains("canonical_tags"))
                 {
@@ -669,12 +711,12 @@ namespace O3DE::ProjectManager
         return templateInfo;
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates()  
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates()
     {
         QVector<ProjectTemplateInfo> templates;
 
         bool result = ExecuteWithLock([&] {
-            for (auto path : m_registration.attr("get_project_templates")())
+            for (auto path : m_manifest.attr("get_project_templates")())
             {
                 templates.push_back(ProjectTemplateInfoFromPath(path));
             }
@@ -686,7 +728,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            return AZ::Success(AZStd::move(templates)); 
+            return AZ::Success(AZStd::move(templates));
         }
     }
 }

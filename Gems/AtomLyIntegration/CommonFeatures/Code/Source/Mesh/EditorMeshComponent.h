@@ -35,14 +35,13 @@ namespace AZ
             , private MeshComponentNotificationBus::Handler
         {
         public:
-
             using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>;
             AZ_EDITOR_COMPONENT(AZ::Render::EditorMeshComponent, EditorMeshComponentTypeId, BaseClass);
 
             static void Reflect(AZ::ReflectContext* context);
 
             EditorMeshComponent() = default;
-            EditorMeshComponent(const MeshComponentConfig& config);
+            explicit EditorMeshComponent(const MeshComponentConfig& config);
 
             // AZ::Component overrides ...
             void Activate() override;

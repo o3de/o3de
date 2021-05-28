@@ -58,6 +58,19 @@ namespace AWSCore
         return configFilePath;
     }
 
+    AZStd::string AWSCoreConfiguration::GetResourceMappingConfigFolderPath() const
+    {
+        if (m_sourceProjectFolder.empty())
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
+            return "";
+        }
+        AZStd::string configFolderPath = AZStd::string::format(
+            "%s/%s", m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName);
+        AzFramework::StringFunc::Path::Normalize(configFolderPath);
+        return configFolderPath;
+    }
+
     void AWSCoreConfiguration::InitConfig()
     {
         InitSourceProjectFolderPath();
@@ -123,7 +136,7 @@ namespace AWSCore
         auto profileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreProfileNameKey);
         m_settingsRegistry.Remove(profileNamePath);
-        m_profileName.clear();
+        m_profileName = AWSCoreDefaultProfileName;
 
         auto resourceMappingConfigFileNamePath = AZStd::string::format("%s%s",
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);

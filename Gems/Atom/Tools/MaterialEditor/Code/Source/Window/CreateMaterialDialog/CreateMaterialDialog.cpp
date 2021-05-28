@@ -71,6 +71,8 @@ namespace MaterialEditor
         QObject::connect(m_ui->m_materialTypeComboBox, static_cast<void (QComboBox::*)(const int)>(&QComboBox::currentIndexChanged), this, [this]() { UpdateMaterialTypeSelection(); });
         QObject::connect(m_ui->m_materialTypeComboBox, &QComboBox::currentTextChanged, this, [this]() { UpdateMaterialTypeSelection(); });
 
+        m_ui->m_materialTypeComboBox->model()->sort(0, Qt::AscendingOrder); 
+
         // Select the default material type from settings
         auto settings =
             AZ::UserSettings::CreateFind<MaterialDocumentSettings>(AZ::Crc32("MaterialDocumentSettings"), AZ::UserSettings::CT_GLOBAL);

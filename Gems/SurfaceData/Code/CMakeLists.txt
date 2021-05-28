@@ -22,10 +22,10 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
+            Gem::LmbrCentral
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
-            Gem::LmbrCentral
 )
 
 ly_add_target(
@@ -42,9 +42,14 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::SurfaceData.Static
+            Gem::LmbrCentral
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# the above module is for use in all client/server types 
+ly_create_alias(NAME SurfaceData.Servers  NAMESPACE Gem TARGETS Gem::SurfaceData)
+ly_create_alias(NAME SurfaceData.Clients  NAMESPACE Gem TARGETS Gem::SurfaceData)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -67,9 +72,13 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 Gem::SurfaceData.Static
+                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+    # the above module is for use in dev tool situations
+    ly_create_alias(NAME SurfaceData.Builders NAMESPACE Gem TARGETS Gem::SurfaceData.Editor)
+    ly_create_alias(NAME SurfaceData.Tools    NAMESPACE Gem TARGETS Gem::SurfaceData.Editor)
 
 endif()
 
@@ -93,6 +102,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Legacy::CryCommon
                 Gem::SurfaceData.Static
+                Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::SurfaceData.Tests

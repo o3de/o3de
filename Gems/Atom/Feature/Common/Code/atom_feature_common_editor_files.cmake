@@ -24,16 +24,12 @@ set(FILES
     Source/Material/ConvertEmissiveUnitFunctorSourceData.h
     Source/Material/MaterialConverterSystemComponent.cpp
     Source/Material/MaterialConverterSystemComponent.h
-    Source/Material/ShaderEnableFunctorSourceData.cpp
-    Source/Material/ShaderEnableFunctorSourceData.h
     Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.h
     Source/Material/Transform2DFunctorSourceData.cpp
     Source/Material/Transform2DFunctorSourceData.h
     Source/Material/UseTextureFunctorSourceData.cpp
     Source/Material/UseTextureFunctorSourceData.h
-    Source/Material/PropertyVisibilityFunctorSourceData.cpp
-    Source/Material/PropertyVisibilityFunctorSourceData.h
     Source/Material/DrawListFunctorSourceData.cpp
     Source/Material/DrawListFunctorSourceData.h
 )

@@ -209,8 +209,8 @@ namespace AZ
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
-            AZ::Vector3 scale = AZ::Vector3::CreateOne();
-            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalScale);
+            float scale = 1.0f;
+            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalUniformScale);
 
             // draw AABB at probe position using the inner dimensions
             Color color(0.0f, 0.0f, 1.0f, 1.0f);

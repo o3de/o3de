@@ -74,9 +74,11 @@ namespace AzToolsFramework
             //! The path will always have the correct separator for the current OS
             virtual AZ::IO::Path GetFullPath(AZ::IO::PathView path) = 0;
 
-            //! Converts path into a relative path to the current project, this will be the paths in .prefab file.
-            //! The path will always have '/' separator.
-            virtual AZ::IO::Path GetRelativePathToProject(AZ::IO::PathView path) = 0;
+            //! Converts path into a path that's relative to the highest-priority containing folder of all the folders registered
+            //! with the engine.
+            //! This path will be the path that appears in the .prefab file.
+            //! The path will always use the '/' separator.
+            virtual AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) = 0;
 
         protected:
 
