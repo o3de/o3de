@@ -92,7 +92,7 @@ namespace PhysX
         m_onDefaultMaterialLibraryLoadErrorEventHandler = AzPhysics::SystemEvents::OnDefaultMaterialLibraryLoadErrorEvent::Handler(
             [this]()
             {
-                // Attempt to set/create the default material library
+                // Attempt to set/create the default material library if there was an error
                 if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
                 {
                     if (auto retrievedMaterialLibrary = RetrieveDefaultMaterialLibrary())
@@ -108,7 +108,6 @@ namespace PhysX
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
             editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
-            physicsSystem->GetDefaultMaterialLibrary().GetId();
             physicsSystem->RegisterOnDefaultMaterialLibraryLoadErrorEventHandler(m_onDefaultMaterialLibraryLoadErrorEventHandler);
         }
 
