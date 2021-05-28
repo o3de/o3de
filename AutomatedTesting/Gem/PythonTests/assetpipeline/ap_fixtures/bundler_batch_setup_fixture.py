@@ -318,7 +318,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                     if start_gathering:
                         result = get_platform.match(line)  # Try the regex
                         if result:
-                            platform_values[result.group(1).lower()] = counter
+                            platform_values[result.group(1).replace("_ID", "").lower()] = counter
                             counter = counter << 1
                     elif "(Invalid, -1)" in line:  # The line right before the first platform
                         start_gathering = True

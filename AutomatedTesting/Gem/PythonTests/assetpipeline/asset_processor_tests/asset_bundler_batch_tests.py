@@ -619,7 +619,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Validate both mac and pc are activated for seed
         # fmt:off
         check_seed_platform(helper["seed_list_file"], test_asset,
-                            helper["platform_values"]["pc"] + helper["platform_values"]["osx"])
+                            helper["platform_values"]["pc"] + helper["platform_values"]["mac"])
         # fmt:on
 
         # Remove MAC platform
@@ -651,7 +651,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Validate Mac platform was added back on. Save file contents
         # fmt:off
         all_lines = check_seed_platform(helper["seed_list_file"], test_asset,
-                                        helper["platform_values"]["pc"] + helper["platform_values"]["osx"])
+                                        helper["platform_values"]["pc"] + helper["platform_values"]["mac"])
         # fmt:on
 
         # Try to remove platform without specifying a platform to remove (should fail)
