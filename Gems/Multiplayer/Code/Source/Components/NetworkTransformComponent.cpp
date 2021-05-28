@@ -33,6 +33,8 @@ namespace Multiplayer
         : m_rotationEventHandler([this](const AZ::Quaternion& rotation) { OnRotationChangedEvent(rotation); })
         , m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
         , m_scaleEventHandler([this](const AZ::Vector3& scale) { OnScaleChangedEvent(scale); })
+        , m_resetCountEventHandler([this](const uint8_t&) { OnResetCountChangedEvent(); })
+        , m_entityPreRenderEventHandler([this](float deltaTime, float blendFactor) { OnPreRender(deltaTime, blendFactor); })
     {
         ;
     }
@@ -47,6 +49,11 @@ namespace Multiplayer
         RotationAddEvent(m_rotationEventHandler);
         TranslationAddEvent(m_translationEventHandler);
         ScaleAddEvent(m_scaleEventHandler);
+        ResetCountAddEvent(m_resetCountEventHandler);
+        GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
+
+        // When coming into relevance, reset all blending factors so we don't interpolate to our start position
+        OnResetCountChangedEvent();
     }
 
     void NetworkTransformComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -56,23 +63,37 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnRotationChangedEvent(const AZ::Quaternion& rotation)
     {
-        AZ::Transform worldTm = GetTransformComponent()->GetWorldTM();
-        worldTm.SetRotation(rotation);
-        GetTransformComponent()->SetWorldTM(worldTm);
+        m_previousTransform.SetRotation(m_targetTransform.GetRotation());
+        m_targetTransform.SetRotation(rotation);
     }
 
     void NetworkTransformComponent::OnTranslationChangedEvent(const AZ::Vector3& translation)
     {
-        AZ::Transform worldTm = GetTransformComponent()->GetWorldTM();
-        worldTm.SetTranslation(translation);
-        GetTransformComponent()->SetWorldTM(worldTm);
+        m_previousTransform.SetTranslation(m_targetTransform.GetTranslation());
+        m_targetTransform.SetTranslation(translation);
     }
 
     void NetworkTransformComponent::OnScaleChangedEvent(const AZ::Vector3& scale)
     {
-        AZ::Transform worldTm = GetTransformComponent()->GetWorldTM();
-        worldTm.SetScale(scale);
-        GetTransformComponent()->SetWorldTM(worldTm);
+        m_previousTransform.SetScale(m_targetTransform.GetScale());
+        m_targetTransform.SetScale(scale);
+    }
+
+    void NetworkTransformComponent::OnResetCountChangedEvent()
+    {
+        m_previousTransform = m_targetTransform;
+    }
+
+    void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime, float blendFactor)
+    {
+        if (!HasController())
+        {
+            AZ::Transform blendTransform;
+            blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
+            blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
+            blendTransform.SetScale(m_previousTransform.GetScale().Lerp(m_targetTransform.GetScale(), blendFactor));
+            GetTransformComponent()->SetWorldTM(blendTransform);
+        }
     }
 
 
@@ -96,11 +117,8 @@ namespace Multiplayer
 
     void NetworkTransformComponentController::OnTransformChangedEvent(const AZ::Transform& worldTm)
     {
-        if (IsAuthority())
-        {
-            SetRotation(worldTm.GetRotation());
-            SetTranslation(worldTm.GetTranslation());
-            SetScale(worldTm.GetScale());
-        }
+        SetRotation(worldTm.GetRotation());
+        SetTranslation(worldTm.GetTranslation());
+        SetScale(worldTm.GetScale());
     }
 }

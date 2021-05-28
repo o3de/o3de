@@ -9,6 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #include <Launcher.h>
 
 #include <AzCore/Casting/numeric_cast.h>
@@ -22,6 +23,8 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
+#include <AzFramework/Windowing/NativeWindow.h>
+#include <AzFramework/Windowing/WindowBus.h>
 
 #include <AzGameFramework/Application/GameApplication.h>
 
@@ -45,6 +48,19 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 
 namespace
 {
+    void OnViewportResize(const AZ::Vector2& value);
+
+    AZ_CVAR(AZ::Vector2, r_viewportSize, AZ::Vector2::CreateZero(), OnViewportResize, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The default size for the launcher viewport, 0 0 means full screen");
+
+    void OnViewportResize(const AZ::Vector2& value)
+    {
+        AzFramework::NativeWindowHandle windowHandle = nullptr;
+        AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+        AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
+        AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
+    }
+
     void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
         const AZStd::string_view customConCmdKey = "console-command-file";

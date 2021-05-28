@@ -45,10 +45,10 @@ namespace Multiplayer
         static constexpr uint32_t MaxRecordBits = 2048;
 
         ReplicationRecord() = default;
-        ReplicationRecord(NetEntityRole netEntityRole);
+        ReplicationRecord(NetEntityRole remoteNetEntityRole);
 
-        void SetNetworkRole(NetEntityRole netEntityRole);
-        NetEntityRole GetNetworkRole() const;
+        void SetRemoteNetworkRole(NetEntityRole remoteNetEntityRole);
+        NetEntityRole GetRemoteNetworkRole() const;
 
         bool AreAllBitsConsumed() const;
         void ResetConsumedBits();
@@ -92,6 +92,6 @@ namespace Multiplayer
         // Sequence number this ReplicationRecord was sent on
         AzNetworking::PacketId m_sentPacketId = AzNetworking::InvalidPacketId;
 
-        NetEntityRole m_netEntityRole = NetEntityRole::InvalidRole;;
+        NetEntityRole m_remoteNetEntityRole = NetEntityRole::InvalidRole;;
     };
 }
