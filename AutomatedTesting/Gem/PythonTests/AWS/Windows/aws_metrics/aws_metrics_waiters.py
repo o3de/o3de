@@ -10,9 +10,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 import botocore.client
+import logging
 
 from datetime import timedelta
 from AWS.common.custom_waiter import CustomWaiter, WaitState
+
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 
 class KinesisAnalyticsApplicationUpdatedWaiter(CustomWaiter):

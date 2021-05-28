@@ -9,6 +9,7 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
+import logging
 import pathlib
 import pytest
 import typing
@@ -19,6 +20,8 @@ from botocore.exceptions import WaiterError
 from AWS.common.aws_utils import AwsUtils
 from .aws_metrics_waiters import KinesisAnalyticsApplicationUpdatedWaiter, \
     CloudWatchMetricsDeliveredWaiter, DataLakeMetricsDeliveredWaiter, GlueCrawlerReadyWaiter
+
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 # Expected directory and file extension for the S3 objects.
 EXPECTED_S3_DIRECTORY = 'firehose_events/'

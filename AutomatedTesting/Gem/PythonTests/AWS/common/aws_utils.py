@@ -12,6 +12,7 @@ import pytest
 import logging
 
 logger = logging.getLogger(__name__)
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 
 class AwsUtils:

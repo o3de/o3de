@@ -10,20 +10,29 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import boto3
 import configparser
+import logging
 import os
 import pytest
 import typing
+
+logger = logging.getLogger(__name__)
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 
 class AwsCredentials:
     def __init__(self, profile_name: str):
         self._profile_name = profile_name
 
-        self._credentials_path = os.path.join(os.path.expanduser('~'), '.aws/credentials')
+        self._credentials_path = os.environ.get('AWS_SHARED_CREDENTIALS_FILE')
+        if not self._credentials_path:
+            # Home directory location varies based on the operating system, but is referred to using the environment
+            # variables %UserProfile% in Windows and $HOME or ~ (tilde) in Unix-based systems.
+            self._credentials_path = os.path.join(os.environ.get('UserProfile', os.path.expanduser('~')),
+                                                  '.aws', 'credentials')
+        self._credentials_file_exists = os.path.exists(self._credentials_path)
+
         self._credentials = configparser.ConfigParser()
         self._credentials.read(self._credentials_path)
-
-        self._credentials_file_exists = os.path.exists(self._credentials_path)
 
     def get_aws_credentials(self) -> typing.Tuple[str, str, str]:
         """

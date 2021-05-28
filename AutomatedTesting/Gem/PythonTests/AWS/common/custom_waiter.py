@@ -10,11 +10,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 from enum import Enum
-import logging
 import botocore.client
 import botocore.waiter
+import logging
 
-logger = logging.getLogger(__name__)
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 
 class WaitState(Enum):
