@@ -15,6 +15,7 @@
 #include <Builders/LuaBuilder/LuaBuilderWorker.h>
 #include <AzTest/Utils.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
@@ -32,6 +33,12 @@ namespace UnitTest
     {
         void SetUp() override
         {
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_app.Start(m_descriptor);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

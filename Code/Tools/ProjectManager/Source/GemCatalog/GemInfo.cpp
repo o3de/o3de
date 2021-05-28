@@ -62,6 +62,19 @@ namespace O3DE::ProjectManager
         }
     }
 
+    QString GemInfo::GetGemOriginString(GemOrigin origin)
+    {
+        switch (origin)
+        {
+        case O3DEFoundation:
+            return "Open 3D Foundation";
+        case Local:
+            return "Local";
+        default:
+            return "<Unknown Gem Origin>";
+        }
+    }
+
     bool GemInfo::IsPlatformSupported(Platform platform) const
     {
         return (m_platforms & platform);

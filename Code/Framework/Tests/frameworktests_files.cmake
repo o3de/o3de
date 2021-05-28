@@ -11,6 +11,7 @@
 
 set(FILES
     ../AzCore/Tests/Main.cpp
+    Spawnable/SpawnableEntitiesManagerTests.cpp
     ArchiveCompressionTests.cpp
     ArchiveTests.cpp
     BehaviorEntityTests.cpp

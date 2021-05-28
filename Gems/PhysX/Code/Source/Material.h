@@ -15,11 +15,18 @@
 #include <PxPhysicsAPI.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/MaterialBus.h>
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 
 namespace PhysX
 {
+    /// Name used by physx asset exporter to indicate that the default
+    /// physics material should be used for a mesh surface. The exporter
+    /// will use it as the fallback option when it's not possible to obtain
+    /// the surface information from the mesh material.
+    static const char* const DefaultPhysicsMaterialNameFromPhysicsAsset = "<Default>";
+
     /// PhysX implementation of Physics::Material interface
     /// ===================================================
     /// 
@@ -58,9 +65,9 @@ namespace PhysX
 
         // Physics::Material
         AZ::Crc32 GetSurfaceType() const override;
-        void SetSurfaceType(AZ::Crc32 surfaceType) override;
 
-        const AZStd::string& GetSurfaceTypeName() const override { return m_surfaceString; }
+        const AZStd::string& GetSurfaceTypeName() const override;
+        void SetSurfaceTypeName(const AZStd::string& surfaceTypeName) override;
 
         float GetDynamicFriction() const override;
         void SetDynamicFriction(float dynamicFriction) override;
@@ -80,6 +87,9 @@ namespace PhysX
         float GetDensity() const override;
         void SetDensity(float density) override;
 
+        AZ::Color GetDebugColor() const override;
+        void SetDebugColor(const AZ::Color& debugColor) override;
+
         AZ::u32 GetCryEngineSurfaceId() const override;
 
         void* GetNativePointer() override;
@@ -92,6 +102,7 @@ namespace PhysX
         AZ::u32 m_cryEngineSurfaceId = -1;
         AZStd::string m_surfaceString;
         float m_density = 1000.0f;
+        AZ::Color m_debugColor = AZ::Colors::White;
     };
 
     /// Bus with requests to MaterialsManager
@@ -116,7 +127,7 @@ namespace PhysX
 
         /// Returns default material
         /// @return default PhysX::Material instance
-        virtual const AZStd::shared_ptr<Material>& GetDefaultMaterial() = 0;
+        virtual AZStd::shared_ptr<Material> GetDefaultMaterial() = 0;
 
         /// Releases ownership of all materials created before.
         virtual void ReleaseAllMaterials() = 0;
@@ -128,6 +139,9 @@ namespace PhysX
     ///
     /// Material managers creates PhysX::Material instances from MaterialLibraryAsset and assumes their ownership.
     /// Also keeps a reference to the default material.
+    ///
+    /// Note: Materials will be created on the fly while doing queries and
+    ///       they will be updated when the material library changes.
     class MaterialsManager
         : public MaterialManagerRequestsBus::Handler
         , public Physics::PhysicsMaterialRequestBus::Handler
@@ -141,14 +155,17 @@ namespace PhysX
 
         // PhysicsMaterialRequestBus::Handler overrides...
         void GetMaterials(const Physics::MaterialSelection& materialSelection
-            , AZStd::vector<AZStd::weak_ptr<Physics::Material>>& outMaterials) override;
-        AZStd::weak_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) override;
-        AZ::u32 GetFirstSelectedMaterialIndex(const Physics::MaterialSelection& materialSelection) override;
+            , AZStd::vector<AZStd::shared_ptr<Physics::Material>>& outMaterials) override;
+        AZStd::shared_ptr<Physics::Material> GetMaterialById(Physics::MaterialId id) override;
+        AZStd::shared_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) override;
+        void UpdateMaterialSelectionFromPhysicsAsset(
+            const Physics::ShapeConfiguration& shapeConfiguration,
+            Physics::MaterialSelection& materialSelection) override;
         AZStd::shared_ptr<Physics::Material> GetGenericDefaultMaterial() override;
 
         // MaterialManagerRequestsBus::Handler overrides...
         void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) override;
-        const AZStd::shared_ptr<Material>& GetDefaultMaterial() override;
+        AZStd::shared_ptr<Material> GetDefaultMaterial() override;
         void ReleaseAllMaterials() override;
 
         /// Connect to any necessary buses
@@ -158,9 +175,31 @@ namespace PhysX
         void Disconnect();
 
     private:
-        void InitializeMaterials(const Physics::MaterialSelection& materialSelection);
+        using Materials = AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Material>>;
 
-        AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Material>> m_materialsFromAssets;
+        /// Search a material by id, if it exists already it returns its iterator,
+        /// if it doesn't exist it tries to create it and add it to the list.
+        /// If the material id is null or not part of the material library then the
+        /// iterator returned is end of material list.
+        Materials::iterator FindOrCreateMaterial(Physics::MaterialId materialId);
+
+        /// Search a material by name, if it exists already it returns its iterator,
+        /// if it doesn't exist it tries to create it and add it to the list.
+        /// If the material id is null or not part of the material library then the
+        /// iterator returned is end of material list.
+        Materials::iterator FindOrCreateMaterial(const AZStd::string& materialName);
+
+        /// Returns the material library of the project.
+        Physics::MaterialLibraryAsset* GetMaterialLibrary();
+
+        void OnPhysicsConfigurationChanged(const AzPhysics::SystemConfiguration* config);
+        void OnMaterialLibraryChanged(const AZ::Data::AssetId& materialLibraryAssetId);
+
+        Materials m_materials;
         AZStd::shared_ptr<Material> m_defaultMaterial;
+        Physics::MaterialConfiguration m_defaultMaterialConfiguration;
+
+        AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsConfigChangedHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_materialLibraryChangedHandler;
     };
 }

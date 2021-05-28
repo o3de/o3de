@@ -40,8 +40,8 @@ namespace PhysX
     }
 #endif
 
-    PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(PhysXSystem* physXSystem)
-        : m_physXSystem(physXSystem)
+    PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback)
+        : m_onMaterialLibraryReloadedCallback(callback)
     {
 
     }
@@ -62,16 +62,16 @@ namespace PhysX
 
     void PhysXSystem::MaterialLibraryAssetHelper::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        if (m_physXSystem == nullptr || m_physXSystem->GetDefaultMaterialLibrary() != asset)
-        {
-            return;
-        }
-        m_physXSystem->UpdateDefaultMaterialLibrary(asset);
+        m_onMaterialLibraryReloadedCallback(asset);
     }
     
     PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(*registryManager)
-        , m_materialLibraryAssetHelper(this)
+        , m_materialLibraryAssetHelper(
+            [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
+            {
+                OnMaterialLibraryReloaded(materialLibrary);
+            })
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
@@ -127,7 +127,7 @@ namespace PhysX
         m_materialLibraryAssetHelper.Disconnect();
         // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
         // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
-        m_systemConfig.m_defaultMaterialLibrary.Reset();
+        m_systemConfig.m_materialLibraryAsset.Reset();
 
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
@@ -369,12 +369,13 @@ namespace PhysX
 
     void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
     {
+        // now that assets can be resolved, lets load the default material library.
+        
         if (!m_systemConfig.m_defaultMaterialLibrary.GetId().IsValid())
         {
             m_onDefaultMaterialLoadErrorEvent.Signal();
         }
 
-        // now that assets can be resolved, lets load the default material library.
         bool success = LoadDefaultMaterialLibrary();
         if (!success)
         {
@@ -387,7 +388,7 @@ namespace PhysX
         if (const auto* physXConfig = azdynamic_cast<const PhysXSystemConfiguration*>(newConfig);
             m_systemConfig != (*physXConfig))
         {
-            const bool newMaterialLibrary = m_systemConfig.m_defaultMaterialLibrary != physXConfig->m_defaultMaterialLibrary;
+            const bool newMaterialLibrary = m_systemConfig.m_materialLibraryAsset != physXConfig->m_materialLibraryAsset;
             m_systemConfig = (*physXConfig);
             m_configChangeEvent.Signal(physXConfig);
 
@@ -395,9 +396,11 @@ namespace PhysX
 
             if (newMaterialLibrary)
             {
-                LoadDefaultMaterialLibrary();
-                m_onDefaultMaterialLibraryChangedEvent.Signal(m_systemConfig.m_defaultMaterialLibrary.GetId());
+                LoadMaterialLibrary();
+                m_onMaterialLibraryChangedEvent.Signal(m_systemConfig.m_materialLibraryAsset.GetId());
             }
+            // This function is not called from reloading the material library asset,
+            // which means we don't need to check if the materials inside the library have been modified.
         }
     }
 
@@ -454,21 +457,24 @@ namespace PhysX
         return m_systemConfig;
     }
 
-    void PhysXSystem::UpdateDefaultMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
+    void PhysXSystem::OnMaterialLibraryReloaded(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
     {
-        if (m_systemConfig.m_defaultMaterialLibrary == materialLibrary)
+        if (m_systemConfig.m_materialLibraryAsset == materialLibrary)
         {
-            return;
+            // Same library asset, check if its data has changed.
+            if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
+            {
+                m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
+            }
         }
-        m_systemConfig.m_defaultMaterialLibrary = materialLibrary;
+        else
+        {
+            // New material library asset
+            m_systemConfig.m_materialLibraryAsset = materialLibrary;
 
-        LoadDefaultMaterialLibrary();
-        m_onDefaultMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-    }
-
-    const AZ::Data::Asset<Physics::MaterialLibraryAsset>& PhysXSystem::GetDefaultMaterialLibrary() const
-    {
-        return m_systemConfig.m_defaultMaterialLibrary;
+            LoadMaterialLibrary();
+            m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
+        }
     }
 
     void PhysXSystem::UpdateDefaultSceneConfiguration(const AzPhysics::SceneConfiguration& sceneConfiguration)
@@ -491,9 +497,9 @@ namespace PhysX
         return m_registryManager;
     }
 
-    bool PhysXSystem::LoadDefaultMaterialLibrary()
+    bool PhysXSystem::LoadMaterialLibrary()
     {
-        AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary = m_systemConfig.m_defaultMaterialLibrary;
+        AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary = m_systemConfig.m_materialLibraryAsset;
         const AZ::Data::AssetId& materialLibraryId = materialLibrary.GetId();
         if (!materialLibraryId.IsValid())
         {

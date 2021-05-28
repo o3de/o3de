@@ -342,7 +342,7 @@ namespace AZ
             }
         }
 
-        ViewPtr RenderPass::GetView()
+        ViewPtr RenderPass::GetView() const
         {
             if (m_flags.m_hasPipelineViewTag && m_pipeline)
             {

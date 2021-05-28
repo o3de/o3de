@@ -72,7 +72,6 @@ namespace ScriptCanvas
 
             bool IsDeprecated() const override { return true; }
             
-            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const override;
             void CustomizeReplacementNode(Node* replacementNode, AZStd::unordered_map<SlotId, AZStd::vector<SlotId>>& outSlotIdMap) const override;
 
         protected:
