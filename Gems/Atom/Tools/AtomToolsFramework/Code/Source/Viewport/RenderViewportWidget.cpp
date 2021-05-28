@@ -313,8 +313,7 @@ namespace AtomToolsFramework
         // Scale the size by the DPI of the platform to
         // get the proper size in pixels.
         const QSize uiWindowSize = size();
-        const qreal deficePixelRatio = devicePixelRatioF();
-        const QSize windowSize = uiWindowSize * deficePixelRatio;
+        const QSize windowSize = uiWindowSize * devicePixelRatioF();
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
@@ -463,6 +462,11 @@ namespace AtomToolsFramework
         rayDirection.Normalize();
 
         return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
+    }
+
+    float RenderViewportWidget::DeviceScalingFactor()
+    {
+        return aznumeric_cast<float>(devicePixelRatioF());
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
