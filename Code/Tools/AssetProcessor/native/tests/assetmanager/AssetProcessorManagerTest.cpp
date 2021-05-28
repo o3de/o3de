@@ -66,19 +66,11 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedProductPathDependency_AssetProcessedTwice_ValidatePathDependenciesMap);
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedSourceFileTypeProductPathDependency_DependencyHasNoProductOutput_ValidatePathDependenciesMap);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
-#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
-#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile_AndThenRevert_ProcessesAgain);
@@ -3882,7 +3874,7 @@ void ModtimeScanningTest::ProcessAssetJobs()
 
     for (const auto& processResult : m_data->m_processResults)
     {
-        auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName + ".arc1");
+        auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
         m_data->m_productPaths.emplace(
             QDir(processResult.m_jobEntry.m_watchFolderPath)
                 .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
@@ -3931,11 +3923,11 @@ void ModtimeScanningTest::ExpectWork(int createJobs, int processJobs)
 {
     ASSERT_TRUE(BlockUntilIdle(5000));
 
-    ASSERT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, createJobs);
-    ASSERT_EQ(m_data->m_processResults.size(), processJobs);
-    ASSERT_FALSE(m_data->m_processResults[0].m_autoFail);
-    ASSERT_FALSE(m_data->m_processResults[1].m_autoFail);
-    ASSERT_EQ(m_data->m_deletedSources.size(), 0);
+    EXPECT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, createJobs);
+    EXPECT_EQ(m_data->m_processResults.size(), processJobs);
+    EXPECT_FALSE(m_data->m_processResults[0].m_autoFail);
+    EXPECT_FALSE(m_data->m_processResults[1].m_autoFail);
+    EXPECT_EQ(m_data->m_deletedSources.size(), 0);
 
     m_isIdling = false;
 }
@@ -3963,11 +3955,7 @@ void ModtimeScanningTest::SetFileContents(QString filePath, QString contents)
     file.close();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
-#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -3996,11 +3984,7 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged)
     ExpectNoWork();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
-#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
