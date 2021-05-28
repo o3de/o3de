@@ -95,7 +95,6 @@ namespace AzToolsFramework
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
-            InstancePtrOptionalReference GetNestedInstance(const InstanceAlias& instanceAlias);
 
             /**
             * Gets the aliases for the entities in the Instance DOM.

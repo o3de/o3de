@@ -401,17 +401,6 @@ namespace AzToolsFramework
             }
         }
 
-        InstancePtrOptionalReference Instance::GetNestedInstance(const InstanceAlias& instanceAlias)
-        {
-            auto nestedInstanceIterator = m_nestedInstances.find(instanceAlias);
-            if (nestedInstanceIterator != m_nestedInstances.end())
-            {
-                return nestedInstanceIterator->second;
-            }
-
-            return AZStd::nullopt;
-        }
-
         void Instance::GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback)
         {
             for (auto& [instanceAlias, instance] : m_nestedInstances)
