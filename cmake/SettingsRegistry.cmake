@@ -74,7 +74,6 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
                 ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency})
                 list(APPEND all_gem_load_dependencies ${dependencies})
                 list(APPEND all_gem_load_dependencies ${dealias_load_dependency})
-                message(VERBOSE "Load Dependency \"${dealias_load_dependency}\" has load dependencies of: ${dependencies}")
             endif()
         endforeach()
     endif()
@@ -83,6 +82,7 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     set_property(GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET} "${all_gem_load_dependencies}")
     set(${ly_GEM_LOAD_DEPENDENCIES} ${all_gem_load_dependencies} PARENT_SCOPE)
     message(VERBOSE "Gem Target \"${ly_TARGET}\" has load dependencies of: ${all_gem_load_dependencies}")
+
 endfunction()
 
 #!ly_get_gem_module_root: Uses the supplied gem_target to lookup the nearest gem.json file above the SOURCE_DIR
