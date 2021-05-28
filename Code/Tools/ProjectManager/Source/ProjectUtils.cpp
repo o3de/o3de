@@ -110,7 +110,7 @@ namespace O3DE::ProjectManager
         bool CopyProject(const QString& origPath, const QString& newPath)
         {
             // Disallow copying from or into subdirectory
-            if (IsDirectoryDecedent(origPath, newPath) || IsDirectoryDecedent(newPath, origPath))
+            if (!IsDirectoryDecedent(origPath, newPath) || !IsDirectoryDecedent(newPath, origPath))
             {
                 return false;
             }
@@ -130,24 +130,28 @@ namespace O3DE::ProjectManager
             catch ([[maybe_unused]] std::exception& e)
             {
                 // Cleanup whatever mess was made
-                UnregisterAndDeleteProjectFiles(newPath);
+                DeleteProjectFiles(newPath, true);
                 return false;
             }
 
             if (!RegisterProject(newPath))
             {
-                UnregisterAndDeleteProjectFiles(newPath);
+                DeleteProjectFiles(newPath, true);
             }
 
             return true;
         }
 
-        bool UnregisterAndDeleteProjectFiles(const QString& path)
+        bool DeleteProjectFiles(const QString& path, bool force)
         {
             QDir projectDirectory(path);
             if (projectDirectory.exists())
             {
-                return projectDirectory.removeRecursively();
+                // Check if there is an actual project hereor just force it
+                if (force || PythonBindingsInterface::Get()->GetProject(path).IsSuccess())
+                {
+                    return projectDirectory.removeRecursively();
+                }
             }
 
             return false;

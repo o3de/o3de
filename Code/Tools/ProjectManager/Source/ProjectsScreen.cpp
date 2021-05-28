@@ -329,7 +329,7 @@ namespace O3DE::ProjectManager
         {
             // Remove project from O3DE and delete from disk
             ProjectsScreen::HandleRemoveProject(projectPath);
-            ProjectUtils::UnregisterAndDeleteProjectFiles(projectPath);
+            ProjectUtils::DeleteProjectFiles(projectPath);
         }
     }
 
