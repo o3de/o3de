@@ -373,13 +373,13 @@ namespace PhysX
         
         if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
-            m_onMaterialLoadErrorEvent.Signal();
+            m_onMaterialLibraryLoadErrorEvent.Signal();
         }
 
         bool success = LoadMaterialLibrary();
         if (!success)
         {
-            m_onMaterialLoadErrorEvent.Signal();
+            m_onMaterialLibraryLoadErrorEvent.Signal();
         }
     }
 
@@ -484,6 +484,7 @@ namespace PhysX
             // Same library asset, check if its data has changed.
             if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
             {
+                m_systemConfig.m_materialLibraryAsset = materialLibrary;
                 m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
             }
         }

@@ -301,7 +301,6 @@ namespace AZ::SettingsRegistryMergeUtils
             return projectRoot;
         }
 
-
         return {};
     }
 

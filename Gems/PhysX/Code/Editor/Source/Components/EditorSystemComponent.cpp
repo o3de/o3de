@@ -45,8 +45,7 @@ namespace PhysX
             AZ::Data::Asset<AZ::Data::AssetData> newAsset =
                 AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
 
-            Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData());
-            if (materialLibraryAsset)
+            if (Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
                 // check it out in the source control system
                 AzToolsFramework::SourceControlCommandBus::Broadcast(
@@ -129,6 +128,8 @@ namespace PhysX
             physicsSystem->RemoveScene(m_editorWorldSceneHandle);
         }
         m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+
+        m_onMaterialLibraryLoadErrorEventHandler.Disconnect();
     }
 
     AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const
