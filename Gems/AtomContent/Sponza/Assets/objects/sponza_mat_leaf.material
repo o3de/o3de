@@ -42,7 +42,8 @@
             "mode": "Cutout"
         },
         "parallax": {
-            "textureMap": "Textures/thorn_height.png"
+            "textureMap": "Textures/thorn_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/thorn_roughness.png"

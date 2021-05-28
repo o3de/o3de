@@ -43,7 +43,6 @@ namespace O3DE::ProjectManager
         m_collapseButton->setFlat(true);
         m_collapseButton->setFocusPolicy(Qt::NoFocus);
         m_collapseButton->setFixedWidth(s_collapseButtonSize);
-        m_collapseButton->setStyleSheet("border: 0px; border-radius: 0px;");
         connect(m_collapseButton, &QPushButton::clicked, this, [=]()
             {
                 UpdateCollapseState();
@@ -52,7 +51,7 @@ namespace O3DE::ProjectManager
 
         // Category title
         QLabel* headerLabel = new QLabel(header);
-        headerLabel->setStyleSheet("font-size: 11pt;");
+        headerLabel->setObjectName("GemCatalogFilterCategoryTitle");
         collapseLayout->addWidget(headerLabel);
         vLayout->addLayout(collapseLayout);
 
@@ -79,14 +78,14 @@ namespace O3DE::ProjectManager
                 elementWidget->setLayout(elementLayout);
 
                 QCheckBox* checkbox = new QCheckBox(elementNames[i]);
-                checkbox->setStyleSheet("font-size: 11pt;");
+                checkbox->setStyleSheet("font-size: 12px;");
                 m_buttonGroup->addButton(checkbox);
                 elementLayout->addWidget(checkbox);
 
                 elementLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
                 QLabel* countLabel = new QLabel(QString::number(elementCounts[i]));
-                countLabel->setStyleSheet("font-size: 11pt; background-color: #333333; border-radius: 3px; color: #94D2FF;");
+                countLabel->setStyleSheet("font-size: 12px; background-color: #333333; border-radius: 3px; color: #94D2FF;");
                 elementLayout->addWidget(countLabel);
 
                 m_elementWidgets.push_back(elementWidget);
@@ -109,6 +108,8 @@ namespace O3DE::ProjectManager
                 mainLayout->addSpacing(5);
             }
         }
+
+        vLayout->addSpacing(5);
 
         // Separating line
         QFrame* hLine = new QFrame();
@@ -181,6 +182,8 @@ namespace O3DE::ProjectManager
         : QScrollArea(parent)
         , m_filterProxyModel(filterProxyModel)
     {
+        setObjectName("GemCatalogFilterWidget");
+
         m_gemModel = m_filterProxyModel->GetSourceModel();
 
         setWidgetResizable(true);
@@ -195,7 +198,7 @@ namespace O3DE::ProjectManager
         mainWidget->setLayout(m_mainLayout);
 
         QLabel* filterByLabel = new QLabel("Filter by");
-        filterByLabel->setStyleSheet("font-size: 15pt;");
+        filterByLabel->setStyleSheet("font-size: 16px;");
         m_mainLayout->addWidget(filterByLabel);
 
         AddGemOriginFilter();

@@ -127,4 +127,9 @@ namespace AzManipulatorTestFramework
     {
         return {};
     }
-} // namespace AzManipulatorTestFramework
+
+    float ViewportInteraction::DeviceScalingFactor()
+    {
+        return 1.0f;
+    }
+}// namespace AzManipulatorTestFramework
