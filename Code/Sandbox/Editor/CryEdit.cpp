@@ -58,8 +58,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <AzFramework/AzFramework_Traits_Platform.h>
-#include <AzFramework/Process/ProcessWatcher.h>
+#include <AzFramework/ProjectManager/ProjectManager.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -2862,24 +2861,10 @@ void CCryEditApp::OnPreferences()
 
 void CCryEditApp::OnOpenProjectManager()
 {
-    AZStd::string filename = "o3de";
-    AZ::IO::FixedMaxPath executablePath = AZ::Utils::GetExecutableDirectory();
-    executablePath /= filename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
-
-    if (!AZ::IO::SystemFile::Exists(executablePath.c_str()))
-    {
-        AZ_Error("ProjectManager", false, "%s not found", executablePath.c_str());
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to find the o3de project manager"));
-        return;
-    }
-
-    AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-    processLaunchInfo.m_commandlineParameters = executablePath.String();
-    bool launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager();
     if (!launchSuccess)
     {
-        AZ_Error("ProjectManager", false, "Failed to launch %s", executablePath.c_str());
-        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to start the o3de project manager"));
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to find or start the o3de project manager"));
     }
 }
 
