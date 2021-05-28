@@ -1141,11 +1141,11 @@ namespace AzToolsFramework
 
                         CreateLink(*nestedInstancePtr, parentTemplateId, currentUndoBatch, AZStd::move(linkPatchesCopy), true);
                     });
-
-                    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-                        &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
                 }
             }
+
+            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
 
             if (createdUndo)
             {
