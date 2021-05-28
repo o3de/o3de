@@ -18,8 +18,7 @@ import pathlib
 import plistlib
 import re
 import sys
-
-
+import time
 
 TEST_TARGET_NAME = 'TestLauncherTarget'
 TEST_STARTED_STRING = 'TEST STARTED'
@@ -111,9 +110,9 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
                     test_case_elapsed = matched.group(3).strip() if len(matched.groups()) > 2 else ''
                     if test_case_action == 'OK':
                         test_case_successes.append(f'{test_case_name} {test_case_elapsed}')
+                        test_case_count += 1
                     elif test_case_action == 'FAILED' and 'listed below:' not in test_case_name:
                         test_case_fails.append(f'{test_case_name} {test_case_elapsed}')
-                    elif test_case_action == 'RUN':
                         test_case_count += 1
 
             if TEST_STARTED_STRING in line:
@@ -130,10 +129,11 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
             else:
                 logging.debug(line)
             
-        print(f'{target} Succeeded') if test_success else print(f'{target} Failed')
+        logging.info(f'{target} Succeeded') if test_success else print(f'{target} Failed')
 
     if test_report_json_file:
         test_report_json_path = pathlib.Path(test_report_json_file)
+        test_timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.localtime())
         result_dict = {
             'index': 'ly_platforms.test',
             'payload': {
@@ -145,11 +145,13 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
                 'Count': test_case_count
             },
             'pipeline': 'filebeat',
-            'timestamp': 0
+            'timestamp': test_timestamp
         }
         result_json = json.dumps(result_dict, indent=4)
         test_report_json_path.write_text(result_json, encoding='UTF-8', errors='ignore')
         logging.info(f'MARS report saved to {test_report_json_path}')
+        logging.info(f"MARS report:\n{result_json}")
+
 
 def main(args):
 
