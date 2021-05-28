@@ -1,7 +1,0 @@
-<Material MtlFlags="2623488" Shader="Watervolume" GenMask="80000013" StringGenMask="" SurfaceType="mat_water" Diffuse="1,1,1,1" Specular="0.27583286,0.27583286,0.27583286,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Specular" File="engineassets/textures/water_gloss.dds" Filter="7"/>
-  <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
- </Textures>
- <PublicParams NormalsScale="0.5" GlossMapTilling="1" SoftIntersectionFactor="1" Tilling="0.1" DetailNormalsScale="0.5" GlossMapBias="0" EnvCubeReflMul="16" VertexWaveScale="0.125" DetailTilling="2.5" EnvCubeScale="16" GlossMapScale="1.5" RealtimeReflMul="1" RainTilling="1" WaterFlowSpeed="0.5"/>
-</Material>
