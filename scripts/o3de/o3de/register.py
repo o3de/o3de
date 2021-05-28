@@ -410,12 +410,8 @@ def register_project_path(json_data: dict,
     if update_project_json:
         project_json_data['engine'] = this_engine_json['engine_name']
         utils.backup_file(project_json)
-        with project_json.open('w') as s:
-            try:
-                s.write(json.dumps(project_json_data, indent=4))
-            except OSError as e:
-                logger.error(f'Project json failed to save: {str(e)}')
-                return 1
+        if not manifest.save_o3de_manifest(project_json_data, project_path):
+            return 1
 
 
     return 0

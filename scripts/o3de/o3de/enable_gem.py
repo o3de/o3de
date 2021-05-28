@@ -117,7 +117,7 @@ def enable_gem_in_project(gem_name: str = None,
         gem_path = manifest.get_registered(gem_name=gem_name)
     if not gem_path:
         logger.error(f'Unable to locate gem path from the registered manifest.json files:'
-                     f' {str(pathlib.Path.home() / ".o3de/manifest.json")},'
+                     f' {str(pathlib.Path( "~/.o3de/o3de_manifest.json").expanduser())},'
                      f' {project_path / "project.json"}, engine.json')
         return 1
 

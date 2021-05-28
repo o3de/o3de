@@ -51,7 +51,7 @@ def sha256(file_path: str or pathlib.Path,
         utils.backup_file(json_path)
         with json_path.open('w') as s:
             try:
-                s.write(json.dumps(json_data, indent=4))
+                s.write(json.dumps(json_data, indent=4) + '\n')
             except OSError as e:
                 logger.error(f'Failed to write Json path {json_path}: {str(e)}')
                 return 1
