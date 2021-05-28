@@ -150,10 +150,7 @@ namespace AZ
                     }
                 }
 
-                if (!shaderVariantTreePendingRequests.empty() || !shaderVariantPendingRequests.empty())
-                {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1000));
-                }
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1000));
             }
         }
 

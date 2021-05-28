@@ -18,10 +18,11 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RHI/Factory.h>
 
 #include <CryCommon/ISystem.h>
@@ -146,7 +147,7 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass())
+            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
             {
                 rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
                 m_updateRootPassQuery = false;
@@ -226,7 +227,8 @@ namespace AZ::Render
 
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
-        auto rootPass = AZ::RPI::PassSystemInterface::Get()->GetRootPass();
+        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
         AZStd::function<int(const AZ::RPI::Ptr<AZ::RPI::Pass>)> containingPassCount = [&containingPassCount](const AZ::RPI::Ptr<AZ::RPI::Pass> pass)
         {
