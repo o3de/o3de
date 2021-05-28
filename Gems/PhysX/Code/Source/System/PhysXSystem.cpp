@@ -373,13 +373,13 @@ namespace PhysX
         
         if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
         {
-            m_onMaterialLibraryLoadErrorEvent.Signal();
+            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
         }
 
         bool success = LoadMaterialLibrary();
         if (!success)
         {
-            m_onMaterialLibraryLoadErrorEvent.Signal();
+            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::ErrorLoading);
         }
     }
 

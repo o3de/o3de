@@ -34,11 +34,12 @@ namespace PhysX
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> CreateMaterialLibrary(const AZStd::string& fullTargetFilePath, const AZStd::string& relativePath)
     {
-        auto assetType = AZ::AzTypeInfo<Physics::MaterialLibraryAsset>::Uuid();
         AZ::IO::FileIOStream fileStream(fullTargetFilePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen())
         {
+            const auto& assetType = AZ::AzTypeInfo<Physics::MaterialLibraryAsset>::Uuid();
             AZ::Data::AssetId assetId;
+
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                 assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true);
 
@@ -89,7 +90,7 @@ namespace PhysX
         Physics::EditorWorldBus::Handler::BusConnect();
 
         m_onMaterialLibraryLoadErrorEventHandler = AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler(
-            [this]()
+            [this]([[maybe_unused]] AzPhysics::SystemEvents::MaterialLibraryLoadErrorType error)
             {
                 // Attempt to set/create the default material library if there was an error
                 if (auto* physxSystem = GetPhysXSystem())
