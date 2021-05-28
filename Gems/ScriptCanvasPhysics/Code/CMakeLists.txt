@@ -35,6 +35,7 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             Gem::ScriptCanvasPhysics.Static
+            Gem::ScriptCanvas
 )
 
 # By default, the above module is used by all application types, however, the module depends at runtime to ScriptCanvas
@@ -63,6 +64,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Legacy::CryCommon
                 Gem::ScriptCanvasPhysics.Static
+                Gem::ScriptCanvas
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvasPhysics.Tests

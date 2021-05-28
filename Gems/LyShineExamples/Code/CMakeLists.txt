@@ -40,6 +40,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::LyShineExamples.Static
+            Gem::LmbrCentral
 )
 
 # if enabled, LyShineExamples is used by all kinds of applications, however, the dependency to LmbrCentral is different
