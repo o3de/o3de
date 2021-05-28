@@ -145,13 +145,24 @@ namespace PhysX
         }
     }
 
-    AzPhysics::ApiJointHandle PhysXSceneInterface::AddJoint([[ maybe_unused ]] AzPhysics::SceneHandle sceneHandle, [[ maybe_unused ]] const AzPhysics::ApiJointConfiguration* jointConfig, 
-        [[ maybe_unused ]] AzPhysics::SimulatedBodyHandle parentBody, [[ maybe_unused ]] AzPhysics::SimulatedBodyHandle childBody) {
+    AzPhysics::ApiJointHandle PhysXSceneInterface::AddJoint(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::ApiJointConfiguration* jointConfig, 
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->AddJoint(jointConfig, parentBody, childBody);
+        }
+
         return AzPhysics::InvalidApiJointHandle;
     }
 
-    void PhysXSceneInterface::RemoveJoint([[ maybe_unused ]] AzPhysics::SceneHandle sceneHandle, [[ maybe_unused ]] AzPhysics::ApiJointHandle jointHandle) {
-
+    void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            scene->RemoveJoint(jointHandle);
+        }
     }
 
     AzPhysics::SceneQueryHits PhysXSceneInterface::QueryScene(

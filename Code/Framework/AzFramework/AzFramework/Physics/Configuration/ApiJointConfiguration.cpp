@@ -25,12 +25,12 @@ namespace AzPhysics
         {
             serializeContext->Class<ApiJointConfiguration>()
                 ->Version(1)
-                ->Field("name", &ApiJointConfiguration::m_debugName)
+                ->Field("Name", &ApiJointConfiguration::m_debugName)
                 ->Field("ParentLocalRotation", &ApiJointConfiguration::m_parentLocalRotation)
                 ->Field("ParentLocalPosition", &ApiJointConfiguration::m_parentLocalPosition)
                 ->Field("ChildLocalRotation", &ApiJointConfiguration::m_childLocalRotation)
                 ->Field("ChildLocalPosition", &ApiJointConfiguration::m_childLocalPosition)
-                ->Field("startSimulationEnabled", &ApiJointConfiguration::m_startSimulationEnabled)
+                ->Field("StartSimulationEnabled", &ApiJointConfiguration::m_startSimulationEnabled)
                 ;
         }
     }
