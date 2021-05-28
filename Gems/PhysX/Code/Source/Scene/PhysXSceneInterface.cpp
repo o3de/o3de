@@ -11,6 +11,7 @@
 */
 #include <Scene/PhysXSceneInterface.h>
 
+#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <System/PhysXSystem.h>
@@ -141,6 +142,26 @@ namespace PhysX
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {
             scene->DisableSimulationOfBody(bodyHandle);
+        }
+    }
+
+    AzPhysics::ApiJointHandle PhysXSceneInterface::AddJoint(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::ApiJointConfiguration* jointConfig, 
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->AddJoint(jointConfig, parentBody, childBody);
+        }
+
+        return AzPhysics::InvalidApiJointHandle;
+    }
+
+    void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            scene->RemoveJoint(jointHandle);
         }
     }
 
