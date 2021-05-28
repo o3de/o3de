@@ -25,7 +25,7 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
 
 #include <PhysX/MeshAsset.h>
-#include <AzFramework/Physics/Material.h>
+#include <Source/Material.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Pipeline/MeshExporter.h>
 #include <Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.h>
@@ -153,7 +153,7 @@ namespace PhysX
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(3);
+                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(4);
             }
         }
 
@@ -215,7 +215,7 @@ namespace PhysX
                             if (nameAttribute)
                             {
                                 AZStd::string materialName = nameAttribute->value();
-                                AZStd::string surfaceTypeName = DefaultMaterialName;
+                                AZStd::string surfaceTypeName = DefaultPhysicsMaterialNameFromPhysicsAsset;
 
                                 AZ::rapidxml::xml_attribute<char>* surfaceTypeNode = materialNode->first_attribute("SurfaceType");
                                 if (surfaceTypeNode && surfaceTypeNode->value_size() != 0)
@@ -268,7 +268,7 @@ namespace PhysX
                     }
                     else
                     {
-                        materialName = DefaultMaterialName;
+                        materialName = DefaultPhysicsMaterialNameFromPhysicsAsset;
                     }
 
                     materialNames.emplace_back(AZStd::move(materialName));
