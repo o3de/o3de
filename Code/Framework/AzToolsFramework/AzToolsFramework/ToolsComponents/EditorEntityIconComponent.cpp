@@ -17,6 +17,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
@@ -313,8 +314,7 @@ namespace AzToolsFramework
             // if we do not yet have a valid texture id, request it using the entity icon path
             if (m_entityIconTextureId == 0)
             {
-                EditorRequestBus::BroadcastResult(
-                    m_entityIconTextureId, &EditorRequests::GetIconTextureIdFromEntityIconPath, m_entityIconPath);
+                m_entityIconTextureId = EditorViewportIconDisplay::Get()->GetOrLoadIconForPath(m_entityIconPath);
             }
 
             return m_entityIconTextureId;

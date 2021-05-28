@@ -15,7 +15,7 @@
             "PixelFormat": "R8G8B8X8"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{B1AC2F76-CB1A-46A8-B92D-B8DFBB564FCF}",
                 "Name": "LayerMask",
                 "SourceColor": "Linear",
@@ -37,7 +37,7 @@
                 ],
                 "PixelFormat": "R8G8B8X8"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{B1AC2F76-CB1A-46A8-B92D-B8DFBB564FCF}",
                 "Name": "LayerMask",
                 "SourceColor": "Linear",

@@ -71,6 +71,11 @@ namespace AZ
                 static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
                 using MutexType = AZStd::recursive_mutex;
 
+                static AZ::Crc32 GetAssetImportRequestComponentTag()
+                {
+                    return AZ_CRC_CE("AssetImportRequest");
+                }
+                
                 virtual ~AssetImportRequest() = 0;
 
                 //! Fills the given list with all available file extensions, excluding the extension for the manifest.

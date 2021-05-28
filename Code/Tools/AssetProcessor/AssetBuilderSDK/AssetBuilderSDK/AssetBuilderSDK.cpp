@@ -78,17 +78,17 @@ namespace AssetBuilderSDK
         {
             return AssetBuilderSDK::Platform_PC;
         }
-        if (azstricmp(newPlatformName, "es3") == 0)
+        if (azstricmp(newPlatformName, "android") == 0)
         {
-            return AssetBuilderSDK::Platform_ES3;
+            return AssetBuilderSDK::Platform_ANDROID;
         }
         if (azstricmp(newPlatformName, "ios") == 0)
         {
             return AssetBuilderSDK::Platform_IOS;
         }
-        if (azstricmp(newPlatformName, "osx_gl") == 0)
+        if (azstricmp(newPlatformName, "mac") == 0)
         {
-            return AssetBuilderSDK::Platform_OSX;
+            return AssetBuilderSDK::Platform_MAC;
         }
         if (azstricmp(newPlatformName, "provo") == 0)
         {
@@ -115,12 +115,12 @@ namespace AssetBuilderSDK
         {
         case AssetBuilderSDK::Platform_PC:
             return "pc";
-        case AssetBuilderSDK::Platform_ES3:
-            return "es3";
+        case AssetBuilderSDK::Platform_ANDROID:
+            return "android";
         case AssetBuilderSDK::Platform_IOS:
             return "ios";
-        case AssetBuilderSDK::Platform_OSX:
-            return "osx_gl";
+        case AssetBuilderSDK::Platform_MAC:
+            return "mac";
         case AssetBuilderSDK::Platform_PROVO:
             return "provo";
         case AssetBuilderSDK::Platform_SALEM:
