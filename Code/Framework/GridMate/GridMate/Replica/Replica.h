@@ -68,7 +68,7 @@ namespace GridMate
             Rep_ManagedAlloc      = 1 << 1,
             Rep_CanMigrate        = 1 << 2,
             Rep_New               = 1 << 3,
-            Rep_Master            = 1 << 4,
+            Rep_Primary            = 1 << 4,
             Rep_Active            = 1 << 6,
             Rep_ChangedOwner      = 1 << 7,
             Rep_SuspendDownstream = 1 << 8,
@@ -85,7 +85,7 @@ namespace GridMate
 
         void Destroy();
 
-        void UpdateReplica(const ReplicaContext& rc); // Called when updating replica master from source
+        void UpdateReplica(const ReplicaContext& rc); // Called when updating replica primary from source
         void UpdateFromReplica(const ReplicaContext& rc); // Called when updating game with replica info
         bool AcceptChangeOwnership(PeerId requestor, const ReplicaContext& rc); // Return true to accept the transfer
         void OnActivate(const ReplicaContext& rc);
@@ -112,8 +112,8 @@ namespace GridMate
 
         void RequestChangeOwnership(PeerId newOwner = InvalidReplicaPeerId); // If newOwner is not specified we assume it should be the local peer
 
-        bool IsMaster() const { return !IsActive() || !!(m_flags & Rep_Master); }
-        bool IsProxy() const { return !IsMaster(); }
+        bool IsPrimary() const { return !IsActive() || !!(m_flags & Rep_Primary); }
+        bool IsProxy() const { return !IsPrimary(); }
         bool IsNew() const { return !!(m_flags & Rep_New); }
         bool IsNewOwner() const { return !!(m_flags & Rep_ChangedOwner); }
         bool IsActive() const { return !!(m_flags & Rep_Active); }
@@ -170,7 +170,7 @@ namespace GridMate
 
         void MarkRPCsAsRelayed();
 
-        void SetMaster(bool isMaster) { m_flags = isMaster ? m_flags | Rep_Master : m_flags & ~Rep_Master; }
+        void SetPrimary(bool isPrimary) { m_flags = isPrimary ? m_flags | Rep_Primary : m_flags & ~Rep_Primary; }
         void SetNew() { m_flags |= Rep_New; }
         void SetRepId(ReplicaId id);
         void SetMigratable(bool migratable);

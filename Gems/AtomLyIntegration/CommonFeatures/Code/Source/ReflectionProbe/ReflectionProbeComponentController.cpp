@@ -80,6 +80,7 @@ namespace AZ
         void ReflectionProbeComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void ReflectionProbeComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

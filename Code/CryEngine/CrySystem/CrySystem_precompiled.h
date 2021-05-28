@@ -117,7 +117,6 @@ struct IRenderer;
 struct ISystem;
 struct ITimer;
 struct IFFont;
-struct IKeyboard;
 struct ICVar;
 struct IConsole;
 struct IProcess;

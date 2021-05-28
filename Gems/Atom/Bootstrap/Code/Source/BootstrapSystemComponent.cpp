@@ -123,6 +123,12 @@ namespace AZ
 
                     m_windowHandle = m_nativeWindow->GetWindowHandle();
                 }
+                else
+                {
+                    // Disable default scene creation for non-games projects
+                    // This can be manually overridden via the DefaultWindowBus.
+                    m_createDefaultScene = false;
+                }
 
                 AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 TickBus::Handler::BusConnect();
@@ -351,6 +357,17 @@ namespace AZ
                     scene->AddRenderPipeline(brdfTexturePipeline);
                 }
 
+                // Send notification when the scene and its pipeline are ready.
+                // Use the first created pipeline's scene as our default scene for now to allow
+                // consumers waiting on scene availability to initialize.
+                if (!m_defaultSceneReady)
+                {
+                    m_defaultScene = scene;
+                    Render::Bootstrap::NotificationBus::Broadcast(
+                        &Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());
+                    m_defaultSceneReady = true;
+                }
+
                 return true;
             }
 
@@ -364,9 +381,6 @@ namespace AZ
                 {
                     m_renderPipelineId = pipeline->GetId();
                 }
-
-                // Send notification when the scene and its pipeline are ready
-                Render::Bootstrap::NotificationBus::Broadcast(&Render::Bootstrap::NotificationBus::Handler::OnBootstrapSceneReady, m_defaultScene.get());
             }
 
             void BootstrapSystemComponent::DestroyDefaultScene()

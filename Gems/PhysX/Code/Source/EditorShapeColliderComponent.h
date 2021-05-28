@@ -143,7 +143,6 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
         AzPhysics::SceneInterface* m_sceneInterface = nullptr;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
-        StaticRigidBody* m_editorBody = nullptr; //!< Body in the editor physics scene if there is no rigid body component.
         AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Handle to the body in the editor physics scene if there is no rigid body component.
         bool m_shapeTypeWarningIssued = false; //!< Records whether a warning about unsupported shapes has been previously issued.
         PolygonPrismMeshUtils::Mesh2D m_mesh; //!< Used for storing decompositions of the polygon prism.

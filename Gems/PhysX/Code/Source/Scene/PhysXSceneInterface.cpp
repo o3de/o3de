@@ -113,7 +113,7 @@ namespace PhysX
         return {}; //return an empty list
     }
 
-    void PhysXSceneInterface::RemoveSimulatedBody(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle)
+    void PhysXSceneInterface::RemoveSimulatedBody(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle& bodyHandle)
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {
@@ -121,7 +121,7 @@ namespace PhysX
         }
     }
 
-    void PhysXSceneInterface::RemoveSimulatedBodies(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& bodyHandles)
+    void PhysXSceneInterface::RemoveSimulatedBodies(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandleList& bodyHandles)
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {

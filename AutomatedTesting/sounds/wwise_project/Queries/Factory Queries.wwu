@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{7FBA6390-4CF1-44FA-9DA5-FC65F66E8FC0}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{7FBA6390-4CF1-44FA-9DA5-FC65F66E8FC0}" SchemaVersion="103">
 	<Queries>
 		<WorkUnit Name="Factory Queries" ID="{7FBA6390-4CF1-44FA-9DA5-FC65F66E8FC0}" PersistMode="Standalone">
 			<ChildrenList>

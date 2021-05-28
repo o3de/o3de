@@ -24,7 +24,7 @@ namespace AZ::IO
         ePakPriorityPakOnly = 2
     };
 
-    // variables that control behavior of Archive/StreamEngine subsystems
+    // variables that control behavior of the Archive subsystem
     struct ArchiveVars
     {
 #if defined(_RELEASE)

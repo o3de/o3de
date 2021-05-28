@@ -42,6 +42,8 @@ public: // member functions
 
     virtual ~UiInteractableStateAction() {}
 
+    static void Reflect(AZ::ReflectContext* context);
+
     //! Called from the Init of the UiInteractableComponent
     virtual void Init(AZ::EntityId);
 

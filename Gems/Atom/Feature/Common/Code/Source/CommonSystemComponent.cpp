@@ -14,8 +14,6 @@
 #include <Source/Material/UseTextureFunctor.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctor.h>
 #include <Source/Material/Transform2DFunctor.h>
-#include <Source/Material/ShaderEnableFunctor.h>
-#include <Source/Material/PropertyVisibilityFunctor.h>
 #include <Source/Material/DrawListFunctor.h>
 #include <Source/Material/ConvertEmissiveUnitFunctor.h>
 
@@ -114,7 +112,6 @@ namespace AZ
             ProjectedShadowFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             UseTextureFunctor::Reflect(context);
-            PropertyVisibilityFunctor::Reflect(context);
             DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);
             Transform2DFunctor::Reflect(context);
@@ -126,7 +123,6 @@ namespace AZ
             DisplayMapperPassData::Reflect(context);
             ConvertEmissiveUnitFunctor::Reflect(context);
             LookupTableAsset::Reflect(context);
-            ShaderEnableFunctor::Reflect(context);
             ReflectionProbeFeatureProcessor::Reflect(context);
             DecalTextureArrayFeatureProcessor::Reflect(context);
             SMAAFeatureProcessor::Reflect(context);
@@ -274,6 +270,10 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
+
+            // setup handler for load pass template mappings
+            m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+            RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
         }
 
         void CommonSystemComponent::Deactivate()
@@ -292,5 +292,12 @@ namespace AZ
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<TransformServiceFeatureProcessor>();
             AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<AuxGeomFeatureProcessor>();
         }
+
+        void CommonSystemComponent::LoadPassTemplateMappings()
+        {
+            const char* passTemplatesFile = "Passes/PassTemplates.azasset";
+            RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+        }
+
     } // namespace Render
 } // namespace AZ

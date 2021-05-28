@@ -92,6 +92,8 @@ namespace AZ
             virtual ViewPtr GetCurrentView(const Name& contextName) const = 0;
         };
 
+        using ViewportContextRequests = AZ::Interface<ViewportContextRequestsInterface>;
+
         class ViewportContextManagerNotifications
             : public AZ::EBusTraits
         {

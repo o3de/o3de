@@ -13,6 +13,7 @@
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzFramework/Thermal/ThermalInfo_Android.h>
 
 #include <AzCore/Android/AndroidEnv.h>
 #include <AzCore/Android/JNI/Object.h>
@@ -95,6 +96,7 @@ namespace AzFramework
     private:
         AndroidEventDispatcher* m_eventDispatcher;
         ApplicationLifecycleEvents::Event m_lastEvent;
+        AZStd::unique_ptr<ThermalInfoHandler> m_thermalInfoHandler;
 
         AZStd::atomic<bool> m_requestResponseReceived;
         AZStd::unique_ptr<AZ::Android::JNI::Object> m_lumberyardActivity;
@@ -125,6 +127,10 @@ namespace AzFramework
         AndroidLifecycleEvents::Bus::Handler::BusConnect();
         AndroidAppRequests::Bus::Handler::BusConnect();
         PermissionRequestResultNotification::Bus::Handler::BusConnect();
+
+#if !defined(AZ_RELEASE_BUILD)
+        m_thermalInfoHandler = AZStd::make_unique<ThermalInfoAndroidHandler>();
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

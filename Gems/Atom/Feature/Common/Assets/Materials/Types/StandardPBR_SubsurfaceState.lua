@@ -35,7 +35,7 @@ TransmissionMode_ThickObject = 1
 TransmissionMode_ThinObject = 2
 
 function UpdateUseTextureState(context, subsurfaceScatteringEnabled, textureMapPropertyName, useTexturePropertyName, shaderOptionName) 
-    local textureMap = context:GetMaterialPropertyValue_image(textureMapPropertyName)
+    local textureMap = context:GetMaterialPropertyValue_Image(textureMapPropertyName)
     local useTextureMap = context:GetMaterialPropertyValue_bool(useTexturePropertyName)
     context:SetShaderOptionValue_bool(shaderOptionName, subsurfaceScatteringEnabled and useTextureMap and textureMap ~= nil)
 end
@@ -53,7 +53,7 @@ function UpdateTextureDependentPropertyVisibility(context, featureEnabled, textu
         context:SetMaterialPropertyVisibility(useTexturePropertyName, MaterialPropertyVisibility_Hidden)
         context:SetMaterialPropertyVisibility(uvPropertyName, MaterialPropertyVisibility_Hidden)
     else
-        local textureMap = context:GetMaterialPropertyValue_image(textureMapPropertyName)
+        local textureMap = context:GetMaterialPropertyValue_Image(textureMapPropertyName)
         local useTextureMap = context:GetMaterialPropertyValue_bool(useTexturePropertyName)
 
         if(textureMap == nil) then

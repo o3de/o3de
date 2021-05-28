@@ -13,5 +13,5 @@
 
 namespace AZ
 {
-    static const PlatformID g_currentPlatform = PlatformID::PLATFORM_APPLE_OSX;
+    static const PlatformID g_currentPlatform = PlatformID::PLATFORM_APPLE_MAC;
 }

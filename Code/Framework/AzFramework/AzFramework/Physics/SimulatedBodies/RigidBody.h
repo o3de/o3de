@@ -62,7 +62,7 @@ namespace AzPhysics
         virtual void SetLinearVelocity(const AZ::Vector3& velocity) = 0;
         virtual AZ::Vector3 GetAngularVelocity() const = 0;
         virtual void SetAngularVelocity(const AZ::Vector3& angularVelocity) = 0;
-        virtual AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) = 0;
+        virtual AZ::Vector3 GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const = 0;
         virtual void ApplyLinearImpulse(const AZ::Vector3& impulse) = 0;
         virtual void ApplyLinearImpulseAtWorldPoint(const AZ::Vector3& impulse, const AZ::Vector3& worldPoint) = 0;
         virtual void ApplyAngularImpulse(const AZ::Vector3& angularImpulse) = 0;

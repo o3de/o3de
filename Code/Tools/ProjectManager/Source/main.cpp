@@ -35,21 +35,34 @@ int main(int argc, char* argv[])
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
 
-    QApplication app(argc, argv);
-
-    // Need to use settings registry to get EngineRootFolder
-    AZ::IO::FixedMaxPath engineRootPath;
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+    int runSuccess = 0;
     {
-        AZ::ComponentApplication componentApplication;
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        QApplication app(argc, argv);
+
+        // Need to use settings registry to get EngineRootFolder
+        AZ::IO::FixedMaxPath engineRootPath;
+        {
+            AZ::ComponentApplication componentApplication;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+
+        AzQtComponents::StyleManager styleManager(&app);
+        styleManager.initialize(&app, engineRootPath);
+
+        O3DE::ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
+        window.show();
+
+        // somethings is preventing us from moving the window to the center of the
+        // primary screen - likely an Az style or component helper
+        constexpr int width = 1200;
+        constexpr int height = 800;
+        window.resize(width, height);
+
+        runSuccess = app.exec();
     }
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 
-    AzQtComponents::StyleManager styleManager(&app);
-    styleManager.initialize(&app, engineRootPath);
-
-    O3DE::ProjectManager::ProjectManagerWindow window(nullptr, engineRootPath);
-    window.show();
-
-    return app.exec();
+    return runSuccess;
 }

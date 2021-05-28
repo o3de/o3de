@@ -19,11 +19,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Entity/EntityContextBus.h>
-#include <AzFramework/Network/NetBindingHandlerBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-#include <ScriptCanvas/Variable/GraphVariableNetBindings.h>
 
 #if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
@@ -163,8 +161,6 @@ namespace ScriptCanvas
                 ->Field("m_variableOverrides", &RuntimeComponent::m_variableOverrides)
                 ;
         }
-
-        GraphVariableNetBindingTable::Reflect(context);
     }
 
     void RuntimeComponent::SetVariableOverrides(const VariableData& overrideData)

@@ -83,10 +83,10 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         //add a static rigid body
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
         AzPhysics::StaticRigidBodyConfiguration config;
-        config.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        config.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
         AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &config);
         EXPECT_FALSE(simBodyHandle == AzPhysics::InvalidSimulatedBodyHandle);
     }
@@ -104,14 +104,15 @@ namespace PhysX
         EXPECT_TRUE(emptyBodies.empty());
 
         //add some rigid bodies
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+        AzPhysics::ShapeColliderPair shapeColliderData(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
         constexpr const int numberOfBodies = 100;
         for (int i = 0; i < numberOfBodies; i++)
         {
             const float xpos = 2.0f * static_cast<float>(i);
             AzPhysics::RigidBodyConfiguration* config = aznew AzPhysics::RigidBodyConfiguration();
-            config->m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            config->m_colliderAndShapeData = shapeColliderData;
             config->m_position = AZ::Vector3::CreateAxisX(xpos);
             configs.emplace_back(config);
         }
@@ -150,15 +151,16 @@ namespace PhysX
 
         AzPhysics::SimulatedBodyConfigurationList configs;
         //add some rigid bodies
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
-
+        AzPhysics::ShapeColliderPair shapeColliderData(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
+        
         constexpr const int numberOfBodies = 100;
         for (int i = 0; i < numberOfBodies; i++)
         {
             const float xpos = 2.0f * static_cast<float>(i);
             AzPhysics::RigidBodyConfiguration* config = aznew AzPhysics::RigidBodyConfiguration();
-            config->m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+            config->m_colliderAndShapeData = shapeColliderData;
             config->m_position = AZ::Vector3::CreateAxisX(xpos);
             configs.emplace_back(config);
         }
@@ -205,10 +207,11 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         //add a simulated body
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+        AzPhysics::ShapeColliderPair shapeColliderData(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
         AzPhysics::StaticRigidBodyConfiguration config;
-        config.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        config.m_colliderAndShapeData = shapeColliderData;
         AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &config);
 
         //remove the body
@@ -223,10 +226,11 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         //add a few simulated body
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+        AzPhysics::ShapeColliderPair shapeColliderData(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
         AzPhysics::StaticRigidBodyConfiguration config;
-        config.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        config.m_colliderAndShapeData = shapeColliderData;
 
         AzPhysics::SimulatedBodyHandleList simBodyHandles;
         constexpr const int numBodies = 10;
@@ -237,13 +241,17 @@ namespace PhysX
 
         //select 1 to remove
         AzPhysics::SimulatedBodyHandle removedSelection = simBodyHandles[simBodyHandles.size() / 2];
+        const AzPhysics::SimulatedBodyIndex removedIndex = AZStd::get<AzPhysics::HandleTypeIndex::Index>(removedSelection);
         sceneInterface->RemoveSimulatedBody(m_testSceneHandle, removedSelection);
+
+        // The removedSelection handle should be set to invalid in RemoveSimulatedBody
+        EXPECT_EQ(removedSelection, AzPhysics::InvalidSimulatedBodyHandle);
 
         //add a new one.
         AzPhysics::SimulatedBodyHandle newSimBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &config);
 
         //The old and new handle should share an index as the freed slot will be used
-        EXPECT_EQ(AZStd::get<AzPhysics::HandleTypeIndex::Index>(removedSelection),
+        EXPECT_EQ(removedIndex,
                   AZStd::get<AzPhysics::HandleTypeIndex::Index>(newSimBodyHandle));
     }
 
@@ -277,19 +285,21 @@ namespace PhysX
         sceneInterface->RegisterSimulationBodyRemovedHandler(m_testSceneHandle, removedEvent);
 
         //add a simulated body
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+        AzPhysics::ShapeColliderPair shapeColliderData(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
         AzPhysics::StaticRigidBodyConfiguration config;
-        config.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        config.m_colliderAndShapeData = shapeColliderData;
         AzPhysics::SimulatedBodyHandle simBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &config);
 
         EXPECT_TRUE(addTriggered);
         EXPECT_EQ(simBodyHandle, addEventSimBodyHandle);
 
         //remove the body
+        const AzPhysics::SimulatedBodyHandle removedHandle = simBodyHandle; //copy the handle as RemoveSimulatedBody will mark it invalid.
         sceneInterface->RemoveSimulatedBody(m_testSceneHandle, simBodyHandle);
         EXPECT_TRUE(removedTriggered);
-        EXPECT_EQ(simBodyHandle, removeEventSimBodyHandle);
+        EXPECT_EQ(removedHandle, removeEventSimBodyHandle);
     }
 
     TEST_F(PhysXSceneFixture, StartFinishSimulationEvents_triggerAsExpected)
@@ -547,17 +557,18 @@ namespace PhysX
         auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
 
         // setup shape config
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::BoxShapeConfiguration shapeConfiguration(AZ::Vector3(1.0f, 1.0f, 1.0f));
+        AzPhysics::ShapeColliderPair shapeColliderData(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3::CreateOne()));
 
         // add a static simulated body - this is not expected to be reported as an active actor
         AzPhysics::StaticRigidBodyConfiguration staticConfig;
-        staticConfig.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        staticConfig.m_colliderAndShapeData = shapeColliderData;
         AzPhysics::SimulatedBodyHandle staticSphereHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
 
         // add a rigid body - this is expect to be reported as an active actor
         AzPhysics::RigidBodyConfiguration rigidConfig;
-        rigidConfig.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        rigidConfig.m_colliderAndShapeData = shapeColliderData;
         AzPhysics::SimulatedBodyHandle rigidSphereHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidConfig);
 
         // create + register the active handler

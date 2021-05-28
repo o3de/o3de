@@ -85,6 +85,7 @@ namespace AZ
             desc.m_operationType = m_configuration.m_displayMapperOperation;
             desc.m_ldrGradingLutEnabled = m_configuration.m_ldrColorGradingLutEnabled;
             desc.m_ldrColorGradingLut = m_configuration.m_ldrColorGradingLut;
+            desc.m_acesParameterOverrides = m_configuration.m_acesParameterOverrides;
             fp->RegisterDisplayMapperConfiguration(desc);
         }
 

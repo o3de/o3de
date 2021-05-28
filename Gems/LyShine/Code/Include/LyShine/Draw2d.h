@@ -15,6 +15,7 @@
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiTransformBus.h>
 
+#include <AzFramework/Font/FontInterface.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
@@ -131,16 +132,18 @@ public: // member functions
 
     //! Draw a rectangular outline with a texture
     //
-    //! \param image        The texture to be used for drawing the outline
-    //! \param points       The rect's vertices (top left, top right, bottom right, bottom left)
-    //! \param rightVec     Right vector. Specified because the rect's width/height could be 0 
-    //! \param downVec      Down vector. Specified because the rect's width/height could be 0
-    //! \param color        The color of the outline
+    //! \param image            The texture to be used for drawing the outline
+    //! \param points           The rect's vertices (top left, top right, bottom right, bottom left)
+    //! \param rightVec         Right vector. Specified because the rect's width/height could be 0 
+    //! \param downVec          Down vector. Specified because the rect's width/height could be 0
+    //! \param color            The color of the outline
+    //! \param lineThickness    The thickness in pixels of the outline. If 0, it will be based on image height
     void DrawRectOutlineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
         UiTransformInterface::RectPoints points,
         AZ::Vector2 rightVec,
         AZ::Vector2 downVec,
-        AZ::Color color);
+        AZ::Color color,
+        uint32_t lineThickness = 0);
 
     //! Get the width and height (in pixels) that would be used to draw the given text string.
     //
@@ -254,9 +257,8 @@ protected: // types and constants
             const Draw2dShaderData& shaderData,
             AZ::RPI::ViewportContextPtr viewportContext) const override;
 
-        STextDrawContext    m_fontContext;
-        IFFont*             m_font;
-        AZ::Vector2         m_position;
+        AzFramework::TextDrawParameters m_drawParameters;
+        AzFramework::FontId m_fontId;
         std::string         m_string;
     };
 
@@ -286,7 +288,7 @@ protected: // member functions
     void RotatePointsAboutPivot(AZ::Vector2* points, int numPoints, AZ::Vector2 pivot, float angle) const;
 
     //! Helper function to render a text string
-    void DrawTextInternal(const char* textString, IFFont* font, unsigned int effectIndex,
+    void DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
         AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
         HAlign horizontalAlignment, VAlign verticalAlignment, int baseState);
 
@@ -295,6 +297,9 @@ protected: // member functions
 
     //! Draw or defer a line
     void DrawOrDeferLine(const DeferredLine* line);
+
+    //! Draw or defer a text string
+    void DrawOrDeferTextString(const DeferredText* text);
 
     //! Draw or defer a rect outline
     void DrawOrDeferRectOutline(const DeferredRectOutline* outlineRect);
@@ -439,11 +444,12 @@ public: // member functions
         UiTransformInterface::RectPoints points,
         AZ::Vector2 rightVec,
         AZ::Vector2 downVec,
-        AZ::Color color)
+        AZ::Color color,
+        uint32_t lineThickness = 0)
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawRectOutlineTextured(image, points, rightVec, downVec, color);
+            m_draw2d->DrawRectOutlineTextured(image, points, rightVec, downVec, color, lineThickness);
         }
     }
 
@@ -488,7 +494,7 @@ public: // member functions
     void SetImageBaseState(int state) { m_imageOptions.baseState = state; }
 
     //! Set the text font.
-    void SetTextFont(IFFont* font) { m_textOptions.font = font; }
+    void SetTextFont(AZStd::string_view fontName) { m_textOptions.fontName = fontName; }
 
     //! Set the text font effect index.
     void SetTextEffectIndex(unsigned int effectIndex) { m_textOptions.effectIndex = effectIndex; }

@@ -31,22 +31,3 @@
 #else
 // Put other platform specific includes here!
 #endif
-
-#include <IThreadTask.h>
-
-void CryThreadSetName(threadID dwThreadId, const char* sThreadName)
-{
-    if (gEnv && gEnv->pSystem && gEnv->pSystem->GetIThreadTaskManager())
-    {
-        gEnv->pSystem->GetIThreadTaskManager()->SetThreadName(dwThreadId, sThreadName);
-    }
-}
-
-const char* CryThreadGetName(threadID dwThreadId)
-{
-    if (gEnv && gEnv->pSystem && gEnv->pSystem->GetIThreadTaskManager())
-    {
-        return gEnv->pSystem->GetIThreadTaskManager()->GetThreadName(dwThreadId);
-    }
-    return "";
-}

@@ -86,6 +86,8 @@ namespace PhysX
         Physics::ShapeConfiguration& GetCurrent();
         const Physics::ShapeConfiguration& GetCurrent() const;
 
+        AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
+
         bool ShowingSubdivisionLevel() const;
 
         AZ::u32 OnConfigurationChanged();

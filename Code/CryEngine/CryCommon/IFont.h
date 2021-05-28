@@ -145,6 +145,7 @@ struct STextDrawContext
     Vec2 m_size;
     Vec2i m_requestSize;
     float m_widthScale;
+    float m_lineSpacing;
 
     float m_clipX;
     float m_clipY;
@@ -175,6 +176,7 @@ struct STextDrawContext
         , m_size(16.0f, 16.0f)
         , m_requestSize(static_cast<int32>(m_size.x), static_cast<int32>(m_size.y))
         , m_widthScale(1.0f)
+        , m_lineSpacing(0.f)
         , m_clipX(0)
         , m_clipY(0)
         , m_clipWidth(0)
@@ -209,11 +211,13 @@ struct STextDrawContext
     void SetTransform(const Matrix34& transform) { m_transform = transform; }
     void SetBaseState(int baseState) { m_baseState = baseState; }
     void SetOverrideViewProjMatrices(bool overrideViewProjMatrices) { m_overrideViewProjMatrices = overrideViewProjMatrices; }
+    void SetLineSpacing(float lineSpacing) { m_lineSpacing = lineSpacing; }
 
     float GetCharWidth() const { return m_size.x; }
     float GetCharHeight() const { return m_size.y; }
     float GetCharWidthScale() const { return m_widthScale; }
     int GetFlags() const { return m_drawTextFlags; }
+    float GetLineSpacing() const { return m_lineSpacing; }
 
     bool IsColorOverridden() const { return m_colorOverride.a != 0; }
 };

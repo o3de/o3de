@@ -3,6 +3,6 @@ TestAssets/RelativeProductPathsNotDependencies.txt
 Back slashes
 TestAssets\WildcardScanTest1.txt
 Casing doesn't match
-Config/gAME.XML
-Path inline Config/Editor.xml test
+libs/particles/milestone2PARTICLES.XML
+Path inline project.json test
 Path after=textures/_dev_Purple.tif equal sign

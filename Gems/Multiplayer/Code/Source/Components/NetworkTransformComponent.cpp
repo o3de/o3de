@@ -10,7 +10,7 @@
 *
 */
 
-#include <Source/Components/NetworkTransformComponent.h>
+#include <Multiplayer/Components/NetworkTransformComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/EBus/IEventScheduler.h>
@@ -32,7 +32,7 @@ namespace Multiplayer
     NetworkTransformComponent::NetworkTransformComponent()
         : m_rotationEventHandler([this](const AZ::Quaternion& rotation) { OnRotationChangedEvent(rotation); })
         , m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
-        , m_scaleEventHandler([this](const AZ::Vector3& scale) { OnScaleChangedEvent(scale); })
+        , m_scaleEventHandler([this](float scale) { OnScaleChangedEvent(scale); })
     {
         ;
     }
@@ -68,10 +68,10 @@ namespace Multiplayer
         GetTransformComponent()->SetWorldTM(worldTm);
     }
 
-    void NetworkTransformComponent::OnScaleChangedEvent(const AZ::Vector3& scale)
+    void NetworkTransformComponent::OnScaleChangedEvent(float scale)
     {
         AZ::Transform worldTm = GetTransformComponent()->GetWorldTM();
-        worldTm.SetScale(scale);
+        worldTm.SetUniformScale(scale);
         GetTransformComponent()->SetWorldTM(worldTm);
     }
 
@@ -96,11 +96,11 @@ namespace Multiplayer
 
     void NetworkTransformComponentController::OnTransformChangedEvent(const AZ::Transform& worldTm)
     {
-        if (GetNetEntityRole() == NetEntityRole::Authority)
+        if (IsAuthority())
         {
             SetRotation(worldTm.GetRotation());
             SetTranslation(worldTm.GetTranslation());
-            SetScale(worldTm.GetScale());
+            SetScale(worldTm.GetUniformScale());
         }
     }
 }

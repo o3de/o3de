@@ -85,6 +85,7 @@ namespace Blast
     void EditorBlastFamilyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("BlastFamilyService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorBlastFamilyComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)

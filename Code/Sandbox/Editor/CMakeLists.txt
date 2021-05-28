@@ -112,19 +112,18 @@ ly_add_target(
             3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
-            Legacy::CryCommon.EngineSettings.Static
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
             Legacy::NewsShared
             AZ::AWSNativeSDKInit
-            Legacy::CryCommonTools
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
             Gem::AtomToolsFramework.Static
+            Gem::AtomViewportDisplayInfo
             ${additional_dependencies}
         PUBLIC
             3rdParty::AWSNativeSDK::Core
@@ -174,6 +173,7 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Legacy::CrySystem
         Legacy::EditorLib
+        ProjectManager
 )
 ly_add_translations(
     TARGETS Editor
@@ -245,7 +245,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFramework
                 Legacy::EditorLib
                 Gem::LmbrCentral
-                Legacy::CryCommonTools
     )
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests

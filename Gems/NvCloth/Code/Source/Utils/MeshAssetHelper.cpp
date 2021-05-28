@@ -172,6 +172,7 @@ namespace NvCloth
         meshClothInfo.m_uvs.reserve(numTotalVertices);
         meshClothInfo.m_motionConstraints.reserve(numTotalVertices);
         meshClothInfo.m_backstopData.reserve(numTotalVertices);
+        meshClothInfo.m_normals.reserve(numTotalVertices);
         meshClothInfo.m_indices.reserve(numTotalIndices);
 
         struct Vec2
@@ -192,10 +193,15 @@ namespace NvCloth
         {
             const auto sourceIndices = mesh->GetIndexBufferTyped<uint32_t>();
             const auto sourcePositions = mesh->GetSemanticBufferTyped<Vec3>(AZ::Name("POSITION"));
+            const auto sourceNormals = mesh->GetSemanticBufferTyped<Vec3>(AZ::Name("NORMAL"));
             const auto sourceClothData = mesh->GetSemanticBufferTyped<Vec4>(AZ::Name("CLOTH_DATA"));
             const auto sourceUVs = mesh->GetSemanticBufferTyped<Vec2>(AZ::Name("UV"));
 
-            if (sourceIndices.empty() || sourcePositions.empty() || sourceClothData.empty())
+            if (sourceIndices.empty() ||
+                sourcePositions.empty() ||
+                sourceNormals.empty() ||
+                sourceClothData.empty() ||
+                sourceUVs.empty())
             {
                 return false;
             }
@@ -214,6 +220,11 @@ namespace NvCloth
                     sourcePositions[index].z,
                     inverseMass);
 
+                meshClothInfo.m_normals.emplace_back(
+                    sourceNormals[index].x,
+                    sourceNormals[index].y,
+                    sourceNormals[index].z);
+
                 meshClothInfo.m_motionConstraints.emplace_back(motionConstraint);
                 meshClothInfo.m_backstopData.emplace_back(backstopOffset, backstopRadius);
 
@@ -226,12 +237,12 @@ namespace NvCloth
             meshClothInfo.m_indices.insert(meshClothInfo.m_indices.end(), sourceIndices.begin(), sourceIndices.end());
         }
 
-        // Calculate tangent space for the mesh.
-        [[maybe_unused]] bool tangentSpaceCalculated =
-            AZ::Interface<ITangentSpaceHelper>::Get()->CalculateTangentSpace(
-                meshClothInfo.m_particles, meshClothInfo.m_indices, meshClothInfo.m_uvs,
-                meshClothInfo.m_tangents, meshClothInfo.m_bitangents, meshClothInfo.m_normals);
-        AZ_Assert(tangentSpaceCalculated, "Failed to calculate tangent space.");
+        // Calculate tangents and bitangents for the whole mesh
+        [[maybe_unused]] bool tangentsAndBitangentsCalculated =
+            AZ::Interface<ITangentSpaceHelper>::Get()->CalculateTangentsAndBitagents(
+                meshClothInfo.m_particles, meshClothInfo.m_indices, meshClothInfo.m_uvs, meshClothInfo.m_normals,
+                meshClothInfo.m_tangents, meshClothInfo.m_bitangents);
+        AZ_Assert(tangentsAndBitangentsCalculated, "Failed to calculate tangents and bitangents.");
 
         return true;
     }

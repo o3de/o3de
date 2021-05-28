@@ -24,6 +24,8 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
+    Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
+    Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
@@ -38,4 +40,5 @@ set(FILES
     Source/Util/MaterialPropertyUtil.cpp
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp
+    Source/Viewport/ModularViewportCameraController.cpp
 )

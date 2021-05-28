@@ -28,7 +28,8 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
     AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom)
     {
         AzFramework::Spawnable spawnable;
-        [[maybe_unused]] bool result = CreateSpawnable(spawnable, prefabDom);
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
+        [[maybe_unused]] bool result = CreateSpawnable(spawnable, prefabDom, referencedAssets);
         AZ_Assert(result,
             "Failed to Load Prefab Instance from given Prefab DOM while Spawnable creation.");
         return spawnable;
@@ -36,8 +37,14 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
 
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom)
     {
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
+        return CreateSpawnable(spawnable, prefabDom, referencedAssets);
+    }
+
+    bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom, AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& referencedAssets)
+    {
         Instance instance;
-        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefabDom,
+        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(instance, prefabDom, referencedAssets,
             Prefab::PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
                                                                               // going to be used to create clones of the entities.
         {

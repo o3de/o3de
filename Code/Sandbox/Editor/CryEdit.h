@@ -358,6 +358,8 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
 
 private:
+    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
+
     struct PythonOutputHandler;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;

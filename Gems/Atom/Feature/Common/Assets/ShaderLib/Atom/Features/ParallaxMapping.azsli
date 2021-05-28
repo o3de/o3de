@@ -398,7 +398,8 @@ ParallaxOffset GetParallaxOffset( float depthFactor,
 
 struct PixelDepthOffset
 {
-    float m_depth;
+    float m_depthNDC; //!< The new depth value, in normalized device coordinates (used for final depth output)
+    float m_depthCS;  //!< The new depth value, in clip space (can be used for other operations like light culling)
     float3 m_worldPosition;
 };
 
@@ -432,7 +433,8 @@ PixelDepthOffset CalcPixelDepthOffset(  float depthFactor,
     float4 clipOffsetPosition = mul(viewProjectionMatrix, float4(worldOffsetPosition, 1.0));
 
     PixelDepthOffset pdo;
-    pdo.m_depth = clipOffsetPosition.z / clipOffsetPosition.w;
+    pdo.m_depthCS = clipOffsetPosition.z;
+    pdo.m_depthNDC = clipOffsetPosition.z / clipOffsetPosition.w;
     pdo.m_worldPosition = worldOffsetPosition;
     return pdo;
 }

@@ -34,7 +34,7 @@ namespace AzPhysics
 
         static constexpr float DefaultFixedTimestep = 0.0166667f; //! Value represents 1/60th or 60 FPS.
 
-        float m_maxTimestep = 1.f / 20.f; //!< Maximum fixed timestep in seconds to run the physics update.
+        float m_maxTimestep = 0.1f; //!< Maximum fixed timestep in seconds to run the physics update (10FPS).
         float m_fixedTimestep = DefaultFixedTimestep; //!< Timestep in seconds to run the physics update. See DefaultFixedTimestep.
 
         AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.

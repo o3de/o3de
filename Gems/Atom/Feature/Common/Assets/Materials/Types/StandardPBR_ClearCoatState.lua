@@ -34,7 +34,7 @@ function GetShaderOptionDependencies()
 end
  
 function UpdateUseTextureState(context, clearCoatEnabled, textureMapPropertyName, useTexturePropertyName, shaderOptionName) 
-    local textureMap = context:GetMaterialPropertyValue_image(textureMapPropertyName)
+    local textureMap = context:GetMaterialPropertyValue_Image(textureMapPropertyName)
     local useTextureMap = context:GetMaterialPropertyValue_bool(useTexturePropertyName)
     context:SetShaderOptionValue_bool(shaderOptionName, clearCoatEnabled and useTextureMap and textureMap ~= nil)
 end
@@ -50,7 +50,7 @@ end
 
 -- Note this logic matches that of the UseTextureFunctor class.
 function UpdateTextureDependentPropertyVisibility(context, textureMapPropertyName, useTexturePropertyName, uvPropertyName)
-    local textureMap = context:GetMaterialPropertyValue_image(textureMapPropertyName)
+    local textureMap = context:GetMaterialPropertyValue_Image(textureMapPropertyName)
     local useTexture = context:GetMaterialPropertyValue_bool(useTexturePropertyName)
 
     if(textureMap == nil) then

@@ -12,29 +12,30 @@
 
 #pragma once
 
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/std/string/string.h>
+#include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
-#include <AzCore/Name/Name.h>
 
 namespace Multiplayer
 {
     /// Implementation of the network prefab library interface.
     class NetworkSpawnableLibrary final
-        : private AzFramework::AssetCatalogEventBus::Handler
+        : public INetworkSpawnableLibrary
+        , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
+        AZ_RTTI(NetworkSpawnableLibrary, "{65E15F33-E893-49C2-A8E2-B6A8A6EF31E0}", INetworkSpawnableLibrary);
+
         NetworkSpawnableLibrary();
         ~NetworkSpawnableLibrary();
 
-        void BuildPrefabsList();
-        void ProcessSpawnableAsset(const AZStd::string& relativePath, AZ::Data::AssetId id);
+        /// INetworkSpawnableLibrary overrides.
+        void BuildSpawnablesList() override;
+        void ProcessSpawnableAsset(const AZStd::string& relativePath, AZ::Data::AssetId id) override;
+        AZ::Name GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId) override;
+        AZ::Data::AssetId GetAssetIdByName(AZ::Name name) override;
 
         /// AssetCatalogEventBus overrides.
         void OnCatalogLoaded(const char* catalogFile) override;
-
-        AZ::Name GetPrefabNameFromAssetId(AZ::Data::AssetId assetId);
-        AZ::Data::AssetId GetAssetIdByName(AZ::Name name);
 
     private:
         AZStd::unordered_map<AZ::Name, AZ::Data::AssetId> m_spawnables;

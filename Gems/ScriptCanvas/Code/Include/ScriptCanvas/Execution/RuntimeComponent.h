@@ -15,8 +15,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
 
-#include <AzFramework/Network/NetBindable.h>
-
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
@@ -41,11 +39,10 @@ namespace ScriptCanvas
     //! This component should only be used at runtime 
     class RuntimeComponent
         : public AZ::Component
-        , public AzFramework::NetBindable
         , public AZ::EntityBus::Handler
     {
     public:
-        AZ_COMPONENT(RuntimeComponent, "{95BFD916-E832-4956-837D-525DE8384282}", NetBindable);
+        AZ_COMPONENT(RuntimeComponent, "{95BFD916-E832-4956-837D-525DE8384282}", AZ::Component);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -66,8 +63,6 @@ namespace ScriptCanvas
         AZ::EntityId GetScriptCanvasId() const;
 
         const VariableData& GetVariableOverrides() const;
-
-        void SetNetworkBinding(GridMate::ReplicaChunkPtr) {}
 
         void SetVariableOverrides(const VariableData& overrideData);
 
@@ -102,8 +97,6 @@ namespace ScriptCanvas
         void OnEntityDeactivated(const AZ::EntityId&) override;
 
         void StopExecution();
-
-        void UnbindFromNetwork(void) {}
 
     private:
         AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;

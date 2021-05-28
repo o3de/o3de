@@ -33,10 +33,21 @@ namespace AtomToolsFramework
         setMargin(0);
     }
 
-    void InspectorGroupHeaderWidget::SetExpanded(bool expanded)
+    void InspectorGroupHeaderWidget::SetExpanded(bool expand)
     {
-        m_expanded = expanded;
-        update();
+        if (m_expanded != expand)
+        {
+            m_expanded = expand;
+            if (m_expanded)
+            {
+                emit expanded();
+            }
+            else
+            {
+                emit collapsed();
+            }
+            update();
+        }
     }
 
     bool InspectorGroupHeaderWidget::IsExpanded() const

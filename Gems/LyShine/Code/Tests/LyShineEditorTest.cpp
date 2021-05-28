@@ -16,6 +16,7 @@
 #include <CryCommon/Mocks/ISystemMock.h>
 #include <LyShineBuilder/UiCanvasBuilderWorker.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -87,6 +88,12 @@ protected:
         m_data->m_stubEnv.pRenderer = &m_data->m_renderer;
         m_data->m_stubEnv.pSystem = &m_data->m_mockSystem;
         gEnv = &m_data->m_stubEnv;
+
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(m_descriptor);
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

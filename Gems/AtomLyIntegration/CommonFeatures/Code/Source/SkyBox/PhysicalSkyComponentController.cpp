@@ -58,6 +58,7 @@ namespace AZ
         void PhysicalSkyComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("SkyBoxService", 0x8169a709));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void PhysicalSkyComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -217,7 +218,7 @@ namespace AZ
         SunPosition PhysicalSkyComponentController::GetSunTransform(const AZ::Transform& world)
         {
             Transform worldNoScale = world;
-            worldNoScale.ExtractScale();
+            worldNoScale.ExtractUniformScale();
             AZ::Vector3 sunPositionAtom = worldNoScale.TransformVector(AZ::Vector3(0, -1, 0)); // transform Sun from default position
 
             // Convert sun position to Y-up coordinate

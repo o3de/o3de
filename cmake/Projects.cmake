@@ -105,9 +105,54 @@ function(ly_add_project_dependencies)
     )
 endfunction()
 
+#template for generating the project build_path setreg
+set(project_build_path_template [[
+{
+    "Amazon": {
+        "Project": {
+            "Settings": {
+                "Build": {
+                    "project_build_path": "@project_bin_path@"
+                }
+            }
+        }
+    }
+}]]
+)
+
+
+#! ly_generate_project_build_path_setreg: Generates a .setreg file that contains an absolute path to the ${CMAKE_BINARY_DIR}
+#  This allows locate the directory where the project it's binaries are built to be located within the engine.
+#  Which are the shared libraries and launcher executables
+#  When an a pre-built engine application runs from a directory other than the project build directory, it needs
+#  to be able to locate the project build directory to determine the list of gems that the project depends on to load
+#  as well the location of those gems.
+#  For example if the project uses an external gem not associated with the engine, that gem's dlls/so/dylib files
+#  would be located within the project build directory and the engine SDK binary directory would need that info
+
+# NOTE: This only needed for non-monolithic host platforms.
+#       This is because there are no dynamic gems to load on monolithic builds
+#       Furthermore the pre-built SDK engine applications such as the Editor and AssetProcessor
+#       can only run on the host platform
+# \arg:project_real_path Full path to the o3de project directory
+function(ly_generate_project_build_path_setreg project_real_path)
+        # The build path isn't needed on non-monolithic platforms
+        # Nor on any non-host platforms
+        if (LY_MONOLITHIC_GAME OR NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+            return()
+        endif()
+
+        # Set the project_bin_path to the ${CMAKE_BINARY_DIR} to provide the configure template
+        # with the project build directory
+        set(project_bin_path ${CMAKE_BINARY_DIR})
+        string(CONFIGURE ${project_build_path_template} project_build_path_setreg_content @ONLY)
+        set(project_user_build_path_setreg_file ${project_real_path}/user/Registry/Platform/${PAL_PLATFORM_NAME}/build_path.setreg)
+        file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
+endfunction()
+
 # Add the projects here so the above function is found
 foreach(project ${LY_PROJECTS})
-    get_filename_component(full_directory_path ${project} REALPATH ${CMAKE_SOURCE_DIR})
+    file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
     string(SHA256 full_directory_hash ${full_directory_path})
 
     # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
@@ -117,5 +162,6 @@ foreach(project ${LY_PROJECTS})
     get_filename_component(project_folder_name ${project} NAME)
     list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
     add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
+    ly_generate_project_build_path_setreg(${full_directory_path})
 endforeach()
 ly_set(LY_PROJECTS_FOLDER_NAME ${LY_PROJECTS_FOLDER_NAME})

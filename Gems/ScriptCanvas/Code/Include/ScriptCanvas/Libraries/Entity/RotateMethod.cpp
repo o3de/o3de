@@ -44,22 +44,12 @@ namespace ScriptCanvas
                 {
                     AZ::Quaternion rotation = AZ::ConvertEulerDegreesToQuaternion(angles);
 
-                    AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
-                    AZ::TransformBus::EventResult(currentTransform, targetEntity, &AZ::TransformInterface::GetWorldTM);
+                    AZ::Transform transform = AZ::Transform::CreateIdentity();
+                    AZ::TransformBus::EventResult(transform, targetEntity, &AZ::TransformInterface::GetWorldTM);
 
-                    AZ::Vector3 position = currentTransform.GetTranslation();
-                    AZ::Quaternion currentRotation = currentTransform.GetRotation();
+                    transform.SetRotation((rotation * transform.GetRotation()).GetNormalized());
 
-                    AZ::Quaternion newRotation = (rotation * currentRotation);
-                    newRotation.Normalize();
-
-                    AZ::Transform newTransform = AZ::Transform::CreateIdentity();
-
-                    newTransform.CreateScale(currentTransform.ExtractScale());
-                    newTransform.SetRotation(newRotation);
-                    newTransform.SetTranslation(position);
-
-                    AZ::TransformBus::Event(targetEntity, &AZ::TransformInterface::SetWorldTM, newTransform);
+                    AZ::TransformBus::Event(targetEntity, &AZ::TransformInterface::SetWorldTM, transform);
                 }
             }
         }

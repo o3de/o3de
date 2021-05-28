@@ -15,7 +15,6 @@ set(FILES
     Include/TextureAtlas/TextureAtlasBus.h
     Include/TextureAtlas/TextureAtlasNotificationBus.h
     Include/TextureAtlas/TextureAtlas.h
-    Source/TextureAtlasModule.cpp
     Source/TextureAtlasSystemComponent.cpp
     Source/TextureAtlasSystemComponent.h
     Source/TextureAtlasImpl.h

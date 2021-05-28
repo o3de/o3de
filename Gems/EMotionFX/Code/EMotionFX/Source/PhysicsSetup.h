@@ -68,9 +68,9 @@ namespace EMotionFX
 
         void OptimizeForServer();
 
-        static AZ::Outcome<Physics::ShapeConfigurationPair> CreateColliderByType(const AZ::TypeId& typeId);
-        static AZ::Outcome<Physics::ShapeConfigurationPair> CreateColliderByType(const AZ::TypeId& typeId, AZStd::string& outResult);
-        static void AutoSizeCollider(Physics::ShapeConfigurationPair& collider, const Actor* actor, const Node* node);
+        static AZ::Outcome<AzPhysics::ShapeColliderPair> CreateColliderByType(const AZ::TypeId& typeId);
+        static AZ::Outcome<AzPhysics::ShapeColliderPair> CreateColliderByType(const AZ::TypeId& typeId, AZStd::string& outResult);
+        static void AutoSizeCollider(AzPhysics::ShapeColliderPair& collider, const Actor* actor, const Node* node);
 
         static void Reflect(AZ::ReflectContext* context);
 

@@ -51,7 +51,7 @@ namespace EMotionFX
         m_collisionObjects.reserve(3);
     }
 
-    void SpringSolver::CreateCollider(AZ::u32 skeletonJointIndex, const Physics::ShapeConfigurationPair& shapePair)
+    void SpringSolver::CreateCollider(AZ::u32 skeletonJointIndex, const AzPhysics::ShapeColliderPair& shapePair)
     {
         const Physics::ShapeConfiguration* shapeConfig = shapePair.second.get();
         if (!shapeConfig)
@@ -104,7 +104,7 @@ namespace EMotionFX
             bool colliderFound = false;
             for (const auto& nodeConfig : colliderSetup.m_nodes) 
             {
-                for (const Physics::ShapeConfigurationPair& shapePair : nodeConfig.m_shapes)
+                for (const AzPhysics::ShapeColliderPair& shapePair : nodeConfig.m_shapes)
                 {
                     if (shapePair.first->m_tag == colliderTag)
                     {

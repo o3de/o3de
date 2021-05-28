@@ -13,7 +13,5 @@ set(FILES
     Source/main.cpp
     Source/MaterialEditorApplication.cpp
     Source/MaterialEditorApplication.h
-    Include/Atom/Document/MaterialDocumentModule.h
-    Source/Document/MaterialDocumentModule.cpp
     tool_dependencies.cmake
 )

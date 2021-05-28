@@ -11,9 +11,11 @@
 */
 
 #include <AzCore/Module/DynamicModuleHandle.h>
-#include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/SystemFile.h>
 
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <dlfcn.h>
 #include <libgen.h>
 
@@ -21,9 +23,9 @@ namespace AZ
 {
     namespace Platform
     {
-        void GetModulePath(AZ::OSString& path);
+        AZ::IO::FixedMaxPath GetModulePath();
         void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen);
-        void ConstructModuleFullFileName(const AZ::OSString& path, const AZ::OSString& fileName, AZ::OSString& fullPath);
+        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     }
 
     class DynamicModuleHandleUnixLike
@@ -36,40 +38,55 @@ namespace AZ
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
         {
-            AZ::OSString path;
-            AZ::OSString fileName;
-            AZ::OSString fullPath = "";
-            AZ::OSString::size_type finalSlash = m_fileName.find_last_of("/");
-            if (finalSlash != AZ::OSString::npos)
+            AZ::IO::FixedMaxPath fullFilePath(AZStd::string_view{m_fileName});
+            if (fullFilePath.HasFilename())
             {
-                // Path up to and including final slash
-                path = m_fileName.substr(0, finalSlash + 1);
-                // Everything after the final slash
-                // If m_fileName ends in /, the end result is path/lib.dylib, which just fails to load.
-                fileName = m_fileName.substr(finalSlash + 1);
-            }
-            else
-            {
-                // If no slash found, assume empty path, only file name
-                path = "";
-                Platform::GetModulePath(path);
-                fileName = m_fileName;
+                AZ::IO::FixedMaxPathString fileNamePath{fullFilePath.Filename().Native()};
+                if (!fileNamePath.starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
+                {
+                    fileNamePath = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileNamePath;
+                }
+
+                if (!fileNamePath.ends_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+                {
+                    fileNamePath += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+                }
+
+                fullFilePath.ReplaceFilename(AZStd::string_view(fileNamePath));
             }
 
-            if (fileName.substr(0, 3) != AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX)
+            Platform::ConstructModuleFullFileName(fullFilePath);
+
+            // Check if the module exist at the given path within the current working directory
+            // If it doesn't attempt to append the path to the executable path
+            if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
-                fileName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + fileName;
+                auto candidatePath = Platform::GetModulePath() / fullFilePath;
+                if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
+                {
+                    fullFilePath = candidatePath;
+                }
             }
 
-            size_t extensionLen = strlen(AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION);
-            if (fileName.substr(fileName.length() - extensionLen, extensionLen) != AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION)
+            // If the path still doesn't exist at this point, check the SettingsRegistryMergeUtils
+            // FilePathKey_ProjectBuildPath key to see if a project-build-path argument has been supplied
+            if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
-                fileName = fileName + AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    if(AZ::IO::FixedMaxPath projectModulePath;
+                        settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
+                    {
+                        projectModulePath /= fullFilePath;
+                        if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
+                        {
+                            fullFilePath = projectModulePath;
+                        }
+                    }
+                }
             }
-            
-            Platform::ConstructModuleFullFileName(path, fileName, fullPath);
 
-            m_fileName = fullPath;
+            m_fileName = AZStd::string_view{fullFilePath.Native()};
         }
 
         ~DynamicModuleHandleUnixLike() override
@@ -81,9 +98,9 @@ namespace AZ
         {
             AZ::Debug::Trace::Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
             bool alreadyOpen = false;
-            
+
             m_handle = Platform::OpenModule(m_fileName, alreadyOpen);
-           
+
             if(m_handle)
             {
                 if (alreadyOpen)

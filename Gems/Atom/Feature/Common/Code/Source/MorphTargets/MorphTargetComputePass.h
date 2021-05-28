@@ -18,6 +18,8 @@ namespace AZ
 {
     namespace Render
     {
+        class SkinnedMeshFeatureProcessor;
+
         //! The morph target compute pass submits dispatch items for morph targets. The dispatch items are cleared every frame, so it needs to be re-populated.
         class MorphTargetComputePass
             : public RPI::ComputePass
@@ -31,16 +33,14 @@ namespace AZ
 
             static RPI::Ptr<MorphTargetComputePass> Create(const RPI::PassDescriptor& descriptor);
 
-            //! Thread-safe function for adding a dispatch item to the current frame.
-            void AddDispatchItem(const RHI::DispatchItem* dispatchItem);
             Data::Instance<RPI::Shader> GetShader() const;
 
+            void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
         private:
             void BuildAttachmentsInternal() override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
-            AZStd::mutex m_mutex;
-            AZStd::unordered_set<const RHI::DispatchItem*> m_dispatches;
+            SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
         };
     }
 }
