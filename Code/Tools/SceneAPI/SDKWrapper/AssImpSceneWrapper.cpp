@@ -19,8 +19,9 @@
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 #include <csignal>
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
+#include <stdlib.h>
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
 namespace AZ
