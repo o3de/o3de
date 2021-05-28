@@ -57,16 +57,18 @@ namespace AZ
         FrameCaptureOutputResult PngFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
         {
-            AZStd::vector<uint8_t> buffer(readbackResult.m_dataBuffer->size());
-            AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer.begin());
+            AZStd::shared_ptr<AZStd::vector<uint8_t>> buffer = readbackResult.m_dataBuffer;
 
             // convert bgra to rgba by swapping channels
             const int numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
             if (readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
             {
+                buffer = AZStd::make_shared<AZStd::vector<uint8_t>>(readbackResult.m_dataBuffer->size());
+                AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer->begin());
+
                 AZ::JobCompletion jobCompletion;
                 const int numThreads = 8;
-                const int numPixelsPerThread = buffer.size() / numChannels / numThreads;
+                const int numPixelsPerThread = buffer->size() / numChannels / numThreads;
                 for (int i = 0; i < numThreads; ++i)
                 {
                     int startPixel = i * numPixelsPerThread;
@@ -76,11 +78,11 @@ namespace AZ
                         {
                             for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
                             {
-                                if (startPixel * numChannels + numChannels < buffer.size())
+                                if (startPixel * numChannels + numChannels < buffer->size())
                                 {
                                     AZStd::swap(
-                                        buffer[(startPixel + pixelOffset) * numChannels],
-                                        buffer[(startPixel + pixelOffset) * numChannels + 2]
+                                        buffer->data()[(startPixel + pixelOffset) * numChannels],
+                                        buffer->data()[(startPixel + pixelOffset) * numChannels + 2]
                                     );
                                 }
                             }
@@ -105,7 +107,7 @@ namespace AZ
 
                 if (out->open(outputFilePath.c_str(), spec))
                 {
-                    out->write_image(TypeDesc::UINT8, buffer.data());
+                    out->write_image(TypeDesc::UINT8, buffer->data());
                     out->close();
                     return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
                 }
