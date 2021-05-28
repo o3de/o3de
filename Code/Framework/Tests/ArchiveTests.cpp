@@ -16,6 +16,7 @@
 #include <AzCore/UnitTest/UnitTest.h>
 
 #include <AzCore/IO/SystemFile.h> // for max path decl
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/functional.h> // for function<> in the find files callback.
@@ -42,6 +43,14 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor descriptor;
             descriptor.m_stackRecordLevels = 30;
+
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_application->Start(descriptor);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

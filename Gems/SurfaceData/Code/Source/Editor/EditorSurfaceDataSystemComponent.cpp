@@ -118,6 +118,8 @@ namespace SurfaceData
 
     void EditorSurfaceDataSystemComponent::Deactivate()
     {
+        m_surfaceTagNameAssets.clear();
+
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
         SurfaceDataTagProviderRequestBus::Handler::BusDisconnect();

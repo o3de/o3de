@@ -1354,6 +1354,11 @@ namespace AzToolsFramework
         return static_cast<int>(m_dirtyEntities.erase(entityId));
     }
 
+    void ToolsApplication::ClearDirtyEntities()
+    {
+        m_dirtyEntities.clear();
+    }
+
     void ToolsApplication::UndoPressed()
     {
         if (m_undoStack)

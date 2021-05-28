@@ -153,6 +153,7 @@ namespace AZ::AtomBridge
         void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) override;
         void DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max) override;
         void DrawSolidBox(const AZ::Vector3& min, const AZ::Vector3& max) override;
+        void DrawWireOBB(const AZ::Vector3& center, const AZ::Vector3& axisX, const AZ::Vector3& axisY, const AZ::Vector3& axisZ, const AZ::Vector3& halfExtents) override;
         void DrawSolidOBB(const AZ::Vector3& center, const AZ::Vector3& axisX, const AZ::Vector3& axisY, const AZ::Vector3& axisZ, const AZ::Vector3& halfExtents) override;
         void DrawPoint(const AZ::Vector3& p, int nSize = 1) override;
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2) override;
@@ -167,7 +168,8 @@ namespace AZ::AtomBridge
         void DrawArc(const AZ::Vector3& pos, float radius, float startAngleDegrees, float sweepAngleDegrees, float angularStepDegrees, const AZ::Vector3& fixedAxis) override;
         void DrawCircle(const AZ::Vector3& pos, float radius, int nUnchangedAxis = 2 /*z axis*/) override;
         void DrawHalfDottedCircle(const AZ::Vector3& pos, float radius, const AZ::Vector3& viewPos, int nUnchangedAxis = 2 /*z axis*/) override;
-        void DrawCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded) override;
+        void DrawWireCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height) override;
+        void DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded) override;
         void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
         void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded) override;
         void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float heightStraightSection) override;
@@ -180,11 +182,8 @@ namespace AZ::AtomBridge
         void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) override;
         void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) override;
         void DrawTextOn2DBox(const AZ::Vector3& pos, const char* text, float textScale, const AZ::Vector4& TextColor, const AZ::Vector4& TextBackColor) override;
-        // unhandled on Atom - virtual void DrawTextureLabel(ITexture* texture, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
-        // void DrawTextureLabel(int textureId, const AZ::Vector3& pos, float sizeX, float sizeY, int texIconFlags) override;
         void SetLineWidth(float width) override;
         bool IsVisible(const AZ::Aabb& bounds) override;
-        // int SetFillMode(int nFillMode) override;
         float GetLineWidth() override;
         float GetAspectRatio() override;
         void DepthTestOff() override;

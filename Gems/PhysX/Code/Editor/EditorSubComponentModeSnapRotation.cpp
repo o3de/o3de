@@ -89,7 +89,7 @@ namespace PhysX
             AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(
                 worldTransform, m_entityComponentId.GetEntityId(), &AZ::TransformInterface::GetWorldTM);
-            worldTransform.ExtractScale();
+            worldTransform.ExtractUniformScale();
 
             AZ::Transform localTransform = AZ::Transform::CreateIdentity();
             EditorJointRequestBus::EventResult(
