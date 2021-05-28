@@ -128,7 +128,7 @@ namespace AZ
             void ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
 
             //! Prepare for view culling
-            void BeginCulling(const AZStd::vector<RenderPipelinePtr>& activePipelines);
+            void BeginCulling();
 
             //! Returns the masked occlusion culling interface
             MaskedOcclusionCulling* GetMaskedOcclusionCulling();

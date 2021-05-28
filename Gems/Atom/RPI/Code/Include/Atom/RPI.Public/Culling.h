@@ -217,7 +217,7 @@ namespace AZ
             void SetOcclusionCullingPlanes(const AZStd::vector<AZ::Transform>& occlusionCullingPlanes) { m_occlusionCullingPlanes = occlusionCullingPlanes; }
 
             //! Notifies the CullingScene that culling will begin for this frame.
-            void BeginCulling(const AZStd::vector<ViewPtr>& views, const AZStd::vector<RenderPipelinePtr>& activePipelines);
+            void BeginCulling(const AZStd::vector<ViewPtr>& views);
 
             //! Notifies the CullingScene that the culling is done for this frame.
             void EndCulling();

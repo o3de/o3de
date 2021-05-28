@@ -54,7 +54,7 @@ namespace AZ
             }
 
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();
-            m_maskedOcclusionCulling->SetNearClipPlane(0.1f);
+            m_maskedOcclusionCulling->SetResolution(1920, 1080);
         }
 
         View::~View()
@@ -388,56 +388,14 @@ namespace AZ
             m_needBuildSrg = false;
         }
 
-        void View::BeginCulling(const AZStd::vector<RenderPipelinePtr>& activePipelines)
+        void View::BeginCulling()
         {
-            // retrieve current resolution
-            Vector2 resolution(0.0f, 0.0f);
-            for (auto& pipeline : activePipelines)
-            {
-                ViewPtr pipelineView = pipeline->GetDefaultView();
-                if (pipelineView.get() == this)
-                {
-                    RPI::SwapChainPass* pass = AZ::RPI::PassSystemInterface::Get()->FindSwapChainPass(pipeline->GetWindowHandle());
-                    if (pass)
-                    {
-                        const RHI::Viewport& viewport = pass->GetViewport();
-                        resolution.SetX(viewport.m_maxX);
-                        resolution.SetY(viewport.m_maxY);
-                    }
-                    break;
-                }
-            }
-
-            // calculate culling resolution based on required tile size for MaskedOcclusionCulling
-            static const uint32_t MaskedOcclusionCullingSubTileWidth = 8;
-            static const uint32_t MaskedOcclusionCullingSubTileHeight = 4;
-
-            uint32_t cullingWidth = RHI::AlignUp(resolution.GetX(), MaskedOcclusionCullingSubTileWidth);
-            uint32_t cullingHeight = RHI::AlignUp(resolution.GetY(), MaskedOcclusionCullingSubTileHeight);
-
-            m_maskedOcclusionCulling->SetResolution(cullingWidth, cullingHeight);
-
-            if (cullingWidth > 0 && cullingHeight > 0)
-            {
-                m_maskedOcclusionCulling->ClearBuffer();
-            }
+            m_maskedOcclusionCulling->ClearBuffer();
         }
 
         MaskedOcclusionCulling* View::GetMaskedOcclusionCulling()
         {
-            if (m_maskedOcclusionCulling)
-            {
-                uint32_t width = 0;
-                uint32_t height = 0;
-
-                m_maskedOcclusionCulling->GetResolution(width, height);
-                if (width > 0 && height > 0)
-                {
-                    return m_maskedOcclusionCulling;
-                }
-            }
-
-            return nullptr;
+            return m_maskedOcclusionCulling;
         }
 
     } // namespace RPI

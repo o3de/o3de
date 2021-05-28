@@ -500,7 +500,7 @@ namespace AZ
                 }
 
                 // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs)
-                m_cullingScene->BeginCulling(m_renderPacket.m_views, activePipelines);
+                m_cullingScene->BeginCulling(m_renderPacket.m_views);
                 for (ViewPtr& viewPtr : m_renderPacket.m_views)
                 {
                     AZ::Job* processCullablesJob = AZ::CreateJobFunction([this, &viewPtr](AZ::Job& thisJob)

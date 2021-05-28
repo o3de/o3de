@@ -643,7 +643,7 @@ namespace AZ
             }
         }
 
-        void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views, const AZStd::vector<RenderPipelinePtr>& activePipelines)
+        void CullingScene::BeginCulling(const AZStd::vector<ViewPtr>& views)
         {
             m_cullDataConcurrencyCheck.soft_lock();
 
@@ -652,7 +652,7 @@ namespace AZ
 
             for (auto& view : views)
             {
-                view->BeginCulling(activePipelines);
+                view->BeginCulling();
             }
 
             AuxGeomDrawPtr auxGeom;
