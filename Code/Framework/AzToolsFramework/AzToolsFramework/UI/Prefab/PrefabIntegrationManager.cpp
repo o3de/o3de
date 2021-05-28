@@ -238,24 +238,21 @@ namespace AzToolsFramework
                 deleteAction->setDisabled(true);
             }
 
-            QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
-            if (selectedEntities.size() != 1)
-            {
-                detachPrefabAction->setDisabled(true);
-            }
-            else
+            // Detach Prefab
+            if (selectedEntities.size() == 1)
             {
                 AZ::EntityId selectedEntity = selectedEntities[0];
 
                 if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
                     !s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntity))
                 {
-                    QObject::connect(detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                        [this, selectedEntity] { ContextMenu_DetachPrefab(selectedEntity); });
-                }
-                else
-                {
-                    detachPrefabAction->setDisabled(true);
+                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
+                    QObject::connect(
+                        detachPrefabAction, &QAction::triggered, detachPrefabAction,
+                        [this, selectedEntity]
+                        {
+                            ContextMenu_DetachPrefab(selectedEntity);
+                        });
                 }
             }
         }

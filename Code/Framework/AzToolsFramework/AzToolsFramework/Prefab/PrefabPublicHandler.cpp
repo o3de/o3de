@@ -1155,19 +1155,6 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        void PrefabPublicHandler::ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias)
-        {
-            QString oldAliasQuotes = QString("\"%1\"").arg(oldAlias.data());
-            QString newAliasQuotes = QString("\"%1\"").arg(newAlias.data());
-
-            stringToReplace.replace(oldAliasQuotes, newAliasQuotes);
-
-            QString oldAliasPathRef = QString("/%1").arg(oldAlias.data());
-            QString newAliasPathRef = QString("/%1").arg(newAlias.data());
-
-            stringToReplace.replace(oldAliasPathRef, newAliasPathRef);
-        }
-
         void PrefabPublicHandler::GenerateContainerEntityTransform(const EntityList& topLevelEntities,
             AZ::Vector3& translation, AZ::Quaternion& rotation)
         {
@@ -1417,6 +1404,19 @@ namespace AzToolsFramework
             }
 
             return true;
+        }
+
+        void PrefabPublicHandler::ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias)
+        {
+            QString oldAliasQuotes = QString("\"%1\"").arg(oldAlias.data());
+            QString newAliasQuotes = QString("\"%1\"").arg(newAlias.data());
+
+            stringToReplace.replace(oldAliasQuotes, newAliasQuotes);
+
+            QString oldAliasPathRef = QString("/%1").arg(oldAlias.data());
+            QString newAliasPathRef = QString("/%1").arg(newAlias.data());
+
+            stringToReplace.replace(oldAliasPathRef, newAliasPathRef);
         }
     } // namespace Prefab
 } // namespace AzToolsFramework
