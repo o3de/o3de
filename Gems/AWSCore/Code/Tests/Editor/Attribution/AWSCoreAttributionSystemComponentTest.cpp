@@ -16,61 +16,66 @@
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
+#include <Editor/Attribution/AWSCoreAttributionManager.h>
 #include <Editor/Attribution/AWSCoreAttributionSystemComponent.h>
 #include <TestFramework/AWSCoreFixture.h>
 
-
 using namespace AWSCore;
 
-class AWSAttributionSystemComponentTest
-    : public AWSCoreFixture
+namespace AWSCoreUnitTest
 {
-    void SetUp() override
+    class AWSAttributionSystemComponentTest
+        : public AWSCoreFixture
     {
-        AWSCoreFixture::SetUp();
+        void SetUp() override
+        {
+            AWSCoreFixture::SetUp();
 
-        m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-        m_serializeContext->CreateEditContext();
-        m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
-        m_componentDescriptor.reset(AWSAttributionSystemComponent::CreateDescriptor());
-        m_componentDescriptor->Reflect(m_serializeContext.get());
-        m_componentDescriptor->Reflect(m_behaviorContext.get());
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            m_serializeContext->CreateEditContext();
+            m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
 
-        m_entity = aznew AZ::Entity();
-        m_attributionSystemsComponent.reset(m_entity->CreateComponent<AWSAttributionSystemComponent>());
-        AZ_TEST_START_TRACE_SUPPRESSION;
+            m_componentDescriptor.reset(AWSAttributionSystemComponent::CreateDescriptor());
+            m_componentDescriptor->Reflect(m_serializeContext.get());
+            m_componentDescriptor->Reflect(m_behaviorContext.get());
+
+            m_entity = aznew AZ::Entity();
+            m_attributionSystemsComponent.reset(m_entity->CreateComponent<AWSAttributionSystemComponent>());
+        }
+
+        void TearDown() override
+        {
+            m_entity->Deactivate();
+            m_entity->RemoveComponent(m_attributionSystemsComponent.get());
+            delete m_entity;
+            m_entity = nullptr;
+
+            m_attributionSystemsComponent.reset();
+            m_componentDescriptor.reset();
+            m_behaviorContext.reset();
+            m_serializeContext.reset();
+
+            AWSCoreFixture::TearDown();
+        }
+
+    public:
+        AZStd::unique_ptr<AWSAttributionSystemComponent> m_attributionSystemsComponent;
+        AZ::Entity* m_entity;
+
+    private:
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_componentDescriptor;
+    };
+
+    TEST_F(AWSAttributionSystemComponentTest, SystemComponentInitActivate_Success)
+    {
         m_entity->Init();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(0); 
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
         m_entity->Activate();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
-
-    void TearDown() override
-    {
-        m_entity->Deactivate();
-        m_entity->RemoveComponent(m_attributionSystemsComponent.get());
-        m_attributionSystemsComponent.reset();
-        delete m_entity;
-        m_entity = nullptr;
-
-        m_attributionSystemsComponent.reset();
-        m_componentDescriptor.reset();
-        m_behaviorContext.reset();
-        m_serializeContext.reset();
-
-        AWSCoreFixture::TearDown();
-    }
-
-public:
-    AZStd::unique_ptr<AWSAttributionSystemComponent> m_attributionSystemsComponent;
-    AZ::Entity* m_entity;
-
-private:
-    AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
-    AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
-    AZStd::unique_ptr<AZ::ComponentDescriptor> m_componentDescriptor;
-};
-
-TEST_F(AWSAttributionSystemComponentTest, EmptyTest)
-{
-
 }
+
+

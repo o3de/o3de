@@ -10,8 +10,8 @@
  *
  */
 
-#include <Editor/Attribution/AWSCoreAttributionSystemComponent.h>
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSCoreAttributionSystemComponent.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -74,6 +74,7 @@ namespace AWSCore
 
     void AWSAttributionSystemComponent::Deactivate()
     {
+        m_manager.reset();
     }
 
 } // namespace AWSCore

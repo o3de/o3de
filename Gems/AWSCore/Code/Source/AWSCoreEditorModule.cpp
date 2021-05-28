@@ -11,6 +11,7 @@
 
 #include <AWSCoreEditorModule.h>
 #include <AWSCoreEditorSystemComponent.h>
+#include <Editor/Attribution/AWSCoreAttributionSystemComponent.h>
 
 namespace AWSCore
 {
@@ -19,6 +20,7 @@ namespace AWSCore
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         m_descriptors.insert(m_descriptors.end(), {
             AWSCoreEditorSystemComponent::CreateDescriptor(),
+            AWSAttributionSystemComponent::CreateDescriptor()
         });
     }
 

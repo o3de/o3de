@@ -11,7 +11,6 @@
  */
 
 #pragma once
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -36,11 +35,12 @@ namespace AWSCore
         bool ShouldGenerateMetric() const;
         void UpdateMetric(AttributionMetric& metric);
         void SubmitMetric(AttributionMetric& metric);
-        void UpdateLastCheck();
+        void UpdateLastSend();
 
         AZStd::string GetEngineVersion() const;
         AZStd::string GetPlatform() const;
         void GetActiveAWSGems(AZStd::vector<AZStd::string>& gemNames);
+        void SaveSettingsRegistryFile();
     };
 
 } // namespace AWSCore

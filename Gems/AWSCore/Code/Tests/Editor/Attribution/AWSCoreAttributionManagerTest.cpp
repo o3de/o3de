@@ -11,24 +11,249 @@
  */
 
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSCoreAttributionMetric.h>
 
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/base.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Serialization/Json/JsonSystemComponent.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Jobs/JobManager.h>
+#include <AzCore/Jobs/JobManagerBus.h>
+#include <AzCore/Jobs/JobContext.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
-namespace AWSCore
-{
-    using AttributionManagerTest = UnitTest::ScopedAllocatorSetupFixture;
+#include <TestFramework/AWSCoreFixture.h>
 
-    // TODO: Replace with more complete tests
-    TEST_F(AttributionManagerTest, SubmitMetricTest)
+
+using namespace AWSCore;
+
+namespace AWSCoreUnitTest
+{
+    class AttributionManagerTest
+        : public AWSCoreFixture
+    {
+    public:
+
+        virtual ~AttributionManagerTest() = default;
+
+    protected:
+        AZStd::shared_ptr<AZ::SerializeContext> m_serializeContext;
+        AZStd::unique_ptr<AZ::JsonRegistrationContext> m_registrationContext;
+        AZStd::shared_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+        AZStd::unique_ptr<AZ::JobContext> m_jobContext;
+        AZStd::unique_ptr<AZ::JobCancelGroup> m_jobCancelGroup;
+        AZStd::unique_ptr<AZ::JobManager> m_jobManager;
+        AZStd::array<char, AZ::IO::MaxPathLength> m_resolvedSettingsPath;
+
+        void SetUp() override
+        {
+            AWSCoreFixture::SetUp();
+
+            char rootPath[AZ_MAX_PATH_LEN];
+            AZ::Utils::GetExecutableDirectory(rootPath, AZ_MAX_PATH_LEN);
+            m_localFileIO->SetAlias("@user@", AZ_TRAIT_TEST_ROOT_FOLDER);
+
+            m_localFileIO->ResolvePath("@user@/Registry/", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
+            AZ::IO::SystemFile::CreateDir(m_resolvedSettingsPath.data());
+
+            m_localFileIO->ResolvePath("@user@/Registry/editorpreferences.setreg", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
+
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+
+            AZ::JsonSystemComponent::Reflect(m_registrationContext.get());
+
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+
+            m_settingsRegistry->SetContext(m_serializeContext.get());
+            m_settingsRegistry->SetContext(m_registrationContext.get());
+
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
+            AZ::JobManagerDesc jobManagerDesc;
+            AZ::JobManagerThreadDesc threadDesc;
+
+            m_jobManager.reset(aznew AZ::JobManager(jobManagerDesc));
+            m_jobCancelGroup.reset(aznew AZ::JobCancelGroup());
+            jobManagerDesc.m_workerThreads.push_back(threadDesc);
+            m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
+            AZ::JobContext::SetGlobalContext(m_jobContext.get());
+        }
+
+        void TearDown() override
+        {
+            AZ::JobContext::SetGlobalContext(nullptr);
+            m_jobContext.reset();
+            m_jobCancelGroup.reset();
+            m_jobManager.reset();
+
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+
+            m_settingsRegistry.reset();
+            m_serializeContext.reset();
+            m_registrationContext.reset();
+
+            m_localFileIO->ResolvePath("@user@/Registry/", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
+            AZ::IO::SystemFile::DeleteDir(m_resolvedSettingsPath.data());
+
+            delete AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+
+            AWSCoreFixture::TearDown();
+        }
+    };
+
+    TEST_F(AttributionManagerTest, MetricsSettings_AttributionDisabled_SkipsSend)
     {
         // GIVEN
         AWSAttributionManager manager;
         manager.Init();
+       
+        CreateFile(m_resolvedSettingsPath.data(), R"({
+            "Amazon": {
+                "Preferences": {
+                    "EnablePrefabSystem": false,
+                    "AWS": {
+                        "AWSAttributionEnabled": false,
+                        "AWSAttributionDelaySeconds": 30
+                    }
+                }
+            }
+        })");
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
-        // Nothing happens
+        AZ::u64 timeStamp = 0;
+        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        ASSERT_TRUE(timeStamp == 0);
+
+        RemoveFile(m_resolvedSettingsPath.data());
     }
-} // namespace AWSCore
+
+    TEST_F(AttributionManagerTest, AttributionEnabled_NoPreviousTimeStamp_SendSuccess)
+    {
+        // GIVEN
+        AWSAttributionManager manager;
+        manager.Init();
+
+        CreateFile(m_resolvedSettingsPath.data(), R"({
+            "Amazon": {
+                "Preferences": {
+                    "EnablePrefabSystem": false,
+                    "AWS": {
+                        "AWSAttributionEnabled": true,
+                        "AWSAttributionDelaySeconds": 30,
+                    }
+                }
+            }
+        })");
+
+        // WHEN
+        manager.MetricCheck();
+
+        // THEN
+        AZ::u64 timeStamp = 0;
+        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        ASSERT_TRUE(timeStamp > 0);
+
+
+        RemoveFile(m_resolvedSettingsPath.data());
+    }
+
+    TEST_F(AttributionManagerTest, AttributionEnabled_ValidPreviousTimeStamp_SendSuccess)
+    {
+        // GIVEN
+        AWSAttributionManager manager;
+        manager.Init();
+
+        CreateFile(m_resolvedSettingsPath.data(), R"({
+            "Amazon": {
+                "Preferences": {
+                    "EnablePrefabSystem": false,
+                    "AWS": {
+                        "AWSAttributionEnabled": true,
+                        "AWSAttributionDelaySeconds": 30,
+                        "AWSAttributionLastTimeStamp": 629400
+                    }
+                }
+            }
+        })");
+
+        // WHEN
+        manager.MetricCheck();
+
+        // THEN
+        AZ::u64 timeStamp = 0;
+        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        ASSERT_TRUE(timeStamp > 0);
+
+        RemoveFile(m_resolvedSettingsPath.data());
+    }
+
+    TEST_F(AttributionManagerTest, AttributionEnabled_DelayNotSatisfied_SendFail)
+    {
+        // GIVEN
+        AWSAttributionManager manager;
+        manager.Init();
+
+
+        CreateFile(m_resolvedSettingsPath.data(), R"({
+            "Amazon": {
+                "Preferences": {
+                    "EnablePrefabSystem": false,
+                    "AWS": {
+                        "AWSAttributionEnabled": true,
+                        "AWSAttributionDelaySeconds": 300,
+                        "AWSAttributionLastTimeStamp": 0
+                    }
+                }
+            }
+        })");
+
+        AZ::u64 delayInSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
+        ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp", delayInSeconds));
+
+        // WHEN
+        manager.MetricCheck();
+
+        // THEN
+        AZ::u64 timeStamp = 0;
+        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        ASSERT_TRUE(timeStamp == delayInSeconds);
+
+        RemoveFile(m_resolvedSettingsPath.data());
+    }
+
+    TEST_F(AttributionManagerTest, AttributionEnabledNotFound_SendSuccess)
+    {
+        // GIVEN
+        AWSAttributionManager manager;
+        manager.Init();
+
+        CreateFile(m_resolvedSettingsPath.data(), R"({
+            "Amazon": {
+                "Preferences": {
+                    "EnablePrefabSystem": false,
+                    "AWS": {
+                    }
+                }
+            }
+        })");
+
+        // WHEN
+        manager.MetricCheck();
+
+        // THEN
+        AZ::u64 timeStamp = 0;
+        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        ASSERT_TRUE(timeStamp != 0);
+
+        RemoveFile(m_resolvedSettingsPath.data());
+    }
+} // namespace AWSCoreUnitTest
