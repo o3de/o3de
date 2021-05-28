@@ -37,11 +37,8 @@ ly_add_target(
         PRIVATE
             PY_PACKAGE="${python_package_name}" 
     INCLUDE_DIRECTORIES
-        PUBLIC
-            .
         PRIVATE
             Source
-
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

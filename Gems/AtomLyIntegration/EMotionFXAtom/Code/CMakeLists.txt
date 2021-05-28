@@ -43,6 +43,8 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::EMotionFX_Atom.Static
+    RUNTIME_DEPENDENCIES
+        Gem::EMotionFX
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
