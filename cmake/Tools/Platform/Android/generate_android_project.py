@@ -109,7 +109,8 @@ ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
 ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
 
-MIN_ANDROID_SDK_PLATFORM = 24   # The minimum platform/api level that is supported
+MIN_ANDROID_SDK_PLATFORM = 28   # The minimum platform/api level that is supported for the SDK Platform
+MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported for the NDK
 
 
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
@@ -324,8 +325,8 @@ def main(args):
     if android_native_api_level < 0:
         android_native_api_level = android_sdk_platform_version
     else:
-        if android_native_api_level < MIN_ANDROID_SDK_PLATFORM:
-            raise common.LmbrCmdError(f"Invalid argument for {ANDROID_NATIVE_API_LEVEL} ({android_native_api_level}). Must be greater than the minimum value supported {MIN_ANDROID_SDK_PLATFORM}.")
+        if android_native_api_level < MIN_NATIVE_API_LEVEL:
+            raise common.LmbrCmdError(f"Invalid argument for {ANDROID_NATIVE_API_LEVEL} ({android_native_api_level}). Must be greater than the minimum value supported {MIN_NATIVE_API_LEVEL}.")
 
     # Check and make sure that the requested sdk platform exists, download if necessary
     platform_package_name = f"platforms;android-{android_sdk_platform_version}"
