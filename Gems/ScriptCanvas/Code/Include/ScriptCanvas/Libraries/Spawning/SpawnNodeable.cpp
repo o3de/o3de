@@ -89,18 +89,18 @@ namespace ScriptCanvas::Nodeables::Spawning
                 rootAssetId.m_subId = rootSubId;
 
                 m_spawnableAsset = AZ::Data::AssetManager::Instance().
-                    FindOrCreateAsset<AzFramework::Spawnable>(rootAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                    FindOrCreateAsset<AzFramework::Spawnable>(rootAssetId, AZ::Data::AssetLoadBehavior::Default);
             }
             else
             {
-                m_spawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+                m_spawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::Default);
             }
         }
     }
 
     void SpawnNodeable::RequestSpawn(Data::Vector3Type translation, Data::Vector3Type rotation, Data::NumberType scale)
     {
-        if (!m_spawnableAsset.IsReady())
+        if (m_spawnableAsset.GetAutoLoadBehavior() == AZ::Data::AssetLoadBehavior::NoLoad)
         {
             return;
         }
