@@ -599,20 +599,10 @@ namespace AzToolsFramework
             return result;
         }
 
-        void TransformComponent::SetLocalScale(const AZ::Vector3& scale)
-        {
-            m_editorTransform.m_scale = scale;
-            TransformChanged();
-        }
-
         AZ::Vector3 TransformComponent::GetLocalScale()
         {
+            AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
             return m_editorTransform.m_scale;
-        }
-
-        AZ::Vector3 TransformComponent::GetWorldScale()
-        {
-            return GetWorldTM().GetScale();
         }
 
         void TransformComponent::SetLocalUniformScale(float scale)
