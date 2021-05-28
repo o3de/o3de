@@ -1715,6 +1715,24 @@ namespace AzToolsFramework
         return m_parentRow->CanChildrenBeReordered();
     }
 
+    int PropertyRowWidget::GetIndexInParent() const
+    {
+        if (!GetParentRow())
+        {
+            return -1;
+        }
+
+        for (int index = 0; index < GetParentRow()->GetChildRowCount(); index++)
+        {
+            if (GetParentRow()->GetChildrenRows()[index] == this)
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
     bool PropertyRowWidget::CanMoveUp() const
     {
         if (!CanBeReordered())

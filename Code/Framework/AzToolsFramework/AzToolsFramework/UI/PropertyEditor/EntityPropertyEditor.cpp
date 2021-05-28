@@ -169,187 +169,163 @@ namespace AzToolsFramework
         }
 
     protected:
-        void paintEvent(QPaintEvent* event) override
+        const int TopMargin = 1;
+        const int RightMargin = 2;
+        const int BottomMargin = 5;
+        const int LeftMargin = 2;
+
+        void paintDraggingRowWidget(QPainter& painter)
         {
-            const int TopMargin = 1;
-            const int RightMargin = 2;
-            const int BottomMargin = 5;
-            const int LeftMargin = 2;
-
-            QWidget::paintEvent(event);
-
-            QPainter painter(this);
-            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-
-            QRect currRect;
-            bool drag = false;
-            bool drop = false;
-
-            EntityPropertyEditor::ReorderState currentState = m_editor->GetReorderState();
             ComponentEditor* rowWidgetEditor = m_editor->GetEditorForCurrentReorderRowWidget();
-            PropertyRowWidget* dragRowWidget =  m_editor->GetReorderRowWidget();
+            PropertyRowWidget* dragRowWidget = m_editor->GetReorderRowWidget();
             PropertyRowWidget* dropTarget = m_editor->GetReorderDropTarget();
             EntityPropertyEditor::DropArea dropArea = m_editor->GetReorderDropArea();
-            QPixmap dragImage = m_editor->GetReorderRowWidgetImage();
-            float indicatorAlpha = m_editor->GetMoveIndicatorAlpha();
 
-            if (currentState == EntityPropertyEditor::ReorderState::DraggingRowWidget)
+            // The user is dragging a row widget.
+            for (auto componentEditor : m_editor->m_componentEditors)
             {
-                // The user is dragging a row widget.
-                for (auto componentEditor : m_editor->m_componentEditors)
+                if (!componentEditor->isVisible())
                 {
-                    if (!componentEditor->isVisible())
+                    continue;
+                }
+
+                if (componentEditor != rowWidgetEditor)
+                {
+                    continue;
+                }
+
+                for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> widgetPair : componentEditor->GetPropertyEditor()->GetWidgets())
+                {
+                    PropertyRowWidget* rowWidget = widgetPair.second;
+                    if (!rowWidget->isVisible())
                     {
                         continue;
                     }
 
-                    if (componentEditor != rowWidgetEditor)
-                    {
-                        continue;
-                    }
+                    QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(rowWidget);
 
-                    for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> widgetPair : componentEditor->GetPropertyEditor()->GetWidgets())
-                    {
-                        PropertyRowWidget* rowWidget = widgetPair.second;
-                        if (!rowWidget->isVisible())
-                        {
-                            continue;
-                        }
-
-                        QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(rowWidget);
-
-                        currRect = QRect(
-                            QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
-                            QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
-
-                        currRect.setLeft(LeftMargin + 2);
-                        currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
-
-                        if (rowWidget == dragRowWidget)
-                        {
-                            QStyleOption opt;
-                            opt.init(this);
-                            opt.rect = currRect;
-                            static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
-                            drag = true;
-                        }
-
-                        if (rowWidget == dropTarget)
-                        {
-                            QRect dropRect = currRect;
-                            if (dropArea == EntityPropertyEditor::DropArea::Above)
-                            {
-                                dropRect.setTop(currRect.top() - m_dropIndicatorRowWidgetOffset);
-                            }
-                            else
-                            {
-                                dropRect.setTop(currRect.bottom());
-                            }
-
-                            dropRect.setHeight(0);
-
-                            QStyleOption opt;
-                            opt.init(this);
-                            opt.rect = dropRect;
-                            style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
-
-                            drop = true;
-                        }
-                    }
-                }
-            }
-            else if (
-                currentState == EntityPropertyEditor::ReorderState::UsingMenu ||
-                currentState == EntityPropertyEditor::ReorderState::MenuOperationInProgress)
-            {
-                // User has the context menu open with a movable row selected.
-
-                float alpha = 1.0f;
-                if (currentState == EntityPropertyEditor::ReorderState::MenuOperationInProgress)
-                {
-                    alpha = indicatorAlpha;
-                }
-
-                QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dragRowWidget);
-                
-                int top = mapFromGlobal(globalRect.topLeft()).y();
-                int imageHeight = dragImage.height() / dragImage.devicePixelRatioF();
-                int imageWidth = dragImage.width() / dragImage.devicePixelRatioF();
-                currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + imageWidth, top + imageHeight));
-
-                painter.setOpacity(alpha);
-                painter.drawPixmap(currRect, dragImage);
-
-                if (dropTarget)
-                {
-                    // A move row menu command is highlighted. Draw an indicator to show where the current row will move to.
-                    globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dropTarget);
-                    QRect dropRect = QRect(
-                        QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
-                        QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, TopMargin)));
-
-                    if (dropArea == EntityPropertyEditor::DropArea::Above)
-                    {
-                        dropRect.setTop(dropRect.top() - m_dropIndicatorRowWidgetOffset);
-                    }
-                    else
-                    {
-                        dropRect.setTop(dropRect.bottom());
-                    }
-                    dropRect.setHeight(0);
-
-                    painter.setOpacity(alpha);
-                    QStyleOption lineOpt;
-                    lineOpt.init(this);
-                    lineOpt.rect = dropRect;
-                    style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &lineOpt, &painter, this);
-                    painter.setOpacity(1.0f);
-                }
-            }
-            else
-            {
-                // Check for a component editor being dragged.
-                for (auto componentEditor : m_editor->m_componentEditors)
-                {
-                    if (!componentEditor->isVisible())
-                    {
-                        continue;
-                    }
-
-                    QRect globalRect = m_editor->GetWidgetGlobalRect(componentEditor);
-
-                    currRect = QRect(
+                    QRect currRect = QRect(
                         QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
                         QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
 
-                    currRect.setWidth(currRect.width() - 1);
-                    currRect.setHeight(currRect.height() - 1);
+                    currRect.setLeft(LeftMargin + 2);
+                    currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
 
-                    if (componentEditor->IsDragged())
+                    if (rowWidget == dragRowWidget)
                     {
                         QStyleOption opt;
                         opt.init(this);
                         opt.rect = currRect;
                         static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
-                        drag = true;
                     }
 
-                    if (componentEditor->IsDropTarget())
+                    if (rowWidget == dropTarget)
                     {
                         QRect dropRect = currRect;
-                        dropRect.setTop(currRect.top() - m_dropIndicatorOffset);
+                        if (dropArea == EntityPropertyEditor::DropArea::Above)
+                        {
+                            dropRect.setTop(currRect.top() - m_dropIndicatorRowWidgetOffset);
+                        }
+                        else
+                        {
+                            dropRect.setTop(currRect.bottom());
+                        }
+
                         dropRect.setHeight(0);
 
                         QStyleOption opt;
                         opt.init(this);
                         opt.rect = dropRect;
                         style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
-
-                        drop = true;
                     }
                 }
+            }
+        };
 
-                if (drag && !drop)
+        void paintMenuHighlight(QPainter& painter, float alpha)
+        {
+            // If a RowWidget can be moved up or down, highlight it.
+            PropertyRowWidget* dragRowWidget = m_editor->GetReorderRowWidget();
+            if (!dragRowWidget)
+            {
+                return;
+            }
+
+            PropertyRowWidget* dropTarget = m_editor->GetReorderDropTarget();
+            EntityPropertyEditor::DropArea dropArea = m_editor->GetReorderDropArea();
+            QPixmap dragImage = m_editor->GetReorderRowWidgetImage();
+
+            // User has the context menu open with a movable row selected.
+            QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dragRowWidget);
+
+            int top = mapFromGlobal(globalRect.topLeft()).y();
+            int imageHeight = dragImage.height() / dragImage.devicePixelRatioF();
+            int imageWidth = dragImage.width() / dragImage.devicePixelRatioF();
+            QRect currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + imageWidth, top + imageHeight));
+
+            painter.setOpacity(alpha);
+            painter.drawPixmap(currRect, dragImage);
+
+            if (dropTarget)
+            {
+                // A move row menu command is highlighted. Draw an indicator to show where the current row will move to.
+                globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dropTarget);
+                QRect dropRect = QRect(
+                    QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
+                    QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, TopMargin)));
+
+                if (dropArea == EntityPropertyEditor::DropArea::Above)
+                {
+                    dropRect.setTop(dropRect.top() - m_dropIndicatorRowWidgetOffset);
+                }
+                else
+                {
+                    dropRect.setTop(dropRect.bottom());
+                }
+                dropRect.setHeight(0);
+
+                painter.setOpacity(alpha);
+                QStyleOption lineOpt;
+                lineOpt.init(this);
+                lineOpt.rect = dropRect;
+                style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &lineOpt, &painter, this);
+                painter.setOpacity(1.0f);
+            }
+        };
+
+        void paintDraggingComponent(QPainter& painter)
+        {
+            bool drag = false;
+            bool drop = false;
+            QRect currRect;
+
+            // Check for a component editor being dragged.
+            for (auto componentEditor : m_editor->m_componentEditors)
+            {
+                if (!componentEditor->isVisible())
+                {
+                    continue;
+                }
+
+                QRect globalRect = m_editor->GetWidgetGlobalRect(componentEditor);
+
+                currRect = QRect(
+                    QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
+                    QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
+
+                currRect.setWidth(currRect.width() - 1);
+                currRect.setHeight(currRect.height() - 1);
+
+                if (componentEditor->IsDragged())
+                {
+                    QStyleOption opt;
+                    opt.init(this);
+                    opt.rect = currRect;
+                    static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
+                    drag = true;
+                }
+
+                if (componentEditor->IsDropTarget())
                 {
                     QRect dropRect = currRect;
                     dropRect.setTop(currRect.top() - m_dropIndicatorOffset);
@@ -359,7 +335,82 @@ namespace AzToolsFramework
                     opt.init(this);
                     opt.rect = dropRect;
                     style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
+
+                    drop = true;
                 }
+            }
+
+            if (drag && !drop)
+            {
+                QRect dropRect = currRect;
+                dropRect.setTop(currRect.top() - m_dropIndicatorOffset);
+                dropRect.setHeight(0);
+
+                QStyleOption opt;
+                opt.init(this);
+                opt.rect = dropRect;
+                style()->drawPrimitive(QStyle::PE_IndicatorItemViewItemDrop, &opt, &painter, this);
+            }
+        };
+
+        void paintMovedRow(QPainter& painter, float alpha)
+        {
+            // After a move has been carried out, briefly highlight the moved row.
+            PropertyRowWidget* rowWidget = m_editor->GetRowToHighlight();
+
+            if (!rowWidget)
+            {
+                return;
+            }
+
+            QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(rowWidget);
+            QRect currRect = QRect(
+                QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
+                QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
+
+            currRect.setLeft(LeftMargin + 2);
+            currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
+
+            painter.setOpacity(alpha);
+
+            QPen pen;
+            QColor drawColor = Qt::white;
+            drawColor.setAlphaF(alpha);
+            pen.setColor(drawColor);
+            pen.setWidth(1);
+            painter.setPen(pen);
+            painter.drawRect(currRect);
+        }
+
+        void paintEvent(QPaintEvent* event) override
+        {
+            QWidget::paintEvent(event);
+
+            QPainter painter(this);
+            painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+            EntityPropertyEditor::ReorderState currentState = m_editor->GetReorderState();
+            float indicatorAlpha = m_editor->GetMoveIndicatorAlpha();
+
+            switch (currentState)
+            {
+            case EntityPropertyEditor::ReorderState::DraggingRowWidget:
+                paintDraggingRowWidget(painter);
+                break;
+            case EntityPropertyEditor::ReorderState::UsingMenu:
+                paintMenuHighlight(painter, 1.0f);
+                break;
+            case EntityPropertyEditor::ReorderState::MenuOperationInProgress:
+                paintMenuHighlight(painter, indicatorAlpha);
+                break;
+            case EntityPropertyEditor::ReorderState::DraggingComponent:
+                paintDraggingComponent(painter);
+                break;
+            case EntityPropertyEditor::ReorderState::HighlightMovedRow:
+                paintMovedRow(painter, indicatorAlpha);
+                break;
+            default:
+                break;
             }
         }
 
@@ -2220,6 +2271,7 @@ namespace AzToolsFramework
             }
         }
 
+        m_reorderRowWidget = nullptr;
         // Add move up/down actions if appropriate
         auto componentEditorIterator = m_componentToEditorMap.find(componentInstance);
         AZ_Assert(componentEditorIterator != m_componentToEditorMap.end(), "Unable to find a component editor for the given component");
@@ -2235,11 +2287,12 @@ namespace AzToolsFramework
                 QAction* moveUpAction = menu.addAction(tr("Move %1 Up").arg(widget->GetNameLabel()->text()));
                 moveUpAction->setEnabled(false);
                 moveUpAction->setData(kPropertyEditorMenuActionMoveUp);
+
                 if (widget->CanMoveUp())
                 {
                     moveUpAction->setEnabled(true);
-                    connect(moveUpAction, &QAction::triggered, this, [this, fieldNode] {
-                        ContextMenuActionMoveItemUp(m_reorderRowWidgetEditor, fieldNode);
+                    connect(moveUpAction, &QAction::triggered, this, [this,  widget] {
+                        ContextMenuActionMoveItemUp(m_reorderRowWidgetEditor, widget);
                     });
                 }
 
@@ -2249,8 +2302,8 @@ namespace AzToolsFramework
                 if (widget->CanMoveDown())
                 {
                     moveDownAction->setEnabled(true);
-                    connect(moveDownAction, &QAction::triggered, this, [this, fieldNode] {
-                        ContextMenuActionMoveItemDown(m_reorderRowWidgetEditor, fieldNode);
+                    connect(moveDownAction, &QAction::triggered, this, [this, widget] {
+                        ContextMenuActionMoveItemDown(m_reorderRowWidgetEditor, widget);
                     });
                 }
 
@@ -2563,41 +2616,87 @@ namespace AzToolsFramework
         AZ::TickBus::Handler::BusConnect();
     }
 
+    void EntityPropertyEditor::HighlightMovedRowWidget()
+    {
+        if (m_currentReorderState != ReorderState::WaitForRedraw)
+        {
+            return;
+        }
+        UpdateOverlay();
+
+        m_currentReorderState = ReorderState::HighlightMovedRow;
+        m_moveFadeTimeRemaining = MoveStartFadeTime;
+
+        AZ::TickBus::Handler::BusConnect();
+        m_overlay->setVisible(true);
+    }
+
     void EntityPropertyEditor::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
     {
         m_moveFadeTimeRemaining -= deltaTime;
+        m_overlay->setVisible(true);
         if (m_moveFadeTimeRemaining <= 0.0f)
         {
             m_moveFadeTimeRemaining = 0.0f;
-            AZ::TickBus::Handler::BusDisconnect();
 
-            if (m_moveDirectionAfterFade == DropArea::Above)
+            if (m_currentReorderState == ReorderState::MenuOperationInProgress)
             {
-                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeUp(m_nodeToMode);
+                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeToIndex(m_nodeToMode, m_indexMapOfMovedRow[0]);
+
+                // Ensure the highlight gets drawn once the RPE is updated.
+                m_currentReorderState = ReorderState::WaitForRedraw;
+
+                AZ::TickBus::Handler::BusDisconnect();
             }
             else
             {
-                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeDown(m_nodeToMode);
+                m_currentReorderState = ReorderState::Inactive;
+                AZ::TickBus::Handler::BusDisconnect();
+                m_overlay->setVisible(false);
             }
-
-            m_currentReorderState = ReorderState::Inactive;
         }
+
+        // Force a repaint to show the fade.
         repaint(0, 0, -1, -1);
     }
 
-    void EntityPropertyEditor::ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, InstanceDataNode* node)
+    void EntityPropertyEditor::GenerateRowWidgetIndexMapToChildIndex(PropertyRowWidget* parent, int destIndex)
     {
+        m_indexMapOfMovedRow.clear();
+        m_indexMapOfMovedRow.push_back(destIndex);
+
+        while (parent)
+        {
+            int index = parent->GetIndexInParent();
+            if (index < 0)
+            {
+                // Top level widget.
+                break;
+            }
+            m_indexMapOfMovedRow.push_back(parent->GetIndexInParent());
+            parent = parent->GetParentRow();
+        }
+    }
+
+    void EntityPropertyEditor::ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget)
+    {
+        // After the RPE is rebuilt, there'll be no way to work out which is the moved RowWidget.
+        // Generate a map of the child indices up to the root.
+        PropertyRowWidget* parent = rowWidget->GetParentRow();
+        GenerateRowWidgetIndexMapToChildIndex(parent, rowWidget->GetIndexInParent() - 1);
+
         m_reorderRowWidgetEditor = componentEditor;
-        m_nodeToMode = node;
-        m_moveDirectionAfterFade = DropArea::Above;
+        m_nodeToMode = rowWidget->GetNode();
         BeginMoveRowWidgetFade();
     }
 
-    void EntityPropertyEditor::ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, InstanceDataNode* node)
+    void EntityPropertyEditor::ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget)
     {
+        PropertyRowWidget* parent = rowWidget->GetParentRow();
+        GenerateRowWidgetIndexMapToChildIndex(parent, rowWidget->GetIndexInParent() + 1);
+
         m_reorderRowWidgetEditor = componentEditor;
-        m_nodeToMode = node;
-        m_moveDirectionAfterFade = DropArea::Below;
+        m_nodeToMode = rowWidget->GetNode();
         BeginMoveRowWidgetFade();
     }
 
@@ -4046,6 +4145,8 @@ namespace AzToolsFramework
         m_shouldScrollToNewComponents = false;
         m_shouldScrollToNewComponentsQueued = false;
         m_newComponentId.reset();
+
+        HighlightMovedRowWidget();
     }
 
     void EntityPropertyEditor::QueueScrollToNewComponent()
@@ -4974,6 +5075,8 @@ namespace AzToolsFramework
                 }
             }
 
+            m_currentReorderState = EntityPropertyEditor::ReorderState::DraggingComponent;
+
             // build image from dragged editor UI
             QImage dragImage(dragImageRect.size(), QImage::Format_ARGB32_Premultiplied);
             QPainter painter(&dragImage);
@@ -5085,6 +5188,7 @@ namespace AzToolsFramework
         {
             if (IsDropAllowed(mimeData, globalPos))
             {
+                m_currentReorderState = ReorderState::Inactive;
                 // handle drop for supported mime types
                 HandleDropForComponentTypes(event);
                 HandleDropForComponentAssets(event);
@@ -5629,6 +5733,29 @@ namespace AzToolsFramework
         }
 
         return m_moveFadeTimeRemaining / MoveStartFadeTime;
+    }
+
+    PropertyRowWidget* EntityPropertyEditor::GetRowToHighlight()
+    {
+        // Use the pregenerated map to find the RowWidget that's in the new position.
+        QSet<PropertyRowWidget*> rowWidgets = m_reorderRowWidgetEditor->GetPropertyEditor()->GetTopLevelWidgets();
+        if (rowWidgets.isEmpty())
+        {
+            return nullptr;
+        }
+
+        PropertyRowWidget*highlightRow = *rowWidgets.begin();
+
+        int mapIndex = m_indexMapOfMovedRow.size() - 1;
+
+        while (mapIndex >= 0)
+        {
+            int mapEntry = m_indexMapOfMovedRow[mapIndex];
+            highlightRow = highlightRow->GetChildrenRows()[mapEntry];
+            mapIndex--;
+        }
+
+        return highlightRow;
     }
 }
 

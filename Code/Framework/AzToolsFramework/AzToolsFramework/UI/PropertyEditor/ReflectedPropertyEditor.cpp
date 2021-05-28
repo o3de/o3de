@@ -1655,6 +1655,21 @@ namespace AzToolsFramework
         return pContainerNode;
     }
 
+    InstanceDataNode* ReflectedPropertyEditor::GetNodeAtIndex(int index)
+    {
+        if (index >= m_impl->m_widgetsInDisplayOrder.size())
+        {
+            return nullptr;
+        }
+
+        return GetNodeFromWidget(m_impl->m_widgetsInDisplayOrder[index]);
+    }
+
+    QSet<PropertyRowWidget*> ReflectedPropertyEditor::GetTopLevelWidgets()
+    {
+        return m_impl->getTopLevelWidgets();
+    }
+
     void ReflectedPropertyEditor::ChangeNodeIndex(InstanceDataNode* containerNode, InstanceDataNode* node, int fromIndex, int toIndex)
     {
         auto container = containerNode->GetElementMetadata()
@@ -1735,7 +1750,7 @@ namespace AzToolsFramework
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     }
 
-    void ReflectedPropertyEditor::MoveNodeUp(InstanceDataNode* node)
+    void ReflectedPropertyEditor::MoveNodeToIndex(InstanceDataNode* node, int index)
     {
         InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
 
@@ -1744,29 +1759,7 @@ namespace AzToolsFramework
         AZStd::vector<void*> nodeInstancesOut;
         const size_t elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
 
-        if (elementIndex == 0)
-        {
-            return;
-        }
-
-        ChangeNodeIndex(pContainerNode, node, elementIndex, elementIndex - 1);
-    }
-
-    void ReflectedPropertyEditor::MoveNodeDown(InstanceDataNode* node)
-    {
-        InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
-
-        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
-
-        AZStd::vector<void*> nodeInstancesOut;
-        const size_t elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
-
-        if (elementIndex == container->Size(pContainerNode->GetInstance(0)) - 1)
-        {
-            return;
-        }
-
-        ChangeNodeIndex(pContainerNode, node, elementIndex, elementIndex + 1);
+        ChangeNodeIndex(pContainerNode, node, elementIndex, index);
     }
 
     void ReflectedPropertyEditor::MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore)

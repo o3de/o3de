@@ -162,6 +162,7 @@ namespace AzToolsFramework
         bool CanChildrenBeReordered() const;
         bool CanBeReordered() const;
 
+        int GetIndexInParent() const;
         bool CanMoveUp() const;
         bool CanMoveDown() const;
 

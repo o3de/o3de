@@ -137,7 +137,6 @@ namespace AzToolsFramework
 
         void SetDynamicEditDataProvider(DynamicEditDataProvider provider);
 
-
         QWidget* GetContainerWidget();
         
         void SetSizeHintOffset(const QSize& offset);
@@ -156,12 +155,13 @@ namespace AzToolsFramework
         using VisibilityCallback = AZStd::function<void(InstanceDataNode* node, NodeDisplayVisibility& visibility, bool& checkChildVisibility)>;
         void SetVisibilityCallback(VisibilityCallback callback);
 
-        void MoveNodeUp(InstanceDataNode* node);
-        void MoveNodeDown(InstanceDataNode* node);
+        void MoveNodeToIndex(InstanceDataNode* node, int index);
         void MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
         void MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
 
         int GetNodeIndexInContainer(InstanceDataNode* node);
+        InstanceDataNode* GetNodeAtIndex(int index);
+        QSet<PropertyRowWidget*> GetTopLevelWidgets();
     signals:
         void OnExpansionContractionDone();
     private:

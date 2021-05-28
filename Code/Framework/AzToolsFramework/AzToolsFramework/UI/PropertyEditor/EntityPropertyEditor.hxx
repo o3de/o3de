@@ -124,9 +124,12 @@ namespace AzToolsFramework
         enum class ReorderState
         {
             Inactive,               // No row widget reordering operation is in progress.
+            DraggingComponent,      // User is dragging a component editor.
             DraggingRowWidget,      // User is dragging a row widget around.
             UsingMenu,              // User has the context menu open and may hover over a move up/down operation.
-            MenuOperationInProgress // User has selected a move/up down menu item.
+            MenuOperationInProgress,// User has selected a move/up down menu item.
+            WaitForRedraw,   // Wait for rebuild of RPE.
+            HighlightMovedRow       // User has moved a row, highlight the new position.
         };
 
         enum class DropArea
@@ -177,6 +180,7 @@ namespace AzToolsFramework
         DropArea GetReorderDropArea() const;
         QPixmap GetReorderRowWidgetImage() const;
         float GetMoveIndicatorAlpha() const;
+        PropertyRowWidget* GetRowToHighlight();
     Q_SIGNALS:
         void SelectedEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name);
 
@@ -279,8 +283,9 @@ namespace AzToolsFramework
         void ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode);
         void ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive);
 
-        void ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, InstanceDataNode* node);
-        void ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, InstanceDataNode* node);
+        void GenerateRowWidgetIndexMapToChildIndex(PropertyRowWidget* parent, int destIndex);
+        void ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget);
+        void ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget);
 
         /// Given an InstanceDataNode, calculate a DataPatch address relative to the entity.
         /// @return true if successful.
@@ -619,7 +624,7 @@ namespace AzToolsFramework
         DropArea m_reorderDropArea = DropArea::Above;
         QPixmap m_reorderRowImage;
         float m_moveFadeTimeRemaining;
-        DropArea m_moveDirectionAfterFade;
+        AZStd::vector<int> m_indexMapOfMovedRow;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed
@@ -629,6 +634,7 @@ namespace AzToolsFramework
         void DisconnectFromEntityBuses(const AZ::EntityId& entityId);
 
         void BeginMoveRowWidgetFade();
+        void HighlightMovedRowWidget();
 
         //! Stores a component id to be focused on next time the UI updates.
         AZStd::optional<AZ::ComponentId> m_newComponentId;
