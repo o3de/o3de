@@ -57,11 +57,11 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromRotationAndTranslation, k_categoryName, "{99A4D55D-6EFB-4E24-8113-F5B46DE3A194}", "returns a transform from the rotation and the translation", "Rotation", "Translation");
 
-        AZ_INLINE TransformType FromScale(Vector3Type scale)
+        AZ_INLINE TransformType FromScale(NumberType scale)
         {
-            return TransformType::CreateScale(scale);
+            return TransformType::CreateUniformScale(scale);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromScale, k_categoryName, "{4B6454BC-015C-41BB-9C78-34ADBCF70187}", "returns a scale matrix and the translation set to zero", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromScale, k_categoryName, "{4B6454BC-015C-41BB-9C78-34ADBCF70187}", "returns a transform which applies the specified uniform Scale, but no rotation or translation", "Scale");
 
         AZ_INLINE TransformType FromTranslation(Vector3Type translation)
         {
