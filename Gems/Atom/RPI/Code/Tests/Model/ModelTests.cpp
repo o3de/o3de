@@ -1090,7 +1090,10 @@ namespace UnitTest
         float distance = AZStd::numeric_limits<float>::max();
         AZ::Vector3 normal;
 
-        EXPECT_THAT(kdTree.RayIntersection(AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance, normal), testing::Eq(GetParam().expectedShouldIntersect));
+        EXPECT_THAT(
+            kdTree.RayIntersection(
+                AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance, normal),
+            testing::Eq(GetParam().expectedShouldIntersect));
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
 

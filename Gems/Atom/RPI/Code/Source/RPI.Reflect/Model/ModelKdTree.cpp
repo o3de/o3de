@@ -206,10 +206,17 @@ namespace AZ
 
         bool ModelKdTree::RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const
         {
-            return RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, distance, normal);
+            float startingDistance = std::numeric_limits<float>::max();
+            if (RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, startingDistance, normal))
+            {
+                distance = startingDistance;
+                return true;
+            }
+
+            return false;
         }
 
-        bool ModelKdTree::RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const
+        bool ModelKdTree::RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             if (!pNode)
             {
@@ -237,9 +244,8 @@ namespace AZ
 
                 AZ::Vector3 intersectionNormal;
                 float hitDistanceNormalized;
-                const float maxDist(FLT_MAX);
-                float nearestDist = maxDist;
 
+                float nearestDistNormalized = distanceNormalized;
                 for (AZ::u32 i = 0; i < nVBuffSize; ++i)
                 {
                     const auto& [first, second, third] = pNode->GetVertexIndex(i);
@@ -258,25 +264,23 @@ namespace AZ
                         AZ::Vector3{positionBuffer[third * 3 + 0], positionBuffer[third * 3 + 1], positionBuffer[third * 3 + 2]},
                     };
 
-                    const AZ::Vector3 rayEnd = raySrc + rayDir * distance;
+                    const AZ::Vector3 rayEnd = raySrc + rayDir;
 
                     if (AZ::Intersect::IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
                         intersectionNormal, hitDistanceNormalized) != Intersect::ISECT_RAY_AABB_NONE)
                     {
-                        float hitDistance = hitDistanceNormalized * distance;
-
-                        if (nearestDist > hitDistance)
+                        if (nearestDistNormalized > hitDistanceNormalized)
                         {
                             normal = intersectionNormal;
                         }
 
-                        nearestDist = AZStd::GetMin(nearestDist, hitDistance);
+                        nearestDistNormalized = AZStd::GetMin(nearestDistNormalized, hitDistanceNormalized);
                     }
                 }
 
-                if (nearestDist < maxDist)
+                if (nearestDistNormalized < distanceNormalized)
                 {
-                    distance = AZStd::GetMin(distance, nearestDist);
+                    distanceNormalized = nearestDistNormalized;
                     return true;
                 }
 
@@ -284,8 +288,8 @@ namespace AZ
             }
 
             // running both sides to find the closest intersection
-            const bool bFoundChild0 = RayIntersectionRecursively(pNode->GetChild(0), raySrc, rayDir, distance, normal);
-            const bool bFoundChild1 = RayIntersectionRecursively(pNode->GetChild(1), raySrc, rayDir, distance, normal);
+            const bool bFoundChild0 = RayIntersectionRecursively(pNode->GetChild(0), raySrc, rayDir, distanceNormalized, normal);
+            const bool bFoundChild1 = RayIntersectionRecursively(pNode->GetChild(1), raySrc, rayDir, distanceNormalized, normal);
 
             return bFoundChild0 || bFoundChild1;
         }
