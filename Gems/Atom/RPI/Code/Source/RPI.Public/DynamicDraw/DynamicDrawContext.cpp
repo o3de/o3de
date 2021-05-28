@@ -211,6 +211,42 @@ namespace AZ
             m_rhiPipelineState = m_pipelineState->GetRHIPipelineState();
         }
 
+        void DynamicDrawContext::SetScene(Scene* scene)
+        {
+            AZ_Assert(scene, "SetScene called with an invalid scene");
+            if (!scene || m_scene == scene)
+            {
+                return;
+            }
+            m_scene = scene;
+            m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+            // Reinitialize if it was initialized
+            if (m_initialized)
+            {
+                // Report warning if there were some draw data
+                AZ_Warning(
+                    "DynamicDrawContext", m_cachedDrawItems.size() == 0,
+                    "DynamicDrawContext::SetForScene should be called"
+                    " when there is no cached draw data");
+                // Clear some cached data
+                FrameEnd();
+                m_cachedRhiPipelineStates.clear();
+                // Reinitialize
+                EndInit();
+            }
+        }
+
+        void DynamicDrawContext::SetRenderPipeline(RenderPipeline* pipeline)
+        {
+            AZ_Assert(pipeline, "SetRenderPipeline called with an invalid pipeline");
+            if (!pipeline)
+            {
+                return;
+            }
+            SetScene(pipeline->GetScene());
+            m_drawFilter = pipeline->GetDrawFilterMask();
+        }
+
         bool DynamicDrawContext::IsReady()
         {
             return m_initialized;

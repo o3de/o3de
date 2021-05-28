@@ -33,11 +33,11 @@ set(FILES
     Materials/Types/StandardMultilayerPBR_Common.azsli
     Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.shader
+    Materials/Types/StandardMultilayerPBR_Displacement.lua
     Materials/Types/StandardMultilayerPBR_ForwardPass.azsl
     Materials/Types/StandardMultilayerPBR_ForwardPass.shader
     Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
-    Materials/Types/StandardMultilayerPBR_Parallax.lua
-    Materials/Types/StandardMultilayerPBR_ParallaxPerLayer.lua
+    Materials/Types/StandardMultilayerPBR_LayerEnable.lua
     Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader

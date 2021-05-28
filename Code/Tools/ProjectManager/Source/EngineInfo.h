@@ -22,8 +22,20 @@ namespace O3DE::ProjectManager
     {
     public:
         EngineInfo() = default;
-        EngineInfo(const QString& path);
+        EngineInfo(const QString& path, const QString& name, const QString& version, const QString& thirdPartyPath);
 
+        // from engine.json
+        QString m_version;
+        QString m_name;
+        QString m_thirdPartyPath;
+
+        // from o3de_manifest.json
         QString m_path;
+        QString m_defaultProjectsFolder;
+        QString m_defaultGemsFolder;
+        QString m_defaultTemplatesFolder;
+        QString m_defaultRestrictedFolder;
+
+        bool IsValid() const;
     };
 } // namespace O3DE::ProjectManager

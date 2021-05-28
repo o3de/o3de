@@ -113,7 +113,7 @@ namespace AzToolsFramework
     /// noise in the value returned when dealing with values far from the origin.
     inline float ScaleReciprocal(const AZ::Transform& transform)
     {
-        return Round3(transform.GetScale().GetReciprocal().GetMinElement());
+        return Round3(1.0f / transform.GetUniformScale());
     }
 
     /// Find the reciprocal of the non-uniform scale.

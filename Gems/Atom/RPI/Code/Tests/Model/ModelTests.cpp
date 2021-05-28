@@ -17,6 +17,7 @@
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
+#include <Atom/RPI.Public/Model/UvStreamTangentBitmask.h>
 
 #include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>
@@ -915,6 +916,43 @@ namespace UnitTest
 
             creator.EndMesh();
         }
+    }
+
+    TEST_F(ModelTests, UvStream)
+    {
+        AZ::RPI::UvStreamTangentBitmask uvStreamTangentBitmask;
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0u);
+
+        uvStreamTangentBitmask.ApplyTangent(1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(0u), 1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x10000001);
+        EXPECT_EQ(uvStreamTangentBitmask.GetUvStreamCount(), 1u);
+
+        uvStreamTangentBitmask.ApplyTangent(5u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(0u), 1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(1u), 5u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x20000051);
+        EXPECT_EQ(uvStreamTangentBitmask.GetUvStreamCount(), 2u);
+
+        uvStreamTangentBitmask.ApplyTangent(100u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(0u), 1u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(1u), 5u);
+        EXPECT_EQ(uvStreamTangentBitmask.GetTangentAtUv(2u), AZ::RPI::UvStreamTangentBitmask::UnassignedTangent);
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x30000F51);
+        EXPECT_EQ(uvStreamTangentBitmask.GetUvStreamCount(), 3u);
+
+        for (uint32_t i = 3; i < AZ::RPI::UvStreamTangentBitmask::MaxUvSlots; ++i)
+        {
+            uvStreamTangentBitmask.ApplyTangent(0u);
+        }
+
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        uvStreamTangentBitmask.ApplyTangent(0u);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
     }
 
     // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and

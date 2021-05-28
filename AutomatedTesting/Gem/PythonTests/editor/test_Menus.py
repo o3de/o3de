@@ -39,7 +39,7 @@ class TestMenus(object):
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C16780783", "C2174438")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
     def test_Menus_EditMenuOptions_Work(self, request, editor, level, launcher_platform):
         expected_lines = [
             "Undo Action triggered",
@@ -113,7 +113,7 @@ class TestMenus(object):
         )
 
     @pytest.mark.test_case_id("C16780778")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_sandbox
     def test_Menus_FileMenuOptions_Work(self, request, editor, level, launcher_platform):
         expected_lines = [
             "New Level Action triggered",

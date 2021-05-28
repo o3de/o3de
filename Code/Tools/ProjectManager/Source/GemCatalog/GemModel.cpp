@@ -36,11 +36,11 @@ namespace O3DE::ProjectManager
         const QString uuidString = gemInfo.m_uuid.ToString<AZStd::string>().c_str();
         item->setData(uuidString, RoleUuid);
         item->setData(gemInfo.m_creator, RoleCreator);
+        item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
         item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
         item->setData(gemInfo.m_summary, RoleSummary);
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
-
         item->setData(gemInfo.m_directoryLink, RoleDirectoryLink);
         item->setData(gemInfo.m_documentationLink, RoleDocLink);
         item->setData(gemInfo.m_dependingGemUuids, RoleDependingGems);
@@ -48,12 +48,12 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_version, RoleVersion);
         item->setData(gemInfo.m_lastUpdatedDate, RoleLastUpdated);
         item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
-
         item->setData(gemInfo.m_features, RoleFeatures);
 
         appendRow(item);
 
-        m_uuidToNameMap[uuidString] = gemInfo.m_displayName;
+        const QModelIndex modelIndex = index(rowCount()-1, 0);
+        m_uuidToIndexMap[uuidString] = modelIndex;
     }
 
     void GemModel::Clear()
@@ -69,6 +69,11 @@ namespace O3DE::ProjectManager
     QString GemModel::GetCreator(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleCreator).toString();
+    }
+
+    GemInfo::GemOrigin GemModel::GetGemOrigin(const QModelIndex& modelIndex)
+    {
+        return static_cast<GemInfo::GemOrigin>(modelIndex.data(RoleGemOrigin).toInt());
     }
 
     QString GemModel::GetUuidString(const QModelIndex& modelIndex)
@@ -106,40 +111,61 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleDocLink).toString();
     }
 
-    AZ::Outcome<QString> GemModel::FindGemNameByUuidString(const QString& uuidString) const
+    QModelIndex GemModel::FindIndexByUuidString(const QString& uuidString) const
     {
-        const auto iterator = m_uuidToNameMap.find(uuidString);
-        if (iterator != m_uuidToNameMap.end())
+        const auto iterator = m_uuidToIndexMap.find(uuidString);
+        if (iterator != m_uuidToIndexMap.end())
         {
-            return AZ::Success(iterator.value());
+            return iterator.value();
         }
 
-        return AZ::Failure();
+        return {};
     }
 
-    QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
+    void GemModel::FindGemNamesByUuidStrings(QStringList& inOutGemNames)
     {
-        QStringList result = modelIndex.data(RoleDependingGems).toStringList();
+        for (QString& dependingGemString : inOutGemNames)
+        {
+            QModelIndex modelIndex = FindIndexByUuidString(dependingGemString);
+            if (modelIndex.isValid())
+            {
+                dependingGemString = GetName(modelIndex);
+            }
+        }
+    }
+
+    QStringList GemModel::GetDependingGemUuids(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleDependingGems).toStringList();
+    }
+
+    QStringList GemModel::GetDependingGemNames(const QModelIndex& modelIndex)
+    {
+        QStringList result = GetDependingGemUuids(modelIndex);
         if (result.isEmpty())
         {
             return {};
         }
 
-        for (QString& dependingGemString : result)
-        {
-            AZ::Outcome<QString> gemNameOutcome = FindGemNameByUuidString(dependingGemString);
-            if (gemNameOutcome.IsSuccess())
-            {
-                dependingGemString = gemNameOutcome.GetValue();
-            }
-        }
-
+        FindGemNamesByUuidStrings(result);
         return result;
     }
 
-    QStringList GemModel::GetConflictingGems(const QModelIndex& modelIndex)
+    QStringList GemModel::GetConflictingGemUuids(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleConflictingGems).toStringList();
+    }
+
+    QStringList GemModel::GetConflictingGemNames(const QModelIndex& modelIndex)
+    {
+        QStringList result = GetConflictingGemUuids(modelIndex);
+        if (result.isEmpty())
+        {
+            return {};
+        }
+
+        FindGemNamesByUuidStrings(result);
+        return result;
     }
 
     QString GemModel::GetVersion(const QModelIndex& modelIndex)

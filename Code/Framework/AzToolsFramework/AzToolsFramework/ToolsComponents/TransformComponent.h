@@ -99,22 +99,7 @@ namespace AzToolsFramework
             float GetLocalZ() override;
 
             // Rotation modifiers
-            void SetRotation(const AZ::Vector3& eulerAnglesRadians) override;
-            void SetRotationQuaternion(const AZ::Quaternion& quaternion) override;
-            void SetRotationX(float eulerAngleRadians) override;
-            void SetRotationY(float eulerAngleRadians) override;
-            void SetRotationZ(float eulerAngleRadians) override;
-
-            void RotateByX(float eulerAngleRadians) override;
-            void RotateByY(float eulerAngleRadians) override;
-            void RotateByZ(float eulerAngleRadians) override;
-
-            AZ::Vector3 GetRotationEulerRadians() override;
-            AZ::Quaternion GetRotationQuaternion() override;
-
-            float GetRotationX() override;
-            float GetRotationY() override;
-            float GetRotationZ() override;
+            void SetWorldRotationQuaternion(const AZ::Quaternion& quaternion) override;
 
             AZ::Vector3 GetWorldRotation() override;
             AZ::Quaternion GetWorldRotationQuaternion() override;
@@ -130,23 +115,13 @@ namespace AzToolsFramework
             AZ::Quaternion GetLocalRotationQuaternion() override;
 
             // Scale Modifiers
-            void SetScale(const AZ::Vector3& newScale) override;
-            void SetScaleX(float newScale) override;
-            void SetScaleY(float newScale) override;
-            void SetScaleZ(float newScale) override;
-
-            AZ::Vector3 GetScale() override;
-            float GetScaleX() override;
-            float GetScaleY() override;
-            float GetScaleZ() override;
-
             void SetLocalScale(const AZ::Vector3& scale) override;
-            void SetLocalScaleX(float scaleX) override;
-            void SetLocalScaleY(float scaleY) override;
-            void SetLocalScaleZ(float scaleZ) override;
-
             AZ::Vector3 GetLocalScale() override;
             AZ::Vector3 GetWorldScale() override;
+
+            void SetLocalUniformScale(float scale) override;
+            float GetLocalUniformScale() override;
+            float GetWorldUniformScale() override;
 
             AZ::EntityId  GetParentId() override;
             AZ::TransformInterface* GetParent() override;
@@ -161,7 +136,6 @@ namespace AzToolsFramework
             // TransformComponentMessages::Bus
             void TranslateBy(const AZ::Vector3&) override;
             void RotateBy(const AZ::Vector3&) override; // euler in degrees
-            void ScaleBy(const AZ::Vector3&) override;
             const EditorTransform& GetLocalEditorTransform() override;
             void SetLocalEditorTransform(const EditorTransform& dest) override;
             bool IsTransformLocked() override;

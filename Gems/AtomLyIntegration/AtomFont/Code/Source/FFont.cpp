@@ -54,7 +54,6 @@
 
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
-static const AZ::Vector2 UiDraw_TextSizeFactor = AZ::Vector2(12.0f, 12.0f);
 static const int TabCharCount = 4;
 // set buffer sizes to hold max characters that can be drawn in 1 DrawString call
 static const size_t MaxVerts = 8 * 1024; // 2048 quads
@@ -864,7 +863,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
         if (drawFrame)
         {
             ColorB tempColor(255, 255, 255, 255);
-            uint32_t frameColor = tempColor.pack_abgr8888();        //note: this ends up in r,g,b,a order on little-endian machines
+            uint32_t frameColor = tempColor.pack_argb8888();        //note: this ends up in r,g,b,a order on little-endian machines
 
             Vec2 textSize = GetTextSizeUInternal(viewport, str, asciiMultiLine, ctx);
 
@@ -1122,7 +1121,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             {
                 ColorB tempColor = color;
                 tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
-                packedColor = tempColor.pack_abgr8888();                    //note: this ends up in r,g,b,a order on little-endian machines
+                packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
             if (ctx.m_drawTextFlags & eDrawText_UseTransform)
@@ -1673,6 +1672,12 @@ static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::T
         {
             ctx.m_drawTextFlags |= eDrawText_FixedSize;
         }
+
+        if (params.m_useTransform)
+        {
+            ctx.m_drawTextFlags |= eDrawText_UseTransform;
+            ctx.SetTransform(AZMatrix3x4ToLYMatrix3x4(params.m_transform));
+        }
 }
 
 AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::TextDrawParameters& params, AZStd::string_view text, bool forceCalculateSize)
@@ -1696,22 +1701,25 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     }
     internalParams.m_ctx.SetBaseState(GS_NODEPTHTEST);
     internalParams.m_ctx.SetColor(AZColorToLYColorF(params.m_color));
+    internalParams.m_ctx.SetEffect(params.m_effectIndex);
     internalParams.m_ctx.SetCharWidthScale((params.m_monospace || params.m_scaleWithWindow) ? 0.5f : 1.0f);
     internalParams.m_ctx.EnableFrame(false);
     internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
     internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
-    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(UiDraw_TextSizeFactor * params.m_scale));
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
     internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
-    if (params.m_monospace || !params.m_scaleWithWindow)
-    {
-        ScaleCoord(viewport, posX, posY);
-    }
 
     if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||
         params.m_vAlign != AzFramework::TextVerticalAlignment::Top ||
         forceCalculateSize)
     {
+        // We align based on the size of the default font effect because we do not want the
+        // text to move when the font effect is changed
+        unsigned int effectIndex = internalParams.m_ctx.m_fxIdx;
+        internalParams.m_ctx.SetEffect(0);
         Vec2 textSize = GetTextSizeUInternal(viewport, text.data(), params.m_multiline, internalParams.m_ctx);
+        internalParams.m_ctx.SetEffect(effectIndex);
+        
         // If we're using virtual 800x600 coordinates, convert the text size from
         // pixels to that before using it as an offset.
         if (internalParams.m_ctx.m_sizeIn800x600)
@@ -1786,18 +1794,17 @@ void AZ::FFont::DrawScreenAlignedText3d(
     }
     AZ::Vector3 positionNDC = AzFramework::WorldToScreenNDC(
         params.m_position,
-        currentView->GetViewToWorldMatrix(),
+        currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
-    AzFramework::TextDrawParameters param2d = params;
-    param2d.m_position = positionNDC;
+    internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(
         *internalParams.m_viewport, 
         internalParams.m_viewportContext, 
-        internalParams.m_position.GetX(), 
-        internalParams.m_position.GetY(), 
-        params.m_position.GetZ(), // Z
+        positionNDC.GetX() * internalParams.m_viewport->GetWidth(), 
+        (1.0f - positionNDC.GetY()) * internalParams.m_viewport->GetHeight(), 
+        positionNDC.GetZ(), // Z
         text.data(),
         params.m_multiline,
         internalParams.m_ctx
