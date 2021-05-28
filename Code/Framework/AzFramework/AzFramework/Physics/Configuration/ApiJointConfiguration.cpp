@@ -23,7 +23,6 @@ namespace AzPhysics
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            // serializeContext->ClassDeprecate("WorldBodyConfiguration", "{6EEB377C-DC60-4E10-AF12-9626C0763B2D}", &Internal::DeprecateWorldBodyConfiguration);
             serializeContext->Class<ApiJointConfiguration>()
                 ->Version(1)
                 ->Field("name", &ApiJointConfiguration::m_debugName)

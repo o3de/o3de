@@ -22,7 +22,7 @@ namespace AzPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(ApiJoint, AZ::SystemAllocator, 0);
 
-    /*static*/ void ApiJoint::Reflect(AZ::ReflectContext* context)
+    void ApiJoint::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
         {
