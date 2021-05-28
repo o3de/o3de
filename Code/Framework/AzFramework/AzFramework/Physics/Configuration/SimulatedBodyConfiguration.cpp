@@ -30,6 +30,16 @@ namespace AzPhysics
             classElement.AddElementWithData(context, "name", name);
             return true;
         }
+
+        bool SimulatedBodyVersionConverter([[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() <= 1)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("scale"));
+            }
+
+            return true;
+        }
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyConfiguration, AZ::SystemAllocator, 0);
@@ -40,11 +50,10 @@ namespace AzPhysics
         {
             serializeContext->ClassDeprecate("WorldBodyConfiguration", "{6EEB377C-DC60-4E10-AF12-9626C0763B2D}", &Internal::DeprecateWorldBodyConfiguration);
             serializeContext->Class<SimulatedBodyConfiguration>()
-                ->Version(1)
+                ->Version(2, &Internal::SimulatedBodyVersionConverter)
                 ->Field("name", &SimulatedBodyConfiguration::m_debugName)
                 ->Field("position", &SimulatedBodyConfiguration::m_position)
                 ->Field("orientation", &SimulatedBodyConfiguration::m_orientation)
-                ->Field("scale", &SimulatedBodyConfiguration::m_scale)
                 ->Field("entityId", &SimulatedBodyConfiguration::m_entityId)
                 ->Field("startSimulationEnabled", &SimulatedBodyConfiguration::m_startSimulationEnabled)
                 ;

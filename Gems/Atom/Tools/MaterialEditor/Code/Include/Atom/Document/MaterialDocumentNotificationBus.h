@@ -18,6 +18,7 @@
 #include <AzCore/std/any.h>
 
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 
 namespace MaterialEditor
 {
@@ -77,6 +78,12 @@ namespace MaterialEditor
         //! @param documentId unique id of material document for which the notification is sent
         //! @param property object containing the property value and configuration that was modified
         virtual void OnDocumentPropertyConfigModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
+        
+        //! Signal that the property group visibility has been changed.
+        //! @param documentId unique id of material document for which the notification is sent
+        //! @param groupId id of the group that changed
+        //! @param visible whether the property group is visible
+        virtual void OnDocumentPropertyGroupVisibilityChanged([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AZ::Name& groupId, [[maybe_unused]] bool visible) {}
     };
 
     using MaterialDocumentNotificationBus = AZ::EBus<MaterialDocumentNotifications>;

@@ -103,7 +103,7 @@ namespace AZ
                 }
             }
 
-            /// Returns a pointer to the beginning of master vector of SmallAllocationGroups.
+            /// Returns a pointer to the beginning of vector of SmallAllocationGroups.
             SmallAllocationGroup* ArrayHead()
             {
                 return this - m_index;
@@ -169,7 +169,7 @@ namespace AZ
                 return m_marker == MARKER;
             }
 
-            /// Returns the master index of the SmallAllocationGroup containing this allocation
+            /// Returns the index of the SmallAllocationGroup containing this allocation
             uint32_t GetSmallAllocationIndex() const
             {
                 return (uint32_t)(m_data & 0xFFFFFFFF);

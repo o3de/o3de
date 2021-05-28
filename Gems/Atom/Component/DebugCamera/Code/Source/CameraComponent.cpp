@@ -69,6 +69,7 @@ namespace AZ
         void CameraComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void CameraComponent::Activate()

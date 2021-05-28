@@ -61,9 +61,6 @@ namespace AZ
                 const ShaderAsset& shaderAsset,
                 Data::Asset<ShaderVariantAsset> shaderVariantAsset);
 
-            // Returns a shader stage function associated with the provided enum value, or null if no function exists.
-            const RHI::ShaderStageFunction* GetShaderStageFunction(RHI::ShaderStage shaderStage) const;
-
             // Cached state from the asset to avoid an indirection.
             RHI::PipelineStateType m_pipelineStateType = RHI::PipelineStateType::Count;
 

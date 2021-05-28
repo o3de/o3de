@@ -69,6 +69,7 @@ namespace AZ::Prefab
         bool StoreProducts(
             AZ::IO::PathView tempDirPath,
             const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProcessedObjectStoreContainer& store,
+            const AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext::ProductAssetDependencyContainer& registeredDependencies,
             AZStd::vector<AssetBuilderSDK::JobProduct>& outputProducts) const;
         
         void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);

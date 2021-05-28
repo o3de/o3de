@@ -23,6 +23,7 @@ endif()
 ly_add_target(
     NAME QtForPython.Editor.Static STATIC
     NAMESPACE Gem
+    find_package(Qt)
     FILES_CMAKE
         qtforpython_editor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
@@ -40,6 +41,7 @@ ly_add_target(
             Gem::EditorPythonBindings.Static
     RUNTIME_DEPENDENCIES
         3rdParty::pyside2
+        Qt5::Test
 )
 
 ly_add_target(

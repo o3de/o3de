@@ -17,6 +17,8 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
+float ViewportIcon::m_dpiScaleFactor = 1.0f;
+
 ViewportIcon::ViewportIcon(const char* textureFilename)
 {
     m_image = CDraw2d::LoadTexture(textureFilename);
@@ -31,7 +33,12 @@ AZ::Vector2 ViewportIcon::GetTextureSize() const
     if (m_image)
     {
         AZ::RHI::Size size = m_image->GetDescriptor().m_size;
-        return AZ::Vector2(size.m_width, size.m_height);
+        AZ::Vector2 scaledSize(size.m_width, size.m_height);
+        if (m_applyDpiScaleFactorToSize)
+        {
+            scaledSize *= m_dpiScaleFactor;
+        }
+        return scaledSize;
     }
 
     return AZ::Vector2(0.0f, 0.0f);
@@ -296,7 +303,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
 
     draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
     draw2d.SetTextRotation(rotation);
-    draw2d.DrawText(textBuf, textPos, 16.0f, 1.0f);
+    draw2d.DrawText(textBuf, textPos, 16.0f * ViewportIcon::GetDpiScaleFactor(), 1.0f);
 }
 
 void ViewportIcon::DrawAnchorLinesSplit(Draw2dHelper& draw2d, AZ::Vector2 anchorPos1, AZ::Vector2 anchorPos2,
@@ -380,5 +387,6 @@ void ViewportIcon::DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId ent
     rightVec.NormalizeSafe();
     downVec.NormalizeSafe();
 
-    draw2d.DrawRectOutlineTextured(m_image, points, rightVec, downVec, color);
+    uint32_t lineThickness = aznumeric_cast<uint32_t>(GetTextureSize().GetY());
+    draw2d.DrawRectOutlineTextured(m_image, points, rightVec, downVec, color, lineThickness);
 }

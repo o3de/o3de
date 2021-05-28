@@ -82,12 +82,8 @@ namespace PhysX
 
             SetName(configuration.m_debugName);
             SetGravityEnabled(configuration.m_gravityEnabled);
-            SetSimulationEnabled(configuration.m_simulated);
             SetCCDEnabled(configuration.m_ccdEnabled);
-
-            AzPhysics::MassComputeFlags flags = configuration.GetMassComputeFlags();
-            UpdateMassProperties(flags, &configuration.m_centerOfMassOffset, &configuration.m_inertiaTensor,
-                &configuration.m_mass);
+            SetKinematic(configuration.m_kinematic);
 
             if (configuration.m_customUserData)
             {
@@ -459,7 +455,7 @@ namespace PhysX
         }
     }
 
-    AZ::Vector3 RigidBody::GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint)
+    AZ::Vector3 RigidBody::GetLinearVelocityAtWorldPoint(const AZ::Vector3& worldPoint) const
     {
         return m_pxRigidActor ?
                GetLinearVelocity() + GetAngularVelocity().Cross(worldPoint - GetCenterOfMassWorld()) :

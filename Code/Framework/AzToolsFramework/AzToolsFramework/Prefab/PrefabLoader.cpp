@@ -41,7 +41,7 @@ namespace AzToolsFramework
             
             [[maybe_unused]] bool result =
                 settingsRegistry->Get(m_projectPathWithOsSeparator.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
-            AZ_Assert(result, "Couldn't retrieve project root path");
+            AZ_Warning("Prefab", result, "Couldn't retrieve project root path");
             m_projectPathWithSlashSeparator = AZ::IO::Path(m_projectPathWithOsSeparator.Native(), '/').MakePreferred();
 
             AZ::Interface<PrefabLoaderInterface>::Register(this);

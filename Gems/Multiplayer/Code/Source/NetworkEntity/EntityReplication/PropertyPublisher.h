@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzCore/std/containers/ring_buffer.h>
 
 namespace AzNetworking

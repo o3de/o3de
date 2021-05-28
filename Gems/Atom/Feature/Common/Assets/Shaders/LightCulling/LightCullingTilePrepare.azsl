@@ -150,7 +150,7 @@ uint ComputeTransparentBitMask(float2 minmaxZ)
         return 0;
     }
     
-    float2 minmaxZ_transparent = Depth_to_Z(minmaxDepth_transparent, PassSrg::m_constantData.m_unprojectZ);
+    float2 minmaxZ_transparent = DepthBufferToViewSpace(minmaxDepth_transparent, PassSrg::m_constantData.m_unprojectZ);
 
     float2 minmaxUnit_transparent = RemapZToUnit(minmaxZ_transparent, minmaxZ);
     
@@ -295,7 +295,7 @@ void MainCS(
         float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom2Samples(opaqueDepthSamples);
         minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
         UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
-        minmaxDepth_both = Depth_to_Z(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+        minmaxDepth_both = DepthBufferToViewSpace(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
 
         // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
         minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
@@ -313,7 +313,7 @@ void MainCS(
         float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom4Samples(opaqueDepthSamples);
         minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
         UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
-        minmaxDepth_both = Depth_to_Z(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+        minmaxDepth_both = DepthBufferToViewSpace(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
 
         // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
         minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);

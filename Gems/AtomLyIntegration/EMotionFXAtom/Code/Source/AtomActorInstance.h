@@ -17,6 +17,7 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <Integration/Rendering/RenderActorInstance.h>
+#include <EMotionFX/Source/MorphTargetStandard.h>
 
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
@@ -29,6 +30,8 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -41,6 +44,7 @@ namespace AZ::RPI
 {
     class Model;
     class Buffer;
+    class StreamingImage;
 }
 
 namespace AZ
@@ -168,6 +172,11 @@ namespace AZ
             // SkinnedMeshOutputStreamNotificationBus
             void OnSkinnedMeshOutputStreamMemoryAvailable() override;
 
+            // Check to see if the skin material is being used,
+            // and if there are blend shapes with wrinkle masks that should be applied to it
+            void InitWrinkleMasks();
+            void UpdateWrinkleMasks();
+
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;
             AZ::Data::Instance<AZ::RPI::Buffer> m_boneTransforms = nullptr;
@@ -179,6 +188,12 @@ namespace AZ
             AZ::TransformInterface* m_transformInterface = nullptr;
             AZStd::set<Data::AssetId> m_waitForMaterialLoadIds;
             AZStd::vector<float> m_morphTargetWeights;
+
+            typedef AZStd::unordered_map<EMotionFX::MorphTargetStandard*, Data::Instance<RPI::Image>> MorphTargetWrinkleMaskMap;
+            AZStd::vector<MorphTargetWrinkleMaskMap> m_morphTargetWrinkleMaskMapsByLod;
+
+            AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
+            AZStd::vector<float> m_wrinkleMaskWeights;
         };
 
     } // namespace Render

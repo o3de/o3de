@@ -266,6 +266,8 @@ namespace AzQtComponents
 
         QString m_floatingWindowIdentifierPrefix;
         QString m_tabContainerIdentifierPrefix;
+
+        QCursor m_dragCursor;
     };
 
 } // namespace AzQtComponents

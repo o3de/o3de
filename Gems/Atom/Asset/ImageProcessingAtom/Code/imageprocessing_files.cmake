@@ -41,6 +41,7 @@ set(FILES
     Source/BuilderSettings/PresetSettings.h
     Source/BuilderSettings/TextureSettings.cpp
     Source/BuilderSettings/TextureSettings.h
+    Source/Processing/AzDXGIFormat.h
     Source/Processing/DDSHeader.h
     Source/Processing/ImageAssetProducer.cpp
     Source/Processing/ImageAssetProducer.h

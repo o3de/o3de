@@ -38,7 +38,7 @@ namespace AZ
 
     namespace Render
     {
-        class SkinnedMeshComputePass;
+        class SkinnedMeshFeatureProcessor;
 
         //! Holds and manages an RHI DispatchItem for a specific skinned mesh, and the resources that are needed to build and maintain it.
         class SkinnedMeshDispatchItem
@@ -55,7 +55,7 @@ namespace AZ
                 size_t lodIndex,
                 Data::Instance<RPI::Buffer> skinningMatrices,
                 const SkinnedMeshShaderOptions& shaderOptions,
-                RPI::Ptr<SkinnedMeshComputePass> skinnedMeshComputePass,
+                SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
                 MorphTargetInstanceMetaData morphTargetInstanceMetaData,
                 float morphTargetDeltaIntegerEncoding
             );

@@ -63,23 +63,40 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::Deactivate()
         {
+            // Delete all remaining auto-delete or built-in handlers.
             for (auto it = m_builtInHandlers.begin(); it != m_builtInHandlers.end(); ++it)
             {
-                UnregisterPropertyType(*it);
+#ifdef AZ_DEBUG_BUILD
+                // For debug builds, we'll take the extra time to delete each handler that we're deleting from m_Handlers.
+                // We loop through m_Handlers below to ensure that we don't have any other handlers still registered after
+                // we've deleted these.
+                AZStd::erase_if(m_Handlers, [it](const auto& item) {
+                    auto const& [key, value] = item;
+                    return (key == (*it)->GetHandlerName()) && (value == (*it));
+                });
+#endif
+
                 delete *it;
             }
 
             m_builtInHandlers.clear();
 
 
-    #ifdef _DEBUG
+#ifdef AZ_DEBUG_BUILD
+            // Loop through all the remaining registered handlers (if any) and print out an error, as these all are probably memory
+            // leaks.  UnregisterPropertyType should have been called on these already, and their pointers should have been deleted
+            // by the caller.
             auto it = m_Handlers.begin();
             while (it != m_Handlers.end())
             {
                 AZ_Error("PropertyManager", false, "Property Handler 0x%08x is still registered during shutdown", it->first);
                 ++it;
             }
-    #endif
+#endif
+
+            m_Handlers.clear();
+            m_DefaultHandlers.clear();
+
             PropertyTypeRegistrationMessages::Bus::Handler::BusDisconnect();
         }
 
@@ -141,6 +158,16 @@ namespace AzToolsFramework
                     break;
                 }
                 ++defaultIt;
+            }
+
+            if (pHandler->AutoDelete())
+            {
+                m_builtInHandlers.erase(AZStd::remove(m_builtInHandlers.begin(), m_builtInHandlers.end(), pHandler),
+                    m_builtInHandlers.end());
+                AZ_Assert(false,
+                    "Handlers with AutoDelete set should not call UnregisterPropertyType.  To fix, do one of the following:\n"
+                    "  1. Set AutoDelete to false in the handler, call UnregisterPropertyType, and the caller should delete the handler.\n"
+                    "  2. Set AutoDelete to true in the handler and do NOT call UnregisterPropertyType or delete the handler.");
             }
         }
 

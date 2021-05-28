@@ -16,11 +16,16 @@
 #include "Cry_Geo.h"
 #include "Cry_Camera.h"
 #include "ITexture.h"
-#include <IFlares.h> // <> required for Interfuscator
+#include "Cry_Vector2.h"
+#include "Cry_Vector3.h"
+#include "Cry_Matrix33.h"
+#include "Cry_Color.h"
+#include "smartptr.h"
+#include "StringUtils.h"
+#include <IXml.h> // <> required for Interfuscator
+#include "smartptr.h"
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/intrusive_slist.h>
-
-#include "IResourceCompilerHelper.h" //  for IResourceCompilerHelper::ERcCallResult
 
 // forward declarations
 struct SRenderingPassInfo;
@@ -95,12 +100,10 @@ struct IFFont;
 struct IFFont_RenderProxy;
 struct STextDrawContext;
 struct IRenderMesh;
-class IOpticsManager;
 struct ShadowFrustumMGPUCache;
 struct IAsyncTextureCompileListener;
 struct IClipVolume;
 struct SClipVolumeBlendInfo;
-class IImageFile;
 class CRenderView;
 struct SDynTexture2;
 class CTexture;
@@ -694,7 +697,6 @@ public:
 #include <IShader.h> // <> required for Interfuscator
 //DOC-IGNORE-END
 #include <IRenderMesh.h>
-#include "IMeshBaking.h"
 
 // Flags passed in function FreeResources.
 #define FRR_SHADERS   1
@@ -955,25 +957,6 @@ protected:
     virtual ~ITextureStreamListener() {}
 };
 
-#if defined(CRY_ENABLE_RC_HELPER)
-////////////////////////////////////////////////////////////////////////////
-// Listener for asynchronous texture compilation.
-// Connects the listener to the task-queue of pending compilation requests.
-enum ERcExitCode;
-struct IAsyncTextureCompileListener
-{
-public:
-    virtual void OnCompilationStarted(const char* source, const char* target, int nPending) = 0;
-    virtual void OnCompilationFinished(const char* source, const char* target, IResourceCompilerHelper::ERcCallResult nReturnCode) = 0;
-
-    virtual void OnCompilationQueueTriggered(int nPending) = 0;
-    virtual void OnCompilationQueueDepleted() = 0;
-
-protected:
-    virtual ~IAsyncTextureCompileListener() {}
-};
-#endif
-
 enum eDolbyVisionMode
 {
     eDVM_Disabled,
@@ -1070,11 +1053,6 @@ namespace AZ {
     class Plane;
     namespace Vertex {
         class Format;
-    }
-    namespace VideoRenderer
-    {
-        struct IVideoRenderer;
-        struct DrawArguments;
     }
 }
 enum eRenderPrimitiveType : int8;
@@ -1484,7 +1462,6 @@ struct IRenderer
     //  Is threadsafe
     virtual bool          EF_ReloadFile_Request (const char* szFileName) = 0;
 
-    virtual _smart_ptr<IImageFile> EF_LoadImage(const char* szFileName, uint32 nFlags) = 0;
     // Summary:
     //      Remaps shader gen mask to common global mask.
     virtual uint64      EF_GetRemapedShaderMaskGen(const char* name, uint64 nMaskGen = 0, bool bFixup = 0) = 0;
@@ -1530,7 +1507,6 @@ struct IRenderer
     // Summary:
     //  Loads lightmap for name.
     virtual int           EF_LoadLightmap (const char* name) = 0;
-    virtual bool          EF_RenderEnvironmentCubeHDR (int size, Vec3& Pos, TArray<unsigned short>& vecData) = 0;
 
     // Summary:
     //  Starts using of the shaders (return first index for allow recursions).
@@ -1567,7 +1543,6 @@ struct IRenderer
     virtual int EF_AddDeferredLight(const CDLight& pLight, float fMult, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
     virtual uint32 EF_GetDeferredLightsNum(eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
     virtual void EF_ClearDeferredLightsList() = 0;
-    virtual TArray<SRenderLight>* EF_GetDeferredLights(const SRenderingPassInfo& passInfo, eDeferredLightType eLightType = eDLT_DeferredLight) = 0;
 
     virtual uint8 EF_AddDeferredClipVolume(const IClipVolume* pClipVolume) = 0;
     virtual bool EF_SetDeferredClipVolumeBlendData(const IClipVolume* pClipVolume, const SClipVolumeBlendInfo& blendInfo) = 0;
@@ -1761,8 +1736,6 @@ struct IRenderer
     virtual void RemoveTexture(unsigned int TextureId) = 0;
     virtual void DeleteFont(IFFont* font) = 0;
 
-    virtual bool BakeMesh(const SMeshBakingInputParams* pInputParams, SMeshBakingOutput* pReturnValues) = 0;
-
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     // This routines uses 2 destination surfaces.  It triggers a backbuffer copy to one of its surfaces,
     // and then copies the other surface to system memory.  This hopefully will remove any
@@ -1868,8 +1841,6 @@ struct IRenderer
     virtual bool SetRenderTarget(int nHandle, SDepthTexture* pDepthSurf = nullptr) = 0;
     virtual SDepthTexture* CreateDepthSurface(int nWidth, int nHeight, bool shaderResourceView = false) = 0;
     virtual void DestroyDepthSurface(SDepthTexture* pDepthSurf) = 0;
-
-    virtual IOpticsElementBase* CreateOptics(EFlareType type) const = 0;
 
     // Note:
     //  Used for pausing timer related stuff.
@@ -2369,11 +2340,6 @@ struct IRenderer
     virtual void BeginProfilerSection(const char* name, uint32 eProfileLabelFlags = 0) = 0;
     virtual void EndProfilerSection(const char* name) = 0;
     virtual void AddProfilerLabel(const char* name) = 0;
-
-    // Video Renderer interface
-    virtual void InitializeVideoRenderer(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer) = 0;
-    virtual void CleanupVideoRenderer(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer) = 0;
-    virtual void DrawVideoRenderer(AZ::VideoRenderer::IVideoRenderer* pVideoRenderer, const AZ::VideoRenderer::DrawArguments& drawArguments) = 0;
 
 private:
     // use private for EF_Query to prevent client code to submit arbitrary combinations of output data/size

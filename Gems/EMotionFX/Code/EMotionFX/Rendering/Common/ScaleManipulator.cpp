@@ -169,7 +169,6 @@ namespace MCommon
         if (mXAxisVisible)
         {
             renderUtil->RenderLine(mPosition, mPosition + mSignX * AZ::Vector3(mScaledSize.GetX() + 0.5f * mBaseRadius, 0.0f, 0.0f), xAxisColor);
-            //renderUtil->RenderCube( Vector3(mBaseRadius, mBaseRadius, mBaseRadius), mPosition + mSignX * Vector3(mScaledSize.x+mBaseRadius, 0, 0), ManipulatorColors::mRed );
             AZ::Vector3 quadPos = MCore::Project(mPosition + mSignX * AZ::Vector3(mScaledSize.GetX() + mBaseRadius, 0, 0), camera->GetViewProjMatrix(), screenWidth, screenHeight);
             renderUtil->RenderBorderedRect(static_cast<int32>(quadPos.GetX() - 2.0f), static_cast<int32>(quadPos.GetX() + 3.0f), static_cast<int32>(quadPos.GetY() - 2.0f), static_cast<int32>(quadPos.GetY() + 3.0f), ManipulatorColors::mRed, ManipulatorColors::mRed);
 
@@ -186,7 +185,6 @@ namespace MCommon
         if (mYAxisVisible)
         {
             renderUtil->RenderLine(mPosition, mPosition + mSignY * AZ::Vector3(0.0f, mScaledSize.GetY(), 0.0f), yAxisColor);
-            //renderUtil->RenderCube( Vector3(mBaseRadius, mBaseRadius, mBaseRadius), mPosition + mSignY * Vector3(0, mScaledSize.y+0.5*mBaseRadius, 0), ManipulatorColors::mGreen );
             AZ::Vector3 quadPos = MCore::Project(mPosition + mSignY * AZ::Vector3(0, mScaledSize.GetY() + 0.5f * mBaseRadius, 0), camera->GetViewProjMatrix(), screenWidth, screenHeight);
             renderUtil->RenderBorderedRect(static_cast<int32>(quadPos.GetX() - 2.0f), static_cast<int32>(quadPos.GetX() + 3.0f), static_cast<int32>(quadPos.GetY() - 2.0f), static_cast<int32>(quadPos.GetY() + 3.0f), ManipulatorColors::mGreen, ManipulatorColors::mGreen);
 
@@ -203,7 +201,6 @@ namespace MCommon
         if (mZAxisVisible)
         {
             renderUtil->RenderLine(mPosition, mPosition + mSignZ * AZ::Vector3(0.0f, 0.0f, mScaledSize.GetZ()), zAxisColor);
-            //renderUtil->RenderCube( Vector3(mBaseRadius, mBaseRadius, mBaseRadius), mPosition + mSignZ * Vector3(0, 0, mScaledSize.z+0.5*mBaseRadius), ManipulatorColors::mBlue );
             AZ::Vector3 quadPos = MCore::Project(mPosition + mSignZ * AZ::Vector3(0, 0, mScaledSize.GetZ() + 0.5f * mBaseRadius), camera->GetViewProjMatrix(), screenWidth, screenHeight);
             renderUtil->RenderBorderedRect(static_cast<int32>(quadPos.GetX() - 2.0f), static_cast<int32>(quadPos.GetX() + 3.0f), static_cast<int32>(quadPos.GetY() - 2.0f), static_cast<int32>(quadPos.GetY() + 3.0f), ManipulatorColors::mBlue, ManipulatorColors::mBlue);
 

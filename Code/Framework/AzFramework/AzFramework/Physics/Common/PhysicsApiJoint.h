@@ -41,7 +41,7 @@ namespace AzPhysics
         //! The current Scene the joint is contained.
         SceneHandle m_sceneOwner = AzPhysics::InvalidSceneHandle;
 
-        //! The handle to this joint
+        //! The handle to this joint.
         ApiJointHandle m_jointHandle = AzPhysics::InvalidApiJointHandle;
 
         //! Helper functions for setting user data.

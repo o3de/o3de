@@ -60,10 +60,13 @@ function Process(context)
 
     if(opacityMode == OpacityMode_Blended) then
         ConfigureAlphaBlending(context:GetShader(ForwardPassIndex))
+        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("transparent")
     elseif(opacityMode == OpacityMode_TintedTransparent) then
         ConfigureDualSourceBlending(context:GetShader(ForwardPassIndex))
+        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("transparent")
     else
         ResetAlphaBlending(context:GetShader(ForwardPassIndex))
+        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("") -- reset to default draw list
     end
 end
 
@@ -90,7 +93,7 @@ function ProcessEditor(context)
             context:SetMaterialPropertyVisibility("opacity.textureMap", MaterialPropertyVisibility_Hidden)
             context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Hidden)
         else
-            local textureMap = context:GetMaterialPropertyValue_image("opacity.textureMap")
+            local textureMap = context:GetMaterialPropertyValue_Image("opacity.textureMap")
 
             if(nil == textureMap) then
                 context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Disabled)

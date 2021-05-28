@@ -41,15 +41,26 @@ namespace AzToolsFramework::ViewportUi
         String
     };
 
+    //! Used to anchor widgets to a specific side of the viewport.
+    enum class Alignment
+    {
+        TopRight,
+        TopLeft,
+        BottomRight,
+        BottomLeft,
+        Top,
+        Bottom
+    };
+
     //! Viewport requests to interact with the Viewport UI. Viewport UI refers to the entire UI overlay (one per viewport).
     //! Each widget on the Viewport UI is referred to as an element.
     class ViewportUiRequests
     {
     public:
         //! Creates and registers a cluster with the Viewport UI system.
-        virtual const ClusterId CreateCluster() = 0;
+        virtual const ClusterId CreateCluster(Alignment align) = 0;
         //! Creates and registers a switcher with the Viewport UI system.
-        virtual const SwitcherId CreateSwitcher() = 0;
+        virtual const SwitcherId CreateSwitcher(Alignment align) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.

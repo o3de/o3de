@@ -13,5 +13,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 def init():
     import os
     import sys
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../EditorPythonTestTools/editor_python_test_tools')
+
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../automatedtesting_shared")
+    sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../EditorPythonTestTools/editor_python_test_tools")

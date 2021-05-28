@@ -89,6 +89,7 @@ namespace WhiteBox
     private:
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // EditorComponentBase overrides ...
         void BuildGameEntity(AZ::Entity* gameEntity) override;

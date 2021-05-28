@@ -52,6 +52,6 @@ namespace GridMate
 
     bool DataSetBase::CanSet() const
     {
-        return m_replicaChunk ? m_replicaChunk->IsMaster() : true;
+        return m_replicaChunk ? m_replicaChunk->IsPrimary() : true;
     }
 }

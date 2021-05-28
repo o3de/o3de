@@ -38,6 +38,11 @@ AzToolsFramework--ComponentPaletteWidget > QTreeView
     background-color: #222222;
 }
 
+AzToolsFramework--PropertyRowWidget[canBeReordered="true"]  QLabel#Name
+{
+    font-weight: bold;
+}
+
 /* Style for visualizing property values overridden from their prefab values */
 AzToolsFramework--PropertyRowWidget[IsOverridden=true] #Name QLabel,
 AzToolsFramework--ComponentEditorHeader #Title[IsOverridden="true"]

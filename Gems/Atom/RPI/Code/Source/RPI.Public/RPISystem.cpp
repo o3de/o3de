@@ -369,12 +369,7 @@ namespace AZ
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
 
-            // Have pass system load default pass template mapping
-            bool passSystemReady = m_passSystem.LoadPassTemplateMappings(m_descriptor.m_passTemplatesMappingPath);
-            if (!passSystemReady)
-            {
-                return;
-            }
+            m_passSystem.InitPassTemplates();
 
             m_systemAssetsInitialized = true;
         }

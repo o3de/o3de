@@ -597,10 +597,6 @@ set(FILES
     Include/ScriptCanvas/Variable/GraphVariable.cpp
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.h
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.cpp
-    Include/ScriptCanvas/Variable/GraphVariableNetBindings.h
-    Include/ScriptCanvas/Variable/GraphVariableNetBindings.cpp
-    Include/ScriptCanvas/Variable/GraphVariableMarshal.h
-    Include/ScriptCanvas/Variable/GraphVariableMarshal.cpp
     Include/ScriptCanvas/Variable/VariableCore.h
     Include/ScriptCanvas/Variable/VariableCore.cpp
     Include/ScriptCanvas/Variable/VariableData.h

@@ -136,10 +136,7 @@ namespace AZ
             GpuBufferHandler m_decalBufferHandler;
 
             AsyncLoadTracker<DecalHandle> m_materialLoadTracker;
-
             AZStd::unordered_map< AZ::Data::AssetId, DecalLocationAndUseCount> m_materialToTextureArrayLookupTable;
-
-            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_materialAssets;
 
             bool m_deviceBufferNeedsUpdate = false;
         };

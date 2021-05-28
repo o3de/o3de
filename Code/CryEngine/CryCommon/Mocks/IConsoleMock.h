@@ -13,7 +13,6 @@
 #define CRYINCLUDE_CRYCOMMON_ICONSOLEMOCK_H
 #pragma once
 
-#include <IRemoteCommand.h>
 #include <IConsole.h>
 #include <AzTest/AzTest.h>
 

@@ -143,6 +143,13 @@ namespace AzToolsFramework
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
             virtual PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
+
+            /**
+              * Duplicates all entities in the owning instance. Bails if the entities don't all belong to the same instance.
+              * @param entities The entities to duplicate.
+              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
         };
 
     } // namespace Prefab

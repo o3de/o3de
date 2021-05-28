@@ -101,7 +101,7 @@ namespace AzToolsFramework
                 const TemplateId& targetId,
                 const TemplateId& sourceId,
                 const InstanceAlias& instanceAlias,
-                PrefabDomReference linkPatches = PrefabDomReference(),
+                PrefabDom linkPatches = PrefabDom(),
                 const LinkId linkId = InvalidLinkId);
 
             void Undo() override;

@@ -98,11 +98,6 @@ class EditorTestHelper:
                 self.test_success = False
                 success = False
 
-        # Turn off any display info like FPS, as that will mess up our image comparisons
-        # Turn off antialiasing as well
-        general.run_console("r_displayInfo=0")
-        general.run_console("r_antialiasingmode=0")
-        general.idle_wait(1.0)
         return success
 
     # Test Teardown

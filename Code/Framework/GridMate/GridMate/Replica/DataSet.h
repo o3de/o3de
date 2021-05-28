@@ -43,7 +43,7 @@ namespace GridMate
     struct DataSetDefaultTraits
     {
         /**
-         * \brief Should a change in DataSet value invoke a callback on a master replica chunk? 
+         * \brief Should a change in DataSet value invoke a callback on a primary replica chunk? 
          * 
          * By default, DataSet::BindInterface<C, &C::Callback> only invokes on client/non-authoritative replica chunks.
          * This switch enables the callback on server/authoritative replica chunks.
@@ -55,7 +55,7 @@ namespace GridMate
     };
 
     /**
-     * \brief Turns on DataSet callbacks to be invoked on the master replica as well as client replicas.
+     * \brief Turns on DataSet callbacks to be invoked on the primary replica as well as client replicas.
      */
     struct DataSetInvokeEverywhereTraits : DataSetDefaultTraits
     {
@@ -200,7 +200,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         void Set(const DataType& v)
@@ -214,7 +214,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         void Set(DataType&& v)
@@ -228,7 +228,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         template <class ... Args>
@@ -243,7 +243,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet directly without copying it. Call this on the Master node,
+            Modify the DataSet directly without copying it. Call this on the Primary node,
             passing in a function object that takes the value by reference, optionally
             modifies the data, and returns true if the data was changed.
         **/

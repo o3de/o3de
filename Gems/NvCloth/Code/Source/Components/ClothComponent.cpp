@@ -10,9 +10,8 @@
  *
  */
 
-#include <ISystem.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Console/Console.h>
 
 #include <Components/ClothComponent.h>
 
@@ -47,13 +46,22 @@ namespace NvCloth
         required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
     }
 
+    void ClothComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void ClothComponent::Activate()
     {
         // Cloth components do not run on dedicated servers.
-        AZ_Assert(gEnv, "Environment not ready");
-        if (gEnv->IsDedicated())
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get())
         {
-            return;
+            bool isDedicated = false;
+            if (const auto result = console->GetCvarValue("sv_isDedicated", isDedicated);
+                result == AZ::GetValueResult::Success && isDedicated)
+            {
+                return;
+            }
         }
 
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());

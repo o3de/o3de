@@ -163,6 +163,7 @@ namespace AZ
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
             {
                 incompatible.push_back(AZ_CRC("AttachmentService", 0x5aaa7b63));
+                incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

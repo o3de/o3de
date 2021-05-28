@@ -13,15 +13,12 @@ add_subdirectory(asset_processor_tests)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 ## AP Python Tests ##
-
-
     ly_add_pytest(
         NAME AssetPipelineTests.AuxiliaryContent
         PATH ${CMAKE_CURRENT_LIST_DIR}/auxiliary_content_tests/auxiliary_content_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SUITE periodic
     )
-
 
     ly_add_pytest(
         NAME AssetPipelineTests.BankInfoParser
@@ -33,4 +30,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
         
 endif()
-

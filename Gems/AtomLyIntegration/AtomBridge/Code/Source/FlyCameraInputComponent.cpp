@@ -79,6 +79,12 @@ void FlyCameraInputComponent::GetProvidedServices(AZ::ComponentDescriptor::Depen
 }
 
 //////////////////////////////////////////////////////////////////////////////
+void FlyCameraInputComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+{
+    incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+}
+
+//////////////////////////////////////////////////////////////////////////////
 void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
 {
     AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);

@@ -69,6 +69,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 // AzQtComponents
@@ -85,7 +86,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "Include/IBackgroundScheduleManager.h"
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
@@ -2314,15 +2314,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     #endif
     }
 
-    // process the work schedule - regardless if the app is active or not
-    GetIEditor()->GetBackgroundScheduleManager()->Update();
-
-    // if there are active schedules keep updating the application
-    if (GetIEditor()->GetBackgroundScheduleManager()->GetNumSchedules() > 0)
-    {
-        bActive = true;
-    }
-
     m_bPrevActive = bActive;
 
     AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
@@ -3114,6 +3105,15 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     // Save the document to this folder
     GetIEditor()->GetDocument()->SetPathName(fullyQualifiedLevelName);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
+
+    if (usePrefabSystemForLevels)
+    {
+        auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (service)
+        {
+            service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
+        }
+    }
 
     if (GetIEditor()->GetDocument()->Save())
     {

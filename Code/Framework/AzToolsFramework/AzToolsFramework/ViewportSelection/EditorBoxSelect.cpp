@@ -14,6 +14,7 @@
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <QApplication>
 
@@ -27,8 +28,11 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-            mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+        m_cursorState.SetCurrentPosition(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+
+        const auto selectClickEvent = ClickDetectorEventFromViewportInteraction(mouseInteraction);
+        const auto clickOutcome = m_clickDetector.DetectClick(selectClickEvent, m_cursorState.CursorDelta());
+        if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Move)
         {
             if (m_leftMouseDown)
             {
@@ -58,8 +62,7 @@ namespace AzToolsFramework
                 }
             }
 
-            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
-                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            if (clickOutcome == AzFramework::ClickDetector::ClickOutcome::Release)
             {
                 if (m_leftMouseUp)
                 {
@@ -76,6 +79,8 @@ namespace AzToolsFramework
     void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+        m_cursorState.Update();
 
         if (m_boxSelectRegion)
         {

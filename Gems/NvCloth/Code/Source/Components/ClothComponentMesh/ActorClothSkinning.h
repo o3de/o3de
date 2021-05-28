@@ -21,8 +21,6 @@
 
 namespace NvCloth
 {
-    struct MeshNodeInfo;
-
     //! One skinning influence of a vertex.
     struct SkinningInfluence
     {
@@ -45,7 +43,7 @@ namespace NvCloth
         static AZStd::unique_ptr<ActorClothSkinning> Create(
             AZ::EntityId entityId, 
             const MeshNodeInfo& meshNodeInfo,
-            const size_t numVertices,
+            const AZStd::vector<SimParticleFormat>& originalMeshParticles,
             const size_t numSimulatedVertices,
             const AZStd::vector<int>& meshRemappedVertices);
 

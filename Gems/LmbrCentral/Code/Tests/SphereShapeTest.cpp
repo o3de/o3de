@@ -179,7 +179,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateSphere(
             AZ::Transform::CreateTranslation(AZ::Vector3(-8.0f, -15.0f, 5.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(5.0f)),
+            AZ::Transform::CreateUniformScale(5.0f),
             0.25f, entity);
 
         bool rayHit = false;
@@ -240,7 +240,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateSphere(
             AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 200.0f, 300.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f)),
+            AZ::Transform::CreateUniformScale(2.5f),
             0.5f, entity);
 
         AZ::Aabb aabb;
@@ -269,7 +269,7 @@ namespace UnitTest
     TEST_F(SphereShapeTest, GetTransformAndLocalBounds2)
     {
         AZ::Entity entity;
-        AZ::Transform transformIn = AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 200.0f, 300.0f)) * AZ::Transform::CreateScale(AZ::Vector3(2.5f));
+        AZ::Transform transformIn = AZ::Transform::CreateTranslation(AZ::Vector3(100.0f, 200.0f, 300.0f)) * AZ::Transform::CreateUniformScale(2.5f);
         CreateSphere(transformIn, 2.0f, entity);
 
         AZ::Transform transformOut;
@@ -287,7 +287,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateSphere(
             AZ::Transform::CreateTranslation(AZ::Vector3(-30.0f, -30.0f, 22.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             1.2f, entity);
 
         bool inside;
@@ -303,7 +303,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateSphere(
             AZ::Transform::CreateTranslation(AZ::Vector3(-30.0f, -30.0f, 22.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(1.5f)),
+            AZ::Transform::CreateUniformScale(1.5f),
             1.6f, entity);
 
         bool inside;
@@ -319,7 +319,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateSphere(
             AZ::Transform::CreateTranslation(AZ::Vector3(19.0f, 34.0f, 37.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f)),
+            AZ::Transform::CreateUniformScale(2.0f),
             1.0f, entity);
 
         float distance;
@@ -335,7 +335,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateSphere(
             AZ::Transform::CreateTranslation(AZ::Vector3(19.0f, 34.0f, 37.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(0.5f)),
+            AZ::Transform::CreateUniformScale(0.5f),
             1.0f, entity);
 
         float distance;

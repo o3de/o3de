@@ -15,7 +15,6 @@
 
 #include <LyViewPaneNames.h>
 #include "IResourceSelectorHost.h"
-#include "CryExtension/ICryFactoryRegistry.h"
 
 #include "UI/QComponentEntityEditorMainWindow.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"

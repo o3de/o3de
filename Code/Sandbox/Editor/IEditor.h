@@ -550,7 +550,6 @@ struct IEditor
     virtual class CViewManager* GetViewManager() = 0;
     virtual class CViewport* GetActiveView() = 0;
     virtual void SetActiveView(CViewport* viewport) = 0;
-    virtual struct IBackgroundTaskManager* GetBackgroundTaskManager() = 0;
     virtual struct IEditorFileMonitor* GetFileMonitor() = 0;
 
     // These are needed for Qt integration:
@@ -720,7 +719,6 @@ struct IEditor
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
-    virtual struct IBackgroundScheduleManager* GetBackgroundScheduleManager() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.

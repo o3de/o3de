@@ -48,6 +48,10 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ::Data::AssetData& GetAsset();
         AZStd::unique_ptr<AZ::Data::AssetData> ReleaseAsset();
 
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetReferencedAssets();
+        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& GetReferencedAssets() const;
+
+
         const AZStd::string& GetId() const;
 
     private:
@@ -55,6 +59,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         SerializerFunction m_assetSerializer;
         AZStd::unique_ptr<AZ::Data::AssetData> m_asset;
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_referencedAssets;
         AZStd::string m_uniqueId;
     };
 

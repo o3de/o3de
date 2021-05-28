@@ -208,11 +208,6 @@ private:
 
     QToolButton* CreateUndoRedoButton(int command);
 
-    QToolButton* CreateEnvironmentModeButton();
-    QToolButton* CreateDebugModeButton();
-    void InitEnvironmentModeMenu(CVarMenu* environmentModeMenu);
-    void InitDebugModeMenu(CVarMenu* debugModeMenu);
-
 private Q_SLOTS:
     void ShowKeyboardCustomization();
     void ExportKeyboardShortcuts();

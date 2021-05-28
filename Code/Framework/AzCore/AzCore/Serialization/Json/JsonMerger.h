@@ -42,6 +42,11 @@ namespace AZ
             rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
             JsonApplyPatchSettings& settings);
 
+        //! Implementation of the JSON Merge Patch algorithm: https://tools.ietf.org/html/rfc7386
+        static JsonSerializationResult::ResultCode ApplyMergePatchInternal(rapidjson::Value& target,
+            rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
+            JsonApplyPatchSettings& settings, StackedString& element);
+
         //! Function to create JSON Merge Patches: https://tools.ietf.org/html/rfc7386
         static JsonSerializationResult::ResultCode CreateMergePatch(rapidjson::Value& patch,
             rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,

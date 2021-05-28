@@ -27,8 +27,6 @@ set(FILES
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
-    Include/Atom/Feature/Material/MaterialAssignment.h
-    Include/Atom/Feature/Material/MaterialAssignmentId.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
@@ -137,6 +135,8 @@ set(FILES
     Source/DiffuseProbeGrid/DiffuseProbeGridRenderPass.h
     Source/DiffuseProbeGrid/DiffuseProbeGrid.cpp
     Source/DiffuseProbeGrid/DiffuseProbeGrid.h
+    Source/DiffuseProbeGrid/DiffuseProbeGridTextureReadback.cpp
+    Source/DiffuseProbeGrid/DiffuseProbeGridTextureReadback.h
     Source/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h
     Source/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
@@ -155,18 +155,12 @@ set(FILES
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
-    Source/Material/MaterialAssignment.cpp
-    Source/Material/MaterialAssignmentId.cpp
-    Source/Material/ShaderEnableFunctor.cpp
-    Source/Material/ShaderEnableFunctor.h
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.h
     Source/Material/Transform2DFunctor.cpp
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/PropertyVisibilityFunctor.cpp
-    Source/Material/PropertyVisibilityFunctor.h
     Source/Material/DrawListFunctor.cpp
     Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h

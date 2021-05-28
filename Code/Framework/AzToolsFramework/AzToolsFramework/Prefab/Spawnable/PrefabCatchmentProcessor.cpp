@@ -63,7 +63,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
-        bool result = SpawnableUtils::CreateSpawnable(*spawnable, prefab);
+        bool result = SpawnableUtils::CreateSpawnable(*spawnable, prefab, object.GetReferencedAssets());
         if (result)
         {
             AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
@@ -84,8 +84,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             }
             SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
             context.GetProcessedObjects().push_back(AZStd::move(object));
-
-            context.RemovePrefab(prefabName);
         }
         else
         {

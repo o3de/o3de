@@ -121,6 +121,7 @@ namespace AZ
         void DirectionalLightComponentController::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("DirectionalLightService", 0x5270619f));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleComponent"));
         }
 
         void DirectionalLightComponentController::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)

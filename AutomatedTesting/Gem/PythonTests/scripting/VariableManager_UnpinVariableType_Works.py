@@ -115,7 +115,6 @@ if __name__ == "__main__":
     import ImportPathHelper as imports
 
     imports.init()
-
     from utils import Report
 
     Report.start_test(VariableManager_UnpinVariableType_Works)

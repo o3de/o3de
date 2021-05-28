@@ -1,0 +1,4 @@
+SPDX-FileCopyrightText: Unsplash grants you an irrevocable, nonexclusive, worldwide copyright license to download, copy, 
+SPDX-FileCopyrightText: modify, distribute, perform, and use photos from Unsplash for free, including for commercial 
+SPDX-FileCopyrightText: purposes, without permission from or attributing the photographer or Unsplash. This license does 
+SPDX-FileCopyrightText: not include the right to compile photos from Unsplash to replicate a similar or competing service.

@@ -62,7 +62,7 @@ namespace AZ
             }
         }
 
-        GlobalBuildOptions ReadBuildOptions(const char* builderName)
+        GlobalBuildOptions ReadBuildOptions(const char* builderName, const char* optionalIncludeFolder)
         {
             GlobalBuildOptions output;
             // try to parse some config file for eventual additional options
@@ -79,7 +79,7 @@ namespace AZ
             {
                 AZ_TracePrintf(builderName, "config file [%s] not found.", globalBuildOption.c_str());
             }
-            InitializePreprocessorOptions(output.m_preprocessorSettings, builderName);
+            InitializePreprocessorOptions(output.m_preprocessorSettings, builderName, optionalIncludeFolder);
             return output;
         }
     }
