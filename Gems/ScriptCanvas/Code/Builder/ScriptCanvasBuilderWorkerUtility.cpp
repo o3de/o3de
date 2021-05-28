@@ -690,6 +690,10 @@ namespace ScriptCanvasBuilder
             azrtti_typeid<ScriptCanvas::RuntimeAsset>(),
             AZ_CRC("RuntimeData", 0x163310ae), jobProduct);
 
+        // Output Object marks dependencies as handled.
+        // We still have more to evaluate
+        jobProduct.m_dependenciesHandled = false;
+
         jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), {} });
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
@@ -721,6 +725,7 @@ namespace ScriptCanvasBuilder
             }
         }
 
+        jobProduct.m_dependenciesHandled = true;
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
         return AZ::Success();
     }
