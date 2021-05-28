@@ -414,10 +414,16 @@ namespace AzToolsFramework
             {
                 // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
 
-                AZ_Error(
-                    "Prefab", false, "Full source path for '%.*s' could not be determined. Using fallback logic.",
-                    AZ_STRING_ARG(path.Native()));
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follow
+                // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
+                // a unit test, so just execute the fallback logic without an error.
+                [[maybe_unused]] bool assetProcessorReady = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetProcessorReady, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
 
+                AZ_Error(
+                    "Prefab", !assetProcessorReady, "Full source path for '%.*s' could not be determined. Using fallback logic.",
+                    AZ_STRING_ARG(path.Native()));
 
                 // If a relative path was passed in, make it relative to the project root.
                 fullPath = AZ::IO::Path(m_projectPathWithOsSeparator).Append(pathWithOSSeparator);
@@ -449,7 +455,7 @@ namespace AzToolsFramework
             {
                 // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
 
-                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follor
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follow
                 // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
                 // a unit test, so just execute the fallback logic without an error.
                 [[maybe_unused]] bool assetProcessorReady = false;
