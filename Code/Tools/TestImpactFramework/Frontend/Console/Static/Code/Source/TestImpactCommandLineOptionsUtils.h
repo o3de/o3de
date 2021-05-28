@@ -38,8 +38,8 @@ namespace TestImpact
         const AZStd::pair<OptionValue<T>,
         OptionValue<T>>& state, const AZ::CommandLine& cmd)
     {
-        const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-        if (numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -70,8 +70,8 @@ namespace TestImpact
         const AZStd::vector<AZStd::pair<AZStd::string, T>>& states,
         const AZ::CommandLine& cmd)
     {
-        const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-        if (numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -116,4 +116,4 @@ namespace TestImpact
 
     //! Attempts to parse an option value in seconds.
     AZStd::optional<AZStd::chrono::milliseconds> ParseSecondsOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);
-}
+} // namespace TestImpact

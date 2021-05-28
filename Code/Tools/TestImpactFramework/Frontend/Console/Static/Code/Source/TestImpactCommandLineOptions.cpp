@@ -184,8 +184,8 @@ namespace TestImpact
 
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
         {
-            const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCapture]);
-            if (numSwitchValues)
+            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCapture]);
+                numSwitchValues)
             {
                 AZ_TestImpact_Eval(
                     numSwitchValues <= 2, CommandLineOptionsException, "Unexpected parameters for target output capture option");
@@ -253,8 +253,8 @@ namespace TestImpact
         AZStd::unordered_set<AZStd::string> ParseSuitesFilter(const AZ::CommandLine& cmd)
         {
             AZStd::unordered_set<AZStd::string> suitesFilter;
-            const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[SuitesFilter]);
-            if (numSwitchValues)
+            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[SuitesFilter]);
+                numSwitchValues)
             {
                 for (auto i = 0; i < numSwitchValues; i++)
                 {
@@ -460,4 +460,4 @@ namespace TestImpact
 
         return help;
     }
-}
+} // namespace TestImpact

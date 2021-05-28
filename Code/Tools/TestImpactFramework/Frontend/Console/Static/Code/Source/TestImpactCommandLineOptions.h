@@ -25,7 +25,7 @@ namespace TestImpact
     //! The type of test sequence to run.
     enum class TestSequenceType
     {
-        None, //!< Runs no tests and will report a all tests successful.
+        None, //!< Runs no tests and will report all tests successful.
         Seed, //!< Removes any prior coverage data and runs all test targets with instrumentation to reseed the data from scratch.
         Regular, //!< Runs all of the test targets without any instrumentation to generate coverage data (any prior coverage data is left intact).
         ImpactAnalysis, //!< Uses any prior coverage data to run the instrumented subset of selected tests (if no prior coverage data a regular run is performed instead).
@@ -108,4 +108,4 @@ namespace TestImpact
         AZStd::unordered_set<AZStd::string> m_suitesFilter;
         bool m_safeMode = false;
     };
-}
+} // namespace TestImpact
