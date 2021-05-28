@@ -21,6 +21,7 @@ set(ENABLED_GEMS
     InAppPurchases
     AutomatedTesting
     EditorPythonBindings
+    QtForPython
     PythonAssetBuilder
     Metastream
     AudioSystem
