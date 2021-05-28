@@ -31,6 +31,7 @@ namespace AzToolsFramework
             {
                 m_translate = AZ::Vector3::CreateZero();
                 m_legacyScale = AZ::Vector3::CreateOne();
+                m_uniformScale = 1.0f;
                 m_rotate = AZ::Vector3::CreateZero();
                 m_locked = false;
             }
