@@ -47,13 +47,15 @@ namespace TestImpact
                 AZStd::string::format("Unexpected number of parameters for %s option", optionName.c_str()));
 
             const auto option = cmd.GetSwitchValue(optionName, 0);
-            if (option == state.first.first)
+            if (const auto& [optionValueText, optionValue] = state.first;
+                option == optionValueText)
             {
-                return state.first.second;
+                return optionValue;
             }
-            else if (option == state.second.first)
+            if (const auto& [optionValueText, optionValue] = state.second;
+                option == optionValueText)
             {
-                return state.second.second;
+                return optionValue;
             }
 
             throw CommandLineOptionsException(
@@ -81,9 +83,10 @@ namespace TestImpact
             const auto option = cmd.GetSwitchValue(optionName, 0);
             for (const auto& state : states)
             {
-                if (option == state.first)
+                if (const auto& [optionValueText, optionValue] = state;
+                    option == optionValueText)
                 {
-                    return state.second;
+                    return optionValue;
                 }
             }
 
