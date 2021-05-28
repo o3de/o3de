@@ -12,13 +12,15 @@
 
 #include <TestImpactCommandLineOptionsUtils.h>
 
+#include <AzCore/std/string/conversions.h>
+
 namespace TestImpact
 {
     //! Attempts to parse a path option value.
     AZStd::optional<RepoPath> ParsePathOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
-    {
-        const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-        if (numSwitchValues)
+    {  
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -40,22 +42,22 @@ namespace TestImpact
     //! Attempts to pass an unsigned integer option value.
     AZStd::optional<size_t> ParseUnsignedIntegerOption(const AZStd::string& optionName, const AZ::CommandLine& cmd)
     {
-        const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-        if (numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
                 CommandLineOptionsException,
                 AZStd::string::format("Unexpected number of parameters for %s option", optionName.c_str()));
 
-            const auto str = cmd.GetSwitchValue(optionName, 0);
-            char* end = nullptr;
-            auto value = strtoul(str.c_str(), &end, 0);
+            const auto strValue = cmd.GetSwitchValue(optionName, 0);
+            size_t successfulParse = 0; // Will be non-zero if the parse was successful
+            auto value = AZStd::stoul(strValue, &successfulParse, 0);
 
             AZ_TestImpact_Eval(
-                end != str,
+                successfulParse,
                 CommandLineOptionsException,
-                AZStd::string::format("Couldn't parse unsigned integer option value: %s", str.c_str()));
+                AZStd::string::format("Couldn't parse unsigned integer option value: %s", strValue.c_str()));
 
             return aznumeric_caster(value);
         }
@@ -74,4 +76,4 @@ namespace TestImpact
 
         return AZStd::nullopt;
     }
-}
+} // namespace TestImpact

@@ -38,8 +38,8 @@ namespace TestImpact
         const AZStd::pair<OptionValue<T>,
         OptionValue<T>>& state, const AZ::CommandLine& cmd)
     {
-        const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-        if (numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -47,13 +47,15 @@ namespace TestImpact
                 AZStd::string::format("Unexpected number of parameters for %s option", optionName.c_str()));
 
             const auto option = cmd.GetSwitchValue(optionName, 0);
-            if (option == state.first.first)
+            if (const auto& [optionValueText, optionValue] = state.first;
+                option == optionValueText)
             {
-                return state.first.second;
+                return optionValue;
             }
-            else if (option == state.second.first)
+            if (const auto& [optionValueText, optionValue] = state.second;
+                option == optionValueText)
             {
-                return state.second.second;
+                return optionValue;
             }
 
             throw CommandLineOptionsException(
@@ -70,8 +72,8 @@ namespace TestImpact
         const AZStd::vector<AZStd::pair<AZStd::string, T>>& states,
         const AZ::CommandLine& cmd)
     {
-        const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-        if (numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
+            numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -81,9 +83,10 @@ namespace TestImpact
             const auto option = cmd.GetSwitchValue(optionName, 0);
             for (const auto& state : states)
             {
-                if (option == state.first)
+                if (const auto& [optionValueText, optionValue] = state;
+                    option == optionValueText)
                 {
-                    return state.second;
+                    return optionValue;
                 }
             }
 
@@ -116,4 +119,4 @@ namespace TestImpact
 
     //! Attempts to parse an option value in seconds.
     AZStd::optional<AZStd::chrono::milliseconds> ParseSecondsOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);
-}
+} // namespace TestImpact
