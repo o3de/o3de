@@ -12,4 +12,5 @@
 set(LY_COMPILE_OPTIONS
     PRIVATE
         -fexceptions # The macro PYBIND11_EMBEDDED_MODULE uses a try catch block
+        -lstdc++fs   # Uses filesystem for copying files
 )

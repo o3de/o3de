@@ -328,7 +328,7 @@ namespace O3DE::ProjectManager
         if (warningResult == QMessageBox::Yes)
         {
             // Remove project from O3DE and delete from disk
-            ProjectsScreen::HandleRemoveProject(projectPath);
+            HandleRemoveProject(projectPath);
             ProjectUtils::DeleteProjectFiles(projectPath);
         }
     }
