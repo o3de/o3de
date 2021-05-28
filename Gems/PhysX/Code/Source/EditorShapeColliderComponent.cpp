@@ -50,10 +50,8 @@ namespace PhysX
                 m_colliderConfig.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
                 Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
 
-                // Refresh UI
-                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                    AzToolsFramework::Refresh_EntireTree);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {

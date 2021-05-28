@@ -454,6 +454,7 @@ namespace PhysX
             // Same library asset, check if its data has changed.
             if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
             {
+                m_systemConfig.m_materialLibraryAsset = materialLibrary;
                 m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
             }
         }

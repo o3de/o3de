@@ -357,10 +357,8 @@ namespace PhysX
             {
                 m_configuration.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
 
-                // Refresh UI
-                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
-                    AzToolsFramework::Refresh_EntireTree);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
