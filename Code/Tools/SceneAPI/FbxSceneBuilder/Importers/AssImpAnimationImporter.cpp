@@ -151,7 +151,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(3); // [LYN-3349] Rolling back rotation change
+                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(4); // [LYN-3971] Bone pruning crash fix in AssImp SDK
                 }
             }
 

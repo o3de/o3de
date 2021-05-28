@@ -202,7 +202,7 @@ namespace Blast
             if (parentBody)
             {
                 parentTransform = parentBody->GetTransform();
-                parentTransform.MultiplyByScale(AZ::Vector3(m_initialTransform.GetScale().GetMaxElement()));
+                parentTransform.MultiplyByUniformScale(m_initialTransform.GetUniformScale());
             }
             else
             {
@@ -254,7 +254,7 @@ namespace Blast
         actorDesc.m_parentCenterOfMass = transform.GetTranslation();
         actorDesc.m_parentLinearVelocity = AZ::Vector3::CreateZero();
         actorDesc.m_bodyConfiguration = configuration;
-        actorDesc.m_scale = transform.GetScale().GetMaxElement();
+        actorDesc.m_scale = transform.GetUniformScale();
 
         return actorDesc;
     }

@@ -62,6 +62,8 @@ namespace ScriptCanvas
         constexpr const char* NoChildrenAfterRoot = "No children after parsing function root";
         constexpr const char* NoChildrenInExtraction = "No children found in property extraction node";
         constexpr const char* NoDataPresent = "Could not construct from graph, no graph data was present";
+        constexpr const char* NodeableNodeOverloadAmbiguous = "NodeableNodeOverloaded doesn't have enough data connected to select a valid overload";
+        constexpr const char* NodeableNodeDidNotConstructInternalNodeable = "NodeableNode did not construct its internal Nodeable";
         constexpr const char* NoInputToForEach = "No Input To For Each Loop";
         constexpr const char* NoOutForExecution = "No out slot for execution root";
         constexpr const char* NoOutSlotInFunctionDefinitionStart = "No 'Out' slot in start of function definition";

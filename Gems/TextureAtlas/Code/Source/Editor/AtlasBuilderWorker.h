@@ -13,6 +13,7 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Math/Color.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <qimage.h>
@@ -110,7 +111,7 @@ namespace TextureAtlasBuilder
     enum class Product
     {
         TexatlasidxProduct = 0,
-        DdsProduct = 1
+        StreamingImageProduct = 1
     };
 
     //! An asset builder for texture atlases

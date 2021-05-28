@@ -38,6 +38,7 @@ ly_add_target(
             Gem::LmbrCentral
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::AtomToolsFramework.Static
 )
 
 ly_add_dependencies(Editor ComponentEntityEditorPlugin)

@@ -68,6 +68,7 @@ namespace AzToolsFramework
         // This is meant to be used with the "EditCallback" Attribute
         using EditCallbackType = AZ::Edit::AttributeFunction<void(const AZ::Data::AssetId&, const AZ::Data::AssetType&)>;
         using ClearCallbackType = AZ::Edit::AttributeFunction<void()>;
+        using DefaultDirectoryCallbackType = AZ::Edit::AttributeFunction<void(AZStd::string&)>;
 
         PropertyAssetCtrl(QWidget *pParent = NULL, QString optionalValidDragDropExtensions = QString());
         virtual ~PropertyAssetCtrl();
@@ -119,6 +120,7 @@ namespace AzToolsFramework
         EditCallbackType* m_editNotifyCallback = nullptr;
         ClearCallbackType* m_clearNotifyCallback = nullptr;
         QString m_optionalValidDragDropExtensions;
+        DefaultDirectoryCallbackType* m_defaultDirectoryCallback = nullptr;
 
         //! The number of characters after which the autocompleter dropdown will be shown.
         //  Prevents showing too many options.
@@ -196,6 +198,7 @@ namespace AzToolsFramework
         void SetEditNotifyTarget(void* editNotifyTarget);
         void SetEditNotifyCallback(EditCallbackType* editNotifyCallback); // This is meant to be used with the "EditCallback" Attribute
         void SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback); // This is meant to be used with the "ClearNotify" Attribute
+        void SetDefaultDirectoryCallback(DefaultDirectoryCallbackType* callback); // This is meant to be used with the "DefaultStartingDirectoryCallback" Attribute
         void SetEditButtonEnabled(bool enabled);
         void SetEditButtonVisible(bool visible);
         void SetEditButtonIcon(const QIcon& icon);

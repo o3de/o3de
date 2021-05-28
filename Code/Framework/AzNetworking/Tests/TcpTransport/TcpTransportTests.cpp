@@ -129,7 +129,7 @@ namespace UnitTest
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     TEST_F(TcpTransportTests, DISABLED_TestSingleClient)
     #else
-    TEST_F(TcpTransportTests, TestSingleClient)
+    TEST_F(TcpTransportTests, SUITE_sandbox_TestSingleClient)
     #endif // AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     {
         TestTcpServer testServer;
@@ -157,7 +157,7 @@ namespace UnitTest
     #if AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     TEST_F(TcpTransportTests, DISABLED_TestMultipleClients)
     #else
-    TEST_F(TcpTransportTests, TestMultipleClients)
+    TEST_F(TcpTransportTests, SUITE_sandbox_TestMultipleClients)
     #endif // AZ_TRAIT_DISABLE_FAILED_NETWORKING_TESTS
     {
         constexpr uint32_t NumTestClients = 50;

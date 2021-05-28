@@ -139,7 +139,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateTube(
             AZ::Transform::CreateTranslation(AZ::Vector3(-40.0f, 6.0f, 1.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.5f, 1.0f, 1.0f)), // test max scale
+            AZ::Transform::CreateUniformScale(2.5f),
             1.0f,
             entity);
 
@@ -232,7 +232,7 @@ namespace UnitTest
     TEST_F(TubeShapeTest, GetAabb4)
     {
         AZ::Entity entity;
-        CreateTube(AZ::Transform::CreateScale(AZ::Vector3(1.0f, 1.0f, 2.0f)), 1.0f, entity);
+        CreateTube(AZ::Transform::CreateUniformScale(2.0f), 1.0f, entity);
 
         // set variable radius
         LmbrCentral::TubeShapeComponentRequestsBus::Event(
@@ -254,7 +254,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateTube(
             AZ::Transform::CreateTranslation(AZ::Vector3(37.0f, 36.0f, 32.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(1.0f, 2.0f, 1.0f)), 1.5f, entity);
+            AZ::Transform::CreateUniformScale(2.0f), 1.5f, entity);
 
         // set variable radius
         LmbrCentral::TubeShapeComponentRequestsBus::Event(
@@ -277,7 +277,7 @@ namespace UnitTest
             AZ::Transform::CreateTranslation(AZ::Vector3(37.0f, 36.0f, 32.0f)) *
             AZ::Transform::CreateRotationZ(AZ::Constants::QuarterPi) *
             AZ::Transform::CreateRotationY(AZ::Constants::QuarterPi) *
-            AZ::Transform::CreateScale(AZ::Vector3(0.8f, 1.5f, 1.5f)), 1.5f, entity);
+            AZ::Transform::CreateUniformScale(1.5f), 1.5f, entity);
 
         // set variable radius
         LmbrCentral::TubeShapeComponentRequestsBus::Event(
@@ -302,7 +302,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateTube(
             AZ::Transform::CreateTranslation(AZ::Vector3(37.0f, 36.0f, 39.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f, 1.5f, 1.5f)), 1.5f, entity);
+            AZ::Transform::CreateUniformScale(2.0f), 1.5f, entity);
 
         LmbrCentral::TubeShapeComponentRequestsBus::Event(
             entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 0, 1.0f);
@@ -326,7 +326,7 @@ namespace UnitTest
         AZ::Entity entity;
         CreateTube(
             AZ::Transform::CreateTranslation(AZ::Vector3(37.0f, 36.0f, 39.0f)) *
-            AZ::Transform::CreateScale(AZ::Vector3(2.0f, 1.5f, 1.5f)), 1.5f, entity);
+            AZ::Transform::CreateUniformScale(2.0f), 1.5f, entity);
 
         LmbrCentral::TubeShapeComponentRequestsBus::Event(
             entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::SetVariableRadius, 0, 1.0f);
