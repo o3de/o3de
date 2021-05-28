@@ -39,7 +39,7 @@ namespace PhysX
         , m_parentBodyHandle(parentBodyHandle)
         , m_childBodyHandle(childBodyHandle)
     {
-        // m_pxJoint = PxJointUniquePtr(pxJoint, releasePxJoint);
+
     }
 
     bool PhysXApiJoint::SetPxActors()
