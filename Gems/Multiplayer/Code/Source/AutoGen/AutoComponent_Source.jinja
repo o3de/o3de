@@ -118,22 +118,25 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index
 
 bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{ Property.attrib['Type'] }} &value)
 {
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.push_back(value))
+    int32_t indexToSet = GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.size();
+    if (indexToSet < {{ Property.attrib['Count'] }})
     {
-        int32_t indexToSet = GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.size();
+        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.push_back(value);
         int32_t bitIndex = indexToSet + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
         GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
+        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
         GetParent().MarkDirty();
         return true;
     }
+    return false;
 }
 
 bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PopBack(const Multiplayer::NetworkInput&)
 {
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.pop_back())
+    if (!GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.empty())
     {
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
+        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.pop_back();
+        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
         GetParent().MarkDirty();
         return true;
     }
@@ -216,10 +219,11 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(int32_t index
 
 bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{ Property.attrib['Type'] }} &value)
 {
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.push_back(value))
+    int32_t indexToSet = GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.size();
+    if (indexToSet < {{ Property.attrib['Count'] }})
     {
-        uint32_t indexToSet = aznumeric_cast<uint32_t>(GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.size());
-        uint32_t bitIndex = indexToSet + aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
+        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.push_back(value);
+        int32_t bitIndex = indexToSet + static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }});
         GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(bitIndex, true);
         GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
         GetParent().MarkDirty();
@@ -230,9 +234,10 @@ bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PushBack(const {{
 
 bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PopBack()
 {
-    if (GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.pop_back())
+    if (!GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.empty())
     {
-        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
+        GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.pop_back();
+        GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
         GetParent().MarkDirty();
         return true;
     }
@@ -241,7 +246,7 @@ bool {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}PopBack()
 
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}Clear()
 {
-    GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
+    GetParent().m_currentRecord->m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.SetBit(aznumeric_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Size') }}), true);
     GetParent().m_{{ LowerFirst(Property.attrib['Name']) }}.clear();
     GetParent().MarkDirty();
 }
@@ -586,8 +591,16 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         const uint32_t lastBit = static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'End') }});
 {%         endif %}
         
+{% if Property.attrib['IsRewindable']|booleanTrue %}
         AzNetworking::FixedSizeBitsetView deltaRecord(replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}, firstBit, lastBit - firstBit + 1);
         m_{{ LowerFirst(Property.attrib['Name']) }}.Serialize(serializer, deltaRecord);
+{% else %}
+{%       if Property.attrib['Container'] == 'Vector' %}
+        serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+{%       elif Property.attrib['Container'] == 'Array' %}
+        serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+{%       endif %}
+{% endif %}
     }
 {%     else %}
     Multiplayer::SerializeNetworkPropertyHelper
@@ -618,11 +631,11 @@ void {{ ClassName }}::NotifyChanges{{ AutoComponentMacros.GetNetPropertiesSetNam
 {% if (Property.attrib['GenerateEventBindings']|booleanTrue) %}
 {%     if Property.attrib['Container'] != 'None' and Property.attrib['Container'] != 'Object' %}
     // NotifyChangesAuthorityToClientProperties for Arrays and Vectors
-    for (uint32_t bitIndex = static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }}), elementIndex = 0; bitIndex <= static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component, ReplicateFrom, ReplicateTo, Property, 'End') }}); ++bitIndex, ++elementIndex)
+    for (uint32_t bitIndex = static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'Start') }}), elementIndex = 0; bitIndex <= static_cast<int32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'End') }}); ++bitIndex, ++elementIndex)
     {
-        if (replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.GetBit(bitIndex){% if Property.attrib['Container'] == 'Vector' %} && elementIndex < m_{{ Property.attrib['Name'] }}.GetSize(){% endif %})
+        if (replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}.GetBit(bitIndex){% if Property.attrib['Container'] == 'Vector' %} && elementIndex < m_{{ LowerFirst(Property.attrib['Name']) }}.size(){% endif %})
         {
-            m_LowerFirst( Property.attrib['Name']) }}Event.Signal(elementIndex, m_{{ LowerFirst(Property.attrib['Name']) }}[elementIndex]);
+            m_{{ LowerFirst(Property.attrib['Name']) }}Event.Signal(elementIndex, m_{{ LowerFirst(Property.attrib['Name']) }}[elementIndex]);
         }
     }
 {%         if Property.attrib['Container'] == 'Vector' %}

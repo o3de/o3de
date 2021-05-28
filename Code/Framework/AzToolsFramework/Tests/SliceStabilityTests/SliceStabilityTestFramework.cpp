@@ -141,7 +141,7 @@ namespace UnitTest
 
         // Set the new entity's transform to non zero values
         // This helps validate in comparison tests that the transform values of created entities persist during slice operations
-        entityTransform->SetLocalScale(AZ::Vector3(5, 5, 5));
+        entityTransform->SetLocalUniformScale(5);
         entityTransform->SetLocalRotation(AZ::Vector3RadToDeg(AZ::Vector3(90, 90, 90)));
         entityTransform->SetLocalTranslation(AZ::Vector3(100, 100, 100));
 

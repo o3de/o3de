@@ -935,25 +935,25 @@
             "parallax": [
                 {
                     "id": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Depthmap to create parallax effect.",
+                    "displayName": "Heightmap",
+                    "description": "Displacement heightmap to create parallax effect.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_depthMap"
+                        "id": "m_heightmap"
                     }
                 },
                 {
                     "id": "useTexture",
                     "displayName": "Use Texture",
-                    "description": "Whether to use the texture map.",
+                    "description": "Whether to use the heightmap.",
                     "type": "Bool",
                     "defaultValue": true
                 },
                 {
                     "id": "textureMapUv",
                     "displayName": "UV",
-                    "description": "Depth texture map UV set",
+                    "description": "Heightmap UV set",
                     "type": "Enum",
                     "enumIsUv": true,
                     "defaultValue": "Tiled",
@@ -972,7 +972,7 @@
                     "softMax": 0.1,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_depthFactor"
+                        "id": "m_heightmapScale"
                     }
                 },
                 {
@@ -985,18 +985,7 @@
                     "softMax": 0.1,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_depthOffset"
-                    }
-                },
-                {
-                    "id": "invert",
-                    "displayName": "Invert",
-                    "description": "Invert to depthmap if the texture is heightmap",
-                    "type": "Bool",
-                    "defaultValue": true,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_depthInverted"
+                        "id": "m_heightmapOffset"
                     }
                 },
                 {
