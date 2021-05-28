@@ -384,11 +384,12 @@ namespace O3DE::ProjectManager
             auto registrationResult = m_register.attr("register")(
                 enginePath,       // engine_path 
                 pybind11::none(), // project_path 
-                pybind11::none(), // gem_path 
+                pybind11::none(), // gem_path
+                pybind11::none(), // external_subdir_path 
                 pybind11::none(), // template_path 
                 pybind11::none(), // restricted_path 
                 pybind11::none(), // repo_uri 
-                pybind11::none(),   // default_engines_folder
+                pybind11::none(), // default_engines_folder
                 defaultProjectsFolder,
                 defaultGemsFolder,
                 defaultTemplatesFolder
@@ -486,15 +487,19 @@ namespace O3DE::ProjectManager
                     pybind11::none(),   // engine_path
                     projectPath,        // project_path
                     pybind11::none(),   // gem_path
+                    pybind11::none(),   // external_subdir_path
                     pybind11::none(),   // template_path
                     pybind11::none(),   // restricted_path
                     pybind11::none(),   // repo_uri
                     pybind11::none(),   // default_engines_folder
+                    pybind11::none(),   // default_projects_folder
                     pybind11::none(),   // default_gems_folder
                     pybind11::none(),   // default_templates_folder
                     pybind11::none(),   // default_restricted_folder
-                    pybind11::none(),   // default_restricted_folder
-                    true                // remove
+                    pybind11::none(),   // external_subdir_engine_path
+                    pybind11::none(),   // external_subdir_project_path
+                    true,               // remove
+                    false               // force
                 );
                 
                 // Returns an exit code so boolify it then invert result
