@@ -106,6 +106,11 @@ ANDROID_SDK_ARGUMENT_NAME = '--android-sdk-path'
 ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-platform'
 ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
 
+ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
+
+
+MIN_ANDROID_SDK_PLATFORM = 28   # The minimum platform/api level that is supported
+
 
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
@@ -172,7 +177,14 @@ def main(args):
                         required=True)
 
     parser.add_argument(ANDROID_SDK_PLATFORM_ARGUMENT_NAME,
-                        help='The android SDK platform number version to use for the APK.')
+                        help=f'The android SDK platform number version to use for the APK. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        type=int,
+                        default=-1)
+
+    parser.add_argument(ANDROID_NATIVE_API_LEVEL,
+                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        type=int,
+                        default=-1)
 
     # Override arguments
     parser.add_argument(ANDROID_SDK_PREFERRED_TOOL_VER,
@@ -288,24 +300,32 @@ def main(args):
     android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME))
 
     # If no SDK platform is provided, check for any installed one
-    if not android_sdk_platform_version:
+    if android_sdk_platform_version < 0:
+        android_sdk_platform_version = MIN_ANDROID_SDK_PLATFORM
         installed_android_sdk_platforms = android_sdk.is_package_installed('platforms;*')
-        if not installed_android_sdk_platforms:
-            raise common.LmbrCmdError("No Android SDK Platform specified or installed. Make sure to install an Android SDK Platform.")
-        # Iterate through the list and choose the latest (highest) platform version by default
-        latest_platform_version = -1
-        for installed_android_sdk_platform in installed_android_sdk_platforms:
-            platform_number_match = re.match(r'platforms;android-([0-9]*)', installed_android_sdk_platform.path)
-            if not platform_number_match:
-                continue
-            check_platform_version = int(platform_number_match.group(1))
-            if check_platform_version > latest_platform_version:
-                latest_platform_version = check_platform_version
+        if installed_android_sdk_platforms:
+            # If there are installed platforms, check the most recent one
+            latest_platform_version = -1
+            for installed_android_sdk_platform in installed_android_sdk_platforms:
+                platform_number_match = re.match(r'platforms;android-([0-9]*)', installed_android_sdk_platform.path)
+                if not platform_number_match:
+                    continue
+                check_platform_version = int(platform_number_match.group(1))
+                if check_platform_version > latest_platform_version:
+                    latest_platform_version = check_platform_version
+            if latest_platform_version >= MIN_ANDROID_SDK_PLATFORM:
+                android_sdk_platform_version = latest_platform_version
+    else:
+        if android_sdk_platform_version < MIN_ANDROID_SDK_PLATFORM:
+            raise common.LmbrCmdError(f"Invalid argument for {ANDROID_SDK_PLATFORM_ARGUMENT_NAME} ({android_sdk_platform_version}). Must be greater than the minimum value supported {MIN_ANDROID_SDK_PLATFORM}.")
 
-        if latest_platform_version < 0:
-            raise common.LmbrCmdError("No Android SDK Platform specified or installed. Make sure to install an Android SDK Platform.")
-
-        android_sdk_platform_version = latest_platform_version
+    # Get the android native api level from the arguments. Default to the sdk platform version if not provided
+    android_native_api_level = parsed_args.get_argument(ANDROID_NATIVE_API_LEVEL)
+    if android_native_api_level < 0:
+        android_native_api_level = android_sdk_platform_version
+    else:
+        if android_native_api_level < MIN_ANDROID_SDK_PLATFORM:
+            raise common.LmbrCmdError(f"Invalid argument for {ANDROID_NATIVE_API_LEVEL} ({android_native_api_level}). Must be greater than the minimum value supported {MIN_ANDROID_SDK_PLATFORM}.")
 
     # Check and make sure that the requested sdk platform exists, download if necessary
     platform_package_name = f"platforms;android-{android_sdk_platform_version}"
@@ -359,6 +379,7 @@ def main(args):
                                                         android_sdk_path=android_sdk.android_sdk_path,
                                                         build_tool=build_tools_package,
                                                         android_sdk_platform=android_sdk_platform_version,
+                                                        android_native_api_level=android_native_api_level,
                                                         android_ndk=android_ndk_package,
                                                         project_path=verified_project_path,
                                                         third_party_path=third_party_path,

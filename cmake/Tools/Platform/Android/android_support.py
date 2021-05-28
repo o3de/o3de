@@ -445,7 +445,7 @@ class AndroidProjectGenerator(object):
     Class the manages the process to generate an android project folder in order to build with gradle/android studio
     """
 
-    def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_ndk,
+    def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_native_api_level, android_ndk,
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
                  override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False,
                  overwrite_existing=True):
@@ -457,6 +457,7 @@ class AndroidProjectGenerator(object):
         :param android_sdk_path:        The path to the ANDROID_SDK used for building the android java code
         :param build_tool:              The android SDK build-tool version.
         :param android_sdk_platform:    The android sdk platform version number to use for the Android SDK related builds
+        :param android_native_api_level:The android native API level (ANDROID_NATIVE_API_LEVEL) to set
         :param android_ndk:             The android ndk version number to use for the native builds
         :param project_path:            The path to the project
         :param third_party_path:        The required path to the lumberyard 3rd party path
@@ -488,6 +489,7 @@ class AndroidProjectGenerator(object):
 
         self.android_ndk = android_ndk
         self.android_ndk_version = android_ndk.version
+        self.android_native_api_level = android_native_api_level
 
         self.project_path = project_path
 
@@ -790,7 +792,7 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append('"-DLY_TEST_PROJECT=1"')
 
             cmake_argument_list.extend([
-                f'"-DANDROID_NATIVE_API_LEVEL={self.android_sdk_platform}"',
+                f'"-DANDROID_NATIVE_API_LEVEL={self.android_native_api_level}"',
                 f'"-DLY_NDK_DIR={template_ndk_path}"',
                 '"-DANDROID_STL=c++_shared"',
                 '"-Wno-deprecated"',
@@ -1629,6 +1631,12 @@ class AndroidSDKResolver(object):
         package_result_list = self.is_package_available(package_install_path)
         if not package_result_list:
             raise common.LmbrCmdError(f"Invalid Android SDK Package {package_description}: Bad package path {package_install_path}")
+
+        # Reverse sort and pick the first item, which should be the latest (if the install path contains wildcards)
+        def _available_sort(item):
+            return item.path
+
+        package_result_list.sort(reverse=True, key=_available_sort)
 
         available_package_to_install = package_result_list[0]  # For multiple hits, resolve to the first item which will be the latest version
 
