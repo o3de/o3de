@@ -145,9 +145,8 @@ namespace AzToolsFramework
                 }
 
                 // Create the Prefab
-                auto prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
                 instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
-                    entities, AZStd::move(instancePtrs), prefabLoaderInterface->GenerateRelativePath(absolutePath),
+                    entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(absolutePath),
                     commonRootEntityOwningInstance);
 
                 if (!instanceToCreate)
