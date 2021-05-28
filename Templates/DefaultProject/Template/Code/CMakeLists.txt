@@ -33,7 +33,7 @@ endif()
 # in ${pal_dir}/${NameLower}_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
     NAME ${Name}.Static STATIC
-    NAMESPACE Project
+    NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_files.cmake
         ${pal_dir}/${NameLower}_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -48,7 +48,7 @@ ly_add_target(
 
 ly_add_target(
     NAME ${Name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-    NAMESPACE Project
+    NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_shared_files.cmake
         ${pal_dir}/${NameLower}_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -57,9 +57,15 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Project::${Name}.Static
+            Gem::${Name}.Static
             AZ::AzCore
 )
+
+# if enabled, ${Name} is used by all kinds of applications
+ly_create_alias(NAME ${Name}.Builders NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Tools    NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Clients  NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Servers  NAMESPACE Gem TARGETS Gem::${Name})
 
 ################################################################################
 # Gem dependencies
