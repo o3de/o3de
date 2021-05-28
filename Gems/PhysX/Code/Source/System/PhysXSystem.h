@@ -64,8 +64,6 @@ namespace PhysX
         AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> FindAttachedBodyHandleFromEntityId(AZ::EntityId entityId) override;
         const AzPhysics::SystemConfiguration* GetConfiguration() const override;
         void UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, bool forceReinitialization = false) override;
-        void UpdateDefaultMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary) override;
-        const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary() const override;
         void UpdateDefaultSceneConfiguration(const AzPhysics::SceneConfiguration& sceneConfiguration) override;
         const AzPhysics::SceneConfiguration& GetDefaultSceneConfiguration() const override;
 
@@ -92,7 +90,7 @@ namespace PhysX
         //! @param cookingParams The cooking params to use when setting up PhysX cooking interface. 
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
-        bool LoadDefaultMaterialLibrary();
+        bool LoadMaterialLibrary();
 
         // AzFramework::AssetCatalogEventBus::Handler ...
         void OnCatalogLoaded(const char* catalogFile) override;
@@ -133,7 +131,9 @@ namespace PhysX
             : private AZ::Data::AssetBus::Handler
         {
         public:
-            MaterialLibraryAssetHelper(PhysXSystem* physXSystem);
+            using OnMaterialLibraryReloadedCallback = AZStd::function<void(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)>;
+
+            MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback);
 
             void Connect(const AZ::Data::AssetId& materialLibraryId);
             void Disconnect();
@@ -142,9 +142,12 @@ namespace PhysX
             // AZ::Data::AssetBus::Handler
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-            PhysXSystem* m_physXSystem;
+            OnMaterialLibraryReloadedCallback m_onMaterialLibraryReloadedCallback;
         };
         MaterialLibraryAssetHelper m_materialLibraryAssetHelper;
+
+        //! Called by MaterialLibraryAssetHelper when the material library is reloaded.
+        void OnMaterialLibraryReloaded(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary);
     };
 
     //! Helper function for getting the PhysX System interface from inside the PhysX gem.

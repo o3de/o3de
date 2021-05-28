@@ -119,6 +119,24 @@ namespace Physics
         }
     }
 
+    bool MaterialConfiguration::operator==(const MaterialConfiguration& other) const
+    {
+        return m_surfaceType == other.m_surfaceType &&
+            AZ::IsClose(m_dynamicFriction, other.m_dynamicFriction) &&
+            AZ::IsClose(m_staticFriction, other.m_staticFriction) &&
+            AZ::IsClose(m_restitution, other.m_restitution) &&
+            AZ::IsClose(m_density, other.m_density) &&
+            m_restitutionCombine == other.m_restitutionCombine &&
+            m_frictionCombine == other.m_frictionCombine &&
+            m_debugColor == other.m_debugColor
+            ;
+    }
+
+    bool MaterialConfiguration::operator!=(const MaterialConfiguration& other) const
+    {
+        return !(*this == other);
+    }
+
     AZ::Color MaterialConfiguration::GenerateDebugColor(const char* materialName)
     {
         static const AZ::Color colors[] =
@@ -188,24 +206,25 @@ namespace Physics
 
     //////////////////////////////////////////////////////////////////////////
 
-    void DefaultMaterialLibraryAssetReflectionWrapper::Reflect(AZ::ReflectContext* context)
+    void MaterialInfoReflectionWrapper::Reflect(AZ::ReflectContext* context)
     {
          AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<Physics::DefaultMaterialLibraryAssetReflectionWrapper>()
+            serializeContext->Class<Physics::MaterialInfoReflectionWrapper>()
                 ->Version(1)
-                ->Field("Asset", &DefaultMaterialLibraryAssetReflectionWrapper::m_asset)
+                ->Field("DefaultMaterial", &MaterialInfoReflectionWrapper::m_defaultMaterialConfiguration)
+                ->Field("Asset", &MaterialInfoReflectionWrapper::m_materialLibraryAsset)
                 ;
 
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<Physics::DefaultMaterialLibraryAssetReflectionWrapper>("", "")
+                editContext->Class<Physics::MaterialInfoReflectionWrapper>("Physics Materials", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &DefaultMaterialLibraryAssetReflectionWrapper::m_asset, "Default Physics Material Library", "Library to use by default")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialInfoReflectionWrapper::m_defaultMaterialConfiguration, "Default Physics Material", "Material used by default")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialInfoReflectionWrapper::m_materialLibraryAsset, "Physics Material Library", "Library to use for the project")
                         ->Attribute(AZ::Edit::Attributes::AllowClearAsset, false)
                         ->Attribute("EditButton", "")
                     ;
@@ -237,6 +256,17 @@ namespace Physics
                     ;
             }
         }
+    }
+
+    bool MaterialFromAssetConfiguration::operator==(const MaterialFromAssetConfiguration& other) const
+    {
+        return m_configuration == other.m_configuration &&
+            m_id == other.m_id;
+    }
+
+    bool MaterialFromAssetConfiguration::operator!=(const MaterialFromAssetConfiguration& other) const
+    {
+        return !(*this == other);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -351,7 +381,7 @@ namespace Physics
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_materialIdsAssignedToSlots, "Mesh Surfaces", "Specify which Physics Material to use for each element of this object")
-                        ->ElementAttribute(Attributes::MaterialLibraryAssetId, &MaterialSelection::GetDefaultMaterialLibraryId)
+                        ->ElementAttribute(Attributes::MaterialLibraryAssetId, &MaterialSelection::GetMaterialLibraryId)
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &MaterialSelection::GetMaterialSlotLabel)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->ElementAttribute(AZ::Edit::Attributes::ReadOnly, &MaterialSelection::AreMaterialSlotsReadOnly)
@@ -359,12 +389,6 @@ namespace Physics
                     ;
             }
         }
-    }
-
-    AZ::u32 MaterialSelection::OnMaterialLibraryChanged()
-    {
-        SyncSelectionToMaterialLibrary();
-        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZStd::string MaterialSelection::GetMaterialSlotLabel(int index)
@@ -388,9 +412,9 @@ namespace Physics
         }
     }
 
-    void MaterialSelection::OnDefaultMaterialLibraryChanged([[maybe_unused]] const AZ::Data::AssetId& defaultMaterialLibraryId)
+    void MaterialSelection::OnMaterialLibraryChanged([[maybe_unused]] const AZ::Data::AssetId& defaultMaterialLibraryId)
     {
-        OnMaterialLibraryChanged();
+        SyncSelectionToMaterialLibrary();
     }
 
     void MaterialSelection::SetSlotsReadOnly(bool readOnly)
@@ -440,39 +464,43 @@ namespace Physics
 
     void MaterialSelection::SyncSelectionToMaterialLibrary()
     {
-        // We try to check whether existing selection matches any materials in the newly assigned library and do one of the following:
-        // 1. If previous MaterialId is invalid for this material library, and it is not the Default material, we set it to the Default material from the library.
-        // 2. If it's valid, or it is the Default material, we don't change it (useful when user accidentally re-assigns the same library: previous selection won't go away).
-
-        if (auto* materialLibrary = GetDefaultMaterialLibrary().Get())
+        auto* materialLibrary = GetMaterialLibrary().Get();
+        if (!materialLibrary)
         {
-            for (Physics::MaterialId& materialId : m_materialIdsAssignedToSlots)
-            {
-                if (!materialLibrary->HasDataForMaterialId(materialId)
-                    && !materialId.IsNull()) // Null materialId is the Default material.
-                {
-                    materialId = MaterialId();
-                }
-            }
+            return;
         }
-        else
+
+        for (Physics::MaterialId& materialId : m_materialIdsAssignedToSlots)
         {
-            AZ_Warning("PhysX", false, "MaterialSelection: invalid material library");
+            // Leave nulls (default) unchanged.
+            if (materialId.IsNull())
+            {
+                continue;
+            }
+
+            // If the material id is not present in the library anymore, set it to default
+            if (!materialLibrary->HasDataForMaterialId(materialId))
+            {
+                materialId = MaterialId();
+            }
         }
     }
 
-    const AZ::Data::Asset<Physics::MaterialLibraryAsset>& MaterialSelection::GetDefaultMaterialLibrary()
+    const AZ::Data::Asset<Physics::MaterialLibraryAsset>& MaterialSelection::GetMaterialLibrary()
     {
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
-            return physicsSystem->GetDefaultMaterialLibrary();
+            if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
+            {
+                return physicsConfiguration->m_materialLibraryAsset;
+            }
         }
         return s_invalidMaterialLibrary;
     }
 
-    const AZ::Data::AssetId& MaterialSelection::GetDefaultMaterialLibraryId()
+    const AZ::Data::AssetId& MaterialSelection::GetMaterialLibraryId()
     {
-        return GetDefaultMaterialLibrary().GetId();
+        return GetMaterialLibrary().GetId();
     }
 
     bool MaterialSelection::AreMaterialSlotsReadOnly() const

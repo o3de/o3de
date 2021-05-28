@@ -17,13 +17,13 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
-#include <PhysX/Configuration/PhysXConfiguration.h>
-#include <System/PhysXSystem.h>
+#include <PhysX/Debug/PhysXDebugInterface.h>
 
 namespace PhysX
 {
@@ -415,18 +415,16 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-                {
-                    if (const auto* materialLibrary = physicsSystem->GetDefaultMaterialLibrary().Get())
-                    {
-                        Physics::MaterialFromAssetConfiguration materialConfiguration;
-                        const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
+                const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
 
-                        if (materialLibrary->GetDataForMaterialId(materialId, materialConfiguration))
-                        {
-                            debugColor = materialConfiguration.m_configuration.m_debugColor;
-                        }
-                    }
+                AZStd::shared_ptr<Physics::Material> physicsMaterial;
+                Physics::PhysicsMaterialRequestBus::BroadcastResult(
+                    physicsMaterial,
+                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
+                    materialId);
+                if (physicsMaterial)
+                {
+                    debugColor = physicsMaterial->GetDebugColor();
                 }
                 break;
             }

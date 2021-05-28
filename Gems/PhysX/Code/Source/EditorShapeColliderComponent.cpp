@@ -44,11 +44,16 @@ namespace PhysX
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
-        , m_onDefaultMaterialLibraryChangedEventHandler(
+        , m_onMaterialLibraryChangedEventHandler(
             [this](const AZ::Data::AssetId& defaultMaterialLibrary)
             {
-                m_colliderConfig.m_materialSelection.OnDefaultMaterialLibraryChanged(defaultMaterialLibrary);
+                m_colliderConfig.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
                 Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+
+                // Refresh UI
+                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                    AzToolsFramework::Refresh_EntireTree);
             })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {
@@ -694,16 +699,16 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onDefaultMaterialLibraryChangedEventHandler.IsConnected())
+            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
             {
-                physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
             }
         }
     }
 
     void EditorShapeColliderComponent::OnDeselected()
     {
-        m_onDefaultMaterialLibraryChangedEventHandler.Disconnect();
+        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 

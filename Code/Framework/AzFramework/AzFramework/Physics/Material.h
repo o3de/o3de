@@ -29,7 +29,6 @@ namespace Physics
     /// =========================
     /// This is the interface to the wrapper around native material type (such as PxMaterial in PhysX gem)
     /// that stores extra metadata, like Surface Type name.
-    /// To see more details about PhysX implementation please refer to PhysX::Material class
     ///
     /// Usage example
     /// -------------------------
@@ -37,14 +36,7 @@ namespace Physics
     ///
     ///     Physics::MaterialConfiguration materialProperties;
     ///     AZStd::shared_ptr<Physics::Material> newMaterial = AZ::Interface<Physics::System>::Get()->CreateMaterial(materialProperties);
-    ///
-    /// To get PxMaterial use GetNativePointer function
-    ///
-    ///     physx::PxMaterial* material = static_cast<physx::PxMaterial*>(newMaterial->GetNativePointer());
-    ///
-    /// You can use retrieved PxMaterial pointer on its own, provided you increment its reference count.
-    /// If this class goes out of scope, the PxMaterial pointer will be valid, but its userData
-    /// will be cleaned up to point to nullptr.
+    /// 
     class Material
     {
     public:
@@ -63,9 +55,9 @@ namespace Physics
 
         /// Returns AZ::Crc32 of the surface name.
         virtual AZ::Crc32 GetSurfaceType() const = 0;
-        virtual void SetSurfaceType(AZ::Crc32 surfaceType) = 0;
 
         virtual const AZStd::string& GetSurfaceTypeName() const = 0;
+        virtual void SetSurfaceTypeName(const AZStd::string& surfaceTypeName) = 0;
 
         virtual float GetDynamicFriction() const = 0;
         virtual void SetDynamicFriction(float dynamicFriction) = 0;
@@ -84,6 +76,9 @@ namespace Physics
 
         virtual float GetDensity() const = 0;
         virtual void SetDensity(float density) = 0;
+
+        virtual AZ::Color GetDebugColor() const = 0;
+        virtual void SetDebugColor(const AZ::Color& debugColor) = 0;
 
         /// If the name of this material matches the name of one of the CrySurface types, it will return its CrySurface Id.\n
         /// If there's no match it will return default CrySurface Id.\n
@@ -122,6 +117,10 @@ namespace Physics
         Material::CombineMode m_frictionCombine = Material::CombineMode::Average;
 
         AZ::Color m_debugColor = AZ::Colors::White;
+
+        bool operator==(const MaterialConfiguration& other) const;
+        bool operator!=(const MaterialConfiguration& other) const;
+
     private:
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static AZ::Color GenerateDebugColor(const char* materialName);
@@ -147,6 +146,7 @@ namespace Physics
         static MaterialId FromUUID(const AZ::Uuid& uuid);
         bool IsNull() const { return m_id.IsNull(); }
         bool operator==(const MaterialId& other) const { return m_id == other.m_id; }
+        bool operator!=(const MaterialId& other) const { return !(*this == other); }
         const AZ::Uuid& GetUuid() const { return m_id; }
 
     private:
@@ -166,6 +166,9 @@ namespace Physics
 
         MaterialConfiguration m_configuration;
         MaterialId m_id;
+
+        bool operator==(const MaterialFromAssetConfiguration& other) const;
+        bool operator!=(const MaterialFromAssetConfiguration& other) const;
     };
 
     /// An asset that holds a list of materials to be edited and assigned in Open 3D Engine Editor
@@ -222,19 +225,20 @@ namespace Physics
         AZStd::vector<MaterialFromAssetConfiguration> m_materialLibrary;
     };
 
-    /// The class is used to expose a MaterialLibraryAsset to Edit Context
+    /// The class is used to expose a default material and material library asset to Edit Context
     /// =======================================================================
     ///
     /// Since AZ::Data::Asset doesn't reflect the data to EditContext 
     /// we have to have a wrapper doing it.
-    class DefaultMaterialLibraryAssetReflectionWrapper
+    class MaterialInfoReflectionWrapper
     {
     public:
-        AZ_CLASS_ALLOCATOR(DefaultMaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(Physics::DefaultMaterialLibraryAssetReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
+        AZ_CLASS_ALLOCATOR(MaterialInfoReflectionWrapper, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(Physics::MaterialInfoReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_asset =
+        Physics::MaterialConfiguration m_defaultMaterialConfiguration;
+        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset =
             AZ::Data::AssetLoadBehavior::NoLoad;
     };
 
@@ -272,8 +276,8 @@ namespace Physics
         /// @param slotIndex Index of the slot to retrieve the MaterialId
         Physics::MaterialId GetMaterialId(int slotIndex = 0) const;
 
-        /// Called when the default material library has changed
-        void OnDefaultMaterialLibraryChanged(const AZ::Data::AssetId& defaultMaterialLibraryId);
+        /// Called when the material library has changed
+        void OnMaterialLibraryChanged(const AZ::Data::AssetId& defaultMaterialLibraryId);
 
         /// Set if the material slots are editable in the edit context
         void SetSlotsReadOnly(bool readOnly);
@@ -285,13 +289,12 @@ namespace Physics
         
         void SyncSelectionToMaterialLibrary();
         
-        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary();
-        static const AZ::Data::AssetId& GetDefaultMaterialLibraryId();
+        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibrary();
+        static const AZ::Data::AssetId& GetMaterialLibraryId();
 
         bool AreMaterialSlotsReadOnly() const;
 
         // EditorContext callbacks
-        AZ::u32 OnMaterialLibraryChanged();
         AZStd::string GetMaterialSlotLabel(int index);
     };
 
