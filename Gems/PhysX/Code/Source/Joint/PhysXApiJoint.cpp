@@ -31,7 +31,7 @@ namespace PhysX
         return m_childBodyHandle;
     }
 
-    PhysXApiJoint::PhysXApiJoint([[ maybe_unused ]] const AzPhysics::ApiJointConfiguration& configuration, 
+    PhysXApiJoint::PhysXApiJoint(
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
@@ -94,7 +94,7 @@ namespace PhysX
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
-        : PhysXApiJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle)
+        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
         m_pxJoint = Utils::PxJointFactories::CreatePxD6Joint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }

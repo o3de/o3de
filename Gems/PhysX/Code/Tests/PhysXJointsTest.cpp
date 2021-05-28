@@ -249,8 +249,8 @@ namespace PhysX
             PhysX::GenericPhysicsInterfaceTest::TearDown();
         }
 
-        AzPhysics::SimulatedBodyHandle m_parentBodyHandle;
-        AzPhysics::SimulatedBodyHandle m_childBodyHandle;
+        AzPhysics::SimulatedBodyHandle m_parentBodyHandle = AzPhysics::InvalidApiJointHandle;
+        AzPhysics::SimulatedBodyHandle m_childBodyHandle = AzPhysics::InvalidApiJointHandle;
         AZ::Vector3 m_childInitialPos;
     };
 

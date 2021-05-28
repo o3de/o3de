@@ -827,8 +827,8 @@ namespace PhysX
         }
     }
 
-    AzPhysics::ApiJointHandle PhysXScene::AddJoint([[ maybe_unused ]] const AzPhysics::ApiJointConfiguration* jointConfig, 
-        [[ maybe_unused ]] AzPhysics::SimulatedBodyHandle parentBody, [[ maybe_unused ]] AzPhysics::SimulatedBodyHandle childBody) 
+    AzPhysics::ApiJointHandle PhysXScene::AddJoint(const AzPhysics::ApiJointConfiguration* jointConfig, 
+        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
     {
         AzPhysics::ApiJoint* newJoint = nullptr;
         AZ::Crc32 newJointCrc;
@@ -859,7 +859,7 @@ namespace PhysX
         return AzPhysics::InvalidApiJointHandle;
     }
 
-    void PhysXScene::RemoveJoint([[ maybe_unused ]] AzPhysics::ApiJointHandle jointHandle) 
+    void PhysXScene::RemoveJoint(AzPhysics::ApiJointHandle jointHandle) 
     {
         if (jointHandle == AzPhysics::InvalidApiJointHandle)
         {

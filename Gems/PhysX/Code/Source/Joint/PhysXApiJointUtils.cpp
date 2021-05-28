@@ -1,3 +1,15 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
 #include <PhysX_precompiled.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -104,13 +116,13 @@ namespace PhysX {
                     "Very small swing limit requested for joint between \"%s\" and \"%s\", increasing to %f degrees to improve stability",
                     parentActor ? parentActor->getName() : "world", childActor ? childActor->getName() : "world",
                     JointConstants::MinSwingLimitDegrees);
-                float swingLimitY = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitY));
-                float swingLimitZ = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitZ));
+                const float swingLimitY = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitY));
+                const float swingLimitZ = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitZ));
                 physx::PxJointLimitCone limitCone(swingLimitY, swingLimitZ);
                 joint->setSwingLimit(limitCone);
 
-                float twistLower = AZ::DegToRad(AZStd::GetMin(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
-                float twistUpper = AZ::DegToRad(AZStd::GetMax(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
+                const float twistLower = AZ::DegToRad(AZStd::GetMin(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
+                const float twistUpper = AZ::DegToRad(AZStd::GetMax(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
                 physx::PxJointAngularLimitPair twistLimitPair(twistLower, twistUpper);
                 joint->setTwistLimit(twistLimitPair);
 

@@ -25,7 +25,7 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(PhysXApiJoint, AZ::SystemAllocator, 0);
         AZ_RTTI(PhysXApiJoint, "{DBE1D185-E318-407D-A5A1-AC1DE7F4A62D}", AzPhysics::ApiJoint);
 
-        PhysXApiJoint(const AzPhysics::ApiJointConfiguration& configuration, 
+        PhysXApiJoint(
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle);

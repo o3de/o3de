@@ -30,8 +30,7 @@ namespace PhysX
                 ->Field("TwistUpperLimit", &D6ApiJointLimitConfiguration::m_twistLimitUpper)
                 ;
 
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (editContext)
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<D6ApiJointLimitConfiguration>(
                     "PhysX D6 Joint Configuration", "")
