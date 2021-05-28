@@ -79,7 +79,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 
-static void PrintEntityNameToConsole(const AZ::ConsoleCommandContainer& arguments)
+static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
     if (arguments.empty())
     {
@@ -96,7 +96,8 @@ static void PrintEntityNameToConsole(const AZ::ConsoleCommandContainer& argument
     AZ_Printf("Entity Debug", "EntityId: %" PRIu64 ", Entity Name: %s", entityIdValue, entityName.c_str());
 }
 
-AZ_CONSOLEFREEFUNC(PrintEntityNameToConsole, AZ::ConsoleFunctorFlags::Null, "Print the name of the given EntityId to the console");
+AZ_CONSOLEFREEFUNC(
+    PrintEntityName, AZ::ConsoleFunctorFlags::Null, "Parameter: EntityId value, Prints the name of the entity to the console");
 
 namespace AZ
 {
