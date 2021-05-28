@@ -16,7 +16,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrlTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
-#include <AzToolsFramework/ToolsComponents/TransformScalePropertyHandler.h>
 
 namespace AzToolsFramework
 {
@@ -38,7 +37,6 @@ namespace AzToolsFramework
     void RegisterButtonPropertyHandlers();
     void RegisterMultiLineEditHandler();
     void RegisterCrcHandler();
-    void RegisterTransformScaleHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
 
     namespace Components
