@@ -341,6 +341,17 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            // refresh the projects content by re-creating it for now
+            m_stack->removeWidget(m_projectsContent);
+
+            if (m_projectsContent)
+            {
+                m_projectsContent->deleteLater();
+            }
+
+            m_projectsContent = CreateProjectsContent();
+
+            m_stack->addWidget(m_projectsContent);
             m_stack->setCurrentWidget(m_projectsContent);
         }
     }
