@@ -94,7 +94,7 @@ class Cdk:
 
         deploy_cdk_application_cmd = ['cdk', 'deploy', '--require-approval', 'never']
         if additonal_params:
-            deploy_cdk_application_cmd += additonal_params
+            deploy_cdk_application_cmd.extend(additonal_params)
         if context_variable:
             deploy_cdk_application_cmd.extend(['-c', f'{context_variable}'])
 
