@@ -488,7 +488,6 @@ class AndroidProjectGenerator(object):
 
         self.android_ndk = android_ndk
         self.android_ndk_version = android_ndk.version
-        self.android_ndk_api_level = str(android_ndk.version).split('.')[0]
 
         self.project_path = project_path
 
