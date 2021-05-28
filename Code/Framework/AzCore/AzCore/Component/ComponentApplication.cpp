@@ -77,6 +77,26 @@
 #endif // defined(AZ_ENABLE_DEBUG_TOOLS)
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/string/conversions.h>
+
+static void PrintEntityNameToConsole(const AZ::ConsoleCommandContainer& arguments)
+{
+    if (arguments.empty())
+    {
+        return;
+    }
+
+    const auto entityIdStr = AZStd::string(arguments.front());
+    const auto entityIdValue = AZStd::stoull(entityIdStr);
+
+    AZStd::string entityName;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, AZ::EntityId(entityIdValue));
+
+    AZ_Printf("Entity Debug", "EntityId: %" PRIu64 ", Entity Name: %s", entityIdValue, entityName.c_str());
+}
+
+AZ_CONSOLEFREEFUNC(PrintEntityNameToConsole, AZ::ConsoleFunctorFlags::Null, "Print the name of the given EntityId to the console");
 
 namespace AZ
 {
