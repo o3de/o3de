@@ -14,11 +14,6 @@
                 "description": "Properties for configuring whether the surface is metallic or not."
             },
             {
-                "id": "anisotropy",
-                "displayName": "Anisotropic Material Response",
-                "description": "How much is this material response anisotropic."
-            },
-            {
                 "id": "roughness",
                 "displayName": "Roughness",
                 "description": "Properties for configuring how rough the surface appears."
@@ -29,24 +24,24 @@
                 "description": "The constant f0 represents the specular reflectance at normal incidence (Fresnel 0 Angle). Used to adjust reflectance of non-metal surfaces."
             },
             {
-                "id": "clearCoat",
-                "displayName": "Clear Coat",
-                "description": "Properties for configuring gloss clear coat"
-            }, 
-            {
                 "id": "normal",
                 "displayName": "Normal",
                 "description": "Properties related to configuring surface normal."
             },
             {
-                "id": "opacity",
-                "displayName": "Opacity",
-                "description": "Properties for configuring the materials transparency."
+                "id": "detailLayerGroup",
+                "displayName": "Detail Layer",
+                "description": "Properties for Fine Details Layer."
             },
             {
-                "id": "uv",
-                "displayName": "UVs",
-                "description": "Properties for configuring UV transforms."
+                "id": "detailUV",
+                "displayName": "Detail Layer UV",
+                "description": "Properties for modifying detail layer UV."
+            },
+            {
+                "id": "anisotropy",
+                "displayName": "Anisotropic Material Response",
+                "description": "How much is this material response anisotropic."
             },
             {
                 "id": "occlusion",
@@ -59,24 +54,29 @@
                 "description": "Properties to add light emission, independent of other lights in the scene."
             },
             {
-                "id": "parallax",
-                "displayName": "Displacement",
-                "description": "Properties for parallax effect produced by a height map."
-            },
-            {
                 "id": "subsurfaceScattering",
                 "displayName": "Subsurface Scattering",
                 "description": "Properties for configuring subsurface scattering effects."
             },
             {
-                "id": "detailLayerGroup",
-                "displayName": "Detail Layer",
-                "description": "Properties for Fine Details Layer."
+                "id": "clearCoat",
+                "displayName": "Clear Coat",
+                "description": "Properties for configuring gloss clear coat"
+            }, 
+            {
+                "id": "parallax",
+                "displayName": "Displacement",
+                "description": "Properties for parallax effect produced by a height map."
             },
             {
-                "id": "detailUV",
-                "displayName": "Detail Layer UV",
-                "description": "Properties for modifying detail layer UV."
+                "id": "opacity",
+                "displayName": "Opacity",
+                "description": "Properties for configuring the materials transparency."
+            },
+            {
+                "id": "uv",
+                "displayName": "UVs",
+                "description": "Properties for configuring UV transforms."
             },
             {
                 // Note: this property group is used in the DiffuseGlobalIllumination pass and not by the main forward shader

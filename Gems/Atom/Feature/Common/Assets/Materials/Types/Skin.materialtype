@@ -24,6 +24,16 @@
                 "description": "Properties related to configuring surface normal."
             },
             {
+                "id": "detailLayerGroup",
+                "displayName": "Detail Layer",
+                "description": "Properties for Fine Details Layer."
+            },
+            {
+                "id": "detailUV",
+                "displayName": "Detail Layer UV",
+                "description": "Properties for modifying detail layer UV."
+            },
+            {
                 "id": "occlusion",
                 "displayName": "Occlusion",
                 "description": "Properties for baked textures that represent geometric occlusion of light."
@@ -37,16 +47,6 @@
                 "id": "wrinkleLayers",
                 "displayName": "Wrinkle Layers",
                 "description": "Properties for wrinkle maps to support morph animation, using vertex color blend weights."
-            },
-            {
-                "id": "detailLayerGroup",
-                "displayName": "Detail Layer",
-                "description": "Properties for Fine Details Layer."
-            },
-            {
-                "id": "detailUV",
-                "displayName": "Detail Layer UV",
-                "description": "Properties for modifying detail layer UV."
             },
             {
                 "id": "general",

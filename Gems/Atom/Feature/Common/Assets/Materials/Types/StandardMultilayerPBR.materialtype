@@ -58,11 +58,6 @@
                 "description": "Properties related to configuring surface normal."
             },
             {
-                "id": "layer1_clearCoat",
-                "displayName": "Layer 1: Clear Coat",
-                "description": "Properties for configuring gloss clear coat"
-            }, 
-            {
                 "id": "layer1_occlusion",
                 "displayName": "Layer 1: Occlusion",
                 "description": "Properties for baked textures for diffuse and specular occlusion of ambient lighting."
@@ -72,6 +67,11 @@
                 "displayName": "Layer 1: Emissive",
                 "description": "Properties to add light emission, independent of other lights in the scene."
             },
+            {
+                "id": "layer1_clearCoat",
+                "displayName": "Layer 1: Clear Coat",
+                "description": "Properties for configuring gloss clear coat"
+            }, 
             {
                 "id": "layer1_parallax",
                 "displayName": "Layer 1: Displacement",
@@ -111,11 +111,6 @@
                 "description": "Properties related to configuring surface normal."
             },
             {
-                "id": "layer2_clearCoat",
-                "displayName": "Layer 2: Clear Coat",
-                "description": "Properties for configuring gloss clear coat"
-            }, 
-            {
                 "id": "layer2_occlusion",
                 "displayName": "Layer 2: Occlusion",
                 "description": "Properties for baked textures for diffuse and specular occlusion of ambient lighting."
@@ -125,6 +120,11 @@
                 "displayName": "Layer 2: Emissive",
                 "description": "Properties to add light emission, independent of other lights in the scene."
             },
+            {
+                "id": "layer2_clearCoat",
+                "displayName": "Layer 2: Clear Coat",
+                "description": "Properties for configuring gloss clear coat"
+            }, 
             {
                 "id": "layer2_parallax",
                 "displayName": "Layer 2: Displacement",
@@ -164,11 +164,6 @@
                 "description": "Properties related to configuring surface normal."
             },
             {
-                "id": "layer3_clearCoat",
-                "displayName": "Layer 3: Clear Coat",
-                "description": "Properties for configuring gloss clear coat"
-            }, 
-            {
                 "id": "layer3_occlusion",
                 "displayName": "Layer 3: Occlusion",
                 "description": "Properties for baked textures for diffuse and specular occlusion of ambient lighting."
@@ -178,6 +173,11 @@
                 "displayName": "Layer 3: Emissive",
                 "description": "Properties to add light emission, independent of other lights in the scene."
             },
+            {
+                "id": "layer3_clearCoat",
+                "displayName": "Layer 3: Clear Coat",
+                "description": "Properties for configuring gloss clear coat"
+            }, 
             {
                 "id": "layer3_parallax",
                 "displayName": "Layer 3: Displacement",
