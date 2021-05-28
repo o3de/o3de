@@ -109,7 +109,7 @@ ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
 ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
 
-MIN_ANDROID_SDK_PLATFORM = 28   # The minimum platform/api level that is supported
+MIN_ANDROID_SDK_PLATFORM = 24   # The minimum platform/api level that is supported
 
 
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
