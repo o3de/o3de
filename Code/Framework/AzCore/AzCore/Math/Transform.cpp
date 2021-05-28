@@ -130,8 +130,8 @@ namespace AZ
         const Transform* transform = reinterpret_cast<const Transform*>(classPtr);
         float data[NumFloats];
         transform->GetRotation().StoreToFloat4(data);
-        transform->GetScale().StoreToFloat3(&data[4]);
-        transform->GetTranslation().StoreToFloat3(&data[7]);
+        data[4] = transform->GetUniformScale();
+        transform->GetTranslation().StoreToFloat3(&data[5]);
 
         for (int i = 0; i < NumFloats; i++)
         {
@@ -159,8 +159,8 @@ namespace AZ
 
     size_t TransformSerializer::TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian)
     {
-        const size_t dataBufferSize = AZStd::max(NumFloatsVersion0, NumFloats);
-        const size_t numElements = textVersion < 1 ? NumFloatsVersion0 : NumFloats;
+        const size_t dataBufferSize = AZStd::max(AZStd::max(NumFloatsVersion1, NumFloatsVersion0), NumFloats);
+        const size_t numElements = textVersion < 1 ? NumFloatsVersion0 : (textVersion == 1 ? NumFloatsVersion1 : NumFloats);
 
         size_t nextNumberIndex = 0;
         AZStd::array<float, dataBufferSize> data;
@@ -201,7 +201,34 @@ namespace AZ
             return true;
         }
 
-        // otherwise load as a separate rotation, scale and translation
+        // version 1 had a quaternion rotation, vector3 scale and vector3 translation
+        else if (version == 1)
+        {
+            float data[NumFloatsVersion1];
+            if (stream.GetLength() < sizeof(data))
+            {
+                return false;
+            }
+
+            stream.Read(sizeof(data), reinterpret_cast<void*>(data));
+
+            for (unsigned int i = 0; i < AZ_ARRAY_SIZE(data); ++i)
+            {
+                AZ_SERIALIZE_SWAP_ENDIAN(data[i], isDataBigEndian);
+            }
+
+            Quaternion rotation = Quaternion::CreateFromFloat4(data);
+            Vector3 vectorScale = Vector3::CreateFromFloat3(&data[4]);
+            Vector3 translation = Vector3::CreateFromFloat3(&data[7]);
+
+            float uniformScale = vectorScale.GetMaxElement();
+
+            *reinterpret_cast<Transform*>(classPtr) =
+                Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateUniformScale(uniformScale);
+            return true;
+        }
+
+        // otherwise load as a quaternion rotation, float scale and vector3 translation
         float data[NumFloats];
         if (stream.GetLength() < sizeof(data))
         {
@@ -216,11 +243,11 @@ namespace AZ
         }
 
         Quaternion rotation = Quaternion::CreateFromFloat4(data);
-        Vector3 scale = Vector3::CreateFromFloat3(&data[4]);
-        Vector3 translation = Vector3::CreateFromFloat3(&data[7]);
+        float scale = data[4];
+        Vector3 translation = Vector3::CreateFromFloat3(&data[5]);
 
         *reinterpret_cast<Transform*>(classPtr) =
-            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateScale(scale);
+            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateUniformScale(scale);
         return true;
     }
 
@@ -237,7 +264,7 @@ namespace AZ
         if (serializeContext)
         {
             serializeContext->Class<Transform>()
-                ->Version(1)
+                ->Version(2)
                 ->Serializer<TransformSerializer>();
         }
 

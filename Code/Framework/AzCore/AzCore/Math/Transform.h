@@ -25,10 +25,13 @@ namespace AZ
         : public SerializeContext::IDataSerializer
     {
     public:
-        // number of floats in the serialized representation, 4 for rotation, 3 for scale and 3 for translation
-        static constexpr int NumFloats = 10;
+        // number of floats in the serialized representation, 4 for rotation, 1 for scale and 3 for translation
+        static constexpr int NumFloats = 8;
 
-        // number of floats in the old format, which stored a 3x4 matrix
+        // number of floats in version 1, which used 4 for rotation, 3 for scale and 3 for translation
+        static constexpr int NumFloatsVersion1 = 10;
+
+        // number of floats in version 0, which stored a 3x4 matrix
         static constexpr int NumFloatsVersion0 = 12;
 
         size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
