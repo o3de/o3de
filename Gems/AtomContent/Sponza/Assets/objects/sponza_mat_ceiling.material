@@ -48,7 +48,8 @@
             "factor": 0.019999999552965165,
             "pdo": true,
             "quality": "Medium",
-            "textureMap": "Textures/ceiling_1k_height.png"
+            "textureMap": "Textures/ceiling_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/ceiling_1k_roughness.png"

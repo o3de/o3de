@@ -318,7 +318,7 @@ namespace AzToolsFramework
             }
 
             //Detect whether this instantiation would produce a cyclical dependency
-            auto relativePath = m_prefabLoaderInterface->GetRelativePathToProject(filePath);
+            auto relativePath = m_prefabLoaderInterface->GenerateRelativePath(filePath);
             Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
 
             if (templateId == InvalidTemplateId)
