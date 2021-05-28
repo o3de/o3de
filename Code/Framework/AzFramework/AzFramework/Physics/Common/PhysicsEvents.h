@@ -62,6 +62,15 @@ namespace AzPhysics
         //! When triggered the event will send the Asset Id of the new material library.
         using OnMaterialLibraryChangedEvent = AZ::Event<const AZ::Data::AssetId&>;
 
+        enum class MaterialLibraryLoadErrorType : uint8_t
+        {
+            InvalidId,
+            ErrorLoading
+        };
+
+        //! Event that triggers when the default material library has loaded with errors.
+        using OnMaterialLibraryLoadErrorEvent = AZ::Event<MaterialLibraryLoadErrorType>;
+
         //! Event that triggers when the default scene configuration changes.
         //! When triggered the event will send the new default scene configuration.
         using OnDefaultSceneConfigurationChangedEvent = AZ::Event<const SceneConfiguration*>;

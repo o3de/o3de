@@ -73,6 +73,8 @@ namespace PhysX
         //! Accessor to get the Settings Registry Manager.
         const PhysXSettingsRegistryManager& GetSettingsRegistryManager() const;
 
+        void UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary);
+
         //TEMP -- until these are fully moved over here
         physx::PxPhysics* GetPxPhysics() { return m_physXSdk.m_physics; }
         physx::PxCooking* GetPxCooking() { return m_physXSdk.m_cooking; }
@@ -145,9 +147,6 @@ namespace PhysX
             OnMaterialLibraryReloadedCallback m_onMaterialLibraryReloadedCallback;
         };
         MaterialLibraryAssetHelper m_materialLibraryAssetHelper;
-
-        //! Called by MaterialLibraryAssetHelper when the material library is reloaded.
-        void OnMaterialLibraryReloaded(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary);
     };
 
     //! Helper function for getting the PhysX System interface from inside the PhysX gem.

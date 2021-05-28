@@ -165,6 +165,9 @@ namespace AzPhysics
         //! Register a handler to receive an event when the material library changes.
         //! @param handler The handler to receive the event.
         void RegisterOnMaterialLibraryChangedEventHandler(SystemEvents::OnMaterialLibraryChangedEvent::Handler& handler) { handler.Connect(m_onMaterialLibraryChangedEvent); }
+        //! Register a handler to receive an event when the material library fails to load on startup.
+        //! @param handler The handler to receive the event.
+        void RegisterOnMaterialLibraryLoadErrorEventHandler(SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler& handler) { handler.Connect(m_onMaterialLibraryLoadErrorEvent); }
         //! Register a handler to receive an event when the default SceneConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterOnDefaultSceneConfigurationChangedEventHandler(SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler& handler) { handler.Connect(m_onDefaultSceneConfigurationChangedEvent); }
@@ -179,6 +182,7 @@ namespace AzPhysics
         SystemEvents::OnSceneRemovedEvent m_sceneRemovedEvent;
         SystemEvents::OnConfigurationChangedEvent m_configChangeEvent;
         SystemEvents::OnMaterialLibraryChangedEvent m_onMaterialLibraryChangedEvent;
+        SystemEvents::OnMaterialLibraryLoadErrorEvent m_onMaterialLibraryLoadErrorEvent;
         SystemEvents::OnDefaultSceneConfigurationChangedEvent m_onDefaultSceneConfigurationChangedEvent;
     };
 } // namespace AzPhysics
