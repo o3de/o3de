@@ -48,7 +48,7 @@ namespace AZ
     static constexpr float MaxTransformScale = 1e9f;
     //! @}
 
-    //! The basic transformation class, represented using a quaternion rotation, vector scale and vector translation.
+    //! The basic transformation class, represented using a quaternion rotation, float scale and vector translation.
     //! By design, cannot represent skew transformations.
     class Transform
     {
@@ -66,7 +66,7 @@ namespace AZ
         Transform() = default;
 
         //! Construct a transform from components.
-        Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
+        Transform(const Vector3& translation, const Quaternion& rotation, float scale);
 
         //! Creates an identity transform.
         static Transform CreateIdentity();
@@ -85,11 +85,18 @@ namespace AZ
         static Transform CreateFromQuaternionAndTranslation(const class Quaternion& q, const Vector3& p);
 
         //! Constructs from a Matrix3x3, translation is set to zero.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x3(const class Matrix3x3& value);
 
-        //! Constructs from a Matrix3x3, translation is set to zero.
+        //! Constructs from a Matrix3x3 and translation Vector3.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x3AndTranslation(const class Matrix3x3& value, const Vector3& p);
 
+        //! Constructs from a Matrix3x4.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
 
         //! Sets the transform to apply (uniform) scale only, no rotation or translation.
@@ -122,7 +129,6 @@ namespace AZ
         const Quaternion& GetRotation() const;
         void SetRotation(const Quaternion& rotation);
 
-        Vector3 GetScale() const;
         float GetUniformScale() const;
         void SetUniformScale(const float scale);
 
@@ -163,7 +169,7 @@ namespace AZ
     private:
 
         Quaternion m_rotation;
-        Vector3 m_scale;
+        float m_scale;
         Vector3 m_translation;
     };
 

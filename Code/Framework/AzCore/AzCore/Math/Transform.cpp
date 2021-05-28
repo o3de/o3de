@@ -277,7 +277,7 @@ namespace AZ
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
-                Constructor<const Vector3&, const Quaternion&, const Vector3&>()->
+                Constructor<const Vector3&, const Quaternion&, float>()->
                 Method("GetBasis", &Transform::GetBasis)->
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
@@ -310,7 +310,6 @@ namespace AZ
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("GetRotation", &Transform::GetRotation)->
                 Method<void (Transform::*)(const Quaternion&)>("SetRotation", &Transform::SetRotation)->
-                Method("GetScale", &Transform::GetScale)->
                 Method("GetUniformScale", &Transform::GetUniformScale)->
                 Method("SetUniformScale", &Transform::SetUniformScale)->
                 Method("ExtractUniformScale", &Transform::ExtractUniformScale)->
@@ -343,7 +342,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = Vector3::CreateZero();
         return result;
@@ -353,7 +352,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = p;
         return result;
@@ -363,7 +362,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x4 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x4(tmp);
         result.m_translation = value.GetTranslation();
         return result;
