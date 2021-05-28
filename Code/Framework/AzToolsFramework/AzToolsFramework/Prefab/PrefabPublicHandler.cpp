@@ -167,13 +167,6 @@ namespace AzToolsFramework
                     }
                 }
 
-                // Update the template of the instance since the entities are modified since the template creation.
-                Prefab::PrefabDom serializedInstance;
-                if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceToCreate->get(), serializedInstance))
-                {
-                    m_prefabSystemComponentInterface->UpdatePrefabTemplate(instanceToCreate->get().GetTemplateId(), serializedInstance);
-                }
-
                 instanceToCreate->get().GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
                     AZ_Assert(nestedInstance, "Invalid nested instance found in the new prefab created.");
 
@@ -234,6 +227,19 @@ namespace AzToolsFramework
                         linkUpdate.Redo();
                     }
                 });
+
+                // Reset the transform of the container entity so that the new values aren't saved in the new prefab's dom.
+                // The new values were saved in the link, so propagation will apply them correctly.
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTranslation, AZ::Vector3::CreateZero());
+                AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, AZ::Quaternion::CreateZero());
+
+                // Update the template of the instance since the entities are modified since the template creation.
+                Prefab::PrefabDom serializedInstance;
+                if (Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(instanceToCreate->get(), serializedInstance))
+                {
+                    m_prefabSystemComponentInterface->UpdatePrefabTemplate(instanceToCreate->get().GetTemplateId(), serializedInstance);
+                }
                 
                 // Create a link between the templates of the newly created instance and the instance it's being parented under.
                 CreateLink(
@@ -241,7 +247,7 @@ namespace AzToolsFramework
                     AZStd::move(patch));
 
                 // This clears any entities marked as dirty due to reparenting of entities during the process of creating a prefab.
-                // We are doing this so that the changes in those enities are not queued up twice for propagation.
+                // We are doing this so that the changes in those entities are not queued up twice for propagation.
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
                 
