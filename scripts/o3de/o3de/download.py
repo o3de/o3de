@@ -237,5 +237,4 @@ def main():
     sys.exit(ret)
 
 
-if __name__ == "__main__":
-    main()
+# Do not allow running the download.py script as a standalone script until it is reviewed by app-sec
