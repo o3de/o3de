@@ -109,6 +109,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Gem::ScriptCanvasTesting.Editor.Static
+                Gem::ScriptCanvas.Editor
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
             Gem::ScriptCanvas.Editor
