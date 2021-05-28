@@ -196,8 +196,36 @@ namespace AZ
 
         void RayTracingPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
+            RPI::Scene* scene = m_pipeline->GetScene();
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            AZ_Assert(rayTracingFeatureProcessor, "RayTracingPass requires the RayTracingFeatureProcessor");
+
             RPI::RenderPass::SetupFrameGraphDependencies(frameGraph);
             frameGraph.SetEstimatedItemCount(1);
+
+            // TLAS
+            {
+                const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
+                if (rayTracingTlasBuffer)
+                {
+                    AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
+                    if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId) == false)
+                    {
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
+                    }
+
+                    uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
+                    RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tlasBufferByteCount);
+
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = tlasAttachmentId;
+                    desc.m_bufferViewDescriptor = tlasBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
+                }
+            }
         }
 
         void RayTracingPass::CompileResources(const RHI::FrameGraphCompileContext& context)
