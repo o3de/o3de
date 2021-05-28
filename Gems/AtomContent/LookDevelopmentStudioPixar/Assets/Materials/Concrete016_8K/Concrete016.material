@@ -31,7 +31,8 @@
             "algorithm": "ContactRefinement",
             "factor": 0.019999999552965165,
             "quality": "Ultra",
-            "textureMap": "Materials/Concrete016_8K/Concrete016_8K_Displacement.png"
+            "textureMap": "Materials/Concrete016_8K/Concrete016_8K_Displacement.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Materials/Concrete016_8K/Concrete016_8K_Roughness.png"

@@ -14,8 +14,6 @@
 #include <Source/Material/UseTextureFunctor.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctor.h>
 #include <Source/Material/Transform2DFunctor.h>
-#include <Source/Material/ShaderEnableFunctor.h>
-#include <Source/Material/PropertyVisibilityFunctor.h>
 #include <Source/Material/DrawListFunctor.h>
 #include <Source/Material/ConvertEmissiveUnitFunctor.h>
 
@@ -114,7 +112,6 @@ namespace AZ
             ProjectedShadowFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             UseTextureFunctor::Reflect(context);
-            PropertyVisibilityFunctor::Reflect(context);
             DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);
             Transform2DFunctor::Reflect(context);
@@ -126,7 +123,6 @@ namespace AZ
             DisplayMapperPassData::Reflect(context);
             ConvertEmissiveUnitFunctor::Reflect(context);
             LookupTableAsset::Reflect(context);
-            ShaderEnableFunctor::Reflect(context);
             ReflectionProbeFeatureProcessor::Reflect(context);
             DecalTextureArrayFeatureProcessor::Reflect(context);
             SMAAFeatureProcessor::Reflect(context);
