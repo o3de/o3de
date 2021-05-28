@@ -1260,7 +1260,7 @@ namespace AZ
                 // So auto load is turned off if option "AutoLoad" key is bool that is false
                 if (valueName == "AutoLoad" && !value)
                 {
-                    // Strip off the AutoLoead entry from the path
+                    // Strip off the AutoLoad entry from the path
                     auto autoLoadKey = AZ::StringFunc::TokenizeLast(path, "/");
                     if (!autoLoadKey)
                     {
@@ -1330,7 +1330,7 @@ namespace AZ
                 {
                     auto CompareDynamicModuleDescriptor = [&dynamicLibraryPath](const DynamicModuleDescriptor& entry)
                     {
-                        return entry.m_dynamicLibraryPath.contains(dynamicLibraryPath);
+                        return AZ::IO::PathView(entry.m_dynamicLibraryPath).Stem() == AZ::IO::PathView(dynamicLibraryPath).Stem();
                     };
                     if (auto moduleIter = AZStd::find_if(gemModules.begin(), gemModules.end(), CompareDynamicModuleDescriptor);
                         moduleIter == gemModules.end())

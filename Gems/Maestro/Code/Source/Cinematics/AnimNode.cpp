@@ -280,6 +280,45 @@ static bool AnimNodeVersionConverter(
         rootElement.AddElement(serializeContext, "BaseClass1", azrtti_typeid<IAnimNode>());
     }
 
+    if (rootElement.GetVersion() < 4)
+    {
+        // remove vector scale tracks from transform anim nodes
+        AZStd::string name;
+        if (rootElement.FindSubElementAndGetData<AZStd::string>(AZ_CRC_CE("Name"), name) && name == "Transform")
+        {
+            auto tracksElement = rootElement.FindSubElement(AZ_CRC_CE("Tracks"));
+            if (tracksElement)
+            {
+                for (int trackIndex = tracksElement->GetNumSubElements() - 1; trackIndex >= 0; trackIndex--)
+                {
+                    auto trackElement = tracksElement->GetSubElement(trackIndex);
+                    bool isScale = false;
+
+                    // trackElement should be an intrusive_ptr with one child
+                    if (trackElement.GetNumSubElements() == 1)
+                    {
+                        auto ptrElement = trackElement.GetSubElement(0);
+                        auto paramTypeElement = ptrElement.FindSubElement(AZ_CRC_CE("ParamType"));
+                        if (paramTypeElement)
+                        {
+                            AZStd::string paramName;
+                            if (paramTypeElement->FindSubElementAndGetData<AZStd::string>(AZ_CRC_CE("Name"), paramName) && paramName == "Scale")
+                            {
+                                isScale = true;
+                            }
+                        }
+                    }
+
+                    if (isScale)
+                    {
+                        tracksElement->RemoveElement(trackIndex);
+                    }
+                }
+            }
+        }
+
+    }
+
     return true;
 }
 
@@ -288,7 +327,7 @@ void CAnimNode::Reflect(AZ::ReflectContext* context)
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
         serializeContext->Class<CAnimNode, IAnimNode>()
-            ->Version(3, &AnimNodeVersionConverter)
+            ->Version(4, &AnimNodeVersionConverter)
             ->Field("ID", &CAnimNode::m_id)
             ->Field("Name", &CAnimNode::m_name)
             ->Field("Flags", &CAnimNode::m_flags)

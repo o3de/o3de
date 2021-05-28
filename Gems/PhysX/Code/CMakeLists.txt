@@ -46,6 +46,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
+        PRIVATE
             Gem::LmbrCentral
 )
 
@@ -66,9 +67,14 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::PhysX.Static
+            Gem::LmbrCentral
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# use the PhysX module in clients and servers:
+ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
+ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -107,7 +113,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::CryCommon
-                Gem::LmbrCentral
+                Gem::LmbrCentral.Editor
                 Gem::PhysX.NumericalMethods
                 Gem::PhysX.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static
@@ -136,6 +142,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::LmbrCentral.Editor
     )
 
+    # use the PhysX.Editor module in dev tools:
+    ly_create_alias(NAME PhysX.Builders NAMESPACE Gem TARGETS Gem::PhysX.Editor)
+    ly_create_alias(NAME PhysX.Tools    NAMESPACE Gem TARGETS Gem::PhysX.Editor)
+
 endif()
 
 ################################################################################
@@ -157,6 +167,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTestShared
                 AZ::AzTest
                 Gem::PhysX.Static
+                Gem::LmbrCentral
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )

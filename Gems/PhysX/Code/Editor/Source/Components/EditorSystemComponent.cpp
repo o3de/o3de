@@ -30,40 +30,45 @@
 
 namespace PhysX
 {
-    static bool CreateSurfaceTypeMaterialLibrary(const AZStd::string & targetFilePath)
+    constexpr const char* DefaultAssetFilename = "SurfaceTypeMaterialLibrary";
+
+    static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> CreateMaterialLibrary(const AZStd::string& fullTargetFilePath, const AZStd::string& relativePath)
     {
-        auto assetType = AZ::AzTypeInfo<Physics::MaterialLibraryAsset>::Uuid();
-
-        // Create File
-        AZ::Data::Asset<AZ::Data::AssetData> newAsset = AZ::Data::AssetManager::Instance().CreateAsset(AZ::Uuid::CreateRandom(), assetType, AZ::Data::AssetLoadBehavior::Default);
-
-        AZ::IO::FileIOStream fileStream(targetFilePath.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream fileStream(fullTargetFilePath.c_str(), AZ::IO::OpenMode::ModeWrite);
         if (fileStream.IsOpen())
         {
-            Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData());
-            if (materialLibraryAsset)
+            const auto& assetType = AZ::AzTypeInfo<Physics::MaterialLibraryAsset>::Uuid();
+            AZ::Data::AssetId assetId;
+
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, relativePath.c_str(), assetType, true);
+
+            AZ::Data::Asset<AZ::Data::AssetData> newAsset =
+                AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
+
+            if (Physics::MaterialLibraryAsset* materialLibraryAsset = azrtti_cast<Physics::MaterialLibraryAsset*>(newAsset.GetData()))
             {
                 // check it out in the source control system
                 AzToolsFramework::SourceControlCommandBus::Broadcast(
-                    &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, targetFilePath.c_str(), true,
+                    &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit, fullTargetFilePath.c_str(), true,
                     [](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& /*info*/) {});
 
                 // Save the material library asset into a file
-                auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(assetType));
+                auto assetHandler = AZ::Data::AssetManager::Instance().GetHandler(assetType);
                 if (assetHandler->SaveAssetData(newAsset, &fileStream))
                 {
-                    return true;
+                    return newAsset;
                 }
                 else
                 {
                     AZ_Error("PhysX", false,
                         "CreateSurfaceTypeMaterialLibrary: Unable to save Surface Types Material Library Asset to %s",
-                        targetFilePath.c_str());
+                        fullTargetFilePath.c_str());
                 }
             }
         }
 
-        return false;
+        return AZStd::nullopt;
     }
 
     void EditorSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -84,11 +89,26 @@ namespace PhysX
     {
         Physics::EditorWorldBus::Handler::BusConnect();
 
+        m_onMaterialLibraryLoadErrorEventHandler = AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler(
+            [this]([[maybe_unused]] AzPhysics::SystemEvents::MaterialLibraryLoadErrorType error)
+            {
+                // Attempt to set/create the default material library if there was an error
+                if (auto* physxSystem = GetPhysXSystem())
+                {
+                    if (auto retrievedMaterialLibrary = RetrieveDefaultMaterialLibrary())
+                    {
+                        physxSystem->UpdateMaterialLibrary(retrievedMaterialLibrary.value());
+                    }
+                }
+            }
+        );
+
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             AzPhysics::SceneConfiguration editorWorldConfiguration = physicsSystem->GetDefaultSceneConfiguration();
             editorWorldConfiguration.m_sceneName = AzPhysics::EditorPhysicsSceneName;
             m_editorWorldSceneHandle = physicsSystem->AddScene(editorWorldConfiguration);
+            physicsSystem->RegisterOnMaterialLibraryLoadErrorEventHandler(m_onMaterialLibraryLoadErrorEventHandler);
         }
 
         PhysX::RegisterConfigStringLineEditHandler(); // Register custom unique string line edit control
@@ -109,6 +129,8 @@ namespace PhysX
             physicsSystem->RemoveScene(m_editorWorldSceneHandle);
         }
         m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+
+        m_onMaterialLibraryLoadErrorEventHandler.Disconnect();
     }
 
     AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const
@@ -148,7 +170,7 @@ namespace PhysX
         PhysX::Editor::EditorWindow::RegisterViewClass();
     }
 
-    AZ::Data::AssetId EditorSystemComponent::GenerateSurfaceTypesLibrary()
+    AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> EditorSystemComponent::RetrieveDefaultMaterialLibrary()
     {
         AZ::Data::AssetId resultAssetId;
 
@@ -159,8 +181,6 @@ namespace PhysX
 
         if (assetTypeExtensions.size() == 1)
         {
-            const char* DefaultAssetFilename = "SurfaceTypeMaterialLibrary";
-
             // Constructing the path to the library asset
             const AZStd::string& assetExtension = assetTypeExtensions[0];
 
@@ -173,36 +193,39 @@ namespace PhysX
 
             if (!resultAssetId.IsValid())
             {
+                // No file for the default material library, create it
                 const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
-
                 AZStd::string fullPath;
                 AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilename, assetExtension.c_str(), fullPath);
 
-                if (CreateSurfaceTypeMaterialLibrary(fullPath))
+                if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
                 {
-                    // Find out the asset ID for the material library we've just created
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                        resultAssetId, &AZ::Data::AssetCatalogRequests::GetAssetIdByPath,
-                        relativePath.c_str(),
-                        azrtti_typeid<Physics::MaterialLibraryAsset>(), true);
+                    return materialLibraryOpt;
                 }
                 else
                 {
                     AZ_Warning("PhysX", false,
-                        "GenerateSurfaceTypesLibrary: Failed to create material library at %s. "
+                        "CreateMaterialLibrary: Failed to create material library at %s. "
                         "Please check if the file is writable", fullPath.c_str());
                 }
+            }
+            else
+            {
+                AZ::Data::Asset<AZ::Data::AssetData> existingMaterialLibrary =
+                    AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(resultAssetId, AZ::Data::AssetLoadBehavior::NoLoad);
+
+                return existingMaterialLibrary;
             }
         }
         else
         {
             AZ_Warning("PhysX", false, 
-                "GenerateSurfaceTypesLibrary: Number of extensions for the physics material library asset is %u"
+                "RetrieveDefaultMaterialLibrary: Number of extensions for the physics material library asset is %u"
                 " but should be 1. Please check if the asset registered itself with the asset system correctly",
                 assetTypeExtensions.size())
         }
 
-        return resultAssetId;
+        return AZStd::nullopt;
     }
 }
 

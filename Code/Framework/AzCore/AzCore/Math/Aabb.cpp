@@ -227,7 +227,7 @@ namespace AZ
             // the min and max of each part and sum them to get the min and max co-ordinate of the transformed box. For a given new axis,
             // the coefficients for what proportion of each original axis is rotated onto that new axis are the same as the components we
             // would get by performing the inverse rotation on the new axis, so we need to take the conjugate to get the inverse rotation.
-            axisCoeffs = transform.GetScale() * (transform.GetRotation().GetConjugate().TransformVector(axis));
+            axisCoeffs = transform.GetUniformScale() * (transform.GetRotation().GetConjugate().TransformVector(axis));
             a = axisCoeffs * m_min;
             b = axisCoeffs * m_max;
 

@@ -86,6 +86,10 @@ ly_add_target(
             Gem::WhiteBox.Static
 )
 
+# use the above WhiteBox module in runtimes:
+ly_create_alias(NAME WhiteBox.Clients  NAMESPACE Gem TARGETS Gem::WhiteBox)
+ly_create_alias(NAME WhiteBox.Servers  NAMESPACE Gem TARGETS Gem::WhiteBox)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME WhiteBox.Editor.Static STATIC
@@ -129,6 +133,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::WhiteBox.Editor.Static
     )
+
+    # use the above WhiteBox.Editor module in dev tools:
+    ly_create_alias(NAME WhiteBox.Tools    NAMESPACE Gem TARGETS Gem::WhiteBox.Editor)
+    ly_create_alias(NAME WhiteBox.Builders NAMESPACE Gem TARGETS Gem::WhiteBox.Editor)
+
+
 endif()
 
 ################################################################################

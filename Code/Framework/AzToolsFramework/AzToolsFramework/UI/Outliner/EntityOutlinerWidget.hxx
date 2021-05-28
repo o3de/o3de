@@ -166,6 +166,8 @@ namespace AzToolsFramework
         // to a given entity
         void QueueScrollToNewContent(const AZ::EntityId& entityId) override;
 
+        void SetDefaultTreeViewEditTriggers();
+
         void ScrollToNewContent();
         bool m_scrollToNewContentQueued;
         bool m_scrollToSelectedEntity;
