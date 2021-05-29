@@ -61,4 +61,4 @@ add_subdirectory(smoke)
 
 ## AWS ##
 # Enable when AWS Gems work on Linux and Android.
-add_subdirectory(AWS)
+# add_subdirectory(AWS)
