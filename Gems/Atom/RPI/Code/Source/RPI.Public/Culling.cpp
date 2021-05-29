@@ -480,8 +480,33 @@ namespace AZ
             MaskedOcclusionCulling* maskedOcclusionCulling = m_occlusionCullingPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
             if (maskedOcclusionCulling)
             {
+                // frustum cull and sort the occlusion planes by view space distance, front-to-back
+                using OccluderEntry = AZStd::pair<AZ::Transform, float>;
+                AZStd::vector<OccluderEntry> visibleOccluders;
                 for (const AZ::Transform& transform : m_occlusionCullingPlanes)
                 {
+                    Aabb occluderAabb = Aabb::CreateCenterHalfExtents(transform.GetTranslation(), AZ::Vector3(AZ::Vector2(transform.GetUniformScale() / 2.0f)));
+                    occluderAabb.SetMin(transform.TransformPoint(occluderAabb.GetMin()));
+                    occluderAabb.SetMax(transform.TransformPoint(occluderAabb.GetMax()));
+                    if (ShapeIntersection::Contains(frustum, occluderAabb))
+                    {
+                        // occluder is visible, compute view space distance and add to list
+                        float depth = (view.GetWorldToViewMatrix() * occluderAabb.GetMin()).GetZ();
+                        depth = AZStd::min(depth, (view.GetWorldToViewMatrix() * occluderAabb.GetMax()).GetZ());
+
+                        visibleOccluders.push_back(AZStd::make_pair(transform, depth));
+                    }
+                }
+
+                AZStd::sort(visibleOccluders.begin(), visibleOccluders.end(), [](const OccluderEntry& LHS, const OccluderEntry& RHS)
+                {
+                    return LHS.second < RHS.second;
+                });
+
+                for (const OccluderEntry& occluder : visibleOccluders)
+                {
+                    const AZ::Transform& transform = occluder.first;
+
                     // find the corners of the plane
                     static const Vector3 BL = Vector3(-0.5f, -0.5f, 0.0f);
                     static const Vector3 BR = Vector3(0.5f, -0.5f, 0.0f);
