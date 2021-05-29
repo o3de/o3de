@@ -76,23 +76,32 @@ namespace AZ
                             Edit::UIHandlers::Default, &AcesParameterOverrides::m_cinemaLimitsBlack,
                             "Cinema Limit (black)",
                             "Reference black luminance value")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.02f)
+                        ->Attribute(AZ::Edit::Attributes::Max, &AcesParameterOverrides::m_cinemaLimitsWhite)
                         ->DataElement(
                             Edit::UIHandlers::Default, &AcesParameterOverrides::m_cinemaLimitsWhite,
                             "Cinema Limit (white)",
                             "Reference white luminance value")
+                        ->Attribute(AZ::Edit::Attributes::Min, &AcesParameterOverrides::m_cinemaLimitsBlack)
+                        ->Attribute(AZ::Edit::Attributes::Max, 4000)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(
                             Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_minPoint, "Min Point (luminance)",
                             "Linear extension below this")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.002f)
+                        ->Attribute(AZ::Edit::Attributes::Max, &AcesParameterOverrides::m_midPoint)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(
-                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_midPoint, "Mid Point (luminance)",
-                            "Middle gray")
+                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_midPoint, "Mid Point (luminance)", "Middle gray")
+                        ->Attribute(AZ::Edit::Attributes::Min, &AcesParameterOverrides::m_minPoint)
+                        ->Attribute(AZ::Edit::Attributes::Max, &AcesParameterOverrides::m_maxPoint)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(
                             Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_maxPoint, "Max Point (luminance)",
                             "Linear extension above this")
+                        ->Attribute(AZ::Edit::Attributes::Min, &AcesParameterOverrides::m_midPoint)
+                        ->Attribute(AZ::Edit::Attributes::Max, 4000)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         ->DataElement(

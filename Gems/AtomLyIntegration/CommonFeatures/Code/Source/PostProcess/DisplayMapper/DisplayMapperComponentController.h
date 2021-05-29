@@ -12,10 +12,12 @@
 
 #pragma once
 
+
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentConfig.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentBus.h>
 
 #include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
 #include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
@@ -24,7 +26,10 @@ namespace AZ
 {
     namespace Render
     {
+        struct AcesParameterOverrides;
+
         class DisplayMapperComponentController final
+            : DisplayMapperComponentRequestBus::Handler
         {
         public:
             friend class EditorDisplayMapperComponent;
@@ -42,6 +47,11 @@ namespace AZ
             void Deactivate();
             void SetConfiguration(const DisplayMapperComponentConfig& config);
             const DisplayMapperComponentConfig& GetConfiguration() const;
+
+            //! DisplayMapperComponentRequestBus::Handler overrides...
+            void LoadPreset(OutputDeviceTransformType preset) override;
+            void SetDisplayMapperOperationType(DisplayMapperOperationType displayMapperOperationType) override;
+            void SetAcesParameterOverrides(const AcesParameterOverrides& parameterOverrides) override;
 
         private:
             AZ_DISABLE_COPY(DisplayMapperComponentController);

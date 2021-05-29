@@ -76,6 +76,39 @@ namespace AZ
             return m_configuration;
         }
 
+        void DisplayMapperComponentController::LoadPreset(OutputDeviceTransformType preset)
+        {
+            AcesParameterOverrides propertyOverrides;
+            propertyOverrides.m_preset = preset;
+            propertyOverrides.m_overrideDefaults = true;
+            propertyOverrides.LoadPreset();
+            SetAcesParameterOverrides(propertyOverrides);
+        }
+
+        void DisplayMapperComponentController::SetDisplayMapperOperationType(DisplayMapperOperationType displayMapperOperationType)
+        {
+            if (m_configuration.m_displayMapperOperation != displayMapperOperationType)
+            {
+                m_configuration.m_displayMapperOperation = displayMapperOperationType;
+                OnConfigChanged();
+                DisplayMapperComponentNotificationBus::Broadcast(
+                    &DisplayMapperComponentNotificationBus::Handler::OntDisplayMapperOperationTypeUpdated,
+                    m_configuration.m_displayMapperOperation);
+            }
+        }
+
+        void DisplayMapperComponentController::SetAcesParameterOverrides(const AcesParameterOverrides& parameterOverrides)
+        {
+            m_configuration.m_acesParameterOverrides = parameterOverrides;
+            if (m_configuration.m_displayMapperOperation == DisplayMapperOperationType::Aces)
+            {
+                OnConfigChanged();
+            }
+            DisplayMapperComponentNotificationBus::Broadcast(
+                &DisplayMapperComponentNotificationBus::Handler::OnAcesParameterOverridesUpdated,
+                m_configuration.m_acesParameterOverrides);
+        }
+
         void DisplayMapperComponentController::OnConfigChanged()
         {
             // Register the configuration with the  AcesDisplayMapperFeatureProcessor for this scene.
