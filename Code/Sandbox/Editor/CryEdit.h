@@ -229,6 +229,8 @@ public:
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
+    void OnOpenProjectManagerSettings();
+    void OnOpenProjectManagerNew();
     void OnOpenProjectManager();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
@@ -367,6 +369,7 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
+    void OpenProjectManager(const AZStd::string& screen);
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();

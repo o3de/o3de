@@ -480,7 +480,8 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
 
     // Project Manager 
-    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManager)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
 }
 
@@ -2859,14 +2860,33 @@ void CCryEditApp::OnPreferences()
     */
 }
 
+void CCryEditApp::OnOpenProjectManagerSettings()
+{
+    OpenProjectManager("UpdateProject");
+}
+
+void CCryEditApp::OnOpenProjectManagerNew()
+{
+    OpenProjectManager("CreateProject");
+}
+
 void CCryEditApp::OnOpenProjectManager()
 {
-    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager();
+    OpenProjectManager("Projects");
+}
+
+void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
+{
+    // provide the current project path for in case we want to update the project
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project_path %s", screen.c_str(), projectPath.c_str());
+    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to find or start the o3de project manager"));
     }
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUndo()

@@ -421,16 +421,14 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     fileMenu.AddSeparator();
 
     // Project Settings
-    auto projectSettingMenu = fileMenu.AddMenu(tr("Project Settings"));
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS);
 
-    // Project Settings Tool
+    // Platform Settings - Project Settings Tool
     // Shortcut must be set while adding the action otherwise it doesn't work
-    projectSettingMenu.Get()->addAction(
+    fileMenu.Get()->addAction(
         tr(LyViewPane::ProjectSettingsTool),
         []() { QtViewPaneManager::instance()->OpenPane(LyViewPane::ProjectSettingsTool); },
         tr("Ctrl+Shift+P"));
-
-    projectSettingMenu.AddSeparator();
 
     fileMenu.AddSeparator();
     fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_NEW);
