@@ -281,30 +281,51 @@ namespace AzToolsFramework
             return !nestedTemplateReference->get().IsLoadedWithErrors();
         }
 
-        bool PrefabLoader::SanitizeLoadedTemplate(Template& loadedTemplate)
+        bool PrefabLoader::SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom)
         {
-            Instance loadedPrefabInstance;
-            PrefabDomReference loadedTemplateDom = loadedTemplate.GetPrefabDom();
+            if (!loadedTemplateDom)
+            {
+                return false;
+            }
 
+            Instance loadedPrefabInstance;
             if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
             {
                 return false;
             }
 
-            PrefabDom storedPrefabDom;
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom,
+                PrefabDomUtils::StoreInstanceFlags::DoNotStoreDefaultValues))
             {
                 return false;
             }
 
-            if (AZ::JsonSerialization::Compare(loadedTemplateDom->get(), storedPrefabDom) !=
-                AZ::JsonSerializerCompareResult::Equal)
-            {
-                loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
-                loadedTemplate.MarkAsDirty(true);
-            }
+            loadedTemplateDom->get().Swap(storedPrefabDom);
 
             return true;
+        }
+
+        bool PrefabLoader::SanitizeSavingTemplate(PrefabDomReference savingTemplateDom)
+        {
+            if (!savingTemplateDom)
+            {
+                return false;
+            }
+
+            Instance savingPrefabInstance;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(savingPrefabInstance, savingTemplateDom->get()))
+            {
+                return false;
+            }
+
+            PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom))
+            {
+                return false;
+            }
+
+            savingTemplateDom->get().Swap(storedPrefabDom);
         }
 
         bool PrefabLoader::SaveTemplate(TemplateId templateId)
