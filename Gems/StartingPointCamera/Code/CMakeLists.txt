@@ -48,3 +48,9 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::CameraFramework
 )
+
+# the above module is for use in all kinds of applications
+ly_create_alias(NAME StartingPointCamera.Servers  NAMESPACE Gem TARGETS Gem::StartingPointCamera)
+ly_create_alias(NAME StartingPointCamera.Clients  NAMESPACE Gem TARGETS Gem::StartingPointCamera)
+ly_create_alias(NAME StartingPointCamera.Builders NAMESPACE Gem TARGETS Gem::StartingPointCamera)
+ly_create_alias(NAME StartingPointCamera.Tools    NAMESPACE Gem TARGETS Gem::StartingPointCamera)

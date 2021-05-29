@@ -14,6 +14,7 @@
 #include <AssetImporterPlugin.h>
 #include <AssetImporterWindow.h>
 #include <QtViewPaneManager.h>
+#include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <LyViewPaneNames.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -37,6 +38,10 @@ AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
     opt.showInMenu = false; // this view pane is used to display scene settings, but the user never opens it directly through the Tools menu
     opt.saveKeyName = "Scene Settings (PREVIEW)"; // user settings for this pane were originally saved with PREVIEW, so ensure that's how they are loaded as well, even after the PREVIEW is removed from the name
     AzToolsFramework::RegisterViewPane<AssetImporterWindow>(m_toolName.c_str(), LyViewPane::CategoryTools, opt);
+
+    AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::CreateAndAddEntityFromComponentTags,
+        AZStd::vector<AZ::Crc32>({ AZ::SceneAPI::Events::AssetImportRequest::GetAssetImportRequestComponentTag() }), "AssetImportersEntity");
 }
 
 void AssetImporterPlugin::Release()

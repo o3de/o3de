@@ -25,12 +25,11 @@ namespace AZ
             : public AzFramework::Components::ComponentAdapter<MeshComponentController, MeshComponentConfig>
         {
         public:
-
             using BaseClass = AzFramework::Components::ComponentAdapter<MeshComponentController, MeshComponentConfig>;
             AZ_COMPONENT(AZ::Render::MeshComponent, MeshComponentTypeId, BaseClass);
 
             MeshComponent() = default;
-            MeshComponent(const MeshComponentConfig& config);
+            explicit MeshComponent(const MeshComponentConfig& config);
 
             static void Reflect(AZ::ReflectContext* context);
         };

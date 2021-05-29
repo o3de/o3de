@@ -26,7 +26,6 @@
         },
         "parallax": {
             "algorithm": "POM",
-            "enable": true,
             "factor": 0.02500000037252903,
             "pdo": true,
             "quality": "Ultra",

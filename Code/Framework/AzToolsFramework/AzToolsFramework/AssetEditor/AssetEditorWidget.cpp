@@ -483,6 +483,8 @@ namespace AzToolsFramework
                         }
                     }
 
+                    m_dirty = false;
+
                     AddRecentPath(targetFilePath);
 
                     SetStatusText(Status::assetCreated);

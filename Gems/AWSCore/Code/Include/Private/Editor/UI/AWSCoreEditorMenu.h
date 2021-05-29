@@ -35,29 +35,23 @@ namespace AWSCore
         static constexpr const char AWSResourceMappingToolIsRunningText[] = "Resource Mapping Tool is running...";
         static constexpr const char AWSResourceMappingToolLogWarningText[] =
             "Failed to launch Resource Mapping Tool, please check <a href=\"file:///%s\">logs</a> for details.";
-        static constexpr const char AWSResourceMappingToolActionText[] = "AWS Resource Mapping Tool...";
-        static constexpr const char CredentialConfigurationActionText[] = "Credential Configuration";
-        static constexpr const char CredentialConfigurationUrl[] = "https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/credentials.html";
-        static constexpr const char NewToAWSActionText[] = "New to AWS?";
-        static constexpr const char NewToAWSUrl[] = "https://o3deorg.netlify.app/docs/user-guide/gems/reference/aws";
-        static constexpr const char AWSAndScriptCanvasActionText[] = "AWS && ScriptCanvas";
-        static constexpr const char AWSAndScriptCanvasUrl[] = "https://o3deorg.netlify.app/docs/user-guide/gems/reference/aws";
-        static constexpr const char AWSClientAuthActionText[] = "Client Auth";
-        static constexpr const char AWSMetricsActionText[] = "Metrics";
 
         AWSCoreEditorMenu(const QString& text);
         ~AWSCoreEditorMenu();
 
     private:
+        QAction* AddExternalLinkAction(const AZStd::string& name, const AZStd::string& url, const AZStd::string& icon = "");
+
         void InitializeResourceMappingToolAction();
         void InitializeAWSDocActions();
+        void InitializeAWSGlobalDocsSubMenu();
         void InitializeAWSFeatureGemActions();
 
         // AWSCoreEditorRequestBus interface implementation
         void SetAWSClientAuthEnabled() override;
         void SetAWSMetricsEnabled() override;
 
-        void SetAWSFeatureActionsEnabled(const AZStd::string actionText);
+        QMenu* SetAWSFeatureSubMenu(const AZStd::string& menuText);
 
         // To improve experience, use process watcher to keep track of ongoing tool process
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_resourceMappingToolWatcher;

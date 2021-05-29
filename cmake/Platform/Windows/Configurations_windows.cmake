@@ -106,7 +106,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
     endforeach()
 
     if(NOT version VERSION_EQUAL CMAKE_SYSTEM_VERSION)
-        message(STATUS "Selecting Windows SDK version ${version} to target Windows ${CMAKE_SYSTEM_VERSION}.")
+        message(STATUS "Using Windows SDK version ${version} to target Windows ${CMAKE_SYSTEM_VERSION}")
     endif()
 
     ly_set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION "${version}")
@@ -116,4 +116,3 @@ endif()
 if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION MATCHES "10.0")
     message(FATAL_ERROR "Unsupported version of Windows SDK ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}, specify \"-DCMAKE_SYSTEM_VERSION=10.0\" when invoking cmake")
 endif()
-message(STATUS "Using Windows target SDK ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")

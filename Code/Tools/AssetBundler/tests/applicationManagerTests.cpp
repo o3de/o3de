@@ -150,7 +150,7 @@ namespace AssetBundler
 
         AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(m_data->m_testEngineRoot.c_str(), m_data->m_testEngineRoot.c_str(), DummyProjectName);
         AzFramework::PlatformFlags hostPlatformFlag = AzFramework::PlatformHelper::GetPlatformFlag(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
-        AzFramework::PlatformFlags expectedFlags = AzFramework::PlatformFlags::Platform_ES3 | AzFramework::PlatformFlags::Platform_IOS | AzFramework::PlatformFlags::Platform_PROVO | hostPlatformFlag;
+        AzFramework::PlatformFlags expectedFlags = AzFramework::PlatformFlags::Platform_ANDROID | AzFramework::PlatformFlags::Platform_IOS | AzFramework::PlatformFlags::Platform_PROVO | hostPlatformFlag;
         ASSERT_EQ(platformFlags, expectedFlags);
     }
 
