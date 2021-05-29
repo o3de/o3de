@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/std/string/string.h>
 
 namespace AzFramework::ProjectManager
 {
@@ -30,7 +31,7 @@ namespace AzFramework::ProjectManager
 
     //! Attempt to Launch the project manager, assuming the o3de executable exists in same folder as
     //! current executable. Requires the o3de cli and python.
+    //! @param commandLineArgs additional command line arguments to provide to the project manager
     //! @return true on success, false if failed to find or launch the executable
-    bool LaunchProjectManager();
-
+    bool LaunchProjectManager(const AZStd::string& commandLineArgs = "");
 } // AzFramework::ProjectManager
