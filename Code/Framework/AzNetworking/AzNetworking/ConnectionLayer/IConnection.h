@@ -44,6 +44,12 @@ namespace AzNetworking
 
     //! @class IConnection
     //! @brief interface class for network connections.
+    //!
+    //! IConnection provides a pure-virtual interface for all network connection types.  The two child classes are TcpConnection
+    //! and UdpConnection, though the pure-virtual interface operates largely the same for both. IConnections provide access to
+    //! a ConnectionMetrics object which provides a variety of metrics on the connection itself such as data rate, RTT and
+    //! packet statistics. 
+
     class IConnection
     {
     public:
