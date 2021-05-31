@@ -428,20 +428,52 @@ namespace AZ
                     return MaskedOcclusionCulling::CullingResult::VISIBLE;
                 }
 
-                // convert the bounding box of the visibility entry to NDC
-                AZ::Vector4 clipSpaceMin = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(visibleEntry->m_boundingVolume.GetMin());
-                float depth = clipSpaceMin.GetW();
-                AZ::Vector4 ndcMin = clipSpaceMin / clipSpaceMin.GetW();
+                if (visibleEntry->m_boundingVolume.Contains(m_jobData->m_view->GetCameraTransform().GetTranslation()))
+                {
+                    // camera is inside bounding volume
+                    return MaskedOcclusionCulling::CullingResult::VISIBLE;
+                }
 
-                AZ::Vector4 clipSpaceMax = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(visibleEntry->m_boundingVolume.GetMax());
-                depth = AZStd::min(depth, clipSpaceMax.GetW());
-                AZ::Vector4 ndcMax = clipSpaceMax / clipSpaceMax.GetW();
+                const Vector3& minBound = visibleEntry->m_boundingVolume.GetMin();
+                const Vector3& maxBound = visibleEntry->m_boundingVolume.GetMax();
 
-                Vector2 rectMin(AZStd::min(ndcMin.GetX(), ndcMax.GetX()), AZStd::min(ndcMin.GetY(), ndcMax.GetY()));
-                Vector2 rectMax(AZStd::max(ndcMin.GetX(), ndcMax.GetX()), AZStd::max(ndcMin.GetY(), ndcMax.GetY()));
+                // compute bounding volume corners
+                Vector4 corners[8];
+                corners[0] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(minBound.GetX(), minBound.GetY(), minBound.GetZ(), 1.0f);
+                corners[1] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(minBound.GetX(), minBound.GetY(), maxBound.GetZ(), 1.0f);
+                corners[2] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(maxBound.GetX(), minBound.GetY(), maxBound.GetZ(), 1.0f);
+                corners[3] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(maxBound.GetX(), minBound.GetY(), minBound.GetZ(), 1.0f);
+                corners[4] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(minBound.GetX(), maxBound.GetY(), minBound.GetZ(), 1.0f);
+                corners[5] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(minBound.GetX(), maxBound.GetY(), maxBound.GetZ(), 1.0f);
+                corners[6] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(maxBound.GetX(), maxBound.GetY(), maxBound.GetZ(), 1.0f);
+                corners[7] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(maxBound.GetX(), maxBound.GetY(), minBound.GetZ(), 1.0f);
 
+                // find min clip-space depth and NDC min/max
+                float ndcMinX = FLT_MAX;
+                float ndcMinY = FLT_MAX;
+                float ndcMaxX = -FLT_MAX;
+                float ndcMaxY = -FLT_MAX;
+                float minDepth = FLT_MAX;
+                for (uint32_t index = 0; index < 8; ++index)
+                {
+                    minDepth = AZStd::min(minDepth, corners[index].GetW());
+
+                    // convert to NDC
+                    corners[index] /= corners[index].GetW();
+
+                    ndcMinX = AZStd::min(ndcMinX, corners[index].GetX());
+                    ndcMinY = AZStd::min(ndcMinY, corners[index].GetY());
+                    ndcMaxX = AZStd::max(ndcMaxX, corners[index].GetX());
+                    ndcMaxY = AZStd::max(ndcMaxY, corners[index].GetY());
+                }
+
+                if (minDepth < 0.00000001f)
+                {
+                    return MaskedOcclusionCulling::VISIBLE;
+                }
+               
                 // test against the occlusion buffer, which contains only the manually placed occlusion planes
-                return m_jobData->m_maskedOcclusionCulling->TestRect(rectMin.GetX(), rectMin.GetY(), rectMax.GetX(), rectMax.GetY(), depth);
+                return m_jobData->m_maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth);
             }
         };
 
@@ -480,15 +512,22 @@ namespace AZ
             MaskedOcclusionCulling* maskedOcclusionCulling = m_occlusionCullingPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
             if (maskedOcclusionCulling)
             {
-                // frustum cull and sort the occlusion planes by view space distance, front-to-back
+                // frustum cull occlusion planes
                 using OccluderEntry = AZStd::pair<AZ::Transform, float>;
                 AZStd::vector<OccluderEntry> visibleOccluders;
                 for (const AZ::Transform& transform : m_occlusionCullingPlanes)
                 {
-                    Aabb occluderAabb = Aabb::CreateCenterHalfExtents(transform.GetTranslation(), AZ::Vector3(AZ::Vector2(transform.GetUniformScale() / 2.0f)));
-                    occluderAabb.SetMin(transform.TransformPoint(occluderAabb.GetMin()));
-                    occluderAabb.SetMax(transform.TransformPoint(occluderAabb.GetMax()));
-                    if (ShapeIntersection::Contains(frustum, occluderAabb))
+                    static const AZ::Vector3 BL(-0.5f, -0.5f, 0.0f);
+                    static const AZ::Vector3 TR(0.5f, 0.5f, 0.0f);
+
+                    AZ::Vector3 P1 = transform.TransformPoint(BL);
+                    AZ::Vector3 P2 = transform.TransformPoint(TR);
+
+                    AZ::Vector3 aabbMin = P1.GetMin(P2);
+                    AZ::Vector3 aabbMax = P1.GetMax(P2);
+
+                    AZ::Aabb occluderAabb = Aabb::CreateFromMinMax(aabbMin, aabbMax);
+                    if (ShapeIntersection::Overlaps(frustum, occluderAabb))
                     {
                         // occluder is visible, compute view space distance and add to list
                         float depth = (view.GetWorldToViewMatrix() * occluderAabb.GetMin()).GetZ();
@@ -498,9 +537,10 @@ namespace AZ
                     }
                 }
 
+                // sort the occlusion planes by view space distance, front-to-back
                 AZStd::sort(visibleOccluders.begin(), visibleOccluders.end(), [](const OccluderEntry& LHS, const OccluderEntry& RHS)
                 {
-                    return LHS.second < RHS.second;
+                    return LHS.second > RHS.second;
                 });
 
                 for (const OccluderEntry& occluder : visibleOccluders)

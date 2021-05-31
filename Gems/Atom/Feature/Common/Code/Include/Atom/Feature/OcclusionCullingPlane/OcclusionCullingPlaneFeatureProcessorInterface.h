@@ -36,6 +36,8 @@ namespace AZ
             virtual bool IsValidOcclusionCullingPlaneHandle(const OcclusionCullingPlaneHandle& occlusionCullingPlane) const = 0;
             virtual void SetTransform(const OcclusionCullingPlaneHandle& occlusionCullingPlane, const AZ::Transform& transform) = 0;
             virtual void SetEnabled(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool enabled) = 0;
+            virtual void ShowVisualization(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool showVisualization) = 0;
+            virtual void SetTransparentVisualization(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool transparentVisualization) = 0;
         };
     } // namespace Render
 } // namespace AZ

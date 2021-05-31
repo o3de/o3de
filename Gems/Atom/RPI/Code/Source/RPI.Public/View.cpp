@@ -28,6 +28,10 @@ namespace AZ
 {
     namespace RPI
     {
+        // fixed-size software occlusion culling buffer
+        const uint32_t MaskedSoftwareOcclusionCullingWidth = 1920;
+        const uint32_t MaskedSoftwareOcclusionCullingHeight = 1080;
+
         ViewPtr View::CreateView(const AZ::Name& name, UsageFlags usage)
         {
             View* view = aznew View(name, usage);
@@ -54,7 +58,7 @@ namespace AZ
             }
 
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();
-            m_maskedOcclusionCulling->SetResolution(1920, 1080);
+            m_maskedOcclusionCulling->SetResolution(MaskedSoftwareOcclusionCullingWidth, MaskedSoftwareOcclusionCullingHeight);
         }
 
         View::~View()

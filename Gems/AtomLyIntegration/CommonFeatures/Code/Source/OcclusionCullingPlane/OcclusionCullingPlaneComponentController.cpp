@@ -38,7 +38,9 @@ namespace AZ
             {
                 serializeContext->Class<OcclusionCullingPlaneComponentConfig>()
                     ->Version(0)
-                ;
+                    ->Field("ShowVisualization", &OcclusionCullingPlaneComponentConfig::m_showVisualization)
+                    ->Field("TransparentVisualization", &OcclusionCullingPlaneComponentConfig::m_transparentVisualization)
+                    ;
             }
         }
 
@@ -98,6 +100,10 @@ namespace AZ
             // add this occlusion plane to the feature processor
             const AZ::Transform& transform = m_transformInterface->GetWorldTM();
             m_handle = m_featureProcessor->AddOcclusionCullingPlane(transform);
+
+            // set visualization
+            m_featureProcessor->ShowVisualization(m_handle, m_configuration.m_showVisualization);
+            m_featureProcessor->SetTransparentVisualization(m_handle, m_configuration.m_transparentVisualization);
         }
 
         void OcclusionCullingPlaneComponentController::Deactivate()

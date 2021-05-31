@@ -32,6 +32,9 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(OcclusionCullingPlaneComponentConfig, SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
+            bool m_showVisualization = true;
+            bool m_transparentVisualization = false;
+
             OcclusionCullingPlaneComponentConfig() = default;
         };
 

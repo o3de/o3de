@@ -60,6 +60,7 @@ namespace AZ
         OcclusionCullingPlaneHandle OcclusionCullingPlaneFeatureProcessor::AddOcclusionCullingPlane(const AZ::Transform& transform)
         {
             AZStd::shared_ptr<OcclusionCullingPlane> occlusionCullingPlane = AZStd::make_shared<OcclusionCullingPlane>();
+            occlusionCullingPlane->Init(GetParentScene());
             occlusionCullingPlane->SetTransform(transform);
             m_occlusionCullingPlanes.push_back(occlusionCullingPlane);
             return occlusionCullingPlane;
@@ -89,6 +90,18 @@ namespace AZ
         {
             AZ_Assert(occlusionCullingPlane.get(), "Enable called with an invalid handle");
             occlusionCullingPlane->SetEnabled(enabled);
+        }
+
+        void OcclusionCullingPlaneFeatureProcessor::ShowVisualization(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool showVisualization)
+        {
+            AZ_Assert(occlusionCullingPlane.get(), "ShowVisualization called with an invalid handle");
+            occlusionCullingPlane->ShowVisualization(showVisualization);
+        }
+
+        void OcclusionCullingPlaneFeatureProcessor::SetTransparentVisualization(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool transparentVisualization)
+        {
+            AZ_Assert(occlusionCullingPlane.get(), "SetTransparentVisualization called with an invalid handle");
+            occlusionCullingPlane->SetTransparentVisualization(transparentVisualization);
         }
     } // namespace Render
 } // namespace AZ

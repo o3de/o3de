@@ -53,8 +53,12 @@ namespace AZ
 
                     editContext->Class<OcclusionCullingPlaneComponentConfig>(
                         "OcclusionCullingPlaneComponentConfig", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Settings")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &OcclusionCullingPlaneComponentConfig::m_showVisualization, "Show Visualization", "Show the occlusion culling plane visualization")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->DataElement(AZ::Edit::UIHandlers::CheckBox, &OcclusionCullingPlaneComponentConfig::m_transparentVisualization, "Transparent Visualization", "Sets the occlusion culling plane visualization as transparent")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ;
                 }
             }

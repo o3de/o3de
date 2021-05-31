@@ -13,29 +13,12 @@
 #pragma once
 
 #include <Atom/Feature/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessorInterface.h>
+#include <OcclusionCullingPlane/OcclusionCullingPlane.h>
 
 namespace AZ
 {
     namespace Render
     {
-        //! This class represents an OcclusionCullingPlane which is used to cull meshes that are inside the view frustum
-        class OcclusionCullingPlane final
-        {
-        public:
-            OcclusionCullingPlane() = default;
-            ~OcclusionCullingPlane() = default;
-
-            void SetTransform(const AZ::Transform& transform) { m_transform = transform; }
-            const AZ::Transform& GetTransform() const { return m_transform; }
-
-            void SetEnabled(bool enabled) { m_enabled = enabled; }
-            bool GetEnabled() const { return m_enabled; }
-
-        private:
-            AZ::Transform m_transform;
-            bool m_enabled = true;
-        };
-
         //! This class manages OcclusionCullingPlanes which are used to cull meshes that are inside the view frustum
         class OcclusionCullingPlaneFeatureProcessor final
             : public OcclusionCullingPlaneFeatureProcessorInterface
@@ -54,6 +37,8 @@ namespace AZ
             bool IsValidOcclusionCullingPlaneHandle(const OcclusionCullingPlaneHandle& occlusionCullingPlane) const override { return (occlusionCullingPlane.get() != nullptr); }
             void SetTransform(const OcclusionCullingPlaneHandle& occlusionCullingPlane, const AZ::Transform& transform) override;
             void SetEnabled(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool enable) override;
+            void ShowVisualization(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool showVisualization) override;
+            void SetTransparentVisualization(const OcclusionCullingPlaneHandle& occlusionCullingPlane, bool transparentVisualization) override;
 
             // FeatureProcessor overrides
             void Activate() override;
