@@ -2073,6 +2073,8 @@ void CCryEditApp::OnDocumentationAWSSupport()
 void CCryEditApp::OnDocumentationFeedback()
 {
     FeedbackDialog dialog;
+    dialog.show();
+    dialog.adjustSize();
     dialog.exec();
 }
 
