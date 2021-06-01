@@ -27,6 +27,7 @@
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
+#include <AtomBridge/PerViewportDynamicDrawInterface.h>
 
 namespace AZ
 {
@@ -90,13 +91,6 @@ namespace AZ
         AzFramework::FontDrawInterface* GetFontDrawInterface(AzFramework::FontId fontId) const override;
         AzFramework::FontDrawInterface* GetDefaultFontDrawInterface() const override;
 
-        void SceneAboutToBeRemoved(AzFramework::Scene& scene);
-
-
-        // Atom DynamicDraw interface management
-        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetOrCreateDynamicDrawForScene(AZ::RPI::Scene* scene);
-
-
     public:
         void UnregisterFont(const char* fontName);
 
@@ -107,8 +101,6 @@ namespace AZ
 
         using FontFamilyMap = AZStd::unordered_map<AZStd::string, AZStd::weak_ptr<FontFamily>>;
         using FontFamilyReverseLookupMap = AZStd::unordered_map<FontFamily*, FontFamilyMap::iterator>;
-
-        using SceneToDynamicDrawMap = AZStd::unordered_map<AZ::RPI::Scene*, AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext>>;
 
     private:
         //! Convenience method for loading fonts
@@ -145,9 +137,6 @@ namespace AZ
 
         int r_persistFontFamilies = 1; //!< Persist fonts for application lifetime to prevent unnecessary work; enabled by default.
         AZStd::vector<FontFamilyPtr> m_persistedFontFamilies; //!< Stores persisted fonts (if "persist font families" is enabled)
-
-        SceneToDynamicDrawMap m_sceneToDynamicDrawMap;
-        AZStd::shared_mutex m_sceneToDynamicDrawMutex;
     };
 }
 #endif

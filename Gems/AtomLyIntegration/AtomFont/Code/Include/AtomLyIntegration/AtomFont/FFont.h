@@ -42,10 +42,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
-
-#include <Atom/Bootstrap/DefaultWindowBus.h>
-#include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 struct ISystem;
 
@@ -68,7 +66,6 @@ namespace AZ
         : public IFFont
         , public AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>
         , public AzFramework::FontDrawInterface
-        , private AZ::Render::Bootstrap::NotificationBus::Handler
     {
         using ref_count = AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>;
         friend FontDeleter;
@@ -230,7 +227,7 @@ namespace AZ
 
     private:
         virtual ~FFont();
-        bool InitFont(AZ::RPI::Scene* renderScene);
+        bool InitFont(AzFramework::ViewportId viewportId);
         bool InitTexture();
         bool InitCache();
 
@@ -280,8 +277,6 @@ namespace AZ
         bool UpdateTexture();
 
         void ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) const;
-
-        void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
 
         RPI::WindowContextSharedPtr GetDefaultWindowContext() const;
         RPI::ViewportContextPtr GetDefaultViewportContext() const;
@@ -356,6 +351,7 @@ namespace AZ
         if (font && font->m_atomFont)
         {
             font->m_atomFont->UnregisterFont(font->m_name);
+            font->m_atomFont = nullptr;
         }
 
         delete font;
