@@ -23,6 +23,25 @@ if [[ -n "$CLEAN_ASSETS" ]]; then
     done
 fi
 
+# If the node label changes, we issue a clean output since node changes can change SDK/CMake/toolchains/etc
+LAST_CONFIGURE_NODE_LABEL_FILE=ci_last_node_label.txt
+if [[ -n "$NODE_LABEL" ]]; then
+    if [[ -d $OUTPUT_DIRECTORY ]]; then
+        pushd $OUTPUT_DIRECTORY
+        if [[ ! -e ${LAST_CONFIGURE_NODE_LABEL_FILE} ]]; then
+            LAST_NODE_LABEL=$(<${LAST_CONFIGURE_NODE_LABEL_FILE})    
+        else
+            LAST_NODE_LABEL=
+        fi
+        # Detect if the node label has changed
+        if [[ "${LAST_NODE_LABEL}" != "${NODE_LABEL}" ]]; then
+            echo [ci_build] Last run was done with node label "!LAST_NODE_LABEL!", new node label is "!NODE_LABEL!", forcing CLEAN_OUTPUT_DIRECTORY
+            CLEAN_OUTPUT_DIRECTORY=1
+        fi
+        popd
+    fi
+fi
+
 if [[ -n "$CLEAN_OUTPUT_DIRECTORY" ]]; then
     echo "[ci_build] CLEAN_OUTPUT_DIRECTORY option set"
     if [[ -d $OUTPUT_DIRECTORY ]]; then
@@ -30,3 +49,11 @@ if [[ -n "$CLEAN_OUTPUT_DIRECTORY" ]]; then
         rm -rf ${OUTPUT_DIRECTORY}
     fi
 fi
+
+if [[ -d $OUTPUT_DIRECTORY ]]; then
+    mkdir -p ${OUTPUT_DIRECTORY}
+fi
+# Save the node label
+pushd $OUTPUT_DIRECTORY
+echo "${NODE_LABEL}" > ${LAST_CONFIGURE_NODE_LABEL_FILE}
+popd
