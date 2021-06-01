@@ -30,6 +30,7 @@
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -105,6 +106,16 @@ namespace AZ
             {
                 bool convertResult = ConvertSliceFile(convertSettings.m_serializeContext, filePath, isDryRun);
                 result = result && convertResult;
+
+                // Clear out all registered prefab templates between each top-level file that gets processed.
+                auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+                for (auto templateId : m_createdTemplateIds)
+                {
+                    // We don't just want to call RemoveAllTemplates() because the root template should remain between file conversions.
+                    prefabSystemComponentInterface->RemoveTemplate(templateId);
+                }
+                m_aliasIdMapper.clear();
+                m_createdTemplateIds.clear();
             }
 
             DisconnectFromAssetProcessor();
@@ -114,6 +125,13 @@ namespace AZ
         bool SliceConverter::ConvertSliceFile(
             AZ::SerializeContext* serializeContext, const AZStd::string& slicePath, bool isDryRun)
         {
+            /* To convert a slice file, we read the input file in via ObjectStream, then use the "class ready" callback to convert
+            * the data in memory to a Prefab.
+            * If the input file is a level file (.ly), we actually need to load the level slice file ("levelentities.editor_xml") from
+            * within the level file, which effectively is a zip file of the level slice file and a bunch of legacy level files that won't
+            * be converted, since the systems that would use them no longer exist.
+            */
+
             bool result = true;
             bool packOpened = false;
 
@@ -144,7 +162,7 @@ namespace AZ
                     AZ_STRING_ARG(fileExtension.Native()));
             }
 
-            auto callback = [&outputPath, isDryRun](void* classPtr, const Uuid& classId, SerializeContext* context)
+            auto callback = [this, &outputPath, isDryRun](void* classPtr, const Uuid& classId, SerializeContext* context)
             {
                 if (classId != azrtti_typeid<AZ::Entity>())
                 {
@@ -178,6 +196,13 @@ namespace AZ
         bool SliceConverter::ConvertSliceToPrefab(
             AZ::SerializeContext* serializeContext, AZ::IO::PathView outputPath, bool isDryRun, AZ::Entity* rootEntity)
         {
+            /* Given a root slice entity, we convert it to a prefab by doing the following:
+            * - Locate the SliceComponent
+            * - Take all the entities directly located on the slice, and put them into a prefab
+            * - Fix up any top-level entities to have the prefab container entity as their parent
+            * - If there are any nested slice instances, convert the nested slices to prefabs, then convert the instances.
+            */
+
             auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
 
             // Find the slice from the root entity.
@@ -204,11 +229,27 @@ namespace AZ
             AzToolsFramework::Prefab::EntityOptionalReference container = sourceInstance->GetContainerEntity();
             FixPrefabEntities(container->get(), sliceEntities);
 
+            // Keep track of the template Id we created, we're going to remove it at the end of slice file conversion to make sure
+            // the data doesn't stick around between file conversions.
             auto templateId = sourceInstance->GetTemplateId();
             if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
             {
                 AZ_Printf("Convert-Slice", "  Path error. Path could be invalid, or the prefab may not be loaded in this level.\n");
                 return false;
+            }
+            m_createdTemplateIds.emplace(templateId);
+
+            // Save off a mapping of the original slice entity IDs to the new prefab template entity aliases.
+            // When converting nested slices, this mapping will be needed to fix up the parent entity hierarchy correctly.
+            auto entityAliases = sourceInstance->GetEntityAliases();
+            for (auto& alias : entityAliases)
+            {
+                auto id = sourceInstance->GetEntityId(alias);
+                auto result = m_aliasIdMapper.emplace(TemplateEntityIdPair(templateId, id), alias);
+                if (!result.second)
+                {
+                    AZ_Printf("Convert-Slice", "  Duplicate entity alias -> entity id entries found, conversion may not be successful.\n");
+                }
             }
 
             // Update the prefab template with the fixed-up data in our prefab instance.
@@ -254,21 +295,16 @@ namespace AZ
             // via an EditorRequests EBus in CreatePrefab, but the subsystem that listens for it isn't present in this tool.)
             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                 &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, containerEntity);
-            containerEntity.AddComponent(aznew AzToolsFramework::Prefab::EditorPrefabComponent());
+            if (containerEntity.FindComponent<AzToolsFramework::Prefab::EditorPrefabComponent>() == nullptr)
+            {
+                containerEntity.AddComponent(aznew AzToolsFramework::Prefab::EditorPrefabComponent());
+            }
 
             // Reparent any root-level slice entities to the container entity.
             for (auto entity : sliceEntities)
             {
-                AzToolsFramework::Components::TransformComponent* transformComponent =
-                    entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
-                if (transformComponent)
-                {
-                    if (!transformComponent->GetParentId().IsValid())
-                    {
-                        transformComponent->SetParent(containerEntity.GetId());
-                        transformComponent->UpdateCachedWorldTransform();
-                    }
-                }
+                constexpr bool onlySetIfInvalid = true;
+                SetParentEntity(*entity, containerEntity.GetId(), onlySetIfInvalid);
             }
         }
 
@@ -276,9 +312,13 @@ namespace AZ
             SliceComponent* sliceComponent, AzToolsFramework::Prefab::Instance* sourceInstance,
             AZ::SerializeContext* serializeContext, bool isDryRun)
         {
+            /* Given a root slice, find all the nested slices and convert them. */
+
+            // Get the list of nested slices that this slice uses.
             const SliceComponent::SliceList& sliceList = sliceComponent->GetSlices();
             auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
 
+            // For each nested slice, convert it.
             for (auto& slice : sliceList)
             {
                 // Get the nested slice asset
@@ -312,7 +352,7 @@ namespace AZ
                     return false;
                 }
 
-                // Load the prefab template for the newly-created nested prefab.
+                // Find the prefab template we created for the newly-created nested prefab.
                 // To get the template, we need to take our absolute slice path and turn it into a project-relative prefab path.
                 AZ::IO::Path nestedPrefabPath = assetPath;
                 nestedPrefabPath.ReplaceExtension("prefab");
@@ -346,11 +386,25 @@ namespace AZ
         }
 
         bool SliceConverter::ConvertSliceInstance(
-            [[maybe_unused]] AZ::SliceComponent::SliceInstance& instance,
-            [[maybe_unused]] AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
+            AZ::SliceComponent::SliceInstance& instance,
+            AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
             AzToolsFramework::Prefab::TemplateReference nestedTemplate,
             AzToolsFramework::Prefab::Instance* topLevelInstance)
         {
+            /* To convert a slice instance, it's important to understand the similarities and differences between slices and prefabs.
+            * Both slices and prefabs have the concept of instances of a nested slice/prefab, where each instance can have its own
+            * set of changed data (transforms, component values, etc).
+            * For slices, the changed data comes from applying a DataPatch to an instantiated set of entities from the nested slice.
+            * From prefabs, the changed data comes from Json patches that are applied to the instantiated set of entities from the
+            * nested prefab.  The prefab instance entities also have different IDs than the slice instance entities, so we'll need
+            * to remap some of them along the way.
+            * To get from one to the other, we'll need to do the following:
+            * - Instantiated the nested slice and nested prefab
+            * - Patch the nested slice instance and fix up the entity ID references
+            * - Replace the nested prefab instance entities with the fixed-up slice ones
+            * - Add the nested instance (and the link patch) to the top-level prefab
+            */
+
             auto instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
             auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
 
@@ -371,22 +425,74 @@ namespace AZ
             AzToolsFramework::Prefab::PrefabDom unmodifiedNestedInstanceDom;
             instanceToTemplateInterface->GenerateDomForInstance(unmodifiedNestedInstanceDom, *(nestedInstance.get()));
 
-            // Currently, DataPatch conversions for nested slices aren't implemented, so all nested slice overrides will
-            // be lost.
-            AZ_Warning(
-                "Convert-Slice", false, "  Nested slice instances will lose all of their override data during conversion.",
-                nestedTemplate->get().GetFilePath().c_str());
+            // Instantiate a new instance of the nested slice
+            SliceComponent* dependentSlice = sliceAsset.Get()->GetComponent();
+            [[maybe_unused]] AZ::SliceComponent::InstantiateResult instantiationResult = dependentSlice->Instantiate();
+            AZ_Assert(instantiationResult == AZ::SliceComponent::InstantiateResult::Success, "Failed to instantiate instance");
 
-            // Set the container entity of the nested prefab to have the top-level prefab as the parent.
-            // Once DataPatch conversions are supported, this will need to change to nest the prefab under the appropriate entity
-            // within the level.
+            // Apply the data patch for this instance of the nested slice.  This will provide us with a version of the slice's entities
+            // with all data overrides applied to them.
+            DataPatch::FlagsMap sourceDataFlags = dependentSlice->GetDataFlagsForInstances().GetDataFlagsForPatching();
+            DataPatch::FlagsMap targetDataFlags = instance.GetDataFlags().GetDataFlagsForPatching(&instance.GetEntityIdToBaseMap());
+            AZ::ObjectStream::FilterDescriptor filterDesc(AZ::Data::AssetFilterNoAssetLoading);
+
+            AZ::SliceComponent::InstantiatedContainer sourceObjects(false);
+            dependentSlice->GetEntities(sourceObjects.m_entities);
+            dependentSlice->GetAllMetadataEntities(sourceObjects.m_metadataEntities);
+
+            const DataPatch& dataPatch = instance.GetDataPatch();
+            auto instantiated =
+                dataPatch.Apply(&sourceObjects, dependentSlice->GetSerializeContext(), filterDesc, sourceDataFlags, targetDataFlags);
+
+            // Run through all the instantiated entities and fix up their parent hierarchy:
+            // - Invalid parents need to get set to the container.
+            // - Valid parents into the top-level instance mean that the nested slice instance is also child-nested under an entity.
+            //   Prefabs handle this type of nesting differently - we need to set the parent to the container, and the container's
+            //   parent to that other instance.
             auto containerEntity = nestedInstance->GetContainerEntity();
-            AzToolsFramework::Components::TransformComponent* transformComponent =
-                containerEntity->get().FindComponent<AzToolsFramework::Components::TransformComponent>();
-            if (transformComponent)
+            auto containerEntityId = containerEntity->get().GetId();
+            for (auto entity : instantiated->m_entities)
             {
-                transformComponent->SetParent(topLevelInstance->GetContainerEntityId());
-                transformComponent->UpdateCachedWorldTransform();
+                AzToolsFramework::Components::TransformComponent* transformComponent =
+                    entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
+                if (transformComponent)
+                {
+                    bool onlySetIfInvalid = true;
+                    auto parentId = transformComponent->GetParentId();
+                    if (parentId.IsValid())
+                    {
+                        auto parentAlias = m_aliasIdMapper.find(TemplateEntityIdPair(topLevelInstance->GetTemplateId(), parentId));
+                        if (parentAlias != m_aliasIdMapper.end())
+                        {
+                            // Set the container's parent to this entity's parent, and set this entity's parent to the container
+                            // (i.e. go from A->B to A->container->B)
+                            auto newParentId = topLevelInstance->GetEntityId(parentAlias->second);
+                            SetParentEntity(containerEntity->get(), newParentId, false);
+                            onlySetIfInvalid = false;
+                        }
+                    }
+
+                    SetParentEntity(*entity, containerEntityId, onlySetIfInvalid);                    
+                }
+            }
+
+            // Replace all the entities in the instance with the new patched ones.
+            // (This is easier than trying to figure out what the patched data changes are - we can let the JSON patch handle it for us)
+            nestedInstance->RemoveNestedEntities(
+                [](const AZStd::unique_ptr<AZ::Entity>&)
+                {
+                    return true;
+                });
+            for (auto& entity : instantiated->m_entities)
+            {
+                nestedInstance->AddEntity(*entity);
+            }
+
+            // Set the container entity of the nested prefab to have the top-level prefab as the parent if it hasn't already gotten
+            // another entity as its parent.
+            {
+                constexpr bool onlySetIfInvalid = true;
+                SetParentEntity(containerEntity->get(), topLevelInstance->GetContainerEntityId(), onlySetIfInvalid);
             }
 
             // Add the nested instance itself to the top-level prefab.  To do this, we need to add it to our top-level instance,
@@ -418,7 +524,24 @@ namespace AZ
                 AzToolsFramework::Prefab::InvalidLinkId);
             prefabSystemComponentInterface->PropagateTemplateChanges(topLevelInstance->GetTemplateId());
 
+            AZ::Interface<AzToolsFramework::Prefab::InstanceUpdateExecutorInterface>::Get()->UpdateTemplateInstancesInQueue();
+
             return true;
+        }
+
+        void SliceConverter::SetParentEntity(const AZ::Entity& entity, const AZ::EntityId& parentId, bool onlySetIfInvalid)
+        {
+            AzToolsFramework::Components::TransformComponent* transformComponent =
+                entity.FindComponent<AzToolsFramework::Components::TransformComponent>();
+            if (transformComponent)
+            {
+                // Only set the parent if we didn't set the onlySetIfInvalid flag, or if we did and the parent is currently invalid
+                if (!onlySetIfInvalid || !transformComponent->GetParentId().IsValid())
+                {
+                    transformComponent->SetParent(parentId);
+                    transformComponent->UpdateCachedWorldTransform();
+                }
+            }
         }
 
         void SliceConverter::PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId)
