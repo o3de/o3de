@@ -207,8 +207,8 @@ namespace ScriptCanvasPhysicsTests
     {
     public:
         MOCK_CONST_METHOD0(GetSurfaceType, AZ::Crc32());
-        MOCK_METHOD1(SetSurfaceType, void(AZ::Crc32));
         MOCK_CONST_METHOD0(GetSurfaceTypeName, const AZStd::string&());
+        MOCK_METHOD1(SetSurfaceTypeName, void(const AZStd::string&));
         MOCK_CONST_METHOD0(GetDynamicFriction, float());
         MOCK_METHOD1(SetDynamicFriction, void(float));
         MOCK_CONST_METHOD0(GetStaticFriction, float());
@@ -223,6 +223,8 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD0(GetNativePointer, void*());
         MOCK_CONST_METHOD0(GetDensity, float());
         MOCK_METHOD1(SetDensity, void(float));
+        MOCK_CONST_METHOD0(GetDebugColor, AZ::Color());
+        MOCK_METHOD1(SetDebugColor, void(const AZ::Color&));
     };
 
     class ScriptCanvasPhysicsTestEnvironment

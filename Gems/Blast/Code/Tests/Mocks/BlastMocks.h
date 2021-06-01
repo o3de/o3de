@@ -654,9 +654,7 @@ namespace Blast
         MOCK_METHOD1(RotateAroundLocalZ, void(float));
         MOCK_METHOD0(GetLocalRotation, AZ::Vector3());
         MOCK_METHOD0(GetLocalRotationQuaternion, AZ::Quaternion());
-        MOCK_METHOD1(SetLocalScale, void(const AZ::Vector3&));
         MOCK_METHOD0(GetLocalScale, AZ::Vector3());
-        MOCK_METHOD0(GetWorldScale, AZ::Vector3());
         MOCK_METHOD1(SetLocalUniformScale, void(float));
         MOCK_METHOD0(GetLocalUniformScale, float());
         MOCK_METHOD0(GetWorldUniformScale, float());
