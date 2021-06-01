@@ -211,6 +211,7 @@ namespace PhysX
         EXPECT_TRUE(followerEndPosition.GetZ() > followerPosition.GetZ());
     }
 
+    template<class ApiJointConfigurationType>
     class PhysXJointsApiTest : public PhysX::GenericPhysicsInterfaceTest
     {
     public:
@@ -230,7 +231,8 @@ namespace PhysX
                 parentConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
                 childConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
                 
-                childConfiguration.m_position.SetX(childConfiguration.m_position.GetX() + 1);
+                // Put the child body a bit to the lower side of X to avoid it colliding with parent
+                childConfiguration.m_position.SetX(childConfiguration.m_position.GetX() - 2);
                 m_childInitialPos = childConfiguration.m_position;
                 parentConfiguration.m_initialLinearVelocity.SetX(10.);
 
@@ -238,6 +240,7 @@ namespace PhysX
                 m_childBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &childConfiguration);
             }
         }
+
         void TearDown() override
         {
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -254,14 +257,20 @@ namespace PhysX
         AZ::Vector3 m_childInitialPos;
     };
 
-    TEST_F(PhysXJointsApiTest, Joint_D6Joint_ChildFollowsParent)
+    typedef testing::Types<D6ApiJointLimitConfiguration, FixedApiJointConfiguration> Implementations;
+    TYPED_TEST_CASE(PhysXJointsApiTest, Implementations);
+
+    TYPED_TEST(PhysXJointsApiTest, Joint_ChildFollowsParent)
     {
-        PhysX::D6ApiJointLimitConfiguration jointConfiguration;
+        TypeParam jointConfiguration;
+        AzPhysics::ApiJointHandle jointHandle;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
-            sceneInterface->AddJoint(m_testSceneHandle, &jointConfiguration, m_parentBodyHandle, m_childBodyHandle);    
+            jointHandle = sceneInterface->AddJoint(m_testSceneHandle, &jointConfiguration, m_parentBodyHandle, m_childBodyHandle);    
         }
+
+        EXPECT_NE(jointHandle, AzPhysics::InvalidApiJointHandle);
 
         // run physics to trigger the the move of parent body
         TestUtils::UpdateScene(m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);

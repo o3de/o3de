@@ -43,6 +43,11 @@ namespace PhysX
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+            PxJointUniquePtr CreatePxFixedJoint(const PhysX::FixedApiJointConfiguration& configuration,
+                AzPhysics::SceneHandle sceneHandle,
+                AzPhysics::SimulatedBodyHandle parentBodyHandle,
+                AzPhysics::SimulatedBodyHandle childBodyHandle);
         } // namespace PxActorFactories
     } // namespace Utils
 } // namespace PhysX

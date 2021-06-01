@@ -90,6 +90,11 @@ namespace PhysX
         }
     }
 
+    void* PhysXApiJoint::GetNativePointer() const
+    {
+        return m_pxJoint.get();
+    }
+
     PhysXD6Joint::PhysXD6Joint(const D6ApiJointLimitConfiguration& configuration,
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
@@ -99,14 +104,23 @@ namespace PhysX
         m_pxJoint = Utils::PxJointFactories::CreatePxD6Joint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
-    void* PhysXApiJoint::GetNativePointer() const
+    PhysXFixedApiJoint::PhysXFixedApiJoint(const FixedApiJointConfiguration& configuration,
+        AzPhysics::SceneHandle sceneHandle,
+        AzPhysics::SimulatedBodyHandle parentBodyHandle,
+        AzPhysics::SimulatedBodyHandle childBodyHandle)
+        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
-        return m_pxJoint.get();
+        m_pxJoint = Utils::PxJointFactories::CreatePxFixedJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
     AZ::Crc32 PhysXD6Joint::GetNativeType() const
     {
         return NativeTypeIdentifiers::D6Joint;
+    }
+
+    AZ::Crc32 PhysXFixedApiJoint::GetNativeType() const
+    {
+        return NativeTypeIdentifiers::FixedJoint;
     }
 
     void PhysXD6Joint::GenerateJointLimitVisualizationData(
@@ -152,5 +166,17 @@ namespace PhysX
             AZ::Vector3::CreateAxisX(axisLength));
         lineBufferOut.push_back(AZ::Vector3::CreateZero());
         lineBufferOut.push_back(childAxis);
+    }
+
+    void PhysXFixedApiJoint::GenerateJointLimitVisualizationData(
+        [[maybe_unused]] float scale,
+        [[maybe_unused]] AZ::u32 angularSubdivisions,
+        [[maybe_unused]] AZ::u32 radialSubdivisions,
+        [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertexBufferOut,
+        [[maybe_unused]] AZStd::vector<AZ::u32>& indexBufferOut,
+        [[maybe_unused]] AZStd::vector<AZ::Vector3>& lineBufferOut,
+        [[maybe_unused]] AZStd::vector<bool>& lineValidityBufferOut)
+    {
+        
     }
 } // namespace PhysX

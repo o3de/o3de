@@ -835,13 +835,19 @@ namespace PhysX
         if (azrtti_istypeof<PhysX::D6ApiJointLimitConfiguration>(jointConfig))
         {
             newJoint = Internal::CreateJoint<PhysXD6Joint, D6ApiJointLimitConfiguration>(
-                azdynamic_cast<const PhysX::D6ApiJointLimitConfiguration*>(jointConfig),
+                azdynamic_cast<const D6ApiJointLimitConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
+        else if (azrtti_istypeof<PhysX::FixedApiJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXFixedApiJoint, FixedApiJointConfiguration>(
+                azdynamic_cast<const FixedApiJointConfiguration*>(jointConfig),
                 m_sceneHandle, parentBody, childBody, newJointCrc);
         }
         else
         {
             AZ_Warning("PhysXScene", false, "Unknown ApiJointConfiguration.");
-            return AzPhysics::InvalidSimulatedBodyHandle;
+            return AzPhysics::InvalidApiJointHandle;
         }
 
         if (newJoint != nullptr)
