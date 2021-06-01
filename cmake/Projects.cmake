@@ -167,6 +167,9 @@ endfunction()
 # Add the projects here so the above function is found
 foreach(project ${LY_PROJECTS})
     file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    if(NOT LY_FIRST_PROJECT)
+        ly_set(LY_FIRST_PROJECT_PATH ${full_directory_path})
+    endif()
     string(SHA256 full_directory_hash ${full_directory_path})
 
     # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
