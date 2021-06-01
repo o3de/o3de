@@ -47,6 +47,7 @@ namespace AzFramework
         const char* GetGroup() const override;
         const char* GetBrowserIcon() const override;
         void GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions) override;
+        static uint32_t BuildSubId(AZStd::string_view id);
         
     protected:
         LoadResult LoadAssetData(

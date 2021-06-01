@@ -22,6 +22,7 @@ namespace AZ
         //! This class manages DiffuseProbeGrids which generate diffuse global illumination
         class DiffuseProbeGridFeatureProcessor final
             : public DiffuseProbeGridFeatureProcessorInterface
+            , private Data::AssetBus::MultiHandler
         {
         public:
             AZ_RTTI(AZ::Render::DiffuseProbeGridFeatureProcessor, "{BCD232F9-1EBF-4D0D-A5F4-84AEC933A93C}", DiffuseProbeGridFeatureProcessorInterface);
@@ -46,6 +47,27 @@ namespace AZ
             void Enable(const DiffuseProbeGridHandle& probeGrid, bool enable) override;
             void SetGIShadows(const DiffuseProbeGridHandle& probeGrid, bool giShadows) override;
             void SetUseDiffuseIbl(const DiffuseProbeGridHandle& probeGrid, bool useDiffuseIbl) override;
+            void SetMode(const DiffuseProbeGridHandle& probeGrid, DiffuseProbeGridMode mode) override;
+            void SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures) override;
+
+            void BakeTextures(
+                const DiffuseProbeGridHandle& probeGrid,
+                DiffuseProbeGridBakeTexturesCallback callback,
+                const AZStd::string& irradianceTextureRelativePath,
+                const AZStd::string& distanceTextureRelativePath,
+                const AZStd::string& relocationTextureRelativePath,
+                const AZStd::string& classificationTextureRelativePath) override;
+
+            bool CheckTextureAssetNotification(
+                const AZStd::string& relativePath,
+                Data::Asset<RPI::StreamingImageAsset>& outTextureAsset,
+                DiffuseProbeGridTextureNotificationType& outNotificationType) override;
+
+            bool AreBakedTexturesReferenced(
+                const AZStd::string& irradianceTextureRelativePath,
+                const AZStd::string& distanceTextureRelativePath,
+                const AZStd::string& relocationTextureRelativePath,
+                const AZStd::string& classificationTextureRelativePath) override;
 
             // FeatureProcessor overrides
             void Activate() override;
@@ -56,11 +78,27 @@ namespace AZ
             using DiffuseProbeGridVector = AZStd::vector<AZStd::shared_ptr<DiffuseProbeGrid>>;
             DiffuseProbeGridVector& GetProbeGrids() { return m_diffuseProbeGrids; }
 
+            // retrieve the side list of probe grids that are using real-time (raytraced) mode
+            DiffuseProbeGridVector& GetRealTimeProbeGrids() { return m_realTimeDiffuseProbeGrids; }
+
         private:
             AZ_DISABLE_COPY_MOVE(DiffuseProbeGridFeatureProcessor);
 
             // create the box vertex and index streams, which are used to render the probe volumes
             void CreateBoxMesh();
+
+            // AssetBus::MultiHandler overrides...
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetError(Data::Asset<Data::AssetData> asset) override;
+
+            // updates the real-time list for a specific probe grid
+            void UpdateRealTimeList(const DiffuseProbeGridHandle& diffuseProbeGrid);
+
+            // adds a notification entry for a new asset
+            void AddNotificationEntry(const AZStd::string& relativePath);
+
+            // notifies and removes the notification entry
+            void HandleAssetNotification(Data::Asset<Data::AssetData> asset, DiffuseProbeGridTextureNotificationType notificationType);
 
             // RPI::SceneNotificationBus::Handler overrides
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
@@ -70,9 +108,12 @@ namespace AZ
             void UpdatePipelineStates();
             void UpdatePasses();
 
-            // list of diffuse probe grids
+            // list of all diffuse probe grids
             const size_t InitialProbeGridAllocationSize = 64;
             DiffuseProbeGridVector m_diffuseProbeGrids;
+
+            // side list of diffuse probe grids that are in real-time mode (subset of m_diffuseProbeGrids)
+            DiffuseProbeGridVector m_realTimeDiffuseProbeGrids;
 
             // position structure for the box vertices
             struct Position
@@ -102,6 +143,17 @@ namespace AZ
 
             // indicates the the diffuse probe grid render pipeline state needs to be updated
             bool m_needUpdatePipelineStates = false;
+
+            // list of texture assets that we need to check during Simulate() to see if they are ready
+            struct NotifyTextureAssetEntry
+            {
+                AZStd::string m_relativePath;
+                AZ::Data::AssetId m_assetId;
+                Data::Asset<RPI::StreamingImageAsset> m_asset;
+                DiffuseProbeGridTextureNotificationType m_notificationType = DiffuseProbeGridTextureNotificationType::None;
+            };
+            typedef AZStd::vector<NotifyTextureAssetEntry> NotifyTextureAssetVector;
+            NotifyTextureAssetVector m_notifyTextureAssets;
         };
     } // namespace Render
 } // namespace AZ

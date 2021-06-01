@@ -14,6 +14,7 @@
 
 #include <AWSCoreBus.h>
 #include <AWSCoreEditor_Traits_Platform.h>
+#include <Editor/Constants/AWSCoreEditorMenuNames.h>
 #include <Editor/UI/AWSCoreEditorMenu.h>
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
@@ -35,6 +36,7 @@ class AWSCoreEditorMenuTest
     {
         AWSCoreEditorUIFixture::SetUp();
         AWSCoreFixture::SetUp();
+        m_localFileIO->SetAlias("@devroot@", "dummy engine root");
     }
 
     void TearDown() override
@@ -77,12 +79,12 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_C
     QList<QAction*> actualActions = testMenu.actions();
     for (QList<QAction*>::iterator itr = actualActions.begin(); itr != actualActions.end(); itr++)
     {
-        if (QString::compare((*itr)->text(), AWSCoreEditorMenu::AWSClientAuthActionText) == 0)
+        if (QString::compare((*itr)->text(), AWSClientAuthActionText) == 0)
         {
             EXPECT_TRUE((*itr)->isEnabled());
         }
 
-        if (QString::compare((*itr)->text(), AWSCoreEditorMenu::AWSMetricsActionText) == 0)
+        if (QString::compare((*itr)->text(), AWSMetricsActionText) == 0)
         {
             EXPECT_TRUE((*itr)->isEnabled());
         }

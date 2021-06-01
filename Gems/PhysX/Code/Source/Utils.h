@@ -115,9 +115,6 @@ namespace PhysX
 
         bool MeshDataToPxGeometry(physx::PxBase* meshData, physx::PxGeometryHolder &pxGeometry, const AZ::Vector3& scale);
 
-        void GetMaterialList(
-            AZStd::vector<physx::PxMaterial*>& pxMaterials, const AZStd::vector<int>& materialIndexMapping,
-            const Physics::TerrainMaterialSurfaceIdMap& terrainMaterialsToSurfaceIds);
         //! Returns all connected busIds of the specified type.
         template<typename BusT>
         AZStd::vector<typename BusT::BusIdType> FindConnectedBusIds()
