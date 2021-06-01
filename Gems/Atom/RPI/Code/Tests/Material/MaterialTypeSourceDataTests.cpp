@@ -40,7 +40,7 @@ namespace UnitTest
 
         Data::Asset<ShaderResourceGroupAsset> m_testMaterialSrgAsset;
         Data::Asset<ShaderAsset> m_testShaderAsset;
-        Data::Asset<ShaderAsset> m_testShaderAsset2;
+        Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
         Data::Asset<ImageAsset> m_testImageAsset2; // For relative path testing.
         static constexpr const char* TestMaterialSrgFilename        = "test.azsl";
@@ -304,7 +304,7 @@ namespace UnitTest
             shaderOptions->Finalize();
 
             m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderOptions);
-            m_testShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom());
+            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom());
             
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
@@ -319,7 +319,7 @@ namespace UnitTest
             testShaderAssetInfo.m_assetId = m_testShaderAsset.GetId();
 
             Data::AssetInfo testShaderAssetInfo2;
-            testShaderAssetInfo2.m_assetId = m_testShaderAsset2.GetId();
+            testShaderAssetInfo2.m_assetId = m_testShaderAsset.GetId();
 
             Data::AssetInfo testImageAssetInfo;
             testImageAssetInfo.m_assetId = m_testImageAsset.GetId();
@@ -342,7 +342,7 @@ namespace UnitTest
         {
             m_testMaterialSrgAsset.Reset();
             m_testShaderAsset.Reset();
-            m_testShaderAsset2.Reset();
+            m_testShaderAsset.Reset();
 
             m_functorRegistration.Shutdown();
 

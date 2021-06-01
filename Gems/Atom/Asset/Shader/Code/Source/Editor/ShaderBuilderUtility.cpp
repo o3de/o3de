@@ -30,7 +30,7 @@
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h> // DEPRECATED - [ATOM-15472]
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
 #include <Atom/RHI.Edit/Utils.h>
@@ -718,15 +718,7 @@ namespace AZ
 #endif
             }
 
-            uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType)
-            {
-                auto subIdMaxEnumerator = RPI::ShaderAssetSubId::GeneratedHlslSource;
-                // separate bit space between subid enum, and api-type:
-                int shiftLeft = static_cast<uint32_t>(log2(static_cast<uint32_t>(subIdMaxEnumerator))) + 1;
-                return static_cast<uint32_t>(subId) + (apiType << shiftLeft);
-            }
-
-            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder2(
+            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder(
                 const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
@@ -749,12 +741,12 @@ namespace AZ
                     platformId = AzFramework::PlatformId::IOS;
                 }
 
-                uint32_t assetSubId = RPI::ShaderAsset2::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
+                uint32_t assetSubId = RPI::ShaderAsset::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
                 auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(shaderJsonPath, assetSubId);
                 if (!assetIdOutcome.IsSuccess())
                 {
                     return Failure(AZStd::string::format(
-                        "Missing ShaderAssetBuilder2 product %s, for sub %d", shaderJsonPath.c_str(), (uint32_t)shaderAssetSubId));
+                        "Missing ShaderAssetBuilder product %s, for sub %d", shaderJsonPath.c_str(), (uint32_t)shaderAssetSubId));
                 }
 
                 Data::AssetId assetId = assetIdOutcome.TakeValue();
@@ -776,113 +768,6 @@ namespace AZ
                         (uint32_t)shaderAssetSubId));
                 }
                 return AZ::Success(assetFullPath);
-            }
-
-            Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder([[maybe_unused]] const char* builderName, const AZStd::string& sourceFullPath, RHI::APIType apiType, const AZStd::string& platform)
-            {
-                AzslSubProducts::Paths products;
-
-                // platform id from identifier
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
-                if (platform == "pc")
-                {
-                    platformId = AzFramework::PlatformId::PC;
-                }
-                else if (platform == "mac")
-                {
-                    platformId = AzFramework::PlatformId::MAC_ID;
-                }
-                else if (platform == "android")
-                {
-                    platformId = AzFramework::PlatformId::ANDROID_ID;
-                }
-                else if (platform == "ios")
-                {
-                    platformId = AzFramework::PlatformId::IOS;
-                }
-
-                for (RPI::ShaderAssetSubId sub : AzslSubProducts::SubList)
-                {
-                    uint32_t assetSubId = MakeAzslBuildProductSubId(sub, apiType);
-                    auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(sourceFullPath, assetSubId);
-                    AZ_Error(builderName, assetIdOutcome.IsSuccess(), "Missing AZSL product %s, for sub %d", sourceFullPath.c_str(), (uint32_t)sub);
-                    if (!assetIdOutcome.IsSuccess())
-                    {
-                        return Failure();
-                    }
-                    Data::AssetId assetId = assetIdOutcome.TakeValue();
-                    // get the relative path:
-                    AZStd::string assetPath;
-                    Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &Data::AssetCatalogRequests::GetAssetPathById, assetId);
-
-                    // get the root:
-                    AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(platformId);
-                    // join
-                    AZStd::string assetFullPath;
-                    AzFramework::StringFunc::Path::Join(assetRoot.c_str(), assetPath.c_str(), assetFullPath);
-                    bool fileExists = IO::FileIOBase::GetInstance()->Exists(assetFullPath.c_str()) && !IO::FileIOBase::GetInstance()->IsDirectory(assetFullPath.c_str());
-                    if (!fileExists)
-                    {
-                        return Failure();
-                    }
-                    products.push_back(assetFullPath);
-                }
-                return AZ::Success(products);
-            }
-
-            // DEPRECATED [ATOM-15472]
-            // See header for info.
-            // REMARK: The approach to string searching and matching done in this function is kind of naive
-            // because the strings can match text within a comment block, etc. So it is not 100% fool proof.
-            // We would need proper grammar parsing to reach 100% confidence.
-            // [GFX TODO][ATOM-5302][ATOM-5308] The following function will be removed once, both, [ATOM-5302] & [ATOM-5308] are addressed, and
-            // azslc allows redundant SrgSemantics for "partial" qualified SRGs.
-            SrgSkipFileResult ShouldSkipFileForSrgProcessing([[maybe_unused]] const char* builderName, const AZStd::string_view fullPath)
-            {
-                AZ::IO::FileIOStream stream(fullPath.data(), AZ::IO::OpenMode::ModeRead);
-                if (!stream.IsOpen())
-                {
-                    AZ_Warning(builderName, false, "\"%s\" source file could not be opened.", fullPath.data());
-                    return SrgSkipFileResult::Error;
-                }
-
-                if (!stream.CanRead())
-                {
-                    AZ_Warning(builderName, false, "\"%s\" source file could not be read.", fullPath.data());
-                    return SrgSkipFileResult::Error;
-                }
-
-                // Do a quick check for "ShaderResourceGroup" to determine if this file might even have a ShaderResourceGroup to parse.
-                AZStd::string fileContents;
-                fileContents.resize(stream.GetLength());
-                stream.Read(stream.GetLength(), fileContents.data());
-
-                static const AZStd::regex partialSrgRegex("\n\\s*partial\\s+ShaderResourceGroup\\s+", AZStd::regex::ECMAScript);
-                if (AZStd::regex_search(fileContents.data(), partialSrgRegex))
-                {
-                    // It is considered a programmer's error if a file declares both, non-partial and partial SRGs.
-                    static const AZStd::regex srgRegex("\n\\s*ShaderResourceGroup\\s+", AZStd::regex::ECMAScript);
-                    if (AZStd::regex_search(fileContents.data(), srgRegex))
-                    {
-                        AZ_Error(builderName, false, "\"%s\" defines both partial and non-partial SRGs.", fullPath.data());
-                        return SrgSkipFileResult::Error;
-                    }
-                    // We should skip files that define partial Srgs because an srgi file will eventually
-                    // include it.
-                    return SrgSkipFileResult::SkipFile;
-                }
-
-                // This is an optimization to avoid unnecessary preprocessing a whole tree of azsli files; we can detect when a
-                // ShaderResourceGroupAsset wouldn't be produced and return early. Note, we could remove this early-return check
-                // if the preprocessing code below is updated to not follow include paths [ATOM-5302].
-                // (Note this optimization is not valid for srgi files because those do require scanning all include paths)"
-                if (fileContents.find("ShaderResourceGroup") == AZStd::string::npos)
-                {
-                    // No ShaderResourceGroup in this file, so there's nothing to do. Create no jobs and report success.
-                    return SrgSkipFileResult::SkipFile;
-                }
-
-                return SrgSkipFileResult::ContinueProcess;
             }
 
             RHI::Ptr<RHI::PipelineLayoutDescriptor> BuildPipelineLayoutDescriptorForApi(

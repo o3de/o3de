@@ -181,7 +181,7 @@ namespace AZ
         ///////////////////////////////////////////////////////////////////
         // IShaderVariantFinder overrides
         bool ShaderVariantAsyncLoader::QueueLoadShaderVariantAssetByVariantId(
-            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId)
+            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
             if (m_isServiceShutdown.load())
             {
@@ -198,7 +198,7 @@ namespace AZ
         }
 
         bool ShaderVariantAsyncLoader::QueueLoadShaderVariantAsset(
-            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId)
+            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex)
         {
             if (m_isServiceShutdown.load())
             {
@@ -234,7 +234,7 @@ namespace AZ
         }
 
         Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAssetByVariantId(
-            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId)
+            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
             Data::Asset<ShaderVariantTreeAsset> shaderVariantTreeAsset = GetShaderVariantTreeAsset(shaderAsset.GetId());
             if (!shaderVariantTreeAsset)
@@ -257,7 +257,7 @@ namespace AZ
         }
 
         Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAssetByStableId(
-            Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId)
+            Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex)
         {
             AZ_Assert(shaderVariantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
@@ -292,7 +292,8 @@ namespace AZ
             return {};
         }
 
-        Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId)
+        Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAsset(
+            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex)
         {
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 

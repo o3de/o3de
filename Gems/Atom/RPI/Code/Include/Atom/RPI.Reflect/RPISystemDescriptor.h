@@ -15,7 +15,6 @@
 #include <Atom/RPI.Reflect/GpuQuerySystemDescriptor.h>
 #include <Atom/RPI.Reflect/Image/ImageSystemDescriptor.h>
 #include <Atom/RHI.Reflect/RHISystemDescriptor.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 namespace AZ
 {
@@ -38,11 +37,15 @@ namespace AZ
 
             RHI::RHISystemDescriptor m_rhiSystemDescriptor;
 
-            //! The path of the only one scene srg asset for the RPI system. This is used to create any RPI::Scene.
-            AZStd::string m_sceneSrgAssetPath = "shaderlib/scenesrg_scenesrg.azsrg";
+            //! The path of the only common shader asset for the RPI system that is used
+            //! as means to load the layout for scene srg and view srg. This is used to create any RPI::Scene.
+            AZStd::string m_commonSrgsShaderAssetPath = "shaderlib/scene_and_view_srgs.azshader";
 
-            //! The path of the only one view srg asset for the RPI system. This is used to create any RPI::View.
-            AZStd::string m_viewSrgAssetPath = "shaderlib/viewsrg_viewsrg.azsrg";
+            //! Name of the scene srg as it can be found inside @m_commonSrgsShaderAssetPath
+            AZStd::string m_sceneSrgName = "SceneSrg";
+
+            //! Name of the view srg as it can be found inside @m_commonSrgsShaderAssetPath
+            AZStd::string m_viewSrgName = "ViewSrg";
 
             ImageSystemDescriptor m_imageSystemDescriptor;
             GpuQuerySystemDescriptor m_gpuQuerySystemDescriptor;

@@ -40,29 +40,37 @@ namespace AZ
             void Init();
             void Shutdown();
 
-            struct PairOfShaderAssetAndShaderVariantId
+            struct TupleShaderAssetAndShaderVariantId
             {
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;
+                SupervariantIndex m_supervariantIndex
 
-                bool operator==(const PairOfShaderAssetAndShaderVariantId& anotherPair) const
+                bool operator==(const TupleShaderAssetAndShaderVariantId& anotherTuple) const
                 {
-                    return (m_shaderAsset.GetId() == anotherPair.m_shaderAsset.GetId() && m_shaderVariantId == anotherPair.m_shaderVariantId);
+                    return (
+                        (m_shaderAsset.GetId() == anotherTuple.m_shaderAsset.GetId()) &&
+                        (m_shaderVariantId == anotherTuple.m_shaderVariantId) &&
+                        (m_supervariantIndex == anotherTuple.m_supervariantIndex)
+                    );
                 }
             };
 
             ///////////////////////////////////////////////////////////////////
             // IShaderVariantFinder overrides
-            bool QueueLoadShaderVariantAssetByVariantId(Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId) override;
+            bool QueueLoadShaderVariantAssetByVariantId(Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) override;
             bool QueueLoadShaderVariantTreeAsset(const Data::AssetId& shaderAssetId) override;
-            bool QueueLoadShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId) override;
+            bool QueueLoadShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex) override;
 
             Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByVariantId(
-                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId) override;
+                Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) override;
             Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByStableId(
-                Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId) override;
+                Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId,
+                SupervariantIndex supervariantIndex) override;
             Data::Asset<ShaderVariantTreeAsset> GetShaderVariantTreeAsset(const Data::AssetId& shaderAssetId) override;
-            Data::Asset<ShaderVariantAsset> GetShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId) override;
+            Data::Asset<ShaderVariantAsset> GetShaderVariantAsset(
+                const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId,
+                SupervariantIndex supervariantIndex) override;
 
             void Reset() override;
             ///////////////////////////////////////////////////////////////////
@@ -84,7 +92,7 @@ namespace AZ
             void ThreadServiceLoop();
 
             void QueueShaderVariantTreeForLoading(
-                const PairOfShaderAssetAndShaderVariantId& shaderAndVariantPair,
+                const TupleShaderAssetAndShaderVariantId& shaderAndVariantTuple,
                 AZStd::unordered_set<Data::AssetId>& shaderVariantTreePendingRequests);
 
             //! This is a helper method called from the service thread.
@@ -102,7 +110,7 @@ namespace AZ
             AZStd::condition_variable m_workCondition;
 
             //! This is a list of AssetId of ShaderVariantAsset.
-            AZStd::vector<PairOfShaderAssetAndShaderVariantId> m_newShaderVariantPendingRequests;
+            AZStd::vector<TupleShaderAssetAndShaderVariantId> m_newShaderVariantPendingRequests;
 
             //! This is a list of AssetId of ShaderAsset (Do not confuse with the AssetId ShaderVariantTreeAsset).
             AZStd::vector<Data::AssetId> m_shaderVariantTreePendingRequests;

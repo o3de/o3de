@@ -21,7 +21,7 @@ namespace AZ
 {
     namespace RPI
     {
-        void ShaderVariantAssetCreator::Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, const ShaderOptionGroupLayout* shaderOptionGroupLayout)
+        void ShaderVariantAssetCreator::Begin(const AZ::Data::AssetId& assetId, const ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId stableId, bool isFullyBaked)
         {
             BeginCommon(assetId);
 
@@ -29,16 +29,7 @@ namespace AZ
             {
                 m_asset->m_stableId = stableId;
                 m_asset->m_shaderVariantId = shaderVariantId;
-
-                if (shaderOptionGroupLayout)
-                {
-                    ShaderOptionGroup shaderOptions{shaderOptionGroupLayout, shaderVariantId};
-                    m_asset->m_isFullyBaked = shaderOptions.IsFullySpecified();
-                }
-                else if(shaderVariantId.m_mask.any())
-                {
-                    ReportError("ShaderVariantId is not empty, but no ShaderOptionGroupLayout was provided");
-                }
+                m_asset->m_isFullyBaked = isFullyBaked;
             }
         }
 
@@ -91,27 +82,7 @@ namespace AZ
                 return false;
             }
 
-            const ShaderInputContract& shaderInputContract = m_asset->m_inputContract;
-            // Validate that each stream ID appears only once.
-            for (const auto& channel : shaderInputContract.m_streamChannels)
-            {
-                int count = 0;
 
-                for (const auto& searchChannel : shaderInputContract.m_streamChannels)
-                {
-                    if (channel.m_semantic == searchChannel.m_semantic)
-                    {
-                        ++count;
-                    }
-                }
-
-                if (count > 1)
-                {
-                    ReportError("Input stream channel '%s' appears multiple times. For Shader Variant with StableId '%u' ",
-                        channel.m_semantic.ToString().c_str(), m_asset->m_stableId);
-                    return false;
-                }
-            }
 
             m_asset->SetReady();
             return EndCommon(result);
@@ -121,11 +92,11 @@ namespace AZ
         /////////////////////////////////////////////////////////////////////
         // Methods for all shader variant types
 
-        void ShaderVariantAssetCreator::SetShaderAssetBuildTimestamp(AZStd::sys_time_t shaderAssetBuildTimestamp)
+        void ShaderVariantAssetCreator::SetBuildTimestamp(AZStd::sys_time_t buildTimestamp)
         {
             if (ValidateIsReady())
             {
-                m_asset->m_shaderAssetBuildTimestamp = shaderAssetBuildTimestamp;
+                m_asset->m_buildTimestamp = buildTimestamp;
             }
         }
 
@@ -136,34 +107,6 @@ namespace AZ
                 m_asset->m_functionsByStage[static_cast<size_t>(shaderStage)] = shaderStageFunction;
             }
         }
-
-        /////////////////////////////////////////////////////////////////////
-        // Methods for PipelineStateType::Draw variants.
-
-        void ShaderVariantAssetCreator::SetInputContract(const ShaderInputContract& contract)
-        {
-            if (ValidateIsReady())
-            {
-                m_asset->m_inputContract = contract;
-            }
-        }
-
-        void ShaderVariantAssetCreator::SetOutputContract(const ShaderOutputContract& contract)
-        {
-            if (ValidateIsReady())
-            {
-                m_asset->m_outputContract = contract;
-            }
-        }
-
-        void ShaderVariantAssetCreator::SetRenderStates(const RHI::RenderStates& renderStates)
-        {
-            if (ValidateIsReady())
-            {
-                m_asset->m_renderStates = renderStates;
-            }
-        }
-
 
     } // namespace RPI
 } // namespace AZ
