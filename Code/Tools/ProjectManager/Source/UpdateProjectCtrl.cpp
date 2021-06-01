@@ -155,6 +155,7 @@ namespace O3DE::ProjectManager
             m_projectInfo = projectResult.GetValue();
         }
 
+        Update();
         UpdateSettingsScreen();
     }
 
