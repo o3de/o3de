@@ -164,6 +164,15 @@ namespace O3DE::ProjectManager
             projectPathIsValid = false;
             m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
         }
+        else
+        {
+            QDir path(m_projectPath->lineEdit()->text());
+            if (path.exists() && !path.isEmpty())
+            {
+                projectPathIsValid = false;
+                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
+            }
+        }
 
         bool projectNameIsValid = true;
         if (m_projectName->lineEdit()->text().isEmpty())
@@ -173,21 +182,16 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            QDir path(m_projectPath->lineEdit()->text());
-
-            // path validation with multiple locals and platforms is ... difficult. Prevent the usual suspects.
-            QRegExp illegalCharacterRegex("[^A-Za-z0-9_]");
-            const int result = illegalCharacterRegex.indexIn(m_projectName->lineEdit()->text());
-            if (result > -1)
+            // this validation should roughly match the utils.validate_identifier which the cli 
+            // uses to validate project names
+            QRegExp validProjectNameRegex("[A-Za-z][A-Za-z0-9_-]{0,63}");
+            const bool result = validProjectNameRegex.exactMatch(m_projectName->lineEdit()->text());
+            if (!result)
             {
                 projectNameIsValid = false;
-                m_projectName->setErrorLabelText(tr("Project names must only contain alphanumeric characters or the '_' character"));
+                m_projectName->setErrorLabelText(tr("Project names must start with a letter and consist of up to 64 letter, number, '_' or '-' characters"));
             }
-            else if (path.exists() && !path.isEmpty())
-            {
-                projectPathIsValid = false;
-                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
-            }
+
         }
 
         m_projectName->setErrorLabelVisible(!projectNameIsValid);

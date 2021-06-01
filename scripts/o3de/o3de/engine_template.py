@@ -1495,6 +1495,10 @@ def create_project(project_path: str,
         # project name is now the last component of the project_path
         project_name = os.path.basename(project_path)
 
+    if not utils.validate_identifier(project_name):
+        logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {project_name}')
+        return 1
+
     # project name cannot be the same as a restricted platform name
     if project_name in restricted_platforms:
         logger.error(f'Project name cannot be a restricted name. {project_name}')
