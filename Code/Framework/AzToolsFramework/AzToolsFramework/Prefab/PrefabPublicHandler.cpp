@@ -189,7 +189,7 @@ namespace AzToolsFramework
                     if (nestedInstanceLinkPatchesMap.contains(nestedInstance.get()))
                     {
                         previousPatch = AZStd::move(nestedInstanceLinkPatchesMap[nestedInstance.get()]);
-                        UpdateLinkPatchForNewParent(previousPatch, oldEntityAliases, instanceToCreate->get());
+                        UpdateLinkPatchesWithNewEntityAliases(previousPatch, oldEntityAliases, instanceToCreate->get());
                     }
 
                     // These link creations shouldn't be undone because that would put the template in a non-usable state if a user
@@ -365,9 +365,6 @@ namespace AzToolsFramework
                 m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, containerEntityId);
 
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
-
-                // Update the cache - this prevents these changes from being stored in the regular undo/redo nodes
-                //m_prefabUndoCache.Store(containerEntityId, AZStd::move(containerEntityDomAfter));
 
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
@@ -1076,7 +1073,7 @@ namespace AzToolsFramework
 
                         RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
 
-                        UpdateLinkPatchForNewParent(linkPatchesCopy, oldEntityAliases, parentInstance);
+                        UpdateLinkPatchesWithNewEntityAliases(linkPatchesCopy, oldEntityAliases, parentInstance);
                         
                         CreateLink(*nestedInstancePtr, parentTemplateId, undoBatch.GetUndoBatch(),
                             AZStd::move(linkPatchesCopy), true);
@@ -1354,7 +1351,7 @@ namespace AzToolsFramework
             stringToReplace.replace(oldAliasPathRef, newAliasPathRef);
         }
 
-        void PrefabPublicHandler::UpdateLinkPatchForNewParent(
+        void PrefabPublicHandler::UpdateLinkPatchesWithNewEntityAliases(
             PrefabDom& linkPatch,
             const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
             Instance& newParent)

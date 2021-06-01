@@ -134,7 +134,7 @@ namespace AzToolsFramework
             bool IsCyclicalDependencyFound(
                 InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
-            static void UpdateLinkPatchForNewParent(
+            void UpdateLinkPatchesWithNewEntityAliases(
                 PrefabDom& linkPatch,
                 const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
                 Instance& newParent);
