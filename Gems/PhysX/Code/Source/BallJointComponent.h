@@ -32,8 +32,5 @@ namespace PhysX
     protected:
         // JointComponent
         void InitNativeJoint() override;
-
-    private:
-        void InitSwingLimits();
     };
 } // namespace PhysX

@@ -19,6 +19,7 @@
 #include <AzCore/Component/TransformBus.h>
 
 #include <Source/Joint.h>
+#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace AzPhysics
 {
@@ -69,9 +70,6 @@ namespace PhysX
         AZ::Transform GetJointTransform(AZ::EntityId entityId,
             const GenericJointConfiguration& jointConfig);
 
-        /// Initializes joint properties common to all native joint types after native joint creation.
-        void InitGenericProperties();
-
         /// Used on initialization by sub-classes to get native pointers from entity IDs.
         /// This allows sub-classes to instantiate specific native types. This base class does not need knowledge of any specific joint type.
         void ObtainLeadFollowerInfo(LeadFollowerInfo& leadFollowerInfo);
@@ -79,8 +77,12 @@ namespace PhysX
         /// Issues warnings for invalid scenarios when initializing a joint from entity IDs.
         void WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message);
 
+        ApiJointGenericProperties Convert(const GenericJointConfiguration& configuration);
+        ApiJointLimitProperties Convert(const GenericJointLimitsConfiguration& configuration);
+
         GenericJointConfiguration m_configuration;
         GenericJointLimitsConfiguration m_limits;
-        AZStd::shared_ptr<PhysX::Joint> m_joint = nullptr;
+        AzPhysics::ApiJointHandle m_jointHandle = AzPhysics::InvalidApiJointHandle;
+        AzPhysics::SceneHandle m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
     };
 } // namespace PhysX

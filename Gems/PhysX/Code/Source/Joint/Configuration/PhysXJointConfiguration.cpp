@@ -18,6 +18,28 @@
 
 namespace PhysX
 {
+    ApiJointGenericProperties::ApiJointGenericProperties(GenericApiJointFlag flags, float forceMax, float torqueMax)
+        : m_flags(flags)
+        , m_forceMax(forceMax)
+        , m_torqueMax(torqueMax)
+    {
+
+    }
+
+    ApiJointLimitProperties::ApiJointLimitProperties(
+        bool isLimited, bool isSoftLimit, 
+        float damping, float limitFirst, float limitSecond, float stiffness, float tolerance)
+        : m_isLimited(isLimited)
+        , m_isSoftLimit(isSoftLimit)
+        , m_damping(damping)
+        , m_limitFirst(limitFirst)
+        , m_limitSecond(limitSecond)
+        , m_stiffness(stiffness)
+        , m_tolerance(tolerance)
+    {
+
+    }
+
     bool ApiJointGenericProperties::GetFlag(GenericApiJointFlag flag) const
     {
         return static_cast<bool>(m_flags & flag);

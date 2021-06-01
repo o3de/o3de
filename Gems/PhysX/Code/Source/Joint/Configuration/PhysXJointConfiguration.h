@@ -42,6 +42,9 @@ namespace PhysX
         AZ_RTTI(ApiJointGenericProperties, "{6CB15399-24F6-4F03-AAEF-1AE013B683E0}");
         static void Reflect(AZ::ReflectContext* context);
 
+        ApiJointGenericProperties() = default;
+        ApiJointGenericProperties(GenericApiJointFlag flags, float forceMax, float torqueMax);
+
         bool GetFlag(GenericApiJointFlag flag) const; ///< Returns if a particular flag is set as a bool.
 
         GenericApiJointFlag m_flags = GenericApiJointFlag::None; ///< Flags that indicates if joint is breakable, self-colliding, etc.. Converting joint between breakable/non-breakable at game time is allowed.
@@ -55,6 +58,11 @@ namespace PhysX
         AZ_CLASS_ALLOCATOR(ApiJointLimitProperties, AZ::SystemAllocator, 0);
         AZ_RTTI(ApiJointLimitProperties, "{31F941CB-6699-48BB-B12D-61874B52B984}");
         static void Reflect(AZ::ReflectContext* context);
+
+        ApiJointLimitProperties() = default;
+        ApiJointLimitProperties(
+            bool isLimited, bool isSoftLimit, 
+            float damping, float limitFirst, float limitSecond, float stiffness, float tolerance);
 
         bool m_isLimited = true; ///< Specifies if limits are applied to the joint constraints. E.g. if the swing angles are limited.
         bool m_isSoftLimit = false; ///< If limit is soft, spring and damping are used, otherwise tolerance is used. Converting between soft/hard limit at game time is allowed.

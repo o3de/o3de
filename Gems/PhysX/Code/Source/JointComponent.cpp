@@ -21,6 +21,7 @@
 #include <Source/Joint.h>
 #include <Source/JointComponent.h>
 #include <Source/Utils.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace PhysX
 {
@@ -67,7 +68,11 @@ namespace PhysX
     void JointComponent::Deactivate()
     {
         AZ::EntityBus::Handler::BusDisconnect();
-        m_joint.reset();
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            auto* scene = physicsSystem->GetScene(m_jointSceneOwner);
+            scene->RemoveJoint(m_jointHandle);
+        }
     }
 
     physx::PxTransform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor
@@ -93,30 +98,6 @@ namespace PhysX
         AZ::Transform jointTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
         jointTransform = jointTransform * jointConfig.m_localTransformFromFollower;
         return jointTransform;
-    }
-
-    void JointComponent::InitGenericProperties()
-    {
-        if (!m_joint)
-        {
-            return;
-        }
-
-        physx::PxJoint* jointNative = static_cast<physx::PxJoint*>(m_joint->GetNativePointer());
-        if (!jointNative)
-        {
-            return;
-        }
-        PHYSX_SCENE_WRITE_LOCK(jointNative->getScene());
-        jointNative->setConstraintFlag(
-            physx::PxConstraintFlag::eCOLLISION_ENABLED,
-            m_configuration.GetFlag(GenericJointConfiguration::GenericJointFlag::SelfCollide));
-
-        if (m_configuration.GetFlag(GenericJointConfiguration::GenericJointFlag::Breakable))
-        {
-            jointNative->setBreakForce(m_configuration.m_forceMax
-                , m_configuration.m_torqueMax);
-        }
     }
 
     void JointComponent::ObtainLeadFollowerInfo(JointComponent::LeadFollowerInfo& info)
@@ -189,12 +170,33 @@ namespace PhysX
         if (!m_configuration.m_leadEntity.IsValid() || entityId == m_configuration.m_leadEntity)
         {
             InitNativeJoint(); // Invoke overriden specific joint type instantiation
-            InitGenericProperties();
         }
         // Else, follower entity is activated, subscribe to be notified that lead entity is activated.
         else
         {
             AZ::EntityBus::Handler::BusConnect(m_configuration.m_leadEntity);
         }
+    }
+
+    ApiJointGenericProperties JointComponent::Convert(const GenericJointConfiguration& configuration)
+    {
+        return ApiJointGenericProperties{
+            static_cast<ApiJointGenericProperties::GenericApiJointFlag>(configuration.m_flags),
+            configuration.m_forceMax,
+            configuration.m_torqueMax
+        };
+    }
+
+    ApiJointLimitProperties JointComponent::Convert(const GenericJointLimitsConfiguration& configuration)
+    {
+        return ApiJointLimitProperties{
+            configuration.m_isLimited,
+            configuration.m_isSoftLimit,
+            configuration.m_damping,
+            configuration.m_limitFirst,
+            configuration.m_limitSecond,
+            configuration.m_stiffness,
+            configuration.m_tolerance
+        };
     }
 } // namespace PhysX
