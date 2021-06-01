@@ -280,6 +280,8 @@ BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
     [[maybe_unused]] DWORD lFlags, BOOL bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -3315,6 +3317,8 @@ void CCryEditApp::OnCreateSlice()
 void CCryEditApp::OnOpenLevel()
 {
     CLevelFileDialog levelFileDialog(true);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
