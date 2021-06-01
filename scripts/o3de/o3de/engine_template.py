@@ -2275,8 +2275,10 @@ def add_args(subparsers) -> None:
                                                ' Ex. C:/o3de/TestProject'
                                                ' TestProject = <project_name> if --project-name not provided')
     create_project_subparser.add_argument('-pn', '--project-name', type=str, required=False,
-                                          help='The name of the project you wish to use, must be alphanumeric'
-                                               ' Ex. NewProject')
+                                          help='The name of the project you wish to use, must be alphanumeric, '
+                                               ' and can contain _ and - characters.'
+                                               ' If no name is provided, will use last component of project path.'
+                                               ' Ex. New_Project-123')
 
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=str, required=False,
