@@ -25,13 +25,7 @@ namespace O3DE::ProjectManager
         ~UpdateProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        QString GetTabText() override;
-        bool IsTab() override;
-
         void SetProjectInfo(const ProjectInfo& projectInfo);
-
-    protected slots:
-        void HandleBrowseButton();
 
     private:
     };

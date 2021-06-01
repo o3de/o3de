@@ -21,22 +21,11 @@ namespace O3DE::ProjectManager
     UpdateProjectSettingsScreen::UpdateProjectSettingsScreen(QWidget* parent)
         : ProjectSettingsScreen(parent)
     {
-        //connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
     }
 
     ProjectManagerScreen UpdateProjectSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::UpdateProjectSettings;
-    }
-
-    QString UpdateProjectSettingsScreen::GetTabText()
-    {
-        return tr("General");
-    }
-
-    bool UpdateProjectSettingsScreen::IsTab()
-    {
-        return true;
     }
 
     void UpdateProjectSettingsScreen::SetProjectInfo(const ProjectInfo& projectInfo)
