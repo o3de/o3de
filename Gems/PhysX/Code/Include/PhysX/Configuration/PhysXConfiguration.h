@@ -13,7 +13,6 @@
 #pragma once
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
@@ -55,7 +54,6 @@ namespace PhysX
         static PhysXSystemConfiguration CreateDefault();
 
         WindConfiguration m_windConfiguration; //!< Wind configuration for PhysX.
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_defaultMaterialLibrary = AZ::Data::AssetLoadBehavior::NoLoad; //!< Material Library exposed by the system component SystemBus API.
 
         bool operator==(const PhysXSystemConfiguration& other) const;
         bool operator!=(const PhysXSystemConfiguration& other) const;

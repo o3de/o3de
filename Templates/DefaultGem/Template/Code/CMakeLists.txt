@@ -59,6 +59,12 @@ ly_add_target(
             Gem::${Name}.Static
 )
 
+# By default, we will specify that the above target ${Name} would be used by
+# Client and Server type targets when this gem is enabled.  If you don't want it
+# active in Clients or Servers by default, delete one of both of the following lines:
+ly_create_alias(NAME ${Name}.Clients NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Servers NAMESPACE Gem TARGETS Gem::${Name})
+
 # If we are on a host platform, we want to add the host tools targets like the ${Name}.Editor target which
 # will also depend on ${Name}.Static
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -94,6 +100,14 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Gem::${Name}.Editor.Static
     )
+
+    # By default, we will specify that the above target ${Name} would be used by
+    # Tool and Builder type targets when this gem is enabled.  If you don't want it
+    # active in Tools or Builders by default, delete one of both of the following lines:
+    ly_create_alias(NAME ${Name}.Tools    NAMESPACE Gem TARGETS Gem::${Name}.Editor)
+    ly_create_alias(NAME ${Name}.Builders NAMESPACE Gem TARGETS Gem::${Name}.Editor)
+
+
 endif()
 
 ################################################################################

@@ -52,6 +52,11 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
     )
+
+    # Load the "Gem::GraphModel" module in Builders and Tools
+    ly_create_alias(NAME GraphModel.Builders NAMESPACE Gem TARGETS Gem::GraphModel.Editor)
+    ly_create_alias(NAME GraphModel.Tools    NAMESPACE Gem TARGETS Gem::GraphModel.Editor)
+
 endif()
 
 ################################################################################

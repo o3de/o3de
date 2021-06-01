@@ -22,6 +22,10 @@ ly_add_target(
             AZ::AzCore
 )
 
+# clients and servers use the above module.
+ly_create_alias(NAME CustomAssetExample.Clients NAMESPACE Gem TARGETS CustomAssetExample)
+ly_create_alias(NAME CustomAssetExample.Servers NAMESPACE Gem TARGETS CustomAssetExample)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME CustomAssetExample.Editor GEM_MODULE
@@ -37,4 +41,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AssetBuilderSDK
     )
+
+    # other tools use the above tools module:
+    ly_create_alias(NAME CustomAssetExample.Builders NAMESPACE Gem TARGETS CustomAssetExample.Editor)
+    ly_create_alias(NAME CustomAssetExample.Tools    NAMESPACE Gem TARGETS CustomAssetExample.Editor)
+
 endif()
