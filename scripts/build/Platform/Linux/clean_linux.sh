@@ -50,9 +50,7 @@ if [[ -n "$CLEAN_OUTPUT_DIRECTORY" ]]; then
     fi
 fi
 
-if [[ -d $OUTPUT_DIRECTORY ]]; then
-    mkdir -p ${OUTPUT_DIRECTORY}
-fi
+mkdir -p ${OUTPUT_DIRECTORY}
 # Save the node label
 pushd $OUTPUT_DIRECTORY
 echo "${NODE_LABEL}" > ${LAST_CONFIGURE_NODE_LABEL_FILE}
