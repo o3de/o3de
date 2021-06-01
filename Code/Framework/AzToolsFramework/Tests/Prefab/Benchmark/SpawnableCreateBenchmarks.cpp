@@ -34,7 +34,8 @@ namespace Benchmark
         {
             state.PauseTiming();
 
-            auto spawnable = ::AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(prefabDom);
+            AzFramework::Spawnable spawnable;
+            AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
 
             state.ResumeTiming();
         }
