@@ -16,7 +16,7 @@
 
 ShaderResourceGroup MorphTargetPassSrg : SRG_PerPass
 {
-    RWBuffer<int> m_accumulatedDeltas;    
+    RWStruturedBuffer<int> m_accumulatedDeltas;    
 }
 
 // This class represents the data that is passed to the morph target compute shader of an individual delta
