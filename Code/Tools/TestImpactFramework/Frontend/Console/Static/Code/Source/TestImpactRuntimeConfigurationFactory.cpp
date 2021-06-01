@@ -79,24 +79,19 @@ namespace TestImpact
         const auto& autogenTargetSources = targetSources["autogen"];
         buildTargetDescriptorConfig.m_mappingDirectory = buildTargetDescriptor["dir"].GetString();
         const auto& staticInclusionFilters = staticTargetSources["include_filters"].GetArray();
-        if (!staticInclusionFilters.Empty())
+        
+        buildTargetDescriptorConfig.m_staticInclusionFilters.reserve(staticInclusionFilters.Size());
+        for (const auto& staticInclusionFilter : staticInclusionFilters)
         {
-            buildTargetDescriptorConfig.m_staticInclusionFilters.reserve(staticInclusionFilters.Size());
-            for (const auto& staticInclusionFilter : staticInclusionFilters)
-            {
-                buildTargetDescriptorConfig.m_staticInclusionFilters.push_back(staticInclusionFilter.GetString());
-            }
+            buildTargetDescriptorConfig.m_staticInclusionFilters.push_back(staticInclusionFilter.GetString());
         }
 
         buildTargetDescriptorConfig.m_inputOutputPairer = autogenTargetSources["input_output_pairer"].GetString();
         const auto& inputInclusionFilters = autogenTargetSources["input"]["include_filters"].GetArray();
-        if (!inputInclusionFilters.Empty())
+        buildTargetDescriptorConfig.m_inputInclusionFilters.reserve(inputInclusionFilters.Size());
+        for (const auto& inputInclusionFilter : inputInclusionFilters)
         {
-            buildTargetDescriptorConfig.m_inputInclusionFilters.reserve(inputInclusionFilters.Size());
-            for (const auto& inputInclusionFilter : inputInclusionFilters)
-            {
-                buildTargetDescriptorConfig.m_inputInclusionFilters.push_back(inputInclusionFilter.GetString());
-            }
+            buildTargetDescriptorConfig.m_inputInclusionFilters.push_back(inputInclusionFilter.GetString());
         }
 
         return buildTargetDescriptorConfig;
@@ -126,60 +121,54 @@ namespace TestImpact
         testEngineConfig.m_instrumentation.m_binary = testEngine["instrumentation"]["bin"].GetString();
         return testEngineConfig;
     }
+
     TargetConfig ParseTargetConfig(const rapidjson::Value& target)
     {
         TargetConfig targetConfig;
         targetConfig.m_outputDirectory = target["dir"].GetString();
-        const auto& testExcludes =
-            target["exclude"].GetArray();
-        if (!testExcludes.Empty())
+        const auto& testExcludes = target["exclude"].GetArray();
+        targetConfig.m_excludedTestTargets.reserve(testExcludes.Size());
+        for (const auto& testExclude : testExcludes)
         {
-            targetConfig.m_excludedTestTargets.reserve(testExcludes.Size());
-            for (const auto& testExclude : testExcludes)
-            {
-                targetConfig.m_excludedTestTargets.push_back(testExclude.GetString());
-            }
+            targetConfig.m_excludedTestTargets.push_back(testExclude.GetString());
         }
-        const auto& testShards =
-            target["shard"].GetArray();
-        if (!testShards.Empty())
-        {
-            targetConfig.m_shardedTestTargets.reserve(testShards.Size());
-            for (const auto& testShard : testShards)
-            {
-                const auto getShardingConfiguration = [](const AZStd::string& config)
-                {
-                    if (config == "fixture_contiguous")
-                    {
-                        return ShardConfiguration::FixtureContiguous;
-                    }
-                    else if (config == "fixture_interleaved")
-                    {
-                        return ShardConfiguration::FixtureInterleaved;
-                    }
-                    else if (config == "test_contiguous")
-                    {
-                        return ShardConfiguration::TestContiguous;
-                    }
-                    else if (config == "test_interleaved")
-                    {
-                        return ShardConfiguration::TestInterleaved;
-                    }
-                    else if (config == "never")
-                    {
-                        return ShardConfiguration::Never;
-                    }
-                    else
-                    {
-                        throw ConfigurationException(AZStd::string::format("Unexpected sharding configuration: %s", config.c_str()));
-                    }
-                };
 
-                TargetConfig::ShardedTarget shard;
-                shard.m_name = testShard["target"].GetString();
-                shard.m_configuration = getShardingConfiguration(testShard["policy"].GetString());
-                targetConfig.m_shardedTestTargets.push_back(AZStd::move(shard));
-            }
+        const auto& testShards =  target["shard"].GetArray();
+        targetConfig.m_shardedTestTargets.reserve(testShards.Size());
+        for (const auto& testShard : testShards)
+        {
+            const auto getShardingConfiguration = [](const AZStd::string& config)
+            {
+                if (config == "fixture_contiguous")
+                {
+                    return ShardConfiguration::FixtureContiguous;
+                }
+                else if (config == "fixture_interleaved")
+                {
+                    return ShardConfiguration::FixtureInterleaved;
+                }
+                else if (config == "test_contiguous")
+                {
+                    return ShardConfiguration::TestContiguous;
+                }
+                else if (config == "test_interleaved")
+                {
+                    return ShardConfiguration::TestInterleaved;
+                }
+                else if (config == "never")
+                {
+                    return ShardConfiguration::Never;
+                }
+                else
+                {
+                    throw ConfigurationException(AZStd::string::format("Unexpected sharding configuration: %s", config.c_str()));
+                }
+            };
+
+            TargetConfig::ShardedTarget shard;
+            shard.m_name = testShard["target"].GetString();
+            shard.m_configuration = getShardingConfiguration(testShard["policy"].GetString());
+            targetConfig.m_shardedTestTargets.push_back(AZStd::move(shard));
         }
 
         return targetConfig;
@@ -187,7 +176,6 @@ namespace TestImpact
 
     RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData)
     {
-        RuntimeConfig runtimeConfig;
         rapidjson::Document configurationFile;
 
         if (configurationFile.Parse(configurationData.c_str()).HasParseError())
@@ -195,6 +183,7 @@ namespace TestImpact
             throw TestImpact::ConfigurationException("Could not parse runtimeConfig data, JSON has errors");
         }
 
+        RuntimeConfig runtimeConfig;
         const auto& staticArtifacts = configurationFile["artifacts"]["static"];
         runtimeConfig.m_meta = ParseConfigMeta(configurationFile["meta"]);
         runtimeConfig.m_repo = ParseRepoConfig(configurationFile["repo"]);
