@@ -122,6 +122,15 @@ namespace PhysX
         m_pxJoint = Utils::PxJointFactories::CreatePxBallJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
+    PhysXHingeApiJoint::PhysXHingeApiJoint(const HingeApiJointConfiguration& configuration,
+        AzPhysics::SceneHandle sceneHandle,
+        AzPhysics::SimulatedBodyHandle parentBodyHandle,
+        AzPhysics::SimulatedBodyHandle childBodyHandle)
+        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+    {
+        m_pxJoint = Utils::PxJointFactories::CreatePxHingeJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+    }
+
     AZ::Crc32 PhysXD6Joint::GetNativeType() const
     {
         return NativeTypeIdentifiers::D6Joint;
@@ -135,6 +144,11 @@ namespace PhysX
     AZ::Crc32 PhysXBallApiJoint::GetNativeType() const
     {
         return NativeTypeIdentifiers::BallJoint;
+    }
+
+    AZ::Crc32 PhysXHingeApiJoint::GetNativeType() const
+    {
+        return NativeTypeIdentifiers::HingeJoint;
     }
 
     void PhysXD6Joint::GenerateJointLimitVisualizationData(
@@ -206,4 +220,15 @@ namespace PhysX
         
     }
 
+    void PhysXHingeApiJoint::GenerateJointLimitVisualizationData(
+        [[maybe_unused]] float scale,
+        [[maybe_unused]] AZ::u32 angularSubdivisions,
+        [[maybe_unused]] AZ::u32 radialSubdivisions,
+        [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertexBufferOut,
+        [[maybe_unused]] AZStd::vector<AZ::u32>& indexBufferOut,
+        [[maybe_unused]] AZStd::vector<AZ::Vector3>& lineBufferOut,
+        [[maybe_unused]] AZStd::vector<bool>& lineValidityBufferOut)
+    {
+        
+    }
 } // namespace PhysX

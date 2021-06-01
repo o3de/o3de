@@ -122,4 +122,29 @@ namespace PhysX
             AZStd::vector<AZ::Vector3>& lineBufferOut,
             AZStd::vector<bool>& lineValidityBufferOut) override;
     };
+
+    //! A hinge joint locks 2 bodies relative to one another except about the x-axis of the joint between them.
+    class PhysXHingeApiJoint : public PhysXApiJoint
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PhysXHingeApiJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXHingeApiJoint, "{9C5B955C-6C80-45FA-855D-DDA449C85313}", PhysX::PhysXApiJoint);
+
+        PhysXHingeApiJoint(const HingeApiJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+        virtual ~PhysXHingeApiJoint() = default;
+
+        AZ::Crc32 GetNativeType() const override;
+        void GenerateJointLimitVisualizationData(
+            float scale,
+            AZ::u32 angularSubdivisions,
+            AZ::u32 radialSubdivisions,
+            AZStd::vector<AZ::Vector3>& vertexBufferOut,
+            AZStd::vector<AZ::u32>& indexBufferOut,
+            AZStd::vector<AZ::Vector3>& lineBufferOut,
+            AZStd::vector<bool>& lineValidityBufferOut) override;
+    };
 } // namespace PhysX

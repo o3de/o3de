@@ -850,6 +850,12 @@ namespace PhysX
                 azdynamic_cast<const BallApiJointConfiguration*>(jointConfig),
                 m_sceneHandle, parentBody, childBody, newJointCrc);
         }
+        else if (azrtti_istypeof<PhysX::HingeApiJointConfiguration*>(jointConfig))
+        {
+            newJoint = Internal::CreateJoint<PhysXHingeApiJoint, HingeApiJointConfiguration>(
+                azdynamic_cast<const HingeApiJointConfiguration*>(jointConfig),
+                m_sceneHandle, parentBody, childBody, newJointCrc);
+        }
         else
         {
             AZ_Warning("PhysXScene", false, "Unknown ApiJointConfiguration.");

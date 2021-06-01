@@ -169,6 +169,34 @@ namespace PhysX {
             nativeJoint->setSphericalJointFlag(physx::PxSphericalJointFlag::eLIMIT_ENABLED, true);
         }
 
+        void InitializeRevoluteLimitProperties(const ApiJointLimitProperties& properties, physx::PxRevoluteJoint* nativeJoint)
+        {
+            if (!nativeJoint)
+            {
+                return;
+            }
+
+            if (!properties.m_isLimited)
+            {
+                nativeJoint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eLIMIT_ENABLED, false);
+                return;
+            }
+
+            physx::PxJointAngularLimitPair limitPair(
+                AZ::DegToRad(properties.m_limitSecond), 
+                AZ::DegToRad(properties.m_limitFirst), 
+                properties.m_tolerance);
+
+            if (properties.m_isSoftLimit)
+            {
+                limitPair.stiffness = properties.m_stiffness;
+                limitPair.damping = properties.m_damping;
+            }
+
+            nativeJoint->setLimit(limitPair);
+            nativeJoint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eLIMIT_ENABLED, true);
+        }
+
         namespace PxJointFactories
         {   
             PxJointUniquePtr CreatePxD6Joint(
@@ -264,6 +292,36 @@ namespace PhysX {
                 }
 
                 InitializeSphericalLimitProperties(configuration.m_limitProperties, joint);
+                InitializeGenericProperties(
+                    configuration.m_genericProperties, 
+                    static_cast<physx::PxJoint*>(joint));
+
+                return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
+            }
+
+            PxJointUniquePtr CreatePxHingeJoint(
+                const PhysX::HingeApiJointConfiguration& configuration,
+                AzPhysics::SceneHandle sceneHandle,
+                AzPhysics::SimulatedBodyHandle parentBodyHandle,
+                AzPhysics::SimulatedBodyHandle childBodyHandle) 
+            {
+                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+
+                if (!actorData.parentActor || !actorData.childActor)
+                {
+                    return nullptr;
+                }
+
+                physx::PxRevoluteJoint* joint;
+
+                {
+                    PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
+                    joint = physx::PxRevoluteJointCreate(PxGetPhysics(), 
+                        actorData.parentActor, actorData.parentLocalTransform,
+                        actorData.childActor, actorData.childLocalTransform);
+                }
+
+                InitializeRevoluteLimitProperties(configuration.m_limitProperties, joint);
                 InitializeGenericProperties(
                     configuration.m_genericProperties, 
                     static_cast<physx::PxJoint*>(joint));

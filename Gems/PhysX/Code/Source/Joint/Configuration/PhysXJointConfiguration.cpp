@@ -118,4 +118,16 @@ namespace PhysX
                 ;
         }
     }
+    
+    void HingeApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<HingeApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+                ->Version(1)
+                ->Field("Generic Properties", &HingeApiJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &HingeApiJointConfiguration::m_limitProperties)
+                ;
+        }
+    }
 } // namespace PhysX

@@ -83,4 +83,14 @@ namespace PhysX
         ApiJointGenericProperties m_genericProperties;
         ApiJointLimitProperties m_limitProperties;
     };
+    
+    struct HingeApiJointConfiguration : public AzPhysics::ApiJointConfiguration 
+    {
+        AZ_CLASS_ALLOCATOR(HingeApiJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(HingeApiJointConfiguration, "{FB04198E-0BA5-45C2-8343-66DA28ED45EA}", AzPhysics::ApiJointConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+
+        ApiJointGenericProperties m_genericProperties;
+        ApiJointLimitProperties m_limitProperties;
+    };
 } // namespace PhysX
