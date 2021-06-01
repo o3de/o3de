@@ -16,6 +16,7 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
 
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
@@ -250,11 +251,7 @@ namespace AZ
 
         bool FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
         {
-            AzFramework::NativeWindowHandle windowHandle = nullptr;
-            AzFramework::WindowSystemRequestBus::BroadcastResult(
-                windowHandle,
-                &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
-
+            AzFramework::NativeWindowHandle windowHandle = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext()->GetWindowHandle();
             if (windowHandle)
             {
                 return CaptureScreenshotForWindow(filePath, windowHandle);
