@@ -50,8 +50,7 @@ namespace AzFramework
         }
     }
 
-    void SpawnableEntitiesManager::SpawnAllEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, SpawnEntitiesOptionalArgs optionalArgs)
+    void SpawnableEntitiesManager::SpawnAllEntities(EntitySpawnTicket& ticket, SpawnEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnAllEntities hasn't been initialized.");
 
@@ -61,11 +60,11 @@ namespace AzFramework
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::SpawnEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs)
+        EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to SpawnEntities hasn't been initialized.");
 
@@ -76,23 +75,21 @@ namespace AzFramework
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
         queueEntry.m_preInsertionCallback = AZStd::move(optionalArgs.m_preInsertionCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::DespawnAllEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, DespawnAllEntitiesOptionalArgs optionalArgs)
+    void SpawnableEntitiesManager::DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to DespawnAllEntities hasn't been initialized.");
 
         DespawnAllEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ReloadSpawnable(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, AZ::Data::Asset<Spawnable> spawnable,
-        ReloadSpawnableOptionalArgs optionalArgs)
+        EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs)
     {
         AZ_Assert(ticket.IsValid(), "Ticket provided to ReloadSpawnable hasn't been initialized.");
 
@@ -102,10 +99,11 @@ namespace AzFramework
         queueEntry.m_serializeContext =
             optionalArgs.m_serializeContext == nullptr ? m_defaultSerializeContext : optionalArgs.m_serializeContext;
         queueEntry.m_completionCallback = AZStd::move(optionalArgs.m_completionCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::ListEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ListEntitiesCallback listCallback)
+    void SpawnableEntitiesManager::ListEntities(
+        EntitySpawnTicket& ticket, ListEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(listCallback, "ListEntities called on spawnable entities without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to ListEntities hasn't been initialized.");
@@ -113,11 +111,11 @@ namespace AzFramework
         ListEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::ListIndicesAndEntities(
-        EntitySpawnTicket& ticket, SpawnablePriority priority, ListIndicesEntitiesCallback listCallback)
+        EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(listCallback, "ListEntities called on spawnable entities without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to ListEntities hasn't been initialized.");
@@ -125,10 +123,11 @@ namespace AzFramework
         ListIndicesEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::ClaimEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ClaimEntitiesCallback listCallback)
+    void SpawnableEntitiesManager::ClaimEntities(
+        EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs)
     {
         AZ_Assert(listCallback, "ClaimEntities called on spawnable entities without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to ClaimEntities hasn't been initialized.");
@@ -136,10 +135,10 @@ namespace AzFramework
         ClaimEntitiesCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_listCallback = AZStd::move(listCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
-    void SpawnableEntitiesManager::Barrier(EntitySpawnTicket& ticket, SpawnablePriority priority, BarrierCallback completionCallback)
+    void SpawnableEntitiesManager::Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs)
     {
         AZ_Assert(completionCallback, "Barrier on spawnable entities called without a valid callback to use.");
         AZ_Assert(ticket.IsValid(), "Ticket provided to Barrier hasn't been initialized.");
@@ -147,7 +146,7 @@ namespace AzFramework
         BarrierCommand queueEntry;
         queueEntry.m_ticketId = ticket.GetId();
         queueEntry.m_completionCallback = AZStd::move(completionCallback);
-        QueueRequest(ticket, priority, AZStd::move(queueEntry));
+        QueueRequest(ticket, optionalArgs.m_priority, AZStd::move(queueEntry));
     }
 
     void SpawnableEntitiesManager::AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler)

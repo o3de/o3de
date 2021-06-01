@@ -106,7 +106,7 @@ namespace UnitTest
             };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
-        m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriority_Default, AZStd::move(optionalArgs));
+        m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
         EXPECT_EQ(NumEntities, spawnedEntitiesCount);
@@ -116,7 +116,7 @@ namespace UnitTest
     {
         {
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
-            m_manager->SpawnAllEntities(ticket, AzFramework::SpawnablePriority_Default);
+            m_manager->SpawnAllEntities(ticket);
         }
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
@@ -130,7 +130,7 @@ namespace UnitTest
     {
         {
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
-            m_manager->SpawnEntities(ticket, AzFramework::SpawnablePriority_Default, {});
+            m_manager->SpawnEntities(ticket, {/* Deliberate empty list of indices. */});
         }
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
@@ -144,7 +144,7 @@ namespace UnitTest
     {
         {
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
-            m_manager->DespawnAllEntities(ticket, AzFramework::SpawnablePriority_Default);
+            m_manager->DespawnAllEntities(ticket);
         }
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
@@ -158,7 +158,7 @@ namespace UnitTest
     {
         {
             AzFramework::EntitySpawnTicket ticket(*m_spawnableAsset);
-            m_manager->ReloadSpawnable(ticket, AzFramework::SpawnablePriority_Default, *m_spawnableAsset);
+            m_manager->ReloadSpawnable(ticket, *m_spawnableAsset);
         }
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
@@ -185,7 +185,7 @@ namespace UnitTest
                 spawnedEntitiesCount += entities.size();
             };
 
-        m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriority_Default);
+        m_manager->SpawnAllEntities(*m_ticket);
         m_manager->ListEntities(*m_ticket, AzFramework::SpawnablePriority_Default, AZStd::move(callback));
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
@@ -230,7 +230,7 @@ namespace UnitTest
                 }
             };
 
-        m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriority_Default);
+        m_manager->SpawnAllEntities(*m_ticket);
         m_manager->ListIndicesAndEntities(*m_ticket, AzFramework::SpawnablePriority_Default, AZStd::move(callback));
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
@@ -309,11 +309,13 @@ namespace UnitTest
 
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(defaultCallback);
-        m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriority_Default, AZStd::move(optionalArgs));
+        optionalArgs.m_priority = AzFramework::SpawnablePriority_Default;
+        m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
 
         AzFramework::SpawnEntitiesOptionalArgs highPriortyOptionalArgs;
         highPriortyOptionalArgs.m_completionCallback = AZStd::move(highCallback);
-        m_manager->SpawnAllEntities(highPriorityTicket, AzFramework::SpawnablePriority_High, AZStd::move(highPriortyOptionalArgs));
+        highPriortyOptionalArgs.m_priority = AzFramework::SpawnablePriority_High;
+        m_manager->SpawnAllEntities(highPriorityTicket, AZStd::move(highPriortyOptionalArgs));
 
         m_manager->ProcessQueue(
             AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |
@@ -343,11 +345,13 @@ namespace UnitTest
 
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(defaultCallback);
-        m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriority_Default, AZStd::move(optionalArgs));
+        optionalArgs.m_priority = AzFramework::SpawnablePriority_Default;
+        m_manager->SpawnAllEntities(*m_ticket, AZStd::move(optionalArgs));
 
         AzFramework::SpawnEntitiesOptionalArgs highPriortyOptionalArgs;
         highPriortyOptionalArgs.m_completionCallback = AZStd::move(highCallback);
-        m_manager->SpawnAllEntities(*m_ticket, AzFramework::SpawnablePriority_High, AZStd::move(highPriortyOptionalArgs));
+        highPriortyOptionalArgs.m_priority = AzFramework::SpawnablePriority_High;
+        m_manager->SpawnAllEntities(*m_ticket, AZStd::move(highPriortyOptionalArgs));
 
         m_manager->ProcessQueue(
             AzFramework::SpawnableEntitiesManager::CommandQueuePriority::High |

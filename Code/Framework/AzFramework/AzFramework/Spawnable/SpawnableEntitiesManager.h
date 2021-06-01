@@ -57,23 +57,21 @@ namespace AzFramework
         // The following functions are thread safe
         //
 
-        void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
+        void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
         void SpawnEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices,
-            SpawnEntitiesOptionalArgs optionalArgs = {}) override;
-        void DespawnAllEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
-
+            EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
+        void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void ReloadSpawnable(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, AZ::Data::Asset<Spawnable> spawnable,
-            ReloadSpawnableOptionalArgs optionalArgs = {}) override;
+            EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs = {}) override;
 
-        void ListEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ListEntitiesCallback listCallback) override;
+        void ListEntities(
+            EntitySpawnTicket& ticket, ListEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
         void ListIndicesAndEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, ListIndicesEntitiesCallback listCallback) override;
-        void ClaimEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ClaimEntitiesCallback listCallback) override;
+            EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
+        void ClaimEntities(
+            EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs = {}) override;
 
-        void Barrier(EntitySpawnTicket& spawnInfo, SpawnablePriority priority, BarrierCallback completionCallback) override;
+        void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
 
         void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
         void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
