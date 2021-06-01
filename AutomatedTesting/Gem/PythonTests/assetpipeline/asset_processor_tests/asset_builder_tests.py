@@ -64,6 +64,15 @@ class TestsAssetBuilder_WindowsAndMac(object):
     ):
         """
         Verifying -debug parameter for AssetBuilder
+
+        Test Steps:
+        1. Create temporary workspace
+        2. Launch Asset Processor GUI
+        3. Add test assets to workspace
+        4. Run Asset Builder with debug on an intact slice
+        5. Check Asset Builder didn't fail to build
+        6. Run Asset Builder with debug on a corrupted slice
+        7. Verify corrupted slice produced an error
         """
         env = ap_setup_fixture
         intact_slice_failed = False
