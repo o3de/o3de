@@ -59,7 +59,10 @@ namespace AZ
             static constexpr uint32_t Draw = 0;
             static constexpr uint32_t Object = 1;
             static constexpr uint32_t Material = 2;
+            static constexpr uint32_t SubPass = 3;
             static constexpr uint32_t Pass = 4;
+            static constexpr uint32_t View = 5;
+            static constexpr uint32_t Scene = 6;
         };
     }
 }

@@ -406,21 +406,10 @@ namespace AzFramework
         return m_localTM.GetRotation();
     }
 
-    void TransformComponent::SetLocalScale(const AZ::Vector3& scale)
-    {
-        AZ::Transform newLocalTM = m_localTM;
-        newLocalTM.SetScale(scale);
-        SetLocalTM(newLocalTM);
-    }
-
     AZ::Vector3 TransformComponent::GetLocalScale()
     {
-        return m_localTM.GetScale();
-    }
-
-    AZ::Vector3 TransformComponent::GetWorldScale()
-    {
-        return m_worldTM.GetScale();
+        AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
+        return AZ::Vector3(m_localTM.GetUniformScale());
     }
 
     void TransformComponent::SetLocalUniformScale(float scale)
@@ -756,11 +745,11 @@ namespace AzFramework
                 ->Event("GetLocalRotationQuaternion", &AZ::TransformBus::Events::GetLocalRotationQuaternion)
                     ->Attribute("Rotation", AZ::Edit::Attributes::PropertyRotation)
                 ->VirtualProperty("Rotation", "GetLocalRotationQuaternion", "SetLocalRotationQuaternion")
-                ->Event("SetLocalScale", &AZ::TransformBus::Events::SetLocalScale)
                 ->Event("GetLocalScale", &AZ::TransformBus::Events::GetLocalScale)
                     ->Attribute("Scale", AZ::Edit::Attributes::PropertyScale)
-                ->VirtualProperty("Scale", "GetLocalScale", "SetLocalScale")
-                ->Event("GetWorldScale", &AZ::TransformBus::Events::GetWorldScale)
+                ->Event("SetLocalUniformScale", &AZ::TransformBus::Events::SetLocalUniformScale)
+                ->Event("GetLocalUniformScale", &AZ::TransformBus::Events::GetLocalUniformScale)
+                ->VirtualProperty("Uniform Scale", "GetLocalUniformScale", "SetLocalUniformScale")
                 ->Event("GetChildren", &AZ::TransformBus::Events::GetChildren)
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
