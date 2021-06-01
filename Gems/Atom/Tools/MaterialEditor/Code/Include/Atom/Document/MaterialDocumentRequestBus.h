@@ -33,7 +33,7 @@ namespace AZ
 namespace MaterialEditor
 {
     //! UVs are processed in a property group but will be handled differently.
-    static constexpr const char UvGroupName[] = "UvNames";
+    static constexpr const char UvGroupName[] = "uvSets";
 
     class MaterialDocumentRequests
         : public AZ::EBusTraits
