@@ -2471,7 +2471,17 @@ namespace AzToolsFramework
                 break;
             }
         });
-
+        
+        AddAction(
+            m_actions, { QKeySequence(Qt::Key_U) },
+            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Test", "Removing Viewport Ui",
+           [this]()
+        {
+                SetViewportUiClusterVisible(m_transformModeClusterId, !m_viewportUiVisible);
+                SetViewportUiClusterVisible(m_spaceCluster.m_spaceClusterId, !m_viewportUiVisible);
+                m_viewportUiVisible = !m_viewportUiVisible;
+        });
+       
         EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
     }
 

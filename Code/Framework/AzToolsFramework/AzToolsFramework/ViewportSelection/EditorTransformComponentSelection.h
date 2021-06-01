@@ -306,6 +306,8 @@ namespace AzToolsFramework
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
+
+        bool m_viewportUiVisible = true;
     };
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
