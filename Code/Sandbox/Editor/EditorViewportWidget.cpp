@@ -463,16 +463,20 @@ void EditorViewportWidget::Update()
         m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
     }
 
-    AZ::Matrix4x4 clipMatrix;
-    AZ::MakePerspectiveFovMatrixRH(
-        clipMatrix,
-        m_Camera.GetFov(),
-        aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
-        m_Camera.GetNearPlane(),
-        m_Camera.GetFarPlane(),
-        true
-    );
-    m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
+    // Don't override the game mode FOV
+    if (!GetIEditor()->IsInGameMode())
+    {
+        AZ::Matrix4x4 clipMatrix;
+        AZ::MakePerspectiveFovMatrixRH(
+            clipMatrix,
+            GetFOV(),
+            aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
+            m_Camera.GetNearPlane(),
+            m_Camera.GetFarPlane(),
+            true
+        );
+        m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
+    }
     m_updatingCameraPosition = false;
 
 
@@ -869,6 +873,13 @@ void EditorViewportWidget::OnBeginPrepareRender()
         m_cameraObjectId = GUID_NULL;
         int w = m_rcClient.width();
         int h = m_rcClient.height();
+
+        // Don't bother doing an FOV calculation if we don't have a valid viewport
+        // This prevents frustum calculation bugs with a null viewport
+        if (w <= 1 || h <= 1)
+        {
+            return;
+        }
 
         float fov = gSettings.viewports.fDefaultFov;
 
@@ -1782,9 +1793,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
                 cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection));
             }
         }
-
-        using namespace AzToolsFramework;
-        ComponentEntityObjectRequestBus::Event(cameraObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
     }
     else if (m_viewEntityId.IsValid())
     {
