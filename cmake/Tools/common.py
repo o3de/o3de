@@ -316,14 +316,18 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         version_match = tool_version_regex.search(version_output)
         if not version_match:
             raise RuntimeError()
-        result_version = LooseVersion(str(version_match.group(1)).strip())
 
-        if min_version and result_version < min_version:
-            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",
-                               ERROR_CODE_ENVIRONMENT_ERROR)
-        elif max_version and result_version > max_version:
-            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of {tool_name} supported ({str(max_version)}).",
-                               ERROR_CODE_ENVIRONMENT_ERROR)
+        try:
+            result_version = LooseVersion(str(version_match.group(1)).strip())
+
+            if min_version and result_version < min_version:
+                raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",
+                                   ERROR_CODE_ENVIRONMENT_ERROR)
+            elif max_version and result_version > max_version:
+                raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of {tool_name} supported ({str(max_version)}).",
+                                   ERROR_CODE_ENVIRONMENT_ERROR)
+        except TypeError as err:
+            logging.warning(f"Unable to verify current detected version of {tool_name} : {result_version} ({err})")
 
         return result_version, resolved_override_tool_path
 
