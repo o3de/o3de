@@ -52,7 +52,7 @@ namespace MaterialEditor
         bool CompareInstanceNodeProperties(
             const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const;
 
-        void AddDetailsGroup();
+        void AddOverviewGroup();
         void AddUvNamesGroup();
         void AddPropertiesGroup();
 

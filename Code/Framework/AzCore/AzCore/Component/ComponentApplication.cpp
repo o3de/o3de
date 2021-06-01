@@ -77,6 +77,27 @@
 #endif // defined(AZ_ENABLE_DEBUG_TOOLS)
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/string/conversions.h>
+
+static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
+{
+    if (arguments.empty())
+    {
+        return;
+    }
+
+    const auto entityIdStr = AZStd::string(arguments.front());
+    const auto entityIdValue = AZStd::stoull(entityIdStr);
+
+    AZStd::string entityName;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, AZ::EntityId(entityIdValue));
+
+    AZ_Printf("Entity Debug", "EntityId: %" PRIu64 ", Entity Name: %s", entityIdValue, entityName.c_str());
+}
+
+AZ_CONSOLEFREEFUNC(
+    PrintEntityName, AZ::ConsoleFunctorFlags::Null, "Parameter: EntityId value, Prints the name of the entity to the console");
 
 namespace AZ
 {
@@ -1260,7 +1281,7 @@ namespace AZ
                 // So auto load is turned off if option "AutoLoad" key is bool that is false
                 if (valueName == "AutoLoad" && !value)
                 {
-                    // Strip off the AutoLoead entry from the path
+                    // Strip off the AutoLoad entry from the path
                     auto autoLoadKey = AZ::StringFunc::TokenizeLast(path, "/");
                     if (!autoLoadKey)
                     {
@@ -1330,7 +1351,7 @@ namespace AZ
                 {
                     auto CompareDynamicModuleDescriptor = [&dynamicLibraryPath](const DynamicModuleDescriptor& entry)
                     {
-                        return entry.m_dynamicLibraryPath.contains(dynamicLibraryPath);
+                        return AZ::IO::PathView(entry.m_dynamicLibraryPath).Stem() == AZ::IO::PathView(dynamicLibraryPath).Stem();
                     };
                     if (auto moduleIter = AZStd::find_if(gemModules.begin(), gemModules.end(), CompareDynamicModuleDescriptor);
                         moduleIter == gemModules.end())

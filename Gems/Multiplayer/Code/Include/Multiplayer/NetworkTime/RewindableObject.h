@@ -32,7 +32,7 @@ namespace Multiplayer
         RewindableObject() = default;
 
         //! Constructor.
-        //! @param connectionId the connectionId of the connection that owns the object.
+        //! @param value base type value to construct from
         RewindableObject(const BASE_TYPE& value);
 
         //! Copy construct from underlying base type.
