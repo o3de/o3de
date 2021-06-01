@@ -32,7 +32,7 @@ namespace AZ
                 if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
                 {
                     serializeContext->Class<SceneImporterSettings>()
-                                    ->Version(1)
+                                    ->Version(2)
                                     ->Field("SupportedFileTypeExtensions", &SceneImporterSettings::m_supportedFileTypeExtensions);
                 }
             }
@@ -61,22 +61,15 @@ namespace AZ
                 {
                     serializeContext->Class<FbxImportRequestHandler, AZ::Component>()->Version(1)->Attribute(
                         AZ::Edit::Attributes::SystemComponentTags,
-                        AZStd::vector<AZ::Crc32>({AssetBuilderSDK::ComponentTags::AssetBuilder}));
+                        AZStd::vector<AZ::Crc32>(
+                            {AssetBuilderSDK::ComponentTags::AssetBuilder,
+                            AssetImportRequest::GetAssetImportRequestComponentTag()}));
                     
                 }
             }
 
             void FbxImportRequestHandler::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
             {
-                // It's unlikely an empty file extension list is intentional,
-                // so if it's empty, try reloading it from the registry.
-                if (m_settings.m_supportedFileTypeExtensions.empty())
-                {
-                    if (auto* settingsRegistry = AZ::SettingsRegistry::Get())
-                    {
-                        settingsRegistry->GetObject(m_settings, "/O3DE/SceneAPI/AssetImporter");
-                    }
-                }
                 extensions.insert(m_settings.m_supportedFileTypeExtensions.begin(), m_settings.m_supportedFileTypeExtensions.end());
             }
 

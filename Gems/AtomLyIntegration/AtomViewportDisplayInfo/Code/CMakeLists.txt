@@ -10,7 +10,7 @@
 #
 
 ly_add_target(
-    NAME AtomViewportDisplayInfo GEM_MODULE
+    NAME AtomViewportDisplayInfo ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atomviewportdisplayinfo_files.cmake

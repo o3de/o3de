@@ -240,7 +240,9 @@ namespace Camera
         CameraBus::Handler::BusConnect();
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnCameraAdded, m_entityId);
 
-        if (m_config.m_makeActiveViewOnActivation)
+        // Activate our camera if we're running from the launcher or Editor game mode
+        // Otherwise, let the Editor keep managing the active camera
+        if (m_config.m_makeActiveViewOnActivation && (!gEnv || !gEnv->IsEditor() || gEnv->IsEditorGameMode()))
         {
             MakeActiveView();
         }

@@ -82,6 +82,16 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::EngineSettings;
     }
 
+    QString EngineSettingsScreen::GetTabText()
+    {
+        return tr("Engine");
+    }
+
+    bool EngineSettingsScreen::IsTab()
+    {
+        return true;
+    }
+
     void EngineSettingsScreen::OnTextChanged()
     {
         // save engine settings

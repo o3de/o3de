@@ -9,6 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
+
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -27,7 +28,6 @@ namespace O3DE::ProjectManager
         explicit GemCatalogScreen(QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetNextButtonText() override;
 
     private:
         QVector<GemInfo> GenerateTestData();

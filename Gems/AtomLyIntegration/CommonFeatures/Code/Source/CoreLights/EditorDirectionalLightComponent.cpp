@@ -217,7 +217,7 @@ namespace AZ
                 GetEntityId(),
                 &TransformBus::Events::GetWorldTM);
 
-            transform.ExtractScale();
+            transform.ExtractUniformScale();
             const Vector3 origin = transform.GetTranslation();
             const Vector3 originOffset = origin - (transform.TransformVector(forward) * arrowOffset);
             const Vector3 target = origin - (transform.TransformVector(forward) * (arrowLength + arrowOffset));

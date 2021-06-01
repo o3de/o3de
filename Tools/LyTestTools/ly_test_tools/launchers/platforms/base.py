@@ -123,7 +123,6 @@ class Launcher(object):
         """
         backup_path = self.workspace.settings.get_temp_path()
         log.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
-        self.workspace.settings.backup_bootstrap_settings(backup_path)
         self.workspace.settings.backup_platform_settings(backup_path)
         self.workspace.settings.backup_shader_compiler_settings(backup_path)
 
