@@ -68,6 +68,8 @@ namespace ScriptCanvas
 
         void AddContract(const ContractDescriptor& contractDesc);
 
+        void ClearDynamicGroup();
+
         template<typename T>
         T* FindContract()
         {

@@ -239,14 +239,14 @@ void RCcontrollerUnitTests::RunRCControllerTests()
         createdJobs.push_back(job);
     }
 
-    // double them up for "es3" to make sure that platform is respected
+    // double them up for "android" to make sure that platform is respected
     for (QString name : tempJobNames)
     {
         AZ::Uuid uuidOfSource = AZ::Uuid::CreateName(name.toUtf8().constData());
         RCJob* job0 = new RCJob(rcJobListModel);
         AssetProcessor::JobDetails jobDetails;
         jobDetails.m_jobEntry.m_databaseSourceName = jobDetails.m_jobEntry.m_pathRelativeToWatchFolder = name;
-        jobDetails.m_jobEntry.m_platformInfo = { "es3" ,{ "mobile", "renderer" } };
+        jobDetails.m_jobEntry.m_platformInfo = { "android" ,{ "mobile", "renderer" } };
         jobDetails.m_jobEntry.m_jobKey = "Compile Other Stuff";
         jobDetails.m_jobEntry.m_sourceFileUUID = uuidOfSource;
         job0->Init(jobDetails);
@@ -490,7 +490,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     UNIT_TEST_EXPECT_FALSE(gotJobsInQueueCall);
 
     // submit same job but different platform:
-    details.m_jobEntry = JobEntry("d:/test", "test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "es3" ,{ "mobile", "renderer" } }, "Test Job", 1234, 3, sourceId);
+    details.m_jobEntry = JobEntry("d:/test", "test1.txt", "test1.txt", AZ::Uuid("{7954065D-CFD1-4666-9E4C-3F36F417C7AC}"), { "android" ,{ "mobile", "renderer" } }, "Test Job", 1234, 3, sourceId);
     m_rcController.JobSubmitted(details);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 

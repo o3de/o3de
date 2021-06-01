@@ -68,7 +68,7 @@ namespace Blast
 
         auto transform = AZ::Transform::CreateFromQuaternionAndTranslation(
             m_bodyConfiguration.m_orientation, m_bodyConfiguration.m_position);
-        transform.MultiplyByScale(AZ::Vector3(m_scale));
+        transform.MultiplyByUniformScale(m_scale);
 
         AZ::TransformBus::Event(m_entity->GetId(), &AZ::TransformInterface::SetWorldTM, transform);
 
@@ -151,8 +151,6 @@ namespace Blast
         colliderConfiguration.m_position = transform.GetTranslation();
         colliderConfiguration.m_rotation = transform.GetRotation();
         colliderConfiguration.m_isExclusive = true;
-        colliderConfiguration.m_materialSelection.SetMaterialLibrary(
-            AZ::Interface<AzPhysics::SystemInterface>::Get()->GetDefaultMaterialLibrary()->GetId());
         colliderConfiguration.m_materialSelection.SetMaterialId(material);
         colliderConfiguration.m_collisionGroupId = actorConfiguration.m_collisionGroupId;
         colliderConfiguration.m_collisionLayer = actorConfiguration.m_collisionLayer;

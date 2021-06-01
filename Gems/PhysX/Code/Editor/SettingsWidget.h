@@ -56,7 +56,7 @@ namespace PhysX
 
             AzToolsFramework::ReflectedPropertyEditor* m_propertyEditor;
             DocumentationLinkWidget* m_documentationLinkWidget;
-            Physics::DefaultMaterialLibraryAssetReflectionWrapper m_defaultPhysicsMaterialLibrary;
+            Physics::MaterialInfoReflectionWrapper m_physicsMaterialInfo;
             PhysX::PhysXSystemConfiguration m_physxSystemConfiguration;
             AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
             Debug::DebugDisplayData m_debugDisplayData;

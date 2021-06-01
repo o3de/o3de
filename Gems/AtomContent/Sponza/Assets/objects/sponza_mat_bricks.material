@@ -46,7 +46,8 @@
             "algorithm": "ContactRefinement",
             "factor": 0.03500000014901161,
             "quality": "Medium",
-            "textureMap": "Textures/bricks_1k_height.png"
+            "textureMap": "Textures/bricks_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/bricks_1k_roughness.png"

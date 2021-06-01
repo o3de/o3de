@@ -38,7 +38,6 @@ namespace AZ
     {
         namespace FbxSceneBuilder
         {
-            static AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler* g_fbxImporter = nullptr;
             static AZStd::vector<AZ::ComponentDescriptor*> g_componentDescriptors;
 
             void Reflect(AZ::SerializeContext* /*context*/)
@@ -99,13 +98,6 @@ namespace AZ
                     g_componentDescriptors.clear();
                     g_componentDescriptors.shrink_to_fit();
                 }
-
-                if (g_fbxImporter)
-                {
-                    g_fbxImporter->Deactivate();
-                    delete g_fbxImporter;
-                    g_fbxImporter = nullptr;
-                }
             }
         } // namespace FbxSceneBuilder
     } // namespace SceneAPI
@@ -114,11 +106,6 @@ namespace AZ
 extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
 {
     AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
-    if (!AZ::SceneAPI::FbxSceneBuilder::g_fbxImporter)
-    {
-        AZ::SceneAPI::FbxSceneBuilder::g_fbxImporter = aznew AZ::SceneAPI::FbxSceneImporter::FbxImportRequestHandler();
-        AZ::SceneAPI::FbxSceneBuilder::g_fbxImporter->Activate();
-    }
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {

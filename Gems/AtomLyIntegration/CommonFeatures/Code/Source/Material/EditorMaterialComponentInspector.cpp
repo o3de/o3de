@@ -184,7 +184,7 @@ namespace AZ
             void MaterialPropertyInspector::AddUvNamesGroup()
             {
                 const AZStd::string groupNameId = AZ::RPI::UvGroupName;
-                const AZStd::string groupDisplayName = "UV Names";
+                const AZStd::string groupDisplayName = "UV Sets";
                 const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
                 auto& group = m_groups[groupNameId];
 

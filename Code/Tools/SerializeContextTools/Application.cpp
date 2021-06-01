@@ -97,6 +97,11 @@ namespace AZ
             return m_configFilePath.c_str();
         }
 
+        void Application::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
+        {
+            appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
+        }
+ 
         void Application::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
         {
             AZ::ComponentApplication::SetSettingsRegistrySpecializations(specializations);

@@ -66,8 +66,8 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
-#include <ModernViewportCameraControllerRequestBus.h>
 
 #include "Objects/ComponentEntityObject.h"
 #include "ISourceControl.h"
@@ -1736,9 +1736,9 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 const AZ::Transform nextCameraTransform =
                     AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
 
-                SandboxEditor::ModernViewportCameraControllerRequestBus::Event(
-                    viewportContext->GetId(), &SandboxEditor::ModernViewportCameraControllerRequestBus::Events::InterpolateToTransform,
-                    nextCameraTransform);
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    viewportContext->GetId(),
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
             }
         }
     }

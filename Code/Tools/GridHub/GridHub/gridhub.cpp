@@ -552,7 +552,7 @@ GridHubComponent::OnMemberJoined([[maybe_unused]] GridMate::GridSession* session
     switch( member->GetPlatformId() )
     {
     case AZ::PlatformID::PLATFORM_WINDOWS_64:
-    case AZ::PlatformID::PLATFORM_APPLE_OSX:
+    case AZ::PlatformID::PLATFORM_APPLE_MAC:
         {
             GridMate::string localMachineName = GridMate::Utils::GetMachineAddress();
             if( member->GetMachineName() == localMachineName )

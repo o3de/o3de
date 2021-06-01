@@ -60,6 +60,8 @@ namespace AzToolsFramework
 
             AZStd::vector<AssetBrowserEntry*> GetSelectedAssets() const;
 
+            void SelectFolder(AZStd::string_view folderPath);
+
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
             void SelectProduct(AZ::Data::AssetId assetID) override;
@@ -67,6 +69,7 @@ namespace AzToolsFramework
             void ClearFilter() override;
 
             void Update() override;
+
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -105,7 +108,7 @@ namespace AzToolsFramework
             QString m_name;
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
-            bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0);
+            bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
 
             //! Grab one entry from the source thumbnail list and update it
             void UpdateSCThumbnails();

@@ -31,6 +31,8 @@ namespace UnitTest
     ErrorHandler::ErrorHandler(const char* errorPattern)
         : m_errorCount(0)
         , m_warningCount(0)
+        , m_expectedErrorCount(0)
+        , m_expectedWarningCount(0)
         , m_errorPattern(errorPattern)
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
@@ -51,6 +53,16 @@ namespace UnitTest
         return m_warningCount;
     }
 
+    int ErrorHandler::GetExpectedErrorCount() const
+    {
+        return m_expectedErrorCount;
+    }
+
+    int ErrorHandler::GetExpectedWarningCount() const
+    {
+        return m_expectedWarningCount;
+    }
+
     bool ErrorHandler::SuppressExpectedErrors([[maybe_unused]] const char* window, const char* message)
     {
         return AZStd::string(message).find(m_errorPattern) != AZStd::string::npos;
@@ -61,7 +73,9 @@ namespace UnitTest
         [[maybe_unused]] const char* func, const char* message)
     {
         m_errorCount++;
-        return SuppressExpectedErrors(window, message);
+        bool suppress = SuppressExpectedErrors(window, message);
+        m_expectedErrorCount += suppress;
+        return suppress;
     }
 
     bool ErrorHandler::OnPreWarning(
@@ -69,7 +83,9 @@ namespace UnitTest
         [[maybe_unused]] const char* func, const char* message)
     {
         m_warningCount++;
-        return SuppressExpectedErrors(window, message);
+        bool suppress = SuppressExpectedErrors(window, message);
+        m_expectedWarningCount += suppress;
+        return suppress;
     }
 
     bool ErrorHandler::OnPrintf(const char* window, const char* message)

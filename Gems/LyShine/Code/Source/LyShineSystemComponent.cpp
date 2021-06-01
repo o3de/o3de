@@ -208,8 +208,6 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::InitializeSystem()
     {
-        m_pLyShine = new CLyShine(gEnv->pSystem);
-        gEnv->pLyShine = m_pLyShine;
         BroadcastCursorImagePathname();
     }
 
@@ -372,6 +370,25 @@ namespace LyShine
                 }
             }
         }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    {
+#if !defined(AZ_MONOLITHIC_BUILD)
+        // When module is linked dynamically, we must set our gEnv pointer.
+        // When module is linked statically, we'll share the application's gEnv pointer.
+        gEnv = system.GetGlobalEnvironment();
+#endif
+        m_pLyShine = new CLyShine(gEnv->pSystem);
+        gEnv->pLyShine = m_pLyShine;
+    }
+
+    void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
+    {
+        gEnv->pLyShine = nullptr;
+        delete m_pLyShine;
+        m_pLyShine = nullptr;       
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
