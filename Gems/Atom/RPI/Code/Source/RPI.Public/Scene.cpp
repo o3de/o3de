@@ -42,11 +42,11 @@ namespace AZ
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
             }
 
-            Data::Asset<ShaderResourceGroupAsset> sceneSrgAsset = RPISystemInterface::Get()->GetSceneSrgAsset();
-
-            if (sceneSrgAsset.IsReady())
+            auto sceneSrgLayout = RPISystemInterface::Get()->GetSceneSrgLayout();
+            if (sceneSrgLayout)
             {
-                scene->m_srg = ShaderResourceGroup::Create(sceneSrgAsset);
+                auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
+                scene->m_srg = ShaderResourceGroup::Create(shaderAsset, DefaultSupervariantIndex, sceneSrgLayout->GetName());
             }
             
             return ScenePtr(scene);

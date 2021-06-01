@@ -25,24 +25,49 @@ namespace AZ
         const Data::Instance<Image> ShaderResourceGroup::s_nullImage;
         const Data::Instance<Buffer> ShaderResourceGroup::s_nullBuffer;
 
-        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::FindOrCreate(const Data::Asset<ShaderResourceGroupAsset>& srgAsset)
+        Data::InstanceId ShaderResourceGroup::MakeInstanceId(
+            const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(srgAsset.GetId()),
-                srgAsset);
+            AZ_Assert(!srgName.IsEmpty(), "Invalid ShaderResourceGroup name");
+
+            // Let's find the srg layout with the given name, because it contains the azsl file path of origin
+            // which is essential to uniquely identify an SRG and avoid redundant copies in memory.
+            auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(srgName, supervariantIndex);
+            AZ_Assert(srgLayout != nullptr, "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s", srgName.GetCStr(),
+                supervariantIndex.GetIndex(), shaderAsset.GetHint().c_str());
+
+            AZStd::string idString = AZStd::string::format("%s_%u_%s", srgLayout->GetAzslFileOfOrigin().c_str(), supervariantIndex.GetIndex(), srgName.GetCStr());
+            return Data::InstanceId::CreateData(idString.data(), idString.size());
         }
 
-        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(const Data::Asset<ShaderResourceGroupAsset>& srgAsset)
+        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::FindOrCreate(
+            const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
+            auto instanceId = MakeInstanceId(shaderAsset, supervariantIndex, srgName);
+            auto srg = Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(instanceId, shaderAsset);
+            if (!srg->IsInitialized())
+            {
+                const RHI::ResultCode resultCode = srg->Init(*shaderAsset.Get(), supervariantIndex, srgName);
+
+                if (resultCode == RHI::ResultCode::Success)
+                {
+                    return srg;
+                }
+
+                return nullptr;
+            }
+
+            return srg;
+        }
+
+        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
+            const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
+        {
+            auto srg = Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
                 Data::InstanceId::CreateRandom(),
-                srgAsset);
-        }
-
-        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal(ShaderResourceGroupAsset& srgAsset)
-        {
-            Data::Instance<ShaderResourceGroup> srg = aznew ShaderResourceGroup();
-            const RHI::ResultCode resultCode = srg->Init(srgAsset);
+                shaderAsset);
+            // Because the InstanceId is random, this is always a brand new SRG.
+            const RHI::ResultCode resultCode = srg->Init(*shaderAsset.Get(), supervariantIndex, srgName);
 
             if (resultCode == RHI::ResultCode::Success)
             {
@@ -52,11 +77,17 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode ShaderResourceGroup::Init(ShaderResourceGroupAsset& shaderResourceGroupAsset)
+        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal([[maybe_unused]] ShaderAsset& shaderAsset)
+        {
+            Data::Instance<ShaderResourceGroup> srg = aznew ShaderResourceGroup();
+            return srg;
+        }
+
+        RHI::ResultCode ShaderResourceGroup::Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             AZ_TRACE_METHOD();
 
-            m_layout = shaderResourceGroupAsset.GetLayout();
+            m_layout = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
             
             if (!m_layout)
             {
@@ -64,10 +95,8 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            m_pool = ShaderResourceGroupPool::FindOrCreate(AZ::Data::Asset<ShaderResourceGroupAsset>(
-                &shaderResourceGroupAsset,
-                AZ::Data::AssetLoadBehavior::PreLoad));
-            if (!m_pool)
+            m_pool = ShaderResourceGroupPool::FindOrCreate(
+                AZ::Data::Asset<ShaderAsset>(&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad), supervariantIndex, srgName);
             {
                 return RHI::ResultCode::Fail;
             }
@@ -77,50 +106,17 @@ namespace AZ
             {
                 return RHI::ResultCode::Fail;
             }
-            m_shaderResourceGroup->SetName(shaderResourceGroupAsset.GetName());
+            m_shaderResourceGroup->SetName(srgName);
             m_data = RHI::ShaderResourceGroupData(m_layout);
-            m_asset = { &shaderResourceGroupAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            m_asset = { &shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
             // The RPI groups match the same dimensions as the RHI group.
             m_imageGroup.resize(m_layout->GetGroupSizeForImages());
             m_bufferGroup.resize(m_layout->GetGroupSizeForBuffers());
+
+            m_isInitialized = true;
 
             return RHI::ResultCode::Success;
-        }
-
-        bool ShaderResourceGroup::ReplaceSrgLayoutUsingShaderAsset(
-            Data::Asset<ShaderAsset2> shaderAsset, const Name& supervariantName, const Name& srgName)
-        {
-            AZ_TRACE_METHOD();
-
-            SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
-            if (supervariantIndex == InvalidSupervariantIndex)
-            {
-                AZ_Assert(
-                    false, "Supervariant with name [%s] not found in shader asset [%s]", supervariantName.GetCStr(),
-                    shaderAsset->GetName().GetCStr());
-                return false;
-            }
-
-            m_layout = shaderAsset->FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
-
-            if (!m_layout)
-            {
-                AZ_Assert(false, "ShaderResourceGroup cannot be initialized due to invalid ShaderResourceGroupLayout");
-                return false;
-            }
-
-            m_shaderResourceGroup->SetName(m_layout->GetName());
-            m_data = RHI::ShaderResourceGroupData(m_layout);
-            m_shaderAsset = shaderAsset;
-
-            // The RPI groups match the same dimensions as the RHI group.
-            m_imageGroup.clear();
-            m_imageGroup.resize(m_layout->GetGroupSizeForImages());
-            m_bufferGroup.clear();
-            m_bufferGroup.resize(m_layout->GetGroupSizeForBuffers());
-
-            return true;
         }
 
         void ShaderResourceGroup::Compile()
@@ -163,7 +159,7 @@ namespace AZ
             return m_layout->FindShaderInputImageUnboundedArrayIndex(name);
         }
 
-        const Data::Asset<ShaderResourceGroupAsset>& ShaderResourceGroup::GetAsset() const
+        const Data::Asset<ShaderAsset>& ShaderResourceGroup::GetAsset() const
         {
             return m_asset;
         }

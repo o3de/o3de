@@ -48,11 +48,9 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialUvNameMap>();
 
                 serializeContext->Class<MaterialTypeAsset, AZ::Data::AssetData>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("ShaderCollection", &MaterialTypeAsset::m_shaderCollection)
                     ->Field("MaterialFunctors", &MaterialTypeAsset::m_materialFunctors)
-                    ->Field("MaterialSrgAsset", &MaterialTypeAsset::m_materialSrgAsset)
-                    ->Field("ObjectSrgAsset", &MaterialTypeAsset::m_objectSrgAsset)
                     ->Field("MaterialPropertiesLayout", &MaterialTypeAsset::m_materialPropertiesLayout)
                     ->Field("DefaultPropertyValues", &MaterialTypeAsset::m_propertyValues)
                     ->Field("UvNameMap", &MaterialTypeAsset::m_uvNameMap)
@@ -77,14 +75,53 @@ namespace AZ
             return m_materialFunctors;
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& MaterialTypeAsset::GetMaterialSrgAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetSrgLayout(
+            uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex) const
         {
-            return m_materialSrgAsset;
+            AZ_Assert(m_shaderCollection.size(), "Need at least one shader in the collection");
+            const auto& shaderAsset = m_shaderCollection[0].GetShaderAsset();
+            return shaderAsset->FindShaderResourceGroupLayout(srgBindingSlot, supervariantIndex);
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& MaterialTypeAsset::GetObjectSrgAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetSrgLayout(
+            uint32_t srgBindingSlot, const AZ::Name& supervariantName) const
         {
-            return m_objectSrgAsset;
+            AZ_Assert(m_shaderCollection.size(), "Need at least one shader in the collection");
+            const auto& shaderAsset = m_shaderCollection[0].GetShaderAsset();
+            auto supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
+            return shaderAsset->FindShaderResourceGroupLayout(srgBindingSlot, supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetMaterialSrgLayout(
+            const SupervariantIndex& supervariantIndex) const
+        {
+            return GetSrgLayout(RPI::SrgBindingSlot::Material, supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetMaterialSrgLayout(const AZ::Name& supervariantName) const
+        {
+            return GetSrgLayout(RPI::SrgBindingSlot::Material, supervariantName);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetMaterialSrgLayout() const
+        {
+            return GetMaterialSrgLayout(DefaultSupervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetObjectSrgLayout(
+            const SupervariantIndex& supervariantIndex) const
+        {
+            return GetSrgLayout(RPI::SrgBindingSlot::Object, supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetObjectSrgLayout(const AZ::Name& supervariantName) const
+        {
+            return GetSrgLayout(RPI::SrgBindingSlot::Object, supervariantName);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout> MaterialTypeAsset::GetObjectSrgLayout() const
+        {
+            return GetObjectSrgLayout(DefaultSupervariantIndex);
         }
 
         const MaterialPropertiesLayout* MaterialTypeAsset::GetMaterialPropertiesLayout() const
@@ -109,8 +146,6 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
-            Data::AssetBus::MultiHandler::BusConnect(m_materialSrgAsset.GetId());
-            Data::AssetBus::MultiHandler::BusConnect(m_objectSrgAsset.GetId());
             for (const auto& shaderItem : m_shaderCollection)
             {
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
@@ -135,8 +170,6 @@ namespace AZ
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
-            TryReplaceAsset(m_materialSrgAsset, asset);
-            TryReplaceAsset(m_objectSrgAsset, asset);
             for (auto& shaderItem : m_shaderCollection)
             {
                 TryReplaceAsset(shaderItem.m_shaderAsset, asset);

@@ -77,15 +77,31 @@ namespace AZ
             //! See MaterialFunctor.h for details.
             const MaterialFunctorList& GetMaterialFunctors() const;
 
-            //! Returns the shader resource group asset that has per-material frequency, which indicates most of the topology 
+            //! Returns the shader resource group layout that has per-material frequency, which indicates most of the topology
             //! for a material's shaders.
-            //! All shaders in a material will have the same per-material SRG asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetMaterialSrgAsset() const;
-            
-            //! Returns the shader resource group asset that has per-object frequency. What constitutes an "object" is an
+            //! All shaders in a material will have the same per-material SRG layout.
+            //! @param supervariantIndex: supervariant index to get the layout from.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const;
+
+            //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
+            //! because it will discover the index from the name.  
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
+
+            //! Just like the original GetMaterialSrgLayout() where it uses the index of the default, nameless, supervariant.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout() const;
+
+            //! Returns the shader resource group layout that has per-object frequency. What constitutes an "object" is an
             //! agreement between the FeatureProcessor and the shaders, but an example might be world-transform for a model.
-            //! All shaders in a material will have the same per-object SRG asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetObjectSrgAsset() const;
+            //! All shaders in a material will have the same per-object SRG layout.
+            //! @param supervariantIndex: supervariant index to get the layout from.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const;
+
+            //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
+            //! because it will discover the index from the name.  
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout(const AZ::Name& supervariantName) const;
+
+            //! Just like the original GetObjectSrgLayout() where it uses the index of the default, nameless, supervariant.
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout() const;
 
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
@@ -101,6 +117,9 @@ namespace AZ
 
         private:
             bool PostLoadInit();
+
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSrgLayout(uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSrgLayout(uint32_t srgBindingSlot, const AZ::Name& supervariantName) const;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
@@ -124,10 +143,6 @@ namespace AZ
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             MaterialFunctorList m_materialFunctors;
-
-            //! Reference to the SRGs that are the same for all shaders in a material
-            Data::Asset<ShaderResourceGroupAsset> m_materialSrgAsset;
-            Data::Asset<ShaderResourceGroupAsset> m_objectSrgAsset;
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
