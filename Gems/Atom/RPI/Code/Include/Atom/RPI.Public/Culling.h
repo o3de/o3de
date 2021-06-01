@@ -31,7 +31,6 @@
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 #include <Atom/RHI/DrawList.h>
 
 #include <AtomCore/std/parallel/concurrency_checker.h>

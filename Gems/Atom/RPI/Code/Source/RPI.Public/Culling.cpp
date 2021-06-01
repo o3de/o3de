@@ -20,15 +20,20 @@
 
 #include <Atom/RHI/CpuProfiler.h>
 
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Casting/numeric_cast.h>
-
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/Job.h>
+#include <Atom_RPI_Traits_Platform.h>
+
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+#include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
+#endif
 
 //Enables more inner-loop profiling scopes (can create high overhead in RadTelemetry if there are many-many objects in a scene)
 //#define AZ_CULL_PROFILE_DETAILED
@@ -265,10 +270,12 @@ namespace AZ
             struct JobData
             {
                 CullingDebugContext* m_debugCtx = nullptr;
-                MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
                 const Scene* m_scene = nullptr;
                 View* m_view = nullptr;
                 Frustum m_frustum;
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+                MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+#endif
             };
 
         private:
@@ -308,7 +315,9 @@ namespace AZ
                         //Add all objects within this node to the view, without any extra culling
                         for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                         {
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
                             if (TestOcclusionCulling(visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
+#endif
                             {
                                 if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                                 {
@@ -347,7 +356,9 @@ namespace AZ
                                 }
                                 else if (res == IntersectResult::Interior || ShapeIntersection::Overlaps(m_jobData->m_frustum, c->m_cullData.m_boundingObb))
                                 {
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
                                     if (TestOcclusionCulling(visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
+#endif
                                     {
                                         numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
                                         ++numVisibleCullables;
@@ -421,6 +432,7 @@ namespace AZ
                 }
             }
 
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling::CullingResult TestOcclusionCulling(AzFramework::VisibilityEntry* visibleEntry)
             {
                 if (!m_jobData->m_maskedOcclusionCulling)
@@ -471,10 +483,11 @@ namespace AZ
                 {
                     return MaskedOcclusionCulling::VISIBLE;
                 }
-               
+
                 // test against the occlusion buffer, which contains only the manually placed occlusion planes
                 return m_jobData->m_maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth);
             }
+#endif
         };
 
         void CullingScene::ProcessCullables(const Scene& scene, View& view, AZ::Job& parentJob)
@@ -508,6 +521,7 @@ namespace AZ
                 cullStats.m_cameraViewToWorld = view.GetViewToWorldMatrix();
             }
 
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             // setup occlusion culling, if necessary
             MaskedOcclusionCulling* maskedOcclusionCulling = m_occlusionCullingPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
             if (maskedOcclusionCulling)
@@ -577,15 +591,19 @@ namespace AZ
                     maskedOcclusionCulling->RenderTriangles((float*)verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
                 }
             }
+#endif
 
             WorkListType worklist;
 
             AZStd::shared_ptr<AddObjectsToViewJob::JobData> jobData = AZStd::make_shared<AddObjectsToViewJob::JobData>();
             jobData->m_debugCtx = &m_debugCtx;
-            jobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
             jobData->m_scene = &scene;
             jobData->m_view = &view;
             jobData->m_frustum = frustum;
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            jobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
+#endif
+
 
             auto nodeVisitorLambda = [this, jobData, &parentJob, &frustum, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
@@ -620,11 +638,12 @@ namespace AZ
             {
                 AZStd::shared_ptr<AddObjectsToViewJob::JobData> remainingJobData = AZStd::make_shared<AddObjectsToViewJob::JobData>();
                 remainingJobData->m_debugCtx = &m_debugCtx;
-                remainingJobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
                 remainingJobData->m_scene = &scene;
                 remainingJobData->m_view = &view;
                 remainingJobData->m_frustum = frustum;
-
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+                remainingJobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
+#endif
                 //Kick off a job to process any remaining workitems
                 AddObjectsToViewJob* job = aznew AddObjectsToViewJob(remainingJobData, worklist); //pool allocated (cheap), auto-deletes when job finishes
                 parentJob.SetContinuation(job);

@@ -23,6 +23,11 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Atom_RPI_Traits_Platform.h>
+
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+#include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
+#endif
 
 namespace AZ
 {
@@ -56,18 +61,21 @@ namespace AZ
             {
                 m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgAsset);
             }
-
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();
             m_maskedOcclusionCulling->SetResolution(MaskedSoftwareOcclusionCullingWidth, MaskedSoftwareOcclusionCullingHeight);
+#endif
         }
 
         View::~View()
         {
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             if (m_maskedOcclusionCulling)
             {
                 MaskedOcclusionCulling::Destroy(m_maskedOcclusionCulling);
                 m_maskedOcclusionCulling = nullptr;
             }
+#endif
         }
 
         void View::SetDrawListMask(const RHI::DrawListMask& drawListMask)
@@ -394,13 +402,14 @@ namespace AZ
 
         void View::BeginCulling()
         {
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             m_maskedOcclusionCulling->ClearBuffer();
+#endif
         }
 
         MaskedOcclusionCulling* View::GetMaskedOcclusionCulling()
         {
             return m_maskedOcclusionCulling;
         }
-
     } // namespace RPI
 } // namespace AZ

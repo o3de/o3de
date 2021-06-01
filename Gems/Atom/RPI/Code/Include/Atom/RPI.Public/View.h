@@ -18,12 +18,13 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <Atom/RPI.Public/External/MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Name/Name.h>
+
+class MaskedOcclusionCulling;
 
 namespace AZ
 {
