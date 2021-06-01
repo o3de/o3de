@@ -62,7 +62,10 @@ namespace AZ
 
             void BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices);
             bool RayIntersectionRecursively(
-                ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized,
+                ModelKdTreeNode* pNode,
+                const AZ::Vector3& raySrc,
+                const AZ::Vector3& rayDir,
+                float& distanceNormalized,
                 AZ::Vector3& normal) const;
             void GetPenetratedBoxesRecursively(
                 ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);

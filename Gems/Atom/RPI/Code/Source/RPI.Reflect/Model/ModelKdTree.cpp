@@ -219,7 +219,10 @@ namespace AZ
         }
 
         bool ModelKdTree::RayIntersectionRecursively(
-            ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized,
+            ModelKdTreeNode* pNode,
+            const AZ::Vector3& raySrc,
+            const AZ::Vector3& rayDir,
+            float& distanceNormalized,
             AZ::Vector3& normal) const
         {
             using Intersect::IntersectRayAABB2;
@@ -283,9 +286,8 @@ namespace AZ
                         if (nearestDistanceNormalized > hitDistanceNormalized)
                         {
                             normal = intersectionNormal;
+                            nearestDistanceNormalized = hitDistanceNormalized;
                         }
-
-                        nearestDistanceNormalized = AZStd::GetMin(nearestDistanceNormalized, hitDistanceNormalized);
                     }
                 }
 
