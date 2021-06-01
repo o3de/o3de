@@ -402,8 +402,12 @@ namespace Multiplayer
         const AZ::Transform& transform
     )
     {
-        INetworkEntityManager::EntityList returnList;
-
+        EntityList returnList;
+        if (!AZ::Data::AssetManager::IsReady())
+        {
+            return returnList;
+        }
+        
         auto spawnableAssetId = m_networkPrefabLibrary.GetAssetIdByName(prefabEntryId.m_prefabName);
         // Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
         auto netSpawnableAsset = AZ::Data::AssetManager::Instance().GetAsset<AzFramework::Spawnable>(spawnableAssetId, AZ::Data::AssetLoadBehavior::PreLoad);

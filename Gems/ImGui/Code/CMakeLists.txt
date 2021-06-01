@@ -53,6 +53,8 @@ ly_add_target(
         PUBLIC
             Gem::ImGui.imguilib
             Legacy::CryCommon
+    RUNTIME_DEPENDENCIES
+        Gem::ImGui.imguilib
 )
 
 ly_add_target(
@@ -70,6 +72,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ImGui.ImGuiLYUtils
+        PRIVATE
             Gem::LmbrCentral
 )
 
@@ -89,6 +92,10 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# Load the above "Gem::ImGui" module in Clients and Servers:
+ly_create_alias(NAME ImGui.Clients NAMESPACE Gem TARGETS Gem::ImGui)
+ly_create_alias(NAME ImGui.Servers NAMESPACE Gem TARGETS Gem::ImGui)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -113,4 +120,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # Load the above "Gem::ImGui.Editor" module in only tools and builders.
+    ly_create_alias(NAME ImGui.Builders NAMESPACE Gem TARGETS Gem::ImGui.Editor)
+    ly_create_alias(NAME ImGui.Tools    NAMESPACE Gem TARGETS Gem::ImGui.Editor)
+
 endif()

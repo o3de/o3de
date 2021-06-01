@@ -15,6 +15,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/Color.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -24,6 +25,11 @@
 
 namespace AtomToolsFramework
 {
+    AZ_CVAR(
+        AZ::Color, ed_cameraSystemOrbitPointColor, AZ::Color::CreateFromRgba(255, 255, 255, 255), nullptr, AZ::ConsoleFunctorFlags::Null,
+        "");
+    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
     {
@@ -73,7 +79,8 @@ namespace AtomToolsFramework
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&) {
+            auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&)
+            {
                 if (!m_updatingTransform)
                 {
                     UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
@@ -137,7 +144,10 @@ namespace AtomToolsFramework
             }
             else if (m_cameraMode == CameraMode::Animation)
             {
-                const auto smootherStepFn = [](const float t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); };
+                const auto smootherStepFn = [](const float t)
+                {
+                    return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
+                };
                 const float transitionT = smootherStepFn(m_animationT);
 
                 const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
@@ -169,8 +179,9 @@ namespace AtomToolsFramework
     {
         if (const float alpha = AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f); alpha > AZ::Constants::FloatEpsilon)
         {
-            debugDisplay.SetColor(1.0f, 1.0f, 1.0f, alpha);
-            debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
+            const AZ::Color orbitPointColor = ed_cameraSystemOrbitPointColor;
+            debugDisplay.SetColor(orbitPointColor.GetR(), orbitPointColor.GetG(), orbitPointColor.GetB(), alpha);
+            debugDisplay.DrawWireSphere(m_camera.m_lookAt, ed_cameraSystemOrbitPointSize);
         }
     }
 

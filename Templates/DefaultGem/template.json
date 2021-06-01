@@ -1,6 +1,6 @@
 {
     "template_name": "DefaultGem",
-    "restricted": "o3de",
+    "restricted_name": "o3de",
     "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultGem goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultGem uses goes here: i.e. https://opensource.org/licenses/MIT",

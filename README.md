@@ -118,11 +118,6 @@ If you have the Git credential manager core or other credential helpers installe
     ```
     python\get_python.bat
     ```
-    
-1.  While still within the repo folder, register the engine with this command:
-    ```
-    scripts\o3de.bat register --this-engine
-    ```
 
 1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
     ```
@@ -146,7 +141,11 @@ If you have the Git credential manager core or other credential helpers installe
    
 1.  This will compile after some time and binaries will be available in the build path you've specified
 
-### Setting up new projects    
+### Setting up new projects
+1.  While still within the repo folder, register the engine with this command:
+    ```
+    scripts\o3de.bat register --this-engine
+    ```
 1. Setup new projects using the `o3de create-project` command. In the 0.5 branch, the project directory must be a subdirectory in the repo folder.
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
@@ -160,10 +159,10 @@ If you have the Git credential manager core or other credential helpers installe
     cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
     // For the 0.5 branch, you must build a new Editor for each project:
-    cmake --build <your project build path> --target <New Project Name> Editor --config profile -- /m
+    cmake --build <your project build path> --target <New Project Name>.GameLauncher Editor --config profile -- /m
     
     // For all other branches, just build the project:
-    cmake --build <your project build path> --target <New Project Name> --config profile -- /m
+    cmake --build <your project build path> --target <New Project Name>.GameLauncher --config profile -- /m
     ```
   
 For a tutorial on project configuration, see [Creating Projects Using the Command Line](https://docs.o3de.org/docs/welcome-guide/get-started/project-config/creating-projects-using-cli) in the documentation.

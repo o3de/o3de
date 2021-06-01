@@ -47,4 +47,4 @@ namespace ${Name}
     };
 }// namespace ${Name}
 
-AZ_DECLARE_MODULE_CLASS(Project_${Name}, ${Name}::${Name}Module)
+AZ_DECLARE_MODULE_CLASS(Gem_${Name}, ${Name}::${Name}Module)

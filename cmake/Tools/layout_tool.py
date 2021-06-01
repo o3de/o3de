@@ -107,7 +107,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
     project_name_lower = project_path.lower()
     layout_path = pathlib.Path(layout_dir)
 
-    bootstrap_path = layout_path / 'Registry'
+    bootstrap_path = pathlib.Path(ROOT_ENGINE_PATH) / 'Registry'
     bootstrap_values = common.get_bootstrap_values(str(bootstrap_path), [f'{platform_name_lower}_remote_filesystem',
                                                                          f'{platform_name_lower}_connect_to_remote',
                                                                          f'{platform_name_lower}_wait_for_connect',

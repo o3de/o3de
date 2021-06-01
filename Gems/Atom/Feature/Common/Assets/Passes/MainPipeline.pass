@@ -252,6 +252,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
