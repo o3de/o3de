@@ -288,6 +288,7 @@ namespace AZ
             AZStd::size_t GetShaderCount() const;
             LuaMaterialFunctorShaderItem GetShader(AZStd::size_t index);
             LuaMaterialFunctorShaderItem GetShaderByTag(const char* shaderTag);
+            bool HasShaderWithTag(const char* shaderTag);
 
         private:
 

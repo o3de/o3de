@@ -1259,9 +1259,6 @@ CBaseObject* CRenderViewport::GetCameraObject() const
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
-    static ICVar* outputToHMD = gEnv->pConsole->GetCVar("output_to_hmd");
-    AZ_Assert(outputToHMD, "cvar output_to_hmd is undeclared");
-
     switch (event)
     {
     case eNotify_OnBeginGameMode:
@@ -1282,7 +1279,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
                 if (deviceInfo)
                 {
-                    outputToHMD->Set(1);
                     m_previousContext = SetCurrentContext(deviceInfo->renderWidth, deviceInfo->renderHeight);
                     if (m_renderer->GetIStereoRenderer())
                     {
@@ -1312,10 +1308,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 // called SetCurrentContext(...) on the renderer, probably did some rendering, but then either
                 // failed to set the context back when done, or set it back to the wrong one.
                 CryWarning(VALIDATOR_MODULE_3DENGINE, VALIDATOR_WARNING, "RenderViewport render context was not correctly restored by someone else.");
-            }
-            if (gSettings.bEnableGameModeVR)
-            {
-                outputToHMD->Set(0);
             }
             RestorePreviousContext(m_previousContext);
             m_bInRotateMode = false;

@@ -79,8 +79,8 @@ namespace MaterialEditor
 
         if (!m_documentId.IsNull() && isOpen)
         {
-            // Create the top group for displaying details about the material
-            AddDetailsGroup();
+            // Create the top group for displaying overview info about the material
+            AddOverviewGroup();
             // Create groups for displaying editable UV names
             AddUvNamesGroup();
             // Create groups for displaying editable properties
@@ -105,25 +105,25 @@ namespace MaterialEditor
         return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
     }
 
-    void MaterialInspector::AddDetailsGroup()
+    void MaterialInspector::AddOverviewGroup()
     {
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
         MaterialDocumentRequestBus::EventResult(
             materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
 
-        const AZStd::string groupNameId = "details";
-        const AZStd::string groupDisplayName = "Details";
+        const AZStd::string groupNameId = "overview";
+        const AZStd::string groupDisplayName = "Overview";
         const AZStd::string groupDescription = materialTypeSourceData->m_description;
         auto& group = m_groups[groupNameId];
 
         AtomToolsFramework::DynamicProperty property;
         MaterialDocumentRequestBus::EventResult(
-            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.materialType"));
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("overview.materialType"));
         group.m_properties.push_back(property);
 
         property = {};
         MaterialDocumentRequestBus::EventResult(
-            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.parentMaterial"));
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("overview.parentMaterial"));
         group.m_properties.push_back(property);
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
@@ -139,7 +139,7 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(materialAsset, m_documentId, &MaterialDocumentRequestBus::Events::GetAsset);
 
         const AZStd::string groupNameId = UvGroupName;
-        const AZStd::string groupDisplayName = "UV Names";
+        const AZStd::string groupDisplayName = "UV Sets";
         const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
         auto& group = m_groups[groupNameId];
 

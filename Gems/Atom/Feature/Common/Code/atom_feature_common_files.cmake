@@ -155,16 +155,12 @@ set(FILES
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
-    Source/Material/ShaderEnableFunctor.cpp
-    Source/Material/ShaderEnableFunctor.h
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.h
     Source/Material/Transform2DFunctor.cpp
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/PropertyVisibilityFunctor.cpp
-    Source/Material/PropertyVisibilityFunctor.h
     Source/Material/DrawListFunctor.cpp
     Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h
@@ -254,6 +250,9 @@ set(FILES
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
+    Source/RayTracing/RayTracingPass.cpp
+    Source/RayTracing/RayTracingPass.h
+    Source/RayTracing/RayTracingPassData.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp

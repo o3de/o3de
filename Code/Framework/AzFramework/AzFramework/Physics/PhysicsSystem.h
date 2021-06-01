@@ -130,13 +130,6 @@ namespace AzPhysics
         //! @param forceReinitialization Flag to force a reinitialization of the physics system. Default false.
         virtual void UpdateConfiguration(const SystemConfiguration* newConfig, bool forceReinitialization = false) = 0;
 
-        //! Update the default material library.
-        //! @param materialLibrary The new material library asset to use.
-        virtual void UpdateDefaultMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary) = 0;
-
-        //! Accessor to get the current Material Library. This is also available in the PhysXSystemConfiguration.
-        virtual const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary() const = 0;
-
         //! Update the current default scene configuration.
         //! This is the configuration used to to create scenes without a custom configuration.
         //! @param sceneConfiguration The new configuration to apply.
@@ -169,9 +162,12 @@ namespace AzPhysics
         //! Register to receive notifications when the SystemConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterSystemConfigurationChangedEvent(SystemEvents::OnConfigurationChangedEvent::Handler& handler) { handler.Connect(m_configChangeEvent); }
-        //! Register a handler to receive an event when the default material library changes.
+        //! Register a handler to receive an event when the material library changes.
         //! @param handler The handler to receive the event.
-        void RegisterOnDefaultMaterialLibraryChangedEventHandler(SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler& handler) { handler.Connect(m_onDefaultMaterialLibraryChangedEvent); }
+        void RegisterOnMaterialLibraryChangedEventHandler(SystemEvents::OnMaterialLibraryChangedEvent::Handler& handler) { handler.Connect(m_onMaterialLibraryChangedEvent); }
+        //! Register a handler to receive an event when the material library fails to load on startup.
+        //! @param handler The handler to receive the event.
+        void RegisterOnMaterialLibraryLoadErrorEventHandler(SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler& handler) { handler.Connect(m_onMaterialLibraryLoadErrorEvent); }
         //! Register a handler to receive an event when the default SceneConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterOnDefaultSceneConfigurationChangedEventHandler(SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler& handler) { handler.Connect(m_onDefaultSceneConfigurationChangedEvent); }
@@ -185,7 +181,8 @@ namespace AzPhysics
         SystemEvents::OnSceneAddedEvent m_sceneAddedEvent;
         SystemEvents::OnSceneRemovedEvent m_sceneRemovedEvent;
         SystemEvents::OnConfigurationChangedEvent m_configChangeEvent;
-        SystemEvents::OnDefaultMaterialLibraryChangedEvent m_onDefaultMaterialLibraryChangedEvent;
+        SystemEvents::OnMaterialLibraryChangedEvent m_onMaterialLibraryChangedEvent;
+        SystemEvents::OnMaterialLibraryLoadErrorEvent m_onMaterialLibraryLoadErrorEvent;
         SystemEvents::OnDefaultSceneConfigurationChangedEvent m_onDefaultSceneConfigurationChangedEvent;
     };
 } // namespace AzPhysics
