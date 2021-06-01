@@ -113,7 +113,10 @@ public:
     void DetachOverride();
 
 public:
-    void AddNewAction(QAction* new_action, AZ::Crc32 r_url = 0);
+    void AddNewAction(QAction* new_action, AZ::Crc32 r_url);
+
+    void AddNewAction(QAction* new_action);
+
 
     AZStd::vector<AZStd::pair<AZ::Crc32, QAction*>> m_all_actions;
 

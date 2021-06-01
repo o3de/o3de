@@ -32,8 +32,6 @@
 #include "ActionManager.h"
 #include "QtViewPaneManager.h"
 
-#include <iostream>
-
 const char* FOCUSED_VIEW_PANE_EVENT_NAME = "FocusedViewPaneEvent";    //Sent when view panes are focused
 const char* FOCUSED_VIEW_PANE_ATTRIBUTE_NAME = "FocusedViewPaneName"; //Name of the current focused view pane
 
@@ -331,5 +329,25 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
     
     m_all_actions.push_back(new_addition);
 }
+
+void ShortcutDispatcher::AddNewAction(QAction* newAction)
+{
+    const int new_id = newAction->data().toInt();
+
+    unsigned size = m_all_actions.size();
+    for (unsigned i = 0; i < size; i++)
+    {
+        if (m_all_actions[i].second->data().toInt() == new_id)
+        {
+            qWarning() << "ActionManager already contains action with id" << new_id;
+            Q_ASSERT(false);
+        }
+    }
+
+    AZStd::pair<AZ::Crc32, QAction*> new_addition(AZ::Crc32(0), newAction);
+
+    m_all_actions.push_back(new_addition);
+}
+
 
 #include <moc_ShortcutDispatcher.cpp>
