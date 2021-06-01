@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 INTRODUCTION
 ------------
 
-Atom_RPI_Tools is a Python project that contains a collection of tools
+atom_rpi_tools is a Python project that contains a collection of tools
 developed by the Atom team. The project contains the following tools:
 
  * Render pipeline merge tool:
@@ -36,4 +36,4 @@ UNINSTALLATION
 --------------
 
 The preferred way to uninstall the project is:
- /path/to/your/python -m pip uninstall Atom_RPI_Tools
+ /path/to/your/python -m pip uninstall atom_rpi_tools

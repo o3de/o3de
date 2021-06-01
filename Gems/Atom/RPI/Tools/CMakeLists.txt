@@ -9,11 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if (NOT CMAKE_SCRIPT_MODE_FILE)
-    # only installl package when it's not in script mode
-    # this has same condition as \o3de\cmake\LYPython.cmake
-    ly_pip_install_local_package_editable(${CMAKE_CURRENT_LIST_DIR} atom_rpi_tools)
-endif()
+ly_pip_install_local_package_editable(${CMAKE_CURRENT_LIST_DIR} atom_rpi_tools)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
