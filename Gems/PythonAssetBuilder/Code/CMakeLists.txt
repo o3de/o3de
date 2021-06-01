@@ -69,6 +69,11 @@ ly_add_target(
         Gem::EditorPythonBindings.Editor
 )
 
+# the above target is used in both builders like AssetProcessor and Tools like the Editor
+# but is not used in clients or servers
+ly_create_alias(NAME PythonAssetBuilder.Tools     NAMESPACE Gem TARGETS Gem::PythonAssetBuilder.Editor)
+ly_create_alias(NAME PythonAssetBuilder.Builders  NAMESPACE Gem TARGETS Gem::PythonAssetBuilder.Editor)
+
 ################################################################################
 # Tests
 ################################################################################

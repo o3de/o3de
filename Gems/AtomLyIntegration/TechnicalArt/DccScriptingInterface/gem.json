@@ -1,17 +1,14 @@
 {
-    "gem_name": "Atom_DccScriptingInterface",
-    "GemFormatVersion": 4,
-    "Uuid": "7bf5a77dacd8438bb4966a66b5a678d8",
-    "Name": "Atom_DccScriptingInterface",
-    "DisplayName": "Atom DccScriptingInterface (DCCsi)",
-    "Version": "0.1.0",
-    "Summary": "A python framework for working with various DCC tools and workflows.",
-    "Tags": ["DCC","Digital","Content","Creation"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Name": "Editor",
-            "Type": "EditorModule"
-        }
+    "gem_name": "DccScriptingInterface",
+    "display_name": "Atom DccScriptingInterface (DCCsi)",
+    "summary": "A python framework for working with various DCC tools and workflows.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "DCC",
+	"Digital",
+	"Content",
+	"Creation"
     ]
 }

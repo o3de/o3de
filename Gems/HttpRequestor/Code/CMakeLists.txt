@@ -48,6 +48,12 @@ ly_add_target(
             Gem::HttpRequestor.Static
 )
 
+# Load the "Gem::HttpRequestor" module in all types of applicatons.
+ly_create_alias(NAME HttpRequestor.Clients  NAMESPACE Gem TARGETS Gem::HttpRequestor)
+ly_create_alias(NAME HttpRequestor.Servers  NAMESPACE Gem TARGETS Gem::HttpRequestor)
+ly_create_alias(NAME HttpRequestor.Builders NAMESPACE Gem TARGETS Gem::HttpRequestor)
+ly_create_alias(NAME HttpRequestor.Tools    NAMESPACE Gem TARGETS Gem::HttpRequestor)
+
 ################################################################################
 # Tests
 ################################################################################

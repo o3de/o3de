@@ -28,7 +28,7 @@ namespace AzToolsFramework
 
             AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(worldFromLocal, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-            worldFromLocal.ExtractScale();
+            worldFromLocal.ExtractUniformScale();
             m_manipulators = AZStd::make_unique<ScaleManipulators>(worldFromLocal);
             m_manipulators->Register(g_mainManipulatorManagerId);
             m_manipulators->SetAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());

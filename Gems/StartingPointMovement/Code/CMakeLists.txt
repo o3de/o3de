@@ -40,3 +40,9 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
 )
+
+# the above module is for use in all application types (there is no tool specialization)
+ly_create_alias(NAME StartingPointMovement.Servers  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Clients  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Builders NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Tools    NAMESPACE Gem TARGETS Gem::StartingPointMovement)
