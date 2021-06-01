@@ -114,7 +114,7 @@ namespace TestImpact
             }
             case Client::TestRunResult::TestFailures:
             {
-                testRunFailures.push_back(ExtractTestRunFailure(testJob));
+                testRunFailures.push_back(GenerateTestRunFailure(testJob));
                 break;
             }
             default:

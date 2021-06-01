@@ -29,6 +29,7 @@ namespace TestImpact
             Timeout //!< The test sequence runtime exceeded the global timeout value.
         };
 
+        //! Entry point for the console front end application.
         [[nodiscard]] ReturnCode Main(int argc, char** argv);
-    }
-}
+    } // namespace Console 
+} // namespace TestImpact
