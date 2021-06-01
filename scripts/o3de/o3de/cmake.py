@@ -21,6 +21,95 @@ from o3de import manifest
 logger = logging.getLogger()
 logging.basicConfig()
 
+enable_gem_start_marker = 'set(ENABLED_GEMS'
+enable_gem_end_marker = ')'
+
+
+def add_gem_dependency(cmake_file: pathlib.Path,
+                       gem_name: str) -> int:
+    """
+    adds a gem dependency to a cmake file
+    :param cmake_file: path to the cmake file
+    :param gem_name: name of the gem
+    :return: 0 for success or non 0 failure code
+    """
+    if not cmake_file.is_file():
+        logger.error(f'Failed to locate cmake file {str(cmake_file)}')
+        return 1
+
+    # on a line by basis, see if there already is {gem_name}
+    # find the first occurrence of a gem, copy its formatting and replace
+    # the gem name with the new one and append it
+    # if the gem is already present fail
+    t_data = []
+    added = False
+    line_index_to_append = None
+    with open(cmake_file, 'r') as s:
+        line_index = 0
+        for line in s:
+            if line.strip().startswith(enable_gem_start_marker):
+                line_index_to_append = line_index
+            if f'{gem_name}' == line.strip():
+                logger.warning(f'{gem_name} is already enabled in file {str(cmake_file)}.')
+                return 0
+            t_data.append(line)
+            line_index += 1
+
+
+    indent = 4
+    if line_index_to_append:
+        # Insert the gem after the 'set(ENABLED_GEMS)...` line
+        t_data.insert(line_index_to_append + 1, f'{" "  * indent}{gem_name}\n')
+        added = True
+
+    # if we didn't add, then create a new set(ENABLED_GEMS) variable
+    # add a new gem, if empty the correct format is 1 tab=4spaces
+    if not added:
+        t_data.append('\n')
+        t_data.append(f'{enable_gem_start_marker}\n')
+        t_data.append(f'{" "  * indent}{gem_name}\n')
+        t_data.append(f'{enable_gem_end_marker}\n')
+
+    # write the cmake
+    with open(cmake_file, 'w') as s:
+        s.writelines(t_data)
+
+    return 0
+
+def remove_gem_dependency(cmake_file: pathlib.Path,
+                          gem_name: str) -> int:
+    """
+    removes a gem dependency from a cmake file
+    :param cmake_file: path to the cmake file
+    :param gem_name: name of the gem
+    :return: 0 for success or non 0 failure code
+    """
+    if not cmake_file.is_file():
+        logger.error(f'Failed to locate cmake file {cmake_file}')
+        return 1
+
+    # on a line by basis, remove any line with {gem_name}
+    t_data = []
+    # Remove the gem from the enabled_gem file by skipping the gem name entry
+    removed = False
+    with open(cmake_file, 'r') as s:
+        for line in s:
+            if gem_name == line.strip():
+                removed = True
+            else:
+                t_data.append(line)
+
+    if not removed:
+        logger.error(f'Failed to remove {gem_name} from cmake file {cmake_file}')
+        return 1
+
+    # write the cmake
+    with open(cmake_file, 'w') as s:
+        s.writelines(t_data)
+
+    return 0
+
+
 def get_project_gems(project_path: pathlib.Path,
                             platform: str = 'Common') -> set:
     return get_gems_from_cmake_file(get_enabled_gem_cmake_file(project_path=project_path, platform=platform))
@@ -38,8 +127,6 @@ def get_enabled_gems(cmake_file: pathlib.Path) -> set:
         logger.error(f'Failed to locate cmake file {cmake_file}')
         return set()
 
-    enable_gem_start_marker = 'set(ENABLED_GEMS'
-    enable_gem_end_marker = ')'
     gem_target_set = set()
     with cmake_file.open('r') as s:
         in_gem_list = False
