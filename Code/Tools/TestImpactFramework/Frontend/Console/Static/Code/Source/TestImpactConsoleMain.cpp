@@ -24,7 +24,7 @@
 
 #include <TestImpactConsoleTestSequenceEventHandler.h>
 #include <TestImpactCommandLineOptions.h>
-#include <TestImpactConfigurationFactory.h>
+#include <TestImpactRuntimeConfigurationFactory.h>
 #include <TestImpactCommandLineOptionsException.h>
 
 #include <AzCore/IO/SystemFile.h>
@@ -166,7 +166,7 @@ namespace TestImpact
 
                 std::cout << "Constructing in-memory model of source tree and test coverage, this may take a moment...\n";
                 Runtime runtime(
-                    ConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
+                    RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
                     options.GetExecutionFailurePolicy(),
                     options.GetExecutionFailureDraftingPolicy(),
                     options.GetTestFailurePolicy(),

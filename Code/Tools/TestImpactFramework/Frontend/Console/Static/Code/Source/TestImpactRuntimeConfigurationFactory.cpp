@@ -12,7 +12,7 @@
 
 #include <TestImpactFramework/TestImpactConfigurationException.h>
 
-#include <TestImpactConfigurationFactory.h>
+#include <TestImpactRuntimeConfigurationFactory.h>
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/std/functional.h>
@@ -185,7 +185,7 @@ namespace TestImpact
         return targetConfig;
     }
 
-    RuntimeConfig ConfigurationFactory(const AZStd::string& configurationData)
+    RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData)
     {
         RuntimeConfig runtimeConfig;
         rapidjson::Document configurationFile;

@@ -14,5 +14,6 @@
 
 namespace TestImpact
 {
-    RuntimeConfig ConfigurationFactory(const AZStd::string& configurationData);
+    //! Parses the configuration data (in JSON format) and returns the constructed runtime configuration.
+    RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData);
 } // namespace TestImpact
