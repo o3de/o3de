@@ -51,7 +51,31 @@ namespace AZ
             //! DisplayMapperComponentRequestBus::Handler overrides...
             void LoadPreset(OutputDeviceTransformType preset) override;
             void SetDisplayMapperOperationType(DisplayMapperOperationType displayMapperOperationType) override;
+            DisplayMapperOperationType GetDisplayMapperOperationType() const override;
             void SetAcesParameterOverrides(const AcesParameterOverrides& parameterOverrides) override;
+            const AcesParameterOverrides& GetAcesParameterOverrides() const override;
+            void SetOverrideAcesParameters(bool value) override;
+            bool GetOverrideAcesParameters() const override;
+            void SetAlterSurround(bool value) override;
+            bool GetAlterSurround() const override;
+            void SetApplyDesaturation(bool value) override;
+            bool GetApplyDesaturation() const override;
+            void SetApplyCATD60toD65(bool value) override;
+            bool GetApplyCATD60toD65() const override;
+            void SetCinemaLimitsBlack(float value) override;
+            float GetCinemaLimitsBlack() const override;
+            void SetCinemaLimitsWhite(float value) override;
+            float GetCinemaLimitsWhite() const override;
+            void SetMinPoint(float value) override;
+            float GetMinPoint() const override;
+            void SetMidPoint(float value) override;
+            float GetMidPoint() const override;
+            void SetMaxPoint(float value) override;
+            float GetMaxPoint() const override;
+            void SetSurroundGamma(float value) override;
+            float GetSurroundGamma() const override;
+            void SetGamma(float value) override;
+            float GetGamma() const override;
 
         private:
             AZ_DISABLE_COPY(DisplayMapperComponentController);

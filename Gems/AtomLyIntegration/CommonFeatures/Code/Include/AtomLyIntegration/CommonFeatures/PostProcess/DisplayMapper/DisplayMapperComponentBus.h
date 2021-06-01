@@ -30,8 +30,67 @@ namespace AZ
             virtual void LoadPreset(OutputDeviceTransformType preset) = 0;
             //! Set display mapper type
             virtual void SetDisplayMapperOperationType(DisplayMapperOperationType displayMapperOperationType) = 0;
-            //! Set custom ACES parameters for ACES mapping, display mapper must be set to Aces to see the difference
+            //! Get display mapper type
+            virtual DisplayMapperOperationType GetDisplayMapperOperationType() const = 0;
+            //! Set ACES parameter overrides for ACES mapping, display mapper must be set to Aces to see the difference
             virtual void SetAcesParameterOverrides(const AcesParameterOverrides& parameterOverrides) = 0;
+            //! Get ACES parameter overrides
+            virtual const AcesParameterOverrides& GetAcesParameterOverrides() const = 0;
+
+            // Enable or disable ACES parameter overrides
+            virtual void SetOverrideAcesParameters(bool value) = 0;
+            // Check if ACES parameters are overriding default preset values
+            virtual bool GetOverrideAcesParameters() const = 0;
+
+            // Set gamma adjustment to compensate for dim surround
+            virtual void SetAlterSurround(bool value) = 0;
+            // Get gamma adjustment to compensate for dim surround
+            virtual bool GetAlterSurround() const = 0;
+                        
+            // Set desaturation to compensate for luminance difference
+            virtual void SetApplyDesaturation(bool value) = 0;
+            // Get desaturation to compensate for luminance difference
+            virtual bool GetApplyDesaturation() const = 0;
+            
+            // Set color appearance transform (CAT) from ACES white point to assumed observer adapted white point
+            virtual void SetApplyCATD60toD65(bool value) = 0;
+            // Get color appearance transform (CAT) from ACES white point to assumed observer adapted white point
+            virtual bool GetApplyCATD60toD65() const = 0;
+
+            // Set reference black luminance value
+            virtual void SetCinemaLimitsBlack(float value) = 0;
+            // Get reference black luminance value
+            virtual float GetCinemaLimitsBlack() const = 0;
+
+            // Set reference white luminance value
+            virtual void SetCinemaLimitsWhite(float value) = 0;
+            // Get reference white luminance value
+            virtual float GetCinemaLimitsWhite() const = 0;
+
+            // Set min luminance value
+            virtual void SetMinPoint(float value) = 0;
+            // Get min luminance value
+            virtual float GetMinPoint() const = 0;
+
+            // Set mid luminance value
+            virtual void SetMidPoint(float value) = 0;
+            // Get mid luminance value
+            virtual float GetMidPoint() const = 0;
+
+            // Set max luminance value
+            virtual void SetMaxPoint(float value) = 0;
+            // Get max luminance value
+            virtual float GetMaxPoint() const = 0;
+
+            // Set gamma adjustment value
+            virtual void SetSurroundGamma(float value) = 0;
+            // Get gamma adjustment value
+            virtual float GetSurroundGamma() const = 0;
+
+            // Set optional gamma value that is applied as basic gamma curve OETF
+            virtual void SetGamma(float value) = 0;
+            // Get optional gamma value that is applied as basic gamma curve OETF
+            virtual float GetGamma() const = 0;
         };
         using DisplayMapperComponentRequestBus = EBus<DisplayMapperComponentRequests>;
 
@@ -40,7 +99,7 @@ namespace AZ
         {
         public:
             //! Notifies that display mapper type changed
-            virtual void OntDisplayMapperOperationTypeUpdated([[maybe_unused]] const DisplayMapperOperationType& displayMapperOperationType)
+            virtual void OnDisplayMapperOperationTypeUpdated([[maybe_unused]] const DisplayMapperOperationType& displayMapperOperationType)
             {
             }
 
