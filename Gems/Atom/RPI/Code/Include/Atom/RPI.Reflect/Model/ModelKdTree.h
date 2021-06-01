@@ -35,6 +35,13 @@ namespace AZ
             ModelKdTree() = default;
 
             bool Build(const ModelAsset* model);
+            //! Return if a ray intersected the model.
+            //! @param raySrc The starting point of the ray.
+            //! @param rayDir The direction and length of the ray (magnitude is encoded in the direction).
+            //! @param[out] The normalized distance of the intersection (in the range 0.0-1.0) - to calculate the actual
+            //! distance, multiply distanceNormalized by the magnitude of rayDir.
+            //! @param[out] The surface normal of the intersection with the model.
+            //! @return Return true if there was an intersection with the model, false otherwise.
             bool RayIntersection(
                 const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
             void GetPenetratedBoxes(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
