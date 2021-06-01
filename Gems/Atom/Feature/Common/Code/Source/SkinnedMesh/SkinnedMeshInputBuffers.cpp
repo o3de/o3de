@@ -257,7 +257,7 @@ namespace AZ
                         // Get all of the streams potentially used as input to the skinning compute shader
                         RHI::InputStreamLayout inputLayout;
                         RPI::ModelLod::StreamBufferViewList streamBufferViews;
-                        modelLod->GetStreamsForMesh(inputLayout, streamBufferViews, SkinnedMeshVertexStreamPropertyInterface::Get()->GetComputeShaderInputContract(), meshIndex);
+                        modelLod->GetStreamsForMesh(inputLayout, streamBufferViews, nullptr, SkinnedMeshVertexStreamPropertyInterface::Get()->GetComputeShaderInputContract(), meshIndex);
 
                         AZ_Assert(inputLayout.GetStreamBuffers().size() == streamBufferViews.size(), "Mismatch in size of InputStreamLayout and StreamBufferViewList for model '%s'", m_modelAsset.GetHint().c_str());
 

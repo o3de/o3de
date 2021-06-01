@@ -79,9 +79,8 @@ namespace AZ
         static void ProcessSkinInfluences(
             const EMotionFX::Mesh* mesh,
             const EMotionFX::SubMesh* subMesh,
-            size_t atomVertexBufferOffset,
-            AZStd::vector<uint32_t[MaxSupportedSkinInfluences / 2]>& blendIndexBufferData,
-            AZStd::vector<AZStd::array<float, MaxSupportedSkinInfluences>>& blendWeightBufferData,
+            AZStd::vector<uint32_t>& blendIndexBufferData,
+            AZStd::vector<float>& blendWeightBufferData,
             bool hasClothData)
         {
             EMotionFX::SkinningInfoVertexAttributeLayer* sourceSkinningInfo = static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(mesh->FindSharedVertexAttributeLayer(EMotionFX::SkinningInfoVertexAttributeLayer::TYPE_ID));
@@ -102,52 +101,63 @@ namespace AZ
                     float weightError = 1.0f;
 
                     AZStd::vector<uint32_t> localIndices;
+                    AZStd::vector<float> localWeights;
                     for (; influenceIndex < influenceCount; ++influenceIndex)
                     {
                         EMotionFX::SkinInfluence* influence = sourceSkinningInfo->GetInfluence(originalVertex, influenceIndex);
                         localIndices.push_back(static_cast<uint32_t>(influence->GetNodeNr()));
-                        blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = influence->GetWeight();
-                        weightError -= blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex];
+                        localWeights.push_back(influence->GetWeight());
+                        weightError -= influence->GetWeight();
                     }
 
                     // Zero out any unused ids/weights
                     for (; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
                     {
                         localIndices.push_back(0);
-                        blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = 0.0f;
+                        localWeights.push_back(0.0f);
+                    }
+
+
+                    // [TODO ATOM-15288]
+                    // Temporary workaround. If there is cloth data, set all the blend weights to zero to indicate
+                    // the vertices will be updated by cpu. When meshes with cloth data are not dispatched for skinning
+                    // this can be hasClothData can be removed.
+
+                    // If there is no skinning info, default to 0 weights and display an error
+                    if (hasClothData || !sourceSkinningInfo)
+                    {
+                        for (influenceIndex = 0; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
+                        {
+                            localWeights[influenceIndex] = 0.0f;
+                        }
                     }
 
                     // Now that we have the 16-bit indices, pack them into 32-bit uints
+                    uint32_t packedJointIds = 0;
                     for (size_t i = 0; i < localIndices.size(); ++i)
                     {
                         if (i % 2 == 0)
                         {
                             // Put the first/even ids in the most significant bits
-                            blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i / 2] = localIndices[i] << 16;
+                            packedJointIds = localIndices[i] << 16;
                         }
                         else
                         {
                             // Put the next/odd ids in the least significant bits
-                            blendIndexBufferData[atomVertexBufferOffset + vertexIndex][i / 2] |= localIndices[i];
+                            packedJointIds |= localIndices[i];
+                            blendIndexBufferData.push_back(packedJointIds);
                         }
+
+                        blendWeightBufferData.push_back(localWeights[i]);
                     }
                 }
-            }
 
-            // [TODO ATOM-15288]
-            // Temporary workaround. If there is cloth data, set all the blend weights to zero to indicate
-            // the vertices will be updated by cpu. When meshes with cloth data are not dispatched for skinning
-            // this can be hasClothData can be removed.
-
-            // If there is no skinning info, default to 0 weights and display an error
-            if (hasClothData || !sourceSkinningInfo)
-            {
-                for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+                while (blendIndexBufferData.size() % 4 != 0)
                 {
-                    for (uint32_t influenceIndex = 0; influenceIndex < MaxSupportedSkinInfluences; ++influenceIndex)
-                    {
-                        blendWeightBufferData[atomVertexBufferOffset + vertexIndex][influenceIndex] = 0.0f;
-                    }
+                    // Pad with some extra data so the the offset to each mesh view is 16 byte aligned
+                    // which is required for raw views. These don't need corresponding weights, because
+                    // they will be ignored, and just serve as padding between different meshes
+                    blendIndexBufferData.push_back(0);
                 }
             }
         }
@@ -210,8 +220,8 @@ namespace AZ
             const size_t numLODs = actor->GetNumLODLevels();
 
             // Create the containers to hold the data for all the combined sub-meshes
-            AZStd::vector<uint32_t[MaxSupportedSkinInfluences / 2]> blendIndexBufferData;
-            AZStd::vector<AZStd::array<float, MaxSupportedSkinInfluences>> blendWeightBufferData;
+            AZStd::vector<uint32_t> blendIndexBufferData;
+            AZStd::vector<float> blendWeightBufferData;
 
             //
             // Process all LODs from the EMotionFX actor data.
@@ -226,14 +236,14 @@ namespace AZ
 
                 Data::Asset<RPI::ModelLodAsset> modelLodAsset = modelAsset->GetLodAssets()[lodIndex];
 
-                // We'll be overwriting all the elements, so no need to construct them when resizing
-                // TODO: operate on a per-mesh basis
-                blendIndexBufferData.resize_no_construct(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position));
-                blendWeightBufferData.resize_no_construct(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position));
+                // Clear out the vector for re-mapped joint data that will be populated by values from EMotionFX
+                blendIndexBufferData.clear();
+                blendWeightBufferData.clear();
+                blendIndexBufferData.reserve(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) * MaxSupportedSkinInfluences / 2);
+                blendWeightBufferData.reserve(skinnedMeshLod.GetVertexCountForStream(SkinnedMeshOutputVertexStreams::Position) * MaxSupportedSkinInfluences);
 
                 // Now iterate over the actual data and populate the data for the per-actor buffers
                 size_t vertexBufferOffset = 0;
-                size_t skinnedMeshSubmeshIndex = 0;
                 for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
                 {
                     const EMotionFX::Mesh* mesh = actor->GetMesh(lodIndex, jointIndex);
@@ -260,11 +270,10 @@ namespace AZ
                             // Check if the model mesh asset has cloth data. One ModelLodAsset::Mesh corresponds to one EMotionFX::SubMesh.
                             const bool hasClothData = modelLodAsset->GetMeshes()[subMeshIndex].GetSemanticBufferAssetView(AZ::Name("CLOTH_DATA")) != nullptr;
 
-                            ProcessSkinInfluences(mesh, subMesh, vertexBufferOffset, blendIndexBufferData, blendWeightBufferData, hasClothData);
+                            ProcessSkinInfluences(mesh, subMesh, blendIndexBufferData, blendWeightBufferData, hasClothData);
 
                             // Increment offsets so that the next sub-mesh can start at the right place
                             vertexBufferOffset += vertexCount;
-                            skinnedMeshSubmeshIndex++;
                         }
                     }   // for all submeshes
                 } // for all meshes

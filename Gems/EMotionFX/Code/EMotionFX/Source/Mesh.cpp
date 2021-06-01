@@ -269,10 +269,6 @@ namespace EMotionFX
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
-                size_t influenceCount = elementCountInBytes / sizeof(AZ::u16);
-                maxSkinInfluences = influenceCount / modelVertexCount;
-                AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
-                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
 
                 // Multiply element offset by 2 here since m_elementOffset is referring to 32-bit elements
@@ -285,6 +281,7 @@ namespace EMotionFX
                 size_t influenceCount = elementCountInBytes / sizeof(float);
                 maxSkinInfluences = influenceCount / modelVertexCount;
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
+                AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
         }
