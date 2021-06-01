@@ -128,9 +128,7 @@ namespace AzFramework
         AZ::Quaternion GetLocalRotationQuaternion() override;
 
         // Scale Modifiers
-        void SetLocalScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetLocalScale() override;
-        AZ::Vector3 GetWorldScale() override;
 
         void SetLocalUniformScale(float scale) override;
         float GetLocalUniformScale() override;

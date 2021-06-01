@@ -828,7 +828,7 @@ void CTrackViewSequence::SyncSelectedTracksToBase()
                     const Vec3 scale = pAnimNode->GetScale();
 
                     AZ::Transform transform = AZ::Transform::CreateIdentity();
-                    transform.SetScale(LYVec3ToAZVec3(scale));
+                    transform.SetUniformScale(LYVec3ToAZVec3(scale).GetMaxElement());
                     transform.SetRotation(LYQuaternionToAZQuaternion(rotation));
                     transform.SetTranslation(LYVec3ToAZVec3(position));
 
@@ -870,7 +870,7 @@ void CTrackViewSequence::SyncSelectedTracksFromBase()
 
                 pAnimNode->SetPos(AZVec3ToLYVec3(transform.GetTranslation()));
                 pAnimNode->SetRotation(AZQuaternionToLYQuaternion(transform.GetRotation()));
-                pAnimNode->SetScale(AZVec3ToLYVec3(transform.GetScale()));
+                pAnimNode->SetScale(AZVec3ToLYVec3(AZ::Vector3(transform.GetUniformScale())));
 
                 bNothingWasSynced = false;
             }

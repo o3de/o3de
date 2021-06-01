@@ -33,6 +33,25 @@ class TestVegetationInstances_DespawnWhenOutOfRange(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix='VegetationInstances_DespawnWhenOutOfRange', args=['level'])
 
     def run_test(self):
+        """
+        Summary:
+        Verifies that vegetation instances properly spawn/despawn based on camera range.
+
+        Expected Behavior:
+        Vegetation instances despawn when out of camera range.
+
+        Test Steps:
+         1) Create a new level
+         2) Create a simple vegetation area, and set the view position near the spawner. Verify instances plant.
+         3) Move the view position away from the spawner. Verify instances despawn.
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         # Create a new level
         self.test_success = self.create_level(

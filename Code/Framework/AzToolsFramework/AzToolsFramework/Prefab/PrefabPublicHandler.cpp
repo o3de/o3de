@@ -64,7 +64,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath)
         {
             EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
@@ -75,6 +75,8 @@ namespace AzToolsFramework
             {
                 return findCommonRootOutcome;
             }
+
+            AZ_Assert(absolutePath.IsAbsolute(), "CreatePrefab requires an absolute path for saving the initial prefab file.");
 
             InstanceOptionalReference instanceToCreate;
             {
@@ -144,7 +146,8 @@ namespace AzToolsFramework
 
                 // Create the Prefab
                 instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
-                    entities, AZStd::move(instancePtrs), filePath, commonRootEntityOwningInstance);
+                    entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(absolutePath),
+                    commonRootEntityOwningInstance);
 
                 if (!instanceToCreate)
                 {
@@ -254,7 +257,7 @@ namespace AzToolsFramework
             }
 
             // Save Template to file
-            m_prefabLoaderInterface->SaveTemplate(instanceToCreate->get().GetTemplateId());
+            m_prefabLoaderInterface->SaveTemplateToFile(instanceToCreate->get().GetTemplateId(), absolutePath);
             
             return AZ::Success();
         }
@@ -318,7 +321,7 @@ namespace AzToolsFramework
             }
 
             //Detect whether this instantiation would produce a cyclical dependency
-            auto relativePath = m_prefabLoaderInterface->GetRelativePathToProject(filePath);
+            auto relativePath = m_prefabLoaderInterface->GenerateRelativePath(filePath);
             Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
 
             if (templateId == InvalidTemplateId)

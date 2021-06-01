@@ -57,7 +57,6 @@ namespace AzToolsFramework
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
         m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "NewLevel.prefab"));
-
         m_sliceOwnershipService.BusConnect(m_entityContextId);
         m_sliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
         m_editorSliceOwnershipService.BusConnect();
@@ -91,14 +90,17 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::Reset()
     {
-        Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
-        if (templateId != Prefab::InvalidTemplateId)
+        if (m_rootInstance)
         {
-            m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
-            m_prefabSystemComponent->RemoveTemplate(templateId);
+            Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
+            if (templateId != Prefab::InvalidTemplateId)
+            {
+                m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
+                m_prefabSystemComponent->RemoveTemplate(templateId);
+            }
+            m_rootInstance->Reset();
+            m_rootInstance->SetContainerEntityName("Level");
         }
-        m_rootInstance->Reset();
-        m_rootInstance->SetContainerEntityName("Level");
 
         AzFramework::EntityOwnershipServiceNotificationBus::Event(
             m_entityContextId, &AzFramework::EntityOwnershipServiceNotificationBus::Events::OnEntityOwnershipServiceReset);
@@ -202,7 +204,7 @@ namespace AzToolsFramework
         }
 
         m_rootInstance->SetTemplateId(templateId);
-        m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GetRelativePathToProject(filename));
+        m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filename));
         m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
 
@@ -220,7 +222,7 @@ namespace AzToolsFramework
 
     bool PrefabEditorEntityOwnershipService::SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename)
     {
-        AZ::IO::Path relativePath = m_loaderInterface->GetRelativePathToProject(filename);
+        AZ::IO::Path relativePath = m_loaderInterface->GenerateRelativePath(filename);
         AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
 
         m_rootInstance->SetTemplateSourcePath(relativePath);
@@ -267,7 +269,7 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename)
     {
-        AZ::IO::Path relativePath = m_loaderInterface->GetRelativePathToProject(filename);
+        AZ::IO::Path relativePath = m_loaderInterface->GenerateRelativePath(filename);
         AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
 
         m_rootInstance->SetTemplateSourcePath(relativePath);
@@ -378,7 +380,12 @@ namespace AzToolsFramework
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::GetRootPrefabInstance()
     {
         AZ_Assert(m_rootInstance, "A valid root prefab instance couldn't be found in PrefabEditorEntityOwnershipService.");
-        return *m_rootInstance;
+        if (m_rootInstance)
+        {
+            return *m_rootInstance;
+        }
+
+        return AZStd::nullopt;
     }
 
     Prefab::TemplateId PrefabEditorEntityOwnershipService::GetRootPrefabInstanceTemplateId()

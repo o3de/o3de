@@ -337,3 +337,30 @@ QTabBar::tab:pressed
     min-height:278px;
     max-height:278px;
 }
+
+/************** Gem Catalog **************/
+
+#GemCatalogTitle {
+    font-size: 18px;
+}
+
+/************** Gem Catalog (Inspector) **************/
+
+#GemCatalogInspector {
+    background-color: #444444;
+}
+
+/************** Gem Catalog (Filter/left pane) **************/
+
+#GemCatalogFilterWidget {
+    background-color: #444444;
+}
+
+#GemCatalogHeaderWidget {
+    background-color: #1E252F;
+}
+
+#GemCatalogFilterCategoryTitle {
+    font-size: 12px;
+    font-weight: 600;
+}

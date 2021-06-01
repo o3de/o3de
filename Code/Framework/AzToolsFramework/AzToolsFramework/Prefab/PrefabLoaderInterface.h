@@ -61,6 +61,16 @@ namespace AzToolsFramework
             virtual bool SaveTemplate(TemplateId templateId) = 0;
 
             /**
+             * Saves a Prefab Template to the provided absolute source path, which needs to match the relative path in the template.
+             * Converts Prefab Template form into .prefab form by collapsing nested Template info
+             * into a source path and patches.
+             * @param templateId Id of the template to be saved
+             * @param absolutePath Absolute path to save the file to
+             * @return bool on whether the operation succeeded or not
+             */
+            virtual bool SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath) = 0;
+
+            /**
             * Saves a Prefab Template into the provided output string.
             * Converts Prefab Template form into .prefab form by collapsing nested Template info
             * into a source path and patches.
@@ -74,9 +84,11 @@ namespace AzToolsFramework
             //! The path will always have the correct separator for the current OS
             virtual AZ::IO::Path GetFullPath(AZ::IO::PathView path) = 0;
 
-            //! Converts path into a relative path to the current project, this will be the paths in .prefab file.
-            //! The path will always have '/' separator.
-            virtual AZ::IO::Path GetRelativePathToProject(AZ::IO::PathView path) = 0;
+            //! Converts path into a path that's relative to the highest-priority containing folder of all the folders registered
+            //! with the engine.
+            //! This path will be the path that appears in the .prefab file.
+            //! The path will always use the '/' separator.
+            virtual AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) = 0;
 
         protected:
 
