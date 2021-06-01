@@ -58,7 +58,7 @@ namespace O3DE::ProjectManager
 
         m_horizontalLayout->addWidget(projectSettingsFrame);
 
-        this->setLayout(m_horizontalLayout);
+        setLayout(m_horizontalLayout);
     }
 
     ProjectManagerScreen ProjectSettingsScreen::GetScreenEnum()

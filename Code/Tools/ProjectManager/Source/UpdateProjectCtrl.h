@@ -55,20 +55,18 @@ namespace O3DE::ProjectManager
             Gems
         };
 
-        ScreenHeader* m_header;
-        QStackedWidget* m_stack;
-        UpdateProjectSettingsScreen* m_updateSettingsScreen;
-        GemCatalogScreen* m_gemCatalogScreen;
+        ScreenHeader* m_header = nullptr;
+        QStackedWidget* m_stack = nullptr;
+        UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
+        GemCatalogScreen* m_gemCatalogScreen = nullptr;
 
         bool m_visitedSettingsScreen = false;
 
-        QPushButton* m_backButton;
-        QPushButton* m_nextButton;
+        QPushButton* m_backButton = nullptr;
+        QPushButton* m_nextButton = nullptr;
         QVector<ProjectManagerScreen> m_screensOrder;
 
         ProjectInfo m_projectInfo;
-
-        ProjectManagerScreen m_screenEnum;
     };
 
 } // namespace O3DE::ProjectManager

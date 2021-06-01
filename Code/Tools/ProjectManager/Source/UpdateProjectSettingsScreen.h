@@ -26,8 +26,6 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
         void SetProjectInfo(const ProjectInfo& projectInfo);
-
-    private:
     };
 
 } // namespace O3DE::ProjectManager

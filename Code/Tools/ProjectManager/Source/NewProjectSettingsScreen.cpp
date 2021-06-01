@@ -62,7 +62,7 @@ namespace O3DE::ProjectManager
             auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
             if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
             {
-                for (auto projectTemplate : templatesResult.GetValue())
+                for (const ProjectTemplateInfo& projectTemplate : templatesResult.GetValue())
                 {
                     QRadioButton* radioButton = new QRadioButton(projectTemplate.m_name, this);
                     radioButton->setProperty(k_pathProperty, projectTemplate.m_path);
