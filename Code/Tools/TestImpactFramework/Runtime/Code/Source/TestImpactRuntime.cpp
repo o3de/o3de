@@ -309,7 +309,7 @@ namespace TestImpact
 
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateSequenceFailureReport(testJobs), timer.Elapsed());
+            (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
         }
 
         return result;
@@ -353,7 +353,7 @@ namespace TestImpact
 
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateSequenceFailureReport(testJobs), timer.Elapsed());
+            (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
         }
 
         return result;
@@ -419,8 +419,8 @@ namespace TestImpact
         if (testSequenceEndCallback.has_value())
         {
             (*testSequenceEndCallback)(
-                CreateSequenceFailureReport(selectedTestJobs),
-                CreateSequenceFailureReport(discardedTestJobs),
+                GenerateSequenceFailureReport(selectedTestJobs),
+                GenerateSequenceFailureReport(discardedTestJobs),
                 timer.Elapsed());
         }
 
@@ -471,7 +471,7 @@ namespace TestImpact
 
         if (testSequenceEndCallback.has_value())
         {
-            (*testSequenceEndCallback)(CreateSequenceFailureReport(testJobs), timer.Elapsed());
+            (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
         }
 
         return result;
