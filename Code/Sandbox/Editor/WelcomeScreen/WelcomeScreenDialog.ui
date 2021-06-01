@@ -159,7 +159,7 @@
                <string/>
               </property>
               <property name="pixmap">
-               <pixmap resource="C:/o3de/Code/Sandbox/Editor/WelcomeScreen/WelcomeScreenDialog.qrc">:/WelcomeScreenDialog/DefaultActiveProject.png</pixmap>
+               <pixmap resource="WelcomeScreenDialog.qrc">:/WelcomeScreenDialog/DefaultActiveProject.png</pixmap>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -429,7 +429,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="C:/o3de/Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+                 <iconset resource="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
                   <normaloff>:/stylesheet/img/UI20/toolbar/Object_list.svg</normaloff>:/stylesheet/img/UI20/toolbar/Object_list.svg</iconset>
                 </property>
                 <property name="iconSize">
@@ -446,7 +446,7 @@
                  <string>...</string>
                 </property>
                 <property name="icon">
-                 <iconset resource="C:/o3de/Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+                 <iconset resource="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
                   <normaloff>:/stylesheet/img/UI20/toolbar/Grid.svg</normaloff>:/stylesheet/img/UI20/toolbar/Grid.svg</iconset>
                 </property>
                 <property name="iconSize">
@@ -538,7 +538,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QListView" name="recentLevelList">
+           <widget class="QTableWidget" name="recentLevelTable">
             <property name="enabled">
              <bool>true</bool>
             </property>
@@ -548,9 +548,24 @@
             <property name="horizontalScrollBarPolicy">
              <enum>Qt::ScrollBarAlwaysOff</enum>
             </property>
-            <property name="spacing">
-             <number>4</number>
+            <property name="columnCount">
+             <number>3</number>
             </property>
+            <attribute name="horizontalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>60</number>
+            </attribute>
+            <column/>
+            <column/>
+            <column/>
            </widget>
           </item>
           <item>
@@ -598,8 +613,8 @@
   </layout>
  </widget>
  <resources>
-  <include location="C:/o3de/Code/Sandbox/Editor/WelcomeScreen/WelcomeScreenDialog.qrc"/>
-  <include location="C:/o3de/Code/Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
+  <include location="WelcomeScreenDialog.qrc"/>
+  <include location="../../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

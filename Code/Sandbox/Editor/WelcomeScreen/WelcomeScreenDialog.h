@@ -52,7 +52,6 @@ private:
     Ui::WelcomeScreenDialog* ui;
 
     QString m_levelPath;
-    QStringListModel* m_pRecentListModel;
     TNameFullPathArray m_levels;
     RecentFileList* m_pRecentList;
     const char* m_levelExtension = nullptr;
@@ -65,7 +64,7 @@ private:
     void OnNewLevelBtnClicked(bool checked);
     void OnNewLevelLabelClicked(const QString& checked);
     void OnOpenLevelBtnClicked(bool checked);
-    void OnRecentLevelListItemClicked(const QModelIndex& index);
+    void OnRecentLevelTableItemClicked(const QModelIndex& index);
     void OnCloseBtnClicked(bool checked);
 
     void SyncFail(News::ErrorCode error);
