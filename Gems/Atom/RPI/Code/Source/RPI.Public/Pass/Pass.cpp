@@ -914,7 +914,7 @@ namespace AZ
                 {
                     // make sure to only import the resource one time
                     RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
-                    RHI::FrameAttachment* currentAttachment = attachmentDatabase.FindAttachment(attachmentId);
+                    const RHI::FrameAttachment* currentAttachment = attachmentDatabase.FindAttachment(attachmentId);
 
                     if (azrtti_istypeof<Image>(attachment->m_importedResource.get()))
                     {
