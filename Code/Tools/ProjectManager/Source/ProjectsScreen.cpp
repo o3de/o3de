@@ -179,13 +179,10 @@ namespace O3DE::ProjectManager
 
                     connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
                     connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
+                    connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
                     connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
                     connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
                     connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
-
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-                    connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
-#endif
                 }
 
                 layout->addWidget(projectsScrollArea);
@@ -293,7 +290,6 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::HandleEditProject(const QString& projectPath)
     {
         emit NotifyCurrentProject(projectPath);
-        emit ResetScreenRequest(ProjectManagerScreen::UpdateProject);
         emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
     }
     void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)

@@ -13,6 +13,7 @@
 #include <ScreensCtrl.h>
 #include <ScreenFactory.h>
 #include <ScreenWidget.h>
+#include <UpdateProjectCtrl.h>
 
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -112,6 +113,16 @@ namespace O3DE::ProjectManager
                 newScreen->NotifyCurrentScreen();
 
                 return true;
+            }
+        }
+        else
+        {
+            if (screen == ProjectManagerScreen::GemCatalog)
+            {
+                ForceChangeToScreen(ProjectManagerScreen::UpdateProject, addVisit);
+                ScreenWidget* currentScreen = GetCurrentScreen();
+                auto projectCtrl = reinterpret_cast<UpdateProjectCtrl*>(currentScreen);
+                projectCtrl->HandleGemsButton(true);
             }
         }
 

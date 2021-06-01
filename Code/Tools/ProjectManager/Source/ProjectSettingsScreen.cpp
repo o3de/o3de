@@ -11,45 +11,89 @@
  */
 
 #include <ProjectSettingsScreen.h>
+#include <FormBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <PathValidator.h>
 
-#include <Source/ui_ProjectSettingsScreen.h>
+#include <QFileDialog>
+#include <QFrame>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QStandardPaths>
 
 namespace O3DE::ProjectManager
 {
     ProjectSettingsScreen::ProjectSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
-        , m_ui(new Ui::ProjectSettingsClass())
     {
-        m_ui->setupUi(this);
+        m_horizontalLayout = new QHBoxLayout(this);
+        m_horizontalLayout->setAlignment(Qt::AlignLeft);
+        m_horizontalLayout->setContentsMargins(0, 0, 0, 0);
 
-        connect(m_ui->gemsButton, &QPushButton::pressed, this, &ProjectSettingsScreen::HandleGemsButton);
+        // if we don't provide a parent for this box layout the stylesheet doesn't take
+        // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
+        QFrame* projectSettingsFrame = new QFrame(this);
+        projectSettingsFrame->setObjectName("projectSettings");
+        m_verticalLayout = new QVBoxLayout(this);
+
+        // you cannot remove content margins in qss
+        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
+        m_verticalLayout->setAlignment(Qt::AlignTop);
+        {
+            m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
+            m_projectName->setErrorLabelText(
+                tr("A project with this name already exists at this location. Please choose a new name or location."));
+            m_verticalLayout->addWidget(m_projectName);
+
+            m_projectPath =
+                new FormBrowseEditWidget(tr("Project Location"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
+            m_projectPath->lineEdit()->setReadOnly(true);
+            m_projectPath->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
+            m_projectPath->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
+            m_verticalLayout->addWidget(m_projectPath);
+        }
+        projectSettingsFrame->setLayout(m_verticalLayout);
+
+        m_horizontalLayout->addWidget(projectSettingsFrame);
+
+        this->setLayout(m_horizontalLayout);
     }
 
     ProjectManagerScreen ProjectSettingsScreen::GetScreenEnum()
     {
-        return ProjectManagerScreen::ProjectSettings;
+        return ProjectManagerScreen::Invalid;
     }
 
     ProjectInfo ProjectSettingsScreen::GetProjectInfo()
     {
-        // Impl pending next PR
-        return ProjectInfo();
-    }
-
-    void ProjectSettingsScreen::SetProjectInfo()
-    {
-        // Impl pending next PR
+        ProjectInfo projectInfo;
+        projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        projectInfo.m_path        = QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + projectInfo.m_projectName);
+        return projectInfo;
     }
 
     bool ProjectSettingsScreen::Validate()
     {
-        // Impl pending next PR
-        return true;
-    }
+        bool projectNameIsValid = true;
+        if (m_projectName->lineEdit()->text().isEmpty())
+        {
+            projectNameIsValid = false;
+        }
 
-    void ProjectSettingsScreen::HandleGemsButton()
-    {
-        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
-    }
+        bool projectPathIsValid = true;
+        if (m_projectPath->lineEdit()->text().isEmpty())
+        {
+            projectPathIsValid = false;
+        }
 
+        QDir path(QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + m_projectName->lineEdit()->text()));
+        if (path.exists() && !path.isEmpty())
+        {
+            projectPathIsValid = false;
+        }
+
+        return projectNameIsValid && projectPathIsValid;
+    }
 } // namespace O3DE::ProjectManager

@@ -12,35 +12,28 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ProjectInfo.h>
-#include <ScreenWidget.h>
+#include <ProjectSettingsScreen.h>
 #endif
-
-QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
-QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 namespace O3DE::ProjectManager
 {
-    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
-    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
-
-    class ProjectSettingsScreen
-        : public ScreenWidget
+    class UpdateProjectSettingsScreen
+        : public ProjectSettingsScreen
     {
     public:
-        explicit ProjectSettingsScreen(QWidget* parent = nullptr);
-        ~ProjectSettingsScreen() = default;
+        explicit UpdateProjectSettingsScreen(QWidget* parent = nullptr);
+        ~UpdateProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        ProjectInfo GetProjectInfo();
+        QString GetTabText() override;
+        bool IsTab() override;
 
-        bool Validate();
+        void SetProjectInfo(const ProjectInfo& projectInfo);
 
-    protected:
-        QHBoxLayout* m_horizontalLayout;
-        QVBoxLayout* m_verticalLayout;
-        FormLineEditWidget* m_projectName;
-        FormBrowseEditWidget* m_projectPath;
+    protected slots:
+        void HandleBrowseButton();
+
+    private:
     };
 
 } // namespace O3DE::ProjectManager
