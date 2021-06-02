@@ -28,8 +28,6 @@
 
 namespace UnitTest
 {
-    using JobExceptionPolicy = TestImpact::InstrumentedTestRunner::JobExceptionPolicy;
-
     struct TargetPaths
     {
         TestImpact::RepoPath m_targetBinary;
@@ -183,8 +181,8 @@ namespace UnitTest
 
     void InstrumentedTestRunnerFixture::TearDown()
     {
-        DeleteFiles(LY_TEST_IMPACT_TEST_TARGET_COVERAGE_DIR, "*.xml");
-        DeleteFiles(LY_TEST_IMPACT_TEST_TARGET_RESULTS_DIR, "*.xml");
+        TestImpact::DeleteFiles(LY_TEST_IMPACT_TEST_TARGET_COVERAGE_DIR, "*.xml");
+        TestImpact::DeleteFiles(LY_TEST_IMPACT_TEST_TARGET_RESULTS_DIR, "*.xml");
 
         AllocatorsTestFixture::TearDown();
     }
@@ -308,11 +306,20 @@ namespace UnitTest
         }
 
         // When the instrumented test run jobs are executed with different exception policies
-        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, m_jobExceptionPolicy, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt,
+            [this]([[maybe_unused]] const JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+        {
+            if (m_jobExceptionPolicy == JobExceptionPolicy::OnFailedToExecute && meta.m_result == TestImpact::JobResult::FailedToExecute)
+            {
+                return TestImpact::ProcessCallbackResult::Abort;
+            }
+            else
+            {
+                return TestImpact::ProcessCallbackResult::Continue;
+            }
+        });
 
-        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
-
-        if (::IsFlagSet(m_jobExceptionPolicy, JobExceptionPolicy::OnFailedToExecute))
+        if (m_jobExceptionPolicy == JobExceptionPolicy::OnFailedToExecute)
         {
             ValidateTestRunCompleted(runnerJobs[0], m_expectedTestTargetResult[runnerJobs[0].GetJobInfo().GetId().m_value]);
             ValidateTestTargetRun(runnerJobs[0].GetPayload().value().first, m_expectedTestTargetRuns[runnerJobs[0].GetJobInfo().GetId().m_value]);
@@ -324,6 +331,8 @@ namespace UnitTest
             {
                 ValidateJobNotExecuted(runnerJobs[i]);
             }
+
+            EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::UserAborted);
         }
         else
         {
@@ -343,6 +352,8 @@ namespace UnitTest
                     ValidateTestTargetCoverage(job.GetPayload().value().second, m_expectedTestTargetCoverages[jobId][m_coverageLevel]);
                 }
             }
+
+            EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
         }
     }
 
@@ -365,11 +376,20 @@ namespace UnitTest
         }
 
         // When the instrumented test run jobs are executed with different exception policies
-        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, m_jobExceptionPolicy, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt,
+            [this]([[maybe_unused]] const JobInfo& jobInfo, const TestImpact::JobMeta& meta)
+        {
+            if (m_jobExceptionPolicy == JobExceptionPolicy::OnExecutedWithFailure && meta.m_result == TestImpact::JobResult::ExecutedWithFailure)
+            {
+                return TestImpact::ProcessCallbackResult::Abort;
+            }
+            else
+            {
+                return TestImpact::ProcessCallbackResult::Continue;
+            }
+        });
 
-        EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
-
-        if (::IsFlagSet(m_jobExceptionPolicy, JobExceptionPolicy::OnExecutedWithFailure))
+        if (m_jobExceptionPolicy == JobExceptionPolicy::OnExecutedWithFailure)
         {
             ValidateJobExecutedWithFailedTests(runnerJobs[0]);
             ValidateTestTargetRun(runnerJobs[0].GetPayload().value().first, m_expectedTestTargetRuns[runnerJobs[0].GetJobInfo().GetId().m_value]);
@@ -386,6 +406,8 @@ namespace UnitTest
                     ValidateJobNotExecuted(runnerJobs[jobId]);
                 }
             }
+
+            EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::UserAborted);
         }
         else
         {
@@ -396,6 +418,8 @@ namespace UnitTest
                 // Expect the valid jobs to successfully result in a test run that matches the expected test run data
                 ValidateJobExecutedSuccessfullyNoPayload(runnerJobs[jobId]);
             }
+
+            EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
         }
     }
 
@@ -411,7 +435,7 @@ namespace UnitTest
 
         // When the test runner job is executed
         const auto [result, runnerJobs] =
-            m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+            m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -431,7 +455,7 @@ namespace UnitTest
 
         // When the test runner job is executed
         const auto [result, runnerJobs] =
-            m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+            m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -446,7 +470,7 @@ namespace UnitTest
 
         // Given a job command that will write the run artifact to a different location that what we will read from
         TargetPaths invalidRunArtifact = m_testTargetPaths[TestTargetA];
-        invalidRunArtifact.m_testRunArtifact /= ".xml";
+        invalidRunArtifact.m_testRunArtifact = invalidRunArtifact.m_testRunArtifact.String() + ".xml";
         const Command args = GetRunCommandForTargetWithSources(invalidRunArtifact, LineLevel);
 
         // Given a test runner with no client callback, concurrency, run timeout or runner timeout
@@ -459,7 +483,7 @@ namespace UnitTest
 
         // When the test runner job is executed
         const auto [result, runnerJobs] =
-            m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+            m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -483,11 +507,11 @@ namespace UnitTest
 
         // Given an test runner job that will return successfully but not produce a run artifact
         JobData jobData(m_testTargetPaths[TestTargetA].m_testRunArtifact, m_testTargetPaths[TestTargetA].m_testCoverageArtifact);
-        m_jobInfos.emplace_back(JobInfo({TestTargetA}, args, AZStd::move(jobData)));
+        m_jobInfos.emplace_back(JobInfo({ TestTargetA }, args, AZStd::move(jobData)));
 
         // When the test runner job is executed
         const auto [result, runnerJobs] =
-            m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+            m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -510,7 +534,7 @@ namespace UnitTest
 
         // When the test runner job is executed
         const auto [result, runnerJobs] =
-            m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+            m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -567,7 +591,7 @@ namespace UnitTest
 
         // When the test runner job is executed
         const auto [result, runnerJobs] =
-            m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
+            m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -592,6 +616,8 @@ namespace UnitTest
                 {
                     numSuccesses++;
                 }
+
+                return TestImpact::ProcessCallbackResult::Continue;
             };
 
         // Given a test runner with no run timeout or runner timeout
@@ -606,7 +632,7 @@ namespace UnitTest
         }
 
         // When the instrumented test run jobs are executed
-        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::nullopt, jobCallback);
+        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::nullopt, jobCallback);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Graceful);
 
@@ -643,7 +669,7 @@ namespace UnitTest
         }
 
         // When the instrumented test run jobs are executed
-        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::chrono::seconds(2), AZStd::nullopt);
+        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::chrono::seconds(2), AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Timeout);
 
@@ -685,7 +711,7 @@ namespace UnitTest
         }
 
         // When the instrumented test run jobs are executed
-        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, JobExceptionPolicy::Never, AZStd::nullopt, AZStd::chrono::seconds(5), AZStd::nullopt);
+        const auto [result, runnerJobs] = m_testRunner->RunInstrumentedTests(m_jobInfos, AZStd::nullopt, AZStd::chrono::seconds(5), AZStd::nullopt);
 
         EXPECT_EQ(result, TestImpact::ProcessSchedulerResult::Timeout);
 

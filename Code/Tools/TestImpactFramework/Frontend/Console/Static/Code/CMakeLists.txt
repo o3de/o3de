@@ -16,26 +16,12 @@ ly_add_target(
         testimpactframework_frontend_console_static_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Static/Include
+            Include
         PRIVATE
-            Static/Source
+            Source
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::TestImpact.Runtime.Static
-)
-
-ly_add_target(
-    NAME TestImpact.Frontend.Console EXECUTABLE
-    OUTPUT_NAME tiaf
-    NAMESPACE AZ
-    FILES_CMAKE
-        testimpactframework_frontend_console_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Static/Source
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::TestImpact.Frontend.Console.Static
 )
 
 ################################################################################
@@ -49,9 +35,9 @@ ly_add_target(
         testimpactframework_frontend_console_static_tests_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Static/Include
-            Static/Source
-            Static/Tests
+            Include
+            Source
+            Tests
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzTestShared

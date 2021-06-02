@@ -67,7 +67,7 @@ namespace UnitTest
 
         const AZStd::string m_name = "ScriptCanvasDiagnosticLibrary.Static";
         const AZStd::string m_outputName = "ScriptCanvasDiagnosticLibrary";
-        const AZStd::string m_path = "Gems/ScriptCanvasDiagnosticLibrary/Code";
+        const TestImpact::RepoPath m_path = "Gems/ScriptCanvasDiagnosticLibrary/Code";
 
         const TestImpact::AutogenSources m_expectedAutogenSources =
         {
@@ -257,12 +257,20 @@ namespace UnitTest
         const AZStd::string rawTargetDescriptor =
             GenerateBuildTargetDescriptorString(m_name, m_outputName, m_path, {}, m_autogenInputs, m_autogenOutputs);
 
-        // When attempting to construct the build target descriptor
-        const TestImpact::BuildTargetDescriptor buildTarget =
-            TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, {}, m_inputInclude, m_autogenMatcher);
+        try
+        {
+            std::cout << "\n" << rawTargetDescriptor.c_str() << "\n";
+            // When attempting to construct the build target descriptor
+            const TestImpact::BuildTargetDescriptor buildTarget =
+                TestImpact::BuildTargetDescriptorFactory(rawTargetDescriptor, {}, m_inputInclude, m_autogenMatcher);
 
-        // Expect the constructed build target descriptor to match the specified descriptor
-        EXPECT_TRUE(buildTarget == expectedBuiltTarget);
+            // Expect the constructed build target descriptor to match the specified descriptor
+            EXPECT_TRUE(buildTarget == expectedBuiltTarget);
+       }
+        catch (TestImpact::Exception e)
+        {
+            std::cout << e.what();
+        }
     }
 
     TEST_F(BuildTargetDescriptorFactoryTestFixture, NoAutogenSources_ExpectValidDescriptor)

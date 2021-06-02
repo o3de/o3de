@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactUtils.h>
+#include <TestImpactFramework/TestImpactFileUtils.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
@@ -56,7 +56,8 @@ namespace TestImpact
         return AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
     }
 
-    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(const TestTargetList& testTargets, const AZStd::vector<AZStd::string>& excludedTestTargets)
+    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(
+        const TestTargetList& testTargets, const AZStd::vector<AZStd::string>& excludedTestTargets)
     {
         AZStd::unordered_set<const TestTarget*> testTargetExcludeList;
         for (const auto& testTargetName : excludedTestTargets)

@@ -20,6 +20,7 @@
 
 namespace TestImpact
 {
+    // Tag used to indicate whether a given line is the name or a covering test target
     constexpr char TargetTag = '-';
 
     AZStd::string SerializeSourceCoveringTestsList(const SourceCoveringTestsList& sourceCoveringTestsList)
@@ -40,7 +41,7 @@ namespace TestImpact
             }
         }
 
-        // NEEDED!
+        // Add the newline so the deserializer can properly terminate on the last read line
         output += "\n";
 
         return output;
@@ -49,21 +50,24 @@ namespace TestImpact
     SourceCoveringTestsList DeserializeSourceCoveringTestsList(const AZStd::string& sourceCoveringTestsListString)
     {
         AZStd::vector<SourceCoveringTests> sourceCoveringTests;
+        AZStd::string source;
+        AZStd::vector<AZStd::string> coveringTests;
         sourceCoveringTests.reserve(1U << 16); // Reserve for approx. 65k source files
         const AZStd::string delim = "\n";
         auto start = 0U;
         auto end = sourceCoveringTestsListString.find(delim);
-        AZStd::string source;
-        AZStd::vector<AZStd::string> coveringTests;
+
         while (end != AZStd::string::npos)
         {
             const auto line = sourceCoveringTestsListString.substr(start, end - start);
             if (line.starts_with(TargetTag))
             {
+                // This is a test target covering the most recent source discovered
                 coveringTests.push_back(line.substr(1, line.length() - 1));
             }
             else
             {
+                // This is a new source file so assign the accumulated test targets to the current source file before proceeding
                 if (!coveringTests.empty())
                 {
                     sourceCoveringTests.push_back(SourceCoveringTests(source, AZStd::move(coveringTests)));
@@ -77,6 +81,7 @@ namespace TestImpact
             end = sourceCoveringTestsListString.find(delim, start);
         }
 
+        // Ensure we properly assign the accumulated test targets to the most recent source discovered
         if (!coveringTests.empty())
         {
             sourceCoveringTests.push_back(SourceCoveringTests(source, AZStd::move(coveringTests)));

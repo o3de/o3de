@@ -10,18 +10,10 @@
  *
  */
 
-#include <TestImpactConfigurationFactory.h>
+#include <TestImpactFramework/TestImpactConfiguration.h>
 
-#include <AzTest/AzTest.h>
-
-#include <fstream>
-
-namespace UnitTest
+namespace TestImpact
 {
-    TEST(FOO, BAR)
-    {
-        std::ifstream configFile("C:\\o3de_TIF_Feature\\windows_vs2019\\bin\\debug\\tiaf.debug.json");
-        AZStd::string configData((std::istreambuf_iterator<char>(configFile)), std::istreambuf_iterator<char>());
-        const auto configuration = TestImpact::ConfigurationFactory(configData);
-    }
-}
+    //! Parses the configuration data (in JSON format) and returns the constructed runtime configuration.
+    RuntimeConfig RuntimeConfigurationFactory(const AZStd::string& configurationData);
+} // namespace TestImpact

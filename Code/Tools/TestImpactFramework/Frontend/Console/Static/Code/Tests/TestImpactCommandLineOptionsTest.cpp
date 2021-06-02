@@ -51,12 +51,11 @@ namespace UnitTest
         EXPECT_FALSE(m_options->GetTestTargetTimeout().has_value());
         EXPECT_FALSE(m_options->GetMaxConcurrency().has_value());
         EXPECT_FALSE(m_options->HasOutputChangeList());
-        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::None);
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::Policy::TargetOutputCapture::None);
         EXPECT_EQ(m_options->GetTestFailurePolicy(), TestImpact::Policy::TestFailure::Abort);
         EXPECT_EQ(m_options->GetIntegrityFailurePolicy(), TestImpact::Policy::IntegrityFailure::Abort);
         EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::Policy::TestPrioritization::None);
-        EXPECT_FALSE(m_options->HasTestSequence());
-        EXPECT_FALSE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::None);
         EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::Policy::TestSharding::Never);
         EXPECT_FALSE(m_options->HasChangeListFile());
         EXPECT_FALSE(m_options->GetChangeListFile().has_value());
@@ -256,8 +255,7 @@ namespace UnitTest
         m_args.push_back("-sequence");
         m_args.push_back("none");
         InitOptions();
-        EXPECT_FALSE(m_options->HasTestSequence());
-        EXPECT_FALSE(m_options->GetTestSequenceType().has_value());
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::None);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasSeedOption_ExpectSeedTestSequenceType)
@@ -265,9 +263,7 @@ namespace UnitTest
         m_args.push_back("-sequence");
         m_args.push_back("seed");
         InitOptions();
-        EXPECT_TRUE(m_options->HasTestSequence());
-        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
-        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::Seed);
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::Seed);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasRegularOption_ExpectRegularTestSequenceType)
@@ -275,9 +271,7 @@ namespace UnitTest
         m_args.push_back("-sequence");
         m_args.push_back("regular");
         InitOptions();
-        EXPECT_TRUE(m_options->HasTestSequence());
-        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
-        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::Regular);
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::Regular);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasImpactAnalysisOption_ExpectImpactAnalysisTestSequenceType)
@@ -285,9 +279,7 @@ namespace UnitTest
         m_args.push_back("-sequence");
         m_args.push_back("tia");
         InitOptions();
-        EXPECT_TRUE(m_options->HasTestSequence());
-        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
-        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::ImpactAnalysis);
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::ImpactAnalysis);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasSafeImpactAnalysisOption_ExpectSafeImpactAnalysisTestSequenceType)
@@ -295,9 +287,7 @@ namespace UnitTest
         m_args.push_back("-sequence");
         m_args.push_back("tiaorseed");
         InitOptions();
-        EXPECT_TRUE(m_options->HasTestSequence());
-        EXPECT_TRUE(m_options->GetTestSequenceType().has_value());
-        EXPECT_EQ(m_options->GetTestSequenceType().value(), TestImpact::TestSequenceType::ImpactAnalysisOrSeed);
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::ImpactAnalysisOrSeed);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasInvalidOption_ExpectCommandLineOptionsException)
@@ -896,7 +886,7 @@ namespace UnitTest
         m_args.push_back("-targetout");
         m_args.push_back("stdout");
         InitOptions();
-        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::StdOut);
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::Policy::TargetOutputCapture::StdOut);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasFileOption_ExpectFileTargetOutputCapture)
@@ -904,7 +894,7 @@ namespace UnitTest
         m_args.push_back("-targetout");
         m_args.push_back("file");
         InitOptions();
-        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::File);
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::Policy::TargetOutputCapture::File);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureHasStdOutAndFileOption_ExpectStdOutAndFileTargetOutputCapture)
@@ -912,7 +902,7 @@ namespace UnitTest
         m_args.push_back("-targetout");
         m_args.push_back("stdout,file");
         InitOptions();
-        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::TargetOutputCapture::StdOutAndFile);
+        EXPECT_EQ(m_options->GetTargetOutputCapture(), TestImpact::Policy::TargetOutputCapture::StdOutAndFile);
     }
 
     TEST_F(CommandLineOptionsTestFixture, TargetOutputCaptureInvalidOption_ExpectCommandLineOptionsException)
@@ -1098,7 +1088,7 @@ namespace UnitTest
         m_args.push_back("-ttimeout");
         m_args.push_back("10");
         InitOptions();
-        EXPECT_EQ(m_options->GetTestTargetTimeout(), AZStd::chrono::milliseconds(10));
+        EXPECT_EQ(m_options->GetTestTargetTimeout(), AZStd::chrono::seconds(10));
     }
 
     TEST_F(CommandLineOptionsTestFixture, TestTargetTimeoutHasOutOfRangeOption_ExpectCommandLineOptionsException)
@@ -1203,7 +1193,7 @@ namespace UnitTest
         m_args.push_back("-gtimeout");
         m_args.push_back("10");
         InitOptions();
-        EXPECT_EQ(m_options->GetGlobalTimeout(), AZStd::chrono::milliseconds(10));
+        EXPECT_EQ(m_options->GetGlobalTimeout(), AZStd::chrono::seconds(10));
     }
 
     TEST_F(CommandLineOptionsTestFixture, GlobalTimeoutHasOutOfRangeOption_ExpectCommandLineOptionsException)

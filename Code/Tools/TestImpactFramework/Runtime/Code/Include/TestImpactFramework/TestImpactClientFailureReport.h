@@ -113,7 +113,7 @@ namespace TestImpact
             //! Returns the test targets that contain failing tests.
             const AZStd::vector<TestRunFailure>& GetTestRunFailures() const;
 
-            //! Returns the test targets in this sequence that were terminated for exceeding their allotted flight time.
+            //! Returns the test targets in this sequence that were terminated for exceeding their allotted runtime.
             const AZStd::vector<TargetFailure>& GetTimedOutTests() const;
 
             //! Returns the test targets in this sequence that were not executed due to the sequence terminating prematurely.

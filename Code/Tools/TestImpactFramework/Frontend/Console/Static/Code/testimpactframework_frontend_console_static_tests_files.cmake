@@ -10,11 +10,9 @@
 #
 
 set(FILES
-    Static/Include/TestImpactFramework/TestImpactConsoleApplication.h
-    Static/Source/TestImpactCommandLineOptions.h
-    Static/Source/TestImpactCommandLineOptions.cpp
-    Static/Source/TestImpactCommandLineOptionsException.h
-    Static/Source/TestImpactConfigurationFactory.h
-    Static/Source/TestImpactConfigurationFactory.cpp
-    Static/Source/TestImpactConsoleApplication.cpp
+    Tests/TestImpactCommandLineOptionsTest.cpp
+    Tests/TestImpactRuntimeConfigurationFactoryTest.cpp
+    Tests/TestImpactFrontendConsoleStaticTestMain.cpp
+    Tests/TestImpactConsoleMainTest.cpp
+    Tests/TestImpactConsoleTestSequenceEventHandlerTest.cpp
 )

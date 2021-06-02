@@ -72,7 +72,6 @@ namespace TestImpact
         //! @return The result of the run sequence and the enumeration jobs with their associated test enumeration payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> Enumerate(
             const AZStd::vector<JobInfo>& jobInfos,
-            JobExceptionPolicy jobExceptionPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> enumerationTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> enumeratorTimeout,
             AZStd::optional<ClientJobCallback> clientCallback);

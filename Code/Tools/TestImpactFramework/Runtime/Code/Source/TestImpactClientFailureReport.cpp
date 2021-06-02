@@ -119,6 +119,6 @@ namespace TestImpact
         const AZStd::vector<TargetFailure>& SequenceFailure::GetUnexecutedTests() const
         {
             return m_unexecutedTests;
-        }        
-    }
-}
+        }
+    } // namespace Client
+} // namespace TestImpact

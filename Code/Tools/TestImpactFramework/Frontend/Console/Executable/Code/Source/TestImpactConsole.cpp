@@ -10,9 +10,20 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactConfiguration.h>
+#include <TestImpactFramework/TestImpactConsoleMain.h>
 
-namespace TestImpact
+#include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Memory/SystemAllocator.h>
+
+int main(int argc, char** argv)
 {
-    RuntimeConfig ConfigurationFactory(const AZStd::string& configurationData);
+    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+    
+    TestImpact::Console::ReturnCode returnCode = TestImpact::Console::Main(argc, argv);
+
+    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
+
+    return static_cast<int>(returnCode);
 }

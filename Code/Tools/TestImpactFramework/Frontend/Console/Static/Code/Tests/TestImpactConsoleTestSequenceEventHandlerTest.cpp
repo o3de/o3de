@@ -13,7 +13,7 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
-#include <TestImpactConsoleTestSequence.h>
+#include <TestImpactConsoleTestSequenceEventHandler.h>
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -30,7 +30,7 @@ namespace UnitTest
     TEST_F(ConsoleTestSequenceTestFixture, CheckEmptyArgs_ExpectDefaultValues)
     {
         AZStd::unordered_set<AZStd::string> suites = { "PERIODIC","MAIN" };
-        TestImpact::Console::TestSequence seq(&suites);
+        TestImpact::Console::TestSequenceEventHandler seq(&suites);
         AZStd::vector<AZStd::string> selectedTests = { "Test1", "Test2", "Test3", "Test4", "Test5" };
         seq.operator()(TestImpact::Client::TestRunSelection(selectedTests, {"Test6"}));
 
@@ -38,7 +38,5 @@ namespace UnitTest
         {
             seq.operator()(TestImpact::Client::TestRun(selectedTests[i], (TestImpact::Client::TestRunResult)i, AZStd::chrono::milliseconds(i)));
         }
-
-
     }
 }

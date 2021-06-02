@@ -23,7 +23,7 @@ set(FILES
     Include/TestImpactFramework/TestImpactClientTestSelection.h
     Include/TestImpactFramework/TestImpactClientTestRun.h
     Include/TestImpactFramework/TestImpactClientFailureReport.h
-    Include/TestImpactFramework/TestImpactUtils.h
+    Include/TestImpactFramework/TestImpactFileUtils.h
     Source/Artifact/TestImpactArtifactException.h
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h
@@ -108,8 +108,8 @@ set(FILES
     Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.cpp
     Source/TestEngine/JobRunner/TestImpactTestJobInfoGenerator.h
     Source/TestEngine/JobRunner/TestImpactTestTargetExtension.h
-    Source/TestEngine/JobRunner/TestImpactTestjobFailure.cpp
-    Source/TestEngine/JobRunner/TestImpactTestjobFailure.h
+    Source/TestEngine/TestImpactTestEngineJobFailure.cpp
+    Source/TestEngine/TestImpactTestEngineJobFailure.h
     Source/TestEngine/TestImpactTestSuiteContainer.h
     Source/TestEngine/TestImpactTestEngine.cpp
     Source/TestEngine/TestImpactTestEngine.h
@@ -123,7 +123,6 @@ set(FILES
     Source/TestEngine/TestImpactTestEngineInstrumentedRun.h
     Source/TestEngine/TestImpactTestEngineException.h
     Source/TestImpactException.cpp
-    Source/TestImpactBitwise.h
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp
     Source/TestImpactRuntimeUtils.h

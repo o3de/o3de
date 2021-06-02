@@ -41,4 +41,4 @@ namespace TestImpact
         }
         }
     }
-}
+} // namespace TestImpact

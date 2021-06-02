@@ -70,6 +70,7 @@ namespace TestImpact
         AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
             const AZStd::vector<const TestTarget*>& testTargets,
             Policy::ExecutionFailure executionFailurePolicy,
+            Policy::TestFailure testFailurePolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestEngineJobCompleteCallback> callback);

@@ -10,11 +10,26 @@
  *
  */
 
-#pragma once
-
-#include <Process/JobRunner/TestImpactProcessJobMeta.h>
+#include <TestEngine/TestImpactTestEngineJobFailure.h>
 
 namespace TestImpact
 {
-    JobResult DetermineCauseOfFailure(ReturnCode returnCode);
+    // Known error codes for test instrumentation
+    namespace ErrorCodes
+    {
+        namespace OpenCppCoverage
+        {
+            static constexpr ReturnCode InvalidArgs = 0x9F8C8E5C;
+        }
+    }
+
+    AZStd::optional<Client::TestRunResult> CheckForKnownTestInstrumentErrorCode(ReturnCode returnCode)
+    {
+        if (returnCode == ErrorCodes::OpenCppCoverage::InvalidArgs)
+        {
+            return Client::TestRunResult::FailedToExecute;
+        }
+
+        return AZStd::nullopt;
+    }
 } // namespace TestImpact

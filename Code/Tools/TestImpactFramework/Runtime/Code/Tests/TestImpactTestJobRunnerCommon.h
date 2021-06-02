@@ -21,14 +21,15 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
-template<typename Flags>
-constexpr bool IsFlagSet(Flags flags, Flags flag)
-{
-    return TestImpact::Bitwise::IsFlagSet(flags, flag);
-}
-
 namespace UnitTest
 {
+    enum class JobExceptionPolicy
+    {
+        Never,
+        OnFailedToExecute,
+        OnExecutedWithFailure
+    };
+
     // Named constants for array of targets lookup
     enum
     {

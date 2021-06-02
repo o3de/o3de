@@ -17,5 +17,5 @@ set(FILES
     Process/TestImpactWin32_Pipe.cpp
     Process/TestImpactWin32_Pipe.h
     TestEngine/JobRunner/TestImpactWin32_TestTargetExtension.cpp
-    TestEngine/JobRunner/TestImpactWin32_TestJobFailure.cpp
+    TestEngine/TestImpactWin32_TestEngineJobFailure.cpp
 )

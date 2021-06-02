@@ -29,6 +29,7 @@
 
 namespace TestImpact
 {
+    class ChangeDependencyList;
     class DynamicDependencyMap;
     class TestSelectorAndPrioritizer;
     class TestEngine;
@@ -82,7 +83,7 @@ namespace TestImpact
         AZStd::chrono::milliseconds duration)>;
 
     //! Callback for test runs that have completed for any reason.
-    //! selectedTests The test that has completed.
+    //! @param selectedTests The test that has completed.
     using TestRunCompleteCallback = AZStd::function<void(Client::TestRun&& selectedTests)>;
 
     //! The API exposed to the client responsible for all test runs and persistent data management.
@@ -180,13 +181,29 @@ namespace TestImpact
         bool HasImpactAnalysisData() const;
 
     private:
-        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargetsAndEnumerateMutatedTestTargets(
+        //! Updates the test enumeration cache for test targets that had sources modified by a given change list.
+        //! @param changeDependencyList The resolved change dependency list generated for the change list.
+        void EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList);
+
+        //! Selects the test targets covering a given change list and updates the enumeration cache of the test targets with sources
+        //! modified in that change list.
+        //! @param changeList The change list for which the covering tests and enumeration cache updates will be generated for.
+        //! @param testPrioritizationPolicy The test prioritization strategy to use for the selected test targets.
+        //! @returns The pair of selected test targets and discarded test targets.
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargetsAndUpdateEnumerationCache(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 
+        //! Selects the test targets from the specified list of test targets that are not on the test target exclusion list.
+        //! @param testTargets The list of test targets to select from.
+        //! @returns The subset of test targets in the specified list that are not on the target exclude list.
         AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
             AZStd::vector<const TestTarget*> testTargets) const;
 
+        //! Prepares the dynamic dependency map for a seed update by clearing all existing data and deleting the file that will be serialized.
+        void ClearDynamicDependencyMapAndRemoveExistingFile();
+
+        //! Updates the dynamic dependency map and serializes the entire map to disk.
         void UpdateAndSerializeDynamicDependencyMap(const SourceCoveringTestsList& sourceCoverageTestsList);
 
         RuntimeConfig m_config;

@@ -12,54 +12,89 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactRuntime.h> // MOVE THESE ENUMS ETC. OUT OF THIS FILE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#include <TestImpactFramework/TestImpactRuntime.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
 
+#include <AzCore/std/string/string.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace TestImpact
 {
+    //! The type of test sequence to run.
     enum class TestSequenceType
     {
-        Seed,
-        Regular,
-        ImpactAnalysis,
-        ImpactAnalysisOrSeed
+        None, //!< Runs no tests and will report all tests successful.
+        Seed, //!< Removes any prior coverage data and runs all test targets with instrumentation to reseed the data from scratch.
+        Regular, //!< Runs all of the test targets without any instrumentation to generate coverage data (any prior coverage data is left intact).
+        ImpactAnalysis, //!< Uses any prior coverage data to run the instrumented subset of selected tests (if no prior coverage data a regular run is performed instead).
+        ImpactAnalysisOrSeed //!< Uses any prior coverage data to run the instrumented subset of selected tests (if no prior coverage data a seed run is performed instead).
     };
 
+    //! Representation of the command line options supplied to the console frontend application.
     class CommandLineOptions
     {
     public:
         CommandLineOptions(int argc, char** argv);
         static AZStd::string GetCommandLineUsageString();
 
+        //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFile() const;
-        bool HasTestSequence() const;
+
+        //! Returns true if the safe mode option has been enabled, otherwise false.
         bool HasSafeMode() const;
+
+        //! Returns true if the output change list option has been enabled, otherwise false.
         bool HasOutputChangeList() const;
 
+        //! Returns the path to the runtime configuration file.
         const RepoPath& GetConfigurationFile() const;
+
+        //! Returns the path to the change list file (if any).
         const AZStd::optional<RepoPath>& GetChangeListFile() const;
-        const AZStd::optional<TestSequenceType>& GetTestSequenceType() const;
+
+        //! Returns the test sequence type to run.
+        TestSequenceType GetTestSequenceType() const;
+
+        //! Returns the test prioritization policy to use.
         Policy::TestPrioritization GetTestPrioritizationPolicy() const;
+
+        //! Returns the test execution failure policy to use.
         Policy::ExecutionFailure GetExecutionFailurePolicy() const;
+
+        //! Returns the test historic test execution failure drafting policy to use.
         Policy::ExecutionFailureDrafting GetExecutionFailureDraftingPolicy() const;
+
+        //! Returns the test failure policy to use.
         Policy::TestFailure GetTestFailurePolicy() const;
+
+        //! Returns the integration failure policy to use.
         Policy::IntegrityFailure GetIntegrityFailurePolicy() const;
+
+        //! Returns the test sharding policy to use.
         Policy::TestSharding GetTestShardingPolicy() const;
+
+        //! Returns the test target standard output capture policy to use.
         Policy::TargetOutputCapture GetTargetOutputCapture() const;
+
+        //! Returns the maximum number of test targets to be in flight at any given time.
         const AZStd::optional<size_t>& GetMaxConcurrency() const;
+
+        //! Returns the individual test target timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
+
+        //! Returns the global test sequence timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
+
+        //! Returns the filter for test suites that will be allowed to be run.
         const AZStd::unordered_set<AZStd::string>& GetSuitesFilter() const;
 
     private:
         RepoPath m_configurationFile;
         AZStd::optional<RepoPath> m_changeListFile;
         bool m_outputChangeList = false;
-        AZStd::optional<TestSequenceType> m_testSequenceType;
+        TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
         Policy::ExecutionFailureDrafting m_executionFailureDraftingPolicy = Policy::ExecutionFailureDrafting::Always;
@@ -73,4 +108,4 @@ namespace TestImpact
         AZStd::unordered_set<AZStd::string> m_suitesFilter;
         bool m_safeMode = false;
     };
-}
+} // namespace TestImpact

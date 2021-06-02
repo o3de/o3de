@@ -65,6 +65,11 @@ namespace UnitTest
         return AZStd::string::format("%s/%u", name.c_str(), testNum);
     }
 
+    AZStd::string JSONSafeString(const AZStd::string output)
+    {
+        return AZStd::regex_replace(output, AZStd::regex("\\\\"), "/");
+    }
+
     AZStd::string StringVectorToJSONElements(const AZStd::vector<TestImpact::RepoPath> strings)
     {
         AZStd::string output;
@@ -81,7 +86,7 @@ namespace UnitTest
             output += "\n";
         }
 
-        return AZStd::regex_replace(output, AZStd::regex("\\"), "\\\\");
+        return JSONSafeString(output);
     }
 
     AZStd::string GenerateBuildTargetDescriptorString(
@@ -119,7 +124,7 @@ namespace UnitTest
             StringVectorToJSONElements(staticSources).c_str(),
             name.c_str(),
             outputName.c_str(),
-            path.c_str());
+            JSONSafeString(path.String()).c_str());
 
         return output;
     }

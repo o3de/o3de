@@ -10,20 +10,18 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactConsoleApplication.h>
+#include <TestImpactConfigurationFactory.h>
 
-#include <AzCore/Memory/OSAllocator.h>
-#include <AzCore/Memory/SystemAllocator.h>
+#include <AzTest/AzTest.h>
 
-int main(int argc, char** argv)
+#include <fstream>
+
+namespace UnitTest
 {
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-    
-    TestImpact::Console::ReturnCode returnCode = TestImpact::Console::Main(argc, argv);
-
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-
-    return static_cast<int>(returnCode);
+    //TEST(FOO, BAR)
+    //{
+    //    std::ifstream configFile("C:\\o3de_TIF_Feature\\windows_vs2019\\bin\\debug\\tiaf.debug.json");
+    //    AZStd::string configData((std::istreambuf_iterator<char>(configFile)), std::istreambuf_iterator<char>());
+    //    const auto configuration = TestImpact::ConfigurationFactory(configData);
+    //}
 }

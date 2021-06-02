@@ -20,28 +20,39 @@ import json
 import socket
 
 def parse_args():
-    def file_path(path):
-        if os.path.isfile(path):
-            return path
+    def file_path(value):
+        if os.path.isfile(value):
+            return value
         else:
-            raise FileNotFoundError(path)
+            raise FileNotFoundError(value)
 
-    def sequence_type(type):
-        if type == "regular":
+    def sequence_type(value):
+        if value == "regular":
             return SequenceType.REGULAR
-        elif type == "tia":
+        elif value == "tia":
             return SequenceType.TEST_IMPACT_ANALYSIS
         else:
-            raise ValueError(type)
+            raise ValueError(value)
+
+    def timout_type(value):
+        value = int(value)
+        if value <= 0:
+            raise ValueError("Timer values must be positive integers")
+        return value
             
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', dest="config", type=file_path, help="Path to the test impact analysis framework configuration file", required=True)
-    parser.add_argument('-d', '--destCommit', dest="dst_commit", help="Commit to run test impact analysis on (if empty, the most recent commit will be used)")
-    parser.add_argument('-t', '--sequenceType', dest="sequence_type", type=sequence_type, help="Test sequence type to run ('regular' or 'tia')", required=True)
-    parser.add_argument('-t', '--suites', dest="suits", type=sequence_type, help="Test sequence type to run ('regular' or 'tia')", required=True)
-    parser.add_argument('-s', '--safeMode', dest='safe_mode', action='store_true', help="If set, will run any test impact analysis runs in safe mode (unselected tests will still be run)")
+    parser.add_argument('--config', dest="config", type=file_path, help="Path to the test impact analysis framework configuration file", required=True)
+    parser.add_argument('--destCommit', dest="dst_commit", help="Commit to run test impact analysis on (if empty, HEAD^ will be used)")
+    parser.add_argument('--sequenceType', dest="sequence_type", type=sequence_type, help="Test sequence type to run ('regular' or 'tia')", required=True)
+    parser.add_argument('--suites', dest="suites", nargs='*', help="Suites to include for regular tes sequences (use '*' for all suites)")
+    parser.add_argument('--safeMode', dest='safe_mode', help="If set, will run any test impact analysis runs in safe mode (unselected tests will still be run)")
+    parser.add_argument('--testTimeout', dest="test_timeout", type=timout_type, help="Maximum flight time (in seconds) of any test target before being terminated", required=False)
+    parser.add_argument('--globalTimeout', dest="global_timeout", type=timout_type, help="Maximum tun time of the sequence before being terminated", required=False)
     parser.set_defaults(dst_commit="HEAD^")
+    parser.set_defaults(suites="*")
     parser.set_defaults(safe_mode=False)
+    parser.set_defaults(test_timeout=None)
+    parser.set_defaults(global_timeout=None)
     args = parser.parse_args()
     
     return args
@@ -49,5 +60,5 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     tiaf = TestImpact(args.config, args.dst_commit)
-    tiaf.run(args.sequence_type, args.safe_mode)
-    sys.exit(0)
+    return_code = tiaf.run(args.sequence_type, args.safe_mode, args.test_timeout, args.global_timeout)
+    sys.exit(return_code)

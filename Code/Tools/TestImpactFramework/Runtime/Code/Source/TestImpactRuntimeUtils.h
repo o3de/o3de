@@ -33,19 +33,23 @@ namespace TestImpact
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
 
-    //! Constructs the 
+    //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
     AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(
         const TestTargetList& testTargets,
-        const AZStd::vector<AZStd::string>& excludedTstTargets);
+        const AZStd::vector<AZStd::string>& excludedTestTargets);
 
+    //! Extracts the name information from the specified test targets.
     AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
 
+    //! Creates the consolidates source covering tests list from the test engine instrumented run jobs.
     SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
         const AZStd::vector<TestEngineInstrumentedRun>& jobs,
         const RepoPath& root);
 
+    //! Generates a test run failure report from the specified test engine job information.
+    //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    Client::TestRunFailure ExtractTestRunFailure(const TestJob& testJob)
+    Client::TestRunFailure GenerateTestRunFailure(const TestJob& testJob)
     {
         if (testJob.GetTestRun().has_value())
         {
@@ -55,7 +59,7 @@ namespace TestImpact
                 AZStd::vector<Client::TestFailure> testFailures;
                 for (const auto& testCase : testSuite.m_tests)
                 {
-                    if(testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
+                    if (testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
                     {
                         testFailures.push_back(Client::TestFailure(testCase.m_name, "No error message retrieved"));
                     }
@@ -75,8 +79,10 @@ namespace TestImpact
         }
     }
 
+    //! Generates a sequence failure report from the specified list of test engine jobs.
+    //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    Client::SequenceFailure CreateSequenceFailureReport(const AZStd::vector<TestJob>& testJobs)
+    Client::SequenceFailure GenerateSequenceFailureReport(const AZStd::vector<TestJob>& testJobs)
     {
         AZStd::vector<Client::ExecutionFailure> executionFailures;
         AZStd::vector<Client::TestRunFailure> testRunFailures;
@@ -108,12 +114,13 @@ namespace TestImpact
             }
             case Client::TestRunResult::TestFailures:
             {
-                testRunFailures.push_back(ExtractTestRunFailure(testJob));
+                testRunFailures.push_back(GenerateTestRunFailure(testJob));
                 break;
             }
             default:
             {
-                throw Exception(AZStd::string::format("Unexpected client test run result: %u", static_cast<unsigned int>(testJob.GetTestResult())));
+                throw Exception(
+                    AZStd::string::format("Unexpected client test run result: %u", static_cast<unsigned int>(testJob.GetTestResult())));
             }
             }
         }

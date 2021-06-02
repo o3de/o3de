@@ -85,19 +85,25 @@ namespace TestImpact
         //! @param sourceCoverageDelta The source coverage delta to replace in the dependency map.
         void ReplaceSourceCoverage(const SourceCoveringTestsList& sourceCoverageDelta);
 
+        //! Clears all of the existing source coverage in the dependency map.
+        void ClearAllSourceCoverage();
+
         //! Exports the coverage of all sources in the dependency map.
         SourceCoveringTestsList ExportSourceCoverage() const;
 
         //! Gets the list of orphaned source files in the dependency map that have coverage data but belong to no parent build targets.
         AZStd::vector<AZStd::string> GetOrphanSourceFiles() const;
 
-        //! Applies the specified change list to the dynamic dependency map and resolves the change list to a change dependency list
+        //! Applies the specified change list to the dependency map and resolves the change list to a change dependency list
         //! containing the updated source dependencies for each source file in the change list.
         //! @param changeList The change list to apply and resolve.
         //! @returns The change list as resolved to the appropriate source dependencies.
         [[nodiscard]] ChangeDependencyList ApplyAndResoveChangeList(const ChangeList& changeList);
 
+        //! Returns the test targets that cover one or more sources in the repository.
         AZStd::vector<const TestTarget*> GetCoveringTests() const;
+
+        //! Returns the test targets that do not cover any sources in the repository.
         AZStd::vector<const TestTarget*> GetNotCoveringTests() const;
 
     private:
@@ -121,6 +127,6 @@ namespace TestImpact
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;
 
         //! Number of sources that each test target in the repository covers.
-        AZStd::unordered_map<const TestTarget*, size_t> m_coveringTestTargets;
+        AZStd::unordered_map<const TestTarget*, size_t> m_testTargetSourceCoverageCount;
     };
 } // namespace TestImpact
