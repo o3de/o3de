@@ -2017,8 +2017,8 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_streaming_in_blocks", &g_cvars.sys_streaming_in_blocks, 1, VF_NULL,
         "Streaming of large files happens in blocks");
 
-#if (defined(WIN32) || defined(WIN64)) && !defined(_RELEASE)
-    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 3, 0, "Use or not use floating point exceptions.");
+#if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
+    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
 #else // Float exceptions by default disabled for console builds.
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 0, 0, "Use or not use floating point exceptions.");
 #endif
