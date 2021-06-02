@@ -24,17 +24,6 @@
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
-
-    AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom)
-    {
-        AzFramework::Spawnable spawnable;
-        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
-        [[maybe_unused]] bool result = CreateSpawnable(spawnable, prefabDom, referencedAssets);
-        AZ_Assert(result,
-            "Failed to Load Prefab Instance from given Prefab DOM while Spawnable creation.");
-        return spawnable;
-    }
-
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom)
     {
         AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;

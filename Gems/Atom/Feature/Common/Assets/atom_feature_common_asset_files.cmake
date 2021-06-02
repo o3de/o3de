@@ -23,6 +23,7 @@ set(FILES
     Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
+    Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
     Materials/Types/Skin.shader
@@ -61,7 +62,6 @@ set(FILES
     Materials/Types/StandardPBR_ShaderEnable.lua
     Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardPBR_Shadowmap_WithPS.shader
-    Materials/Types/StandardPBR_SubsurfaceState.lua
     Materials/Types/MaterialInputs/AlphaInput.azsli
     Materials/Types/MaterialInputs/BaseColorInput.azsli
     Materials/Types/MaterialInputs/ClearCoatInput.azsli
