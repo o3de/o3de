@@ -77,7 +77,8 @@ namespace AZ
             //! because it will discover the index from the name.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
 
-            //! Just like the original GetMaterialSrgLayout() where it uses the index of the default, nameless, supervariant.
+            //! Just like the original GetMaterialSrgLayout() where it uses the index of the default supervariant.
+            //! See the definition of DefaultSupervariantIndex.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout() const;
 
             //! Returns the shader resource group layout that has per-object frequency. What constitutes an "object" is an
@@ -90,7 +91,8 @@ namespace AZ
             //! because it will discover the index from the name.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout(const AZ::Name& supervariantName) const;
 
-            //! Just like the original GetObjectSrgLayout() where it uses the index of the default, nameless, supervariant.
+            //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
+            //! See the definition of DefaultSupervariantIndex.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout() const;
 
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.

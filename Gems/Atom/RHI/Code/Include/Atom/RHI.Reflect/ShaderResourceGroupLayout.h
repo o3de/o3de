@@ -79,7 +79,7 @@ namespace AZ
             const Name& GetName() const { return m_name; }
 
             void SetAzslFileOfOrigin(const AZStd::string& filePath) { m_azslFileOfOrigin = filePath; }
-            const AZStd::string& GetAzslFileOfOrigin() { return m_azslFileOfOrigin; }
+            const AZStd::string& GetAzslFileOfOrigin() const { return m_azslFileOfOrigin; }
 
             /**
              * Designates this SRG as ShaderVariantKey fallback by providing the generated

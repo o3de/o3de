@@ -54,13 +54,13 @@ namespace AZ
             : public AZ::Data::InstanceData
         {
             friend class ShaderSystem;
+            friend class ShaderResourceGroupPool
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroup, "{88B52D0C-9CBF-4B4D-B9E2-180BA602E1EA}");
             AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
 
-            static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
-
-            /// Instantiates or returns an existing streaming image instance using its paired asset.
+            /// Instantiates or returns an existing shader resource group instance using an InstanceId
+            /// created with the private static function: MakeInstanceId.
             static Data::Instance<ShaderResourceGroup> FindOrCreate(
                 const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
@@ -281,6 +281,22 @@ namespace AZ
 
         private:
             ShaderResourceGroup() = default;
+
+            //! Usually subclasses of AZ::Data::InstanceData leverage the AssetId of the given asset as a means to define
+            //! the AZ::Data::InstanceId. This works well when there's a one-to-one relationship between the Asset and the InstanceData.
+            //!
+            //! ShaderResourceGroup & ShaderResourceGroupPool are different because one ShaderAsset can have several
+            //! ShaderResourceGroupLayouts define in it. This means using only the AssetId is not sufficient.
+            //!
+            //! This function searches the ShaderResourceGroupLayout of the given @srgName in the @shaderAsset. If it finds such
+            //! ShaderResourceGroupLayout it makes an InstanceId based on:
+            //! - The azsl file of origin where the ShaderResourceGroup was defined.
+            //! - The supervariant index.
+            //! - The name of the srg.
+            //! @param shaderAsset: The shader asset where the ShaderResourceGroupLayout will be searched.
+            //! @param supervariantIndex: The supervariant index in @shaderAsset where the search will be conducted.
+            //! @param srgName: Name of the ShaderResourceGroup as it was declared in the azsl file of origin.
+            static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
             bool IsInitialized() { return m_isInitialized; }
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);

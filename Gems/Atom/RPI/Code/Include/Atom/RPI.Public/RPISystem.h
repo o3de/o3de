@@ -131,7 +131,7 @@ namespace AZ
 
             RPISystemDescriptor m_descriptor;
 
-            // Reference to a well known shader asset that is used
+            // Reference to the shader asset that is used
             // to get the layout for SceneSrg (@m_sceneSrgLayout) and ViewSrg (@m_viewSrgLayout).
             Data::Asset<ShaderAsset> m_commonShaderAssetForSrgs;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_sceneSrgLayout;
