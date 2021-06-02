@@ -649,12 +649,6 @@ namespace AzToolsFramework
                         InstanceOptionalReference owningInstanceAfterReparenting =
                             m_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-                        LinkReference link = m_prefabSystemComponentInterface->FindLink(owningInstanceAfterReparenting->get().GetLinkId());
-
-                        PrefabDomValueReference instanceDomRef = link->get().GetLinkedInstanceDom();
-
-                        // TODO - check if has_value
-
                         GenerateUndoNodeForContainerOverride(
                             parentUndoBatch, entityId, newPatch, owningInstanceAfterReparenting->get().GetLinkId());
                     }
