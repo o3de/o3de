@@ -15,26 +15,20 @@
 #include <ProjectSettingsScreen.h>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QButtonGroup)
-
 namespace O3DE::ProjectManager
 {
-    class NewProjectSettingsScreen
+    class UpdateProjectSettingsScreen
         : public ProjectSettingsScreen
     {
     public:
-        explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
-        ~NewProjectSettingsScreen() = default;
+        explicit UpdateProjectSettingsScreen(QWidget* parent = nullptr);
+        ~UpdateProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        QString GetProjectTemplatePath();
+        void SetProjectInfo(const ProjectInfo& projectInfo);
 
-        void NotifyCurrentScreen() override;
-
-    private:
-        QString GetDefaultProjectPath();
-
-        QButtonGroup* m_projectTemplateButtonGroup;
+    protected:
+        bool ValidateProjectPath() override;
     };
 
 } // namespace O3DE::ProjectManager

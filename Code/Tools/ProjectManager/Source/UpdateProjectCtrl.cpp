@@ -10,16 +10,19 @@
  *
  */
 
-#include <UpdateProjectCtrl.h>
-#include <ScreensCtrl.h>
-#include <PythonBindingsInterface.h>
-#include <ProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
+#include <PythonBindingsInterface.h>
+#include <ScreenHeaderWidget.h>
+#include <ScreensCtrl.h>
+#include <UpdateProjectCtrl.h>
+#include <UpdateProjectSettingsScreen.h>
 
 #include <QDialogButtonBox>
-#include <QVBoxLayout>
-#include <QPushButton>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QStackedWidget>
+#include <QTabWidget>
+#include <QVBoxLayout>
 
 namespace O3DE::ProjectManager
 {
@@ -27,32 +30,57 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
-        vLayout->setMargin(0);
-        setLayout(vLayout);
+        vLayout->setContentsMargins(0, 0, 0, 0);
 
-        m_screensCtrl = new ScreensCtrl();
-        vLayout->addWidget(m_screensCtrl);
+        m_header = new ScreenHeader(this);
+        m_header->setTitle(tr(""));
+        m_header->setSubTitle(tr("Edit Project Settings:"));
+        connect(m_header->backButton(), &QPushButton::clicked, this, &UpdateProjectCtrl::HandleBackButton);
+        vLayout->addWidget(m_header);
+
+        m_updateSettingsScreen = new UpdateProjectSettingsScreen();
+        m_gemCatalogScreen = new GemCatalogScreen();
+
+        m_stack = new QStackedWidget(this);
+        m_stack->setObjectName("body");
+        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
+        vLayout->addWidget(m_stack);
+
+        QFrame* topBarFrameWidget = new QFrame(this);
+        topBarFrameWidget->setObjectName("projectSettingsTopFrame");
+        QHBoxLayout* topBarHLayout = new QHBoxLayout();
+        topBarHLayout->setContentsMargins(0, 0, 0, 0);
+        topBarFrameWidget->setLayout(topBarHLayout);
+
+        QTabWidget* tabWidget = new QTabWidget();
+        tabWidget->setObjectName("projectSettingsTab");
+        tabWidget->tabBar()->setObjectName("projectSettingsTabBar");
+        tabWidget->addTab(m_updateSettingsScreen, tr("General"));
+
+        QPushButton* gemsButton = new QPushButton(tr("Add More Gems"), this);
+        topBarHLayout->addWidget(gemsButton);
+        tabWidget->setCornerWidget(gemsButton);
+
+        topBarHLayout->addWidget(tabWidget);
+
+        m_stack->addWidget(topBarFrameWidget);
+        m_stack->addWidget(m_gemCatalogScreen);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
+        backNextButtons->setObjectName("footer");
         vLayout->addWidget(backNextButtons);
 
         m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_backButton->setProperty("secondary", true);
         m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::pressed, this, &UpdateProjectCtrl::HandleBackButton);
-        connect(m_nextButton, &QPushButton::pressed, this, &UpdateProjectCtrl::HandleNextButton);
+        connect(gemsButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleGemsButton);
+        connect(m_backButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleNextButton);
         connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyCurrentProject, this, &UpdateProjectCtrl::UpdateCurrentProject);
 
-        m_screensOrder =
-        {
-            ProjectManagerScreen::ProjectSettings,
-            ProjectManagerScreen::GemCatalog
-        };
-        m_screensCtrl->BuildScreens(m_screensOrder);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::ProjectSettings, false);
-
-        UpdateNextButtonText();
-
+        Update();
+        setLayout(vLayout);
     }
 
     ProjectManagerScreen UpdateProjectCtrl::GetScreenEnum()
@@ -60,85 +88,80 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::UpdateProject;
     }
 
+    void UpdateProjectCtrl::NotifyCurrentScreen()
+    {
+        m_stack->setCurrentIndex(ScreenOrder::Settings);
+        Update();
+    }
+
+    void UpdateProjectCtrl::HandleGemsButton()
+    {
+        // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
+        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
+
+        m_stack->setCurrentWidget(m_gemCatalogScreen);
+        Update();
+    }
+
     void UpdateProjectCtrl::HandleBackButton()
     {
-        if (!m_screensCtrl->GotoPreviousScreen())
+        if (m_stack->currentIndex() > 0)
         {
-            emit GotoPreviousScreenRequest();
+            m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            Update();
         }
         else
         {
-            UpdateNextButtonText();
+            emit GotoPreviousScreenRequest();
         }
     }
+
     void UpdateProjectCtrl::HandleNextButton()
     {
-        ScreenWidget* currentScreen = m_screensCtrl->GetCurrentScreen();
-        ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
-        auto screenOrderIter = m_screensOrder.begin();
-        for (; screenOrderIter != m_screensOrder.end(); ++screenOrderIter)
+        if (m_stack->currentIndex() == ScreenOrder::Settings)
         {
-            if (*screenOrderIter == screenEnum)
+            if (m_updateSettingsScreen)
             {
-                ++screenOrderIter;
-                break;
-            }
-        }
-
-        if (screenEnum == ProjectManagerScreen::ProjectSettings)
-        {
-            auto projectScreen = reinterpret_cast<ProjectSettingsScreen*>(currentScreen);
-            if (projectScreen)
-            {
-                if (!projectScreen->Validate())
+                if (!m_updateSettingsScreen->Validate())
                 {
                     QMessageBox::critical(this, tr("Invalid project settings"), tr("Invalid project settings"));
                     return;
                 }
 
-                m_projectInfo = projectScreen->GetProjectInfo();
+                ProjectInfo newProjectSettings = m_updateSettingsScreen->GetProjectInfo();
 
-                // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
-                auto* gemCatalogScreen = reinterpret_cast<GemCatalogScreen*>(m_screensCtrl->FindScreen(ProjectManagerScreen::GemCatalog));
-                if (gemCatalogScreen)
+                // Update project if settings changed
+                if (m_projectInfo != newProjectSettings)
                 {
-                    gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
+                    bool result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
+                    if (!result)
+                    {
+                        QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+                        return;
+                    }
                 }
-                else
+
+                // Check if project path has changed and move it
+                if (newProjectSettings.m_path != m_projectInfo.m_path)
                 {
-                    QMessageBox::critical(this, tr("Operation failed"), tr("Cannot find gem catalog screen."));
+                    if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
+                    {
+                        QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
+                        return;
+                    }
                 }
+
+                m_projectInfo = newProjectSettings;
             }
         }
 
-        if (screenOrderIter != m_screensOrder.end())
+        if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
         {
-            m_screensCtrl->ChangeToScreen(*screenOrderIter);
-            UpdateNextButtonText();
-        }
-        else
-        {
-            auto result = PythonBindingsInterface::Get()->UpdateProject(m_projectInfo);
-            if (result)
-            {
-                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
-            }
-            else
-            {
-                QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
-            }
-
             // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
-            auto* gemCatalogScreen = reinterpret_cast<GemCatalogScreen*>(m_screensCtrl->FindScreen(ProjectManagerScreen::GemCatalog));
-            if (gemCatalogScreen)
-            {
-                gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
-            }
-            else
-            {
-                QMessageBox::critical(this, tr("Operation failed"), tr("Cannot find gem catalog screen."));
-            }
+            m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
         }
+
+        emit ChangeScreenRequest(ProjectManagerScreen::Projects);
     }
 
     void UpdateProjectCtrl::UpdateCurrentProject(const QString& projectPath)
@@ -148,16 +171,28 @@ namespace O3DE::ProjectManager
         {
             m_projectInfo = projectResult.GetValue();
         }
+
+        Update();
+        UpdateSettingsScreen();
     }
 
-    void UpdateProjectCtrl::UpdateNextButtonText()
+    void UpdateProjectCtrl::Update()
     {
-        QString nextButtonText = tr("Continue");
-        if (m_screensCtrl->GetCurrentScreen()->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
+        if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
-            nextButtonText = tr("Update Project");
+            m_header->setSubTitle(QString(tr("Add More Gems to \"%1\"")).arg(m_projectInfo.m_projectName));
+            m_nextButton->setText(tr("Confirm"));
         }
-        m_nextButton->setText(nextButtonText);
+        else
+        {
+            m_header->setSubTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.m_projectName));
+            m_nextButton->setText(tr("Save"));
+        }
+    }
+
+    void UpdateProjectCtrl::UpdateSettingsScreen()
+    {
+        m_updateSettingsScreen->SetProjectInfo(m_projectInfo);
     }
 
 } // namespace O3DE::ProjectManager
