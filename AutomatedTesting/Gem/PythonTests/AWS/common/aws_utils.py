@@ -12,6 +12,7 @@ import pytest
 import logging
 
 logger = logging.getLogger(__name__)
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 
 class AwsUtils:
@@ -41,6 +42,13 @@ class AwsUtils:
         """
         return self._assume_session.client(service)
 
+    def resource(self, service: str):
+        """
+        Get the resource for a specific AWS service from configured session
+        :return: Client for the AWS service.
+        """
+        return self._assume_session.resource(service)
+
     def assume_session(self):
         return self._assume_session
 
@@ -64,7 +72,7 @@ def aws_utils(
         session_name: str,
         region_name: str):
     """
-    Fixture for setting up a Cdk
+    Fixture for AWS util functions
     :param request: _pytest.fixtures.SubRequest class that handles getting
         a pytest fixture from a pytest function/fixture.
     :param assume_role_arn: Role used to fetch temporary aws credentials, configure service clients with obtained credentials.

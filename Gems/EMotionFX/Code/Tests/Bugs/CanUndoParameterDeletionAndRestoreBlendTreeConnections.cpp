@@ -106,7 +106,7 @@ namespace EMotionFX
         R"str(AnimGraphCreateConnection -animGraphID 0 -sourceNode Parameters0 -targetNode Smoothing2 -sourcePort 2 -targetPort 0 -startOffsetX 119 -startOffsetY 70 -endOffsetX -2 -endOffsetY 40)str"
     };
 
-    class LY92860Fixture
+    class UndoParameterDeletionTests
         : public CommandRunnerFixture
     {
     public:
@@ -183,10 +183,10 @@ namespace EMotionFX
         }
     };
 
-    TEST_P(LY92860Fixture, ExecuteCommands)
+    TEST_P(UndoParameterDeletionTests, CanUndoParameterDeletionAndRestoreBlendTreeConnections)
     {
         Run();
     };
 
-    INSTANTIATE_TEST_CASE_P(LY92860, LY92860Fixture, ::testing::Values(prepareLY92860Commands));
+    INSTANTIATE_TEST_CASE_P(UndoParameterDeletionTests, UndoParameterDeletionTests, ::testing::Values(prepareLY92860Commands));
 } // EMotionFX
