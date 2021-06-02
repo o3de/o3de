@@ -17,7 +17,7 @@ function GetMaterialPropertyDependencies()
 end
 
 function GetShaderOptionDependencies()
-    return {"o_parallax_feature_enabled", "o_useDepthMap"}
+    return {"o_parallax_feature_enabled", "o_useHeightmap"}
 end
  
 function Process(context)
@@ -25,7 +25,7 @@ function Process(context)
     local useTexture = context:GetMaterialPropertyValue_bool("parallax.useTexture")
     local enable = textureMap ~= nil and useTexture 
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enable)
-    context:SetShaderOptionValue_bool("o_useDepthMap", enable)
+    context:SetShaderOptionValue_bool("o_useHeightmap", enable)
 end
 
 function ProcessEditor(context)

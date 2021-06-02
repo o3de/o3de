@@ -16,6 +16,7 @@
 #include <Libraries/Logic/Logic.h>
 #include <Libraries/Math/Math.h>
 #include <Libraries/Comparison/Comparison.h>
+#include <Libraries/Spawning/Spawning.h>
 #include <Libraries/UnitTesting/UnitTestingLibrary.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -33,6 +34,7 @@ namespace ScriptCanvas
         Entity::InitNodeRegistry(*g_nodeRegistry);
         Comparison::InitNodeRegistry(*g_nodeRegistry);
         Time::InitNodeRegistry(*g_nodeRegistry);
+        Spawning::InitNodeRegistry(*g_nodeRegistry);
         String::InitNodeRegistry(*g_nodeRegistry);
         Operators::InitNodeRegistry(*g_nodeRegistry);
 
@@ -61,6 +63,7 @@ namespace ScriptCanvas
         Entity::Reflect(reflectContext);
         Comparison::Reflect(reflectContext);
         Time::Reflect(reflectContext);
+        Spawning::Reflect(reflectContext);
         String::Reflect(reflectContext);
         Operators::Reflect(reflectContext);
 
@@ -88,6 +91,9 @@ namespace ScriptCanvas
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = Time::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        componentDescriptors = Spawning::GetComponentDescriptors();
         libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
 
         componentDescriptors = String::GetComponentDescriptors();

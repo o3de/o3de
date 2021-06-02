@@ -219,17 +219,10 @@ namespace AZ
 
         //! Scale modifiers
         //! @{
-        //! Set local scale of the transform.
-        //! @param scale The new scale to set.
-        virtual void SetLocalScale([[maybe_unused]] const AZ::Vector3& scale) {}
-
-        //! Get the scale value in local space.
+        //! @deprecated GetLocalScale is deprecated, and is left only to allow migration of legacy vector scale.
+        //! Get the legacy vector scale value in local space.
         //! @return The scale value in local space.
         virtual AZ::Vector3 GetLocalScale() { return AZ::Vector3(FLT_MAX); }
-
-        //! Get the scale value in world space.
-        //! @return The scale value in world space.
-        virtual AZ::Vector3 GetWorldScale() { return AZ::Vector3(FLT_MAX); }
 
         //! Set the uniform scale value in local space.
         virtual void SetLocalUniformScale([[maybe_unused]] float scale) {}

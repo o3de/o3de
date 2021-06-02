@@ -38,6 +38,7 @@ namespace LyShine
         , protected UiSystemToolsBus::Handler
         , protected LyShineAllocatorScope
         , protected UiFrameworkBus::Handler
+        , protected CrySystemEventBus::Handler
     {
     public:
         AZ_COMPONENT(LyShineSystemComponent, lyShineSystemComponentUuid);
@@ -88,6 +89,11 @@ namespace LyShine
         void AddEditorOnlyEntity(AZ::Entity* editorOnlyEntity, EntityIdSet& editorOnlyEntities) override;
         void HandleEditorOnlyEntities(const EntityList& exportSliceEntities, const EntityIdSet& editorOnlyEntityIds) override;
         ////////////////////////////////////////////////////////////////////////
+
+        // CrySystemEventBus ///////////////////////////////////////////////////////
+        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
+        virtual void OnCrySystemShutdown(ISystem&) override;
+        ////////////////////////////////////////////////////////////////////////////
 
         void BroadcastCursorImagePathname();
 

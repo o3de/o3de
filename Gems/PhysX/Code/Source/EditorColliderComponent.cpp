@@ -17,7 +17,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -352,10 +352,13 @@ namespace PhysX
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
-        m_onDefaultMaterialLibraryChangedEventHandler = AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler(
+        m_onMaterialLibraryChangedEventHandler = AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler(
             [this](const AZ::Data::AssetId& defaultMaterialLibrary)
             {
-                m_configuration.m_materialSelection.OnDefaultMaterialLibraryChanged(defaultMaterialLibrary);
+                m_configuration.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
+
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -463,13 +466,13 @@ namespace PhysX
         if (auto* physXSystem = GetPhysXSystem())
         {
             physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
-            physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
         }
     }
 
     void EditorColliderComponent::OnDeselected()
     {
-        m_onDefaultMaterialLibraryChangedEventHandler.Disconnect();
+        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 
@@ -681,11 +684,6 @@ namespace PhysX
         }
     }
 
-    void EditorColliderComponent::SetMaterialAsset(const AZ::Data::AssetId& id)
-    {
-        m_configuration.m_materialSelection.SetMaterialLibrary(id);
-    }
-
     void EditorColliderComponent::SetMaterialId(const Physics::MaterialId& id)
     {
         m_configuration.m_materialSelection.SetMaterialId(id);
@@ -693,8 +691,10 @@ namespace PhysX
 
     void EditorColliderComponent::UpdateMaterialSlotsFromMeshAsset()
     {
-        Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::UpdateMaterialSelection,
-            m_shapeConfiguration.GetCurrent(), m_configuration);
+        Physics::PhysicsMaterialRequestBus::Broadcast(
+            &Physics::PhysicsMaterialRequestBus::Events::UpdateMaterialSelectionFromPhysicsAsset,
+            m_shapeConfiguration.GetCurrent(),
+            m_configuration.m_materialSelection);
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
