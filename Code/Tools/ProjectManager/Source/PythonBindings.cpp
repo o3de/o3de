@@ -321,13 +321,14 @@ namespace O3DE::ProjectManager
         try
         {
             executionCallback();
-            return AZ::Success();
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
             AZ_Warning("PythonBindings", false, "Python exception %s", e.what());
             return AZ::Failure<AZStd::string>(e.what());
         }
+
+        return AZ::Success();
     }
 
     bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)

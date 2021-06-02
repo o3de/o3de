@@ -92,7 +92,6 @@ namespace O3DE::ProjectManager
     void CreateProjectCtrl::HandleNextButton()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
-        const int currentScreenIndex = m_stack->currentIndex();
         ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
 
         if (screenEnum == ProjectManagerScreen::NewProjectSettings)

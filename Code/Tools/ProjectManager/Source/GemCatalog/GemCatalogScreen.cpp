@@ -89,7 +89,7 @@ namespace O3DE::ProjectManager
             });
     }
 
-    void GemCatalogScreen::FillModel(const QString& projectPath, [[maybe_unused]] bool isNewProject)
+    void GemCatalogScreen::FillModel(const QString& projectPath, bool isNewProject)
     {
         AZ::Outcome<QVector<GemInfo>, AZStd::string> allGemInfosResult;
         if (isNewProject)
@@ -133,12 +133,12 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(nullptr, "Operation failed", QString("Cannot retrieve enabled gems for project %1.\n\nError:\n%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
+                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.\n\nError:\n%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
             }
         }
         else
         {
-            QMessageBox::critical(nullptr, "Operation failed", QString("Cannot retrieve gems for %1.\n\nError:\n%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
+            QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems for %1.\n\nError:\n%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
         }
     }
 
