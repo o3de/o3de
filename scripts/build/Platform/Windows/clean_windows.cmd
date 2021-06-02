@@ -12,8 +12,17 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
-ECHO [ci_build] CLEAN_ASSETS option: %CLEAN_ASSETS%
-IF %CLEAN_ASSETS% (
+REM Jenkins defines environment variables for parameters and passes "false" to variables 
+REM that are not set. Here we clear them if they are false so we can also just defined them
+REM from command line
+IF "%CLEAN_ASSETS%"=="false" (
+    set CLEAN_ASSETS=
+)
+IF "%CLEAN_OUTPUT_DIRECTORY%"=="false" (
+    set CLEAN_OUTPUT_DIRECTORY=
+)
+
+IF DEFINED CLEAN_ASSETS (
     ECHO [ci_build] CLEAN_ASSETS option set
     FOR %%P in (%CMAKE_LY_PROJECTS%) do (
         IF EXIST %%P\Cache (
@@ -42,7 +51,7 @@ IF DEFINED NODE_LABEL (
     )
 )
 
-IF %CLEAN_OUTPUT_DIRECTORY% (
+IF DEFINED CLEAN_OUTPUT_DIRECTORY (
     ECHO [ci_build] CLEAN_OUTPUT_DIRECTORY option set
     IF EXIST %OUTPUT_DIRECTORY% (
         ECHO [ci_build] Deleting "%OUTPUT_DIRECTORY%"
