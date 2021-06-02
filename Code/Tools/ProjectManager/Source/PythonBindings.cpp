@@ -320,8 +320,6 @@ namespace O3DE::ProjectManager
         bool pythonResult = ExecuteWithLock(
             [&]
             {
-                bool registerThis = true;
-
                 // check current engine path against all other registered engines
                 // to see if we are already registered
                 auto allEngines = m_manifest.attr("get_engines")();
@@ -332,17 +330,13 @@ namespace O3DE::ProjectManager
                         AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
                         if (enginePath.Compare(m_enginePath) == 0)
                         {
-                            registerThis = false;
-                            break;
+                            return;
                         }
                     }
                 }
 
-                if (registerThis)
-                {
-                    auto result = m_register.attr("register")(m_enginePath.c_str());
-                    registrationResult = (result.cast<int>() == 0);
-                }
+                auto result = m_register.attr("register")(m_enginePath.c_str());
+                registrationResult = (result.cast<int>() == 0);
             });
 
         bool finalResult = (registrationResult && pythonResult);
