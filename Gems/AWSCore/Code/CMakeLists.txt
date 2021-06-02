@@ -85,8 +85,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                Gem::AWSCore.Static
                 Gem::AWSCore.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
     )
 
     ly_add_target(
