@@ -324,10 +324,10 @@ namespace O3DE::ProjectManager
 
                 // check current engine path against all other registered engines
                 // to see if we are already registered
-                auto allEngines = m_registration.attr("get_engines")();
+                auto allEngines = m_manifest.attr("get_engines")();
                 if (pybind11::isinstance<pybind11::list>(allEngines))
                 {
-                    for (const auto& engine : allEngines)
+                    for (auto engine : allEngines)
                     {
                         AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
                         if (enginePath.Compare(m_enginePath) == 0)
@@ -340,7 +340,7 @@ namespace O3DE::ProjectManager
 
                 if (registerThis)
                 {
-                    auto result = m_registration.attr("register")(m_enginePath.c_str());
+                    auto result = m_register.attr("register")(m_enginePath.c_str());
                     registrationResult = (result.cast<int>() == 0);
                 }
             });
