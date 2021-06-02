@@ -12,7 +12,8 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
-IF DEFINED CLEAN_ASSETS (
+ECHO [ci_build] CLEAN_ASSETS option: %CLEAN_ASSETS%
+IF %CLEAN_ASSETS% (
     ECHO [ci_build] CLEAN_ASSETS option set
     FOR %%P in (%CMAKE_LY_PROJECTS%) do (
         IF EXIST %%P\Cache (
@@ -41,7 +42,7 @@ IF DEFINED NODE_LABEL (
     )
 )
 
-IF DEFINED CLEAN_OUTPUT_DIRECTORY (
+IF %CLEAN_OUTPUT_DIRECTORY% (
     ECHO [ci_build] CLEAN_OUTPUT_DIRECTORY option set
     IF EXIST %OUTPUT_DIRECTORY% (
         ECHO [ci_build] Deleting "%OUTPUT_DIRECTORY%"
