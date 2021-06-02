@@ -704,7 +704,7 @@ namespace AzToolsFramework
             EntityList entities;
             AZStd::vector<Instance*> instances;
 
-            // Retrieve all descendants of this entity, be them entities of container entities
+            // Retrieve all descendant entities and instances of this entity that belonged to the same owning instance.
             RetrieveAndSortPrefabEntitiesAndInstances({ entity }, beforeOwningInstance->get(), entities, instances);
 
             AZStd::vector<AZStd::unique_ptr<Instance>> instanceUniquePtrs;

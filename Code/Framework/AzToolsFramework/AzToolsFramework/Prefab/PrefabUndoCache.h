@@ -57,8 +57,8 @@ namespace AzToolsFramework
                 PrefabDom dom;
                 AZ::EntityId parentId;
             };
-            typedef AZStd::unordered_map<AZ::EntityId, PrefabUndoCacheItem> EntityDomMap;
-            EntityDomMap m_entitySavedStates;
+            typedef AZStd::unordered_map<AZ::EntityId, PrefabUndoCacheItem> EntityCache;
+            EntityCache m_entitySavedStates;
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
