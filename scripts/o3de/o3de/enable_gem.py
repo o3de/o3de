@@ -24,56 +24,6 @@ from o3de import cmake, manifest, validation
 logger = logging.getLogger()
 logging.basicConfig()
 
-def add_gem_dependency(cmake_file: pathlib.Path,
-                       gem_name: str) -> int:
-    """
-    adds a gem dependency to a cmake file
-    :param cmake_file: path to the cmake file
-    :param gem_name: name of the gem
-    :return: 0 for success or non 0 failure code
-    """
-    if not cmake_file.is_file():
-        logger.error(f'Failed to locate cmake file {str(cmake_file)}')
-        return 1
-
-    # on a line by basis, see if there already is {gem_name}
-    # find the first occurrence of a gem, copy its formatting and replace
-    # the gem name with the new one and append it
-    # if the gem is already present fail
-    t_data = []
-    added = False
-    line_index_to_append = None
-    with open(cmake_file, 'r') as s:
-        line_index = 0
-        for line in s:
-            if 'ENABLED_GEMS' in line:
-                line_index_to_append = line_index
-            if f'{gem_name}' == line.strip():
-                logger.warning(f'{gem_name} is already enabled in file {str(cmake_file)}.')
-                return 0
-            t_data.append(line)
-            line_index += 1
-
-
-    indent = 4
-    if line_index_to_append:
-        t_data[line_index_to_append] = f'{" "  * indent}{gem_name}\n'
-        added = True
-
-    # if we didn't add, then create a new set(ENABLED_GEMS) variable
-    # add a new gem, if empty the correct format is 1 tab=4spaces
-    if not added:
-        t_data.append('\n')
-        t_data.append('set(ENABLED_GEMS\n')
-        t_data.append(f'{" "  * indent}{gem_name}\n')
-        t_data.append(')\n')
-
-    # write the cmake
-    with open(cmake_file, 'w') as s:
-        s.writelines(t_data)
-
-    return 0
-
 
 def enable_gem_in_project(gem_name: str = None,
                           gem_path: pathlib.Path = None,
@@ -141,7 +91,7 @@ def enable_gem_in_project(gem_name: str = None,
             logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
             return 1
         # add the gem
-        ret_val = add_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
+        ret_val = cmake.add_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
 
     else:
         # Find the path to enabled gem file.
@@ -150,7 +100,7 @@ def enable_gem_in_project(gem_name: str = None,
         if not project_enabled_gem_file.is_file():
             project_enabled_gem_file.touch()
         # add the gem
-        ret_val = add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
+        ret_val = cmake.add_gem_dependency(project_enabled_gem_file, gem_json_data['gem_name'])
 
     return ret_val
 

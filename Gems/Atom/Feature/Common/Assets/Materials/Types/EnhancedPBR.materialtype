@@ -1636,7 +1636,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_SubsurfaceState.lua"
+                "file": "EnhancedPBR_SubsurfaceState.lua"
             }
         },
         {
