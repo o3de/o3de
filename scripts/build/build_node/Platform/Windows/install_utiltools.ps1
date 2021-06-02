@@ -30,5 +30,5 @@ choco install corretto8jdk -y --ia INSTALLDIR="c:\jdk8" # Custom directory to ha
 # Install CMake
 choco install cmake -y --installargs 'ADD_CMAKE_TO_PATH=System'
 
-# Install WIX
+# Install Windows Installer XML toolkit (WiX)
 choco install wixtoolset -y
