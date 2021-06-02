@@ -38,6 +38,8 @@
 
 #include <AzNetworking/Framework/INetworking.h>
 
+#include <cmath> // for std::powf on linux
+
 namespace AZ::ConsoleTypeHelpers
 {
     template <>
