@@ -232,6 +232,18 @@ QTabBar::tab:pressed
     margin-left:30px;
 }
 
+#projectSettingsTab::tab-bar {
+    left: 60px;
+}
+
+#projectSettingsTabBar::tab {
+    height:50px;
+}
+
+#projectSettingsTopFrame {
+    background-color:#1E252F;
+}
+
 /************** Projects **************/
 #firstTimeContent > #titleLabel {
     font-size:60px;
