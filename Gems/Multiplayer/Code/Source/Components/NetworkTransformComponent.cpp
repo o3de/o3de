@@ -94,7 +94,7 @@ namespace Multiplayer
             AZ::Transform blendTransform;
             blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
             blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
-            blendTransform.SetScale(m_previousTransform.GetScale().Lerp(m_targetTransform.GetScale(), blendFactor));
+            blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
             GetTransformComponent()->SetWorldTM(blendTransform);
         }
     }
