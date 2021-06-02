@@ -15,6 +15,8 @@ SETLOCAL EnableDelayedExpansion
 REM Jenkins defines environment variables for parameters and passes "false" to variables 
 REM that are not set. Here we clear them if they are false so we can also just defined them
 REM from command line
+ECHO CLEAN_ASSETS=%CLEAN_ASSETS%
+ECHO CLEAN_OUTPUT_DIRECTORY=%CLEAN_OUTPUT_DIRECTORY%
 IF "%CLEAN_ASSETS%"=="false" (
     set CLEAN_ASSETS=
 )
@@ -22,6 +24,8 @@ IF "%CLEAN_OUTPUT_DIRECTORY%"=="false" (
     set CLEAN_OUTPUT_DIRECTORY=
 )
 
+ECHO CLEAN_ASSETS=%CLEAN_ASSETS%
+ECHO CLEAN_OUTPUT_DIRECTORY=%CLEAN_OUTPUT_DIRECTORY%
 IF DEFINED CLEAN_ASSETS (
     ECHO [ci_build] CLEAN_ASSETS option set
     FOR %%P in (%CMAKE_LY_PROJECTS%) do (
