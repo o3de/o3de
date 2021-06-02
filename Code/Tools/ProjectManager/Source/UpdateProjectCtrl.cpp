@@ -16,6 +16,7 @@
 #include <ScreensCtrl.h>
 #include <UpdateProjectCtrl.h>
 #include <UpdateProjectSettingsScreen.h>
+#include <ProjectUtils.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
