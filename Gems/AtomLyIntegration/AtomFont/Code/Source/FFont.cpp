@@ -60,13 +60,6 @@ static const size_t MaxVerts = 8 * 1024; // 2048 quads
 static const size_t MaxIndices = (MaxVerts * 6) / 4; // 6 indices per quad, 6/4 * MaxVerts
 static const char DrawList2DPassName[] = "2dpass";
 
-namespace ShaderInputs
-{
-    static const char TextureIndexName[] = "m_texture";
-    static const char WorldToProjIndexName[] = "m_worldToProj";
-    static const char SamplerIndexName[] = "m_sampler";
-}
-
 AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     : m_name(fontName)
     , m_atomFont(atomFont)
@@ -77,6 +70,13 @@ AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     // create default effect
     FontEffect* effect = AddEffect("default");
     effect->AddPass();
+
+    // Create cpu memory to cache the font draw data before submit
+    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
+    m_indexBuffer = new u16[MaxIndices];
+
+    m_vertexCount = 0;
+    m_indexCount = 0;
 
     AddRef();
 }
@@ -94,49 +94,6 @@ AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
         return defaultViewportContext->GetWindowContext();
     }
     return {};
-}
-
-bool AZ::FFont::InitFont(AzFramework::ViewportId viewportId)
-{
-    auto initializationState = InitializationState::Uninitialized;
-
-    // Get the dynamic draw context so we can query the SRG input index's
-    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::AtomBridge::PerViewportDynamicDraw::Get()->GetDynamicDrawContextForViewport(AZ::Name("AtomFont"), viewportId);
-    if (dynamicDraw == nullptr)
-    {
-        return false;
-    }
-
-    // Do an atomic transition to Initializing if we're in the Uninitialized state.
-    // Otherwise, check the current state.
-    // If we're Initialized, there's no more work to be done, return true to indicate we're good to go.
-    // If we're Initializing (on another thread), return false to let the consumer know it's not safe for us to be used yet.
-    if (!m_fontInitializationState.compare_exchange_strong(initializationState, InitializationState::Initializing))
-    {
-        return initializationState == InitializationState::Initialized;
-    }
-
-    // Save draw srg input indices for later use
-    Data::Instance<RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-    const RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
-
-    m_fontShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::TextureIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::TextureIndexName);
-
-    m_fontShaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::WorldToProjIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::WorldToProjIndexName);
-
-    // Create cpu memory to cache the font draw data before submit
-    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
-    m_indexBuffer = new u16[MaxIndices];
-
-    m_vertexCount = 0;
-    m_indexCount = 0;
-
-    m_fontInitializationState = InitializationState::Initialized;
-    return true;
 }
 
 AZ::FFont::~FFont()
@@ -300,7 +257,7 @@ void AZ::FFont::DrawStringUInternal(
 {
     // Lazily ensure we're initialized before attempting to render.
     // Validate that there is a render scene before attempting to init.
-    if (!viewportContext || !viewportContext->GetRenderScene() || !InitFont(viewportContext->GetId()))
+    if (!viewportContext || !viewportContext->GetRenderScene())
     {
         return;
     }
@@ -1511,7 +1468,7 @@ bool AZ::FFont::UpdateTexture()
 {
     using namespace AZ;
 
-    if (m_fontInitializationState != InitializationState::Initialized || !m_fontImage)
+    if (!m_fontImage)
     {
         return false;
     }
@@ -1579,7 +1536,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
     const bool rerenderGlyphs = m_sizeBehavior == SizeBehavior::Rerender;
     const AtomFont::GlyphSize usedGlyphSize = rerenderGlyphs ? glyphSize : AtomFont::defaultGlyphSize;
     bool texUpdateNeeded = m_fontTexture->PreCacheString(str, nullptr, m_sizeRatio, usedGlyphSize, m_fontHintParams) == 1 || m_fontTexDirty;
-    if (m_fontInitializationState == InitializationState::Initialized && updateTexture && texUpdateNeeded && m_fontImage)
+    if (updateTexture && texUpdateNeeded && m_fontImage)
     {
         UpdateTexture();
         m_fontTexDirty = false;

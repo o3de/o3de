@@ -165,8 +165,8 @@ namespace AZ
 
         struct FontShaderData
         {
-            AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
+            AZ::RHI::ShaderInputNameIndex m_imageInputIndex = "m_texture";
+            AZ::RHI::ShaderInputNameIndex m_viewProjInputIndex = "m_worldToProj";
         };
 
     public:
@@ -227,7 +227,6 @@ namespace AZ
 
     private:
         virtual ~FFont();
-        bool InitFont(AzFramework::ViewportId viewportId);
         bool InitTexture();
         bool InitCache();
 
@@ -310,13 +309,6 @@ namespace AZ
         AtomFont* m_atomFont = nullptr;
 
         bool m_fontTexDirty = false;
-        enum class InitializationState : AZ::u8
-        {
-            Uninitialized,
-            Initializing,
-            Initialized
-        };
-        AZStd::atomic<InitializationState> m_fontInitializationState = InitializationState::Uninitialized;
 
         FontEffects m_effects;
 
