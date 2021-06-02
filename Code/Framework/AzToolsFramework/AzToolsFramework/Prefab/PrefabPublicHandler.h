@@ -71,6 +71,13 @@ namespace AzToolsFramework
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+
+            void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
+                AZStd::vector<AZ::Entity*> entities, PrefabDom& instanceDomAfter,
+                EntityIdList& duplicatedEntityIds);
+            void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
+                AZStd::vector<Instance*> instances, PrefabDom& instanceDomAfter,
+                EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
             
             /**
              * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
