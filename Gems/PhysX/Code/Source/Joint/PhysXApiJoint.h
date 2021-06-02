@@ -88,13 +88,5 @@ namespace PhysX
         virtual ~PhysXFixedApiJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
-        void GenerateJointLimitVisualizationData(
-            float scale,
-            AZ::u32 angularSubdivisions,
-            AZ::u32 radialSubdivisions,
-            AZStd::vector<AZ::Vector3>& vertexBufferOut,
-            AZStd::vector<AZ::u32>& indexBufferOut,
-            AZStd::vector<AZ::Vector3>& lineBufferOut,
-            AZStd::vector<bool>& lineValidityBufferOut) override;
     };
 } // namespace PhysX
