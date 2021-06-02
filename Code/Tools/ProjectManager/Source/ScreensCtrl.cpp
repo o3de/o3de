@@ -115,16 +115,6 @@ namespace O3DE::ProjectManager
                 return true;
             }
         }
-        else
-        {
-            if (screen == ProjectManagerScreen::GemCatalog)
-            {
-                ForceChangeToScreen(ProjectManagerScreen::UpdateProject, addVisit);
-                ScreenWidget* currentScreen = GetCurrentScreen();
-                auto projectCtrl = reinterpret_cast<UpdateProjectCtrl*>(currentScreen);
-                projectCtrl->HandleGemsButton(true);
-            }
-        }
 
         return false;
     }

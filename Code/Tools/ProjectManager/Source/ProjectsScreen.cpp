@@ -179,7 +179,6 @@ namespace O3DE::ProjectManager
 
                     connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
                     connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
-                    connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
                     connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
                     connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
                     connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
@@ -291,11 +290,6 @@ namespace O3DE::ProjectManager
     {
         emit NotifyCurrentProject(projectPath);
         emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
-    }
-    void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)
-    {
-        emit NotifyCurrentProject(projectPath);
-        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
     }
     void ProjectsScreen::HandleCopyProject(const QString& projectPath)
     {

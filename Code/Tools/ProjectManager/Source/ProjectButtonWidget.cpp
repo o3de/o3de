@@ -88,7 +88,6 @@ namespace O3DE::ProjectManager
 
         QMenu* newProjectMenu = new QMenu(this);
         m_editProjectAction = newProjectMenu->addAction(tr("Edit Project Settings..."));
-        m_editProjectGemsAction = newProjectMenu->addAction(tr("Cutomize Gems..."));
         newProjectMenu->addSeparator();
         m_copyProjectAction = newProjectMenu->addAction(tr("Duplicate"));
         newProjectMenu->addSeparator();
@@ -113,7 +112,6 @@ namespace O3DE::ProjectManager
 
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         connect(m_editProjectAction, &QAction::triggered, [this]() { emit EditProject(m_projectInfo.m_path); });
-        connect(m_editProjectGemsAction, &QAction::triggered, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
         connect(m_copyProjectAction, &QAction::triggered, [this]() { emit CopyProject(m_projectInfo.m_path); });
         connect(m_removeProjectAction, &QAction::triggered, [this]() { emit RemoveProject(m_projectInfo.m_path); });
         connect(m_deleteProjectAction, &QAction::triggered, [this]() { emit DeleteProject(m_projectInfo.m_path); });
