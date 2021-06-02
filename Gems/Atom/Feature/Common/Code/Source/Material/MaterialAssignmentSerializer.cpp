@@ -10,7 +10,7 @@
  *
  */
 
-#include "MaterialAssignmentSerializer.h"
+#include <Material/MaterialAssignmentSerializer.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 
 namespace AZ

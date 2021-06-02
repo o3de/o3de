@@ -14,8 +14,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
-#include "MaterialAssignmentSerializer.h"
+#include <Material/MaterialAssignmentSerializer.h>
 
 namespace AZ
 {
