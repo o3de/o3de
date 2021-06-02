@@ -14,13 +14,16 @@
 #include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Application/Application.h>
 
 #include <QDir>
 
 namespace O3DE::ProjectManager
 {
-    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
+    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
     {
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
@@ -50,7 +53,18 @@ namespace O3DE::ProjectManager
         // set stylesheet after creating the screens or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
-        screensCtrl->ForceChangeToScreen(ProjectManagerScreen::Projects, false);
+        // always push the projects screen first so we have something to come back to
+        if (startScreen != ProjectManagerScreen::Projects)
+        {
+            screensCtrl->ForceChangeToScreen(ProjectManagerScreen::Projects);
+        }
+        screensCtrl->ForceChangeToScreen(startScreen);
+
+        if (!projectPath.empty())
+        {
+            const QString path = QString::fromUtf8(projectPath.Native().data(), aznumeric_cast<int>(projectPath.Native().size()));
+            emit screensCtrl->NotifyCurrentProject(path);
+        }
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()
