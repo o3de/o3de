@@ -1328,7 +1328,7 @@ namespace AZ::AtomBridge
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
         params.m_monospace = false; //! disable character proportional spacing
         params.m_depthTest = false; //! Test character against the depth buffer
-        params.m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
+        params.m_virtual800x600ScreenSize = false; //! Text placement and size are scaled in viewport pixel coordinates
         params.m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
         params.m_multiline = true; //! text respects ascii newline characters
 
@@ -1364,7 +1364,7 @@ namespace AZ::AtomBridge
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
         params.m_monospace = false; //! disable character proportional spacing
         params.m_depthTest = false; //! Test character against the depth buffer
-        params.m_virtual800x600ScreenSize = true; //! Text placement and size are scaled relative to a virtual 800x600 resolution
+        params.m_virtual800x600ScreenSize = false; //! Text placement and size are scaled in viewport pixel coordinates
         params.m_scaleWithWindow = false; //! Font gets bigger as the window gets bigger
         params.m_multiline = true; //! text respects ascii newline characters
 

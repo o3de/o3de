@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
         explicit CreateProjectCtrl(QWidget* parent = nullptr);
         ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
+        void NotifyCurrentScreen() override;
 
     protected slots:
         void HandleBackButton();
