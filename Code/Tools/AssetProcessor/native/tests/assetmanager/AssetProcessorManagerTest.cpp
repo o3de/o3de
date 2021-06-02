@@ -4020,15 +4020,15 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesFor
     m_assetProcessorManager->m_allowModtimeSkippingFeature = true;
     AssetUtilities::SetUseFileHashOverride(true, true);
 
-    // Enable es3 platform after the initial SetUp has already processed the files for pc
+    // Enable android platform after the initial SetUp has already processed the files for pc
     QDir tempPath(m_tempDir.path());
-    AssetBuilderSDK::PlatformInfo es3Platform("es3", { "host", "renderer" });
-    m_config->EnablePlatform(es3Platform, true);
+    AssetBuilderSDK::PlatformInfo androidPlatform("android", { "host", "renderer" });
+    m_config->EnablePlatform(androidPlatform, true);
 
     // There's no way to remove scanfolders and adding a new one after enabling the platform will cause the pc assets to build as well, which we don't want
     // Instead we'll just const cast the vector and modify the enabled platforms for the scanfolder
     auto& platforms = const_cast<AZStd::vector<AssetBuilderSDK::PlatformInfo>&>(m_config->GetScanFolderAt(0).GetPlatforms());
-    platforms.push_back(es3Platform);
+    platforms.push_back(androidPlatform);
 
     // We need the builder fingerprints to be updated to reflect the newly enabled platform
     m_assetProcessorManager->ComputeBuilderDirty();
@@ -4036,10 +4036,10 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesFor
     QSet<AssetFileInfo> filePaths = BuildFileSet();
     SimulateAssetScanner(filePaths);
 
-    ExpectWork(4, 2); // CreateJobs = 4, 2 files * 2 platforms.  ProcessJobs = 2, just the es3 platform jobs (pc is already processed)
+    ExpectWork(4, 2); // CreateJobs = 4, 2 files * 2 platforms.  ProcessJobs = 2, just the android platform jobs (pc is already processed)
 
-    ASSERT_TRUE(m_data->m_processResults[0].m_destinationPath.contains("es3"));
-    ASSERT_TRUE(m_data->m_processResults[1].m_destinationPath.contains("es3"));
+    ASSERT_TRUE(m_data->m_processResults[0].m_destinationPath.contains("android"));
+    ASSERT_TRUE(m_data->m_processResults[1].m_destinationPath.contains("android"));
 }
 
 TEST_F(ModtimeScanningTest, ModtimeSkipping_ModifyTimestamp)

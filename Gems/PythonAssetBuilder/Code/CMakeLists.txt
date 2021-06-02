@@ -13,24 +13,11 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-set(static_files pythonassetbuilder_common_files.cmake)
-set(editor_files pythonassetbuilder_editor_files.cmake)
-set(shared_files pythonassetbuilder_shared_files.cmake)
-set(static_dependencies
-        3rdParty::Python
-        Gem::EditorPythonBindings.Static
-        AZ::AssetBuilderSDK
-)
-set(editor_dependencies
-        Gem::EditorPythonBindings.Static
-        AZ::AssetBuilderSDK
-)
-
 ly_add_target(
     NAME PythonAssetBuilder.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
-        ${static_files}
+        pythonassetbuilder_common_files.cmake
     PLATFORM_INCLUDE_FILES
         Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/pythonassetbuilder_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -43,7 +30,9 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
         PUBLIC
-            ${static_dependencies}
+            3rdParty::Python
+            Gem::EditorPythonBindings.Static
+            AZ::AssetBuilderSDK
             AZ::AzToolsFramework
 )
 
@@ -52,8 +41,8 @@ ly_add_target(
 
     NAMESPACE Gem
     FILES_CMAKE
-        ${editor_files}
-        ${shared_files}
+        pythonassetbuilder_editor_files.cmake
+        pythonassetbuilder_shared_files.cmake
     PLATFORM_INCLUDE_FILES
         Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/pythonassetbuilder_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
@@ -64,10 +53,16 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            ${editor_dependencies}
+            Gem::EditorPythonBindings.Static
+            AZ::AssetBuilderSDK
     RUNTIME_DEPENDENCIES
         Gem::EditorPythonBindings.Editor
 )
+
+# the above target is used in both builders like AssetProcessor and Tools like the Editor
+# but is not used in clients or servers
+ly_create_alias(NAME PythonAssetBuilder.Tools     NAMESPACE Gem TARGETS Gem::PythonAssetBuilder.Editor)
+ly_create_alias(NAME PythonAssetBuilder.Builders  NAMESPACE Gem TARGETS Gem::PythonAssetBuilder.Editor)
 
 ################################################################################
 # Tests

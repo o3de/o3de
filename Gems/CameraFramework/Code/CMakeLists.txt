@@ -38,3 +38,9 @@ ly_add_target(
         PRIVATE
             Gem::CameraFramework.Static
 )
+
+# Every kind of application uses the above target module.
+ly_create_alias(NAME CameraFramework.Clients  NAMESPACE Gem TARGETS Gem::CameraFramework)
+ly_create_alias(NAME CameraFramework.Servers  NAMESPACE Gem TARGETS Gem::CameraFramework)
+ly_create_alias(NAME CameraFramework.Tools    NAMESPACE Gem TARGETS Gem::CameraFramework)
+ly_create_alias(NAME CameraFramework.Builders NAMESPACE Gem TARGETS Gem::CameraFramework)

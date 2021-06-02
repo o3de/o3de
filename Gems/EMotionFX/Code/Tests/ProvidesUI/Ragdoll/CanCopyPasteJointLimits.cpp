@@ -59,9 +59,6 @@ namespace EMotionFX
             .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{azrtti_typeid<D6JointLimitConfiguration>()}));
         EXPECT_CALL(physicsSystem, ComputeInitialJointLimitConfiguration(azrtti_typeid<D6JointLimitConfiguration>(), _, _, _, _))
             .WillRepeatedly([]([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation, [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis, [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) { return AZStd::make_unique<D6JointLimitConfiguration>(); });
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> materialLibraryAsset;
-        EXPECT_CALL(physicsInterface, GetDefaultMaterialLibrary)
-            .WillRepeatedly(testing::ReturnRef(materialLibraryAsset));
 
         AutoRegisteredActor actor {ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
 

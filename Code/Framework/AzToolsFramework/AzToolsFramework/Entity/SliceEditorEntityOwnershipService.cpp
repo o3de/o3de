@@ -614,7 +614,7 @@ namespace AzToolsFramework
 
                                     AZ::Quaternion oldEntityRotation;
                                     AZ::TransformBus::EventResult(oldEntityRotation, id, &AZ::TransformBus::Events::GetWorldRotationQuaternion);
-                                    transformComponent->SetRotationQuaternion(oldEntityRotation);
+                                    transformComponent->SetWorldRotationQuaternion(oldEntityRotation);
 
                                     // Ensure the existing hierarchy is maintained
                                     AZ::EntityId oldParentEntityId;
