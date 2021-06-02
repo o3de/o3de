@@ -243,11 +243,33 @@ namespace AzToolsFramework
                     instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch(),
                     AZStd::move(patch));
 
+                // Reset the transform of the container entity so that the new values aren't saved in the new prefab's dom.
+                // The new values were saved in the link, so propagation will apply them correctly.
+                {
+                    AZ::Entity* containerEntity = GetEntityById(containerEntityId);
+
+                    PrefabDom containerBeforeReset;
+                    m_instanceToTemplateInterface->GenerateDomForEntity(containerBeforeReset, *containerEntity);
+
+                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+
+                    PrefabDom containerAfterReset;
+                    m_instanceToTemplateInterface->GenerateDomForEntity(containerAfterReset, *containerEntity);
+
+                    // Update the state of the entity
+                    PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(containerEntityId)));
+                    state->SetParent(undoBatch.GetUndoBatch());
+                    state->Capture(containerBeforeReset, containerAfterReset, containerEntityId);
+
+                    state->Redo();
+                }
+
                 // This clears any entities marked as dirty due to reparenting of entities during the process of creating a prefab.
-                // We are doing this so that the changes in those enities are not queued up twice for propagation.
+                // We are doing this so that the changes in those entities are not queued up twice for propagation.
                 AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
-                
+
                 // Select Container Entity
                 {
                     auto selectionUndo = aznew SelectionCommand({containerEntityId}, "Select Prefab Container Entity");

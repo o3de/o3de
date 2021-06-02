@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         GemCatalog,
         Projects,
         UpdateProject,
-        ProjectSettings,
+        UpdateProjectSettings,
         EngineSettings
     };
 
@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         { "GemCatalog", ProjectManagerScreen::GemCatalog},
         { "Projects", ProjectManagerScreen::Projects},
         { "UpdateProject", ProjectManagerScreen::UpdateProject},
-        { "ProjectSettings", ProjectManagerScreen::ProjectSettings},
+        { "UpdateProjectSettings", ProjectManagerScreen::UpdateProjectSettings},
         { "EngineSettings", ProjectManagerScreen::EngineSettings}
     };
 

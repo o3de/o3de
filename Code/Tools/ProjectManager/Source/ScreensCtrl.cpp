@@ -13,6 +13,7 @@
 #include <ScreensCtrl.h>
 #include <ScreenFactory.h>
 #include <ScreenWidget.h>
+#include <UpdateProjectCtrl.h>
 
 #include <QTabWidget>
 #include <QVBoxLayout>

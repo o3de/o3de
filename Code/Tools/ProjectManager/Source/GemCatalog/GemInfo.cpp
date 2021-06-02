@@ -79,4 +79,9 @@ namespace O3DE::ProjectManager
     {
         return (m_platforms & platform);
     }
+
+    bool GemInfo::operator<(const GemInfo& gemInfo) const
+    {
+        return (m_displayName < gemInfo.m_displayName);
+    }
 } // namespace O3DE::ProjectManager
