@@ -12,7 +12,7 @@
 set(LY_WIX_PATH "" CACHE PATH "Path to the WiX install path")
 
 if(LY_WIX_PATH)
-    file(TO_CMAKE_PATH ${LY_QTIFW_PATH} CPACK_WIX_ROOT)
+    file(TO_CMAKE_PATH ${LY_WIX_PATH} CPACK_WIX_ROOT)
 elseif(DEFINED ENV{WIX})
     file(TO_CMAKE_PATH $ENV{WIX} CPACK_WIX_ROOT)
 endif()
@@ -26,7 +26,7 @@ else()
     return()
 endif()
 
-set(CPACK_GENERATOR "WIX")
+set(CPACK_GENERATOR WIX)
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
