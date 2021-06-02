@@ -10,9 +10,7 @@
 *
 */
 
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
