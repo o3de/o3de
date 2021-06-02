@@ -14,6 +14,7 @@
 #include <ScreensCtrl.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectSettingsScreen.h>
+#include <GemCatalog/GemCatalogScreen.h>
 
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
@@ -26,6 +27,7 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setMargin(0);
         setLayout(vLayout);
 
         m_screensCtrl = new ScreensCtrl();
@@ -95,6 +97,17 @@ namespace O3DE::ProjectManager
                 }
 
                 m_projectInfo = projectScreen->GetProjectInfo();
+
+                // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
+                auto* gemCatalogScreen = reinterpret_cast<GemCatalogScreen*>(m_screensCtrl->FindScreen(ProjectManagerScreen::GemCatalog));
+                if (gemCatalogScreen)
+                {
+                    gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
+                }
+                else
+                {
+                    QMessageBox::critical(this, tr("Operation failed"), tr("Cannot find gem catalog screen."));
+                }
             }
         }
 
@@ -113,6 +126,17 @@ namespace O3DE::ProjectManager
             else
             {
                 QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+            }
+
+            // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
+            auto* gemCatalogScreen = reinterpret_cast<GemCatalogScreen*>(m_screensCtrl->FindScreen(ProjectManagerScreen::GemCatalog));
+            if (gemCatalogScreen)
+            {
+                gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
+            }
+            else
+            {
+                QMessageBox::critical(this, tr("Operation failed"), tr("Cannot find gem catalog screen."));
             }
         }
     }
