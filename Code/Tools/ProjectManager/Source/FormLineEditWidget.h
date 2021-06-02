@@ -39,6 +39,7 @@ namespace O3DE::ProjectManager
 
         //! Set the error message for to display when invalid.
         void setErrorLabelText(const QString& labelText);
+        void setErrorLabelVisible(bool visible);
 
         //! Returns a pointer to the underlying LineEdit.
         QLineEdit* lineEdit() const;

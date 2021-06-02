@@ -61,6 +61,16 @@ namespace AzToolsFramework
             virtual bool SaveTemplate(TemplateId templateId) = 0;
 
             /**
+             * Saves a Prefab Template to the provided absolute source path, which needs to match the relative path in the template.
+             * Converts Prefab Template form into .prefab form by collapsing nested Template info
+             * into a source path and patches.
+             * @param templateId Id of the template to be saved
+             * @param absolutePath Absolute path to save the file to
+             * @return bool on whether the operation succeeded or not
+             */
+            virtual bool SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath) = 0;
+
+            /**
             * Saves a Prefab Template into the provided output string.
             * Converts Prefab Template form into .prefab form by collapsing nested Template info
             * into a source path and patches.
