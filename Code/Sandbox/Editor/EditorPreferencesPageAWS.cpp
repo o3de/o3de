@@ -49,7 +49,7 @@ CEditorPreferencesPage_AWS::CEditorPreferencesPage_AWS()
     InitializeSettings();
 
     // TODO Update with AWS svg.
-    m_icon = QIcon(":/res/Experimental.svg");
+    m_icon = QIcon(":/res/AWS_preferences_icon.svg");
 }
 
 const char* CEditorPreferencesPage_AWS::GetTitle()

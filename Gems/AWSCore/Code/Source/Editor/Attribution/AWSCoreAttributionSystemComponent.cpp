@@ -53,7 +53,7 @@ namespace AWSCore
 
     void AWSAttributionSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        AZ_UNUSED(required);
+        required.push_back(AZ_CRC_CE("AWSCoreService"));
     }
 
     void AWSAttributionSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

@@ -10,8 +10,9 @@
  *
  */
 
-#include <Editor/Attribution/AWSCoreAttributionManager.h>
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
+#include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSAttributionServiceApi.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/PlatformId/PlatformId.h>
@@ -21,6 +22,8 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/IO/ByteContainerStream.h>
+#include <ResourceMapping/AWSResourceMappingUtils.h>
+
 
 
 namespace AWSCore
@@ -29,6 +32,9 @@ namespace AWSCore
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/Preferences/AWS/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/Preferences/AWS/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp";
+    constexpr char AWSAttributionApiId[] = "xbzx78kvbk";
+    constexpr char AWSAttributionChinaApiId[] = "";
+    constexpr char AWSAttributionApiStage[] = "prod";
 
     void AWSAttributionManager::Init()
     {
@@ -84,7 +90,7 @@ namespace AWSCore
             return false;
         }
 
-        // If delay not set default to a day
+        // If delayInSeconds is not found, set default to a day
         AZ::u64 delayInSeconds = 0;
         if (!registry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
         {
@@ -187,7 +193,7 @@ namespace AWSCore
 
     void AWSAttributionManager::GetActiveAWSGems(AZStd::vector<AZStd::string>& gems)
     {
-        // Read from project's runtimedependencies.cmake?
+        // Read from project's enabled_gems.cmake?
         AZ_UNUSED(gems);
     }
 
@@ -203,9 +209,37 @@ namespace AWSCore
 
     void AWSAttributionManager::SubmitMetric(AttributionMetric& metric)
     {
-        // Submit metric
-        AZ_UNUSED(metric);
-        UpdateLastSend();
+        auto config = ServiceAPI::AWSAttributionRequestJob::GetDefaultConfig();
+        config->region = Aws::Region::US_WEST_2;
+
+        // Get default config for the process to check the region.
+        // Assumption to determine China region is the default profile is set to China region.
+        auto profile_name = Aws::Auth::GetConfigProfileName();
+        Aws::Client::ClientConfiguration clientConfig(profile_name.c_str());
+        AZStd::string apiId = AWSAttributionApiId;
+
+        if (clientConfig.region == Aws::Region::CN_NORTH_1 || clientConfig.region == Aws::Region::CN_NORTHWEST_1)
+        {
+            config->region = Aws::Region::CN_NORTH_1;
+            apiId = AWSAttributionChinaApiId;
+        }
+
+        config->endpointOverride = AWSResourceMappingUtils::FormatRESTApiUrl(apiId, config->region.value().c_str(), AWSAttributionApiStage).c_str();
+        ServiceAPI::AWSAttributionRequestJob* requestJob = ServiceAPI::AWSAttributionRequestJob::Create(
+            [this](ServiceAPI::AWSAttributionRequestJob* successJob)
+            {
+                AZ_UNUSED(successJob);
+                AZ_Printf("AWSAttributionManager", "AWSAttributionManager submitted metric succesfully");
+                UpdateLastSend();
+
+            },
+            [this](ServiceAPI::AWSAttributionRequestJob* failedJob)
+            {
+                AZ_Warning("AWSAttributionManager", false, "AWSAttributionManager failed to submit metric.\nError Message: %s", failedJob->error.message.c_str());
+            }, config);
+
+        requestJob->parameters.metric = metric;
+        requestJob->Start();
     }
 
 } // namespace AWSCore

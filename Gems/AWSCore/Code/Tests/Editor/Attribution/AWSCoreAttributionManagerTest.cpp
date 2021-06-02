@@ -32,8 +32,29 @@
 
 using namespace AWSCore;
 
-namespace AWSCoreUnitTest
+namespace AWSAttributionUnitTest
 {
+
+    class AWSAttributionManagerMock
+        : public AWSAttributionManager
+    {
+    public:
+
+        AWSAttributionManagerMock()
+        {
+            ON_CALL(*this, SubmitMetric(testing::_)).WillByDefault(testing::Invoke(this, &AWSAttributionManagerMock::SubmitMetricMock));
+        }
+        using AWSAttributionManager::SubmitMetric;
+
+        MOCK_METHOD1(SubmitMetric, void(AttributionMetric& metric));
+
+        void SubmitMetricMock(AttributionMetric& metric)
+        {
+            AZ_UNUSED(metric);
+            UpdateLastSend();
+        }
+    };
+
     class AttributionManagerTest
         : public AWSCoreFixture
     {
@@ -110,7 +131,7 @@ namespace AWSCoreUnitTest
     TEST_F(AttributionManagerTest, MetricsSettings_AttributionDisabled_SkipsSend)
     {
         // GIVEN
-        AWSAttributionManager manager;
+        AWSAttributionManagerMock manager;
         manager.Init();
        
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -124,6 +145,8 @@ namespace AWSCoreUnitTest
                 }
             }
         })");
+
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
 
         // WHEN
         manager.MetricCheck();
@@ -139,7 +162,7 @@ namespace AWSCoreUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabled_NoPreviousTimeStamp_SendSuccess)
     {
         // GIVEN
-        AWSAttributionManager manager;
+        AWSAttributionManagerMock manager;
         manager.Init();
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -153,6 +176,8 @@ namespace AWSCoreUnitTest
                 }
             }
         })");
+
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
 
         // WHEN
         manager.MetricCheck();
@@ -169,7 +194,7 @@ namespace AWSCoreUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabled_ValidPreviousTimeStamp_SendSuccess)
     {
         // GIVEN
-        AWSAttributionManager manager;
+        AWSAttributionManagerMock manager;
         manager.Init();
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -185,6 +210,8 @@ namespace AWSCoreUnitTest
             }
         })");
 
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
+
         // WHEN
         manager.MetricCheck();
 
@@ -199,7 +226,7 @@ namespace AWSCoreUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabled_DelayNotSatisfied_SendFail)
     {
         // GIVEN
-        AWSAttributionManager manager;
+        AWSAttributionManagerMock manager;
         manager.Init();
 
 
@@ -219,6 +246,8 @@ namespace AWSCoreUnitTest
         AZ::u64 delayInSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
         ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp", delayInSeconds));
 
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
+
         // WHEN
         manager.MetricCheck();
 
@@ -233,7 +262,7 @@ namespace AWSCoreUnitTest
     TEST_F(AttributionManagerTest, AttributionEnabledNotFound_SendSuccess)
     {
         // GIVEN
-        AWSAttributionManager manager;
+        AWSAttributionManagerMock manager;
         manager.Init();
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
@@ -245,6 +274,8 @@ namespace AWSCoreUnitTest
                 }
             }
         })");
+
+        EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
 
         // WHEN
         manager.MetricCheck();

@@ -30,7 +30,8 @@ namespace AWSCore
     AZ::ComponentTypeList AWSCoreEditorModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<AWSCoreEditorSystemComponent>()
+            azrtti_typeid<AWSCoreEditorSystemComponent>(),
+            azrtti_typeid<AWSAttributionSystemComponent>()
         };
     }
 

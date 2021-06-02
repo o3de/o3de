@@ -27,6 +27,7 @@ public:
     CEditorPreferencesPage_AWS();
     virtual ~CEditorPreferencesPage_AWS() = default;
 
+    // IPreferencesPage interface methods.
     virtual const char* GetCategory() override { return "AWS"; }
     virtual const char* GetTitle() override;
     virtual QIcon& GetIcon() override;

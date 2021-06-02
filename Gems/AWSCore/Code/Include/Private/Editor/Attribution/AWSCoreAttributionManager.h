@@ -31,11 +31,13 @@ namespace AWSCore
         //! Run metric check
         void MetricCheck();
 
+    protected:
+        virtual void SubmitMetric(AttributionMetric& metric);
+        void UpdateLastSend();
+
     private:
         bool ShouldGenerateMetric() const;
         void UpdateMetric(AttributionMetric& metric);
-        void SubmitMetric(AttributionMetric& metric);
-        void UpdateLastSend();
 
         AZStd::string GetEngineVersion() const;
         AZStd::string GetPlatform() const;
