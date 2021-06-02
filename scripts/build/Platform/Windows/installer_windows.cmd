@@ -26,9 +26,17 @@ IF NOT EXIST "%WIX_TEMP%" (
     MKDIR %WIX_TEMP%
 )
 
+REM Make sure we are using the CMake version of CPack and not the one that comes with chocolaty
+IF "%LY_CMAKE_PATH%"=="" (
+    for /f %%i in ('where cmake') do SET "CMAKE_EXE_PATH=%%i"
+    for %%F in ("%CMAKE_EXE_PATH%") do SET "CMAKE_INSTALL_PATH=%%~dpF"
+) ELSE (
+    SET "CMAKE_INSTALL_PATH=%LY_CMAKE_PATH%\"
+)
+
 REM Run cpack
-ECHO [ci_build] cpack -C %CONFIGURATION%
-cpack  -C %CONFIGURATION%
+ECHO [ci_build] "%CMAKE_INSTALL_PATH%cpack" -C %CONFIGURATION%
+"%CMAKE_INSTALL_PATH%cpack"  -C %CONFIGURATION%
 IF NOT %ERRORLEVEL%==0 GOTO :popd_error
 
 POPD
