@@ -39,8 +39,10 @@ namespace O3DE::ProjectManager
         bool SetEngineInfo(const EngineInfo& engineInfo) override;
 
         // Gem
-        AZ::Outcome<GemInfo> GetGem(const QString& path) override;
-        AZ::Outcome<QVector<GemInfo>> GetGems() override;
+        AZ::Outcome<GemInfo> GetGemInfo(const QString& path) override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
+        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
 
         // Project
         AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
@@ -49,8 +51,8 @@ namespace O3DE::ProjectManager
         bool AddProject(const QString& path) override;
         bool RemoveProject(const QString& path) override;
         bool UpdateProject(const ProjectInfo& projectInfo) override;
-        bool AddGemToProject(const QString& gemPath, const QString& projectPath) override;
-        bool RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
+        AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) override;
+        AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
 
         // ProjectTemplate
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
@@ -58,6 +60,7 @@ namespace O3DE::ProjectManager
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
+        AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
         GemInfo GemInfoFromPath(pybind11::handle path);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
@@ -68,6 +71,7 @@ namespace O3DE::ProjectManager
         AZ::IO::FixedMaxPath m_enginePath;
         pybind11::handle m_engineTemplate;
         AZStd::recursive_mutex m_lock;
+        pybind11::handle m_cmake;
         pybind11::handle m_register;
         pybind11::handle m_manifest;
         pybind11::handle m_enableGemProject;
