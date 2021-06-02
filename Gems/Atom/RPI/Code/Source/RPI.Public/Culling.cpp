@@ -315,21 +315,29 @@ namespace AZ
                         //Add all objects within this node to the view, without any extra culling
                         for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                         {
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                            if (TestOcclusionCulling(visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
-#endif
                             {
                                 if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                                 {
                                     Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
+
+                                    // reset visibility flag to false, update to true if all culling checks pass
+                                    c->m_isVisible = false;
+
                                     if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
                                         c->m_cullData.m_hideFlags & viewFlags ||
                                         c->m_cullData.m_scene != m_jobData->m_scene)       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
                                     {
                                         continue;
                                     }
-                                    numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
-                                    ++numVisibleCullables;
+
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+                                    if (TestOcclusionCulling(visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
+#endif
+                                    {
+                                        numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
+                                        ++numVisibleCullables;
+                                        c->m_isVisible = true;
+                                    }
                                 }
                             }
                         }
@@ -342,6 +350,10 @@ namespace AZ
                             if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
                             {
                                 Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
+
+                                // reset visibility flag to false, update to true if all culling checks pass
+                                c->m_isVisible = false;
+
                                 if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
                                     c->m_cullData.m_hideFlags & viewFlags ||
                                     c->m_cullData.m_scene != m_jobData->m_scene)       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
@@ -362,6 +374,7 @@ namespace AZ
                                     {
                                         numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
                                         ++numVisibleCullables;
+                                        c->m_isVisible = true;
                                     }
                                 }
                             }
@@ -461,11 +474,11 @@ namespace AZ
                 corners[7] = m_jobData->m_view->GetWorldToClipMatrix() * Vector4(maxBound.GetX(), maxBound.GetY(), minBound.GetZ(), 1.0f);
 
                 // find min clip-space depth and NDC min/max
+                float minDepth = FLT_MAX;
                 float ndcMinX = FLT_MAX;
                 float ndcMinY = FLT_MAX;
                 float ndcMaxX = -FLT_MAX;
                 float ndcMaxY = -FLT_MAX;
-                float minDepth = FLT_MAX;
                 for (uint32_t index = 0; index < 8; ++index)
                 {
                     minDepth = AZStd::min(minDepth, corners[index].GetW());

@@ -96,6 +96,9 @@ namespace AZ
             };
             LodData m_lodData;
 
+            //! Flag indicating if the object is visible, i.e., was not culled out in the last frame
+            bool m_isVisible = true;
+
             void SetDebugName([[maybe_unused]] const AZ::Name& debugName)
             {
 #ifdef AZ_CULL_DEBUG_ENABLED
