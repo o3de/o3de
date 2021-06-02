@@ -63,6 +63,13 @@
                                 "Pass": "Parent",
                                 "Attachment": "SkinnedMeshes"
                             }
+                        },
+                        {
+                            "LocalSlot": "MotionInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "CameraMotionVectorPass",
+                                "Attachment": "Output"
+                            }
                         }
                     ],
                     "PassData": {

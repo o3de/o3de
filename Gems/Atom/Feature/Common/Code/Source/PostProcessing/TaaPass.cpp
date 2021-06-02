@@ -12,8 +12,10 @@
 
 #include <PostProcessing/TaaPass.h>
 
+#include <AzCore/Math/Random.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
@@ -30,22 +32,34 @@ namespace AZ::Render
     TaaPass::TaaPass(const RPI::PassDescriptor& descriptor)
         : Base(descriptor)
     {
+        uint32_t numJitterPositions = 8;
+
+        const TaaPassData* taaPassData = RPI::PassUtils::GetPassData<TaaPassData>(descriptor);
+        if (taaPassData)
+        {
+            numJitterPositions = taaPassData->m_numJitterPositions;
+        }
+
+        // The coprimes 2, 3 are commonly used for halton sequences because they have an even distribution even for
+        // few samples. With larger primes you need to offset by some amount between each prime to have the same
+        // effect. We could allow this to be configurable in the future.
+        SetupSubPixelOffsets(2, 3, numJitterPositions);
     }
 
     void TaaPass::CompileResources(const RHI::FrameGraphCompileContext& context)
     {
-        // Set parameters on SRG here
-
         struct TaaConstants
         {
             AZStd::array<uint32_t, 2> m_size = { 1, 1 };
-            AZStd::array<uint32_t, 2> m_padding = { 0, 0 };
+            AZStd::array<float, 2> m_rcpSize = { 0.0, 0.0 };
         };
 
         TaaConstants cb;
         RHI::Size inputSize = m_lastFrameAccumulationBinding->m_attachment->m_descriptor.m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
+        cb.m_rcpSize[0] = 1.0f / inputSize.m_width;
+        cb.m_rcpSize[1] = 1.0f / inputSize.m_height;
         
         m_shaderResourceGroup->SetConstant(m_constantDataIndex, cb);
 
@@ -54,6 +68,14 @@ namespace AZ::Render
     
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
+        RHI::Size inputSize = m_inputColorBinding->m_attachment->m_descriptor.m_image.m_size;
+        Vector2 rcpInputSize = Vector2(1.0 / inputSize.m_width, 1.0 / inputSize.m_height);
+
+        RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+        Offset offset = m_subPixelOffsets.at(m_offsetIndex);
+        view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
+        m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
+
         m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
         m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
 
@@ -112,7 +134,7 @@ namespace AZ::Render
 
         Base::BuildAttachmentsInternal();
     }
-    
+
     void TaaPass::UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment)
     {
         if (!attachment)
@@ -147,6 +169,23 @@ namespace AZ::Render
         
         attachment->m_path = attachmentImage->GetAttachmentId();
         attachment->m_importedResource = attachmentImage;
+    }
+
+    void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)
+    {
+        m_subPixelOffsets.resize(length);
+        HaltonSequence<2> sequence = HaltonSequence<2>({haltonX, haltonY});
+        sequence.FillHaltonSequence(m_subPixelOffsets.begin(), m_subPixelOffsets.end());
+
+        // Adjust to the -1.0 to 1.0 range. This is done because the view needs offsets in clip
+        // space and is one less calculation that would need to be done in FrameBeginInternal()
+        AZStd::for_each(m_subPixelOffsets.begin(), m_subPixelOffsets.end(),
+            [](Offset& offset)
+            {
+                offset.m_xOffset = 2.0f * offset.m_xOffset - 1.0f;
+                offset.m_yOffset = 2.0f * offset.m_yOffset - 1.0f;
+            }
+        );
     }
 
 } // namespace AZ::Render

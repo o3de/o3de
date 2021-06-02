@@ -86,6 +86,9 @@ namespace AZ
             //! Sets the viewToClip matrix and recalculates the other matrices
             void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip);
 
+            //! Sets a pixel offset on the view, usually used for jittering the camera for anti-aliasing techniques.
+            void SetClipSpaceOffset(float xOffset, float yOffset);
+
             const AZ::Matrix4x4& GetWorldToViewMatrix() const;
             //! Use GetViewToWorldMatrix().GetTranslation() to get the camera's position.
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
@@ -165,7 +168,6 @@ namespace AZ
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
-            Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
 
             // View's position in world space
@@ -180,16 +182,14 @@ namespace AZ
             // Cached matrix to transform from world space to clip space
             Matrix4x4 m_worldToClipMatrix;
 
-            Matrix4x4 m_worldToClipPrevMatrix;
+            Matrix4x4 m_worldToViewPrevMatrix;
+            Matrix4x4 m_viewToClipPrevMatrix;
+
+            // Clip space offset for camera jitter with taa
+            Vector2 m_clipSpaceOffset = Vector2(0.0f, 0.0f);
 
             // Flags whether view matrices are dirty which requires rebuild srg
             bool m_needBuildSrg = true;
-
-            // Following two bools form a delay circuit to update history of next frame
-            // if vp matrix is changed during current frame, this is required because
-            // view class doesn't contain subroutines called at the end of each frame
-            bool m_worldToClipMatrixChanged = true;
-            bool m_worldToClipPrevMatrixNeedsUpdate = false;
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;

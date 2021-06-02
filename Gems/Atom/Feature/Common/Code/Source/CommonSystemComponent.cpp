@@ -133,6 +133,7 @@ namespace AZ
             SMAAFeatureProcessor::Reflect(context);
             PostProcessFeatureProcessor::Reflect(context);
             ImGuiPassData::Reflect(context);
+            TaaPassData::Reflect(context);
 
             LightingPreset::Reflect(context);
             ModelPreset::Reflect(context);

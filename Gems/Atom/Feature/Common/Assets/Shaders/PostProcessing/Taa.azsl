@@ -11,6 +11,7 @@
 */
 
 #include <scenesrg.srgi>
+#include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 
 #define TILE_DIM_X 16
 #define TILE_DIM_Y 16
@@ -19,9 +20,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4> m_inputColor;
     Texture2D<float4> m_inputDepth;
-    RWTexture2D<float4> m_outputColor;
     Texture2D<float2> m_motionVectors;
     Texture2D<float4> m_lastFrameAccumulation;
+
+    RWTexture2D<float4> m_outputColor;
 
     Sampler LinearSampler
     {
@@ -33,11 +35,12 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
 
-    float m_minContribution;
+    float m_currentFrameMinContribution;
 
     struct Constants
     {
-        uint2 m_size;
+        uint2 m_inputColorSize;
+        float2 m_inputColorRcpSize;
     };
     Constants m_constantData;
 }
@@ -58,29 +61,54 @@ void MainCS(
     uint2 pixelCoord = dispatchThreadID.xy;
     float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
     float depth = PassSrg::m_inputDepth[pixelCoord].r;
-    float2 previousPosition = -PassSrg::m_motionVectors[pixelCoord];
+
+    // Motion vectors store the direction of movement, so to look up where things were in the previous frame, it's negated.
+    float2 previousPositionOffset = -PassSrg::m_motionVectors[pixelCoord];
+
+    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
+    color = max(0.0, color);
+
+    // Tonemap color so that the blend with history is in perceptual space. Without this, bright values can dominate
+    // against the history and increase aliasing.
+    float luminance = GetLuminance(color);
+    color = color / (1.0 + luminance);
 
     // Get the uv coordinate for the previous frame.
-    uint2 size = PassSrg::m_constantData.m_size;
-    float2 halfPixel = rcp(size * 2.0);
-    float2 uvCoord = pixelCoord / float2(size) + halfPixel;
-    float2 uvOld = float2(uvCoord) + previousPosition;
+    float2 rcpSize = PassSrg::m_constantData.m_inputColorRcpSize;
+    float2 uvCoord = (pixelCoord + 0.5f) * rcpSize;
+    float2 uvOld = float2(uvCoord) + previousPositionOffset;
 
     // For now just rely on hardware bilinear filtering but this is something that will be improved.
     // Color in rgb, Depth in a
     float4 lastFrameColorDepth = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0);
 
-    float weight = PassSrg::m_minContribution;
+    // Tonemap last frame color
+    lastFrameColorDepth.rgb = lastFrameColorDepth / (1.0 + luminance);
 
-    // Very basic depth rejection
+    float currentFrameWeight = PassSrg::m_currentFrameMinContribution;
+
+    // Basic depth rejection
     if (abs(depth - lastFrameColorDepth.a) > 0.001)
     {
-        weight = 1.0f;
+        currentFrameWeight = 1.0f;
     }
 
-    PassSrg::m_outputColor[pixelCoord].rgb = lerp(lastFrameColorDepth.rgb, color, weight);
+    // Out of bounds protection.
+    if (any(uvOld > 1.0) || any(uvOld < 0.0))
+    {
+        currentFrameWeight = 1.0f;
+    }
+
+    // Blend color with history
+    color = lerp(lastFrameColorDepth.rgb, color, currentFrameWeight);
+
+    // Un-tonemap color
+    color = color * (1.0 + luminance);
+
+    PassSrg::m_outputColor[pixelCoord].rgb = color;
 
     // Output depth to check against next frame. This is much higher precision than necessary for a depth rejection, so we'll either move this to a
     // separate buffer or stuff some additional data useful to taa in the same spot.
     PassSrg::m_outputColor[pixelCoord].a = depth;
+    
 }

@@ -85,7 +85,7 @@
                 }
             ],
             "PassData": {
-                "$type": "ComputePassData",
+                "$type": "TaaPassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Postprocessing/Taa.shader"
                 },
@@ -93,11 +93,12 @@
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {
-                            "Name": "m_minContribution",
+                            "Name": "m_currentFrameMinContribution",
                             "Value": 0.1
                         }
                     ]
-                }
+                },
+                "NumJitterPositions": 16
             }
         }
     }
