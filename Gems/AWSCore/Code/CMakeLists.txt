@@ -79,9 +79,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include/Private
-        COMPILE_DEFINITIONS
-            PRIVATE
-                AWSCORE_EDITOR
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
