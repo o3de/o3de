@@ -1474,7 +1474,7 @@ namespace EMotionFX
 
 
     // check for a given mesh how we categorize it
-    Mesh::EMeshType Mesh::ClassifyMeshType(uint32 lodLevel, Actor* actor, uint32 nodeIndex, bool forceCPUSkinning, uint32 maxInfluences, uint32 maxBonesPerSubMesh) const
+    Mesh::EMeshType Mesh::ClassifyMeshType(size_t lodLevel, Actor* actor, size_t nodeIndex, bool forceCPUSkinning, uint32 maxInfluences, uint32 maxBonesPerSubMesh) const
     {
         // get the mesh deformer stack for the given node at the given detail level
         MeshDeformerStack* deformerStack = actor->GetMeshDeformerStack(lodLevel, nodeIndex);

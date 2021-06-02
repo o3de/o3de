@@ -281,7 +281,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> items = selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = items.count();
+        const int numSelectedItems = items.count();
 
         // check if nothing needed to be copied
         if (numSelectedItems == 0)
@@ -290,11 +290,11 @@ namespace EMStudio
         }
 
         // filter the items
-        AZStd::vector<uint32> rowIndices;
+        AZStd::vector<int> rowIndices;
         rowIndices.reserve(numSelectedItems);
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = items[i]->row();
+            const int rowIndex = items[i]->row();
             if (AZStd::find(begin(rowIndices), end(rowIndices), rowIndex) == end(rowIndices))
             {
                 rowIndices.emplace_back(rowIndex);
@@ -305,12 +305,12 @@ namespace EMStudio
         AZStd::sort(begin(rowIndices), end(rowIndices));
 
         // get the number of selected rows
-        const uint32 numSelectedRows = rowIndices.size();
+        const size_t numSelectedRows = rowIndices.size();
 
         // genereate the clipboard text
         QString clipboardText;
-        const uint32 lastIndex = numSelectedRows - 1;
-        for (uint32 i = 0; i < numSelectedRows; ++i)
+        const size_t lastIndex = numSelectedRows - 1;
+        for (size_t i = 0; i < numSelectedRows; ++i)
         {
             const QString time = item(rowIndices[i], 0)->text();
             const QString message = item(rowIndices[i], 1)->text();
@@ -360,7 +360,7 @@ namespace EMStudio
         QMenu menu(this);
 
         // add actions
-        if (items.size() > 0)
+        if (!items.empty())
         {
             QAction* copyAction = menu.addAction("Copy");
             connect(copyAction, &QAction::triggered, this, &LogWindowCallback::Copy);
@@ -370,7 +370,7 @@ namespace EMStudio
             QAction* selectAllAction = menu.addAction("Select All");
             connect(selectAllAction, &QAction::triggered, this, &LogWindowCallback::SelectAll);
         }
-        if (items.size() > 0)
+        if (!items.empty())
         {
             QAction* UnselectAllAction = menu.addAction("Unselect All");
             connect(UnselectAllAction, &QAction::triggered, this, &LogWindowCallback::UnselectAll);

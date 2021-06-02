@@ -8,6 +8,8 @@
 
 // include required headers
 #include "AttachmentsWindow.h"
+#include "AzCore/std/limits.h"
+#include "MCore/Source/Config.h"
 #include <AzFramework/API/ApplicationAPI.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AttachmentNode.h>
@@ -236,13 +238,13 @@ namespace EMStudio
         }
 
         // the number of existing attachments
-        const uint32 numAttachments = mActorInstance->GetNumAttachments();
+        const int numAttachments = aznumeric_caster(mActorInstance->GetNumAttachments());
 
         // set table size and add header items
         mTableWidget->setRowCount(numAttachments);
 
         // loop trough all attachments and add them to the table
-        for (uint32 i = 0; i < numAttachments; ++i)
+        for (int i = 0; i < numAttachments; ++i)
         {
             EMotionFX::Attachment* attachment = mActorInstance->GetAttachment(i);
             if (attachment == nullptr)
@@ -253,18 +255,11 @@ namespace EMStudio
             EMotionFX::ActorInstance*   attachmentInstance  = attachment->GetAttachmentActorInstance();
             EMotionFX::Actor*           attachmentActor     = attachmentInstance->GetActor();
             EMotionFX::Actor*           attachedToActor     = mActorInstance->GetActor();
-            uint32                      attachedToNodeIndex = MCORE_INVALIDINDEX32;
-            EMotionFX::Node*            attachedToNode      = nullptr;
-
-            if (!attachment->GetIsInfluencedByMultipleJoints())
-            {
-                attachedToNodeIndex = static_cast<EMotionFX::AttachmentNode*>(attachment)->GetAttachToNodeIndex();
-            }
-
-            if (attachedToNodeIndex != MCORE_INVALIDINDEX32)
-            {
-                attachedToNode = attachedToActor->GetSkeleton()->GetNode(attachedToNodeIndex);
-            }
+            EMotionFX::Node*            attachedToNode      =
+                !attachment->GetIsInfluencedByMultipleJoints()
+                    ? attachedToNode = attachedToActor->GetSkeleton()->GetNode(
+                         static_cast<EMotionFX::AttachmentNode*>(attachment)->GetAttachToNodeIndex())
+                    : nullptr;
 
             // create table items
             mTempString = AZStd::string::format("%i", attachmentInstance->GetID());
@@ -436,10 +431,10 @@ namespace EMStudio
         {
             EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
 
-            const uint32 actorIndex = EMotionFX::GetActorManager().FindActorIndexByFileName(filename.c_str());
+            const size_t actorIndex = EMotionFX::GetActorManager().FindActorIndexByFileName(filename.c_str());
 
             // create instance for the attachment
-            if (actorIndex == MCORE_INVALIDINDEX32)
+            if (actorIndex == InvalidIndex)
             {
                 commandGroup.AddCommandString(AZStd::string::format("ImportActor -filename \"%s\"", filename.c_str()).c_str());
                 commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
@@ -479,20 +474,18 @@ namespace EMStudio
         MCore::CommandGroup group(AZStd::string("Remove Attachment Actor").c_str());
 
         // iterate trough all selected items
-        const uint32 numItems = items.length();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (const QTableWidgetItem* item : items)
         {
-            QTableWidgetItem* item = items[i];
             if (item == nullptr || item->column() != 1)
             {
                 continue;
             }
 
             // the attachment id
-            const uint32 id                 = GetIDFromTableRow(item->row());
+            const int id                    = GetIDFromTableRow(item->row());
             const AZStd::string nodeName    = GetNodeNameFromTableRow(item->row());
 
-            group.AddCommandString(AZStd::string::format("RemoveAttachment -attachmentID %i -attachToID %i -attachToNode \"%s\"", id, mActorInstance->GetID(), nodeName.c_str()).c_str());
+            group.AddCommandString(AZStd::string::format("RemoveAttachment -attachmentID %d -attachToID %i -attachToNode \"%s\"", id, mActorInstance->GetID(), nodeName.c_str()).c_str());
         }
 
         // execute the group command
@@ -708,20 +701,19 @@ namespace EMStudio
     // remove selected attachments
     void AttachmentsWindow::OnRemoveButtonClicked()
     {
-        uint32 lowestSelectedRow = MCORE_INVALIDINDEX32;
+        int lowestSelectedRow = AZStd::numeric_limits<int>::max();
         const QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
-        const int numSelectedItems = selectedItems.size();
-        for (int i = 0; i < numSelectedItems; ++i)
+        for (const QTableWidgetItem* selectedItem : selectedItems)
         {
-            if ((uint32)selectedItems[i]->row() < lowestSelectedRow)
+            if (selectedItem->row() < lowestSelectedRow)
             {
-                lowestSelectedRow = (uint32)selectedItems[i]->row();
+                lowestSelectedRow = selectedItem->row();
             }
         }
 
         RemoveTableItems(selectedItems);
 
-        if (lowestSelectedRow > ((uint32)mTableWidget->rowCount() - 1))
+        if (lowestSelectedRow > (mTableWidget->rowCount() - 1))
         {
             mTableWidget->selectRow(lowestSelectedRow - 1);
         }
@@ -808,7 +800,7 @@ namespace EMStudio
     AZStd::string AttachmentsWindow::GetSelectedNodeName()
     {
         const QList<QTableWidgetItem*> items = mTableWidget->selectedItems();
-        const uint32 numItems = items.length();
+        const size_t numItems = items.length();
         if (numItems < 1)
         {
             return AZStd::string();
@@ -845,7 +837,7 @@ namespace EMStudio
         QTableWidgetItem* item = mTableWidget->item(row, 1);
         if (item == nullptr)
         {
-            return MCORE_INVALIDINDEX32;
+            return MCore::InvalidIndexT<int>;
         }
 
         AZStd::string id;
@@ -861,7 +853,7 @@ namespace EMStudio
         QTableWidgetItem* item = mTableWidget->item(row, 4);
         if (item == nullptr)
         {
-            return AZStd::string();
+            return {};
         }
 
         return FromQtString(item->whatsThis());
@@ -872,11 +864,11 @@ namespace EMStudio
     int AttachmentsWindow::GetRowContainingWidget(const QWidget* widget)
     {
         // loop trough the table items and search for widget
-        const uint32 numRows = mTableWidget->rowCount();
-        const uint32 numCols = mTableWidget->columnCount();
-        for (uint32 i = 0; i < numRows; ++i)
+        const int numRows = mTableWidget->rowCount();
+        const int numCols = mTableWidget->columnCount();
+        for (int i = 0; i < numRows; ++i)
         {
-            for (uint32 j = 0; j < numCols; ++j)
+            for (int j = 0; j < numCols; ++j)
             {
                 if (mTableWidget->cellWidget(i, j) == widget)
                 {

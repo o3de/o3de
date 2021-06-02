@@ -6,6 +6,7 @@
  *
  */
 
+#include "AzCore/std/algorithm.h"
 #include "MotionSetsWindowPlugin.h"
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzCore/IO/FileIO.h>
@@ -328,8 +329,8 @@ namespace EMStudio
     void MotionSetWindow::ReInit()
     {
         EMotionFX::MotionSet* selectedSet = mPlugin->GetSelectedSet();
-        const uint32 selectedSetIndex = EMotionFX::GetMotionManager().FindMotionSetIndex(selectedSet);
-        if (selectedSetIndex != MCORE_INVALIDINDEX32)
+        const size_t selectedSetIndex = EMotionFX::GetMotionManager().FindMotionSetIndex(selectedSet);
+        if (selectedSetIndex != InvalidIndex)
         {
             UpdateMotionSetTable(m_tableWidget, mPlugin->GetSelectedSet());
         }
@@ -824,7 +825,7 @@ namespace EMStudio
         }
 
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const uint32 numSelectedItems = selectedItems.count();
+        const size_t numSelectedItems = selectedItems.count();
 
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
@@ -835,7 +836,7 @@ namespace EMStudio
         m_editAction->setEnabled(hasMotions);
 
         // Inform the time view plugin about the motion selection change.
-        const bool hasSelectedRows = rowIndices.size() > 0;
+        const bool hasSelectedRows = !rowIndices.empty();
         if (hasSelectedRows)
         {
             QTableWidgetItem* firstSelectedItem = selectedItems[0];
@@ -847,8 +848,8 @@ namespace EMStudio
                 {
                     MCore::CommandGroup commandGroup("Select motion");
                     commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
-                    const AZ::u32 motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByFileName(motion->GetFileName());
-                    commandGroup.AddCommandString(AZStd::string::format("Select -motionIndex %d", motionIndex));
+                    const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByFileName(motion->GetFileName());
+                    commandGroup.AddCommandString(AZStd::string::format("Select -motionIndex %zu", motionIndex));
 
                     AZStd::string result;
                     if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
@@ -913,7 +914,7 @@ namespace EMStudio
 
         // Build a list of unique string id values from all motion set entries.
         AZStd::vector<AZStd::string> idStrings;
-        idStrings.reserve(selectedSet->GetNumMotionEntries() + (uint32)numFileNames);
+        idStrings.reserve(selectedSet->GetNumMotionEntries() + numFileNames);
         selectedSet->BuildIdStringList(idStrings);
 
         AZStd::string parameterString;
@@ -1133,16 +1134,16 @@ namespace EMStudio
             return;
         }
 
-        for (uint32 i = 0; i < numRowIndices; ++i)
+        for (const int rowIndex : rowIndices)
         {
-            QTableWidgetItem* idItem = m_tableWidget->item(rowIndices[i], 1);
+            QTableWidgetItem* idItem = m_tableWidget->item(rowIndex, 1);
             EMotionFX::MotionSet::MotionEntry* motionEntry = motionSet->FindMotionEntryById(idItem->text().toUtf8().data());
 
             // Check if the motion exists in multiple motion sets.
-            const AZ::u32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            AZ::u32 numMotionSetContainsMotion = 0;
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            size_t numMotionSetContainsMotion = 0;
 
-            for (AZ::u32 motionSetId = 0; motionSetId < numMotionSets; motionSetId++)
+            for (size_t motionSetId = 0; motionSetId < numMotionSets; motionSetId++)
             {
                 EMotionFX::MotionSet* motionSet2 = EMotionFX::GetMotionManager().GetMotionSet(motionSetId);
                 if (motionSet2->FindMotionEntryById(motionEntry->GetId()))
@@ -1181,7 +1182,7 @@ namespace EMStudio
             if (removeMotion && motionEntry->GetMotion())
             {
                 // Calculcate how many motion sets except than the provided one use the given motion.
-                uint32 numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
+                size_t numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
 
                 // Remove the motion in case it was only used by the given motion set.
                 if (numExternalUses == 0)
@@ -1199,14 +1200,13 @@ namespace EMStudio
 
         // Find the lowest row selected.
         int lowestRowSelected = -1;
-        for (uint32 i = 0; i < numRowIndices; ++i)
+        for (int selectedRowIndex : rowIndices)
         {
-            if (rowIndices[i] < lowestRowSelected)
+            if (selectedRowIndex < lowestRowSelected)
             {
-                lowestRowSelected = rowIndices[i];
+                lowestRowSelected = selectedRowIndex;
             }
         }
-
 
         MCore::CommandGroup commandGroup("Motion set remove motions");
 
@@ -1371,7 +1371,7 @@ namespace EMStudio
                 }
 
                 // Calculcate how many motion sets except than the provided one use the given motion.
-                uint32 numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
+                size_t numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
 
                 // Remove the motion in case it was only used by the given motion set.
                 if (numExternalUses == 0)
@@ -1407,9 +1407,6 @@ namespace EMStudio
         // get the current selection
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
 
-        // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
-
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
         GetRowIndices(selectedItems, rowIndices);
@@ -1419,12 +1416,11 @@ namespace EMStudio
 
         // generate the motions IDs array
         AZStd::vector<AZStd::string> motionIDs;
-        const size_t numSelectedRows = rowIndices.size();
-        if (numSelectedRows > 0)
+        if (!rowIndices.empty())
         {
-            for (int i = 0; i < numSelectedRows; ++i)
+            for (const int rowIndex : rowIndices)
             {
-                QTableWidgetItem* item = m_tableWidget->item(rowIndices[i], 1);
+                QTableWidgetItem* item = m_tableWidget->item(rowIndex, 1);
                 motionIDs.push_back(item->text().toUtf8().data());
             }
         }
@@ -1556,8 +1552,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
-        if (numSelectedItems == 0)
+        if (selectedItems.empty())
         {
             return;
         }
@@ -1828,12 +1823,11 @@ namespace EMStudio
 
         // add each command
         AZStd::string commandString;
-        const size_t numValid = mValids.size();
-        for (size_t i = 0; i < numValid; ++i)
+        for (size_t validID : mValids)
         {
             // get the motion ID and the modified ID
-            AZStd::string& motionID = mMotionIDs[mValids[i]];
-            const AZStd::string& modifiedID = mModifiedMotionIDs[mMotionToModifiedMap[mValids[i]]];
+            AZStd::string& motionID = mMotionIDs[validID];
+            const AZStd::string& modifiedID = mModifiedMotionIDs[mMotionToModifiedMap[validID]];
 
             commandString = AZStd::string::format("MotionSetAdjustMotion -motionSetID %i -idString \"%s\" -newIDString \"%s\" -updateMotionNodeStringIDs true", mMotionSet->GetID(), motionID.c_str(), modifiedID.c_str());
             motionID = modifiedID;
@@ -1954,9 +1948,6 @@ namespace EMStudio
             return;
         }
 
-        // found flags
-        uint32 numDuplicateFound = 0;
-
         // Clear the arrays but keep the memory to avoid alloc.
         mValids.clear();
         mModifiedMotionIDs.clear();
@@ -1974,7 +1965,7 @@ namespace EMStudio
         // Modify each ID using the operation in the modified array.
         AZStd::string newMotionID;
         AZStd::string tempString;
-        for (uint32 i = 0; i < numMotionIDs; ++i)
+        for (const AZStd::string& mMotionID : mMotionIDs)
         {
             // 0=Replace All, 1=Replace First, 2=Replace Last
             const int operationMode = mComboBox->currentIndex();
@@ -1984,7 +1975,7 @@ namespace EMStudio
             {
                 case 0:
                 {
-                    tempString = mMotionIDs[i].c_str();
+                    tempString = mMotionID.c_str();
                     AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */);
                     newMotionID = tempString.c_str();
                     break;
@@ -1992,7 +1983,7 @@ namespace EMStudio
 
                 case 1:
                 {
-                    tempString = mMotionIDs[i].c_str();
+                    tempString = mMotionID.c_str();
                     AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */, true /* replace first */, false /* replace last */);
                     newMotionID = tempString.c_str();
                     break;
@@ -2000,7 +1991,7 @@ namespace EMStudio
 
                 case 2:
                 {
-                    tempString = mMotionIDs[i].c_str();
+                    tempString = mMotionID.c_str();
                     AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */, false /* replace first */, true /* replace last */);
                     newMotionID = tempString.c_str();
                     break;
@@ -2008,17 +1999,20 @@ namespace EMStudio
             }
 
             // change the value in the array and add the mapping motion to modified
-            auto iterator = AZStd::find(mModifiedMotionIDs.begin(), mModifiedMotionIDs.end(), mMotionIDs[i]);
+            auto iterator = AZStd::find(mModifiedMotionIDs.begin(), mModifiedMotionIDs.end(), mMotionID);
             const size_t modifiedIndex = iterator - mModifiedMotionIDs.begin();
             mModifiedMotionIDs[modifiedIndex] = newMotionID;
-            mMotionToModifiedMap.push_back(static_cast<uint32>(modifiedIndex));
+            mMotionToModifiedMap.push_back(modifiedIndex);
         }
 
         // disable the sorting
         mTableWidget->setSortingEnabled(false);
 
+        // found flags
+        size_t numDuplicateFound = 0;
+
         // update each row
-        for (uint32 i = 0; i < numMotionIDs; ++i)
+        for (size_t i = 0; i < numMotionIDs; ++i)
         {
             // find the index in the motion set
             const AZStd::string& modifiedID = mModifiedMotionIDs[mMotionToModifiedMap[i]];
@@ -2028,9 +2022,9 @@ namespace EMStudio
             QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(modifiedID.c_str());
 
             // find duplicate
-            uint32 itemFoundCounter = 0;
-            const AZ::u32 numMotionEntries = static_cast<AZ::u32>(mMotionSet->GetNumMotionEntries());
-            for (uint32 k = 0; k < numMotionEntries; ++k)
+            size_t itemFoundCounter = 0;
+            const size_t numMotionEntries = mMotionSet->GetNumMotionEntries();
+            for (size_t k = 0; k < numMotionEntries; ++k)
             {
                 if (mModifiedMotionIDs[k] == modifiedID)
                 {
@@ -2063,8 +2057,8 @@ namespace EMStudio
             }
 
             // set the text of the row
-            mTableWidget->setItem(i, 0, beforeTableWidgetItem);
-            mTableWidget->setItem(i, 1, afterTableWidgetItem);
+            mTableWidget->setItem(aznumeric_caster(i), 0, beforeTableWidgetItem);
+            mTableWidget->setItem(aznumeric_caster(i), 1, afterTableWidgetItem);
         }
 
         // enable the sorting
@@ -2085,7 +2079,7 @@ namespace EMStudio
         }
 
         // enable or disable the apply button
-        mApplyButton->setEnabled((mValids.size() > 0) && (numDuplicateFound == 0));
+        mApplyButton->setEnabled((!mValids.empty()) && (numDuplicateFound == 0));
 
         // Reselect the remembered motions.
         mTableWidget->clearSelection();
@@ -2130,9 +2124,9 @@ namespace EMStudio
         const int numItems = items.size();
         outRowIndices.reserve(numItems);
 
-        for (int i = 0; i < numItems; ++i)
+        for (const QTableWidgetItem* item : items)
         {
-            const int rowIndex = items[i]->row();
+            const int rowIndex = item->row();
             if (AZStd::find(outRowIndices.begin(), outRowIndices.end(), rowIndex) == outRowIndices.end())
             {
                 outRowIndices.push_back(rowIndex);
@@ -2141,7 +2135,7 @@ namespace EMStudio
     }
 
 
-    uint32 MotionSetWindow::CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet)
+    size_t MotionSetWindow::CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet)
     {
         if (motionFilename.empty())
         {
@@ -2149,9 +2143,9 @@ namespace EMStudio
         }
 
         // Iterate through all available motion sets and count how many entries are refering to the given motion file.
-        AZ::u32 counter = 0;
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        size_t counter = 0;
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
             if (motionSet->GetIsOwnedByRuntime())

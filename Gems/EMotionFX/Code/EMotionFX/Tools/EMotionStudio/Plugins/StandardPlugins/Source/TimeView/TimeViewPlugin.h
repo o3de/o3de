@@ -39,7 +39,7 @@ namespace EMStudio
         EMotionFX::MotionEvent* GetMotionEvent();
         EMotionFX::MotionEventTrack* GetEventTrack();
 
-        uint32                          mEventNr;// the motion event index in its track
+        size_t                          mEventNr;// the motion event index in its track
         size_t                          mTrackNr;// the corresponding track in which the event is in
         EMotionFX::Motion*              mMotion;// the parent motion of the event track
     };
@@ -115,9 +115,9 @@ namespace EMStudio
 
         void AddTrack(TimeTrack* track);
         void RemoveAllTracks();
-        TimeTrack* GetTrack(uint32 index)           { return mTracks[index]; }
+        TimeTrack* GetTrack(size_t index)           { return mTracks[index]; }
         size_t GetNumTracks() const                 { return mTracks.size(); }
-        AZ::Outcome<AZ::u32> FindTrackIndex(const TimeTrack* track) const;
+        AZ::Outcome<size_t> FindTrackIndex(const TimeTrack* track) const;
         TimeTrack* FindTrackByElement(TimeTrackElement* element) const;
 
         void UnselectAllElements();
@@ -152,7 +152,7 @@ namespace EMStudio
         void ZoomRect(const QRect& rect);
 
         size_t GetNumSelectedEvents()                                                   { return mSelectedEvents.size(); }
-        EventSelectionItem GetSelectedEvent(uint32 index) const                         { return mSelectedEvents[index]; }
+        EventSelectionItem GetSelectedEvent(size_t index) const                         { return mSelectedEvents[index]; }
 
         void Select(const AZStd::vector<EventSelectionItem>& selection);
 
@@ -180,7 +180,7 @@ namespace EMStudio
         void OnCenterOnCurTime();
         void OnShowNodeHistoryNodeInGraph();
         void OnClickNodeHistoryNode();
-        void MotionEventTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)            { UnselectAllElements(); CommandSystem::CommandHelperMotionEventTrackChanged(eventNr, startTime, endTime, oldTrackName, newTrackName); }
+        void MotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName)            { UnselectAllElements(); CommandSystem::CommandHelperMotionEventTrackChanged(eventNr, startTime, endTime, oldTrackName, newTrackName); }
         void OnManualTimeChange(float timeValue);
 
     signals:

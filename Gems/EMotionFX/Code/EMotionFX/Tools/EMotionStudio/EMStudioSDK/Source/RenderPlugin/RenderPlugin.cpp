@@ -128,12 +128,11 @@ namespace EMStudio
     void RenderPlugin::CleanEMStudioActors()
     {
         // get rid of the actors
-        const uint32 numActors = mActors.size();
-        for (uint32 i = 0; i < numActors; ++i)
+        for (EMStudioRenderActor* mActor : mActors)
         {
-            if (mActors[i])
+            if (mActor)
             {
-                delete mActors[i];
+                delete mActor;
             }
         }
         mActors.clear();
@@ -152,8 +151,8 @@ namespace EMStudio
         }
 
         // get the index of the emstudio actor, we can be sure it is valid as else the emstudioActor pointer would be nullptr already
-        const uint32 index = FindEMStudioActorIndex(emstudioActor);
-        MCORE_ASSERT(index != MCORE_INVALIDINDEX32);
+        const size_t index = FindEMStudioActorIndex(emstudioActor);
+        MCORE_ASSERT(index != InvalidIndex);
 
         // get rid of the emstudio actor
         delete emstudioActor;
@@ -167,7 +166,6 @@ namespace EMStudio
     {
         // get the current manipulator
         AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
-        const uint32 numGizmos = transformationManipulators->size();
 
         // init the active manipulator to nullptr
         MCommon::TransformationManipulator* activeManipulator = nullptr;
@@ -175,10 +173,9 @@ namespace EMStudio
         bool activeManipulatorFound = false;
 
         // iterate over all gizmos and search for the hit one that is closest to the camera
-        for (uint32 i = 0; i < numGizmos; ++i)
+        for (MCommon::TransformationManipulator* currentManipulator : *transformationManipulators)
         {
             // get the current manipulator and check if it exists
-            MCommon::TransformationManipulator* currentManipulator = transformationManipulators->at(i);
             if (currentManipulator == nullptr || currentManipulator->GetIsVisible() == false)
             {
                 continue;
@@ -275,8 +272,8 @@ namespace EMStudio
             const AZ::Vector3 jointPosition = pose->GetWorldSpaceTransform(joint->GetNodeIndex()).mPosition;
             aabb.AddPoint(jointPosition);
 
-            const AZ::u32 childCount = joint->GetNumChildNodes();
-            for (AZ::u32 i = 0; i < childCount; ++i)
+            const size_t childCount = joint->GetNumChildNodes();
+            for (size_t i = 0; i < childCount; ++i)
             {
                 EMotionFX::Node* childJoint = skeleton->GetNode(joint->GetChildIndex(i));
                 const AZ::Vector3 childPosition = pose->GetWorldSpaceTransform(childJoint->GetNodeIndex()).mPosition;
@@ -314,80 +311,49 @@ namespace EMStudio
     }
 
     // try to locate the helper actor for a given instance
-    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance)
+    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(const EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance) const
     {
-        // get the number of emstudio actors and iterate through them
-        const uint32 numEMStudioRenderActors = mActors.size();
-        for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
+        const auto foundActor = AZStd::find_if(begin(mActors), end(mActors), [actorInstance, doubleCheckInstance](const EMStudioRenderActor* renderActor)
         {
-            EMStudioRenderActor* EMStudioRenderActor = mActors[i];
-
             // is the parent actor of the instance the same as the one in the emstudio actor?
-            if (EMStudioRenderActor->mActor == actorInstance->GetActor())
+            if (renderActor->mActor == actorInstance->GetActor())
             {
                 // double check if the actor instance is in the actor instance array inside the emstudio actor
                 if (doubleCheckInstance)
                 {
                     // now double check if the actor instance really is in the array of instances of this emstudio actor
-                    const uint32 numActorInstances = EMStudioRenderActor->mActorInstances.size();
-                    for (uint32 a = 0; a < numActorInstances; ++a)
-                    {
-                        if (EMStudioRenderActor->mActorInstances[a] == actorInstance)
-                        {
-                            return EMStudioRenderActor;
-                        }
-                    }
+                    const auto foundActorInstance = AZStd::find(begin(renderActor->mActorInstances), end(renderActor->mActorInstances), actorInstance);
+                    return foundActorInstance != end(renderActor->mActorInstances);
                 }
-                else
-                {
-                    return EMStudioRenderActor;
-                }
+                return true;
             }
-        }
-
-        return nullptr;
+            return false;
+        });
+        return foundActor != end(mActors) ? *foundActor : nullptr;
     }
 
 
     // try to locate the helper actor for a given one
-    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(EMotionFX::Actor* actor)
+    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(const EMotionFX::Actor* actor) const
     {
         if (!actor)
         {
             return nullptr;
         }
 
-        const uint32 numEMStudioRenderActors = mActors.size();
-        for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
+        const auto foundActor = AZStd::find_if(begin(mActors), end(mActors), [match = actor](const EMStudioRenderActor* actor)
         {
-            EMStudioRenderActor* EMStudioRenderActor = mActors[i];
-
-            if (EMStudioRenderActor->mActor == actor)
-            {
-                return EMStudioRenderActor;
-            }
-        }
-
-        return nullptr;
+            return actor->mActor == match;
+        });
+        return foundActor != end(mActors) ? *foundActor : nullptr;
     }
 
 
     // get the index of the given emstudio actor
-    uint32 RenderPlugin::FindEMStudioActorIndex(EMStudioRenderActor* EMStudioRenderActor)
+    size_t RenderPlugin::FindEMStudioActorIndex(const EMStudioRenderActor* EMStudioRenderActor) const
     {
-        // get the number of emstudio actors and iterate through them
-        const uint32 numEMStudioRenderActors = mActors.size();
-        for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
-        {
-            // compare the two emstudio actors and return the current index in case of success
-            if (EMStudioRenderActor == mActors[i])
-            {
-                return i;
-            }
-        }
-
-        // the emstudio actor has not been found
-        return MCORE_INVALIDINDEX32;
+        const auto foundActor = AZStd::find(begin(mActors), end(mActors), EMStudioRenderActor);
+        return foundActor != end(mActors) ? AZStd::distance(begin(mActors), foundActor) : InvalidIndex;
     }
 
 
@@ -417,8 +383,8 @@ namespace EMStudio
         }
 
         // 1. Create new emstudio actors
-        uint32 numActors = EMotionFX::GetActorManager().GetNumActors();
-        for (uint32 i = 0; i < numActors; ++i)
+        size_t numActors = EMotionFX::GetActorManager().GetNumActors();
+        for (size_t i = 0; i < numActors; ++i)
         {
             // get the current actor and the number of clones
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
@@ -438,13 +404,13 @@ namespace EMStudio
             }
         }
 
-        for (uint32 i = 0; i < mActors.size(); ++i)
+        for (size_t i = 0; i < mActors.size(); ++i)
         {
             EMStudioRenderActor* emstudioActor = mActors[i];
             EMotionFX::Actor* actor = emstudioActor->mActor;
 
             bool found = false;
-            for (uint32 j = 0; j < numActors; ++j)
+            for (size_t j = 0; j < numActors; ++j)
             {
                 EMotionFX::Actor* curActor = EMotionFX::GetActorManager().GetActor(j);
                 if (actor == curActor)
@@ -462,8 +428,8 @@ namespace EMStudio
         }
 
         // 3. Relink the actor instances with the emstudio actors
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().GetActorInstance(i);
             EMotionFX::Actor*           actor           = actorInstance->GetActor();
@@ -476,9 +442,8 @@ namespace EMStudio
 
             if (!emstudioActor)
             {
-                for (uint32 j = 0; j < mActors.size(); ++j)
+                for (EMStudioRenderActor* currentEMStudioActor : mActors)
                 {
-                    EMStudioRenderActor* currentEMStudioActor = mActors[j];
                     if (actor == currentEMStudioActor->mActor)
                     {
                         emstudioActor = currentEMStudioActor;
@@ -503,12 +468,12 @@ namespace EMStudio
         // 4. Unlink invalid actor instances from the emstudio actors
         for (EMStudioRenderActor* emstudioActor : mActors)
         {
-            for (uint32 j = 0; j < emstudioActor->mActorInstances.size();)
+            for (size_t j = 0; j < emstudioActor->mActorInstances.size();)
             {
                 EMotionFX::ActorInstance* emstudioActorInstance = emstudioActor->mActorInstances[j];
                 bool found = false;
 
-                for (uint32 k = 0; k < numActorInstances; ++k)
+                for (size_t k = 0; k < numActorInstances; ++k)
                 {
                     if (emstudioActorInstance == EMotionFX::GetActorManager().GetActorInstance(k))
                     {
@@ -566,14 +531,11 @@ namespace EMStudio
     RenderPlugin::EMStudioRenderActor::~EMStudioRenderActor()
     {
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.size();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (EMotionFX::ActorInstance* actorInstance : mActorInstances)
         {
-            EMotionFX::ActorInstance* actorInstance = mActorInstances[i];
-
             // only delete the actor instance in case it is still inside the actor manager
             // in case it is not present there anymore this means an undo command has already deleted it
-            if (EMotionFX::GetActorManager().FindActorInstanceIndex(actorInstance) != MCORE_INVALIDINDEX32)
+            if (EMotionFX::GetActorManager().FindActorInstanceIndex(actorInstance) != InvalidIndex)
             {
                 //actorInstance->Destroy();
             }
@@ -587,13 +549,9 @@ namespace EMStudio
 
         // only delete the actor in case it is still inside the actor manager
         // in case it is not present there anymore this means an undo command has already deleted it
-        if (EMotionFX::GetActorManager().FindActorIndex(mActor) != MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetActorManager().FindActorIndex(mActor) == InvalidIndex)
         {
-            //mActor->Destroy();
-        }
-        // in case the actor is not valid anymore make sure to unselect it to avoid bad pointers
-        else
-        {
+            // in case the actor is not valid anymore make sure to unselect it to avoid bad pointers
             CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
             selection.RemoveActor(mActor);
         }
@@ -810,8 +768,8 @@ namespace EMStudio
 
     void RenderPlugin::UpdateActorInstances(float timePassedInSeconds)
     {
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 
@@ -889,8 +847,8 @@ namespace EMStudio
         }
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance and update its transformations and meshes
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -1045,10 +1003,10 @@ namespace EMStudio
     {
         // get the current selection
         CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
 
         // iterate through the actor instances and reset their trajectory path
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             // get the actor instance and find the corresponding trajectory path
             EMotionFX::ActorInstance*                   actorInstance   = selectionList.GetActorInstance(i);
@@ -1080,7 +1038,7 @@ namespace EMStudio
                 }
                 else
                 {
-                    const uint32 numParticles = trajectoryPath->mTraceParticles.size();
+                    const size_t numParticles = trajectoryPath->mTraceParticles.size();
                     const EMotionFX::Transform& oldWorldTM = trajectoryPath->mTraceParticles[numParticles - 1].mWorldTM;
 
                     const AZ::Vector3& oldPos = oldWorldTM.mPosition;
@@ -1141,8 +1099,8 @@ namespace EMStudio
         RenderViewWidget*   widget          = GetActiveViewWidget();
         RenderOptions*      renderOptions   = GetRenderOptions();
 
-        const AZStd::unordered_set<AZ::u32>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
 
         // render the AABBs
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_AABB))
@@ -1219,12 +1177,12 @@ namespace EMStudio
             // iterate through all enabled nodes
             const EMotionFX::Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
 
-            const uint32 geomLODLevel   = actorInstance->GetLODLevel();
-            const uint32 numEnabled     = actorInstance->GetNumEnabledNodes();
-            for (uint32 i = 0; i < numEnabled; ++i)
+            const size_t geomLODLevel   = actorInstance->GetLODLevel();
+            const size_t numEnabled     = actorInstance->GetNumEnabledNodes();
+            for (size_t i = 0; i < numEnabled; ++i)
             {
                 EMotionFX::Node*    node      = emstudioActor->mActor->GetSkeleton()->GetNode(actorInstance->GetEnabledNode(i));
-                const AZ::u32       nodeIndex = node->GetNodeIndex();
+                const size_t        nodeIndex = node->GetNodeIndex();
                 EMotionFX::Mesh*    mesh      = emstudioActor->mActor->GetMesh(geomLODLevel, nodeIndex);
 
                 renderUtil->ResetCurrentMesh();

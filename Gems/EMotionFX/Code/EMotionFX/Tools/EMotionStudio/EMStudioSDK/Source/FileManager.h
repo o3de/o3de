@@ -82,8 +82,8 @@ namespace EMStudio
         // motion set file dialogs
         AZStd::string LoadMotionSetFileDialog(QWidget* parent);
         AZStd::string SaveMotionSetFileDialog(QWidget* parent);
-        void SaveMotionSet(QWidget* parent, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveMotionSet(const char* filename, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveMotionSet(QWidget* parent, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveMotionSet(const char* filename, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup = nullptr);
 
         // motion file dialogs
         AZStd::string LoadMotionFileDialog(QWidget* parent);

@@ -9,7 +9,8 @@
 // inlude required headers
 #include "NodeGroupWidget.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "AzCore/std/iterator.h"
+#include <AzCore/std/iterator.h>
+#include <AzCore/std/limits.h>
 #include <EMotionFX/Source/NodeGroup.h>
 #include <MCore/Source/StringConversions.h>
 
@@ -332,10 +333,10 @@ namespace EMStudio
 
 
     // add / select nodes
-    void NodeGroupWidget::NodeSelectionFinished(AZStd::vector<SelectionItem> selectionList)
+    void NodeGroupWidget::NodeSelectionFinished(const AZStd::vector<SelectionItem>& selectionList)
     {
         // return if no nodes are selected
-        if (selectionList.size() == 0)
+        if (selectionList.empty())
         {
             return;
         }

@@ -93,11 +93,11 @@ namespace EMStudio
         void LogInfo();
 
         // in case the array is empty, all nodes are shown
-        void SetVisibleJointIndices(const AZStd::unordered_set<AZ::u32>& visibleJointIndices);
-        const AZStd::unordered_set<AZ::u32>& GetVisibleJointIndices() const                                 { return m_visibleJointIndices; }
+        void SetVisibleJointIndices(const AZStd::unordered_set<size_t>& visibleJointIndices);
+        const AZStd::unordered_set<size_t>& GetVisibleJointIndices() const                                 { return m_visibleJointIndices; }
 
-        void SetSelectedJointIndices(const AZStd::unordered_set<AZ::u32>& selectedJointIndices);
-        const AZStd::unordered_set<AZ::u32>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
+        void SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices);
+        const AZStd::unordered_set<size_t>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
 
         Workspace* GetWorkspace()                                                               { return &mWorkspace; }
 
@@ -123,8 +123,8 @@ namespace EMStudio
         NotificationWindowManager*          mNotificationWindowManager;
         CommandSystem::CommandManager*      mCommandManager;
         AZStd::string                       mCompileDate;
-        AZStd::unordered_set<AZ::u32>       m_visibleJointIndices;
-        AZStd::unordered_set<AZ::u32>       m_selectedJointIndices;
+        AZStd::unordered_set<size_t>       m_visibleJointIndices;
+        AZStd::unordered_set<size_t>       m_selectedJointIndices;
         Workspace                           mWorkspace;
         bool                                mAutoLoadLastWorkspace;
         AZStd::string                       mHTMLLinkString;

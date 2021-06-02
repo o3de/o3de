@@ -30,13 +30,13 @@ namespace EMStudio
         AZ_CLASS_ALLOCATOR_DECL
 
         MeshInfo() {}
-        MeshInfo(EMotionFX::Actor* actor, EMotionFX::Node* node, unsigned int lodLevel, EMotionFX::Mesh* mesh);
+        MeshInfo(EMotionFX::Actor* actor, EMotionFX::Node* node, size_t lodLevel, EMotionFX::Mesh* mesh);
         ~MeshInfo() = default;
 
         static void Reflect(AZ::ReflectContext* context);
 
     private:
-        unsigned int    m_lod;
+        AZ::u64         m_lod;
         unsigned int    m_verticesCount;
         unsigned int    m_indicesCount;
         unsigned int    m_polygonsCount;

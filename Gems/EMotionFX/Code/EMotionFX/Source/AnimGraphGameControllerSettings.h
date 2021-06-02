@@ -153,7 +153,7 @@ namespace EMotionFX
         Preset* GetPreset(size_t index) const;
         size_t GetNumPresets() const;
 
-        uint32 GetActivePresetIndex() const;
+        size_t GetActivePresetIndex() const;
         Preset* GetActivePreset() const;
         void SetActivePreset(Preset* preset);
 
@@ -164,6 +164,6 @@ namespace EMotionFX
 
     private:
         AZStd::vector<Preset*>   m_presets;
-        AZ::u32                  m_activePresetIndex;
+        size_t                   m_activePresetIndex;
     };
 } // namespace EMotionFX

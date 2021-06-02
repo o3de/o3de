@@ -177,7 +177,7 @@ namespace MCommon
          * @param[in] directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                           you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderSimpleSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr,
+        void RenderSimpleSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<size_t>* visibleJointIndices = nullptr, const AZStd::unordered_set<size_t>* selectedJointIndices = nullptr,
             const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f),
             float jointSphereRadius = 0.1f, bool directlyRender = false);
 
@@ -191,7 +191,7 @@ namespace MCommon
          * @param[in] color The desired skeleton color.
          * @param[in] selectedColor The color of the selected bones.
          */
-        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
+        void RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices = nullptr, const AZStd::unordered_set<size_t>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 0.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f));
 
         /**
          * Render node orientations.
@@ -202,7 +202,7 @@ namespace MCommon
          * @param[in] scale The scaling value in units. Axes of normal nodes will use the scaling value as unit length, skinned bones will use the scaling value as multiplier.
          * @param[in] scaleBonesOnLength Automatically scales the bone orientations based on the bone length. This means finger node orientations will be rendered smaller than foot bones as the bone length is a lot smaller as well.
          */
-        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
+        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices = nullptr, const AZStd::unordered_set<size_t>* selectedJointIndices = nullptr, float scale = 1.0f, bool scaleBonesOnLength = true);
 
         /**
          * Render the bind pose of the given actor.
@@ -224,7 +224,7 @@ namespace MCommon
          * @param[in] visibleJointIndices List of visible joint indices. nullptr in case all joints should be rendered.
          * @param[in] selectedJointIndices List of selected joint indices. nullptr in case selection should not be considered.
          */
-        void RenderNodeNames(EMotionFX::ActorInstance* actorInstance, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, const AZStd::unordered_set<AZ::u32>& visibleJointIndices, const AZStd::unordered_set<AZ::u32>& selectedJointIndices);
+        void RenderNodeNames(EMotionFX::ActorInstance* actorInstance, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, const AZStd::unordered_set<size_t>& visibleJointIndices, const AZStd::unordered_set<size_t>& selectedJointIndices);
 
         /**
          * Render a sphere.

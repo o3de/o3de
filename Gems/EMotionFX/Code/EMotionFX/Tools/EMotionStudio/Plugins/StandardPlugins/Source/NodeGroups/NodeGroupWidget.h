@@ -45,7 +45,7 @@ namespace EMStudio
     public slots:
         void SelectNodesButtonPressed();
         void RemoveNodesButtonPressed();
-        void NodeSelectionFinished(AZStd::vector<SelectionItem> selectionList);
+        void NodeSelectionFinished(const AZStd::vector<SelectionItem>& selectionList);
         void OnItemSelectionChanged();
 
     private:

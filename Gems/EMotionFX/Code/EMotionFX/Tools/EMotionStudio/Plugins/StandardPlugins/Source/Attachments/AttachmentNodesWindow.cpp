@@ -9,6 +9,7 @@
 // inlude required headers
 #include "AttachmentNodesWindow.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
+#include "AzCore/std/limits.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>
 
@@ -144,11 +145,11 @@ namespace EMStudio
         mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
 
         // counter for attachment nodes
-        size_t numAttachmentNodes = 0;
+        int numAttachmentNodes = 0;
 
         // set the row count
-        const size_t numNodes = mActor->GetNumNodes();
-        for (size_t i = 0; i < numNodes; ++i)
+        const int numNodes = aznumeric_caster(mActor->GetNumNodes());
+        for (int i = 0; i < numNodes; ++i)
         {
             // get the nodegroup
             EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
@@ -162,7 +163,7 @@ namespace EMStudio
         mNodeTable->setRowCount(numAttachmentNodes);
 
         // set header items for the table
-        QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(AZStd::string::format("Attachment Nodes (%zu / %zu)", numAttachmentNodes, mActor->GetNumNodes()).c_str());
+        QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(AZStd::string::format("Attachment Nodes (%d / %zu)", numAttachmentNodes, mActor->GetNumNodes()).c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
         mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
@@ -250,8 +251,8 @@ namespace EMStudio
         mNodeSelectionList.Clear();
         if (senderWidget == mSelectNodesButton)
         {
-            const uint32 numNodes = mActor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = mActor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
                 if (node->GetIsAttachmentNode())
@@ -272,9 +273,9 @@ namespace EMStudio
     {
         // generate node list string
         AZStd::string nodeList;
-        uint32 lowestSelectedRow = MCORE_INVALIDINDEX32;
-        const uint32 numTableRows = mNodeTable->rowCount();
-        for (uint32 i = 0; i < numTableRows; ++i)
+        int lowestSelectedRow = AZStd::numeric_limits<int>::max();
+        const int numTableRows = mNodeTable->rowCount();
+        for (int i = 0; i < numTableRows; ++i)
         {
             // get the current table item
             QTableWidgetItem* item = mNodeTable->item(i, 0);
@@ -287,9 +288,9 @@ namespace EMStudio
             if (item->isSelected())
             {
                 nodeList += AZStd::string::format("%s;", FromQtString(item->text()).c_str());
-                if ((uint32)item->row() < lowestSelectedRow)
+                if (item->row() < lowestSelectedRow)
                 {
-                    lowestSelectedRow = (uint32)item->row();
+                    lowestSelectedRow = item->row();
                 }
             }
         }
@@ -310,7 +311,7 @@ namespace EMStudio
         }
 
         // selected the next row
-        if (lowestSelectedRow > ((uint32)mNodeTable->rowCount() - 1))
+        if (lowestSelectedRow > mNodeTable->rowCount() - 1)
         {
             mNodeTable->selectRow(lowestSelectedRow - 1);
         }
@@ -324,8 +325,7 @@ namespace EMStudio
     // add / select nodes
     void AttachmentNodesWindow::NodeSelectionFinished(AZStd::vector<SelectionItem> selectionList)
     {
-        // return if no nodes are selected
-        if (selectionList.size() == 0)
+        if (selectionList.empty())
         {
             return;
         }
@@ -333,10 +333,9 @@ namespace EMStudio
         // generate node list string
         AZStd::string nodeList;
         nodeList.reserve(16384);
-        const uint32 numSelectedNodes = selectionList.size();
-        for (uint32 i = 0; i < numSelectedNodes; ++i)
+        for (const SelectionItem& i : selectionList)
         {
-            nodeList += AZStd::string::format("%s;", selectionList[i].GetNodeName());
+            nodeList += AZStd::string::format("%s;", i.GetNodeName());
         }
         AzFramework::StringFunc::Strip(nodeList, MCore::CharacterConstants::semiColon, true /* case sensitive */, false /* beginning */, true /* ending */);
 
@@ -364,7 +363,7 @@ namespace EMStudio
     // handle item selection changes of the node table
     void AttachmentNodesWindow::OnItemSelectionChanged()
     {
-        mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
+        mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (!mNodeTable->selectedItems().empty()));
     }
 
 

@@ -396,8 +396,8 @@ namespace EMStudio
     {
         motionSet->SetDirtyFlag(dirtyFlag);
 
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             EMotionFX::MotionSet* childSet = motionSet->GetChildSet(i);
             RecursiveSetDirtyFlag(childSet, dirtyFlag);

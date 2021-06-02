@@ -73,10 +73,9 @@ namespace RenderGL
     void TextureCache::Release()
     {
         // delete all textures
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        for (Entry& entry : mEntries)
         {
-            delete mEntries[i].mTexture;
+            delete entry.mTexture;
         }
 
         // clear all entries
@@ -102,17 +101,11 @@ namespace RenderGL
     Texture* TextureCache::FindTexture(const char* filename) const
     {
         // get the number of entries and iterate through them
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(mEntries), end(mEntries), [filename](const Entry& entry)
         {
-            if (AzFramework::StringFunc::Equal(mEntries[i].mName.c_str(), filename, false /* no case */)) // non-case-sensitive name compare
-            {
-                return mEntries[i].mTexture;
-            }
-        }
-
-        // not found
-        return nullptr;
+            return AzFramework::StringFunc::Equal(entry.mName.c_str(), filename, false /* no case */);
+        });
+        return foundEntry != end(mEntries) ? foundEntry->mTexture : nullptr;
     }
 
 
@@ -120,31 +113,25 @@ namespace RenderGL
     bool TextureCache::CheckIfHasTexture(Texture* texture) const
     {
         // get the number of entries and iterate through them
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        return AZStd::any_of(begin(mEntries), end(mEntries), [texture](const Entry& entry)
         {
-            if (mEntries[i].mTexture == texture)
-            {
-                return true;
-            }
-        }
-
-        return false;
+            return entry.mTexture == texture;
+        });
     }
 
 
     // remove an item from the cache
     void TextureCache::RemoveTexture(Texture* texture)
     {
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundEntry = AZStd::find_if(begin(mEntries), end(mEntries), [texture](const Entry& entry)
         {
-            if (mEntries[i].mTexture == texture)
-            {
-                delete mEntries[i].mTexture;
-                mEntries.erase(AZStd::next(begin(mEntries), i));
-                return;
-            }
+            return entry.mTexture == texture;
+        });
+
+        if (foundEntry != end(mEntries))
+        {
+            delete foundEntry->mTexture;
+            mEntries.erase(foundEntry);
         }
     }
 
@@ -154,12 +141,12 @@ namespace RenderGL
         GLuint textureID;
         glGenTextures(1, &textureID);
 
-        uint32 width = 2;
-        uint32 height = 2;
+        constexpr GLsizei width = 2;
+        constexpr GLsizei height = 2;
         uint32 imageBuffer[4];
-        for (uint32 i = 0; i < 4; ++i)
         {
-            imageBuffer[i] = MCore::RGBA(255, 255, 255, 255); // actually abgr
+            using AZStd::begin, AZStd::end;
+            AZStd::fill(begin(imageBuffer), end(imageBuffer), MCore::RGBA(255, 255, 255, 255)); // actually abgr
         }
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -180,12 +167,12 @@ namespace RenderGL
         GLuint textureID;
         glGenTextures(1, &textureID);
 
-        uint32 width = 2;
-        uint32 height = 2;
+        constexpr GLsizei width = 2;
+        constexpr GLsizei height = 2;
         uint32 imageBuffer[4];
-        for (uint32 i = 0; i < 4; ++i)
         {
-            imageBuffer[i] = MCore::RGBA(255, 128, 128, 255); // opengl wants abgr
+            using AZStd::begin, AZStd::end;
+            AZStd::fill(begin(imageBuffer), end(imageBuffer), MCore::RGBA(255, 128, 128, 255)); // opengl wants abgr
         }
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

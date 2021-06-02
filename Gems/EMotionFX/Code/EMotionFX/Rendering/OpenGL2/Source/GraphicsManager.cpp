@@ -416,10 +416,9 @@ namespace RenderGL
 
         // construct the lookup string for the shader cache
         AZStd::string cacheLookupStr = vertexPath.Native() + pixelPath.Native();
-        const uint32 numDefines = defines.size();
-        for (uint32 n = 0; n < numDefines; n++)
+        for (const AZStd::string& define : defines)
         {
-            cacheLookupStr += AZStd::string::format("#%s", defines[n].c_str());
+            cacheLookupStr += AZStd::string::format("#%s", define.c_str());
         }
 
         // check if the shader is already in the cache

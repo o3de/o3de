@@ -11,7 +11,6 @@
 
 //
 #if !defined(Q_MOC_RUN)
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "MysticQtConfig.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QScrollArea>
@@ -29,6 +28,8 @@ QT_FORWARD_DECLARE_CLASS(QSplitter)
 
 namespace MysticQt
 {
+    class DialogStackSplitter;
+
     /**
      *
      *
@@ -64,8 +65,8 @@ namespace MysticQt
             QPushButton*    mButton = nullptr;
             QWidget*        mFrame = nullptr;
             QWidget*        mWidget = nullptr;
-            AZStd::unique_ptr<QWidget> mDialogWidget = nullptr;
-            QSplitter*      mSplitter = nullptr;
+            QWidget*        mDialogWidget = nullptr;
+            DialogStackSplitter* mSplitter = nullptr;
             bool            mClosable = true;
             bool            mMaximizeSize = false;
             bool            mStretchWhenMaximize = false;
@@ -76,14 +77,14 @@ namespace MysticQt
         };
 
     private:
-        uint32 FindDialog(QPushButton* pushButton);
+        size_t FindDialog(QPushButton* pushButton);
         void Open(QPushButton* button);
         void Close(QPushButton* button);
         void UpdateScrollBars();
 
     private:
-        QSplitter*              mRootSplitter;
-        AZStd::vector<Dialog>    mDialogs;
+        DialogStackSplitter*    mRootSplitter;
+        AZStd::vector<Dialog>   mDialogs;
         int32                   mPrevMouseX;
         int32                   mPrevMouseY;
     };

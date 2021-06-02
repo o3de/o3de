@@ -173,8 +173,7 @@ namespace EMStudio
         setVisible(true);
         mStackWidget->setVisible(false);
 
-        const uint32 numTracks = mPlugin->mTracks.size();
-        if (numTracks == 0)
+        if (mPlugin->mTracks.empty())
         {
             return;
         }
@@ -184,7 +183,8 @@ namespace EMStudio
         mTrackLayout->setMargin(0);
         mTrackLayout->setSpacing(1);
 
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = mPlugin->mTracks.size();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             TimeTrack* track = mPlugin->mTracks[i];
 
@@ -206,7 +206,7 @@ namespace EMStudio
     }
 
 
-    HeaderTrackWidget::HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, uint32 trackIndex)
+    HeaderTrackWidget::HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, size_t trackIndex)
         : QWidget(parent)
     {
         mPlugin = parentPlugin;
@@ -309,8 +309,8 @@ namespace EMStudio
         AZStd::string name = mNameEdit->text().toUtf8().data();
 
         bool nameUnique = true;
-        const uint32 numTracks = mPlugin->GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = mPlugin->GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             TimeTrack* track = mPlugin->GetTrack(i);
 

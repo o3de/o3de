@@ -182,7 +182,7 @@ namespace EMStudio
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
 
         // Check if there actually is any motion selected.
-        const uint32 numSelectedMotions = selectionList.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
         const bool isEnabled = (numSelectedMotions != 0);
 
         EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
@@ -254,11 +254,11 @@ namespace EMStudio
 
             // Figure out if all selected motions use the same settings.
             bool allCaptureHeightEqual = true;
-            uint32 numCaptureHeight = 0;
-            const uint32 numMotions = selectionList.GetNumSelectedMotions();
+            size_t numCaptureHeight = 0;
+            const size_t numMotions = selectionList.GetNumSelectedMotions();
             bool curCaptureHeight = false;
 
-            for (uint32 i = 0; i < numMotions; ++i)
+            for (size_t i = 0; i < numMotions; ++i)
             {
                 EMotionFX::Motion* curMotion = selectionList.GetMotion(i);
                 EMotionFX::Motion* prevMotion = (i>0) ? selectionList.GetMotion(i-1) : nullptr;
@@ -325,7 +325,7 @@ namespace EMStudio
     void MotionExtractionWindow::OnMotionExtractionFlagsUpdated()
     {
         const CommandSystem::SelectionList& selectionList       = GetCommandManager()->GetCurrentSelection();
-        const uint32                        numSelectedMotions  = selectionList.GetNumSelectedMotions();
+        const size_t                        numSelectedMotions  = selectionList.GetNumSelectedMotions();
         EMotionFX::ActorInstance*           actorInstance       = selectionList.GetSingleActorInstance();
 
         // Check if there is at least one motion selected and exactly one actor instance.
@@ -353,7 +353,7 @@ namespace EMStudio
 
         // Iterate through all selected motions.
         AZStd::string command;
-        for (uint32 i = 0; i < numSelectedMotions; ++i)
+        for (size_t i = 0; i < numSelectedMotions; ++i)
         {
             // Get the current selected motion, check if it is a skeletal motion, skip directly elsewise.
             EMotionFX::Motion* motion = selectionList.GetMotion(i);

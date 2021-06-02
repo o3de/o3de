@@ -550,7 +550,7 @@ namespace EMotionFX
     {
         const size_t currentSize = mOutputPorts.size();
         mOutputPorts.emplace_back();
-        return static_cast<uint32>(currentSize);
+        return currentSize;
     }
 
 

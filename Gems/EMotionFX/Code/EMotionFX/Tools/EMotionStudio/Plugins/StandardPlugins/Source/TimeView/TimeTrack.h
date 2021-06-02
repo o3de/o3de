@@ -78,7 +78,7 @@ namespace EMStudio
         MCORE_INLINE TimeViewPlugin* GetPlugin()            { return mPlugin; }
         MCORE_INLINE void SetStartY(uint32 y)               { mStartY = y; }
         MCORE_INLINE uint32 GetStartY() const               { return mStartY; }
-        bool GetIsInside(uint32 y)                          { return (y >= mStartY) && (y <= (mStartY + mHeight)); }
+        bool GetIsInside(uint32 y) const                    { return (y >= mStartY) && (y <= (mStartY + mHeight)); }
 
         void SetName(const char* name)                      { mName = name; }
         const char* GetName() const                         { return mName.c_str(); }
@@ -95,7 +95,7 @@ namespace EMStudio
         MCORE_INLINE bool GetIsHighlighted() const          { return mIsHighlighted; }
         MCORE_INLINE void SetIsHighlighted(bool enabled)    { mIsHighlighted = enabled; }
 
-        TimeTrackElement* GetElementAt(int32 x, int32 y);
+        TimeTrackElement* GetElementAt(int32 x, int32 y) const;
 
     protected:
         AZStd::string                       mName;

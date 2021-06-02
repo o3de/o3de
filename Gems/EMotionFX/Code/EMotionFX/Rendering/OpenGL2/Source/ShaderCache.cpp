@@ -30,11 +30,10 @@ namespace RenderGL
     void ShaderCache::Release()
     {
         // delete all shaders
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        for (Entry& entry : mEntries)
         {
-            mEntries[i].mName.clear();
-            delete mEntries[i].mShader;
+            entry.mName.clear();
+            delete entry.mShader;
         }
 
         // clear all entries
@@ -52,32 +51,20 @@ namespace RenderGL
     // try to locate a shader based on its name
     Shader* ShaderCache::FindShader(AZStd::string_view filename) const
     {
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const auto foundShader = AZStd::find_if(begin(mEntries), end(mEntries), [filename](const Entry& entry)
         {
-            if (AzFramework::StringFunc::Equal(mEntries[i].mName, filename, false /* no case */)) // non-case-sensitive name compare
-            {
-                return mEntries[i].mShader;
-            }
-        }
-
-        // not found
-        return nullptr;
+            return AzFramework::StringFunc::Equal(entry.mName, filename, false /* no case */);
+        });
+        return foundShader != end(mEntries) ? foundShader->mShader : nullptr;
     }
 
 
     // check if we have a given shader in the cache
     bool ShaderCache::CheckIfHasShader(Shader* shader) const
     {
-        const uint32 numEntries = mEntries.size();
-        for (uint32 i = 0; i < numEntries; ++i)
+        return AZStd::any_of(begin(mEntries), end(mEntries), [shader](const Entry& entry)
         {
-            if (mEntries[i].mShader == shader)
-            {
-                return true;
-            }
-        }
-
-        return false;
+            return entry.mShader == shader;
+        });
     }
 }   // namespace RenderGL

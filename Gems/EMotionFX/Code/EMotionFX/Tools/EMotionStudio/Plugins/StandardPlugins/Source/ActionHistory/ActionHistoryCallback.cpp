@@ -42,8 +42,8 @@ namespace EMStudio
             if (MCore::GetLogManager().GetLogLevels() & MCore::LogCallback::LOGLEVEL_DEBUG)
             {
                 mTempString = command->GetName();
-                const uint32 numParameters = commandLine.GetNumParameters();
-                for (uint32 i = 0; i < numParameters; ++i)
+                const size_t numParameters = commandLine.GetNumParameters();
+                for (size_t i = 0; i < numParameters; ++i)
                 {
                     mTempString += " -";
                     mTempString += commandLine.GetParameterName(i);
@@ -130,8 +130,8 @@ namespace EMStudio
         MCORE_UNUSED(commandLine);
         mTempString = MCore::CommandManager::CommandHistoryEntry::ToString(group, command, mIndex++).c_str();
 
-        mList->insertItem(historyIndex, new QListWidgetItem(mTempString.c_str(), mList));
-        mList->setCurrentRow(historyIndex);
+        mList->insertItem(aznumeric_caster(historyIndex), new QListWidgetItem(mTempString.c_str(), mList));
+        mList->setCurrentRow(aznumeric_caster(historyIndex));
     }
 
     // Remove an item from the history.
@@ -168,7 +168,7 @@ namespace EMStudio
         mList->setCurrentRow(aznumeric_caster(index));
 
         // Get the current history index.
-        const uint32 historyIndex = GetCommandManager()->GetHistoryIndex();
+        const size_t historyIndex = GetCommandManager()->GetHistoryIndex();
         if (historyIndex == InvalidIndex)
         {
             AZStd::string outResult;
@@ -189,8 +189,8 @@ namespace EMStudio
         else if (historyIndex > index) // if we need to perform undo's
         {
             AZStd::string outResult;
-            const int32 numUndos = historyIndex - index;
-            for (int32 i = 0; i < numUndos; ++i)
+            const ptrdiff_t numUndos = historyIndex - index;
+            for (ptrdiff_t i = 0; i < numUndos; ++i)
             {
                 // try to undo
                 outResult.clear();
@@ -207,8 +207,8 @@ namespace EMStudio
         else if (historyIndex < index) // if we need to redo commands
         {
             AZStd::string outResult;
-            const int32 numRedos = index - historyIndex;
-            for (int32 i = 0; i < numRedos; ++i)
+            const ptrdiff_t numRedos = index - historyIndex;
+            for (ptrdiff_t i = 0; i < numRedos; ++i)
             {
                 outResult.clear();
                 const bool result = GetCommandManager()->Redo(outResult);
@@ -223,7 +223,7 @@ namespace EMStudio
         }
 
         const int numCommands = static_cast<int>(GetCommandManager()->GetNumHistoryItems());
-        for (int i = index; i < numCommands; ++i)
+        for (int i = aznumeric_caster(index); i < numCommands; ++i)
         {
             mList->item(i)->setForeground(m_darkenedBrush);
         }

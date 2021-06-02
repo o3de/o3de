@@ -75,18 +75,18 @@ namespace RenderGL
 
         void RenderMeshes(EMotionFX::ActorInstance* actorInstance, EMotionFX::Mesh::EMeshType meshType, uint32 renderFlags);
         void RenderShadowMap(EMotionFX::Mesh::EMeshType meshType);
-        void InitMaterials(uint32 lodLevel);
+        void InitMaterials(size_t lodLevel);
         Material* InitMaterial(EMotionFX::Material* emfxMaterial);
-        void FillIndexBuffers(uint32 lodLevel);
-        void FillStaticVertexBuffers(uint32 lodLevel);
-        void FillGPUSkinnedVertexBuffers(uint32 lodLevel);
+        void FillIndexBuffers(size_t lodLevel);
+        void FillStaticVertexBuffers(size_t lodLevel);
+        void FillGPUSkinnedVertexBuffers(size_t lodLevel);
 
         void UpdateDynamicVertices(EMotionFX::ActorInstance* actorInstance);
 
-        EMotionFX::Mesh::EMeshType ClassifyMeshType(EMotionFX::Node* node, EMotionFX::Mesh* mesh, uint32 lodLevel);
+        EMotionFX::Mesh::EMeshType ClassifyMeshType(EMotionFX::Node* node, EMotionFX::Mesh* mesh, size_t lodLevel);
 
         AZStd::vector< AZStd::vector<MaterialPrimitives*> >  mMaterials;
-        MCore::Array2D<uint32>          mDynamicNodes;
+        MCore::Array2D<size_t>          mDynamicNodes;
         MCore::Array2D<Primitive>       mPrimitives[3];
         AZStd::vector<bool>              mHomoMaterials;
         AZStd::vector<VertexBuffer*>     mVertexBuffers[3];

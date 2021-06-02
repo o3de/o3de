@@ -126,8 +126,8 @@ namespace EMStudio
         {
             mActor = actor;
 
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* currentInstance = EMotionFX::GetActorManager().GetActorInstance(i);
                 if (currentInstance->GetActor() == actor)
@@ -198,8 +198,8 @@ namespace EMStudio
         AZStd::vector<SelectionItem> jointsExcludedFromBounds;
         if (mActorInstance)
         {
-            const uint32 numNodes = mActor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = mActor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
                 if (!node->GetIncludeInBoundsCalc())
@@ -395,10 +395,10 @@ namespace EMStudio
 
         EMotionFX::Actor* actor = actorInstance->GetActor();
         EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
-        const uint32 numJoints = mActor->GetNumNodes();
+        const size_t numJoints = mActor->GetNumNodes();
 
         // Include all joints first.
-        for (uint32 i = 0; i < numJoints; ++i)
+        for (size_t i = 0; i < numJoints; ++i)
         {
             skeleton->GetNode(i)->SetIncludeInBoundsCalc(true);
         }

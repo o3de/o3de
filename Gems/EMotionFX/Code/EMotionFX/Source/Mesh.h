@@ -596,7 +596,7 @@ namespace EMotionFX
          * @param maxBonesPerSubMesh The maximum number of bones per submesh can be processed on hardware. If there will be more bones per submesh the mesh will be processed in software which will be very slow.
          * @return The mesh type meaning if the given mesh is static like a cube or building or if is deformed by the GPU or CPU.
          */
-        EMeshType ClassifyMeshType(uint32 lodLevel, Actor* actor, uint32 nodeIndex, bool forceCPUSkinning, uint32 maxInfluences, uint32 maxBonesPerSubMesh) const;
+        EMeshType ClassifyMeshType(size_t lodLevel, Actor* actor, size_t nodeIndex, bool forceCPUSkinning, uint32 maxInfluences, uint32 maxBonesPerSubMesh) const;
 
         /**
          * Debug log information.

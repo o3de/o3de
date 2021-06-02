@@ -112,8 +112,8 @@ namespace EMStudio
         void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
         {
             // get the number of anim graphs and iterate through them
-            const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-            for (uint32 i = 0; i < numAnimGraphs; ++i)
+            const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+            for (size_t i = 0; i < numAnimGraphs; ++i)
             {
                 // return in case we found a dirty file
                 EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
@@ -147,11 +147,9 @@ namespace EMStudio
                 return DirtyFileManager::FINISHED;
             }
 
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
+            for (const SaveDirtyFilesCallback::ObjectPointer objPointer : objects)
             {
                 // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
                 if (objPointer.mAnimGraph == nullptr)
                 {
                     continue;
@@ -429,19 +427,17 @@ namespace EMStudio
 
     void AnimGraphPlugin::SetOptionFlag(EDockWindowOptionFlag option, bool isEnabled)
     {
-        const uint32 optionIndex = (uint32)option;
-        if (mDockWindowActions[optionIndex])
+        if (mDockWindowActions[option])
         {
-            mDockWindowActions[optionIndex]->setChecked(isEnabled);
+            mDockWindowActions[option]->setChecked(isEnabled);
         }
     }
 
     void AnimGraphPlugin::SetOptionEnabled(EDockWindowOptionFlag option, bool isEnabled)
     {
-        const uint32 optionIndex = (uint32)option;
-        if (mDockWindowActions[optionIndex])
+        if (mDockWindowActions[option])
         {
-            mDockWindowActions[optionIndex]->setEnabled(isEnabled);
+            mDockWindowActions[option]->setEnabled(isEnabled);
         }
     }
 
@@ -739,8 +735,8 @@ namespace EMStudio
 
         MCore::Ray ray(start, end);
 
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 
@@ -787,20 +783,12 @@ namespace EMStudio
             result  = true;
         }
 
-        /*
-            // collide with ground plane
-            MCore::Vector3 groundNormal(0.0f, 0.0f, 0.0f);
-            groundNormal[MCore::GetCoordinateSystem().GetUpIndex()] = 1.0f;
-            MCore::PlaneEq groundPlane( groundNormal, Vector3(0.0f, 0.0f, 0.0f) );
-            bool result = MCore::Ray(start, end).Intersects( groundPlane, &(outIntersectInfo->mPosition) );
-            outIntersectInfo->mNormal = groundNormal;
-        */
         return result;
     }
 
 
     // set the gizmo offsets
-    void AnimGraphEventHandler::OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset)
+    void AnimGraphEventHandler::OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset)
     {
         EMStudioManager* manager = GetManager();
 
@@ -808,13 +796,10 @@ namespace EMStudio
         const AZStd::string& paramName = animGraphInstance->GetAnimGraph()->FindParameter(paramIndex)->GetName();
 
         // iterate over all gizmos that are active
-        AZStd::vector<MCommon::TransformationManipulator*>* gizmos = manager->GetTransformationManipulators();
-        const uint32 numGizmos = gizmos->size();
-        for (uint32 i = 0; i < numGizmos; ++i)
+        const AZStd::vector<MCommon::TransformationManipulator*>* gizmos = manager->GetTransformationManipulators();
+        for (MCommon::TransformationManipulator* gizmo : *gizmos)
         {
-            MCommon::TransformationManipulator* gizmo = gizmos->at(i);
-
-            // check the gizmo name
+             // check the gizmo name
             if (paramName == gizmo->GetName())
             {
                 gizmo->SetRenderOffset(offset);
@@ -835,8 +820,8 @@ namespace EMStudio
         AZStd::vector<AZStd::unique_ptr<EMotionFX::BlendTreeConnection> > newConnections;
 
         // get the number of incoming connections and iterate through them
-        const uint32 numConnections = node->GetNumConnections();
-        for (uint32 c = 0; c < numConnections; ++c)
+        const size_t numConnections = node->GetNumConnections();
+        for (size_t c = 0; c < numConnections; ++c)
         {
             // get the connection and check if it is plugged into the node
             EMotionFX::BlendTreeConnection* connection = node->GetConnection(c);
@@ -927,8 +912,8 @@ namespace EMStudio
         AZStd::vector<AZStd::pair<AZStd::unique_ptr<EMotionFX::BlendTreeConnection>, EMotionFX::AnimGraphNode*> > newConnections;
 
         // iterate through all nodes in the parent and check if any of these has a connection from our node
-        const uint32 numNodes = parentNode->GetNumChildNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = parentNode->GetNumChildNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             // get the child node and skip it in case it is the parameter node itself
             EMotionFX::AnimGraphNode* childNode = parentNode->GetChildNode(i);
@@ -938,8 +923,8 @@ namespace EMStudio
             }
 
             // get the number of outgoing connections and iterate through them
-            const uint32 numConnections = childNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = childNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 // get the connection and check if it is plugged into the parameter node
                 EMotionFX::BlendTreeConnection* connection = childNode->GetConnection(c);
@@ -1059,8 +1044,8 @@ namespace EMStudio
     bool AnimGraphPlugin::IsAnimGraphActive(EMotionFX::AnimGraph* animGraph) const
     {
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             const EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
             const EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
@@ -1074,9 +1059,9 @@ namespace EMStudio
     }
 
 
-    void AnimGraphPlugin::SaveAnimGraph(const char* filename, uint32 animGraphIndex, MCore::CommandGroup* commandGroup)
+    void AnimGraphPlugin::SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup)
     {
-        const AZStd::string command = AZStd::string::format("SaveAnimGraph -index %i -filename \"%s\"", animGraphIndex, filename);
+        const AZStd::string command = AZStd::string::format("SaveAnimGraph -index %zu -filename \"%s\"", animGraphIndex, filename);
 
         if (commandGroup == nullptr)
         {
@@ -1101,8 +1086,8 @@ namespace EMStudio
 
     void AnimGraphPlugin::SaveAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
     {
-        const uint32 animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
-        if (animGraphIndex == MCORE_INVALIDINDEX32)
+        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
+        if (animGraphIndex == InvalidIndex)
         {
             return;
         }
@@ -1146,8 +1131,8 @@ namespace EMStudio
             return;
         }
 
-        const uint32 animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
-        if (animGraphIndex == MCORE_INVALIDINDEX32)
+        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
+        if (animGraphIndex == InvalidIndex)
         {
             MCore::LogError("Cannot save anim graph. Anim graph index invalid.");
             return;
@@ -1176,7 +1161,7 @@ namespace EMStudio
         }
 
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
         MCore::CommandGroup commandGroup("Load anim graph");
         AZStd::string command;
@@ -1202,10 +1187,10 @@ namespace EMStudio
             }
             else
             {
-                const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+                const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
                 if (numMotionSets > 0)
                 {
-                    for (uint32 i = 0; i < numMotionSets; ++i)
+                    for (size_t i = 0; i < numMotionSets; ++i)
                     {
                         EMotionFX::MotionSet* candidate = EMotionFX::GetMotionManager().GetMotionSet(i);
                         if (candidate->GetIsOwnedByRuntime())
@@ -1222,7 +1207,7 @@ namespace EMStudio
 
             if (motionSet)
             {
-                for (uint32 i = 0; i < numActorInstances; ++i)
+                for (size_t i = 0; i < numActorInstances; ++i)
                 {
                     EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
                     if (actorInstance->GetIsOwnedByRuntime())
@@ -1254,8 +1239,8 @@ namespace EMStudio
             return;
         }
 
-        const uint32 animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
-        assert(animGraphIndex != MCORE_INVALIDINDEX32);
+        const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
+        assert(animGraphIndex != InvalidIndex);
 
         const AZStd::string filename = animGraph->GetFileName();
         if (filename.empty())

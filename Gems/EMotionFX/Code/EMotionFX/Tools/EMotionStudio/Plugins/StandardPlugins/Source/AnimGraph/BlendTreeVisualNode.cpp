@@ -39,9 +39,9 @@ namespace EMStudio
 
         // add all input ports
         const AZStd::vector<EMotionFX::AnimGraphNode::Port>& inPorts = mEMFXNode->GetInputPorts();
-        const uint32 numInputs = static_cast<uint32>(inPorts.size());
+        const AZ::u16 numInputs = aznumeric_caster(inPorts.size());
         mInputPorts.reserve(numInputs);
-        for (uint32 i = 0; i < numInputs; ++i)
+        for (AZ::u16 i = 0; i < numInputs; ++i)
         {
             NodePort* port = AddInputPort(false);
             port->SetNameID(inPorts[i].mNameID);
@@ -52,9 +52,9 @@ namespace EMStudio
         {
             // add all output ports
             const AZStd::vector<EMotionFX::AnimGraphNode::Port>& outPorts = mEMFXNode->GetOutputPorts();
-            const uint32 numOutputs = static_cast<uint32>(outPorts.size());
+            const AZ::u16 numOutputs = aznumeric_caster(outPorts.size());
             mOutputPorts.reserve(numOutputs);
-            for (uint32 i = 0; i < numOutputs; ++i)
+            for (AZ::u16 i = 0; i < numOutputs; ++i)
             {
                 NodePort* port = AddOutputPort(false);
                 port->SetNameID(outPorts[i].mNameID);
@@ -73,8 +73,8 @@ namespace EMStudio
 
                 GraphNode* source = mParentGraph->FindGraphNode(connection->GetSourceNode());
                 GraphNode* target = this;
-                const uint32 sourcePort = connection->GetSourcePort();
-                const uint32 targetPort = connection->GetTargetPort();
+                const AZ::u16 sourcePort = connection->GetSourcePort();
+                const AZ::u16 targetPort = connection->GetTargetPort();
 
                 NodeConnection* visualConnection = new NodeConnection(mParentGraph, childIndex, target, targetPort, source, sourcePort);
                 target->AddConnection(visualConnection);
@@ -302,8 +302,8 @@ namespace EMStudio
             {
                 // draw the input ports
                 QColor portBrushColor, portPenColor;
-                const uint32 numInputs = mInputPorts.size();
-                for (uint32 i = 0; i < numInputs; ++i)
+                const AZ::u16 numInputs = aznumeric_caster(mInputPorts.size());
+                for (AZ::u16 i = 0; i < numInputs; ++i)
                 {
                     // get the input port and the corresponding rect
                     NodePort* inputPort = &mInputPorts[i];
@@ -321,8 +321,8 @@ namespace EMStudio
                 if (GetHasVisualOutputPorts())
                 {
                     // draw the output ports
-                    const uint32 numOutputs = mOutputPorts.size();
-                    for (uint32 i = 0; i < numOutputs; ++i)
+                    const AZ::u16 numOutputs = aznumeric_caster(mOutputPorts.size());
+                    for (AZ::u16 i = 0; i < numOutputs; ++i)
                     {
                         // get the output port and the corresponding rect
                         NodePort* outputPort = &mOutputPorts[i];
@@ -455,8 +455,8 @@ namespace EMStudio
             painter.setFont(mPortNameFont);
 
             // draw input port text
-            const uint32 numInputs = mInputPorts.size();
-            for (uint32 i = 0; i < numInputs; ++i)
+            const AZ::u16 numInputs = aznumeric_caster(mInputPorts.size());
+            for (AZ::u16 i = 0; i < numInputs; ++i)
             {
                 NodePort* inputPort = &mInputPorts[i];
                 const QRect& portRect = inputPort->GetRect();
@@ -468,8 +468,8 @@ namespace EMStudio
             }
 
             // draw output port text
-            const uint32 numOutputs = mOutputPorts.size();
-            for (uint32 i = 0; i < numOutputs; ++i)
+            const AZ::u16 numOutputs = aznumeric_caster(mOutputPorts.size());
+            for (AZ::u16 i = 0; i < numOutputs; ++i)
             {
                 NodePort* outputPort = &mOutputPorts[i];
                 const QRect& portRect = outputPort->GetRect();

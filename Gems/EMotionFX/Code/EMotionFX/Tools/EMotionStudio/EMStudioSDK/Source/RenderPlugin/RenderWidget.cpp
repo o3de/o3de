@@ -256,10 +256,8 @@ namespace EMStudio
         const AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
 
         // render all visible gizmos
-        const uint32 numGizmos = transformationManipulators->size();
-        for (uint32 i = 0; i < numGizmos; ++i)
+        for (MCommon::TransformationManipulator* activeManipulator : *transformationManipulators)
         {
-            MCommon::TransformationManipulator* activeManipulator = transformationManipulators->at(i);
             if (activeManipulator == nullptr)
             {
                 continue;
@@ -527,10 +525,10 @@ namespace EMStudio
         // handle visual mouse selection
         if (EMStudio::GetCommandManager()->GetLockSelection() == false && gizmoHit == false) // avoid selection operations when there is only one actor instance
         {
-            AZ::u32 editorActorInstanceCount = 0;
+            size_t editorActorInstanceCount = 0;
             const EMotionFX::ActorManager& actorManager = EMotionFX::GetActorManager();
-            const AZ::u32 totalActorInstanceCount = actorManager.GetNumActorInstances();
-            for (AZ::u32 i = 0; i < totalActorInstanceCount; ++i)
+            const size_t totalActorInstanceCount = actorManager.GetNumActorInstances();
+            for (size_t i = 0; i < totalActorInstanceCount; ++i)
             {
                 const EMotionFX::ActorInstance* actorInstance = actorManager.GetActorInstance(i);
                 if (!actorInstance->GetIsOwnedByRuntime())
@@ -557,8 +555,8 @@ namespace EMStudio
                     const MCore::Ray ray = mCamera->Unproject(mousePosX, mousePosY);
 
                     // get the number of actor instances and iterate through them
-                    const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-                    for (uint32 i = 0; i < numActorInstances; ++i)
+                    const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+                    for (size_t i = 0; i < numActorInstances; ++i)
                     {
                         EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
                         if (actorInstance->GetIsVisible() == false || actorInstance->GetRender() == false || actorInstance->GetIsUsedForVisualization() || actorInstance->GetIsOwnedByRuntime())
@@ -622,8 +620,8 @@ namespace EMStudio
                     if (ctrlPressed)
                     {
                         // add the old selection to the selected actor instances (selection mode = add)
-                        const uint32 numSelectedActorInstances = selection.GetNumSelectedActorInstances();
-                        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+                        const size_t numSelectedActorInstances = selection.GetNumSelectedActorInstances();
+                        for (size_t i = 0; i < numSelectedActorInstances; ++i)
                         {
                             mSelectedActorInstances.emplace_back(selection.GetActorInstance(i));
                         }
@@ -922,8 +920,8 @@ namespace EMStudio
                 AZ::Vector3 actorInstancePos;
 
                 EMotionFX::Actor* followActor = followInstance->GetActor();
-                const uint32 motionExtractionNodeIndex = followActor->GetMotionExtractionNodeIndex();
-                if (motionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+                const size_t motionExtractionNodeIndex = followActor->GetMotionExtractionNodeIndex();
+                if (motionExtractionNodeIndex != InvalidIndex)
                 {
                     actorInstancePos = followInstance->GetWorldSpaceTransform().mPosition;
                     RenderPlugin::EMStudioRenderActor* emstudioActor = mPlugin->FindEMStudioActor(followActor);
@@ -1007,14 +1005,10 @@ namespace EMStudio
         }
 
         AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
-        const uint32 numGizmos = transformationManipulators->size();
 
         // render all visible gizmos
-        for (uint32 i = 0; i < numGizmos; ++i)
+        for (MCommon::TransformationManipulator* activeManipulator : *transformationManipulators)
         {
-            // update the gizmos
-            MCommon::TransformationManipulator* activeManipulator = transformationManipulators->at(i);
-
             // update the gizmos if there is an active manipulator
             if (activeManipulator == nullptr)
             {
@@ -1046,11 +1040,9 @@ namespace EMStudio
         }
 
         // render custom triangles
-        const uint32 numTriangles = mTriangles.size();
-        for (uint32 i = 0; i < numTriangles; ++i)
+        for (const Triangle& curTri : mTriangles)
         {
-            const Triangle& curTri = mTriangles[i];
-            renderUtil->AddTriangle(curTri.mPosA, curTri.mPosB, curTri.mPosC, curTri.mNormalA, curTri.mNormalB, curTri.mNormalC, curTri.mColor); // TODO: make renderutil use uint32 colors instead
+             renderUtil->AddTriangle(curTri.mPosA, curTri.mPosB, curTri.mPosC, curTri.mNormalA, curTri.mNormalB, curTri.mNormalC, curTri.mColor); // TODO: make renderutil use uint32 colors instead
         }
 
         ClearTriangles();
@@ -1068,8 +1060,8 @@ namespace EMStudio
         }
 
         // render all custom plugin visuals
-        const uint32 numPlugins = GetPluginManager()->GetNumActivePlugins();
-        for (uint32 i = 0; i < numPlugins; ++i)
+        const size_t numPlugins = GetPluginManager()->GetNumActivePlugins();
+        for (size_t i = 0; i < numPlugins; ++i)
         {
             EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
             EMStudioPlugin::RenderInfo renderInfo(renderUtil, mCamera, mWidth, mHeight);
@@ -1131,8 +1123,8 @@ namespace EMStudio
         /////        EMotionFX::GetEMotionFX().Update(0.0f);
 
         // render
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
             if (actorInstance->GetRender() && actorInstance->GetIsVisible() && actorInstance->GetIsOwnedByRuntime() == false)

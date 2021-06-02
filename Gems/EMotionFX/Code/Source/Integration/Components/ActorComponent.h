@@ -80,13 +80,13 @@ namespace EMotionFX
                 AZ::Data::Asset<ActorAsset> m_actorAsset{AZ::Data::AssetLoadBehavior::NoLoad}; ///< Selected actor asset.
                 ActorAsset::MaterialList m_materialPerLOD{}; ///< Material assignment per LOD.
                 AZ::EntityId m_attachmentTarget{}; ///< Target entity this actor should attach to.
-                AZ::u32 m_attachmentJointIndex = MCORE_INVALIDINDEX32; ///< Index of joint on target skeleton for actor attachments.
+                size_t m_attachmentJointIndex = InvalidIndex; ///< Index of joint on target skeleton for actor attachments.
                 AttachmentType m_attachmentType = AttachmentType::None; ///< Type of attachment.
                 bool m_renderSkeleton = false; ///< Toggles debug rendering of the skeleton.
                 bool m_renderCharacter = true; ///< Toggles rendering of the character.
                 bool m_renderBounds = false; ///< Toggles rendering of the character bounds used for visibility testing.
                 SkinningMethod m_skinningMethod = SkinningMethod::DualQuat; ///< The skinning method for this actor
-                AZ::u32 m_lodLevel = 0;
+                size_t m_lodLevel = 0;
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on

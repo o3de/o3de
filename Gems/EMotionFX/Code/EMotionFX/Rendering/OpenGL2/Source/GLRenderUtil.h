@@ -74,7 +74,7 @@ namespace RenderGL
 
         #define MAX_LINE_VERTEXBUFFERS 2
         GraphicsManager*            mGraphicsManager;
-        VertexBuffer*               mLineVertexBuffers[MAX_LINE_VERTEXBUFFERS];
+        VertexBuffer*               mLineVertexBuffers[MAX_LINE_VERTEXBUFFERS]{};
         uint16                      mCurrentLineVB;
         GLSLShader*                 mLineShader;
         GLSLShader*                 mMeshShader;

@@ -20,7 +20,7 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(MeshInfo, EMStudio::UIAllocator, 0)
 
-    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, unsigned int lodLevel, EMotionFX::Mesh* mesh)
+    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, size_t lodLevel, EMotionFX::Mesh* mesh)
         : m_lod(lodLevel)
     {
         // vertices, indices and polygons etc.

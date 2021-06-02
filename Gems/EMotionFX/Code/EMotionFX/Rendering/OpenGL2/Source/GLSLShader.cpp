@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/numeric.h>
 #include <MCore/Source/Config.h>
 #include <MCore/Source/LogManager.h>
 #include "GLSLShader.h"
@@ -65,17 +66,13 @@ namespace RenderGL
     // Deactivate
     void GLSLShader::Deactivate()
     {
-        const uint32 numAttribs = mActivatedAttribs.size();
-        for (uint32 i = 0; i < numAttribs; ++i)
+        for (const size_t index : mActivatedAttribs)
         {
-            const uint32 index = mActivatedAttribs[i];
             glDisableVertexAttribArray(mAttributes[index].mLocation);
         }
 
-        const uint32 numTextures = mActivatedTextures.size();
-        for (uint32 i = 0; i < numTextures; ++i)
+        for (const size_t index : mActivatedTextures)
         {
-            const uint32 index = mActivatedTextures[i];
             assert(mUniforms[index].mType == GL_SAMPLER_2D);
             glActiveTexture(GL_TEXTURE0 + mUniforms[index].mTextureUnit);
             glBindTexture(GL_TEXTURE_2D, 0);
@@ -124,10 +121,9 @@ namespace RenderGL
         text = "#version 120\n";
 
         // build define string
-        const uint32 numDefines = mDefines.size();
-        for (uint32 n = 0; n < numDefines; ++n)
+        for (const AZStd::string& define : mDefines)
         {
-            text += AZStd::string::format("#define %s\n", mDefines[n].c_str());
+            text += AZStd::string::format("#define %s\n", define.c_str());
         }
 
         // read file into a big string
@@ -175,20 +171,16 @@ namespace RenderGL
             AZStd::invoke(func, static_cast<QOpenGLExtraFunctions*>(this), object, logLen, &logWritten, text.data());
 
             // if there are any defines, print that out too
-            if (mDefines.size() > 0)
+            if (!mDefines.empty())
             {
                 AZStd::string dStr;
-                const uint32 numDefines = mDefines.size();
-                for (uint32 n = 0; n < numDefines; ++n)
+                for (const AZStd::string& define : mDefines)
                 {
-                    if (n < numDefines - 1)
+                    if (!dStr.empty())
                     {
-                        dStr += mDefines[n] + " ";
+                        dStr.append(" ");
                     }
-                    else
-                    {
-                        dStr += mDefines[n];
-                    }
+                    dStr.append(define);
                 }
 
                 MCore::LogDetailedInfo("[GLSL] Compiling shader '%s', with defines %s", mFileName.c_str(), dStr.c_str());
@@ -260,8 +252,8 @@ namespace RenderGL
     // FindAttribute
     GLSLShader::ShaderParameter* GLSLShader::FindAttribute(const char* name)
     {
-        const uint32 index = FindAttributeIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindAttributeIndex(name);
+        if (index == InvalidIndex)
         {
             return nullptr;
         }
@@ -273,20 +265,16 @@ namespace RenderGL
     // FindAttributeIndex
     size_t GLSLShader::FindAttributeIndex(const char* name)
     {
-        const uint32 numAttribs = mAttributes.size();
-        for (uint32 i = 0; i < numAttribs; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(mAttributes), end(mAttributes), [name](const auto& attribute)
         {
-            if (AzFramework::StringFunc::Equal(mAttributes[i].mName.c_str(), name, false /* no case */))
-            {
+            return AzFramework::StringFunc::Equal(attribute.mName.c_str(), name, false /* no case */) &&
                 // if we don't have a valid parameter location, an attribute by this name doesn't exist
                 // we just cached the fact that it doesn't exist, instead of failing glGetAttribLocation every time
-                if (mAttributes[i].mLocation >= 0)
-                {
-                    return i;
-                }
-
-                return MCORE_INVALIDINDEX32;
-            }
+                attribute.mLocation >= 0;
+        });
+        if (foundAttribute != end(mAttributes))
+        {
+            return AZStd::distance(begin(mAttributes), foundAttribute);
         }
 
         // the parameter wasn't cached, try to retrieve it
@@ -295,7 +283,7 @@ namespace RenderGL
 
         if (loc < 0)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
         return mAttributes.size() - 1;
@@ -303,12 +291,12 @@ namespace RenderGL
 
 
     // FindAttributeLocation
-    uint32 GLSLShader::FindAttributeLocation(const char* name)
+    size_t GLSLShader::FindAttributeLocation(const char* name)
     {
         ShaderParameter* p = FindAttribute(name);
         if (p == nullptr)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
         return p->mLocation;
@@ -318,8 +306,8 @@ namespace RenderGL
     // FindUniform
     GLSLShader::ShaderParameter* GLSLShader::FindUniform(const char* name)
     {
-        const uint32 index = FindUniformIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindUniformIndex(name);
+        if (index == InvalidIndex)
         {
             return nullptr;
         }
@@ -331,18 +319,14 @@ namespace RenderGL
     // FindUniformIndex
     size_t GLSLShader::FindUniformIndex(const char* name)
     {
-        const uint32 numUniforms = mUniforms.size();
-        for (uint32 i = 0; i < numUniforms; ++i)
+        const auto foundUniform = AZStd::find_if(begin(mUniforms), end(mUniforms), [name](const auto& uniform)
         {
-            if (AzFramework::StringFunc::Equal(mUniforms[i].mName.c_str(), name, false /* no case */))
-            {
-                if (mUniforms[i].mLocation >= 0)
-                {
-                    return i;
-                }
-
-                return MCORE_INVALIDINDEX32;
-            }
+            return AzFramework::StringFunc::Equal(uniform.mName.c_str(), name, false /* no case */) &&
+                uniform.mLocation >= 0;
+        });
+        if (foundUniform != end(mUniforms))
+        {
+            return AZStd::distance(begin(mUniforms), foundUniform);
         }
 
         // the parameter wasn't cached, try to retrieve it
@@ -351,7 +335,7 @@ namespace RenderGL
 
         if (loc < 0)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
         return mUniforms.size() - 1;
@@ -361,8 +345,8 @@ namespace RenderGL
     // SetAttribute
     void GLSLShader::SetAttribute(const char* name, uint32 dim, uint32 type, uint32 stride, size_t offset)
     {
-        const uint32 index = FindAttributeIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindAttributeIndex(name);
+        if (index == InvalidIndex)
         {
             return;
         }
@@ -503,8 +487,8 @@ namespace RenderGL
     // SetUniform
     void GLSLShader::SetUniform(const char* name, Texture* texture)
     {
-        const uint32 index = FindUniformIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindUniformIndex(name);
+        if (index == InvalidIndex)
         {
             return;
         }
@@ -534,8 +518,8 @@ namespace RenderGL
     // link a texture to a given uniform
     void GLSLShader::SetUniformTextureID(const char* name, uint32 textureID)
     {
-        const uint32 index = FindUniformIndex(name);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindUniformIndex(name);
+        if (index == InvalidIndex)
         {
             return;
         }
@@ -563,20 +547,12 @@ namespace RenderGL
 
 
     // check if the given attribute string is defined in the shader
-    bool GLSLShader::CheckIfIsDefined(const char* attributeName)
+    bool GLSLShader::CheckIfIsDefined(const char* attributeName) const
     {
         // get the number of defines and iterate through them
-        const uint32 numDefines = mDefines.size();
-        for (uint32 i = 0; i < numDefines; ++i)
+        return AZStd::any_of(begin(mDefines), end(mDefines), [attributeName](const AZStd::string& define)
         {
-            // compare the given attribute with the current define and return if they are equal
-            if (AzFramework::StringFunc::Equal(mDefines[i].c_str(), attributeName, false /* no case */))
-            {
-                return true;
-            }
-        }
-
-        // we haven't found the attribute, return failure
-        return false;
+            return AzFramework::StringFunc::Equal(define.c_str(), attributeName, false /* no case */);
+        });
     }
 }

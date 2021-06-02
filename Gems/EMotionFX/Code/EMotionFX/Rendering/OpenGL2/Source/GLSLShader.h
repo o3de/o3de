@@ -36,11 +36,11 @@ namespace RenderGL
         void Deactivate() override;
         bool Validate() override;
 
-        uint32 FindAttributeLocation(const char* name);
+        size_t FindAttributeLocation(const char* name);
         uint32 GetType() const override;
 
         MCORE_INLINE unsigned int GetProgram() const                                    { return mProgram; }
-        bool CheckIfIsDefined(const char* attributeName);
+        bool CheckIfIsDefined(const char* attributeName) const;
 
         bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines);
         void SetAttribute(const char* name, uint32 dim, uint32 type, uint32 stride, size_t offset) override;
@@ -84,8 +84,8 @@ namespace RenderGL
 
         AZ::IO::Path                    mFileName;
 
-        AZStd::vector<uint32>            mActivatedAttribs;
-        AZStd::vector<uint32>            mActivatedTextures;
+        AZStd::vector<size_t>            mActivatedAttribs;
+        AZStd::vector<size_t>            mActivatedTextures;
         AZStd::vector<ShaderParameter>   mUniforms;
         AZStd::vector<ShaderParameter>   mAttributes;
         AZStd::vector<AZStd::string>     mDefines;

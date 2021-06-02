@@ -37,16 +37,11 @@ namespace RenderGL
 
         mCurrentLineVB          = 0;
 
-        for (uint32 i = 0; i < MAX_LINE_VERTEXBUFFERS; ++i)
-        {
-            mLineVertexBuffers[i] = nullptr;
-        }
-
         // initialize the vertex buffers and the shader used for line rendering
-        for (uint32 i = 0; i < MAX_LINE_VERTEXBUFFERS; ++i)
+        for (VertexBuffer*& lineVertexBuffer : mLineVertexBuffers)
         {
-            mLineVertexBuffers[i] = new VertexBuffer();
-            if (mLineVertexBuffers[i]->Init(sizeof(LineVertex), mNumMaxLineVertices, USAGE_DYNAMIC) == false)
+            lineVertexBuffer = new VertexBuffer();
+            if (lineVertexBuffer->Init(sizeof(LineVertex), mNumMaxLineVertices, USAGE_DYNAMIC) == false)
             {
                 MCore::LogError("[OpenGL]  Failed to create render utility line vertex buffer.");
                 CleanUp();
@@ -139,10 +134,10 @@ namespace RenderGL
     // destroy the allocated memory
     void GLRenderUtil::CleanUp()
     {
-        for (uint32 i = 0; i < MAX_LINE_VERTEXBUFFERS; ++i)
+        for (VertexBuffer*& lineVertexBuffer : mLineVertexBuffers)
         {
-            delete mLineVertexBuffers[i];
-            mLineVertexBuffers[i] = nullptr;
+            delete lineVertexBuffer;
+            lineVertexBuffer = nullptr;
         }
 
         delete mMeshVertexBuffer;
@@ -163,10 +158,9 @@ namespace RenderGL
         delete[] mTextures;
 
         // get rid of texture entries
-        const uint32 numTextEntries = mTextEntries.size();
-        for (uint32 i = 0; i < numTextEntries; ++i)
+        for (TextEntry* mTextEntrie : mTextEntries)
         {
-            delete mTextEntries[i];
+            delete mTextEntrie;
         }
         mTextEntries.clear();
     }
@@ -243,9 +237,6 @@ namespace RenderGL
         }
 
         glPopAttrib();
-
-        //const float renderTime = time.GetTime();
-        //LOG("numTextures=%i, renderTime=%.3fms", mNumTextures, renderTime*1000);
 
         mNumTextures = 0;
     }
@@ -491,7 +482,7 @@ namespace RenderGL
         glDisable(GL_CULL_FACE);
 
         // get the number of vertices to render
-        const uint32 numVertices = triangleVertices.size();
+        const uint32 numVertices = aznumeric_caster(triangleVertices.size());
         MCORE_ASSERT(numVertices <= mNumMaxTriangleVertices);
 
         // lock the vertex buffer

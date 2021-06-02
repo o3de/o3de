@@ -830,13 +830,13 @@ namespace EMStudio
         return MCore::Max<uint32>(headerWidth, 100);
     }
 
-    QRect StateGraphNode::CalcInputPortRect(uint32 portNr)
+    QRect StateGraphNode::CalcInputPortRect(AZ::u16 portNr)
     {
         MCORE_UNUSED(portNr);
         return mRect.adjusted(10, 10, -10, -10);
     }
 
-    QRect StateGraphNode::CalcOutputPortRect(uint32 portNr)
+    QRect StateGraphNode::CalcOutputPortRect(AZ::u16 portNr)
     {
         switch (portNr)
         {

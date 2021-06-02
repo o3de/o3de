@@ -163,10 +163,9 @@ namespace EMStudio
     {
         if (delFromMem)
         {
-            const size_t numElems = mElements.size();
-            for (size_t i = 0; i < numElems; ++i)
+            for (TimeTrackElement* mElement : mElements)
             {
-                delete mElements[i];
+                delete mElement;
             }
         }
 
@@ -175,7 +174,7 @@ namespace EMStudio
 
 
     // get the track element at a given pixel
-    TimeTrackElement* TimeTrack::GetElementAt(int32 x, int32 y)
+    TimeTrackElement* TimeTrack::GetElementAt(int32 x, int32 y) const
     {
         if (mVisible == false)
         {
@@ -183,11 +182,9 @@ namespace EMStudio
         }
 
         // for all elements
-        const size_t numElems = mElements.size();
-        for (size_t i = 0; i < numElems; ++i)
+        for (TimeTrackElement* element : mElements)
         {
             // check if its inside
-            TimeTrackElement* element = mElements[i];
             if (element->GetIsVisible() == false)
             {
                 continue;

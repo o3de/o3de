@@ -230,50 +230,35 @@ namespace EMotionFX
 
     size_t AnimGraphGameControllerSettings::FindPresetIndexByName(const char* presetName) const
     {
-        const size_t presetCount = m_presets.size();
-        for (size_t i = 0; i < presetCount; ++i)
+        const auto foundPreset = AZStd::find_if(begin(m_presets), end(m_presets), [presetName](const Preset* preset)
         {
-            if (m_presets[i]->GetNameString() == presetName)
-            {
-                return i;
-            }
-        }
-
-        // return failure
-        return MCORE_INVALIDINDEX32;
+            return preset->GetNameString() == presetName;
+        });
+        return foundPreset != end(m_presets) ? AZStd::distance(begin(m_presets), foundPreset) : InvalidIndex;
     }
 
 
     size_t AnimGraphGameControllerSettings::FindPresetIndex(Preset* preset) const
     {
-        const size_t presetCount = m_presets.size();
-        for (size_t i = 0; i < presetCount; ++i)
-        {
-            if (m_presets[i] == preset)
-            {
-                return i;
-            }
-        }
-
-        // return failure
-        return MCORE_INVALIDINDEX32;
+        const auto foundPreset = AZStd::find(begin(m_presets), end(m_presets), preset);
+        return foundPreset != end(m_presets) ? AZStd::distance(begin(m_presets), foundPreset) : InvalidIndex;
     }
 
 
     void AnimGraphGameControllerSettings::SetActivePreset(Preset* preset)
     {
-        m_activePresetIndex = static_cast<AZ::u32>(FindPresetIndex(preset));
+        m_activePresetIndex = FindPresetIndex(preset);
     }
 
 
-    uint32 AnimGraphGameControllerSettings::GetActivePresetIndex() const
+    size_t AnimGraphGameControllerSettings::GetActivePresetIndex() const
     {
         if (m_activePresetIndex < m_presets.size())
         {
             return m_activePresetIndex;
         }
 
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
 

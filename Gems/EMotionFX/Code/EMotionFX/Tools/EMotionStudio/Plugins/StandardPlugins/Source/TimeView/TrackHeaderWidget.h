@@ -46,14 +46,14 @@ namespace EMStudio
         MCORE_MEMORYOBJECTCATEGORY(HeaderTrackWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, uint32 trackIndex);
+        HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, size_t trackIndex);
 
         QCheckBox*              mEnabledCheckbox;
         QLabel*                 mNameLabel;
         QLineEdit*              mNameEdit;
         QPushButton*            mRemoveButton;
         TimeTrack*              mTrack;
-        uint32                  mTrackIndex;
+        size_t                  mTrackIndex;
         TrackHeaderWidget*      mHeaderTrackWidget;
         TimeViewPlugin*         mPlugin;
 
@@ -62,8 +62,8 @@ namespace EMStudio
         bool eventFilter(QObject* object, QEvent* event) override;
 
     signals:
-        void TrackNameChanged(const QString& text, int trackNr);
-        void EnabledStateChanged(bool checked, int trackNr);
+        void TrackNameChanged(const QString& text, size_t trackNr);
+        void EnabledStateChanged(bool checked, size_t trackNr);
 
     public slots:
         void NameChanged();
@@ -97,8 +97,8 @@ namespace EMStudio
 
     public slots:
         void OnAddTrackButtonClicked()                                                                      { CommandSystem::CommandAddEventTrack(); }
-        void OnTrackNameChanged(const QString& text, int trackNr)                                           { CommandSystem::CommandRenameEventTrack(trackNr, FromQtString(text).c_str()); }
-        void OnTrackEnabledStateChanged(bool enabled, int trackNr)                                          { CommandSystem::CommandEnableEventTrack(trackNr, enabled); }
+        void OnTrackNameChanged(const QString& text, size_t trackNr)                                           { CommandSystem::CommandRenameEventTrack(trackNr, FromQtString(text).c_str()); }
+        void OnTrackEnabledStateChanged(bool enabled, size_t trackNr)                                          { CommandSystem::CommandEnableEventTrack(trackNr, enabled); }
         void OnDetailedNodesCheckBox(int state);
         void OnCheckBox(int state);
         void OnComboBoxIndexChanged(int state);

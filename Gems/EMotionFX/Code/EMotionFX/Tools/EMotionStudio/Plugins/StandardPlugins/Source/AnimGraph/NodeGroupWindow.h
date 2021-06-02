@@ -91,7 +91,7 @@ namespace EMStudio
 
         void contextMenuEvent(QContextMenuEvent* event) override;
 
-        uint32 FindGroupIndexByWidget(QObject* widget) const;
+        int FindGroupIndexByWidget(QObject* widget) const;
         //bool ValidateName(EMotionFX::AnimGraphNodeGroup* nodeGroup, const char* newName) const;
 
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphAddNodeGroupCallback);
@@ -105,7 +105,7 @@ namespace EMStudio
         struct WidgetLookup
         {
             QObject*    mWidget;
-            uint32      mGroupIndex;
+            int         mGroupIndex;
         };
 
         AnimGraphPlugin*               mPlugin;

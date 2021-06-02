@@ -156,8 +156,8 @@ namespace EMStudio
         if (actorInstanceID == MCORE_INVALIDINDEX32)
         {
             // get the number actor instances and iterate over them
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 // add the actor to the node hierarchy widget
                 EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -187,11 +187,10 @@ namespace EMStudio
         mHierarchy->clear();
 
         // get the number actor instances and iterate over them
-        const uint32 numActorInstances = mActorInstanceIDs.size();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (const uint32 mActorInstanceID : mActorInstanceIDs)
         {
             // get the actor instance by its id
-            EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(mActorInstanceIDs[i]);
+            EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(mActorInstanceID);
             if (actorInstance)
             {
                 AddActorInstance(actorInstance);
@@ -241,7 +240,7 @@ namespace EMStudio
 
         // get the number of root nodes and iterate through them
         const size_t numRootNodes = actor->GetSkeleton()->GetNumRootNodes();
-        for (uint32 i = 0; i < numRootNodes; ++i)
+        for (size_t i = 0; i < numRootNodes; ++i)
         {
             // get the root node index and the corresponding node
             const size_t        rootNodeIndex   = actor->GetSkeleton()->GetRootNodeIndex(i);
@@ -349,7 +348,7 @@ namespace EMStudio
             parent->addChild(item);
 
             // iterate through all children
-            for (uint32 i = 0; i < numChildren; ++i)
+            for (size_t i = 0; i < numChildren; ++i)
             {
                 // get the node index and the corresponding node
                 const size_t        childIndex  = node->GetChildIndex(i);
@@ -362,7 +361,7 @@ namespace EMStudio
         else
         {
             // iterate through all children
-            for (uint32 i = 0; i < numChildren; ++i)
+            for (size_t i = 0; i < numChildren; ++i)
             {
                 // get the node index and the corresponding node
                 const size_t        childIndex  = node->GetChildIndex(i);
@@ -470,8 +469,8 @@ namespace EMStudio
         }
 
         // get the number of children and iterate through them
-        const uint32 numChilds = item->childCount();
-        for (uint32 i = 0; i < numChilds; ++i)
+        const int numChilds = item->childCount();
+        for (int i = 0; i < numChilds; ++i)
         {
             RecursiveRemoveUnselectedItems(item->child(i));
         }
@@ -480,33 +479,20 @@ namespace EMStudio
 
     void NodeHierarchyWidget::UpdateSelection()
     {
-        uint32 i;
-
-        //LOG("================================Update Selection!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        //LOG("NumSelectedNodes=%i", mSelectedNodes.GetLength());
-        //String debugString;
-        //debugString.Reserve(10000);
-        //for (uint32 s=0; s<mSelectedNodes.GetLength(); ++s)
-        //  debugString += AZStd::string::format("%s,", mSelectedNodes[s].GetNodeName());
-        //LOG(debugString.AsChar());
-
         // get the selected items and the number of them
         QList<QTreeWidgetItem*> selectedItems = mHierarchy->selectedItems();
-        const uint32 numSelectedItems = selectedItems.count();
 
         // remove the unselected tree widget items from the selected nodes
-        const uint32 numTopLevelItems = mHierarchy->topLevelItemCount();
-        for (i = 0; i < numTopLevelItems; ++i)
+        const int numTopLevelItems = mHierarchy->topLevelItemCount();
+        for (int i = 0; i < numTopLevelItems; ++i)
         {
             RecursiveRemoveUnselectedItems(mHierarchy->topLevelItem(i));
         }
 
         // iterate through all selected items
-        for (i = 0; i < numSelectedItems; ++i)
+        for (const QTreeWidgetItem* item : selectedItems)
         {
-            QTreeWidgetItem* item = selectedItems[i];
-
-            // get the item name
+             // get the item name
             FromQtString(item->text(0), &mItemName);
             FromQtString(item->whatsThis(0), &mActorInstanceIDString);
 
@@ -644,32 +630,20 @@ namespace EMStudio
     // check if the node with the given name is selected in the window
     bool NodeHierarchyWidget::CheckIfNodeSelected(const char* nodeName, uint32 actorInstanceID)
     {
-        for (const SelectionItem& selectedItem : m_selectedNodes)
+        return AZStd::any_of(begin(m_selectedNodes), end(m_selectedNodes), [nodeName, actorInstanceID](const SelectionItem& selectedItem)
         {
-            if (selectedItem.mActorInstanceID == actorInstanceID && selectedItem.GetNodeNameString() == nodeName)
-            {
-                return true;
-            }
-        }
-
-        // failure, not found in the selected nodes array
-        return false;
+            return selectedItem.mActorInstanceID == actorInstanceID && selectedItem.GetNodeNameString() == nodeName;
+        });
     }
 
 
     // check if the actor instance with the given id is selected in the window
     bool NodeHierarchyWidget::CheckIfActorInstanceSelected(uint32 actorInstanceID)
     {
-        for (const SelectionItem& selectedItem : m_selectedNodes)
+        return AZStd::any_of(begin(m_selectedNodes), end(m_selectedNodes), [actorInstanceID](const SelectionItem& selectedItem)
         {
-            if (selectedItem.mActorInstanceID == actorInstanceID && selectedItem.GetNodeNameString().empty())
-            {
-                return true;
-            }
-        }
-
-        // failure, not found in the selected nodes array
-        return false;
+            return selectedItem.mActorInstanceID == actorInstanceID && selectedItem.GetNodeNameString().empty();
+        });
     }
 
 
@@ -685,15 +659,12 @@ namespace EMStudio
         m_selectedNodes.clear();
 
         // get the number actor instances and iterate over them
-        const uint32 numActorInstances = mActorInstanceIDs.size();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (const uint32 actorInstanceID : mActorInstanceIDs)
         {
             // add the actor to the node hierarchy widget
-            const uint32 actorInstanceID = mActorInstanceIDs[i];
-
             // get the number of selected nodes and iterate through them
-            const uint32 numSelectedNodes = selectionList->GetNumSelectedNodes();
-            for (uint32 n = 0; n < numSelectedNodes; ++n)
+            const size_t numSelectedNodes = selectionList->GetNumSelectedNodes();
+            for (size_t n = 0; n < numSelectedNodes; ++n)
             {
                 const EMotionFX::Node* joint = selectionList->GetNode(n);
                 if (joint)
@@ -725,12 +696,6 @@ namespace EMStudio
         return mFilterState.testFlag(FilterType::Bones);
     }
 
-    /*
-    void NodeHierarchyWidget::OnVisibilityChanged(bool isVisible)
-    {
-        if (isVisible)
-            Update();
-    }*/
 } // namespace EMStudio
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/moc_NodeHierarchyWidget.cpp>

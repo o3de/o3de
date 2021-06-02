@@ -50,7 +50,7 @@ namespace EMStudio
         void resizeGL(int w, int h) override;
         void paintGL() override;
 
-        void RemoveTrack(AZ::u32 trackIndex);
+        void RemoveTrack(size_t trackIndex);
         
     protected:
         //void paintEvent(QPaintEvent* event);
@@ -70,7 +70,7 @@ namespace EMStudio
         void MotionEventChanged(TimeTrackElement* element, double startTime, double endTime);
         void TrackAdded(TimeTrack* track);
         void SelectionChanged();
-        void ElementTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
+        void ElementTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
 
     private slots:
         void OnRemoveElement()                          { RemoveMotionEvent(mContextMenuX, mContextMenuY); }
@@ -137,7 +137,7 @@ namespace EMStudio
         double              mOldCurrentTime;
 
         AZStd::vector<EMotionFX::Recorder::ExtractedNodeHistoryItem> mActiveItems;
-        AZStd::vector<uint32>                                        mTrackRemap;
+        AZStd::vector<size_t>                                        mTrackRemap;
 
         // copy and paste
         struct CopyElement

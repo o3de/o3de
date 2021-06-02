@@ -810,7 +810,7 @@ namespace EMStudio
 
 
     // check if a connection is valid or not
-    bool BlendGraphWidget::CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
+    bool BlendGraphWidget::CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
     {
         MCORE_UNUSED(port);
         MCORE_ASSERT(mActiveGraph);
@@ -845,8 +845,8 @@ namespace EMStudio
         MCORE_ASSERT(sourceNode->GetType() == BlendTreeVisualNode::TYPE_ID);
         BlendTreeVisualNode* targetBlendNode;
         BlendTreeVisualNode* sourceBlendNode;
-        uint32 sourcePortNr;
-        uint32 targetPortNr;
+        AZ::u16 sourcePortNr;
+        AZ::u16 targetPortNr;
 
         // make sure the input always comes from the source node
         if (isInputPort)
@@ -933,15 +933,15 @@ namespace EMStudio
 
 
     // create the connection
-    void BlendGraphWidget::OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
+    void BlendGraphWidget::OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
     {
         MCORE_UNUSED(targetIsInputPort);
         MCORE_ASSERT(mActiveGraph);
 
         GraphNode*  realSourceNode;
         GraphNode*  realTargetNode;
-        uint32      realInputPortNr;
-        uint32      realOutputPortNr;
+        AZ::u16      realInputPortNr;
+        AZ::u16      realOutputPortNr;
 
         if (sourceIsInputPort)
         {
@@ -1357,8 +1357,8 @@ namespace EMStudio
                     }
 
                     // get the output and the input port numbers
-                    const uint32 outputPortNr   = connection->GetOutputPortNr();
-                    const uint32 inputPortNr    = connection->GetInputPortNr();
+                    const AZ::u16 outputPortNr   = connection->GetOutputPortNr();
+                    const AZ::u16 inputPortNr    = connection->GetInputPortNr();
 
                     // show connection or state transition tooltip
                     if (conditionFound == false)

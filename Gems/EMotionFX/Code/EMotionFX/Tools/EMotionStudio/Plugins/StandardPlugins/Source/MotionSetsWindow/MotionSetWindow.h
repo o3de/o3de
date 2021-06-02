@@ -91,8 +91,8 @@ namespace EMStudio
         EMotionFX::MotionSet*           mMotionSet;
         AZStd::vector<AZStd::string>    mMotionIDs;
         AZStd::vector<AZStd::string>    mModifiedMotionIDs;
-        AZStd::vector<uint32>           mMotionToModifiedMap;
-        AZStd::vector<uint32>           mValids;
+        AZStd::vector<size_t>           mMotionToModifiedMap;
+        AZStd::vector<size_t>           mValids;
         QTableWidget*                   mTableWidget;
         QLineEdit*                      mStringALineEdit;
         QLineEdit*                      mStringBLineEdit;
@@ -184,7 +184,7 @@ namespace EMStudio
         EMotionFX::MotionSet::MotionEntry* FindMotionEntry(QTableWidgetItem* item) const;
 
         void GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices);
-        uint32 CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
+        size_t CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
 
     private:
         QVBoxLayout* mVLayout = nullptr;

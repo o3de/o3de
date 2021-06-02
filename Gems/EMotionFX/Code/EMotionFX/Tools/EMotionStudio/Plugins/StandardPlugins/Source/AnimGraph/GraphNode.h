@@ -78,7 +78,7 @@ namespace EMStudio
             TYPE_ID = 0x00000001
         };
 
-        GraphNode(const QModelIndex& modelIndex, const char* name, uint32 numInputs = 0, uint32 numOutputs = 0);
+        GraphNode(const QModelIndex& modelIndex, const char* name, AZ::u16 numInputs = 0, AZ::u16 numOutputs = 0);
         virtual ~GraphNode();
 
         const QModelIndex& GetModelIndex() const                            { return m_modelIndex; }
@@ -86,12 +86,12 @@ namespace EMStudio
         MCORE_INLINE void UpdateNameAndPorts()                              { mNameAndPortsUpdated = false; }
         MCORE_INLINE AZStd::vector<NodeConnection*>& GetConnections()        { return mConnections; }
         MCORE_INLINE size_t GetNumConnections()                             { return mConnections.size(); }
-        MCORE_INLINE NodeConnection* GetConnection(uint32 index)            { return mConnections[index]; }
+        MCORE_INLINE NodeConnection* GetConnection(size_t index)            { return mConnections[index]; }
         MCORE_INLINE NodeConnection* AddConnection(NodeConnection* con)     { mConnections.emplace_back(con); return con; }
         MCORE_INLINE void SetParentGraph(NodeGraph* graph)                  { mParentGraph = graph; }
         MCORE_INLINE NodeGraph* GetParentGraph()                            { return mParentGraph; }
-        MCORE_INLINE NodePort* GetInputPort(uint32 index)                   { return &mInputPorts[index]; }
-        MCORE_INLINE NodePort* GetOutputPort(uint32 index)                  { return &mOutputPorts[index]; }
+        MCORE_INLINE NodePort* GetInputPort(AZ::u16 index)                  { return &mInputPorts[index]; }
+        MCORE_INLINE NodePort* GetOutputPort(AZ::u16 index)                 { return &mOutputPorts[index]; }
         MCORE_INLINE const QRect& GetRect() const                           { return mRect; }
         MCORE_INLINE const QRect& GetFinalRect() const                      { return mFinalRect; }
         MCORE_INLINE const QRect& GetVizRect() const                        { return mVisualizeRect; }
@@ -134,8 +134,8 @@ namespace EMStudio
         MCORE_INLINE float GetOpacity() const                               { return mOpacity; }
         MCORE_INLINE void SetOpacity(float opacity)                         { mOpacity = opacity; }
 
-        size_t GetNumInputPorts() const                                     { return mInputPorts.size(); }
-        size_t GetNumOutputPorts() const                                    { return mOutputPorts.size(); }
+        AZ::u16 GetNumInputPorts() const                                    { return aznumeric_caster(mInputPorts.size()); }
+        AZ::u16 GetNumOutputPorts() const                                   { return aznumeric_caster(mOutputPorts.size()); }
 
         NodePort* AddInputPort(bool updateTextPixMap);
         NodePort* AddOutputPort(bool updateTextPixMap);
@@ -173,9 +173,9 @@ namespace EMStudio
         virtual void RenderHasChildsIndicator(QPainter& painter, QPen* pen, QColor borderColor, QColor bgColor);
         virtual void RenderVisualizeRect(QPainter& painter, const QColor& bgColor, const QColor& bgColor2);
 
-        virtual QRect CalcInputPortRect(uint32 portNr);
-        virtual QRect CalcOutputPortRect(uint32 portNr);
-        virtual NodePort* FindPort(int32 x, int32 y, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts);
+        virtual QRect CalcInputPortRect(AZ::u16 portNr);
+        virtual QRect CalcOutputPortRect(AZ::u16 portNr);
+        virtual NodePort* FindPort(int32 x, int32 y, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts);
 
         virtual bool GetAlwaysColor() const                                                     { return true; }
         virtual bool GetHasError() const                                                        { return true; }
@@ -188,8 +188,8 @@ namespace EMStudio
 
         virtual void Sync() {}
 
-        void CalcOutputPortTextRect(uint32 portNr, QRect& outRect, bool local = false);
-        void CalcInputPortTextRect(uint32 portNr, QRect& outRect, bool local = false);
+        void CalcOutputPortTextRect(AZ::u16 portNr, QRect& outRect, bool local = false);
+        void CalcInputPortTextRect(AZ::u16 portNr, QRect& outRect, bool local = false);
         void CalcInfoTextRect(QRect& outRect, bool local = false);
 
         MCORE_INLINE void SetHasVisualOutputPorts(bool hasVisualOutputPorts)                    { mHasVisualOutputPorts = hasVisualOutputPorts; }

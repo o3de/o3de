@@ -680,11 +680,11 @@ namespace EMotionFX
             bool isHit = false;
 
             // Iterate through the meshes in the actor, looking for the closest hit
-            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
+            const size_t lodLevel = m_actorInstance->GetLODLevel();
             Actor* actor = m_actorAsset.Get()->GetActor();
-            const uint32 numNodes = actor->GetNumNodes();
-            const uint32 numLods = actor->GetNumLODLevels();
-            for (uint32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+            const size_t numNodes = actor->GetNumNodes();
+            const size_t numLods = actor->GetNumLODLevels();
+            for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
             {
                 Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);
                 if (!mesh || mesh->GetIsCollisionMesh())
@@ -803,7 +803,7 @@ namespace EMotionFX
                 Node* node = jointName ? targetActorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : targetActorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(targetActorInstance, jointIndex, m_actorInstance.get(), true /* Managed externally, by this component. */);
                     targetActorInstance->AddAttachment(attachment);
                 }

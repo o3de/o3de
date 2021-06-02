@@ -123,7 +123,7 @@ namespace EMotionFX
                 return QModelIndex();
             }
 
-            const AZ::u32 childNodeIndex = parentNode->GetChildIndex(row);
+            const size_t childNodeIndex = parentNode->GetChildIndex(row);
             Node* childNode = m_skeleton->GetNode(childNodeIndex);
             return createIndex(row, column, childNode);
         }
@@ -135,7 +135,7 @@ namespace EMotionFX
                 return QModelIndex();
             }
 
-            const AZ::u32 rootNodeIndex = m_skeleton->GetRootNodeIndex(row);
+            const size_t rootNodeIndex = m_skeleton->GetRootNodeIndex(row);
             Node* rootNode = m_skeleton->GetNode(rootNodeIndex);
             return createIndex(row, column, rootNode);
         }
@@ -157,8 +157,8 @@ namespace EMotionFX
             Node* grandParentNode = parentNode->GetParentNode();
             if (grandParentNode)
             {
-                const AZ::u32 numChildNodes = grandParentNode->GetNumChildNodes();
-                for (AZ::u32 i = 0; i < numChildNodes; ++i)
+                const int numChildNodes = aznumeric_caster(grandParentNode->GetNumChildNodes());
+                for (int i = 0; i < numChildNodes; ++i)
                 {
                     const Node* grandParentChildNode = m_skeleton->GetNode(grandParentNode->GetChildIndex(i));
                     if (grandParentChildNode == parentNode)
@@ -169,8 +169,8 @@ namespace EMotionFX
             }
             else
             {
-                const AZ::u32 numRootNodes = m_skeleton->GetNumRootNodes();
-                for (AZ::u32 i = 0; i < numRootNodes; ++i)
+                const int numRootNodes = aznumeric_caster(m_skeleton->GetNumRootNodes());
+                for (int i = 0; i < numRootNodes; ++i)
                 {
                     const Node* rootNode = m_skeleton->GetNode(m_skeleton->GetRootNodeIndex(i));
                     if (rootNode == parentNode)
@@ -234,7 +234,7 @@ namespace EMotionFX
         Node* node = static_cast<Node*>(index.internalPointer());
         AZ_Assert(node, "Expected valid node pointer.");
 
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
         const NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
         switch (role)
@@ -389,7 +389,7 @@ namespace EMotionFX
             break;
         }
         case ROLE_NODE_INDEX:
-            return nodeIndex;
+            return qulonglong(nodeIndex);
         case ROLE_POINTER:
             return QVariant::fromValue(node);
         case ROLE_ACTOR_POINTER:
@@ -474,7 +474,7 @@ namespace EMotionFX
         Node* node = static_cast<Node*>(index.internalPointer());
         AZ_Assert(node, "Expected valid node pointer.");
 
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
         const NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
         if (nodeInfo.m_checkable)
@@ -496,7 +496,7 @@ namespace EMotionFX
         const Node* node = static_cast<Node*>(index.internalPointer());
         AZ_Assert(node, "Expected valid node pointer.");
 
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
         NodeInfo& nodeInfo = m_nodeInfos[nodeIndex];
 
         switch (role)
@@ -525,8 +525,8 @@ namespace EMotionFX
         Node* parentNode = node->GetParentNode();
         if (parentNode)
         {
-            const AZ::u32 numChildNodes = parentNode->GetNumChildNodes();
-            for (AZ::u32 i = 0; i < numChildNodes; ++i)
+            const int numChildNodes = aznumeric_caster(parentNode->GetNumChildNodes());
+            for (int i = 0; i < numChildNodes; ++i)
             {
                 const Node* childNode = m_skeleton->GetNode(parentNode->GetChildIndex(i));
                 if (childNode == node)
@@ -536,8 +536,8 @@ namespace EMotionFX
             }
         }
 
-        const AZ::u32 numRootNodes = m_skeleton->GetNumRootNodes();
-        for (AZ::u32 i = 0; i < numRootNodes; ++i)
+        const int numRootNodes = aznumeric_caster(m_skeleton->GetNumRootNodes());
+        for (int i = 0; i < numRootNodes; ++i)
         {
             const Node* rootNode = m_skeleton->GetNode(m_skeleton->GetRootNodeIndex(i));
             if (rootNode == node)
@@ -552,8 +552,8 @@ namespace EMotionFX
     QModelIndexList SkeletonModel::GetModelIndicesForFullSkeleton() const
     {
         QModelIndexList result;
-        const AZ::u32 jointCount = m_skeleton->GetNumNodes();
-        for (AZ::u32 i = 0; i < jointCount; ++i)
+        const size_t jointCount = m_skeleton->GetNumNodes();
+        for (size_t i = 0; i < jointCount; ++i)
         {
             Node* joint = m_skeleton->GetNode(i);
             result.push_back(GetModelIndex(joint));
@@ -585,8 +585,8 @@ namespace EMotionFX
     void SkeletonModel::ForEach(const AZStd::function<void(const QModelIndex& modelIndex)>& func)
     {
         QModelIndex modelIndex;
-        const AZ::u32 jointCount = m_skeleton->GetNumNodes();
-        for (AZ::u32 i = 0; i < jointCount; ++i)
+        const size_t jointCount = m_skeleton->GetNumNodes();
+        for (size_t i = 0; i < jointCount; ++i)
         {
             Node* joint = m_skeleton->GetNode(i);
             modelIndex = GetModelIndex(joint);

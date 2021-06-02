@@ -154,8 +154,8 @@ namespace EMStudio
         EMotionFX::Actor* actor = selectionList.GetSingleActor();
         if (actor)
         {
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* actorInstance2 = EMotionFX::GetActorManager().GetActorInstance(i);
                 if (actorInstance2->GetActor() == actor)

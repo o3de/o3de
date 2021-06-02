@@ -131,7 +131,7 @@ namespace EMotionFX
             KeyTrackLinearDynamic<float, float> mPlayTimes;     // normalized time values (current time in the node/motion)
             uint32                  mMotionID;              // the ID of the Motion object used
             size_t                  mTrackIndex;            // the track index
-            uint32                  mCachedKey;             // a cached key
+            size_t                  mCachedKey;             // a cached key
             AnimGraphNodeId         mNodeId;                // animgraph node Id
             AnimGraphInstance*      mAnimGraphInstance;     // the anim graph instance this node was recorded from
             AZ::Color               mColor;                 // the node viz color
@@ -147,7 +147,7 @@ namespace EMotionFX
                 mEndTime        = 0.0f;
                 mMotionID       = MCORE_INVALIDINDEX32;
                 mTrackIndex     = InvalidIndex;
-                mCachedKey      = MCORE_INVALIDINDEX32;
+                mCachedKey      = InvalidIndex;
                 mNodeId         = AnimGraphNodeId();
                 mAnimGraphInstance = nullptr;
                 mAnimGraphID    = MCORE_INVALIDINDEX32;

@@ -106,9 +106,9 @@ namespace EMStudio
         PluginOptions* GetOptions() override { return &mRenderOptions; }
 
         // render actors
-        EMStudioRenderActor* FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance = true);
-        EMStudioRenderActor* FindEMStudioActor(EMotionFX::Actor* actor);
-        uint32 FindEMStudioActorIndex(EMStudioRenderActor* EMStudioRenderActor);
+        EMStudioRenderActor* FindEMStudioActor(const EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance = true) const;
+        EMStudioRenderActor* FindEMStudioActor(const EMotionFX::Actor* actor) const;
+        size_t FindEMStudioActorIndex(const EMStudioRenderActor* EMStudioRenderActor) const;
 
         void AddEMStudioActor(EMStudioRenderActor* emstudioActor);
         bool DestroyEMStudioActor(EMotionFX::Actor* actor);

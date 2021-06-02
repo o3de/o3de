@@ -107,10 +107,9 @@ namespace EMStudio
         delete mZoomOutCursor;
 
         // get rid of the motion infos
-        const uint32 numMotionInfos = mMotionInfos.size();
-        for (uint32 i = 0; i < numMotionInfos; ++i)
+        for (MotionInfo* mMotionInfo : mMotionInfos)
         {
-            delete mMotionInfos[i];
+            delete mMotionInfo;
         }
     }
 
@@ -294,10 +293,9 @@ namespace EMStudio
     void TimeViewPlugin::RemoveAllTracks()
     {
         // get the number of time tracks and iterate through them
-        const uint32 numTracks = mTracks.size();
-        for (uint32 i = 0; i < numTracks; ++i)
+        for (TimeTrack* track : mTracks)
         {
-            delete mTracks[i];
+            delete track;
         }
 
         mTracks.clear();
@@ -306,37 +304,29 @@ namespace EMStudio
 
     TimeTrack* TimeViewPlugin::FindTrackByElement(TimeTrackElement* element) const
     {
-        // get the number of time tracks and iterate through them
-        const uint32 numTracks = mTracks.size();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const auto foundTrack = AZStd::find_if(begin(mTracks), end(mTracks), [element](const TimeTrack* timeTrack)
         {
-            TimeTrack* timeTrack = mTracks[i];
-
             // get the number of time track elements and iterate through them
-            const uint32 numElements = timeTrack->GetNumElements();
-            for (uint32 j = 0; j < numElements; ++j)
+            const size_t numElements = timeTrack->GetNumElements();
+            for (size_t j = 0; j < numElements; ++j)
             {
                 if (timeTrack->GetElement(j) == element)
                 {
-                    return timeTrack;
+                    return true;
                 }
             }
-        }
-
-        return nullptr;
+            return false;
+        });
+        return foundTrack != end(mTracks) ? *foundTrack : nullptr;
     }
 
-    AZ::Outcome<AZ::u32> TimeViewPlugin::FindTrackIndex(const TimeTrack* track) const
+    AZ::Outcome<size_t> TimeViewPlugin::FindTrackIndex(const TimeTrack* track) const
     {
-        const AZ::u32 numTracks = mTracks.size();
-        for (AZ::u32 i = 0; i < numTracks; ++i)
+        const auto foundTrack = AZStd::find(begin(mTracks), end(mTracks), track);
+        if (foundTrack != end(mTracks))
         {
-            if (mTracks[i] == track)
-            {
-                return AZ::Success(i);
-            }
+            return AZ::Success(static_cast<size_t>(AZStd::distance(begin(mTracks), foundTrack)));
         }
-
         return AZ::Failure();
     }
 
@@ -472,11 +462,10 @@ namespace EMStudio
     TimeTrackElement* TimeViewPlugin::GetElementAt(int32 x, int32 y)
     {
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 i = 0; i < numTracks; ++i)
+        for (const TimeTrack* track : mTracks)
         {
             // check if the absolute pixel is inside
-            TimeTrackElement* result = mTracks[i]->GetElementAt(aznumeric_cast<int32>(x + mScrollX), y);
+            TimeTrackElement* result = track->GetElementAt(aznumeric_cast<int32>(x + mScrollX), y);
             if (result)
             {
                 return result;
@@ -491,17 +480,11 @@ namespace EMStudio
     TimeTrack* TimeViewPlugin::GetTrackAt(int32 y)
     {
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const auto foundTrack = AZStd::find_if(begin(mTracks), end(mTracks), [y](const TimeTrack* track)
         {
-            // check if the absolute pixel is inside
-            if (mTracks[i]->GetIsInside(y))
-            {
-                return mTracks[i];
-            }
-        }
-
-        return nullptr;
+            return track->GetIsInside(y);
+        });
+        return foundTrack != end(mTracks) ? *foundTrack : nullptr;
     }
 
 
@@ -509,14 +492,11 @@ namespace EMStudio
     void TimeViewPlugin::UnselectAllElements()
     {
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 t = 0; t < numTracks; ++t)
+        for (TimeTrack* track : mTracks)
         {
-            TimeTrack* track = mTracks[t];
-
             // for all elements, deselect it
-            const uint32 numElems = track->GetNumElements();
-            for (uint32 i = 0; i < numElems; ++i)
+            const size_t numElems = track->GetNumElements();
+            for (size_t i = 0; i < numElems; ++i)
             {
                 track->GetElement(i)->SetIsSelected(false);
             }
@@ -603,18 +583,16 @@ namespace EMStudio
         }
 
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 t = 0; t < numTracks; ++t)
+        for (TimeTrack* track : mTracks)
         {
-            TimeTrack* track = mTracks[t];
             if (track->GetIsVisible() == false || track->GetIsEnabled() == false)
             {
                 continue;
             }
 
             // for all elements
-            const uint32 numElems = track->GetNumElements();
-            for (uint32 i = 0; i < numElems; ++i)
+            const size_t numElems = track->GetNumElements();
+            for (size_t i = 0; i < numElems; ++i)
             {
                 // don't snap to itself
                 TimeTrackElement* element = track->GetElement(i);
@@ -646,20 +624,18 @@ namespace EMStudio
     void TimeViewPlugin::RenderElementTimeHandles(QPainter& painter, uint32 dataWindowHeight, const QPen& pen)
     {
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 t = 0; t < numTracks; ++t)
+        for (const TimeTrack* track : mTracks)
         {
-            TimeTrack* track = mTracks[t];
             if (track->GetIsVisible() == false)
             {
                 continue;
             }
 
             // for all elements
-            const uint32 numElems = track->GetNumElements();
-            for (uint32 i = 0; i < numElems; ++i)
+            const size_t numElems = track->GetNumElements();
+            for (size_t i = 0; i < numElems; ++i)
             {
-                TimeTrackElement* elem = track->GetElement(i);
+                const TimeTrackElement* elem = track->GetElement(i);
 
                 // if the element has to show its time handles, do it
                 if (elem->GetShowTimeHandles())
@@ -682,14 +658,11 @@ namespace EMStudio
     void TimeViewPlugin::DisableAllToolTips()
     {
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 t = 0; t < numTracks; ++t)
+        for (const TimeTrack* track : mTracks)
         {
-            TimeTrack* track = mTracks[t];
-
-            // for all elements
-            const uint32 numElems = track->GetNumElements();
-            for (uint32 i = 0; i < numElems; ++i)
+             // for all elements
+            const size_t numElems = track->GetNumElements();
+            for (size_t i = 0; i < numElems; ++i)
             {
                 TimeTrackElement* elem = track->GetElement(i);
                 elem->SetShowToolTip(false);
@@ -703,18 +676,16 @@ namespace EMStudio
     bool TimeViewPlugin::FindResizePoint(int32 x, int32 y, TimeTrackElement** outElement, uint32* outID)
     {
         // for all tracks
-        const uint32 numTracks = mTracks.size();
-        for (uint32 t = 0; t < numTracks; ++t)
+        for (const TimeTrack* track : mTracks)
         {
-            TimeTrack* track = mTracks[t];
-            if (track->GetIsVisible() == false)
+             if (track->GetIsVisible() == false)
             {
                 continue;
             }
 
             // for all elements
-            const uint32 numElems = track->GetNumElements();
-            for (uint32 i = 0; i < numElems; ++i)
+            const size_t numElems = track->GetNumElements();
+            for (size_t i = 0; i < numElems; ++i)
             {
                 TimeTrackElement* elem = track->GetElement(i);
 
@@ -1189,8 +1160,8 @@ namespace EMStudio
         const EMotionFX::MotionEventTable* eventTable = mMotion->GetEventTable();
 
         // get the number of tracks in the time view and iterate through them
-        const uint32 numTracks = GetNumTracks();
-        for (uint32 trackIndex = 0; trackIndex < numTracks; ++trackIndex)
+        const size_t numTracks = GetNumTracks();
+        for (size_t trackIndex = 0; trackIndex < numTracks; ++trackIndex)
         {
             // get the current time view track
             const TimeTrack* track = GetTrack(trackIndex);
@@ -1206,8 +1177,8 @@ namespace EMStudio
             }
 
             // get the number of elements in the track and iterate through them
-            const uint32 numTrackElements = track->GetNumElements();
-            for (uint32 elementIndex = 0; elementIndex < numTrackElements; ++elementIndex)
+            const size_t numTrackElements = track->GetNumElements();
+            for (size_t elementIndex = 0; elementIndex < numTrackElements; ++elementIndex)
             {
                 TimeTrackElement* element = track->GetElement(elementIndex);
                 if (element->GetIsVisible() == false)
@@ -1230,7 +1201,7 @@ namespace EMStudio
 
     void TimeViewPlugin::ReInit()
     {
-        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == InvalidIndex)
         {
             // set the motion first back to nullptr
             mMotion = nullptr;
@@ -1289,7 +1260,7 @@ namespace EMStudio
                         TimeTrackElement* element = nullptr;
                         if (eventIndex < timeTrack->GetNumElements())
                         {
-                            element = timeTrack->GetElement(static_cast<uint32>(eventIndex));
+                            element = timeTrack->GetElement(eventIndex);
                         }
                         else
                         {
@@ -1298,15 +1269,13 @@ namespace EMStudio
                         }
 
                         // Select the element if in mSelectedEvents.
-                        const AZ::u32 numSelectedEvents = mSelectedEvents.size();
-                        for (AZ::u32 selectedEventIndex = 0; selectedEventIndex < numSelectedEvents; ++selectedEventIndex)
+                        for (const EventSelectionItem& selectionItem : mSelectedEvents)
                         {
-                            const EventSelectionItem& selectionItem = mSelectedEvents[selectedEventIndex];
                             if (mMotion != selectionItem.mMotion)
                             {
                                 continue;
                             }
-                            if (selectionItem.mTrackNr == static_cast<size_t>(trackIndex) && selectionItem.mEventNr == static_cast<uint32>(eventIndex))
+                            if (selectionItem.mTrackNr == trackIndex && selectionItem.mEventNr == eventIndex)
                             {
                                 element->SetIsSelected(true);
                                 break;
@@ -1334,7 +1303,7 @@ namespace EMStudio
                         element->SetIsVisible(true);
                         element->SetName(text.c_str());
                         element->SetColor(qColor);
-                        element->SetElementNumber(static_cast<uint32>(eventIndex));
+                        element->SetElementNumber(eventIndex);
                         element->SetStartTime(motionEvent.GetStartTime());
                         element->SetEndTime(motionEvent.GetEndTime());
 
@@ -1400,14 +1369,14 @@ namespace EMStudio
         }
         else // mMotion == nullptr
         {
-            const uint32 numEventTracks = GetNumTracks();
-            for (uint32 trackIndex = 0; trackIndex < numEventTracks; ++trackIndex)
+            const size_t numEventTracks = GetNumTracks();
+            for (size_t trackIndex = 0; trackIndex < numEventTracks; ++trackIndex)
             {
                 TimeTrack* timeTrack = GetTrack(trackIndex);
                 timeTrack->SetIsVisible(false);
 
-                const uint32 numMotionEvents = timeTrack->GetNumElements();
-                for (uint32 j = 0; j < numMotionEvents; ++j)
+                const size_t numMotionEvents = timeTrack->GetNumElements();
+                for (size_t j = 0; j < numMotionEvents; ++j)
                 {
                     TimeTrackElement* element = timeTrack->GetElement(j);
                     element->SetIsVisible(false);
@@ -1447,15 +1416,13 @@ namespace EMStudio
     // find the motion info for the given motion id
     TimeViewPlugin::MotionInfo* TimeViewPlugin::FindMotionInfo(uint32 motionID)
     {
-        const uint32 numMotionInfos = mMotionInfos.size();
-        for (uint32 i = 0; i < numMotionInfos; ++i)
+        const auto foundMotionInfo = AZStd::find_if(begin(mMotionInfos), end(mMotionInfos), [motionID](const MotionInfo* motionInfo)
         {
-            MotionInfo* motionInfo = mMotionInfos[i];
-
-            if (motionInfo->mMotionID == motionID)
-            {
-                return motionInfo;
-            }
+            return motionInfo->mMotionID == motionID;
+        });
+        if (foundMotionInfo != end(mMotionInfos))
+        {
+            return *foundMotionInfo;
         }
 
         // we haven't found a motion info for the given id yet, so create a new one
@@ -1469,31 +1436,27 @@ namespace EMStudio
 
     void TimeViewPlugin::Select(const AZStd::vector<EventSelectionItem>& selection)
     {
-        uint32 i;
-
         mSelectedEvents = selection;
 
         // get the number of tracks in the time view and iterate through them
-        const uint32 numTracks = GetNumTracks();
-        for (i = 0; i < numTracks; ++i)
+        const size_t numTracks = GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             TimeTrack* track = GetTrack(i);
 
             // get the number of elements in the track and iterate through them
-            const uint32 numTrackElements = track->GetNumElements();
-            for (uint32 j = 0; j < numTrackElements; ++j)
+            const size_t numTrackElements = track->GetNumElements();
+            for (size_t j = 0; j < numTrackElements; ++j)
             {
                 TimeTrackElement* element = track->GetElement(j);
                 element->SetIsSelected(false);
             }
         }
 
-        const uint32 numSelectedEvents = selection.size();
-        for (i = 0; i < numSelectedEvents; ++i)
+        for (const EventSelectionItem& selectionItem : selection)
         {
-            const EventSelectionItem*   selectionItem   = &selection[i];
-            TimeTrack*                  track           = GetTrack(static_cast<uint32>(selectionItem->mTrackNr));
-            TimeTrackElement*           element         = track->GetElement(selectionItem->mEventNr);
+            TimeTrack*                  track           = GetTrack(selectionItem.mTrackNr);
+            TimeTrackElement*           element         = track->GetElement(selectionItem.mEventNr);
 
             element->SetIsSelected(true);
         }
@@ -1583,8 +1546,8 @@ namespace EMStudio
         }
 
         // get the motion event number by getting the time track element number
-        uint32 motionEventNr = element->GetElementNumber();
-        if (motionEventNr == MCORE_INVALIDINDEX32)
+        size_t motionEventNr = element->GetElementNumber();
+        if (motionEventNr == InvalidIndex)
         {
             return;
         }
@@ -1636,18 +1599,18 @@ namespace EMStudio
             return;
         }
 
-        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == InvalidIndex)
         {
             return;
         }
 
         // get the motion event table
         //  MotionEventTable& eventTable = mMotion->GetEventTable();
-        AZStd::vector<uint32> eventNumbers;
+        AZStd::vector<size_t> eventNumbers;
 
         // get the number of tracks in the time view and iterate through them
-        const uint32 numTracks = GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             // get the current time view track
             TimeTrack* track = GetTrack(i);
@@ -1659,8 +1622,8 @@ namespace EMStudio
             eventNumbers.clear();
 
             // get the number of elements in the track and iterate through them
-            const uint32 numTrackElements = track->GetNumElements();
-            for (uint32 j = 0; j < numTrackElements; ++j)
+            const size_t numTrackElements = track->GetNumElements();
+            for (size_t j = 0; j < numTrackElements; ++j)
             {
                 TimeTrackElement* element = track->GetElement(j);
 
@@ -1695,18 +1658,18 @@ namespace EMStudio
             return;
         }
 
-        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == InvalidIndex)
         {
             return;
         }
 
         // get the motion event table
         //  MotionEventTable& eventTable = mMotion->GetEventTable();
-        AZStd::vector<uint32> eventNumbers;
+        AZStd::vector<size_t> eventNumbers;
 
         // get the number of tracks in the time view and iterate through them
-        const uint32 numTracks = GetNumTracks();
-        for (uint32 i = 0; i < numTracks; ++i)
+        const size_t numTracks = GetNumTracks();
+        for (size_t i = 0; i < numTracks; ++i)
         {
             // get the current time view track
             TimeTrack* track = GetTrack(i);
@@ -1718,8 +1681,8 @@ namespace EMStudio
             eventNumbers.clear();
 
             // get the number of elements in the track and iterate through them
-            const uint32 numTrackElements = track->GetNumElements();
-            for (uint32 j = 0; j < numTrackElements; ++j)
+            const size_t numTrackElements = track->GetNumElements();
+            for (size_t j = 0; j < numTrackElements; ++j)
             {
                 TimeTrackElement* element = track->GetElement(j);
                 if (element->GetIsVisible())
@@ -1885,8 +1848,8 @@ namespace EMStudio
             if (actorInstance)
             {
                 // find the actor instance data for this actor instance
-                const uint32 actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
-                if (actorInstanceDataIndex != MCORE_INVALIDINDEX32)
+                const size_t actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
+                if (actorInstanceDataIndex != InvalidIndex)
                 {
                     RecorderGroup* recorderGroup = mTimeViewToolBar->GetRecorderGroup();
                     const bool displayNodeActivity = recorderGroup->GetDisplayNodeActivity();
@@ -1928,11 +1891,9 @@ namespace EMStudio
         {
             if (mMotion)
             {
-                const uint32 numTracks = mTracks.size();
-                for (uint32 i = 0; i < numTracks; ++i)
+                for (const TimeTrack* track : mTracks)
                 {
-                    TimeTrack* track = mTracks[i];
-                    if (track->GetIsVisible() == false)
+                     if (track->GetIsVisible() == false)
                     {
                         continue;
                     }
