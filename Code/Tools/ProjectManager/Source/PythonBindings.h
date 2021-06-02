@@ -40,6 +40,7 @@ namespace O3DE::ProjectManager
 
         // Gem
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path) override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
 

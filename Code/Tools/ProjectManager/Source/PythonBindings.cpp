@@ -438,6 +438,26 @@ namespace O3DE::ProjectManager
         }
     }
 
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetEngineGemInfos()
+    {
+        QVector<GemInfo> gems;
+
+        auto result = ExecuteWithLockErrorHandling([&]
+            {
+                for (auto path : m_manifest.attr("get_engine_gems")())
+                {
+                    gems.push_back(GemInfoFromPath(path));
+                }
+            });
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
+
+        std::sort(gems.begin(), gems.end());
+        return AZ::Success(AZStd::move(gems));
+    }
+
     AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemInfos(const QString& projectPath)
     {
         QVector<GemInfo> gems;

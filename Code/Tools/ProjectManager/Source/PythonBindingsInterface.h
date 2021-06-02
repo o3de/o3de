@@ -67,6 +67,12 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) = 0;
 
         /**
+        * Get engine gem infos.
+        * @return A list of all registered gem infos.
+        */
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() = 0;
+
+        /**
          * Get a list of all enabled gem names for a given project.
          * @param[in] projectPath Absolute file path to the project.
          * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
