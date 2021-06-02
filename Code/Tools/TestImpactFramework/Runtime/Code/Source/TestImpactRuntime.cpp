@@ -101,8 +101,8 @@ namespace TestImpact
         m_testEngine = AZStd::make_unique<TestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
-            m_config.m_workspace.m_active.m_relativePaths.m_enumerationCacheDirectory,
-            m_config.m_workspace.m_temp.m_relativePaths.m_artifactDirectory,
+            m_config.m_workspace.m_active.m_enumerationCacheDirectory,
+            m_config.m_workspace.m_temp.m_artifactDirectory,
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
@@ -110,7 +110,7 @@ namespace TestImpact
         try
         {
             // Populate the dynamic dependency map with the existing source coverage data (if any)
-            const auto tiaDataRaw = ReadFileContents<Exception>(m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
+            const auto tiaDataRaw = ReadFileContents<Exception>(m_config.m_workspace.m_active.m_sparTIAFile);
             const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
             if (tiaData.GetNumSources())
             {
@@ -136,7 +136,7 @@ namespace TestImpact
         }
         catch ([[maybe_unused]]const Exception& e)
         {
-            AZ_Printf("No test impact analysis data found at %s", m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile.c_str());
+            AZ_Printf("No test impact analysis data found at %s", m_config.m_workspace.m_active.m_sparTIAFile.c_str());
         }        
     }
 
@@ -233,7 +233,7 @@ namespace TestImpact
 
     void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
-        DeleteFile(m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
+        DeleteFile(m_config.m_workspace.m_active.m_sparTIAFile);
         m_dynamicDependencyMap->ClearAllSourceCoverage();
     }
 
@@ -247,7 +247,7 @@ namespace TestImpact
         m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_relativePaths.m_sparTIAFile);
+        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_sparTIAFile);
         m_hasImpactAnalysisData = true;
     }
 

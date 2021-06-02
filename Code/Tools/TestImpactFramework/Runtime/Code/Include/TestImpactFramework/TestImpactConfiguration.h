@@ -38,28 +38,16 @@ namespace TestImpact
         //! Temporary workspace configuration.
         struct Temp
         {
-            //! Paths relative to root.
-            struct RelativePaths
-            {
-                RepoPath m_artifactDirectory; //!< Path to read and write runtime artifacts to and from.
-            };
-
             RepoPath m_root; //!< Path to the temporary workspace (cleaned prior to use).
-            RelativePaths m_relativePaths;
+            RepoPath m_artifactDirectory; //!< Path to read and write runtime artifacts to and from.
         };
 
         //! Active persistent data workspace configuration.
         struct Active
         {
-            //! Paths relative to root.
-            struct RelativePaths
-            {
-                RepoPath m_sparTIAFile; //!< Path to the test impact analysis data.
-                RepoPath m_enumerationCacheDirectory; //!< Path to the test enumerations cache.
-            };
-
             RepoPath m_root; //!< Path to the persistent workspace tracked by the repository.
-            RelativePaths m_relativePaths;
+            RepoPath m_sparTIAFile; //!< Path to the test impact analysis data.
+            RepoPath m_enumerationCacheDirectory; //!< Path to the test enumerations cache.
         };
 
         Temp m_temp;
