@@ -29,7 +29,6 @@ namespace Physics
     /// =========================
     /// This is the interface to the wrapper around native material type (such as PxMaterial in PhysX gem)
     /// that stores extra metadata, like Surface Type name.
-    /// To see more details about PhysX implementation please refer to PhysX::Material class
     ///
     /// Usage example
     /// -------------------------
@@ -37,14 +36,7 @@ namespace Physics
     ///
     ///     Physics::MaterialConfiguration materialProperties;
     ///     AZStd::shared_ptr<Physics::Material> newMaterial = AZ::Interface<Physics::System>::Get()->CreateMaterial(materialProperties);
-    ///
-    /// To get PxMaterial use GetNativePointer function
-    ///
-    ///     physx::PxMaterial* material = static_cast<physx::PxMaterial*>(newMaterial->GetNativePointer());
-    ///
-    /// You can use retrieved PxMaterial pointer on its own, provided you increment its reference count.
-    /// If this class goes out of scope, the PxMaterial pointer will be valid, but its userData
-    /// will be cleaned up to point to nullptr.
+    /// 
     class Material
     {
     public:
@@ -63,9 +55,9 @@ namespace Physics
 
         /// Returns AZ::Crc32 of the surface name.
         virtual AZ::Crc32 GetSurfaceType() const = 0;
-        virtual void SetSurfaceType(AZ::Crc32 surfaceType) = 0;
 
         virtual const AZStd::string& GetSurfaceTypeName() const = 0;
+        virtual void SetSurfaceTypeName(const AZStd::string& surfaceTypeName) = 0;
 
         virtual float GetDynamicFriction() const = 0;
         virtual void SetDynamicFriction(float dynamicFriction) = 0;
@@ -84,6 +76,9 @@ namespace Physics
 
         virtual float GetDensity() const = 0;
         virtual void SetDensity(float density) = 0;
+
+        virtual AZ::Color GetDebugColor() const = 0;
+        virtual void SetDebugColor(const AZ::Color& debugColor) = 0;
 
         /// If the name of this material matches the name of one of the CrySurface types, it will return its CrySurface Id.\n
         /// If there's no match it will return default CrySurface Id.\n
@@ -122,6 +117,10 @@ namespace Physics
         Material::CombineMode m_frictionCombine = Material::CombineMode::Average;
 
         AZ::Color m_debugColor = AZ::Colors::White;
+
+        bool operator==(const MaterialConfiguration& other) const;
+        bool operator!=(const MaterialConfiguration& other) const;
+
     private:
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static AZ::Color GenerateDebugColor(const char* materialName);
@@ -147,6 +146,7 @@ namespace Physics
         static MaterialId FromUUID(const AZ::Uuid& uuid);
         bool IsNull() const { return m_id.IsNull(); }
         bool operator==(const MaterialId& other) const { return m_id == other.m_id; }
+        bool operator!=(const MaterialId& other) const { return !(*this == other); }
         const AZ::Uuid& GetUuid() const { return m_id; }
 
     private:
@@ -166,6 +166,9 @@ namespace Physics
 
         MaterialConfiguration m_configuration;
         MaterialId m_id;
+
+        bool operator==(const MaterialFromAssetConfiguration& other) const;
+        bool operator!=(const MaterialFromAssetConfiguration& other) const;
     };
 
     /// An asset that holds a list of materials to be edited and assigned in Open 3D Engine Editor
@@ -222,40 +225,27 @@ namespace Physics
         AZStd::vector<MaterialFromAssetConfiguration> m_materialLibrary;
     };
 
-    /// The class is used to expose a MaterialLibraryAsset to Edit Context
+    /// The class is used to expose a default material and material library asset to Edit Context
     /// =======================================================================
     ///
     /// Since AZ::Data::Asset doesn't reflect the data to EditContext 
     /// we have to have a wrapper doing it.
-    class MaterialLibraryAssetReflectionWrapper
+    class MaterialInfoReflectionWrapper
     {
     public:
-        AZ_CLASS_ALLOCATOR(MaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(Physics::MaterialLibraryAssetReflectionWrapper, "{3D2EF5DF-EFD0-47EB-B88F-3E6FE1FEE5B0}");
+        AZ_CLASS_ALLOCATOR(MaterialInfoReflectionWrapper, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(Physics::MaterialInfoReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_asset =
+        Physics::MaterialConfiguration m_defaultMaterialConfiguration;
+        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset =
             AZ::Data::AssetLoadBehavior::NoLoad;
     };
 
-    /// Customized material library for use as default material library
-    class DefaultMaterialLibraryAssetReflectionWrapper : public Physics::MaterialLibraryAssetReflectionWrapper
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(MaterialLibraryAssetReflectionWrapper, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(Physics::DefaultMaterialLibraryAssetReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_asset =
-            AZ::Data::AssetLoadBehavior::NoLoad;
-    };
-
-    /// The class is used to store a MaterialLibraryAsset and a vector of MaterialIds selected from the library
+    /// The class is used to store a vector of MaterialIds selected from the library
     /// =======================================================================
     ///
-    /// This class is used to store a reference to the library asset and user's
-    /// selection of the materials from this library.\n
-    /// It also reflects UI controls for assigning MaterialLibraryAsset and selecting a material from it.
+    /// This class is used to store the user's selection of the materials from this library.
     /// You can reflect this class in EditorContext to provide UI for selecting materials
     /// on any custom component or QWidget.
     class MaterialSelection
@@ -269,27 +259,6 @@ namespace Physics
 
         static void Reflect(AZ::ReflectContext* context);
 
-        /// Returns whether MaterialLibraryAsset assigned to this selection exists and valid. Attempts to load
-        /// the library if it's not loaded yet.
-        /// @return true if MaterialLibraryAsset has a valid AssetId, loaded and isn't empty
-        bool IsMaterialLibraryValid() const;
-
-        /// Looks up MaterialLibraryAsset for MaterialFromAssetConfiguration with MaterialId that is stored intrenally.
-        /// @param configuration contains material data if there is a material selected by user
-        /// and if it exists in the MaterialLibraryAsset
-        /// @param materialId MaterialId to retrieve MaterialFromAssetConfiguration for
-        /// @return true if lookup was successful.
-        bool GetMaterialConfiguration(Physics::MaterialFromAssetConfiguration& configuration, const Physics::MaterialId& materialId) const;
-
-        /// Sets and loads MaterialLibraryAsset with specified AssetId. 
-        /// It is used to construct MaterialSelection at runtime.
-        /// It is not a typical use case and mostly needed to convert legacy entities and auto-generate material libraries
-        /// @param assetId AssetId to create MaterialLibraryAsset with
-        void SetMaterialLibrary(const AZ::Data::AssetId& assetId);
-
-        /// Sets the material library to none, this will cause to use the project-wide default material library
-        void ResetToDefaultMaterialLibrary();
-
         /// Sets an array of material slots to pick MaterialIds for. Having multiple slots is required for assigning multiple materials on a mesh 
         /// or heightfield object. SlotsArray can be empty and in this case Default slot will be created.
         /// @param slots Array of names for slots. Can be empty, in this case Default slot will be created
@@ -298,48 +267,34 @@ namespace Physics
         /// Returns a list of MaterialId that were assigned for each corresponding slot.
         const AZStd::vector<Physics::MaterialId>& GetMaterialIdsAssignedToSlots() const;
 
-        /// Sets the MaterialId from MaterialLibraryAsset as the selected material at a specific slotIndex.
-        /// @param materialId MaterialId that user selected from the MaterialLibraryAsset
-        /// @param slotIndex index of the slot to set MaterialId for
+        /// Sets the MaterialId as the selected material at a specific slotIndex.
+        /// @param materialId MaterialId that user selected
+        /// @param slotIndex Index of the slot to set the MaterialId
         void SetMaterialId(const Physics::MaterialId& materialId, int slotIndex = 0);
 
-        /// Returns the material library asset id.
-        AZ::Data::AssetId GetMaterialLibraryAssetId() const;
-
         /// Returns the material id assigned to this selection at a specific slotIndex.
-        /// @param slotIndex index of the slot to retrieve MaterialId for
+        /// @param slotIndex Index of the slot to retrieve the MaterialId
         Physics::MaterialId GetMaterialId(int slotIndex = 0) const;
 
-        /// Returns the material library asset.
-        const Physics::MaterialLibraryAsset* GetMaterialLibraryAssetData() const;
-
-        /// Returns the material library asset hint(UI display string)
-        const AZStd::string& GetMaterialLibraryAssetHint() const;
-
         /// Called when the material library has changed
-        void OnDefaultMaterialLibraryChanged(const AZ::Data::AssetId& defaultMaterialLibraryId);
+        void OnMaterialLibraryChanged(const AZ::Data::AssetId& defaultMaterialLibraryId);
 
         /// Set if the material slots are editable in the edit context
         void SetSlotsReadOnly(bool readOnly);
 
     private:
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibrary { AZ::Data::AssetLoadBehavior::NoLoad };
         AZStd::vector<Physics::MaterialId> m_materialIdsAssignedToSlots;
         SlotsArray m_materialSlots;
         bool m_slotsReadOnly = false;
         
-        const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibraryAsset() const;
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> LoadAsset() const;
-        bool IsDefaultMaterialLibraryAsset() const;
         void SyncSelectionToMaterialLibrary();
         
-        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary();
-        static const AZ::Data::AssetId& GetDefaultMaterialLibraryId();
+        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibrary();
+        static const AZ::Data::AssetId& GetMaterialLibraryId();
 
         bool AreMaterialSlotsReadOnly() const;
 
         // EditorContext callbacks
-        AZ::u32 OnMaterialLibraryChanged();
         AZStd::string GetMaterialSlotLabel(int index);
     };
 

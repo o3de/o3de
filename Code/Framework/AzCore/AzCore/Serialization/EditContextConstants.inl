@@ -123,6 +123,7 @@ namespace AZ
 
             const static AZ::Crc32 NameLabelOverride = AZ_CRC("NameLabelOverride", 0x9ff79cab);
             const static AZ::Crc32 AssetPickerTitle = AZ_CRC_CE("AssetPickerTitle");
+            const static AZ::Crc32 HideProductFilesInAssetPicker = AZ_CRC_CE("HideProductFilesInAssetPicker");
             const static AZ::Crc32 ChildNameLabelOverride = AZ_CRC("ChildNameLabelOverride", 0x73dd2909);
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);

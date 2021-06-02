@@ -379,7 +379,7 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
     
     // layer1
     {
-        if(o_layer1_o_useDepthMap)
+        if(o_layer1_o_useHeightmap)
         {
             float2 layerUv = uv;
             if(MaterialSrg::m_parallaxUvIndex == 0)
@@ -387,16 +387,16 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
                 layerUv = mul(MaterialSrg::m_layer1_m_uvMatrix, float3(uv, 1.0)).xy;
             }
 
-            layerDepthValues.r = SampleDepthOrHeightMap(MaterialSrg::m_layer1_m_depthInverted, MaterialSrg::m_layer1_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
-            layerDepthValues.r *= MaterialSrg::m_layer1_m_depthFactor;
+            layerDepthValues.r = SampleDepthFromHeightmap(MaterialSrg::m_layer1_m_heightmap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
+            layerDepthValues.r *= MaterialSrg::m_layer1_m_heightmapScale;
         }
 
-        layerDepthValues.r -= MaterialSrg::m_layer1_m_depthOffset;
+        layerDepthValues.r -= MaterialSrg::m_layer1_m_heightmapOffset;
     }
     
     if(o_layer2_enabled)
     {
-        if(o_layer2_o_useDepthMap)
+        if(o_layer2_o_useHeightmap)
         {
             float2 layerUv = uv;
             if(MaterialSrg::m_parallaxUvIndex == 0)
@@ -404,17 +404,17 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
                 layerUv = mul(MaterialSrg::m_layer2_m_uvMatrix, float3(uv, 1.0)).xy;
             }
 
-            layerDepthValues.g = SampleDepthOrHeightMap(MaterialSrg::m_layer2_m_depthInverted, MaterialSrg::m_layer2_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
-            layerDepthValues.g *= MaterialSrg::m_layer2_m_depthFactor;
+            layerDepthValues.g = SampleDepthFromHeightmap(MaterialSrg::m_layer2_m_heightmap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
+            layerDepthValues.g *= MaterialSrg::m_layer2_m_heightmapScale;
         }
 
-        layerDepthValues.g -= MaterialSrg::m_layer2_m_depthOffset;
+        layerDepthValues.g -= MaterialSrg::m_layer2_m_heightmapOffset;
 
     }
     
     if(o_layer3_enabled)
     {
-        if(o_layer3_o_useDepthMap)
+        if(o_layer3_o_useHeightmap)
         {
             float2 layerUv = uv;
             if(MaterialSrg::m_parallaxUvIndex == 0)
@@ -422,11 +422,11 @@ float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)
                 layerUv = mul(MaterialSrg::m_layer3_m_uvMatrix, float3(uv, 1.0)).xy;
             }
 
-            layerDepthValues.b = SampleDepthOrHeightMap(MaterialSrg::m_layer3_m_depthInverted, MaterialSrg::m_layer3_m_depthMap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
-            layerDepthValues.b *= MaterialSrg::m_layer3_m_depthFactor;
+            layerDepthValues.b = SampleDepthFromHeightmap(MaterialSrg::m_layer3_m_heightmap, MaterialSrg::m_sampler, layerUv, uv_ddx, uv_ddy).m_depth;
+            layerDepthValues.b *= MaterialSrg::m_layer3_m_heightmapScale;
         }
 
-        layerDepthValues.b -= MaterialSrg::m_layer3_m_depthOffset;
+        layerDepthValues.b -= MaterialSrg::m_layer3_m_heightmapOffset;
 
     }
     
@@ -448,13 +448,13 @@ float3 ApplyBlendMaskToDepthValues(float3 blendMaskValues, float3 layerDepthValu
 
         if(o_layer2_enabled)
         {
-            float dropoffRange = MaterialSrg::m_layer2_m_depthOffset - zeroMaskDisplacement;
+            float dropoffRange = MaterialSrg::m_layer2_m_heightmapOffset - zeroMaskDisplacement;
             layerDepthValues.g += dropoffRange * (1-blendMaskValues.r);
         }
         
         if(o_layer3_enabled)
         {
-            float dropoffRange = MaterialSrg::m_layer3_m_depthOffset - zeroMaskDisplacement;
+            float dropoffRange = MaterialSrg::m_layer3_m_heightmapOffset - zeroMaskDisplacement;
             layerDepthValues.b += dropoffRange * (1-blendMaskValues.g);
         }
     }

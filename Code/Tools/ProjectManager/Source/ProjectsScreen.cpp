@@ -14,6 +14,7 @@
 
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
+#include <ProjectUtils.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -65,9 +66,6 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_projectsContent);
 
         vLayout->addWidget(m_stack);
-
-        connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
-        connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
     }
 
     QFrame* ProjectsScreen::CreateFirstTimeContent()
@@ -167,28 +165,23 @@ namespace O3DE::ProjectManager
 #endif
                 {
                     ProjectButton* projectButton;
+
                     QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
                     QFileInfo doesPreviewExist(projectPreviewPath);
                     if (doesPreviewExist.exists() && doesPreviewExist.isFile())
                     {
-                        projectButton = new ProjectButton(project.m_projectName, projectPreviewPath, this);
+                        project.m_imagePath = projectPreviewPath;
                     }
-                    else
-                    {
-                        projectButton = new ProjectButton(project.m_projectName, this);
-                    }
+
+                    projectButton = new ProjectButton(project, this);
 
                     flowLayout->addWidget(projectButton);
 
                     connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
                     connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
-
-    #ifdef DISPLAY_PROJECT_DEV_DATA
-                    connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
                     connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
                     connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
                     connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
-    #endif
                 }
 
                 layout->addWidget(projectsScrollArea);
@@ -242,7 +235,11 @@ namespace O3DE::ProjectManager
     }
     void ProjectsScreen::HandleAddProjectButton()
     {
-        // Do nothing for now
+        if (ProjectUtils::AddProjectDialog(this))
+        {
+            emit ResetScreenRequest(ProjectManagerScreen::Projects);
+            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+        }
     }
     void ProjectsScreen::HandleOpenProject(const QString& projectPath)
     {
@@ -292,26 +289,38 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::HandleEditProject(const QString& projectPath)
     {
         emit NotifyCurrentProject(projectPath);
-        emit ResetScreenRequest(ProjectManagerScreen::UpdateProject);
         emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
     }
-    void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)
-    {
-        emit NotifyCurrentProject(projectPath);
-        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
-    }
-    void ProjectsScreen::HandleCopyProject([[maybe_unused]] const QString& projectPath)
+    void ProjectsScreen::HandleCopyProject(const QString& projectPath)
     {
         // Open file dialog and choose location for copied project then register copy with O3DE
+        if (ProjectUtils::CopyProjectDialog(projectPath, this))
+        {
+            emit ResetScreenRequest(ProjectManagerScreen::Projects);
+            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+        }
     }
-    void ProjectsScreen::HandleRemoveProject([[maybe_unused]] const QString& projectPath)
+    void ProjectsScreen::HandleRemoveProject(const QString& projectPath)
     {
-        // Unregister Project from O3DE 
+        // Unregister Project from O3DE and reload projects
+        if (ProjectUtils::UnregisterProject(projectPath))
+        {
+            emit ResetScreenRequest(ProjectManagerScreen::Projects);
+            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+        }
     }
-    void ProjectsScreen::HandleDeleteProject([[maybe_unused]] const QString& projectPath)
+    void ProjectsScreen::HandleDeleteProject(const QString& projectPath)
     {
-        // Remove project from 03DE and delete from disk
-        ProjectsScreen::HandleRemoveProject(projectPath);
+        QMessageBox::StandardButton warningResult = QMessageBox::warning(
+            this, tr("Delete Project"), tr("Are you sure?\nProject will be removed from O3DE and directory will be deleted!"),
+            QMessageBox::No | QMessageBox::Yes);
+
+        if (warningResult == QMessageBox::Yes)
+        {
+            // Remove project from O3DE and delete from disk
+            HandleRemoveProject(projectPath);
+            ProjectUtils::DeleteProjectFiles(projectPath);
+        }
     }
 
     void ProjectsScreen::NotifyCurrentScreen()
@@ -322,6 +331,16 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            // refresh the projects content by re-creating it for now
+            if (m_projectsContent)
+            {
+                m_stack->removeWidget(m_projectsContent);
+                m_projectsContent->deleteLater();
+            }
+
+            m_projectsContent = CreateProjectsContent();
+
+            m_stack->addWidget(m_projectsContent);
             m_stack->setCurrentWidget(m_projectsContent);
         }
     }

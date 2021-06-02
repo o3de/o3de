@@ -115,11 +115,11 @@ namespace AZ
                     }
                 }
 
-                // update and compile the RayTracingSceneSrg
+                // update and compile the RayTracingSceneSrg and RayTracingMaterialSrg
                 // Note: the timing of this update is very important, it needs to be updated after the TLAS is allocated so it can
                 // be set on the RayTracingSceneSrg for this frame, and the ray tracing mesh data in the RayTracingSceneSrg must
                 // exactly match the TLAS.  Any mismatch in this data may result in a TDR.
-                rayTracingFeatureProcessor->UpdateRayTracingSceneSrg();
+                rayTracingFeatureProcessor->UpdateRayTracingSrgs();
             }
         }
 

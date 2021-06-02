@@ -59,7 +59,7 @@ namespace Multiplayer
             AZ::Transform worldTm = GetEntity()->FindComponent<AzFramework::TransformComponent>()->GetWorldTM();
             auto preInsertionCallback =
                 [worldTm = AZStd::move(worldTm), netEntityIndex = m_netEntityIndex, spawnableAssetId = m_networkSpawnableAsset.GetId()]
-                (AzFramework::EntitySpawnTicket&, AzFramework::SpawnableEntityContainerView entities)
+                (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
             {
                 if (entities.size() == 1)
                 {
@@ -81,7 +81,8 @@ namespace Multiplayer
             };
 
             m_netSpawnTicket = AzFramework::EntitySpawnTicket(m_networkSpawnableAsset);
-            AzFramework::SpawnableEntitiesInterface::Get()->SpawnEntities(m_netSpawnTicket, {m_netEntityIndex}, preInsertionCallback);
+            AzFramework::SpawnableEntitiesInterface::Get()->SpawnEntities(
+                m_netSpawnTicket, AzFramework::SpawnablePriority_Default, { m_netEntityIndex }, preInsertionCallback);
         }
     }
 
@@ -89,7 +90,7 @@ namespace Multiplayer
     {
         if(m_netSpawnTicket.IsValid())
         {
-            AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(m_netSpawnTicket);
+            AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(m_netSpawnTicket, AzFramework::SpawnablePriority_Default);
         }
     }
 

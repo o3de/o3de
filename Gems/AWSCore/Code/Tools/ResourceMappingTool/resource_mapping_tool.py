@@ -13,13 +13,16 @@ from argparse import (ArgumentParser, Namespace)
 import logging
 import sys
 
+from utils import aws_utils
 from utils import environment_utils
 from utils import file_utils
 
 # arguments setup
 argument_parser: ArgumentParser = ArgumentParser()
 argument_parser.add_argument('--binaries_path', help='Path to QT Binaries necessary for PySide.')
+argument_parser.add_argument('--config_path', help='Path to resource mapping config directory.')
 argument_parser.add_argument('--debug', action='store_true', help='Execute on debug mode to enable DEBUG logging level')
+argument_parser.add_argument('--profile', default='default', help='Named AWS profile to use for querying AWS resources')
 arguments: Namespace = argument_parser.parse_args()
 
 # logging setup
@@ -70,9 +73,12 @@ if __name__ == "__main__":
     except FileNotFoundError:
         logger.warning("Failed to load style sheet for resource mapping tool")
 
+    logger.info("Initializing boto3 default session ...")
+    aws_utils.setup_default_session(arguments.profile)
+
     logger.info("Initializing configuration manager ...")
     configuration_manager: ConfigurationManager = ConfigurationManager()
-    configuration_manager.setup()
+    configuration_manager.setup(arguments.config_path)
 
     logger.info("Initializing thread manager ...")
     thread_manager: ThreadManager = ThreadManager()
