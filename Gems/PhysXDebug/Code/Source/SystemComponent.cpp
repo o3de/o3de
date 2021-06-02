@@ -536,13 +536,13 @@ namespace PhysXDebug
         }
     }
 
-    static void physx_EnableWireFrame([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    static void physx_CullingBox([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         PhysXDebug::PhysXDebugRequestBus::Broadcast(&PhysXDebug::PhysXDebugRequestBus::Events::ToggleCullingWireFrame);
     }
-    AZ_CONSOLEFREEFUNC(physx_EnableWireFrame, AZ::ConsoleFunctorFlags::DontReplicate, "Enables physx wireframe view");
+    AZ_CONSOLEFREEFUNC(physx_CullingBox, AZ::ConsoleFunctorFlags::DontReplicate, "Enables physx wireframe view");
 
-    static void physx_ConnectToPvd([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    static void physx_PvdConnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
         if (debug)
@@ -550,9 +550,9 @@ namespace PhysXDebug
             debug->ConnectToPvd();
         }
     }
-    AZ_CONSOLEFREEFUNC(physx_ConnectToPvd, AZ::ConsoleFunctorFlags::DontReplicate, "Connects to the physx visual debugger");
+    AZ_CONSOLEFREEFUNC(physx_PvdConnect, AZ::ConsoleFunctorFlags::DontReplicate, "Connects to the physx visual debugger");
 
-    static void physx_DisconnectFromPvd([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    static void physx_PvdDisconnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
         if (debug)
@@ -560,9 +560,9 @@ namespace PhysXDebug
             debug->DisconnectFromPvd();
         }
     }
-    AZ_CONSOLEFREEFUNC(physx_DisconnectFromPvd, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects from the physx visual debugger");
+    AZ_CONSOLEFREEFUNC(physx_PvdDisconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects from the physx visual debugger");
 
-    static void physx_SetPhysXDebugCullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    static void physx_CullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         const int argumentCount = arguments.size();
         if (argumentCount == 2)
@@ -576,9 +576,9 @@ namespace PhysXDebug
                 "Please use physx_SetDebugCullingBoxSize <boxSize> e.g. physx_SetDebugCullingBoxSize 100.");
         }
     }
-    AZ_CONSOLEFREEFUNC(physx_SetPhysXDebugCullingBoxSize, AZ::ConsoleFunctorFlags::DontReplicate, "Sets physx debug culling box size");
+    AZ_CONSOLEFREEFUNC(physx_CullingBoxSize, AZ::ConsoleFunctorFlags::DontReplicate, "Sets physx debug culling box size");
 
-    static void physx_TogglePhysXDebugVisualization([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    static void physx_Debug([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         using namespace CryStringUtils;
 
@@ -612,7 +612,7 @@ namespace PhysXDebug
             AZ_Warning("PhysXDebug", false, "Invalid physx_Debug Arguments. Please use physx_Debug 1 to enable, physx_Debug 0 to disable or physx_Debug 2 to enable all configuration settings.");
         }
     }
-    AZ_CONSOLEFREEFUNC(physx_TogglePhysXDebugVisualization, AZ::ConsoleFunctorFlags::DontReplicate, "Toggles physx debug visualization");
+    AZ_CONSOLEFREEFUNC(physx_Debug, AZ::ConsoleFunctorFlags::DontReplicate, "Toggles physx debug visualization");
 
     void SystemComponent::ConfigurePhysXVisualizationParameters()
     {

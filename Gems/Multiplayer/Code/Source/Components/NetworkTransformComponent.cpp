@@ -96,15 +96,6 @@ namespace Multiplayer
             blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
             blendTransform.SetScale(m_previousTransform.GetScale().Lerp(m_targetTransform.GetScale(), blendFactor));
             GetTransformComponent()->SetWorldTM(blendTransform);
-
-            //AZLOG
-            //(
-            //    NET_Movement,
-            //    "Blending entity to position %f x %f x %f",
-            //    blendTransform.GetTranslation().GetX(),
-            //    blendTransform.GetTranslation().GetY(),
-            //    blendTransform.GetTranslation().GetZ()
-            //);
         }
     }
 
