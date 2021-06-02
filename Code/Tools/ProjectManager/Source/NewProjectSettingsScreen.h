@@ -36,10 +36,15 @@ namespace O3DE::ProjectManager
 
         bool Validate();
 
+        void NotifyCurrentScreen() override;
+
     protected slots:
         void HandleBrowseButton();
+        void ValidateProjectPath();
 
     private:
+        QString GetDefaultProjectPath();
+
         FormLineEditWidget* m_projectName;
         FormBrowseEditWidget* m_projectPath;
         QButtonGroup* m_projectTemplateButtonGroup;
