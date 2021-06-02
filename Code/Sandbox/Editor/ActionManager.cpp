@@ -466,22 +466,19 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
 
 ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QString& name)
 {
-    //careful here (check)
-    
     AZ::u32 new_id = id;
 
     QAction* action = ActionIsWidget(new_id)
         ? new WidgetAction(id, m_mainWindow, name, this)
-    : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compiles
+        : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compiles
 
     action->setData(new_id);
 
-    connect(action, SIGNAL(triggered()), m_actionMapper, SLOT(map()));
+    void (QSignalMapper::*mapped)() = &QSignalMapper::map;
+    connect(action, &QAction::triggered, m_actionMapper, mapped);
     m_actionMapper->setMapping(action, new_id);
 
-    QWidget* widget = qobject_cast<QWidget*>(parent());
-
-    if (widget)
+    if (QWidget* widget = qobject_cast<QWidget*>(parent()))
     {
         widget->addAction(action);
     }
@@ -503,11 +500,11 @@ bool ActionManager::HasAction(int id) const
 
 QAction* ActionManager::GetAction(int id) const
 {
-    for (unsigned i = 0; i < m_shortcutDispatcher->m_all_actions.size(); i++)
+    for (size_t i = 0; i < m_shortcutDispatcher->m_allActions.size(); i++)
     {
-        if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
+        if (m_shortcutDispatcher->m_allActions[i].second->data().toInt() == id)
         {
-            return m_shortcutDispatcher->m_all_actions[i].second;
+            return m_shortcutDispatcher->m_allActions[i].second;
         }
     }
 
@@ -665,7 +662,6 @@ void ActionManager::AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* p
     m_shortcutDispatcher->AddNewAction(action, id);
 }
 
-
 void ActionManager::RemoveActionViaBus(QAction* action)
 {
     RemoveAction(action);
@@ -713,5 +709,3 @@ QWidget* WidgetAction::createWidget(QWidget* parent)
 }
 
 #include <moc_ActionManager.cpp>
-
-

@@ -46,7 +46,7 @@ class QKeyEvent;
   More documentation on Qt shortcuts
   -------------------------------------------
 
-  Here's some more detailed info regarding shortcuts in Qt. Not specific Lumberyard but
+  Here's some more detailed info regarding shortcuts in Qt. Not specific Open 3D Engine but
   useful as not explained in Qt docs much.
 
   P.S.: The following text details the strategy used in an earlier Open 3D Engine version. Not sure which
@@ -102,7 +102,6 @@ public:
     explicit ShortcutDispatcher(QObject* parent = nullptr);
     ~ShortcutDispatcher();
     bool eventFilter(QObject* obj, QEvent* ev) override;
-
     static QWidget* focusWidget();
 
     /// Assign the widget responsible for getting first attempt
@@ -114,11 +113,9 @@ public:
 
 public:
     void AddNewAction(QAction* new_action, AZ::Crc32 r_url);
-
     void AddNewAction(QAction* new_action);
 
-
-    AZStd::vector<AZStd::pair<AZ::Crc32, QAction*>> m_all_actions;
+    AZStd::vector<AZStd::pair<AZ::Crc32, QAction*>> m_allActions;
 
 private:
     bool shortcutFilter(QObject* obj, QShortcutEvent* ev);

@@ -331,13 +331,15 @@ public:
     template<typename T>
     void RegisterUpdateCallback(int id, T* object, void (T::*method)(QAction*))
     {
-        unsigned size = m_shortcutDispatcher->m_all_actions.size();
+        size_t size = m_shortcutDispatcher->m_allActions.size();
 
-        for (unsigned i = 0; i < size; i++)
+        for (size_t i = 0; i < size; i++)
         {
-            if (m_shortcutDispatcher->m_all_actions[i].second->data() == id)
+            if (m_shortcutDispatcher->m_allActions[i].second->data() == id)
             {
-                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_all_actions[i].second, object, method] { AZStd::invoke(method, object, action);};
+                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_allActions[i].second, object, method] {
+                    AZStd::invoke(method, object, action);
+                };
             }
         }
     }
@@ -345,12 +347,12 @@ public:
     template<typename Fn>
     void RegisterUpdateCallback(int id, Fn&& fn)
     {
-        unsigned size = m_shortcutDispatcher->m_all_actions.size();
-        for (unsigned i = 0; i < size; i++)
+        size_t size = m_shortcutDispatcher->m_allActions.size();
+        for (size_t i = 0; i < size; i++)
         {
-            if (m_shortcutDispatcher->m_all_actions[i].second->data().toInt() == id)
+            if (m_shortcutDispatcher->m_allActions[i].second->data().toInt() == id)
             {
-                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_all_actions[i].second, fn] { fn(action); };
+                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_allActions[i].second, fn] { fn(action); };
             }
         }
     }

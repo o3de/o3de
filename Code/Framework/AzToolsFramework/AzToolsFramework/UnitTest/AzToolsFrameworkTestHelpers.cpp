@@ -97,7 +97,7 @@ namespace UnitTest
         m_defaultWidget.setFocus();
     }
 
-    void TestEditorActions::AddActionViaBus(int id, QAction* action, QObject * parent)
+    void TestEditorActions::AddActionViaBus(int id, QAction* action, QObject* parent)
     {
         AZ_Assert(action, "Attempting to add a null action");
 

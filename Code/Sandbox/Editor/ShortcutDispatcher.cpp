@@ -167,27 +167,26 @@ bool ShortcutDispatcher::IsAContainerForB(QWidget* a, QWidget* b)
 
 bool ShortcutDispatcher::FindCandidateActionAndFire(QShortcutEvent* shortcutEvent)
 {
-
-    for (unsigned i = 0; i < m_all_actions.size(); i++)
+    for (size_t i = 0; i < m_allActions.size(); i++)
     {
-        if (shortcutEvent->key() == m_all_actions[i].second->shortcut())
+        QObject* focused = qApp->focusObject();
+
+        if (shortcutEvent->key() == m_allActions[i].second->shortcut())
         {
-            //This method is simpler and we don't need any recursion. There are not many shortcuts so a vector is not that problematic with performance.
-            QObject* p_registered = nullptr;
-            p_registered = m_all_actions[i].second->parent();
+            //Here we are going through the shortcuts and looking at the
+            //parents of each shortcut to compare it with the current focused widget.
 
-            QObject* p_focused = nullptr;
-            p_focused = qApp->focusObject();
+            QObject* registered = m_allActions[i].second->parent();
 
-            if (m_all_actions[i].second->isEnabled())
+            if (m_allActions[i].second->isEnabled())
             {
                 //Checking if the parent is on focus so that we can use it.
-                if (p_registered == p_focused)
+                if (registered == focused)
                 {
                     bool isAmbiguous = false;
 
                     QShortcutEvent newEvent(shortcutEvent->key(), isAmbiguous);
-                    if (QApplication::sendEvent(m_all_actions[i].second, &newEvent))
+                    if (QApplication::sendEvent(m_allActions[i].second, &newEvent))
                     {
                         shortcutEvent->accept();
                     }
@@ -195,7 +194,9 @@ bool ShortcutDispatcher::FindCandidateActionAndFire(QShortcutEvent* shortcutEven
                     return true;
                 }
                 else
+                {
                     continue;
+                }
             }
         }
     }
@@ -313,12 +314,14 @@ void ShortcutDispatcher::DetachOverride()
 
 void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
 {
+    //In this function we are going through all of the actions and comparing the Url or the ids,
+    //since the Url are not common yet we take into account they could be null before adding them.
     const int new_id = newAction->data().toInt();
 
-    unsigned size = m_all_actions.size();
-    for (unsigned i = 0; i < size; i++)
+    size_t size = m_allActions.size();
+    for (size_t i = 0; i < size; i++)
     {
-        if (m_all_actions[i].second->data().toInt() == new_id || (m_all_actions[i].first == reverseUrl && m_all_actions[i].first != AZ::Crc32(0)))
+        if (m_allActions[i].second->data().toInt() == new_id || (m_allActions[i].first == reverseUrl && m_allActions[i].first != AZ::Crc32(0)))
         {
             qWarning() << "ActionManager already contains action with id" << new_id;
             Q_ASSERT(false);
@@ -327,17 +330,18 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
 
     AZStd::pair<AZ::Crc32, QAction*> new_addition(reverseUrl, newAction);
     
-    m_all_actions.push_back(new_addition);
+    m_allActions.push_back(new_addition);
 }
 
 void ShortcutDispatcher::AddNewAction(QAction* newAction)
 {
+    //Here we are adding directly the Url with 0 sicne we have none, this is here to keep track of the old shortcuts.
     const int new_id = newAction->data().toInt();
 
-    unsigned size = m_all_actions.size();
-    for (unsigned i = 0; i < size; i++)
+    size_t size = m_allActions.size();
+    for (size_t i = 0; i < size; i++)
     {
-        if (m_all_actions[i].second->data().toInt() == new_id)
+        if (m_allActions[i].second->data().toInt() == new_id)
         {
             qWarning() << "ActionManager already contains action with id" << new_id;
             Q_ASSERT(false);
@@ -346,7 +350,7 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction)
 
     AZStd::pair<AZ::Crc32, QAction*> new_addition(AZ::Crc32(0), newAction);
 
-    m_all_actions.push_back(new_addition);
+    m_allActions.push_back(new_addition);
 }
 
 
