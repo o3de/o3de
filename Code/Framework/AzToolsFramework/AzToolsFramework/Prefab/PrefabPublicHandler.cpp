@@ -252,7 +252,7 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->GenerateDomForEntity(containerBeforeReset, *containerEntity);
 
                     AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetParent, AZ::EntityId());
-                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTM, AZ::Transform());
+                    AZ::TransformBus::Event(containerEntityId, &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
 
                     PrefabDom containerAfterReset;
                     m_instanceToTemplateInterface->GenerateDomForEntity(containerAfterReset, *containerEntity);
