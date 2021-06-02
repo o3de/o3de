@@ -38,3 +38,7 @@ ly_add_target(
         PRIVATE
             Gem::DccScriptingInterface.Static
 )
+
+# Any 'tool' and 'builder' type applications should use Gem::DccScriptingInterface.Editor:
+ly_create_alias(NAME DccScriptingInterface.Builders NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
+ly_create_alias(NAME DccScriptingInterface.Tools    NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
