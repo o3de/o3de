@@ -54,6 +54,8 @@ namespace MaterialEditor
         float m_y = 0;
         //! delta scroll wheel accumulated during current frame
         float m_z = 0;
+        //! Model radius
+        float m_radius = 1.0f;
 
         AZ::EntityId m_cameraEntityId;
         AZ::Vector3 m_targetPosition = AZ::Vector3::CreateZero();

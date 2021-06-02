@@ -79,7 +79,7 @@ namespace AZ
                     if (coordinateSystemRule->GetScale() != 1.0f)
                     {
                         float scale = coordinateSystemRule->GetScale();
-                        matrix.MultiplyByScale(Vector3(scale, scale, scale));
+                        matrix.MultiplyByScale(Vector3(scale));
                     }
                     if (!coordinateSystemRule->GetOriginNodeName().empty())
                     {

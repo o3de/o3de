@@ -41,15 +41,27 @@ namespace O3DE::ProjectManager
         {
             return true;
         }
-        virtual QString GetNextButtonText()
+        virtual bool IsTab()
         {
-            return "Next";
+            return false;
+        }
+        virtual QString GetTabText()
+        {
+            return tr("Missing");
+        }
+
+        //! Notify this screen it is the current screen 
+        virtual void NotifyCurrentScreen()
+        {
+
         }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
         void GotoPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
+        void NotifyCurrentProject(const QString& projectPath);
+
     };
 
 } // namespace O3DE::ProjectManager

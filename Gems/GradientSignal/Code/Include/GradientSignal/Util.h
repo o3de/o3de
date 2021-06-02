@@ -14,6 +14,7 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
@@ -64,15 +65,15 @@ namespace GradientSignal
             AZ::LerpInverse(bounds.GetMin().GetZ(), bounds.GetMax().GetZ(), point.GetZ()));
     }
 
-    inline void GetObbParamsFromShape(const AZ::EntityId& entity, AZ::Aabb& bounds, AZ::Transform& worldToBoundsTransform)
+    inline void GetObbParamsFromShape(const AZ::EntityId& entity, AZ::Aabb& bounds, AZ::Matrix3x4& worldToBoundsTransform)
     {
         //get bound and transform data for associated shape
         bounds = AZ::Aabb::CreateNull();
-        worldToBoundsTransform = AZ::Transform::CreateIdentity();
+        AZ::Transform transform = AZ::Transform::CreateIdentity();
         if (entity.IsValid())
         {
-            LmbrCentral::ShapeComponentRequestsBus::Event(entity, &LmbrCentral::ShapeComponentRequestsBus::Events::GetTransformAndLocalBounds, worldToBoundsTransform, bounds);
-            worldToBoundsTransform.Invert();
+            LmbrCentral::ShapeComponentRequestsBus::Event(entity, &LmbrCentral::ShapeComponentRequestsBus::Events::GetTransformAndLocalBounds, transform, bounds);
+            worldToBoundsTransform = AZ::Matrix3x4::CreateFromTransform(transform.GetInverse());
         }
     }
 

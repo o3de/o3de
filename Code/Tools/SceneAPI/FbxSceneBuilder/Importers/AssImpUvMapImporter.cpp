@@ -89,13 +89,13 @@ namespace AZ
 
                 for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
                 {
-                    int meshesWithIndex = meshesPerTextureCoordinateIndex[texCoordIndex];
                     AZ_Error(
                         Utilities::ErrorWindow,
-                        meshesWithIndex == 0 || meshesWithIndex == currentNode->mNumMeshes,
+                        meshesPerTextureCoordinateIndex[texCoordIndex] == 0 ||
+                            meshesPerTextureCoordinateIndex[texCoordIndex] == currentNode->mNumMeshes,
                         "Texture coordinate index %d for node %s is not on all meshes on this node. "
-                        "Placeholder arbitrary texture values will be generated to allow the data to process, but the source art "
-                        "needs to be fixed to correct this. All meshes on this node should have the same number of texture coordinate channels.",
+                            "Placeholder arbitrary texture values will be generated to allow the data to process, but the source art "
+                            "needs to be fixed to correct this. All meshes on this node should have the same number of texture coordinate channels.",
                         texCoordIndex,
                         currentNode->mName.C_Str());
                 }

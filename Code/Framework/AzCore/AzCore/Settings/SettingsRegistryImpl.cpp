@@ -14,6 +14,7 @@
 #include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/JSON/error/en.h>
+#include <AzCore/NativeUI//NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -1061,15 +1062,23 @@ namespace AZ
         jsonPatch.ParseInsitu<flags>(scratchBuffer.data());
         if (jsonPatch.HasParseError())
         {
+            auto nativeUI = AZ::Interface<NativeUI::NativeUIRequests>::Get();
             if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
             {
-                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)",
+                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
                     path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
             }
             else
             {
-                AZ_Error("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %llu.)", path,
+                using ErrorString = AZStd::fixed_string<4096>;
+                auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)", path,
                     GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+                AZ_Error("Settings Registry", false, "%s", jsonError.c_str());
+
+                if (nativeUI)
+                {
+                    nativeUI->DisplayOkDialog("Setreg(Patch) Merge Issue", AZStd::string_view(jsonError), false);
+                }
             }
             
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()

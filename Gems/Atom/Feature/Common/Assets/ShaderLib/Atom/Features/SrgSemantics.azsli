@@ -64,3 +64,8 @@ ShaderResourceGroupSemantic SRG_RayTracingScene
 {
     FrequencyId = 1;
 };
+
+ShaderResourceGroupSemantic SRG_RayTracingMaterial
+{
+    FrequencyId = 2;
+};
