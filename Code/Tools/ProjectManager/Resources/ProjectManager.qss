@@ -311,6 +311,7 @@ QTabBar::tab:pressed
 #projectButton > #labelButton  {
     border:1px solid white;
 }
+
 #projectButton > #labelButton:hover,
 #projectButton > #labelButton:pressed  {
     border:1px solid #1e70eb;
@@ -348,6 +349,18 @@ QTabBar::tab:pressed
     max-width:210px;;
     min-height:278px;
     max-height:278px;
+}
+
+QProgressBar {
+    border: none;
+    background-color: transparent;
+    padding: 0px;
+    min-height: 14px;
+    font-size: 2px;
+}
+
+QProgressBar::chunk {
+    background-color: #1E70EB;
 }
 
 /************** Gem Catalog **************/

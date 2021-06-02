@@ -21,6 +21,7 @@
 QT_FORWARD_DECLARE_CLASS(QPixmap)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QAction)
+QT_FORWARD_DECLARE_CLASS(QProgressBar)
 
 namespace O3DE::ProjectManager
 {
@@ -36,6 +37,9 @@ namespace O3DE::ProjectManager
         void SetEnabled(bool enabled);
         void SetOverlayText(const QString& text);
 
+        QLabel* OverlayLabel();
+        QProgressBar* ProgressBar();
+
     signals:
         void triggered();
 
@@ -44,6 +48,7 @@ namespace O3DE::ProjectManager
 
     private:
         QLabel* m_overlayLabel;
+        QProgressBar* m_progressBar;
         bool m_enabled = true;
     };
 
@@ -67,10 +72,13 @@ namespace O3DE::ProjectManager
         void DeleteProject(const QString& projectName);
 
     private:
-        void Setup();
+        void BaseSetup();
+        void ProcessingSetup();
+        void ReadySetup();
 
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
+        QFrame* m_projectFooter;
         QAction* m_editProjectAction;
         QAction* m_copyProjectAction;
         QAction* m_removeProjectAction;

@@ -21,6 +21,7 @@
 #include <QPixmap>
 #include <QMenu>
 #include <QSpacerItem>
+#include <QProgressBar>
 
 namespace O3DE::ProjectManager
 {
@@ -31,11 +32,23 @@ namespace O3DE::ProjectManager
         : QLabel(parent)
     {
         setObjectName("labelButton");
+
+        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        vLayout->setContentsMargins(0, 0, 0, 0);
+        vLayout->setSpacing(5);
+
+        setLayout(vLayout);
         m_overlayLabel = new QLabel("", this);
         m_overlayLabel->setObjectName("labelButtonOverlay");
         m_overlayLabel->setWordWrap(true);
         m_overlayLabel->setAlignment(Qt::AlignCenter);
         m_overlayLabel->setVisible(false);
+        vLayout->addWidget(m_overlayLabel);
+
+        m_progressBar = new QProgressBar(this);
+        m_progressBar->setObjectName("labelButtonProgressBar");
+        m_progressBar->setVisible(false);
+        vLayout->addWidget(m_progressBar);
     }
 
     void LabelButton::mousePressEvent([[maybe_unused]] QMouseEvent* event)
@@ -57,6 +70,16 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setText(text);
     }
 
+    QLabel* LabelButton::OverlayLabel()
+    {
+        return m_overlayLabel;
+    }
+
+    QProgressBar* LabelButton::ProgressBar()
+    {
+        return m_progressBar;
+    }
+
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
         : QFrame(parent)
         , m_projectInfo(projectInfo)
@@ -66,10 +89,12 @@ namespace O3DE::ProjectManager
             m_projectInfo.m_imagePath = ":/DefaultProjectImage.png";
         }
 
-        Setup();
+        BaseSetup();
+        //ReadySetup();
+        ProcessingSetup();
     }
 
-    void ProjectButton::Setup()
+    void ProjectButton::BaseSetup()
     {
         setObjectName("projectButton");
 
@@ -86,6 +111,31 @@ namespace O3DE::ProjectManager
         m_projectImageLabel->setPixmap(
             QPixmap(m_projectInfo.m_imagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
+        m_projectFooter = new QFrame(this);
+        QHBoxLayout* hLayout = new QHBoxLayout();
+        hLayout->setContentsMargins(0, 0, 0, 0);
+        m_projectFooter->setLayout(hLayout);
+        {
+            QLabel* projectNameLabel = new QLabel(m_projectInfo.m_displayName, this);
+            hLayout->addWidget(projectNameLabel);
+        }
+
+        vLayout->addWidget(m_projectFooter);
+    }
+
+    void ProjectButton::ProcessingSetup()
+    {
+        m_projectImageLabel->OverlayLabel()->setAlignment(Qt::AlignBottom);
+        m_projectImageLabel->SetEnabled(false);
+        m_projectImageLabel->SetOverlayText("Installing Gems... (25%)\n\n");
+
+        QProgressBar* progressBar = m_projectImageLabel->ProgressBar();
+        progressBar->setVisible(true);
+        progressBar->setValue(35);
+    }
+
+    void ProjectButton::ReadySetup()
+    {
         QMenu* newProjectMenu = new QMenu(this);
         m_editProjectAction = newProjectMenu->addAction(tr("Edit Project Settings..."));
         newProjectMenu->addSeparator();
@@ -94,21 +144,10 @@ namespace O3DE::ProjectManager
         m_removeProjectAction = newProjectMenu->addAction(tr("Remove from O3DE"));
         m_deleteProjectAction = newProjectMenu->addAction(tr("Delete this Project"));
 
-        QFrame* footer = new QFrame(this);
-        QHBoxLayout* hLayout = new QHBoxLayout();
-        hLayout->setContentsMargins(0, 0, 0, 0);
-        footer->setLayout(hLayout);
-        {
-            QLabel* projectNameLabel = new QLabel(m_projectInfo.m_displayName, this);
-            hLayout->addWidget(projectNameLabel);
-
-            QPushButton* projectMenuButton = new QPushButton(this);
-            projectMenuButton->setObjectName("projectMenuButton");
-            projectMenuButton->setMenu(newProjectMenu);
-            hLayout->addWidget(projectMenuButton);
-        }
-
-        vLayout->addWidget(footer);
+        QPushButton* projectMenuButton = new QPushButton(this);
+        projectMenuButton->setObjectName("projectMenuButton");
+        projectMenuButton->setMenu(newProjectMenu);
+        m_projectFooter->layout()->addWidget(projectMenuButton);
 
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         connect(m_editProjectAction, &QAction::triggered, [this]() { emit EditProject(m_projectInfo.m_path); });
