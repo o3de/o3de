@@ -138,8 +138,6 @@ namespace AzToolsFramework
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState);
             void GenerateUndoNodeForReparenting(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
-            void RefreshEntityPatchOnLink(UndoSystem::URSequencePoint* undoBatch, const LinkId linkId, AZ::Entity* entity);
-
             void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
 
             static Instance* GetParentInstance(Instance* instance);
