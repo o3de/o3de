@@ -2474,7 +2474,7 @@ namespace AzToolsFramework
         
         AddAction(
             m_actions, { QKeySequence(Qt::Key_U) },
-            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Test", "Removing Viewport Ui",
+            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle ViewportUI", "Hide/Unhide Viewport UI",
            [this]()
         {
                 SetViewportUiClusterVisible(m_transformModeClusterId, !m_viewportUiVisible);
