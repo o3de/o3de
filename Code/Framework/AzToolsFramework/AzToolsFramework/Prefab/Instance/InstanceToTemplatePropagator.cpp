@@ -190,11 +190,7 @@ namespace AzToolsFramework
             }
             else
             {
-                rapidjson::StringBuffer prefabBuffer;
-                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
-                providedPatch.Accept(writer);
-
-                AZ_Error("Prefab", false, "Patch was not successfully applied:\n %s", prefabBuffer.GetString());
+                AZ_Error("Prefab", false, "Patch was not successfully applied");
                 return false;
             }
         }
