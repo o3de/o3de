@@ -32,7 +32,6 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
-#include <AzToolsFramework/ToolsComponents/TransformScalePropertyHandler.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -50,10 +49,10 @@ namespace AzToolsFramework
         {
             const AZ::u32 ParentEntityCRC = AZ_CRC("Parent Entity", 0x5b1b276c);
 
-            // Decompose a transform into euler angles in degrees, scale (along basis, any shear will be dropped), and translation.
-            void DecomposeTransform(const AZ::Transform& transform, AZ::Vector3& translation, AZ::Vector3& rotation, AZ::Vector3& scale)
+            // Decompose a transform into euler angles in degrees, uniform scale, and translation.
+            void DecomposeTransform(const AZ::Transform& transform, AZ::Vector3& translation, AZ::Vector3& rotation, float& scale)
             {
-                scale = transform.GetScale();
+                scale = transform.GetUniformScale();
                 translation = transform.GetTranslation();
                 rotation = transform.GetRotation().GetEulerDegrees();
             }
@@ -120,7 +119,7 @@ namespace AzToolsFramework
                                     // Decompose the old slice-relative transform and set it as a our editor transform,
                                     // since the entity is now our parent.
                                     EditorTransform editorTransform;
-                                    DecomposeTransform(sliceRelTransform, editorTransform.m_translate, editorTransform.m_rotate, editorTransform.m_scale);
+                                    DecomposeTransform(sliceRelTransform, editorTransform.m_translate, editorTransform.m_rotate, editorTransform.m_uniformScale);
                                     editorTransformElement.Convert<EditorTransform>(context);
                                     editorTransformElement.SetData(context, editorTransform);
                                 }
@@ -166,6 +165,23 @@ namespace AzToolsFramework
                 {
                     // The "Sync Enabled" flag is no longer needed.
                     classElement.RemoveElementByName(AZ_CRC_CE("Sync Enabled"));
+                }
+
+                return true;
+            }
+
+            bool EditorTransformDataConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+            {
+                if (classElement.GetVersion() < 3)
+                {
+                    // version 3 replaces vector scale with uniform scale but does not yet delete the legacy scale data
+                    // in order to allow for migration
+                    AZ::Vector3 vectorScale;
+                    if (classElement.FindSubElementAndGetData<AZ::Vector3>(AZ_CRC_CE("Scale"), vectorScale))
+                    {
+                        const float uniformScale = vectorScale.GetMaxElement();
+                        classElement.AddElementWithData(context, "UniformScale", uniformScale);
+                    }
                 }
 
                 return true;
@@ -357,7 +373,7 @@ namespace AzToolsFramework
 
         AZ::Transform TransformComponent::GetLocalScaleTM() const
         {
-            return AZ::Transform::CreateUniformScale(m_editorTransform.m_scale.GetMaxElement());
+            return AZ::Transform::CreateUniformScale(m_editorTransform.m_uniformScale);
         }
 
         const AZ::Transform& TransformComponent::GetLocalTM()
@@ -374,12 +390,13 @@ namespace AzToolsFramework
         // given a local transform, update local transform.
         void TransformComponent::SetLocalTM(const AZ::Transform& finalTx)
         {
-            AZ::Vector3 tx, rot, scale;
-            Internal::DecomposeTransform(finalTx, tx, rot, scale);
+            AZ::Vector3 tx, rot;
+            float uniformScale;
+            Internal::DecomposeTransform(finalTx, tx, rot, uniformScale);
 
             m_editorTransform.m_translate = tx;
             m_editorTransform.m_rotate = rot;
-            m_editorTransform.m_scale = scale;
+            m_editorTransform.m_uniformScale = uniformScale;
 
             TransformChanged();
         }
@@ -520,89 +537,11 @@ namespace AzToolsFramework
             return m_editorTransform.m_translate.GetZ();
         }
 
-        void TransformComponent::SetRotation(const AZ::Vector3& eulerAnglesRadians)
+        void TransformComponent::SetWorldRotationQuaternion(const AZ::Quaternion& quaternion)
         {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotation is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::ConvertEulerRadiansToQuaternion(eulerAnglesRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationQuaternion(const AZ::Quaternion& quaternion)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationQuaternion is deprecated, please use SetLocalRotation");
             AZ::Transform newWorldTransform = GetWorldTM();
             newWorldTransform.SetRotation(quaternion);
             SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationX(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationX is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationX(eulerAngleRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationY(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationY is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationY(eulerAngleRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::SetRotationZ(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "SetRotationZ is deprecated, please use SetLocalRotation");
-            AZ::Transform newWorldTransform = GetWorldTM();
-            newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationZ(eulerAngleRadians));
-            SetWorldTM(newWorldTransform);
-        }
-
-        void TransformComponent::RotateByX(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "RotateByX is deprecated, please use RotateAroundLocalX");
-            SetWorldTM(GetWorldTM() * AZ::Transform::CreateRotationX(eulerAngleRadians));
-        }
-
-        void TransformComponent::RotateByY(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "RotateByY is deprecated, please use RotateAroundLocalY");
-            SetWorldTM(GetWorldTM() * AZ::Transform::CreateRotationY(eulerAngleRadians));
-        }
-
-        void TransformComponent::RotateByZ(float eulerAngleRadians)
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "RotateByZ is deprecated, please use RotateAroundLocalZ");
-            SetWorldTM(GetWorldTM() * AZ::Transform::CreateRotationZ(eulerAngleRadians));
-        }
-
-        AZ::Vector3 TransformComponent::GetRotationEulerRadians()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetRotationEulerRadians is deprecated, please use GetWorldRotation");
-            return GetWorldTM().GetRotation().GetEulerRadians();
-        }
-
-        AZ::Quaternion TransformComponent::GetRotationQuaternion()
-        {
-            AZ_Warning("AzToolsFramework::TransformComponent", false, "GetRotationQuaternion is deprecated, please use GetWorldRotationQuaternion");
-            return GetWorldTM().GetRotation();
-        }
-
-        float TransformComponent::GetRotationX()
-        {
-            return GetRotationEulerRadians().GetX();
-        }
-
-        float TransformComponent::GetRotationY()
-        {
-            return GetRotationEulerRadians().GetY();
-        }
-
-        float TransformComponent::GetRotationZ()
-        {
-            return GetRotationEulerRadians().GetZ();
         }
 
         AZ::Vector3 TransformComponent::GetWorldRotation()
@@ -677,31 +616,21 @@ namespace AzToolsFramework
             return result;
         }
 
-        void TransformComponent::SetLocalScale(const AZ::Vector3& scale)
-        {
-            m_editorTransform.m_scale = scale;
-            TransformChanged();
-        }
-
         AZ::Vector3 TransformComponent::GetLocalScale()
         {
-            return m_editorTransform.m_scale;
-        }
-
-        AZ::Vector3 TransformComponent::GetWorldScale()
-        {
-            return GetWorldTM().GetScale();
+            AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
+            return m_editorTransform.m_legacyScale;
         }
 
         void TransformComponent::SetLocalUniformScale(float scale)
         {
-            m_editorTransform.m_scale = AZ::Vector3(scale);
+            m_editorTransform.m_uniformScale = scale;
             TransformChanged();
         }
 
         float TransformComponent::GetLocalUniformScale()
         {
-            return m_editorTransform.m_scale.GetMaxElement();
+            return m_editorTransform.m_uniformScale;
         }
 
         float TransformComponent::GetWorldUniformScale()
@@ -1219,9 +1148,10 @@ namespace AzToolsFramework
                 serializeContext->Class<EditorTransform>()->
                     Field("Translate", &EditorTransform::m_translate)->
                     Field("Rotate", &EditorTransform::m_rotate)->
-                    Field("Scale", &EditorTransform::m_scale)->
+                    Field("Scale", &EditorTransform::m_legacyScale)->
                     Field("Locked", &EditorTransform::m_locked)->
-                    Version(2);
+                    Field("UniformScale", &EditorTransform::m_uniformScale)->
+                    Version(3, &Internal::EditorTransformDataConverter);
 
                 serializeContext->Class<Components::TransformComponent, EditorComponentBase>()->
                     Field("Parent Entity", &TransformComponent::m_parentEntityId)->
@@ -1280,7 +1210,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::Suffix, " deg")->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
-                        DataElement(TransformScaleHandler, &EditorTransform::m_scale, "Scale", "Local Scale")->
+                        DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_uniformScale, "Uniform Scale", "Local Uniform Scale")->
                             Attribute(AZ::Edit::Attributes::Step, 0.1f)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)
                         ;
@@ -1308,7 +1238,8 @@ namespace AzToolsFramework
                     {
                         AzToolsFramework::ScopedUndoBatch undo("Reset transform values");
                         m_editorTransform.m_translate = AZ::Vector3::CreateZero();
-                        m_editorTransform.m_scale = AZ::Vector3::CreateOne();
+                        m_editorTransform.m_legacyScale = AZ::Vector3::CreateOne();
+                        m_editorTransform.m_uniformScale = 1.0f;
                         m_editorTransform.m_rotate = AZ::Vector3::CreateZero();
                         OnTransformChanged();
                         SetDirty();

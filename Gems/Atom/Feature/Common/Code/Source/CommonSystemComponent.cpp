@@ -14,8 +14,6 @@
 #include <Source/Material/UseTextureFunctor.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctor.h>
 #include <Source/Material/Transform2DFunctor.h>
-#include <Source/Material/ShaderEnableFunctor.h>
-#include <Source/Material/PropertyVisibilityFunctor.h>
 #include <Source/Material/DrawListFunctor.h>
 #include <Source/Material/ConvertEmissiveUnitFunctor.h>
 
@@ -92,6 +90,8 @@
 #include <ImGui/ImGuiPass.h>
 
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
+#include <RayTracing/RayTracingPass.h>
+#include <RayTracing/RayTracingPassData.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridRayTracingPass.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridBlendIrradiancePass.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridBlendDistancePass.h>
@@ -115,7 +115,6 @@ namespace AZ
             ProjectedShadowFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
             UseTextureFunctor::Reflect(context);
-            PropertyVisibilityFunctor::Reflect(context);
             DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);
             Transform2DFunctor::Reflect(context);
@@ -127,12 +126,12 @@ namespace AZ
             DisplayMapperPassData::Reflect(context);
             ConvertEmissiveUnitFunctor::Reflect(context);
             LookupTableAsset::Reflect(context);
-            ShaderEnableFunctor::Reflect(context);
             ReflectionProbeFeatureProcessor::Reflect(context);
             DecalTextureArrayFeatureProcessor::Reflect(context);
             SMAAFeatureProcessor::Reflect(context);
             PostProcessFeatureProcessor::Reflect(context);
             ImGuiPassData::Reflect(context);
+            RayTracingPassData::Reflect(context);
             TaaPassData::Reflect(context);
 
             LightingPreset::Reflect(context);
@@ -279,6 +278,9 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
+
+            // Add RayTracing pas
+            passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
 
             // setup handler for load pass template mappings
             m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });

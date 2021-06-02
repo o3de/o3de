@@ -46,7 +46,7 @@ namespace PhysX
         void EnableSimulationQueued(const Physics::RagdollState& initialState) override;
         void DisableSimulation() override;
         void DisableSimulationQueued() override;
-        bool IsSimulated() override;
+        bool IsSimulated() const override;
         void GetState(Physics::RagdollState& ragdollState) const override;
         void SetState(const Physics::RagdollState& ragdollState) override;
         void SetStateQueued(const Physics::RagdollState& ragdollState) override;

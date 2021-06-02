@@ -114,8 +114,6 @@ namespace PhysX
         // Physics::SystemRequestBus::Handler
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
         AZStd::shared_ptr<Physics::Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) override;
-        AZStd::shared_ptr<Physics::Material> GetDefaultMaterial() override;
-        AZStd::vector<AZStd::shared_ptr<Physics::Material>> CreateMaterialsFromLibrary(const Physics::MaterialSelection& materialSelection) override;
 
         AZStd::vector<AZ::TypeId> GetSupportedJointTypes() override;
         AZStd::shared_ptr<Physics::JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType) override;
@@ -147,8 +145,6 @@ namespace PhysX
 
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
-        bool UpdateMaterialSelection(const Physics::ShapeConfiguration& shapeConfiguration,
-            Physics::ColliderConfiguration& colliderConfiguration) override;
     private:
         // AZ::TickBus::Handler ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
@@ -157,9 +153,6 @@ namespace PhysX
         void EnableAutoManagedPhysicsTick(bool shouldTick);
 
         void ActivatePhysXSystem();
-        bool UpdateMaterialSelectionFromPhysicsAsset(
-            const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
-            Physics::ColliderConfiguration& colliderConfiguration);
 
         bool m_enabled; ///< If false, this component will not activate itself in the Activate() function.
 

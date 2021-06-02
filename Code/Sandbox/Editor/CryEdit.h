@@ -229,6 +229,9 @@ public:
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
+    void OnOpenProjectManagerSettings();
+    void OnOpenProjectManagerNew();
+    void OnOpenProjectManager();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
@@ -358,12 +361,15 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
 
 private:
+    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
+
     struct PythonOutputHandler;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
+    void OpenProjectManager(const AZStd::string& screen);
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();

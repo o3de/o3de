@@ -45,25 +45,25 @@ namespace O3DE::ProjectManager
         const QColor m_buttonEnabledColor = QColor("#00B931");
 
         // Item
-        inline constexpr static int s_height = 135; // Gem item total height
-        inline constexpr static qreal s_gemNameFontSize = 16.0;
-        inline constexpr static qreal s_fontSize = 15.0;
-        inline constexpr static int s_summaryStartX = 200;
+        inline constexpr static int s_height = 105; // Gem item total height
+        inline constexpr static qreal s_gemNameFontSize = 13.0;
+        inline constexpr static qreal s_fontSize = 12.0;
+        inline constexpr static int s_summaryStartX = 150;
 
         // Margin and borders
-        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/20, /*top=*/10, /*right=*/20, /*bottom=*/10); // Item border distances
-        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/15, /*top=*/12, /*right=*/12, /*bottom=*/12); // Distances of the elements within an item to the item borders
+        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/8, /*right=*/16, /*bottom=*/8); // Item border distances
+        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/12, /*right=*/15, /*bottom=*/12); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
 
         // Button
-        inline constexpr static int s_buttonWidth = 70;
-        inline constexpr static int s_buttonHeight = 24;
-        inline constexpr static int s_buttonBorderRadius = 12;
-        inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 3;
-        inline constexpr static qreal s_buttonFontSize = 12.0;
+        inline constexpr static int s_buttonWidth = 55;
+        inline constexpr static int s_buttonHeight = 18;
+        inline constexpr static int s_buttonBorderRadius = 9;
+        inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
+        inline constexpr static qreal s_buttonFontSize = 10.0;
 
     private:
-        void CalcRects(const QStyleOptionViewItem& option, const QModelIndex& modelIndex, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
+        void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
         void DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
@@ -73,7 +73,7 @@ namespace O3DE::ProjectManager
 
         // Platform icons
         void AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath);
-        inline constexpr static int s_platformIconSize = 16;
+        inline constexpr static int s_platformIconSize = 12;
         QHash<GemInfo::Platform, QPixmap> m_platformIcons;
     };
 } // namespace O3DE::ProjectManager

@@ -179,6 +179,7 @@ function(ly_delayed_generate_static_modules_inl)
                 ${launcher_unified_binary_dir}/${project_name}.GameLauncher/Includes/StaticModules.inl
             )
 
+            ly_target_link_libraries(${project_name}.GameLauncher PRIVATE ${all_game_gem_dependencies})
             if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
                 get_property(server_gem_dependencies GLOBAL PROPERTY LY_STATIC_MODULE_PROJECTS_DEPENDENCIES_${project_name}.ServerLauncher)
 
@@ -204,6 +205,7 @@ function(ly_delayed_generate_static_modules_inl)
                     ${launcher_unified_binary_dir}/${project_name}.ServerLauncher/Includes/StaticModules.inl
                 )
 
+                ly_target_link_libraries(${project_name}.ServerLauncher PRIVATE ${all_server_gem_dependencies})
             endif()
         endforeach()
     endif()
