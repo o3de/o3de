@@ -334,7 +334,7 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularScanfolder)
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
 
     ASSERT_EQ(config.GetScanFolderCount(), 3); // the two, and then the one that has the same data as prior but different identifier.
-    QString scanName = AssetUtilities::ComputeProjectPath() + " Scan Folder";
+    QString scanName = AssetUtilities::ComputeProjectPath(true) + " Scan Folder";
     ASSERT_EQ(config.GetScanFolderAt(0).GetDisplayName(), scanName);
     ASSERT_EQ(config.GetScanFolderAt(0).RecurseSubFolders(), true);
     ASSERT_EQ(config.GetScanFolderAt(0).GetOrder(), 0);
