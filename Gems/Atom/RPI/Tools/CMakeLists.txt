@@ -15,9 +15,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_pytest(
             NAME RPI::atom_rpi_tools_tests
-            TEST_SERIAL
             PATH ${CMAKE_CURRENT_LIST_DIR}/atom_rpi_tools/tests/
             TIMEOUT 30
         )
+    endif()
 endif()
 

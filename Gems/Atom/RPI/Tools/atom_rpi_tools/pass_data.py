@@ -8,7 +8,6 @@ or, if provided, by the license below or the license accompanying this file. Do 
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
-OS and devices are detected and set as constants when ly_test_tools.__init__() completes.
 """
 
 import sys, os
