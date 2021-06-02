@@ -134,7 +134,9 @@ namespace EMotionFX
                 AZStd::optional<AZ::SceneAPI::Events::ExportProduct> result = GetFirstProducedByType(context, type);
                 if (result != AZStd::nullopt)
                 {
-                    product.m_productDependencies.emplace_back(result.value());
+                    AZ::SceneAPI::Events::ExportProduct exportProduct = result.value();
+                    exportProduct.m_dependencyFlags = AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad);
+                    product.m_productDependencies.emplace_back(exportProduct);
                 }
             };
             AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::ModelAsset>());

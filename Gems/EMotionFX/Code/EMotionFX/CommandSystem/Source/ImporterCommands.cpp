@@ -94,7 +94,9 @@ namespace CommandSystem
             return false;
         }
 
-        actor->Finalize();
+        // Because the actor is directly loaded from disk (without going through an actor asset), we need to ask for a blocking
+        // load for the asset that actor is depend on.
+        actor->Finalize(true /*requireBlockingLoad*/);
 
         // set the actor id in case we have specified it as parameter
         if (actorID != MCORE_INVALIDINDEX32)

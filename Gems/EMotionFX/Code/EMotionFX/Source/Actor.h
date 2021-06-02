@@ -889,15 +889,22 @@ namespace EMotionFX
         const AZ::Data::Asset<AZ::RPI::ModelAsset>& GetMeshAsset() const { return m_meshAsset; }
         const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& GetSkinMetaAsset() const { return m_skinMetaAsset; }
         const AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset>& GetMorphTargetMetaAsset() const { return m_morphTargetMetaAsset; }
-
         const AZStd::unordered_map<AZ::u16, AZ::u16>& GetSkinToSkeletonIndexMap() const { return m_skinToSkeletonIndexMap; }
-        void Finalize();
 
         /**
-        * Is the actor fully ready?
-        * @result True in case the actor as well as its dependent files (e.g. mesh, skin, morph targets) are fully loaded and initialized.
-        **/
+         * Is the actor fully ready?
+         * @result True in case the actor as well as its dependent files (e.g. mesh, skin, morph targets) are fully loaded and initialized.
+         **/
         bool IsReady() const { return m_isReady; }
+
+        /**
+         * Finalize the actor with preload assets (mesh, skinmeta and morph target assets).
+         * @requireBlockingLoad We won't be needing a blocking load if the actor is part of the actor asset, as that will triggers the preload assets
+         * to load and get ready before finalize has been reached. However, if we are calling this on an actor that bypassed the asset system (e.g
+         * loading the actor directly from disk), it will require to call a blocking load. This option is now being used because emfx editor does not
+         * fully integrated with the asset system.
+         */
+        void Finalize(bool requireBlockingLoad = false);
 
     private:
         void InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices);
@@ -957,9 +964,6 @@ namespace EMotionFX
 
         Node* FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const;
 
-        void SetActorReady();
-        bool m_isReady = false;
-
         Skeleton*                                       mSkeleton;                  /**< The skeleton, containing the nodes and bind pose. */
         MCore::Array<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
         AZStd::vector<NodeInfo>                         mNodeInfos;                 /**< The per node info, shared between lods. */
@@ -983,7 +987,7 @@ namespace EMotionFX
         bool                                            mDirtyFlag;                 /**< The dirty flag which indicates whether the user has made changes to the actor since the last file save operation. */
         bool                                            mUsedForVisualization;      /**< Indicates if the actor is used for visualization specific things and is not used as a normal in-game actor. */
         bool                                            m_optimizeSkeleton;         /**< Indicates if we should perform/ */
-
+        bool                                            m_isReady = false;          /**< If actor as well as its dependent files are fully loaded and initialized.*/
 #if defined(EMFX_DEVELOPMENT_BUILD)
         bool                                            mIsOwnedByRuntime;          /**< Set if the actor is used/owned by the engine runtime. */
 #endif // EMFX_DEVELOPMENT_BUILD

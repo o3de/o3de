@@ -302,6 +302,7 @@ namespace EMotionFX
             Actor* actor = m_configuration.m_actorAsset->GetActor();
             AZ_Assert(m_configuration.m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
 
+            actor->Finalize();
             CheckActorCreation();
         }
 
