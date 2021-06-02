@@ -634,45 +634,62 @@ namespace Multiplayer
         const float adjustedBlendFactor = 1.0f - (std::powf(0.2f, m_renderBlendFactor));
         AZLOG(NET_Blending, "Computed blend factor of %f", adjustedBlendFactor);
 
-        AZ::Transform activeCameraTransform;
-        Camera::Configuration activeCameraConfiguration;
-        Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
-        Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraConfiguration, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraConfiguration);
-
-        const AZ::ViewFrustumAttributes frustumAttributes
-        (
-            activeCameraTransform,
-            activeCameraConfiguration.m_frustumHeight / activeCameraConfiguration.m_frustumWidth,
-            activeCameraConfiguration.m_fovRadians,
-            activeCameraConfiguration.m_nearClipDistance,
-            activeCameraConfiguration.m_farClipDistance
-        );
-        const AZ::Frustum viewFrustum = AZ::Frustum(frustumAttributes);
-
-        // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
-        AZStd::vector<NetBindComponent*> gatheredEntities;
-        AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
-        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
-            [&gatheredEntities, entityBoundsUnion](const AzFramework::IVisibilityScene::NodeData& nodeData)
+        if (Camera::ActiveCameraRequestBus::HasHandlers())
         {
-            gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
-            for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+            // If there's a camera, update only what's visible
+            AZ::Transform activeCameraTransform;
+            Camera::Configuration activeCameraConfiguration;
+            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraConfiguration, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraConfiguration);
+
+            const AZ::ViewFrustumAttributes frustumAttributes
+            (
+                activeCameraTransform,
+                activeCameraConfiguration.m_frustumHeight / activeCameraConfiguration.m_frustumWidth,
+                activeCameraConfiguration.m_fovRadians,
+                activeCameraConfiguration.m_nearClipDistance,
+                activeCameraConfiguration.m_farClipDistance
+            );
+            const AZ::Frustum viewFrustum = AZ::Frustum(frustumAttributes);
+
+            // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
+            AZStd::vector<NetBindComponent*> gatheredEntities;
+            AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
+                [&gatheredEntities, entityBoundsUnion](const AzFramework::IVisibilityScene::NodeData& nodeData)
             {
-                if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
+                for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
                 {
-                    AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-                    NetBindComponent* netBindComponent = entity->template FindComponent<NetBindComponent>();
-                    if (netBindComponent != nullptr)
+                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
                     {
-                        gatheredEntities.push_back(netBindComponent);
+                        AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+                        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                        if (netBindComponent != nullptr)
+                        {
+                            gatheredEntities.push_back(netBindComponent);
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        for (NetBindComponent* netBindComponent : gatheredEntities)
+            for (NetBindComponent* netBindComponent : gatheredEntities)
+            {
+                netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+            }
+        }
+        else
         {
-            netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+            // If there's no camera, fall back to updating all net entities
+            for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))
+            {
+                AZ::Entity* entity = iter.second;
+                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                if (netBindComponent != nullptr)
+                {
+                    netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+                }
+            }
         }
     }
 

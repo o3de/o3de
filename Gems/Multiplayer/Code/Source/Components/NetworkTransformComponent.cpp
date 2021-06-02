@@ -81,6 +81,9 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnResetCountChangedEvent()
     {
+        m_targetTransform.SetRotation(GetRotation());
+        m_targetTransform.SetTranslation(GetTranslation());
+        m_targetTransform.SetUniformScale(GetScale());
         m_previousTransform = m_targetTransform;
     }
 
@@ -93,6 +96,15 @@ namespace Multiplayer
             blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
             blendTransform.SetScale(m_previousTransform.GetScale().Lerp(m_targetTransform.GetScale(), blendFactor));
             GetTransformComponent()->SetWorldTM(blendTransform);
+
+            //AZLOG
+            //(
+            //    NET_Movement,
+            //    "Blending entity to position %f x %f x %f",
+            //    blendTransform.GetTranslation().GetX(),
+            //    blendTransform.GetTranslation().GetY(),
+            //    blendTransform.GetTranslation().GetZ()
+            //);
         }
     }
 
