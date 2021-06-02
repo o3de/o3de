@@ -19,10 +19,13 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
 
-namespace AzFramework
+namespace AZ
 {
     class ReflectContext;
+}
 
+namespace AzFramework
+{
     class Spawnable final
         : public AZ::Data::AssetData
     {
@@ -38,11 +41,11 @@ namespace AzFramework
         Spawnable() = default;
         explicit Spawnable(const AZ::Data::AssetId& id, AssetStatus status = AssetStatus::NotLoaded);
         Spawnable(const Spawnable& rhs) = delete;
-        Spawnable(Spawnable&& other);
+        Spawnable(Spawnable&& other) = delete;
         ~Spawnable() override = default;
 
         Spawnable& operator=(const Spawnable& rhs) = delete;
-        Spawnable& operator=(Spawnable&& other);
+        Spawnable& operator=(Spawnable&& other) = delete;
 
         const EntityList& GetEntities() const;
         EntityList& GetEntities();

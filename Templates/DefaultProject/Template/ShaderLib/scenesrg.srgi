@@ -26,5 +26,6 @@ partial ShaderResourceGroup SceneSrg : SRG_PerScene
 };
 
 #define AZ_COLLECTING_PARTIAL_SRGS
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/SceneSrgAll.azsli>
+#include <Shaders/ShaderResourceGroups/SceneSrg.azsli>
+#include <Atom/Feature/Common/Assets/ShaderResourceGroups/SceneSrg.azsli>
 #undef AZ_COLLECTING_PARTIAL_SRGS

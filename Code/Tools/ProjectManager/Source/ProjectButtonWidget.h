@@ -13,7 +13,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QFrame>
+#include <ProjectInfo.h>
+
 #include <QLabel>
 #endif
 
@@ -32,11 +33,18 @@ namespace O3DE::ProjectManager
         explicit LabelButton(QWidget* parent = nullptr);
         ~LabelButton() = default;
 
+        void SetEnabled(bool enabled);
+        void SetOverlayText(const QString& text);
+
     signals:
         void triggered();
 
     public slots:
         void mousePressEvent(QMouseEvent* event) override;
+
+    private:
+        QLabel* m_overlayLabel;
+        bool m_enabled = true;
     };
 
     class ProjectButton
@@ -45,9 +53,11 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit ProjectButton(const QString& projectName, QWidget* parent = nullptr);
-        explicit ProjectButton(const QString& projectName, const QString& projectImage, QWidget* parent = nullptr);
+        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
         ~ProjectButton() = default;
+
+        void SetButtonEnabled(bool enabled);
+        void SetButtonOverlayText(const QString& text);
 
     signals:
         void OpenProject(const QString& projectName);
@@ -60,10 +70,8 @@ namespace O3DE::ProjectManager
     private:
         void Setup();
 
-        QString m_projectName;
-        QString m_projectImagePath;
+        ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
-        QPushButton* m_projectSettingsMenuButton;
         QAction* m_editProjectAction;
         QAction* m_editProjectGemsAction;
         QAction* m_copyProjectAction;

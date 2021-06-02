@@ -46,7 +46,6 @@ namespace AzFramework::ProjectManager
             // Store the Command line to the Setting Registry
             AZ::SettingsRegistryImpl settingsRegistry;
             AZ::SettingsRegistryMergeUtils::StoreCommandLineToRegistry(settingsRegistry, commandLine);
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(settingsRegistry);
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
             // Retrieve Command Line from Settings Registry, it may have been updated by the call to FindEngineRoot()
             // in MergeSettingstoRegistry_ConfigFile
@@ -79,7 +78,7 @@ namespace AzFramework::ProjectManager
                 projectJsonPath.c_str());
         }
 
-        if (LaunchProjectManager(engineRootPath))
+        if (LaunchProjectManager())
         {
             AZ_TracePrintf("ProjectManager", "Project Manager launched successfully, requesting exit.");
             return ProjectPathCheckResult::ProjectManagerLaunched;
@@ -88,7 +87,7 @@ namespace AzFramework::ProjectManager
         return ProjectPathCheckResult::ProjectManagerLaunchFailed;
     }
 
-    bool LaunchProjectManager([[maybe_unused]] const AZ::IO::FixedMaxPath& engineRootPath)
+    bool LaunchProjectManager(const AZStd::string& commandLineArgs)
     {
         bool launchSuccess = false;
 #if (AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER)
@@ -110,7 +109,7 @@ namespace AzFramework::ProjectManager
             }
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = executablePath.String();
+            processLaunchInfo.m_commandlineParameters = executablePath.String() + commandLineArgs;
             launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
         }
         if (ownsSystemAllocator)

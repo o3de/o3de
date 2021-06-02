@@ -22,6 +22,7 @@
 #include <AzCore/Slice/SliceAssetHandler.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Script/ScriptAsset.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -1059,6 +1060,12 @@ namespace UnitTest
 
         void SetUp() override
         {
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_app.Start(AzFramework::Application::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
