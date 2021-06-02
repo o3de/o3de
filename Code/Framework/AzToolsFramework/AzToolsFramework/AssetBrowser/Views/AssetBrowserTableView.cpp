@@ -37,7 +37,6 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QPen>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
-#pragma optimize("", off)
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -128,7 +127,8 @@ namespace AzToolsFramework
             QTableView::rowsAboutToBeRemoved(parent, start, end);
         }
 
-        void AssetBrowserTableView::layoutChangedSlot([[maybe_unused]] const QList<QPersistentModelIndex>& parents,[[maybe_unused]]  QAbstractItemModel::LayoutChangeHint hint)
+        void AssetBrowserTableView::layoutChangedSlot(
+            [[maybe_unused]] const QList<QPersistentModelIndex>& parents, [[maybe_unused]] QAbstractItemModel::LayoutChangeHint hint)
         {
             scrollToTop();
         }
@@ -159,7 +159,6 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {
-
             const auto& selectedAssets = GetSelectedAssets();
             if (selectedAssets.size() != 1)
             {
@@ -167,7 +166,8 @@ namespace AzToolsFramework
             }
 
             QMenu menu(this);
-            AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, selectedAssets);
+            AssetBrowserInteractionNotificationBus::Broadcast(
+                &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, selectedAssets);
             if (!menu.isEmpty())
             {
                 menu.exec(QCursor::pos());
@@ -175,5 +175,4 @@ namespace AzToolsFramework
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#pragma optimize("", on)
 #include "AssetBrowser/Views/moc_AssetBrowserTableView.cpp"

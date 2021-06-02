@@ -9,8 +9,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-#include <AssetBrowser/AssetBrowserTableModel.h>
 #include <AssetBrowser/AssetBrowserFilterModel.h>
+#include <AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
 namespace AzToolsFramework
@@ -26,7 +26,9 @@ namespace AzToolsFramework
         void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
         {
             m_filterModel = qobject_cast<AssetBrowserFilterModel*>(sourceModel);
-            AZ_Assert(m_filterModel, "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
+            AZ_Assert(
+                m_filterModel,
+                "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
             QSortFilterProxyModel::setSourceModel(sourceModel);
         }
 
@@ -86,7 +88,8 @@ namespace AzToolsFramework
             return !parent.isValid() ? m_indexMap.size() : 0;
         }
 
-        int AssetBrowserTableModel::BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
+        int AssetBrowserTableModel::BuildTableModelMap(
+            const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
         {
             int rows = model ? model->rowCount(parent) : 0;
             for (int i = 0; i < rows; ++i)
@@ -134,7 +137,6 @@ namespace AzToolsFramework
             }
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
-            
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -1,26 +1,26 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #include "EditorDefs.h"
 
 #include "AzAssetBrowserWindow.h"
 
 // AzToolsFramework
+#include <AzCore/Console/IConsole.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzCore/Console/IConsole.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -34,7 +34,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
-
 
 class ListenerForShowAssetEditorEvent
     : public QObject
@@ -113,22 +112,29 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
 
-    connect(m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal,
-        m_filterModel.data(), &AssetBrowserFilterModel::filterUpdatedSlot);
-    connect(m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, this, [this]()
-    {
-        const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
-        const bool selectFirstFilteredIndex = false;
-        m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
-    });
+    connect(
+        m_ui->m_searchWidget->GetFilter().data(), &AssetBrowserEntryFilter::updatedSignal, m_filterModel.data(),
+        &AssetBrowserFilterModel::filterUpdatedSlot);
+    connect(
+        m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, this,
+        [this]()
+        {
+            const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
+            const bool selectFirstFilteredIndex = false;
+            m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
+        });
 
-    connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal,
-        this, &AzAssetBrowserWindow::SelectionChangedSlot);
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this,
+        &AzAssetBrowserWindow::SelectionChangedSlot);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
-    connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget, &SearchWidget::ClearStringFilter);
-    connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget,
+        &SearchWidget::ClearStringFilter);
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget, &SearchWidget::ClearTypeFilter);
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }
@@ -199,18 +205,21 @@ void AzAssetBrowserWindow::SelectAsset(const QString& assetPath)
         // interferes with the update from the select and expand, and if you don't
         // queue it, the tree doesn't expand reliably.
 
-        QTimer::singleShot(0, this, [this, filteredIndex = index] {
-            // the treeview has a filter model so we have to backwards go from that
-            QModelIndex index = m_filterModel->mapFromSource(filteredIndex);
+        QTimer::singleShot(
+            0, this,
+            [this, filteredIndex = index]
+            {
+                // the treeview has a filter model so we have to backwards go from that
+                QModelIndex index = m_filterModel->mapFromSource(filteredIndex);
 
-            QTreeView* treeView = m_ui->m_assetBrowserTreeViewWidget;
-            ExpandTreeToIndex(treeView, index);
+                QTreeView* treeView = m_ui->m_assetBrowserTreeViewWidget;
+                ExpandTreeToIndex(treeView, index);
 
-            treeView->scrollTo(index);
-            treeView->setCurrentIndex(index);
+                treeView->scrollTo(index);
+                treeView->setCurrentIndex(index);
 
-            treeView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
-        });
+                treeView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+            });
     }
 }
 
@@ -243,11 +252,12 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
             assetIdToOpen = AZ::Data::AssetId(sourceEntry->GetSourceUuid(), 0);
             fullFilePath = entry->GetFullPath();
         }
-        
+
         bool handledBySomeone = false;
         if (assetIdToOpen.IsValid())
         {
-            AssetBrowserInteractionNotificationBus::Broadcast(&AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
+            AssetBrowserInteractionNotificationBus::Broadcast(
+                &AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
         }
 
         if (!handledBySomeone && !fullFilePath.empty())
@@ -255,7 +265,6 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
             AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
         }
     }
-
 }
 
 void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QModelIndex& element)
