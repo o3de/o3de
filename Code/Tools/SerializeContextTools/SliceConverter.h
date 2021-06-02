@@ -56,7 +56,7 @@ namespace AZ
                 AZ::SliceComponent::SliceInstance& instance, AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
                 AzToolsFramework::Prefab::TemplateReference nestedTemplate, AzToolsFramework::Prefab::Instance* topLevelInstance);
             static void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
-            static bool SavePrefab(AzToolsFramework::Prefab::TemplateId templateId);
+            static bool SavePrefab(AZ::IO::PathView outputPath, AzToolsFramework::Prefab::TemplateId templateId);
         };
     } // namespace SerializeContextTools
 } // namespace AZ

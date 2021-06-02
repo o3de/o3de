@@ -218,6 +218,10 @@ namespace EMStudio
         }
 
         const bool saveResult = manifest.SaveToFile(manifestFilename.c_str());
+        if (saveResult)
+        {
+            actor->SetDirtyFlag(false);
+        }
 
         // Source Control: Add file in case it did not exist before (when saving it the first time).
         if (saveResult && !fileExisted)
