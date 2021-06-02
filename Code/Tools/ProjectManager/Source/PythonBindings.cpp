@@ -283,6 +283,7 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManagerWindow", result != -1, "Append to sys path failed");
 
             // import required modules
+            m_cmake = pybind11::module::import("o3de.cmake");
             m_register = pybind11::module::import("o3de.register");
             m_manifest = pybind11::module::import("o3de.manifest");
             m_engineTemplate = pybind11::module::import("o3de.engine_template");
@@ -344,7 +345,7 @@ namespace O3DE::ProjectManager
         return finalResult;
     }
 
-    bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
+    AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
     {
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
         pybind11::gil_scoped_release release;
@@ -353,13 +354,19 @@ namespace O3DE::ProjectManager
         try
         {
             executionCallback();
-            return true;
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
             AZ_Warning("PythonBindings", false, "Python exception %s", e.what());
-            return false;
+            return AZ::Failure<AZStd::string>(e.what());
         }
+
+        return AZ::Success();
+    }
+
+    bool PythonBindings::ExecuteWithLock(AZStd::function<void()> executionCallback)
+    {
+        return ExecuteWithLockErrorHandling(executionCallback).IsSuccess();
     }
 
     AZ::Outcome<EngineInfo> PythonBindings::GetEngineInfo()
@@ -452,7 +459,7 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::GetGem(const QString& path)
+    AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path)
     {
         GemInfo gemInfo = GemInfoFromPath(pybind11::str(path.toStdString()));
         if (gemInfo.IsValid())
@@ -465,32 +472,79 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<GemInfo>> PythonBindings::GetGems()
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetEngineGemInfos()
     {
         QVector<GemInfo> gems;
 
-        bool result = ExecuteWithLock([&] {
-            // external gems
-            for (auto path : m_manifest.attr("get_gems")())
+        auto result = ExecuteWithLockErrorHandling([&]
             {
-                gems.push_back(GemInfoFromPath(path));
-            }
+                for (auto path : m_manifest.attr("get_engine_gems")())
+                {
+                    gems.push_back(GemInfoFromPath(path));
+                }
+            });
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
 
-            // gems from the engine
-            for (auto path : m_manifest.attr("get_engine_gems")())
+        std::sort(gems.begin(), gems.end());
+        return AZ::Success(AZStd::move(gems));
+    }
+
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemInfos(const QString& projectPath)
+    {
+        QVector<GemInfo> gems;
+
+        auto result = ExecuteWithLockErrorHandling([&]
             {
-                gems.push_back(GemInfoFromPath(path));
-            }
-        });
+                pybind11::str pyProjectPath = projectPath.toStdString();
+                for (auto path : m_manifest.attr("get_all_gems")(pyProjectPath))
+                {
+                    gems.push_back(GemInfoFromPath(path));
+                }
+            });
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
 
-        if (!result)
+        std::sort(gems.begin(), gems.end());
+        return AZ::Success(AZStd::move(gems));
+    }
+
+    AZ::Outcome<QVector<AZStd::string>, AZStd::string> PythonBindings::GetEnabledGemNames(const QString& projectPath)
+    {
+        // Retrieve the path to the cmake file that lists the enabled gems.
+        pybind11::str enabledGemsFilename;
+        auto result = ExecuteWithLockErrorHandling([&]
+            {
+                const pybind11::str pyProjectPath = projectPath.toStdString();
+                enabledGemsFilename = m_cmake.attr("get_enabled_gem_cmake_file")(
+                    pybind11::none(), // project_name
+                    pyProjectPath); // project_path
+            });
+        if (!result.IsSuccess())
         {
-            return AZ::Failure();
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
-        else
+
+        // Retrieve the actual list of names from the cmake file.
+        QVector<AZStd::string> gemNames;
+        result = ExecuteWithLockErrorHandling([&]
+            {
+                const auto pyGemNames = m_cmake.attr("get_enabled_gems")(enabledGemsFilename);
+                for (auto gemName : pyGemNames)
+                {
+                    gemNames.push_back(Py_To_String(gemName));
+                }
+            });
+        if (!result.IsSuccess())
         {
-            return AZ::Success(AZStd::move(gems));
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
+
+        return AZ::Success(AZStd::move(gemNames));
     }
 
     bool PythonBindings::AddProject(const QString& path)
@@ -670,38 +724,36 @@ namespace O3DE::ProjectManager
         }
     }
 
-    bool PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
+    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemToProject(const QString& gemPath, const QString& projectPath)
     {
-        bool result = ExecuteWithLock([&] {
-            pybind11::str pyGemPath     = gemPath.toStdString();
-            pybind11::str pyProjectPath = projectPath.toStdString();
+        return ExecuteWithLockErrorHandling([&]
+            {
+                pybind11::str pyGemPath = gemPath.toStdString();
+                pybind11::str pyProjectPath = projectPath.toStdString();
 
-            m_enableGemProject.attr("enable_gem_in_project")(
-                pybind11::none(), // gem_name
-                pyGemPath,
-                pybind11::none(), // project_name
-                pyProjectPath
-            );
-        });
-
-        return result;
+                m_enableGemProject.attr("enable_gem_in_project")(
+                    pybind11::none(), // gem name not needed as path is provided
+                    pyGemPath,
+                    pybind11::none(), // project name not needed as path is provided
+                    pyProjectPath
+                );
+            });
     }
 
-    bool PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
+    AZ::Outcome<void, AZStd::string> PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
     {
-        bool result = ExecuteWithLock([&] {
-            pybind11::str pyGemPath     = gemPath.toStdString();
-            pybind11::str pyProjectPath = projectPath.toStdString();
+        return ExecuteWithLockErrorHandling([&]
+            {
+                pybind11::str pyGemPath = gemPath.toStdString();
+                pybind11::str pyProjectPath = projectPath.toStdString();
 
-            m_disableGemProject.attr("disable_gem_in_project")(
-                pybind11::none(), // gem_name
-                pyGemPath,
-                pybind11::none(), // project_name
-                pyProjectPath
-            );
-        });
-
-        return result;
+                m_disableGemProject.attr("disable_gem_in_project")(
+                    pybind11::none(), // gem name not needed as path is provided
+                    pyGemPath,
+                    pybind11::none(), // project name not needed as path is provided
+                    pyProjectPath
+                );
+            });
     }
 
     bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)

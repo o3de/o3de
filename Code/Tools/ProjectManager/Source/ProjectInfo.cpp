@@ -25,6 +25,19 @@ namespace O3DE::ProjectManager
     {
     }
 
+    bool ProjectInfo::operator==(const ProjectInfo& rhs)
+    {
+        return m_path == rhs.m_path
+            && m_projectName == rhs.m_projectName
+            && m_imagePath == rhs.m_imagePath
+            && m_backgroundImagePath == rhs.m_backgroundImagePath;
+    }
+
+    bool ProjectInfo::operator!=(const ProjectInfo& rhs)
+    {
+        return !operator==(rhs);
+    }
+
     bool ProjectInfo::IsValid() const
     {
         return !m_path.isEmpty() && !m_projectName.isEmpty();
