@@ -28,7 +28,7 @@ LAST_CONFIGURE_NODE_LABEL_FILE=ci_last_node_label.txt
 if [[ -n "$NODE_LABEL" ]]; then
     if [[ -d $OUTPUT_DIRECTORY ]]; then
         pushd $OUTPUT_DIRECTORY
-        if [[ ! -e ${LAST_CONFIGURE_NODE_LABEL_FILE} ]]; then
+        if [[ -e ${LAST_CONFIGURE_NODE_LABEL_FILE} ]]; then
             LAST_NODE_LABEL=$(<${LAST_CONFIGURE_NODE_LABEL_FILE})    
         else
             LAST_NODE_LABEL=
