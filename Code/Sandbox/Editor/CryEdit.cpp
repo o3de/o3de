@@ -58,6 +58,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/ProjectManager/ProjectManager.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -477,6 +478,11 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
+
+    // Project Manager 
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
 }
 
 CCryEditApp* CCryEditApp::s_currentInstance = nullptr;
@@ -2853,6 +2859,34 @@ void CCryEditApp::OnPreferences()
     }
     */
 }
+
+void CCryEditApp::OnOpenProjectManagerSettings()
+{
+    OpenProjectManager("UpdateProject");
+}
+
+void CCryEditApp::OnOpenProjectManagerNew()
+{
+    OpenProjectManager("CreateProject");
+}
+
+void CCryEditApp::OnOpenProjectManager()
+{
+    OpenProjectManager("Projects");
+}
+
+void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
+{
+    // provide the current project path for in case we want to update the project
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project_path %s", screen.c_str(), projectPath.c_str());
+    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
+    if (!launchSuccess)
+    {
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QObject::tr("Failed to launch O3DE Project Manager"), QObject::tr("Failed to find or start the O3dE Project Manager"));
+    }
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUndo()
