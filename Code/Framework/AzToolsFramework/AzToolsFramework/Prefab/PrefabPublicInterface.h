@@ -157,10 +157,10 @@ namespace AzToolsFramework
               * instance and the parent, removing links between this instance and it's nested instances, adding entities directly 
               * owned by this instance under the parent instance.
               * Bails if the entity is not a container entity or belongs to the level prefab instance.
-              * @param entityId The container entity id of the instance to detach.
+              * @param containerEntityId The container entity id of the instance to detach.
               * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
               */
-            virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& entityId) = 0;
+            virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
         };
 
     } // namespace Prefab

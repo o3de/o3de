@@ -973,20 +973,20 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        PrefabOperationResult PrefabPublicHandler::DetachPrefab(const AZ::EntityId& entityId)
+        PrefabOperationResult PrefabPublicHandler::DetachPrefab(const AZ::EntityId& containerEntityId)
         {
-            if (!entityId.IsValid())
+            if (!containerEntityId.IsValid())
             {
                 return AZ::Failure(AZStd::string("Cannot detach Prefab Instance with invalid container entity."));
             }
 
-            if (IsLevelInstanceContainerEntity(entityId))
+            if (IsLevelInstanceContainerEntity(containerEntityId))
             {
                 return AZ::Failure(AZStd::string("Cannot detach level Prefab Instance."));
             }
 
-            InstanceOptionalReference owningInstance = GetOwnerInstanceByEntityId(entityId);
-            if (owningInstance->get().GetContainerEntityId() != entityId)
+            InstanceOptionalReference owningInstance = GetOwnerInstanceByEntityId(containerEntityId);
+            if (owningInstance->get().GetContainerEntityId() != containerEntityId)
             {
                 return AZ::Failure(AZStd::string("Input entity should be its owning Instance's container entity."));
             }
@@ -1014,7 +1014,7 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, parentInstance);
 
                     AZStd::unordered_map<AZ::EntityId, AZStd::string> oldEntityAliases;
-                    oldEntityAliases.emplace(entityId, instancePtr->GetEntityAlias(entityId)->get());
+                    oldEntityAliases.emplace(containerEntityId, instancePtr->GetEntityAlias(containerEntityId)->get());
 
                     auto containerEntityPtr = instancePtr->DetachContainerEntity();
                     auto& containerEntity = *containerEntityPtr.release();
