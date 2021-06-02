@@ -12,6 +12,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Component/Entity.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
