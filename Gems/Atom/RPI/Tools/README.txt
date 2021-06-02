@@ -36,4 +36,4 @@ UNINSTALLATION
 --------------
 
 The preferred way to uninstall the project is:
- /path/to/your/python -m pip uninstall atom_rpi_tools
+(engine install root)/python/python -m pip uninstall atom_rpi_tools
