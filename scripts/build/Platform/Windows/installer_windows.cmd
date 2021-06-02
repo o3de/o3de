@@ -23,15 +23,21 @@ PUSHD %OUTPUT_DIRECTORY%
 REM Override the temporary directory used by wix to the EBS volume
 SET "WIX_TEMP=!WORKSPACE!/temp/wix"
 IF NOT EXIST "%WIX_TEMP%" (
-    MKDIR %WIX_TEMP%
+    MKDIR "WIX_TEMP%"
 )
 
 REM Make sure we are using the CMake version of CPack and not the one that comes with chocolaty
+SET CMAKE_INSTALL_PATH=
 IF "%LY_CMAKE_PATH%"=="" (
     for /f %%i in ('where cmake') do SET "CMAKE_EXE_PATH=%%i"
     for %%F in ("%CMAKE_EXE_PATH%") do SET "CMAKE_INSTALL_PATH=%%~dpF"
 ) ELSE (
     SET "CMAKE_INSTALL_PATH=%LY_CMAKE_PATH%\"
+)
+
+IF "%CMAKE_INSTALL_PATH%"=="" (
+    ECHO [ci_build] CPack path not found
+    GOTO :popd_error
 )
 
 REM Run cpack
