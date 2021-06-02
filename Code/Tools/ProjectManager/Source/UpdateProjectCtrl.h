@@ -47,9 +47,14 @@ namespace O3DE::ProjectManager
         void Update();
         void UpdateSettingsScreen();
 
+        enum ScreenOrder
+        {
+            Settings,
+            Gems
+        };
+
         ScreenHeader* m_header = nullptr;
         QStackedWidget* m_stack = nullptr;
-        QFrame* m_tabFrameWidget = nullptr;
         UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
         GemCatalogScreen* m_gemCatalogScreen = nullptr;
 

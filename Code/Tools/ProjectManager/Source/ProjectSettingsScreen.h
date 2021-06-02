@@ -36,7 +36,13 @@ namespace O3DE::ProjectManager
 
         bool Validate();
 
+    protected slots:
+        virtual bool ValidateProjectName();
+        virtual bool ValidateProjectPath();
+
     protected:
+        QString GetDefaultProjectPath();
+
         QHBoxLayout* m_horizontalLayout;
         QVBoxLayout* m_verticalLayout;
         FormLineEditWidget* m_projectName;

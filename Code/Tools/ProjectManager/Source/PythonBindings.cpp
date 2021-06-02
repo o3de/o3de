@@ -513,10 +513,15 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
-
             pybind11::str projectPath = projectInfo.m_path.toStdString();
+            pybind11::str projectName = projectInfo.m_projectName.toStdString();
             pybind11::str templatePath = projectTemplatePath.toStdString();
-            auto createProjectResult = m_engineTemplate.attr("create_project")(projectPath, templatePath);
+
+            auto createProjectResult = m_engineTemplate.attr("create_project")(
+                projectPath,
+                projectName,
+                templatePath
+                );
             if (createProjectResult.cast<int>() == 0)
             {
                 createdProjectInfo = ProjectInfoFromPath(projectPath);

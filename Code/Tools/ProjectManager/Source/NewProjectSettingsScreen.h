@@ -29,7 +29,11 @@ namespace O3DE::ProjectManager
 
         QString GetProjectTemplatePath();
 
+        void NotifyCurrentScreen() override;
+
     private:
+        QString GetDefaultProjectPath();
+
         QButtonGroup* m_projectTemplateButtonGroup;
     };
 

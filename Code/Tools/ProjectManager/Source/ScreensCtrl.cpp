@@ -137,6 +137,7 @@ namespace O3DE::ProjectManager
         {
             shouldRestoreCurrentScreen = true;
         }
+        int tabIndex = GetScreenTabIndex(screen);
 
         // Delete old screen if it exists to start fresh
         DeleteScreen(screen);
@@ -145,11 +146,19 @@ namespace O3DE::ProjectManager
         ScreenWidget* newScreen = BuildScreen(this, screen);
         if (newScreen->IsTab())
         {
-            m_tabWidget->addTab(newScreen, newScreen->GetTabText());
+            if (tabIndex > -1)
+            {
+                m_tabWidget->insertTab(tabIndex, newScreen, newScreen->GetTabText());
+            }
+            else
+            {
+                m_tabWidget->addTab(newScreen, newScreen->GetTabText());
+            }
             if (shouldRestoreCurrentScreen)
             {
                 m_tabWidget->setCurrentWidget(newScreen);
                 m_screenStack->setCurrentWidget(m_tabWidget);
+                newScreen->NotifyCurrentScreen();
             }
         }
         else
@@ -158,6 +167,7 @@ namespace O3DE::ProjectManager
             if (shouldRestoreCurrentScreen)
             {
                 m_screenStack->setCurrentWidget(newScreen);
+                newScreen->NotifyCurrentScreen();
             }
         }
 
@@ -219,5 +229,20 @@ namespace O3DE::ProjectManager
         {
             screen->NotifyCurrentScreen();
         }
+    }
+
+    int ScreensCtrl::GetScreenTabIndex(ProjectManagerScreen screen)
+    {
+        const auto iter = m_screenMap.find(screen);
+        if (iter != m_screenMap.end())
+        {
+            ScreenWidget* screenWidget = iter.value();
+            if (screenWidget->IsTab())
+            {
+                return m_tabWidget->indexOf(screenWidget);
+            }
+        }
+        
+        return -1;
     }
 } // namespace O3DE::ProjectManager

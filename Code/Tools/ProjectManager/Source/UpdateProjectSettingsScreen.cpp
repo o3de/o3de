@@ -15,6 +15,7 @@
 #include <FormLineEditWidget.h>
 
 #include <QLineEdit>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
@@ -32,6 +33,19 @@ namespace O3DE::ProjectManager
     {
         m_projectName->lineEdit()->setText(projectInfo.m_projectName);
         m_projectPath->lineEdit()->setText(projectInfo.m_path);
+    }
+
+    bool UpdateProjectSettingsScreen::ValidateProjectPath()
+    {
+        bool projectPathIsValid = true;
+        if (m_projectPath->lineEdit()->text().isEmpty())
+        {
+            projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+        }
+
+        m_projectPath->setErrorLabelVisible(!projectPathIsValid);
+        return projectPathIsValid;
     }
 
 } // namespace O3DE::ProjectManager

@@ -16,6 +16,7 @@
 #include <ScreensCtrl.h>
 #include <UpdateProjectCtrl.h>
 #include <UpdateProjectSettingsScreen.h>
+#include <ProjectUtils.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -46,11 +47,11 @@ namespace O3DE::ProjectManager
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
         vLayout->addWidget(m_stack);
 
-        QFrame* m_tabFrameWidget = new QFrame(this);
-        m_tabFrameWidget->setObjectName("projectSettingsTopFrame");
+        QFrame* topBarFrameWidget = new QFrame(this);
+        topBarFrameWidget->setObjectName("projectSettingsTopFrame");
         QHBoxLayout* topBarHLayout = new QHBoxLayout();
         topBarHLayout->setContentsMargins(0, 0, 0, 0);
-        m_tabFrameWidget->setLayout(topBarHLayout);
+        topBarFrameWidget->setLayout(topBarHLayout);
 
         QTabWidget* tabWidget = new QTabWidget();
         tabWidget->setObjectName("projectSettingsTab");
@@ -63,7 +64,7 @@ namespace O3DE::ProjectManager
 
         topBarHLayout->addWidget(tabWidget);
 
-        m_stack->addWidget(m_tabFrameWidget);
+        m_stack->addWidget(topBarFrameWidget);
         m_stack->addWidget(m_gemCatalogScreen);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
@@ -90,7 +91,7 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::NotifyCurrentScreen()
     {
-        m_stack->setCurrentWidget(m_tabFrameWidget);
+        m_stack->setCurrentIndex(ScreenOrder::Settings);
         Update();
     }
 
@@ -114,10 +115,7 @@ namespace O3DE::ProjectManager
     }
     void UpdateProjectCtrl::HandleNextButton()
     {
-        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
-        ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
-
-        if (screenEnum == ProjectManagerScreen::UpdateProjectSettings)
+        if (m_stack->currentIndex() == ScreenOrder::Settings)
         {
             if (m_updateSettingsScreen)
             {
@@ -127,13 +125,30 @@ namespace O3DE::ProjectManager
                     return;
                 }
 
-                m_projectInfo = m_updateSettingsScreen->GetProjectInfo();
+                ProjectInfo newProjectSettings = m_updateSettingsScreen->GetProjectInfo();
 
-                bool result = PythonBindingsInterface::Get()->UpdateProject(m_projectInfo);
-                if (!result)
+                // Update project if settings changed
+                if (m_projectInfo != newProjectSettings)
                 {
-                    QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+                    bool result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
+                    if (!result)
+                    {
+                        QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+                        return;
+                    }
                 }
+
+                // Check if project path has changed and move it
+                if (newProjectSettings.m_path != m_projectInfo.m_path)
+                {
+                    if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
+                    {
+                        QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
+                        return;
+                    }
+                }
+
+                m_projectInfo = newProjectSettings;
             }
         }
 
@@ -154,8 +169,7 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::Update()
     {
-        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
-        if (currentScreen && currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
+        if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
             m_header->setSubTitle(QString(tr("Add More Gems to \"%1\"")).arg(m_projectInfo.m_projectName));
             m_nextButton->setText(tr("Confirm"));

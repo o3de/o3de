@@ -15,6 +15,7 @@
 #include <FormLineEditWidget.h>
 #include <FormBrowseEditWidget.h>
 #include <PathValidator.h>
+#include <EngineInfo.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -35,7 +36,11 @@ namespace O3DE::ProjectManager
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
         : ProjectSettingsScreen(parent)
     {
-        m_projectName->lineEdit()->setText(tr("New Project"));
+        const QString defaultName{ "NewProject" };
+        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
+
+        m_projectName->lineEdit()->setText(defaultName);
+        m_projectPath->lineEdit()->setText(defaultPath);
 
         // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
         // as a group
@@ -82,9 +87,29 @@ namespace O3DE::ProjectManager
         m_horizontalLayout->addWidget(projectTemplateDetails);
     }
 
+    QString NewProjectSettingsScreen::GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
+    }
+
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::NewProjectSettings;
+    }
+
+    void NewProjectSettingsScreen::NotifyCurrentScreen()
+    {
+        Validate();
     }
 
     QString NewProjectSettingsScreen::GetProjectTemplatePath()
