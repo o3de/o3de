@@ -357,7 +357,7 @@ AZ::AtomFont::AtomFont(ISystem* system)
     // register font per viewport dynamic draw context.
     static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
     AZ::AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(
-        AZ::Name("AtomFont"),
+        AZ::Name(AZ::AtomFontDynamicDrawContextName),
         [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
             Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);

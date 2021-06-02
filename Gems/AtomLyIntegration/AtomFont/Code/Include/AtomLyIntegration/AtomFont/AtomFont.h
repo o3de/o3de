@@ -33,6 +33,8 @@ namespace AZ
 {
     class FFont;
 
+    static constexpr char AtomFontDynamicDrawContextName[] = "AtomFont";
+
 
     //! AtomFont is the font system manager. 
     //! AtomFont manages the lifetime of FFont instances, each of which represents an individual font (e.g Courier New Italic)

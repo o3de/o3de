@@ -297,6 +297,8 @@ namespace AZ
         string m_name;
         string m_curPath;
 
+        AZ::Name m_dynamicDrawContextName = AZ::Name(AZ::AtomFontDynamicDrawContextName);
+
         FontTexture* m_fontTexture = nullptr;
 
         size_t m_fontBufferSize = 0;

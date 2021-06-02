@@ -354,7 +354,7 @@ void AZ::FFont::DrawStringUInternal(
 
     if (numQuads)
     {
-        AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::AtomBridge::PerViewportDynamicDraw::Get()->GetDynamicDrawContextForViewport(AZ::Name("AtomFont"), viewportContext->GetId());
+        AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::AtomBridge::PerViewportDynamicDraw::Get()->GetDynamicDrawContextForViewport(m_dynamicDrawContextName, viewportContext->GetId());
         if (dynamicDraw)
         {
             //setup per draw srg
