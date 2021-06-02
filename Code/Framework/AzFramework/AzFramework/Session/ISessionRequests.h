@@ -167,6 +167,9 @@ namespace AzFramework
         : public AZ::EBusTraits
     {
     public:
+        // Safeguard handler for multi-threaded use case
+        using MutexType = AZStd::recursive_mutex;
+
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
