@@ -140,9 +140,16 @@ namespace AZ
             AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
+            float t;
             AZ::Vector3 ignoreNormal;
+            constexpr float rayLength = 1000.0f;
+            if (m_controller.GetModel()->RayIntersection(transform, nonUniformScale, src, dir * rayLength, t, ignoreNormal))
+            {
+                distance = rayLength * t;
+                return true;
+            }
 
-            return m_controller.GetModel()->RayIntersection(transform, nonUniformScale, src, dir, distance, ignoreNormal);
+            return false;
         }
 
         bool EditorMeshComponent::SupportsEditorRayIntersect()

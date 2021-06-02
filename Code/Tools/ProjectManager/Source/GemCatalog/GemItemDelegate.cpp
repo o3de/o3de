@@ -131,6 +131,22 @@ namespace O3DE::ProjectManager
             return false;
         }
 
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+            const QRect buttonRect = CalcButtonRect(contentRect);
+
+            if (buttonRect.contains(mouseEvent->pos()))
+            {
+                const bool isAdded = GemModel::IsAdded(modelIndex);
+                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                return true;
+            }
+        }
+
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
 
