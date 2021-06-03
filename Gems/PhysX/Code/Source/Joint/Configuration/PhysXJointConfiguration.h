@@ -47,8 +47,8 @@ namespace PhysX
 
         bool IsFlagSet(GenericApiJointFlag flag) const; ///< Returns if a particular flag is set as a bool.
 
-        ///< Flags that indicates if joint is breakable, self-colliding, etc. 
-        ///< Converting joint between breakable/non-breakable at game time is allowed.
+        /// Flags that indicates if joint is breakable, self-colliding, etc. 
+        /// Converting joint between breakable/non-breakable at game time is allowed.
         GenericApiJointFlag m_flags = GenericApiJointFlag::None;
         float m_forceMax = 1.0f; ///< Max force joint can tolerate before breaking.
         float m_torqueMax = 1.0f; ///< Max torque joint can tolerate before breaking.
