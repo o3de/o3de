@@ -190,9 +190,8 @@ Please note that only those seed files will get updated that are active for your
     void SourceFileRelocator::HandleMetaDataFiles(QStringList pathMatches, QHash<QString, int>& sourceIndexMap, const ScanFolderInfo* scanFolderInfo, SourceFileRelocationContainer& metadataFiles, bool excludeMetaDataFiles) const
     {
         QSet<QString> metaDataFileEntries;
-        for (QStringList::Iterator fileIter = pathMatches.begin(); fileIter != pathMatches.end();)
+        for (QString file : pathMatches)
         {
-            QString file = *fileIter;
             for (int idx = 0; idx < m_platformConfig->MetaDataFileTypesCount(); idx++)
             {
                 QPair<QString, QString> metaInfo = m_platformConfig->GetMetaDataFileTypeAt(idx);
@@ -203,8 +202,7 @@ Please note that only those seed files will get updated that are active for your
                     {
                         AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Metadata file %s will be ignored because --excludeMetadataFiles was specified in the command line.\n",
                             file.toUtf8().constData());
-                        fileIter = pathMatches.erase(fileIter);
-                        continue;
+                        break; // don't check it against other metafile entries, we've already ascertained its a metafile.
                     }
                     else
                     {
@@ -263,8 +261,6 @@ Please note that only those seed files will get updated that are active for your
                     }
                 }
             }
-
-            fileIter++;
         }
     }
 

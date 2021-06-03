@@ -25,7 +25,7 @@ the provided env and launcher bat files.
 If you are developing for the DCCsi you can use this launcher to start Maya:
 DccScriptingInterface\Launchers\Windows\Launch_Maya_2020.bat"
 
-To Do: https://jira.agscollab.com/browse/ATOM-5861
+To Do: ATOM-5861
 """
 __project__ = 'DccScriptingInterface'
 

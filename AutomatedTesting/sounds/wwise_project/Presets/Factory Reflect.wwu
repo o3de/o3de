@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{C4AA5FFA-27C8-411F-8EA9-8D5494E6DE5C}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{C4AA5FFA-27C8-411F-8EA9-8D5494E6DE5C}" SchemaVersion="103">
 	<Presets>
 		<WorkUnit Name="Factory Reflect" ID="{C4AA5FFA-27C8-411F-8EA9-8D5494E6DE5C}" PersistMode="Standalone">
 			<ChildrenList>
@@ -19,6 +19,7 @@
 							<ObjectRef Name="Wwise_Reflect" ID="{37779A87-4754-4420-8175-3236FA46AA12}" WorkUnitID="{923039AD-F8B4-46D4-BDA7-CB5A6EE595E0}"/>
 						</Reference>
 					</ReferenceList>
+					<ObjectLists/>
 				</AuxBus>
 			</ChildrenList>
 		</WorkUnit>

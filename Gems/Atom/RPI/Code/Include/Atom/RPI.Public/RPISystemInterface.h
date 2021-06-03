@@ -40,6 +40,9 @@ namespace AZ
             //! Note: can't rely on the AzFramework::AssetCatalogEventBus's OnCatalogLoaded since the order of calling handlers is undefined.
             virtual void InitializeSystemAssets() = 0;
 
+            //! Was the RPI system initialized properly
+            virtual bool IsInitialized() const = 0;
+
             //! Register a created scene to RPISystem. Registered scene will be simulated and rendered in RPISystem ticks
             virtual void RegisterScene(ScenePtr scene) = 0;
 

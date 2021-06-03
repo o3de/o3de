@@ -42,6 +42,7 @@
 namespace ScriptCanvas
 {
     struct NodeConfiguration;
+    struct NodeUpdateSlotReport;
 }
 
 namespace ScriptCanvasEditor
@@ -361,8 +362,8 @@ namespace ScriptCanvasEditor
         void HandleFunctionDefinitionExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId);
 
         //// Version Update code
-        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, const ScriptCanvas::NodeConfiguration&, ScriptCanvas::ReplacementConnectionMap&);
-        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>>&);
+        AZ::Outcome<ScriptCanvas::Node*> ReplaceNodeByConfig(ScriptCanvas::Node*, const ScriptCanvas::NodeConfiguration&, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
+        bool SanityCheckNodeReplacement(ScriptCanvas::Node*, ScriptCanvas::Node*, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport);
 
         bool m_allowVersionUpdate = false;
         AZStd::unordered_set< AZ::EntityId > m_queuedConvertingNodes;

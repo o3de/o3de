@@ -479,15 +479,7 @@ ILINE DestinationType alias_cast(SourceType pPtr)
     return conv_union.pDst;
 }
 
-//////////////////////////////////////////////////////////////////////////
-
-#include "CryMemoryManager.h"
-
-// Memory manager breaks strdup
-// Use something higher level, like CryString
-    #undef strdup
-    #define strdup dont_use_strdup
-
+#include "CryLegacyAllocator.h"
 
 //////////////////////////////////////////////////////////////////////////
 #ifndef DEPRECATED

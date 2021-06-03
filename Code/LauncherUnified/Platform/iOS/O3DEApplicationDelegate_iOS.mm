@@ -19,7 +19,7 @@
 
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
 
-#include <CrySystem/SystemUtilsApple.h>
+#include <AzFramework/Utils/SystemUtilsApple.h>
 
 #import <UIKit/UIKit.h>
 

@@ -77,8 +77,6 @@ protected:
     static const char* TranslateExceptionCode(DWORD dwExcept);
     static void PutVersion(char* str, size_t length);
 
-    static void Screenshot(const char* szFileName);
-
     bool m_bIsFatalError;
     static const char* const s_szFatalErrorCode;
 

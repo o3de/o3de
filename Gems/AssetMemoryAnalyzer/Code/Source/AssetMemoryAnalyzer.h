@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/Debug/AssetTrackingTypes.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AssetMemoryAnalyzer
 {

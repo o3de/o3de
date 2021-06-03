@@ -40,6 +40,8 @@ namespace LmbrCentral
             provided.push_back(AZ_CRC("CylinderShapeService", 0x507c688e));
         }
 
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 

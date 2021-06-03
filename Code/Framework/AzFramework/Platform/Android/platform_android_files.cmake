@@ -36,4 +36,6 @@ set(FILES
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessWatcher_Android.cpp
     AzFramework/Process/ProcessCommunicator_Android.cpp
+    AzFramework/Thermal/ThermalInfo_Android.cpp
+    AzFramework/Thermal/ThermalInfo_Android.h
 )

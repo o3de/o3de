@@ -79,7 +79,6 @@
 #define ID_EDIT_HIDE                               32898
 #define ID_EDIT_UNHIDEALL                          32899
 #define ID_RELOAD_TERRAIN                          32902
-#define ID_VIEW_GRIDSETTINGS                       32904
 #define ID_VIEW_CONFIGURELAYOUT                    32906
 #define ID_TOOLS_LOGMEMORYUSAGE                    32908
 #define ID_TERRAIN_EXPORTBLOCK                     32909
@@ -99,7 +98,6 @@
 #define ID_FILE_SAVELEVELRESOURCES                 32942
 #define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
-#define ID_RELOAD_TEXTURES                         32952
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
 #define ID_EDIT_UNFREEZE                           32973
@@ -315,6 +313,9 @@
 #define ID_CREATE_LEVEL_FG_MODULE_FROM_SELECTION                    35077
 #define ID_GRAPHVIEW_ADD_BLACK_BOX                                  35078
 #define ID_GRAPHVIEW_UNGROUP                                        35079
+#define ID_FILE_PROJECT_MANAGER_NEW                                 35080
+#define ID_FILE_PROJECT_MANAGER_OPEN                                35081
+#define ID_FILE_PROJECT_MANAGER_SETTINGS                            35082
 #define ID_TV_TRACKS_TOOLBAR_BASE                                   35083               // range between ID_TV_TRACKS_TOOLBAR_BASE to ID_TV_TRACKS_TOOLBAR_LAST reserved
 #define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
 #define ID_OPEN_TERRAIN_EDITOR          36007
@@ -368,3 +369,4 @@
 #define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
 #define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020
+#define ID_VIEWPORTUI_VISIBLE                50040

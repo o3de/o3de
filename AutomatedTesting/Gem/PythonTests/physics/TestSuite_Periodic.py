@@ -429,6 +429,8 @@ class TestAutomation(TestAutomationBase):
         from . import C4976236_AddPhysxColliderComponent as test_module
         self._run_test(request, workspace, editor, test_module)
 
+    @pytest.mark.xfail(
+        reason="This will fail due to this issue ATOM-15487.")
     def test_C14861502_PhysXCollider_AssetAutoAssigned(self, request, workspace, editor, launcher_platform):
         from . import C14861502_PhysXCollider_AssetAutoAssigned as test_module
         self._run_test(request, workspace, editor, test_module)

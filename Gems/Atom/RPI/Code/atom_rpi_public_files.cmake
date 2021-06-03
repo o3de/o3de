@@ -57,6 +57,7 @@ set(FILES
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h
     Include/Atom/RPI.Public/Model/ModelSystem.h
+    Include/Atom/RPI.Public/Model/UvStreamTangentBitmask.h
     Include/Atom/RPI.Public/Pass/AttachmentReadback.h
     Include/Atom/RPI.Public/Pass/ComputePass.h
     Include/Atom/RPI.Public/Pass/CopyPass.h
@@ -81,8 +82,11 @@ set(FILES
     Include/Atom/RPI.Public/Pass/Specific/SelectorPass.h
     Include/Atom/RPI.Public/Pass/Specific/SwapChainPass.h
     Include/Atom/RPI.Public/Shader/Shader.h
+    Include/Atom/RPI.Public/Shader/Shader2.h
     Include/Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h
+    Include/Atom/RPI.Public/Shader/ShaderReloadNotificationBus2.h
     Include/Atom/RPI.Public/Shader/ShaderVariant.h
+    Include/Atom/RPI.Public/Shader/ShaderVariant2.h
     Include/Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h
     Include/Atom/RPI.Public/Shader/ShaderResourceGroup.h
     Include/Atom/RPI.Public/Shader/ShaderResourceGroupPool.h
@@ -133,6 +137,7 @@ set(FILES
     Source/RPI.Public/Model/ModelLod.cpp
     Source/RPI.Public/Model/ModelLodUtils.cpp
     Source/RPI.Public/Model/ModelSystem.cpp
+    Source/RPI.Public/Model/UvStreamTangentBitmask.cpp
     Source/RPI.Public/Pass/AttachmentReadback.cpp
     Source/RPI.Public/Pass/ComputePass.cpp
     Source/RPI.Public/Pass/CopyPass.cpp
@@ -155,7 +160,9 @@ set(FILES
     Source/RPI.Public/Pass/Specific/SelectorPass.cpp
     Source/RPI.Public/Pass/Specific/SwapChainPass.cpp
     Source/RPI.Public/Shader/Shader.cpp
+    Source/RPI.Public/Shader/Shader2.cpp
     Source/RPI.Public/Shader/ShaderVariant.cpp
+    Source/RPI.Public/Shader/ShaderVariant2.cpp
     Source/RPI.Public/Shader/ShaderReloadDebugTracker.cpp
     Source/RPI.Public/Shader/ShaderResourceGroup.cpp
     Source/RPI.Public/Shader/ShaderResourceGroupPool.cpp

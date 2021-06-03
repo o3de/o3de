@@ -77,6 +77,7 @@ namespace Camera
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
+        void Init();
         void Activate(AZ::EntityId entityId);
         void Deactivate();
         void SetConfiguration(const CameraComponentConfig& config);
@@ -121,6 +122,8 @@ namespace Camera
         // Atom integration
         AZ::RPI::ViewPtr m_atomCamera;
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
+        AZ::Event<const AZ::Matrix4x4&>::Handler m_onViewMatrixChanged;
+        bool m_updatingTransformFromEntity = false;
 
         // Cry view integration
         IView* m_view = nullptr;

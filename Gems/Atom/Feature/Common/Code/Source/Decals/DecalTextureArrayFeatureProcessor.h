@@ -82,7 +82,10 @@ namespace AZ
 
             //! Sets the transform of the decal
             //! Equivalent to calling SetDecalPosition() + SetDecalOrientation() + SetDecalHalfSize()
+            //! @{
             void SetDecalTransform(const DecalHandle handle, const AZ::Transform& world) override;
+            void SetDecalTransform(const DecalHandle handle, const AZ::Transform& world, const AZ::Vector3& nonUniformScale) override;
+            //! @}
 
             //! Sets the material information for this decal
             void SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId id) override;
@@ -133,10 +136,7 @@ namespace AZ
             GpuBufferHandler m_decalBufferHandler;
 
             AsyncLoadTracker<DecalHandle> m_materialLoadTracker;
-
             AZStd::unordered_map< AZ::Data::AssetId, DecalLocationAndUseCount> m_materialToTextureArrayLookupTable;
-
-            AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::RPI::MaterialAsset>> m_materialAssets;
 
             bool m_deviceBufferNeedsUpdate = false;
         };

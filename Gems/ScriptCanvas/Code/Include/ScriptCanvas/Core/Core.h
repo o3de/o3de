@@ -88,6 +88,13 @@ namespace ScriptCanvas
         Current,
     };
 
+    enum class PropertyStatus : AZ::u8
+    {
+        Getter,
+        None,
+        Setter,
+    };
+
     struct VersionData
     {
         AZ_TYPE_INFO(VersionData, "{14C629F6-467B-46FE-8B63-48FDFCA42175}");

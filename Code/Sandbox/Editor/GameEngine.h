@@ -79,7 +79,6 @@ public:
     AZ::Outcome<void, AZStd::string> Init(
         bool bPreviewMode,
         bool bTestMode,
-        bool bShaderCacheGen,
         const char* sCmdLine,
         IInitializeUIInfo* logo,
         HWND hwndForInputSystem);

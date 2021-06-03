@@ -55,6 +55,10 @@ namespace AZ
             //! Initializes the PassSystem and the Root Pass and creates the Pass InstanceDatabase
             void Init();
 
+            //! Initialize and load pass templates
+            //! This function need to be called after Init()
+            void InitPassTemplates();
+
             //! Deletes the Root Pass and shuts down the PassSystem
             void Shutdown();
             
@@ -66,7 +70,7 @@ namespace AZ
 
             // PassSystemInterface functions...
             void ProcessQueuedChanges() override;
-            void LoadPassTemplateMappings(const AZStd::string& templateMappingPath) override;
+            bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) override;
             void WriteTemplateToFile(const PassTemplate& passTemplate, AZStd::string_view assetFilePath) override;
             void DebugPrintPassHierarchy() override;
             bool IsBuilding() const override;
@@ -74,6 +78,7 @@ namespace AZ
             void SetHotReloading(bool hotReloading) override;
             void SetTargetedPassDebuggingName(const AZ::Name& targetPassName) override;
             const AZ::Name& GetTargetedPassDebuggingName() const override;
+            void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) override;
 
             // PassSystemInterface factory related functions...
             void AddPassCreator(Name className, PassCreator createFunction) override;
@@ -139,6 +144,9 @@ namespace AZ
 
             // Counts the number of passes
             int32_t m_passCounter = 0;
+
+            // Events
+            OnReadyLoadTemplatesEvent m_loadTemplatesEvent;
         };
     }   // namespace RPI
 }   // namespace AZ

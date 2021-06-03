@@ -27,7 +27,7 @@ namespace AzNetworking
 
         HashSerializer() = default;
 
-        AZ::HashValue64 GetHash() const;
+        AZ::HashValue32 GetHash() const;
 
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
@@ -56,6 +56,6 @@ namespace AzNetworking
 
     private:
 
-        AZ::HashValue64 m_hash;
+        AZ::HashValue64 m_hash = AZ::HashValue64{ 0 };
     };
 }

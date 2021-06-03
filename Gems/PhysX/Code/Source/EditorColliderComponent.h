@@ -20,7 +20,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
@@ -86,6 +86,8 @@ namespace PhysX
         Physics::ShapeConfiguration& GetCurrent();
         const Physics::ShapeConfiguration& GetCurrent() const;
 
+        AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
+
         bool ShowingSubdivisionLevel() const;
 
         AZ::u32 OnConfigurationChanged();
@@ -105,7 +107,7 @@ namespace PhysX
         , private PhysX::ColliderShapeRequestBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
-        , private Physics::WorldBodyRequestBus::Handler
+        , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
         AZ_RTTI(EditorColliderComponent, "{FD429282-A075-4966-857F-D0BBF186CFE6}", AzToolsFramework::Components::EditorComponentBase);
@@ -156,7 +158,6 @@ namespace PhysX
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
         Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialAsset(const AZ::Data::AssetId& id) override;
         void SetMaterialId(const Physics::MaterialId& id) override;
         void UpdateMaterialSlotsFromMeshAsset();
 
@@ -205,12 +206,13 @@ namespace PhysX
         AZ::u32 OnConfigurationChanged();
         void UpdateShapeConfigurationScale();
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // Mesh collider
@@ -248,7 +250,7 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.

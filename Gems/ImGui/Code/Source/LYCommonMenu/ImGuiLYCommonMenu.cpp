@@ -15,6 +15,7 @@
 
 #ifdef IMGUI_ENABLED
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <ILevelSystem.h>
@@ -251,15 +252,37 @@ namespace ImGui
 
                     if (usePrefabSystemForLevels)
                     {
-                        char levelName[256];
-                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
-                        bool result = ImGui::InputText("", levelName, sizeof(levelName), ImGuiInputTextFlags_EnterReturnsTrue);
-                        if (result)
+                        // Run through all the assets in the asset catalog and gather up the list of level assets
+
+                        AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
+                        AZStd::vector<AZStd::string> levelNames;
+                        auto enumerateCB =
+                            [levelAssetType, &levelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                         {
-                            AZ_TracePrintf("Imgui", "Attempting to load level '%s'\n", levelName);
-                            AZ::TickBus::QueueFunction([lvlSystem, levelName]() {
-                                lvlSystem->LoadLevel(levelName);
-                            });
+                            if (assetInfo.m_assetType == levelAssetType)
+                            {
+                                levelNames.emplace_back(assetInfo.m_relativePath);
+                            }
+                        };
+
+                        AZ::Data::AssetCatalogRequestBus::Broadcast(
+                            &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+                        AZStd::sort(levelNames.begin(), levelNames.end());
+
+                        // Create a menu item for each level asset, with an action to load it if selected.
+
+                        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
+                        for (int i = 0; i < levelNames.size(); i++)
+                        {
+                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, levelNames[i].c_str()).c_str()))
+                            {
+                                AZ::TickBus::QueueFunction(
+                                    [lvlSystem, levelNames, i]()
+                                    {
+                                        lvlSystem->LoadLevel(levelNames[i].c_str());
+                                    });
+                            }
                         }
                     }
                     else
@@ -269,9 +292,8 @@ namespace ImGui
                         {
                             if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, lvlSystem->GetLevelInfo(i)->GetName()).c_str()))
                             {
-                                AZStd::string mapCommandString = AZStd::string::format("map %s", lvlSystem->GetLevelInfo(i)->GetName());
-                                AZ::TickBus::QueueFunction([mapCommandString]() {
-                                    gEnv->pConsole->ExecuteString(mapCommandString.c_str());
+                                AZ::TickBus::QueueFunction([lvlSystem, i]() {
+                                    lvlSystem->LoadLevel(lvlSystem->GetLevelInfo(i)->GetName());
                                 });
                             }
                         }

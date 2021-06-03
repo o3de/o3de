@@ -14,6 +14,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Math/ShapeIntersection.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
@@ -66,6 +67,7 @@ namespace AzFramework
                     octreeDebug.m_nodeBounds.push_back(nodeData.m_bounds);
                 }
 
+                visibleEntityIdsOut.reserve(visibleEntityIdsOut.size() + nodeData.m_entries.size());
                 for (const auto* visibilityEntry : nodeData.m_entries)
                 {
                     if (ed_visibility_showDebug)
@@ -88,8 +90,7 @@ namespace AzFramework
                         octreeDebug.m_entryAabbsInFrustum.push_back(visibilityEntry->m_boundingVolume);
                     }
 
-                    AZ::EntityId entityId;
-                    std::memcpy(&entityId, &visibilityEntry->m_userData, sizeof(AZ::EntityId));
+                    AZ::EntityId entityId = static_cast<AZ::Entity*>(visibilityEntry->m_userData)->GetId();
                     visibleEntityIdsOut.push_back(entityId);
                 }
             });

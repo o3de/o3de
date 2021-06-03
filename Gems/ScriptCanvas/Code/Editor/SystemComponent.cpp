@@ -134,7 +134,7 @@ namespace ScriptCanvasEditor
 
         PopulateEditorCreatableTypes();
 
-        m_propertyHandlers.emplace_back(AzToolsFramework::RegisterGenericComboBoxHandler<ScriptCanvas::VariableId>());
+        AzToolsFramework::RegisterGenericComboBoxHandler<ScriptCanvas::VariableId>();
 
         SystemRequestBus::Handler::BusConnect();
         ScriptCanvasExecutionBus::Handler::BusConnect();
@@ -176,12 +176,6 @@ namespace ScriptCanvasEditor
         ScriptCanvasExecutionBus::Handler::BusDisconnect();
         SystemRequestBus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-
-        for (auto&& propertyHandler : m_propertyHandlers)
-        {
-            AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::UnregisterPropertyType, propertyHandler.get());
-        }
-        m_propertyHandlers.clear();
 
         m_jobContext.reset();
         m_jobManager.reset();

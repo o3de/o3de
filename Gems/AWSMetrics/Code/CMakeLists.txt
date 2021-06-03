@@ -23,6 +23,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+        PUBLIC
             Gem::AWSCore
 )
 
@@ -40,9 +41,18 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
-            Gem::AWSCore
             Gem::AWSMetrics.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
 )
+
+# Load the "Gem::AWSMetrics" module in all types of applications.
+ly_create_alias(NAME AWSMetrics.Servers NAMESPACE Gem TARGETS Gem::AWSMetrics)
+ly_create_alias(NAME AWSMetrics.Clients NAMESPACE Gem TARGETS Gem::AWSMetrics)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AWSMetrics.Tools NAMESPACE Gem TARGETS Gem::AWSMetrics)
+    ly_create_alias(NAME AWSMetrics.Builders NAMESPACE Gem TARGETS Gem::AWSMetrics)
+endif()
 
 ################################################################################
 # Tests
@@ -63,8 +73,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::AWSCore
                 Gem::AWSMetrics.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
     )
     ly_add_googletest(
         NAME Gem::AWSMetrics.Tests

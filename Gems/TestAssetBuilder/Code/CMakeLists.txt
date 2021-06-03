@@ -40,3 +40,6 @@ ly_add_target(
         PRIVATE
             Gem::TestAssetBuilder.Static
 )
+
+# the above module is for use in builders only
+ly_create_alias(NAME TestAssetBuilder.Builders NAMESPACE Gem TARGETS Gem::TestAssetBuilder.Editor)

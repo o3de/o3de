@@ -32,10 +32,14 @@ if(NOT PROJECT_NAME)
     )
 endif()
 
+################################################################################
+# Initialize
+################################################################################
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
+include(cmake/RuntimeDependencies.cmake)
 include(cmake/Install.cmake)
 include(cmake/Configurations.cmake) # Requires to be after PAL so we get platform variable definitions
 include(cmake/Dependencies.cmake)
@@ -43,89 +47,106 @@ include(cmake/Deployment.cmake)
 include(cmake/3rdParty.cmake)
 include(cmake/LYPython.cmake)
 include(cmake/LYWrappers.cmake)
+include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
 include(cmake/TestImpactFramework/LYTestImpactFramework.cmake)
 include(cmake/CMakeFiles.cmake)
+include(cmake/O3DEJson.cmake)
 
 ################################################################################
 # Subdirectory processing
 ################################################################################
 
+function(add_engine_json_external_subdirectories)
+    read_json_external_subdirs(external_subdis ${LY_ROOT_FOLDER}/engine.json)
+    foreach(external_subdir ${external_subdis})
+        file(REAL_PATH ${external_subdir} real_external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER})
+        list(APPEND engine_external_subdirs ${real_external_subdir})
+    endforeach()
+
+    set_property(GLOBAL APPEND PROPERTY LY_EXTERNAL_SUBDIRS ${engine_external_subdirs})
+endfunction()
+
 # Add the projects first so the Launcher can find them
 include(cmake/Projects.cmake)
 
 if(NOT INSTALLED_ENGINE)
+    
     # Add the rest of the targets
     add_subdirectory(Code)
-    add_subdirectory(Gems)
+    add_subdirectory(scripts)
+
+    # SPEC-1417 will investigate and fix this
+    if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+        add_subdirectory(Tools/LyTestTools/tests/)
+        add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
+    endif()
+
+    # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
+    # external subdirectories
+    add_engine_json_external_subdirectories()
+    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+    list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
+
+    # Loop over the additional external subdirectories and invoke add_subdirectory on them
+    foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
+        # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
+        # This is to deal with potential situations where multiple external directories has the same last directory name
+        # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
+        file(REAL_PATH ${external_directory} full_directory_path)
+        string(SHA256 full_directory_hash ${full_directory_path})
+        # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+        # when the external subdirectory contains relative paths of significant length
+        string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+        # Use the last directory as the suffix path to use for the Binary Directory
+        get_filename_component(directory_name ${external_directory} NAME)
+    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
+    endforeach()
+
 else()
     ly_find_o3de_packages()
-endif()
-
-set(enabled_platforms
-    ${PAL_PLATFORM_NAME}
-    ${LY_PAL_TOOLS_ENABLED})
-
-foreach(restricted_platform ${PAL_RESTRICTED_PLATFORMS})
-    if(restricted_platform IN_LIST enabled_platforms)
-        add_subdirectory(restricted/${restricted_platform})
-    endif()
-endforeach()
-
-if(NOT INSTALLED_ENGINE)
-    add_subdirectory(scripts)
-endif()
-
-# SPEC-1417 will investigate and fix this
-if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
-    add_subdirectory(Tools/LyTestTools/tests/)
-    add_subdirectory(Tools/RemoteConsole/ly_remote_console/tests/)
 endif()
 
 ################################################################################
 # Post-processing
 ################################################################################
-
-# Loop over the additional external subdirectories and invoke add_subdirectory on them
-foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
-    # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
-    # This is to deal with potential situations where multiple external directories has the same last directory name
-    # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
-    file(REAL_PATH ${external_directory} full_directory_path)
-    string(SHA256 full_directory_hash ${full_directory_path})
-    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
-    # when the external subdirectory contains relative paths of significant length
-    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
-    # Use the last directory as the suffix path to use for the Binary Directory
-    get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/${directory_name}-${full_directory_hash})
-endforeach()
-
 # The following steps have to be done after all targets are registered:
-# 1. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
+# Defer generation of the StaticModules.inl file which is needed to create the AZ::Module derived class in monolithic
+# builds until after all the targets are known
+ly_delayed_generate_static_modules_inl()
+
+# 1. Add any dependencies registered via ly_enable_gems
+ly_enable_gems_delayed()
+
+# 2. generate a settings registry .setreg file for all ly_add_project_dependencies() and ly_add_target_dependencies() calls
 #    to provide applications with the filenames of gem modules to load
-#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIE as MANUALLY_ADDED_DEPENDENCIES
+#    This must be done before ly_delayed_target_link_libraries() as that inserts BUILD_DEPENDENCIES as MANUALLY_ADDED_DEPENDENCIES
 #    if the build dependency is a MODULE_LIBRARY. That would cause a false load dependency to be generated
 ly_delayed_generate_settings_registry()
-# 2. link targets where the dependency was yet not declared, we need to have the declaration so we do different
+
+# 3. link targets where the dependency was yet not declared, we need to have the declaration so we do different
 #    linking logic depending on the type of target
 ly_delayed_target_link_libraries()
-# 3. generate a registry file for unit testing for platforms that support unit testing
+
+# 4. generate a registry file for unit testing for platforms that support unit testing
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_delayed_generate_unit_test_module_registry()
 endif()
-# 4. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
-#    the dependencies
-include(cmake/RuntimeDependencies.cmake)
-# 5. Perform test impact framework post steps once all of the targets have been enumerated
-ly_test_impact_post_step()
-# 6. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
-if(NOT INSTALLED_ENGINE)
-    ly_setup_o3de_install()
 
-    # IMPORTANT: must be included last
+# 5. inject runtime dependencies to the targets. We need to do this after (1) since we are going to walk through
+#    the dependencies
+ly_delayed_generate_runtime_dependencies()
+
+# 6. Perform test impact framework post steps once all of the targets have been enumerated
+ly_test_impact_post_step()
+
+# 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
+if(NOT INSTALLED_ENGINE)
+    # 8. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
+    ly_setup_o3de_install()
+    # 9. CPack information (to be included after install)
     include(cmake/Packaging.cmake)
 endif()

@@ -80,6 +80,12 @@ namespace AzToolsFramework
 
         void Instance::SetTemplateId(const TemplateId& templateId)
         {
+            // If we aren't changing the template Id, there's no need to unregister / re-register
+            if (templateId == m_templateId)
+            {
+                return;
+            }
+
             // If this instance's templateId is valid, we should be able to unregister this instance from 
             // Template to Instance mapping successfully.
             if (m_templateId != InvalidTemplateId &&
@@ -607,6 +613,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
+            m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
             return AZStd::move(m_containerEntity);
         }
     }

@@ -313,8 +313,7 @@ namespace AtomToolsFramework
         // Scale the size by the DPI of the platform to
         // get the proper size in pixels.
         const QSize uiWindowSize = size();
-        const qreal deficePixelRatio = devicePixelRatioF();
-        const QSize windowSize = uiWindowSize * deficePixelRatio;
+        const QSize windowSize = uiWindowSize * devicePixelRatioF();
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
@@ -384,27 +383,32 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::GridSnappingEnabled()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->GridSnappingEnabled() : false;
     }
 
     float RenderViewportWidget::GridSize()
     {
-        return 0.0f;
+        return m_viewportSettings ? m_viewportSettings->GridSize() : 0.0f;
     }
 
     bool RenderViewportWidget::ShowGrid()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->ShowGrid() : false;
     }
 
     bool RenderViewportWidget::AngleSnappingEnabled()
     {
-        return false;
+        return m_viewportSettings ? m_viewportSettings->AngleSnappingEnabled() : false;
     }
 
     float RenderViewportWidget::AngleStep()
     {
-        return 0.0f;
+        return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
+    }
+
+    void RenderViewportWidget::SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
+    {
+        m_viewportSettings = viewportSettings;
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
@@ -460,6 +464,11 @@ namespace AtomToolsFramework
         return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
     }
 
+    float RenderViewportWidget::DeviceScalingFactor()
+    {
+        return aznumeric_cast<float>(devicePixelRatioF());
+    }
+
     AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
     {
         return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
@@ -470,6 +479,11 @@ namespace AtomToolsFramework
         using AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint;
         return m_lastCursorPosition.has_value() ? ScreenPointFromQPoint(mapFromGlobal(m_lastCursorPosition.value()))
                                                 : AZStd::optional<AzFramework::ScreenPoint>{};
+    }
+
+    bool RenderViewportWidget::IsMouseOver() const
+    {
+        return m_mouseOver;
     }
 
     void RenderViewportWidget::BeginCursorCapture()

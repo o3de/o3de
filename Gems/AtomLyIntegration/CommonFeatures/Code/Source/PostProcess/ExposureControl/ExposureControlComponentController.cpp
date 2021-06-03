@@ -88,6 +88,9 @@ namespace AZ
         {
             ExposureControlRequestBus::Handler::BusDisconnect(m_entityId);
 
+            m_configuration.SetHeatmapEnabled(false);
+            OnConfigChanged();
+            
             if (m_postProcessInterface)
             {
                 m_postProcessInterface->RemoveExposureControlSettingsInterface();

@@ -1,30 +1,10 @@
 {
     "gem_name": "Atom_RHI",
-    "GemFormatVersion": 4,
-    "Uuid": "fb7f322c8bdb42228d9e155c954f98bd",
-    "Name": "Atom_RHI",
-    "DisplayName": "Atom RHI",
-    "Version": "0.1.0",
-    "Summary": "The Atom Render Hardware Interface",
-    "Tags": ["Atom", "RHI"],
-    "LinkType": "Dynamic",
-    "IconPath": "preview.png",
-    "Modules": [
-    	{
-            "Name": "Private",
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Public",
-            "Type": "StaticLib"
-        },
-        {
-            "Name": "Reflect",
-            "Type": "StaticLib"
-        },
-        {
-            "Name": "Tests",
-            "Type": "Standalone"
-        }
+    "display_name": "Atom RHI",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
     ]
 }

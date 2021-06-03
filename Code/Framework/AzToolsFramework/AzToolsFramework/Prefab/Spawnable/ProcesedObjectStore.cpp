@@ -10,7 +10,7 @@
  *
  */
 
-#include <AzCore/Casting/lossy_cast.h>
+#include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzToolsFramework/Prefab/Spawnable/ProcesedObjectStore.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
@@ -56,6 +56,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return *m_asset;
     }
 
+    AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& ProcessedObjectStore::GetReferencedAssets()
+    {
+        return m_referencedAssets;
+    }
+
+    const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& ProcessedObjectStore::GetReferencedAssets() const
+    {
+        return m_referencedAssets;
+    }
+
     AZStd::unique_ptr<AZ::Data::AssetData> ProcessedObjectStore::ReleaseAsset()
     {
         return AZStd::move(m_asset);
@@ -63,8 +73,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     uint32_t ProcessedObjectStore::BuildSubId(AZStd::string_view id)
     {
-        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id.data(), id.size());
-        return azlossy_caster(subIdHash.GetHash());
+        return AzFramework::SpawnableAssetHandler::BuildSubId(id);
     }
 
     const AZStd::string& ProcessedObjectStore::GetId() const

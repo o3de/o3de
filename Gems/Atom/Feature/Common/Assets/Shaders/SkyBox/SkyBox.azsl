@@ -10,6 +10,9 @@
 *
 */
 
+// --- Static Options Available ---
+// SKYBOX_TWO_OUTPUTS - Skybox renders to two rendertargets instead of one (SkyBox_TwoOutputs.pass writes to specular and reflection targets)
+
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
@@ -102,7 +105,9 @@ float3 GetCubemapCoords(float3 original)
 struct PSOutput
 {
     float4 m_specular : SV_Target0;
+#ifdef SKYBOX_TWO_OUTPUTS
     float4 m_reflection : SV_Target1;
+#endif
 };
 
 PSOutput MainPS(VSOutput input)
@@ -163,6 +168,8 @@ PSOutput MainPS(VSOutput input)
 
     PSOutput OUT;
     OUT.m_specular = float4(color, 1.0);
+#ifdef SKYBOX_TWO_OUTPUTS
     OUT.m_reflection = float4(color, 1.0);
+#endif
     return OUT;
 }

@@ -35,7 +35,7 @@ namespace Multiplayer
         if (netBindComponent != nullptr)
         {
             netBindComponent->AddEntityStopEventHandler(m_controlledEntityRemovedHandler);
-            netBindComponent->AddEntityMigrationEventHandler(m_controlledEntityMigrationHandler);
+            netBindComponent->AddEntityServerMigrationEventHandler(m_controlledEntityMigrationHandler);
         }
 
         m_entityReplicationManager.SetMaxRemoteEntitiesPendingCreationCount(sv_ClientMaxRemoteEntitiesPendingCreationCount);
@@ -63,7 +63,7 @@ namespace Multiplayer
         return m_entityReplicationManager;
     }
 
-    void ServerToClientConnectionData::Update(AZ::TimeMs serverGameTimeMs)
+    void ServerToClientConnectionData::Update(AZ::TimeMs hostTimeMs)
     {
         m_entityReplicationManager.ActivatePendingEntities();
 
@@ -73,7 +73,7 @@ namespace Multiplayer
             // potentially false if we just migrated the player, if that is the case, don't send any more updates
             if (netBindComponent != nullptr && (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority))
             {
-                m_entityReplicationManager.SendUpdates(serverGameTimeMs);
+                m_entityReplicationManager.SendUpdates(hostTimeMs);
             }
         }
     }

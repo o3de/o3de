@@ -234,7 +234,7 @@ public:
 
 /**
 * OfflineModeTest verifies that replica chunks are usable without
-* an active session, and basically behave as masters.
+* an active session, and basically behave as primarys.
 */
 class OfflineModeTest
     : public UnitTest::GridMateMPTestFixture
@@ -297,7 +297,7 @@ public:
         AZ_TEST_ASSERT(OfflineChunk::s_nInstances == 1);
         ReplicaChunkPtr chunkPtr = offlineChunk;
         chunkPtr->Init(ReplicaChunkClassId(OfflineChunk::GetChunkName()));
-        AZ_TEST_ASSERT(chunkPtr->IsMaster());
+        AZ_TEST_ASSERT(chunkPtr->IsPrimary());
         AZ_TEST_ASSERT(!chunkPtr->IsProxy());
         offlineChunk->m_data1.Set(5);
         AZ_TEST_ASSERT(offlineChunk->m_data1.Get() == 5);
@@ -315,7 +315,7 @@ public:
                 return true;
             });
         AZ_TEST_ASSERT(offlineChunk->m_data2.Get() == 10);
-        AZ_TEST_ASSERT(offlineChunk->m_nCallsDataSetChangeCB == 0); // DataSet change CB doesn't get called on master.
+        AZ_TEST_ASSERT(offlineChunk->m_nCallsDataSetChangeCB == 0); // DataSet change CB doesn't get called on primary.
 
         offlineChunk->CallRpc();
         AZ_TEST_ASSERT(offlineChunk->m_nCallsRpcHandlerCB == 1);
@@ -325,11 +325,11 @@ public:
         AZ_TEST_ASSERT(strcmp(offlineReplica->GetDebugName(), replicaName) == 0);
 
         offlineReplica->AttachReplicaChunk(chunkPtr);
-        AZ_TEST_ASSERT(chunkPtr->IsMaster());
+        AZ_TEST_ASSERT(chunkPtr->IsPrimary());
         AZ_TEST_ASSERT(!chunkPtr->IsProxy());
 
         offlineReplica->DetachReplicaChunk(chunkPtr);
-        AZ_TEST_ASSERT(chunkPtr->IsMaster());
+        AZ_TEST_ASSERT(chunkPtr->IsPrimary());
         AZ_TEST_ASSERT(!chunkPtr->IsProxy());
 
         AZ_TEST_ASSERT(OfflineChunk::s_nInstances == 1);
@@ -462,7 +462,7 @@ public:
         ReplicaPeer peer(&rm);
 
         AZ_TracePrintf("GridMate", "\n");
-        Replica* replica = Replica::CreateReplica("TestMasterReplica");
+        Replica* replica = Replica::CreateReplica("TestPrimaryReplica");
 
         ReplicaChunkDescriptorTable::Get().RegisterChunkType<SimpleDataSetChunk>();
         AZStd::unique_ptr<SimpleDataSetChunk> chunk(CreateReplicaChunk<SimpleDataSetChunk>());

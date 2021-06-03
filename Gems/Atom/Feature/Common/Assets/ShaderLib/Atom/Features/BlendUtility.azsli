@@ -37,8 +37,6 @@ float3 TextureBlend_Overlay(float3 target, float3 blend)
 //! @return the resulting blended color
 float3 ApplyTextureBlend(float3 color, float3 blendColor, float factor, TextureBlendMode blendMode)
 {
-    // More info to help understand some of these blend modes: https://wiki.agscollab.com/pages/viewpage.action?pageId=15764930
-
     if(blendMode == TextureBlendMode::Multiply)
     {
         return factor * color * blendColor;

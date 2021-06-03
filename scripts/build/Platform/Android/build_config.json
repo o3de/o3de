@@ -27,7 +27,8 @@
   },
   "debug": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -67,7 +68,8 @@
   },
   "profile_nounity": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -83,7 +85,9 @@
   "asset_profile": {
     "TAGS":[
         "default",
-        "weekly-build-metrics"
+        "weekly-build-metrics",
+        "nightly-incremental",
+        "nightly-clean"
     ],
     "COMMAND":"../Windows/build_asset_windows.cmd",
     "PARAMETERS": {
@@ -95,24 +99,13 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
         "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
         "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AssetProcessor/Settings/Exclude Android/pattern=.*/DiffuseGlobalIllumination/.*precompiledshader\"",
-        "ASSET_PROCESSOR_PLATFORMS":"es3"
+        "ASSET_PROCESSOR_PLATFORMS":"android"
     }
-  },
-  "asset_clean_profile": {
-    "TAGS":[
-        "nightly"
-    ],
-    "PIPELINE_ENV": {
-        "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-        "clean",
-        "asset_profile"
-    ]
   },
   "release": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -127,7 +120,8 @@
   },
   "monolithic_release": {
     "TAGS":[
-        "nightly",
+        "nightly-incremental",
+        "nightly-clean",
         "weekly-build-metrics"
     ],
     "COMMAND":"../Windows/build_ninja_windows.cmd",
@@ -142,15 +136,14 @@
   },
   "gradle": {
     "TAGS":[
+        "default",
         "weekly-build-metrics"
     ],
     "COMMAND":"gradle_windows.cmd",
     "PARAMETERS": {
       "CONFIGURATION":"profile",
-      "OUTPUT_DIRECTORY":"build\\android_gradle",
+      "OUTPUT_DIRECTORY":"build\\ad_grd",
       "GAME_PROJECT": "AutomatedTesting",
-      "ANDROID_NDK_PLATFORM": "21",
-      "ANDROID_SDK_PLATFORM": "29",
       "SIGN_APK": "false",
       "GRADLE_BUILD_CMD": "build",
       "ADDITIONAL_GENERATE_ARGS": ""
@@ -164,8 +157,6 @@
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"build\\android_unittest",
       "GAME_PROJECT": "AutomatedTesting",
-      "ANDROID_NDK_PLATFORM": "21",
-      "ANDROID_SDK_PLATFORM": "29",
       "SIGN_APK": "true",
       "GRADLE_BUILD_CMD": "assemble",
       "ADDITIONAL_GENERATE_ARGS": "--unit-test"

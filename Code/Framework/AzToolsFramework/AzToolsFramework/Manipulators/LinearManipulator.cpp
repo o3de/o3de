@@ -59,7 +59,7 @@ namespace AzToolsFramework
             ? CalculateSnappedOffset(localTransform.GetTranslation(), axis, gridSize * scaleRecip)
             : AZ::Vector3::CreateZero();
 
-        const AZ::Vector3 localScale = localTransform.GetScale();
+        const AZ::Vector3 localScale = AZ::Vector3(localTransform.GetUniformScale());
         const AZ::Quaternion localRotation = QuaternionFromTransformNoScaling(localTransform);
         // calculate scale amount to snap, to align to round scale value
         const AZ::Vector3 scaleSnapOffset = snapping && !gridSnapAction.m_localSnapping

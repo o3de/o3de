@@ -39,6 +39,10 @@ ly_add_target(
             Gem::Camera.Static
 )
 
+# clients and servers use the above module:
+ly_create_alias(NAME Camera.Clients NAMESPACE Gem TARGETS Gem::Camera)
+ly_create_alias(NAME Camera.Servers NAMESPACE Gem TARGETS Gem::Camera)
+   
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
@@ -62,4 +66,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Camera.Static
     )
 
+    # tools and builders use the above module.
+    ly_create_alias(NAME Camera.Tools NAMESPACE    Gem TARGETS Gem::Camera.Editor)
+    ly_create_alias(NAME Camera.Builders NAMESPACE Gem TARGETS Gem::Camera.Editor)
 endif()

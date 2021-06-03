@@ -58,19 +58,9 @@ namespace Camera
         float axisPolarity = m_shouldInvertAxis ? -1.0f : 1.0f;
         float rotationAmount = axisPolarity * m_rotationAmount;
 
-        // remove translation and scale
-        AZ::Vector3 translation = outLookAtTargetTransform.GetTranslation();
-        outLookAtTargetTransform.SetTranslation(AZ::Vector3::CreateZero());
-        AZ::Vector3 transformScale = outLookAtTargetTransform.ExtractScale();
-
-        // perform our rotation
-        AZ::Transform desiredRotationTransform = AZ::Transform::CreateFromQuaternion(AZ::Quaternion::CreateFromAxisAngle(outLookAtTargetTransform.GetBasis(m_axisOfRotation), rotationAmount));
-
-        outLookAtTargetTransform = desiredRotationTransform * outLookAtTargetTransform;
-
-        // return scale and translate
-        outLookAtTargetTransform.SetScale(transformScale);
-        outLookAtTargetTransform.SetTranslation(translation);
+        AZ::Quaternion desiredRotation = AZ::Quaternion::CreateFromAxisAngle(
+            outLookAtTargetTransform.GetBasis(m_axisOfRotation), rotationAmount);
+        outLookAtTargetTransform.SetRotation(desiredRotation * outLookAtTargetTransform.GetRotation());
     }
 
     void RotateCameraLookAt::Activate(AZ::EntityId entityId)

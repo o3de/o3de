@@ -189,9 +189,6 @@ namespace AzToolsFramework
         SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
         EditorLegacyGameModeNotificationBus::Handler::BusConnect();
-
-        m_entityVisibilityBoundsUnionSystem.Connect();
-
     }
 
     //=========================================================================
@@ -199,8 +196,6 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::Deactivate()
     {
-        m_entityVisibilityBoundsUnionSystem.Disconnect();
-
         EditorLegacyGameModeNotificationBus::Handler::BusDisconnect();
 
         SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();

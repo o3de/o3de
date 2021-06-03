@@ -75,6 +75,7 @@ namespace UnitTest
         
         // Adding this handler to allow utility functions access the serialize context
         ComponentApplicationBus::Handler::BusConnect();
+        AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
         // Startup default local FileIO (hits OSAllocator) if not already setup.
         if (IO::FileIOBase::GetInstance() == nullptr)
@@ -113,6 +114,7 @@ namespace UnitTest
         delete IO::FileIOBase::GetInstance();
         IO::FileIOBase::SetInstance(nullptr);
 
+        AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
         ComponentApplicationBus::Handler::BusDisconnect();        
 
         m_jsonRegistrationContext->EnableRemoveReflection();

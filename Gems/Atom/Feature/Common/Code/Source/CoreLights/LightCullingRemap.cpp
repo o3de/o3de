@@ -34,7 +34,7 @@ namespace AZ
         const size_t NumBins = 8;
         const size_t MaxLightsPerTile = 256;
         // TODO convert this to R16_UINT. It just needs RHI support
-        // https://jira.agscollab.com/browse/ATOM-3975
+        // ATOM-3975
         const RHI::Format LightListRemappedFormat = RHI::Format::R32_UINT;
 
         RPI::Ptr<LightCullingRemap> LightCullingRemap::Create(const RPI::PassDescriptor& descriptor)

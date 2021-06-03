@@ -69,9 +69,7 @@ namespace AZ
 
             if (m_shouldUpdatePassParameters)
             {
-                auto* passSystem = AZ::RPI::PassSystemInterface::Get();
-                UpdateEyeAdaptationPass(passSystem);
-                UpdateLuminanceHeatmap(passSystem);
+                UpdateLuminanceHeatmap();
 
                 m_shouldUpdatePassParameters = false;
             }
@@ -140,7 +138,8 @@ namespace AZ
             if (m_heatmapEnabled != value)
             {
                 m_heatmapEnabled = value;
-                m_shouldUpdatePassParameters = true;
+                // Update immediately so that the ExposureControlSettings can just be turned off and killed without having to wait for another Simulate() call
+                UpdateLuminanceHeatmap();
             }
         }
 
@@ -198,30 +197,10 @@ namespace AZ
             }
         }
 
-        void ExposureControlSettings::UpdateEyeAdaptationPass(RPI::PassSystemInterface* passSystem)
+        void ExposureControlSettings::UpdateLuminanceHeatmap()
         {
-            // [GFX-TODO][ATOM-13224] Remove UpdateLuminanceHeatmap and UpdateEyeAdaptationPass
-            auto passTemplateName = m_eyeAdaptationPassTemplateNameId;
+            auto* passSystem = AZ::RPI::PassSystemInterface::Get();
 
-            if (passSystem->HasPassesForTemplateName(passTemplateName))
-            {
-                const AZStd::vector<RPI::Pass*>& eyeAdaptationPasses = passSystem->GetPassesForTemplateName(passTemplateName);
-                for (RPI::Pass* pass : eyeAdaptationPasses)
-                {
-                    auto* eyeAdaptationPass = azrtti_cast<AZ::Render::EyeAdaptationPass*>(pass);
-                    auto* renderPipeline = eyeAdaptationPass->GetRenderPipeline();
-
-                    if (renderPipeline && renderPipeline->GetScene() == GetParentScene())
-                    {
-                        // update eye adaptation pass's enable state
-                        eyeAdaptationPass->UpdateEnable();
-                    }
-                }
-            }
-        }
-
-        void ExposureControlSettings::UpdateLuminanceHeatmap(RPI::PassSystemInterface* passSystem)
-        {
             // [GFX-TODO][ATOM-13194] Support multiple views for the luminance heatmap
             // [GFX-TODO][ATOM-13224] Remove UpdateLuminanceHeatmap and UpdateEyeAdaptationPass
             const RPI::Ptr<RPI::Pass> luminanceHeatmap = passSystem->GetRootPass()->FindPassByNameRecursive(m_luminanceHeatmapNameId);

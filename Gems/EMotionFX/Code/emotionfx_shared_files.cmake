@@ -31,9 +31,6 @@ set(FILES
     Source/Integration/Components/ActorComponent.cpp
     Source/Integration/Components/AnimAudioComponent.h
     Source/Integration/Components/AnimAudioComponent.cpp
-    Source/Integration/Components/AnimGraphNetSyncComponent.h
-    Source/Integration/Components/AnimGraphNetSyncTypes.h
-    Source/Integration/Components/AnimGraphNetSyncComponent.cpp
     Source/Integration/Components/AnimGraphComponent.h
     Source/Integration/Components/AnimGraphComponent.cpp
     Source/Integration/Components/SimpleMotionComponent.h

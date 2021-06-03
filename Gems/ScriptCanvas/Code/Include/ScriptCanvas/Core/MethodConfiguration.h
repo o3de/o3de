@@ -33,6 +33,8 @@ namespace ScriptCanvas
         Event,
         Free,
         Member,
+        Getter,
+        Setter,
         Count,
     };
 

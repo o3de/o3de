@@ -14,20 +14,20 @@
 
 namespace AWSCore
 {
-    static constexpr const char AWS_CHINA_REGION_PREFIX[] = "cn-";
+    static constexpr const char AWSChinaRegionPrefix[] = "cn-";
 
-    static constexpr const char AWS_FEATURE_GEM_RESTAPI_ID_KEYNAME_SUFFIX[] = ".RESTApiId";
-    static constexpr const char AWS_FEATURE_GEM_RESTAPI_STAGE_KEYNAME_SUFFIX[] = ".RESTApiStage";
+    static constexpr const char AWSFeatureGemRESTApiIdKeyNameSuffix[] = ".RESTApiId";
+    static constexpr const char AWSFeatureGemRESTApiStageKeyNameSuffix[] = ".RESTApiStage";
 
-    static constexpr const char RESOURCE_MAPPING_ACCOUNTID_KEYNAME[] = "AccountId";
-    static constexpr const char RESOURCE_MAPPING_RESOURCES_KEYNAME[] = "AWSResourceMappings";
-    static constexpr const char RESOURCE_MAPPING_NAMEID_KEYNAME[] = "Name/ID";
-    static constexpr const char RESOURCE_MAPPING_REGION_KEYNAME[] = "Region";
-    static constexpr const char RESOURCE_MAPPING_TYPE_KEYNAME[] = "Type";
-    static constexpr const char RESOURCE_MAPPING_VERSION_KEYNAME[] = "Version";
+    static constexpr const char ResourceMappingAccountIdKeyName[] = "AccountId";
+    static constexpr const char ResourceMappingResourcesKeyName[] = "AWSResourceMappings";
+    static constexpr const char ResourceMappingNameIdKeyName[] = "Name/ID";
+    static constexpr const char ResourceMappingRegionKeyName[] = "Region";
+    static constexpr const char ResourceMappingTypeKeyName[] = "Type";
+    static constexpr const char ResourceMappingVersionKeyName[] = "Version";
 
     // TODO: move this into an independent file under AWSCore gem, if resource mapping tool can reuse it
-    static constexpr const char RESOURCE_MAPPING_JSON_SCHEMA[] =
+    static constexpr const char ResourceMappingJsonSchema[] =
         R"({
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",

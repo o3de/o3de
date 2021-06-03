@@ -17,7 +17,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Physics/ColliderComponentBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
-#include <AzFramework/Physics/SystemBus.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -312,6 +312,26 @@ namespace PhysX
         }
     }
 
+    AZStd::shared_ptr<Physics::ShapeConfiguration> EditorProxyShapeConfig::CloneCurrent() const
+    {
+        switch (m_shapeType)
+        {
+        case Physics::ShapeType::Sphere:
+            return AZStd::make_shared<Physics::SphereShapeConfiguration>(m_sphere);
+        case Physics::ShapeType::Capsule:
+            return AZStd::make_shared<Physics::CapsuleShapeConfiguration>(m_capsule);
+        case Physics::ShapeType::PhysicsAsset:
+            return AZStd::make_shared<Physics::PhysicsAssetShapeConfiguration>(m_physicsAsset.m_configuration);
+        case Physics::ShapeType::CookedMesh:
+            return AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(m_cookedMesh);
+        default:
+            AZ_Warning("EditorProxyShapeConfig", false, "Unsupported shape type, defaulting to Box.");
+            [[fallthrough]];
+        case Physics::ShapeType::Box:
+            return AZStd::make_shared<Physics::BoxShapeConfiguration>(m_box);
+        }
+    }
+
     bool EditorProxyShapeConfig::ShowingSubdivisionLevel() const
     {
         return (m_hasNonUniformScale && (IsCapsuleConfig() || IsSphereConfig() || IsAssetConfig()));
@@ -332,10 +352,13 @@ namespace PhysX
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
-        m_onDefaultMaterialLibraryChangedEventHandler = AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler(
+        m_onMaterialLibraryChangedEventHandler = AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler(
             [this](const AZ::Data::AssetId& defaultMaterialLibrary)
             {
-                m_configuration.m_materialSelection.OnDefaultMaterialLibraryChanged(defaultMaterialLibrary);
+                m_configuration.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
+
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             });
 
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -387,7 +410,7 @@ namespace PhysX
 
     void EditorColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         m_nonUniformScaleChangedHandler.Disconnect();
@@ -405,7 +428,6 @@ namespace PhysX
         if (m_sceneInterface)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
@@ -444,13 +466,13 @@ namespace PhysX
         if (auto* physXSystem = GetPhysXSystem())
         {
             physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
-            physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+            physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
         }
     }
 
     void EditorColliderComponent::OnDeselected()
     {
-        m_onDefaultMaterialLibraryChangedEventHandler.Disconnect();
+        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 
@@ -579,22 +601,17 @@ namespace PhysX
             if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
             return;
         }
 
         AZ::Transform colliderTransform = GetWorldTM();
-        colliderTransform.ExtractScale();
+        colliderTransform.ExtractUniformScale();
         AzPhysics::StaticRigidBodyConfiguration configuration;
         configuration.m_orientation = colliderTransform.GetRotation();
         configuration.m_position = colliderTransform.GetTranslation();
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
-
-        // This configuration needs to be at the scope of the function to be added
-        // to m_colliderAndShapeData as a pointer.
-        Physics::ColliderConfiguration colliderConfig;
 
         if (m_shapeConfiguration.IsAssetConfig())
         {
@@ -605,13 +622,15 @@ namespace PhysX
         }
         else
         {
-            colliderConfig = GetColliderConfigurationScaled();
-            Physics::ShapeConfiguration& shapeConfig = m_shapeConfiguration.GetCurrent();
+            AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig = AZStd::make_shared<Physics::ColliderConfiguration>(
+                GetColliderConfigurationScaled());
+            AZStd::shared_ptr<Physics::ShapeConfiguration> shapeConfig = m_shapeConfiguration.CloneCurrent();
+
             if (IsNonUniformlyScaledPrimitive(m_shapeConfiguration))
             {
-                auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), shapeConfig,
-                    m_shapeConfiguration.m_subdivisionLevel, shapeConfig.m_scale);
-                auto colliderConfigurationNoOffset = colliderConfig;
+                auto convexConfig = Utils::CreateConvexFromPrimitive(GetColliderConfiguration(), *(shapeConfig.get()),
+                    m_shapeConfiguration.m_subdivisionLevel, shapeConfig->m_scale);
+                Physics::ColliderConfiguration colliderConfigurationNoOffset = *colliderConfig;
                 colliderConfigurationNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
                 colliderConfigurationNoOffset.m_position = AZ::Vector3::CreateZero();
 
@@ -624,7 +643,7 @@ namespace PhysX
             }
             else
             {
-                configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(&colliderConfig, &shapeConfig);
+                configuration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfig);
             }
         }
 
@@ -634,7 +653,6 @@ namespace PhysX
             if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
                 m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-                m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
             }
             
             m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
@@ -642,7 +660,7 @@ namespace PhysX
 
         m_colliderDebugDraw.ClearCachedGeometry();
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::Data::Asset<Pipeline::MeshAsset> EditorColliderComponent::GetMeshAsset() const
@@ -666,11 +684,6 @@ namespace PhysX
         }
     }
 
-    void EditorColliderComponent::SetMaterialAsset(const AZ::Data::AssetId& id)
-    {
-        m_configuration.m_materialSelection.SetMaterialLibrary(id);
-    }
-
     void EditorColliderComponent::SetMaterialId(const Physics::MaterialId& id)
     {
         m_configuration.m_materialSelection.SetMaterialId(id);
@@ -678,8 +691,10 @@ namespace PhysX
 
     void EditorColliderComponent::UpdateMaterialSlotsFromMeshAsset()
     {
-        Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::UpdateMaterialSelection,
-            m_shapeConfiguration.GetCurrent(), m_configuration);
+        Physics::PhysicsMaterialRequestBus::Broadcast(
+            &Physics::PhysicsMaterialRequestBus::Events::UpdateMaterialSelectionFromPhysicsAsset,
+            m_shapeConfiguration.GetCurrent(),
+            m_configuration.m_materialSelection);
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
@@ -808,7 +823,7 @@ namespace PhysX
                 return;
             }
 
-            Physics::ShapeConfigurationList shapeConfigList;
+            AzPhysics::ShapeColliderPairList shapeConfigList;
             Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
                 m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
@@ -853,7 +868,7 @@ namespace PhysX
             colliderConfigNoOffset.m_rotation = AZ::Quaternion::CreateIdentity();
             colliderConfigNoOffset.m_position = AZ::Vector3::CreateZero();
             m_colliderDebugDraw.DrawMesh(debugDisplay, colliderConfigNoOffset, m_scaledPrimitive.value(),
-                GetWorldTM().GetScale() * m_cachedNonUniformScale, shapeIndex);
+                GetWorldTM().GetUniformScale() * m_cachedNonUniformScale, shapeIndex);
         }
     }
 
@@ -882,7 +897,7 @@ namespace PhysX
 
         const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = m_shapeConfiguration.m_physicsAsset.m_configuration;
 
-        Physics::ShapeConfigurationList shapeConfigList;
+        AzPhysics::ShapeColliderPairList shapeConfigList;
         Utils::GetColliderShapeConfigsFromAsset(physicsAssetConfiguration, m_configuration, m_hasNonUniformScale,
             m_shapeConfiguration.m_subdivisionLevel, shapeConfigList);
 
@@ -992,7 +1007,7 @@ namespace PhysX
 
     AZ::Vector3 EditorColliderComponent::GetBoxScale()
     {
-        return GetWorldTM().GetScale();
+        return AZ::Vector3(GetWorldTM().GetUniformScale());
     }
 
     void EditorColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
@@ -1034,7 +1049,7 @@ namespace PhysX
     void EditorColliderComponent::UpdateShapeConfigurationScale()
     {
         auto& shapeConfiguration = m_shapeConfiguration.GetCurrent();
-        shapeConfiguration.m_scale = GetWorldTM().ExtractScale() * m_cachedNonUniformScale;
+        shapeConfiguration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
         m_colliderDebugDraw.ClearCachedGeometry();
     }
 
@@ -1051,13 +1066,19 @@ namespace PhysX
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
     bool EditorColliderComponent::IsPhysicsEnabled() const
     {
-        return m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle;
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->m_simulating;
+            }
+        }
+        return false;
     }
 
     AZ::Aabb EditorColliderComponent::GetAabb() const
@@ -1072,7 +1093,7 @@ namespace PhysX
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorColliderComponent::GetSimulatedBody()
     {
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
@@ -1082,6 +1103,11 @@ namespace PhysX
             }
         }
         return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)

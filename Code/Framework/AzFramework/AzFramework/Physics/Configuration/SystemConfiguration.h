@@ -13,6 +13,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/Physics/Material.h>
 
 namespace AZ
 {
@@ -34,7 +35,7 @@ namespace AzPhysics
 
         static constexpr float DefaultFixedTimestep = 0.0166667f; //! Value represents 1/60th or 60 FPS.
 
-        float m_maxTimestep = 1.f / 20.f; //!< Maximum fixed timestep in seconds to run the physics update.
+        float m_maxTimestep = 0.1f; //!< Maximum fixed timestep in seconds to run the physics update (10FPS).
         float m_fixedTimestep = DefaultFixedTimestep; //!< Timestep in seconds to run the physics update. See DefaultFixedTimestep.
 
         AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
@@ -44,6 +45,9 @@ namespace AzPhysics
         //! Contains the default global collision layers and groups.
         //! Each Physics Scene uses this as a base and will override as needed.
         CollisionConfiguration m_collisionConfig;
+
+        Physics::MaterialConfiguration m_defaultMaterialConfiguration; //!< Default material parameters for the project.
+        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset = AZ::Data::AssetLoadBehavior::NoLoad; //!< Material Library exposed by the system component SystemBus API.
 
         //! Controls whether the Physics System will self register to the TickBus and call StartSimulation / FinishSimulation on each Scene.
         //! Disable this to manually control Physics Scene simulation logic.

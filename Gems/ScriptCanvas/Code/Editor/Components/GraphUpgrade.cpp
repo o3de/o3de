@@ -424,24 +424,11 @@ namespace ScriptCanvasEditor
         EditorGraphUpgradeMachine* sm = GetStateMachine<EditorGraphUpgradeMachine>();
         auto* graph = sm->m_graph;
 
-        // Delete underlying data connections.
-        for (auto remapConnection : sm->m_replacementConnections)
+        if (!sm->m_updateReport.IsEmpty())
         {
-            graph->RemoveConnection(remapConnection.first);
-        }
-
-        // Recreate connections in a separate pass to avoid triggering display updates for invalid slot ids.
-        for (auto remapConnection : sm->m_replacementConnections)
-        {
-            for (auto newEndpointPair : remapConnection.second)
-            {
-                if (newEndpointPair.first.IsValid() && newEndpointPair.second.IsValid())
-                {
-                    graph->ConnectByEndpoint(newEndpointPair.first, newEndpointPair.second);
-
-                    Log("Replaced Connection: %s\n", Helpers::ConnectionToText(graph, newEndpointPair.first, newEndpointPair.second).c_str());
-                }
-            }
+            // currently, it is expected that there are no deleted old slots, those need manual correction
+            AZ_Error("ScriptCanvas", sm->m_updateReport.m_deletedOldSlots.empty(), "Graph upgrade path: If old slots are deleted, manual upgrading is required");
+            UpdateConnectionStatus(*graph, sm->m_updateReport);
         }
     }
 
@@ -455,16 +442,18 @@ namespace ScriptCanvasEditor
             ScriptCanvas::NodeConfiguration nodeConfig = node->GetReplacementNodeConfiguration();
             if (nodeConfig.IsValid())
             {
-                auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, sm->m_replacementConnections);
+                ScriptCanvas::NodeUpdateSlotReport nodeUpdateSlotReport;
+                auto nodeOutcome = graph->ReplaceNodeByConfig(node, nodeConfig, nodeUpdateSlotReport);
                 if (nodeOutcome.IsSuccess())
                 {
+                    ScriptCanvas::MergeUpdateSlotReport(node->GetEntityId(), sm->m_updateReport, nodeUpdateSlotReport);
+
                     sm->m_allNodes.erase(node);
                     sm->m_outOfDateNodes.erase(node);
                     sm->m_sanityCheckRequiredNodes.erase(node);
-
                     sm->m_graphNeedsDirtying = true;
-                    auto replacedNode = nodeOutcome.GetValue();
 
+                    auto replacedNode = nodeOutcome.GetValue();
                     sm->m_allNodes.insert(replacedNode);
 
                     if (replacedNode->IsOutOfDate(graph->GetVersion()))

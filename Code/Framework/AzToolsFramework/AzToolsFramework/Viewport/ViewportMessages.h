@@ -18,6 +18,7 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportId.h>
+#include <AzFramework/Viewport/ClickDetector.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
@@ -164,18 +165,39 @@ namespace AzToolsFramework
             virtual bool AngleSnappingEnabled() = 0;
             /// Return the angle snapping/step size.
             virtual float AngleStep() = 0;
-            /// Transform a point in world space to screen space coordinates.
+            /// Transform a point in world space to screen space coordinates in Qt Widget space.
+            /// Multiply by DeviceScalingFactor to get the position in viewport pixel space.
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
-            /// Transform a point in screen space coordinates to a vector in world space based on clip space depth.
+            /// Transform a point from Qt widget screen space to world space based on the given clip space depth.
             /// Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             /// Returns the world space position if successful.
             virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;
             /// Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
             /// Returns a ray containing the ray's origin and a direction normal, if successful.
             virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const AzFramework::ScreenPoint& screenPosition) = 0;
+            /// Gets the DPI scaling factor that translates Qt widget space into viewport pixel space.
+            virtual float DeviceScalingFactor() = 0;
 
         protected:
             ~ViewportInteractionRequests() = default;
+        };
+
+        /// Interface to return only viewport specific settings (e.g. snapping).
+        class ViewportSettings
+        {
+        public:
+            virtual ~ViewportSettings() = default;
+
+            /// Return if grid snapping is enabled.
+            virtual bool GridSnappingEnabled() const = 0;
+            /// Return the grid snapping size.
+            virtual float GridSize() const = 0;
+            /// Does the grid currently want to be displayed.
+            virtual bool ShowGrid() const = 0;
+            /// Return if angle snapping is enabled.
+            virtual bool AngleSnappingEnabled() const = 0;
+            /// Return the angle snapping/step size.
+            virtual float AngleStep() const = 0;
         };
 
         /// Type to inherit to implement ViewportInteractionRequests.
@@ -244,6 +266,8 @@ namespace AzToolsFramework
             /// from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
             /// position delta.
             virtual AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() = 0;
+            /// Is mouse over viewport.
+            virtual bool IsMouseOver() const = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;
@@ -283,5 +307,25 @@ namespace AzToolsFramework
             entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         return entityContextId;
+    }
+
+    //! Maps a mouse interaction event to a ClickDetector event.
+    //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
+    inline AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
+        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    {
+        if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left())
+        {
+            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down)
+            {
+                return AzFramework::ClickDetector::ClickEvent::Down;
+            }
+
+            if (mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Up)
+            {
+                return AzFramework::ClickDetector::ClickEvent::Up;
+            }
+        }
+        return AzFramework::ClickDetector::ClickEvent::Nil;
     }
 } // namespace AzToolsFramework

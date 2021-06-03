@@ -74,6 +74,7 @@ namespace NvCloth
                 ->Field("Solver Frequency", &ClothConfiguration::m_solverFrequency)
                 ->Field("Acceleration Filter Iterations", &ClothConfiguration::m_accelerationFilterIterations)
                 ->Field("Remove Static Triangles", &ClothConfiguration::m_removeStaticTriangles)
+                ->Field("Update Normals of Static Particles", &ClothConfiguration::m_updateNormalsOfStaticParticles)
                 ;
         }
     }

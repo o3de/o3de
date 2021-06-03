@@ -18,10 +18,10 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <Atom/Document/MaterialDocumentSettings.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Document/MaterialDocument.h>
-#include <Document/MaterialEditorSettings.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFileInfo>
@@ -43,7 +43,7 @@ namespace MaterialEditor
         MaterialDocumentSystemComponent();
         ~MaterialDocumentSystemComponent() = default;
         MaterialDocumentSystemComponent(const MaterialDocumentSystemComponent&) = delete;
-        MaterialDocumentSystemComponent& operator =(const MaterialDocumentSystemComponent&) = delete;
+        MaterialDocumentSystemComponent& operator=(const MaterialDocumentSystemComponent&) = delete;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -87,10 +87,10 @@ namespace MaterialEditor
 
         AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);
 
+        AZStd::intrusive_ptr<MaterialDocumentSettings> m_settings;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<MaterialDocument>> m_documentMap;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsToRebuild;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsToReopen;
-        AZStd::unique_ptr<MaterialEditorSettings> m_settings;
         const size_t m_maxMessageBoxLineCount = 15;
     };
-}
+} // namespace MaterialEditor

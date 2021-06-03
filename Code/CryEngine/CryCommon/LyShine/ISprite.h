@@ -16,9 +16,6 @@
 #include <LyShine/Bus/UiTransformBus.h>
 #include <AzCore/Math/Vector2.h>
 
-// forward declarations
-class ITexture;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! A sprite is a texture with extra information about how it behaves for 2D drawing
 //! Currently a sprite exists on disk as a side car file next to the texture file.
@@ -79,9 +76,6 @@ public: // member functions
 
     //! Set the borders of a given cell within the sprite-sheet.
     virtual void SetCellBorders(int cellIndex, Borders borders) = 0;
-
-    //! Get the texture for this sprite
-    virtual ITexture* GetTexture() = 0;
 
     //! Serialize this object for save/load
     virtual void Serialize(TSerialize ser) = 0;

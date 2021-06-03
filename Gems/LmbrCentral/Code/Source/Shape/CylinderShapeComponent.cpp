@@ -31,6 +31,7 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
         incompatible.push_back(AZ_CRC("CylinderShapeService", 0x507c688e));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void CylinderShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

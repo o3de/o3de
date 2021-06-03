@@ -30,7 +30,6 @@ namespace LmbrCentral
         const char* GetAssetTypeDisplayName() const override;
         const char* GetGroup() const override;
         const char* GetBrowserIcon() const override;
-        AZ::Uuid GetComponentTypeId() const override;
         //////////////////////////////////////////////////////////////////////////////////////////////
 
         void Register();

@@ -258,9 +258,9 @@ namespace PhysX
                 {
                     ActorData* userData = Utils::GetUserData(actor);
                     Physics::Shape* shape = Utils::GetUserData(pxShape);
-                    if (userData != nullptr && userData->GetWorldBody())
+                    if (userData != nullptr && userData->GetSimulatedBody())
                     {
-                        return GetPxHitType(m_filterCallback(userData->GetWorldBody(), shape));
+                        return GetPxHitType(m_filterCallback(userData->GetSimulatedBody(), shape));
                     }
                 }
                 return m_hitType;

@@ -496,7 +496,7 @@ namespace ScriptCanvasTests
         ScriptCanvas::Nodes::Core::Method* methodNode(nullptr);
         SystemRequestBus::BroadcastResult(methodNode, &SystemRequests::GetNode<ScriptCanvas::Nodes::Core::Method>, methodNodeID);
         EXPECT_TRUE(methodNode != nullptr);
-        methodNode->InitializeBehaviorMethod(emptyNamespaces, className, methodName);
+        methodNode->InitializeBehaviorMethod(emptyNamespaces, className, methodName, ScriptCanvas::PropertyStatus::None);
         return methodNodeID;
     }
 

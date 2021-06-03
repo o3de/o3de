@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WwiseDocument Type="WorkUnit" ID="{D7135222-D1DB-42D0-ADC0-930743567776}" SchemaVersion="97">
+<WwiseDocument Type="WorkUnit" ID="{D7135222-D1DB-42D0-ADC0-930743567776}" SchemaVersion="103">
 	<GameParameters>
 		<WorkUnit Name="Factory Motion" ID="{D7135222-D1DB-42D0-ADC0-930743567776}" PersistMode="Standalone">
 			<ChildrenList>

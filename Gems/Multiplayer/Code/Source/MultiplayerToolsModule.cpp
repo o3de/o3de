@@ -10,40 +10,40 @@
 *
 */
 
-#include <Source/Multiplayer_precompiled.h>
-#include <Source/MultiplayerToolsModule.h>
+#include <Multiplayer_precompiled.h>
+#include <MultiplayerToolsModule.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
+
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <Prefab/Instance/InstanceSerializer.h>
 
 namespace Multiplayer
 {
-    //! Multiplayer Tools system component provides serialize context reflection for tools-only systems.
-    class MultiplayerToolsSystemComponent final
-        : public AZ::Component
+
+    void MultiplayerToolsSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-    public:
-        AZ_COMPONENT(MultiplayerToolsSystemComponent, "{65AF5342-0ECE-423B-B646-AF55A122F72B}");
+        NetworkPrefabProcessor::Reflect(context);
+    }
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            NetworkPrefabProcessor::Reflect(context);
-        }
+    void MultiplayerToolsSystemComponent::Activate()
+    {
+        AZ::Interface<IMultiplayerTools>::Register(this);
+    }
 
-        MultiplayerToolsSystemComponent() = default;
-        ~MultiplayerToolsSystemComponent() override = default;
+    void MultiplayerToolsSystemComponent::Deactivate()
+    {
+        AZ::Interface<IMultiplayerTools>::Unregister(this);
+    }
 
-        /// AZ::Component overrides.
-        void Activate() override
-        {
+    bool MultiplayerToolsSystemComponent::DidProcessNetworkPrefabs()
+    {
+        return m_didProcessNetPrefabs;
+    }
 
-        }
-
-        void Deactivate() override
-        {
-
-        }
-    };
+    void MultiplayerToolsSystemComponent::SetDidProcessNetworkPrefabs(bool didProcessNetPrefabs)
+    {
+        m_didProcessNetPrefabs = didProcessNetPrefabs;
+    }
 
     MultiplayerToolsModule::MultiplayerToolsModule()
         : AZ::Module()

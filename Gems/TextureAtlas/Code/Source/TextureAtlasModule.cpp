@@ -16,6 +16,10 @@
 
 #include "TextureAtlasSystemComponent.h"
 
+#ifdef TEXTUREATLAS_EDITOR
+#include "Editor/AtlasBuilderComponent.h"
+#endif
+
 #include <IGem.h>
 
 namespace TextureAtlasNamespace
@@ -33,6 +37,9 @@ namespace TextureAtlasNamespace
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
                 TextureAtlasSystemComponent::CreateDescriptor(),
+#ifdef TEXTUREATLAS_EDITOR
+                TextureAtlasBuilder::AtlasBuilderComponent::CreateDescriptor(), //builder component for texture atlas
+#endif
             });
         }
 

@@ -12,12 +12,14 @@
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/schema.h>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AWSCoreInternalBus.h>
+#include <Configuration/AWSCoreConfiguration.h>
 #include <ResourceMapping/AWSResourceMappingConstants.h>
 #include <ResourceMapping/AWSResourceMappingManager.h>
 #include <ResourceMapping/AWSResourceMappingUtils.h>
@@ -25,7 +27,8 @@
 namespace AWSCore
 {
     AWSResourceMappingManager::AWSResourceMappingManager()
-        : m_defaultAccountId("")
+        : m_status(Status::NotLoaded)
+        , m_defaultAccountId("")
         , m_defaultRegion("")
         , m_resourceMappings()
     {
@@ -43,11 +46,27 @@ namespace AWSCore
         ResetResourceMappingsData();
     }
 
+    AZStd::string AWSResourceMappingManager::GetResourceAttributeErrorMessageByStatus(const AZStd::string& resourceKeyName) const
+    {
+        switch (m_status)
+        {
+        case Status::NotLoaded:
+            return AZStd::string::format(ResourceMappingFileNotLoadedErrorMessage, AWSCoreConfiguration::AWSCoreConfigurationFileName);
+        case Status::Ready:
+            return AZStd::string::format(ResourceMappingKeyNotFoundErrorMessage, resourceKeyName.c_str());
+        case Status::Error:
+            return ResourceMappingFileLoadFailureErrorMessage;
+        default:
+            return ManagerUnexpectedStatusErrorMessage;
+        }
+    }
+
     AZStd::string AWSResourceMappingManager::GetDefaultAccountId() const
     {
         if (m_defaultAccountId.empty())
         {
-            AZ_Warning("AWSResourceMappingManager", false, "Account Id should not be empty, please make sure config file is valid.");
+            AZ_Warning(AWSResourceMappingManagerName, false,
+                GetResourceAttributeErrorMessageByStatus(ResourceMappingAccountIdKeyName).c_str());
         }
         return m_defaultAccountId;
     }
@@ -56,7 +75,8 @@ namespace AWSCore
     {
         if (m_defaultRegion.empty())
         {
-            AZ_Warning("AWSResourceMappingManager", false, "Region should not be empty, please make sure config file is valid.");
+            AZ_Warning(AWSResourceMappingManagerName, false,
+                GetResourceAttributeErrorMessageByStatus(ResourceMappingRegionKeyName).c_str());
         }
         return m_defaultRegion;
     }
@@ -100,8 +120,8 @@ namespace AWSCore
     AZStd::string AWSResourceMappingManager::GetServiceUrlByServiceName(const AZStd::string& serviceName) const
     {
         return GetServiceUrlByRESTApiIdAndStage(
-            AZStd::string::format("%s%s", serviceName.c_str(), AWS_FEATURE_GEM_RESTAPI_ID_KEYNAME_SUFFIX),
-            AZStd::string::format("%s%s", serviceName.c_str(), AWS_FEATURE_GEM_RESTAPI_STAGE_KEYNAME_SUFFIX));
+            AZStd::string::format("%s%s", serviceName.c_str(), AWSFeatureGemRESTApiIdKeyNameSuffix),
+            AZStd::string::format("%s%s", serviceName.c_str(), AWSFeatureGemRESTApiStageKeyNameSuffix));
     }
 
     AZStd::string AWSResourceMappingManager::GetServiceUrlByRESTApiIdAndStage(
@@ -113,16 +133,13 @@ namespace AWSCore
         AZStd::string serviceRegion = GetResourceRegion(restApiIdKeyName);
         if (serviceRegion != GetResourceRegion(restApiStageKeyName))
         {
-            AZ_Warning(
-                "AWSResourceMappingManager", false, "%s and %s have inconsistent region value, return empty service url.",
+            AZ_Warning(AWSResourceMappingManagerName, false, ResourceMappingRESTApiIdAndStageInconsistentErrorMessage,
                 restApiIdKeyName.c_str(), restApiStageKeyName.c_str());
             return "";
         }
 
         AZStd::string serviceRESTApiUrl = AWSResourceMappingUtils::FormatRESTApiUrl(serviceRESTApiId, serviceRegion, serviceRESTApiStage);
-        AZ_Warning(
-            "AWSResourceMappingManager", !serviceRESTApiUrl.empty(),
-            "Unable to format REST Api url with RESTApiId=%s, RESTApiRegion=%s, RESTApiStage=%s, return empty service url.",
+        AZ_Warning(AWSResourceMappingManagerName, !serviceRESTApiUrl.empty(), ResourceMappingRESTApiInvalidServiceUrlErrorMessage,
             serviceRESTApiId.c_str(), serviceRegion.c_str(), serviceRESTApiStage.c_str());
         return serviceRESTApiUrl;
     }
@@ -136,16 +153,21 @@ namespace AWSCore
             return getAttributeFunction(iter->second);
         }
 
-        AZ_Warning("AWSResourceMappingManager", false, "Failed to find resource mapping key: %s.", resourceKeyName.c_str());
+        AZ_Warning(AWSResourceMappingManagerName, false, GetResourceAttributeErrorMessageByStatus(resourceKeyName).c_str());
         return "";
+    }
+
+    AWSResourceMappingManager::Status AWSResourceMappingManager::GetStatus() const
+    {
+        return m_status;
     }
 
     void AWSResourceMappingManager::ParseJsonDocument(const rapidjson::Document& jsonDocument)
     {
-        m_defaultAccountId = jsonDocument.FindMember(RESOURCE_MAPPING_ACCOUNTID_KEYNAME)->value.GetString();
-        m_defaultRegion = jsonDocument.FindMember(RESOURCE_MAPPING_REGION_KEYNAME)->value.GetString();
+        m_defaultAccountId = jsonDocument.FindMember(ResourceMappingAccountIdKeyName)->value.GetString();
+        m_defaultRegion = jsonDocument.FindMember(ResourceMappingRegionKeyName)->value.GetString();
 
-        auto resourceMappings = jsonDocument.FindMember(RESOURCE_MAPPING_RESOURCES_KEYNAME)->value.GetObject();
+        auto resourceMappings = jsonDocument.FindMember(ResourceMappingResourcesKeyName)->value.GetObject();
         for (auto mappingIter = resourceMappings.MemberBegin(); mappingIter != resourceMappings.MemberEnd(); mappingIter++)
         {
             auto mappingValue = mappingIter->value.GetObject();
@@ -162,16 +184,16 @@ namespace AWSCore
         const JsonObject& jsonObject)
     {
         AWSResourceMappingAttributes attributes;
-        if (jsonObject.HasMember(RESOURCE_MAPPING_ACCOUNTID_KEYNAME))
+        if (jsonObject.HasMember(ResourceMappingAccountIdKeyName))
         {
-            attributes.resourceAccountId = jsonObject.FindMember(RESOURCE_MAPPING_ACCOUNTID_KEYNAME)->value.GetString();
+            attributes.resourceAccountId = jsonObject.FindMember(ResourceMappingAccountIdKeyName)->value.GetString();
         }
-        attributes.resourceNameId = jsonObject.FindMember(RESOURCE_MAPPING_NAMEID_KEYNAME)->value.GetString();
-        if (jsonObject.HasMember(RESOURCE_MAPPING_REGION_KEYNAME))
+        attributes.resourceNameId = jsonObject.FindMember(ResourceMappingNameIdKeyName)->value.GetString();
+        if (jsonObject.HasMember(ResourceMappingRegionKeyName))
         {
-            attributes.resourceRegion = jsonObject.FindMember(RESOURCE_MAPPING_REGION_KEYNAME)->value.GetString();
+            attributes.resourceRegion = jsonObject.FindMember(ResourceMappingRegionKeyName)->value.GetString();
         }
-        attributes.resourceType = jsonObject.FindMember(RESOURCE_MAPPING_TYPE_KEYNAME)->value.GetString();
+        attributes.resourceType = jsonObject.FindMember(ResourceMappingTypeKeyName)->value.GetString();
         return attributes;
     }
 
@@ -188,7 +210,7 @@ namespace AWSCore
         AWSCoreInternalRequestBus::BroadcastResult(configJsonPath, &AWSCoreInternalRequests::GetResourceMappingConfigFilePath);
         if (configJsonPath.empty())
         {
-            AZ_Warning("AWSResourceMappingManager", false, "Failed to get resource mapping config file path.");
+            AZ_Warning(AWSResourceMappingManagerName, false, ResourceMappingFileInvalidPathErrorMessage);
             return;
         }
 
@@ -201,20 +223,26 @@ namespace AWSCore
             if (!ValidateJsonDocumentAgainstSchema(jsonDocument))
             {
                 // Failed to satisfy the validation against json schema
+                m_status = Status::Error;
                 return;
             }
             ParseJsonDocument(jsonDocument);
         }
         else
         {
-            AZ_Warning(
-                "AWSResourceMappingManager", false, "Failed to get read resource mapping config file: %s\n Error: %s",
-                configJsonPath.c_str(), readJsonOutcome.GetError().c_str());
+            m_status = Status::Error;
+            AZ_Warning(AWSResourceMappingManagerName, false,
+                ResourceMappingFileInvalidJsonFormatErrorMessage, readJsonOutcome.GetError().c_str());
+            return;
         }
+
+        // Resource mapping config file gets loaded successfully
+        m_status = Status::Ready;
     }
 
     void AWSResourceMappingManager::ResetResourceMappingsData()
     {
+        m_status = Status::NotLoaded;
         m_defaultAccountId = "";
         m_defaultRegion = "";
         m_resourceMappings.clear();
@@ -223,9 +251,9 @@ namespace AWSCore
     bool AWSResourceMappingManager::ValidateJsonDocumentAgainstSchema(const rapidjson::Document& jsonDocument)
     {
         rapidjson::Document jsonSchemaDocument;
-        if (jsonSchemaDocument.Parse(RESOURCE_MAPPING_JSON_SCHEMA).HasParseError())
+        if (jsonSchemaDocument.Parse(ResourceMappingJsonSchema).HasParseError())
         {
-            AZ_Error("AWSResourceMappingManager", false, "Invalid resource mapping json schema.");
+            AZ_Error(AWSResourceMappingManagerName, false, ResourceMappingFileInvalidSchemaErrorMessage);
             return false;
         }
 
@@ -235,12 +263,10 @@ namespace AWSCore
         if (!jsonDocument.Accept(validator))
         {
             rapidjson::StringBuffer error;
-            validator.GetInvalidSchemaPointer().StringifyUriFragment(error);
-            AZ_Warning("AWSResourceMappingManager", false, "Failed to load config file, invalid schema: %s.", error.GetString());
-            AZ_Warning("AWSResourceMappingManager", false, "Failed to load config file, invalid keyword: %s.", validator.GetInvalidSchemaKeyword());
-            error.Clear();
-            validator.GetInvalidDocumentPointer().StringifyUriFragment(error);
-            AZ_Warning("AWSResourceMappingManager", false, "Failed to load config file, invalid document: %s.", error.GetString());
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(error);
+            validator.GetError().Accept(writer);
+            AZ_Warning(AWSResourceMappingManagerName, false, ResourceMappingFileInvalidContentErrorMessage, error.GetString());
+
             return false;
         }
         return true;

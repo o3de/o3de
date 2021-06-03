@@ -22,7 +22,6 @@
 #include "Util/ImageGif.h"
 #include "Util/ImageTIF.h"
 #include "Util/ImageHDR.h"
-#include "Util/Image_DXTC.h"
 
 //////////////////////////////////////////////////////////////////////////
 bool CImageUtil::Save(const QString& strFileName, CImageEx& inImage)
@@ -271,10 +270,6 @@ bool CImageUtil::LoadImage(const QString& fileName, CImageEx& image, bool* pQual
     else if (azstricmp(ext, ".pgm") == 0)
     {
         return LoadPGM(fileName, image);
-    }
-    else if (azstricmp(ext, ".dds") == 0)
-    {
-        return CImage_DXTC().Load(fileName.toUtf8().data(), image, pQualityLoss);
     }
     else if (azstricmp(ext, ".png") == 0)
     {

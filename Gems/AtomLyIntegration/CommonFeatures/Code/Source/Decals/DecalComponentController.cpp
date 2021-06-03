@@ -75,6 +75,12 @@ namespace AZ
             incompatible.push_back(AZ_CRC_CE("DecalService"));
         }
 
+        void DecalComponentController::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        {
+            dependent.push_back(AZ_CRC_CE("TransformService"));
+            dependent.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        }
+
         DecalComponentController::DecalComponentController(const DecalComponentConfig& config)
             : m_configuration(config)
         {
@@ -90,6 +96,11 @@ namespace AZ
                 m_handle = m_featureProcessor->AcquireDecal();
             }
 
+            m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, m_entityId, &AZ::NonUniformScaleRequests::GetScale);
+            AZ::NonUniformScaleRequestBus::Event(m_entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
+                m_nonUniformScaleChangedHandler);
+
             AZ::Transform local, world;
             AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::GetLocalAndWorld, local, world);
             OnTransformChanged(local, world);
@@ -103,6 +114,7 @@ namespace AZ
         {
             DecalRequestBus::Handler::BusDisconnect(m_entityId);
             TransformNotificationBus::Handler::BusDisconnect(m_entityId);
+            m_nonUniformScaleChangedHandler.Disconnect();
             if (m_featureProcessor)
             {
                 m_featureProcessor->ReleaseDecal(m_handle);
@@ -125,7 +137,18 @@ namespace AZ
         {
             if (m_featureProcessor)
             {
-                m_featureProcessor->SetDecalTransform(m_handle, world);
+                m_featureProcessor->SetDecalTransform(m_handle, world, m_cachedNonUniformScale);
+            }
+        }
+
+        void DecalComponentController::HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale)
+        {
+            m_cachedNonUniformScale = nonUniformScale;
+            if (m_featureProcessor)
+            {
+                AZ::Transform world = AZ::Transform::CreateIdentity();
+                AZ::TransformBus::EventResult(world, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+                m_featureProcessor->SetDecalTransform(m_handle, world, nonUniformScale);
             }
         }
 

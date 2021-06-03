@@ -381,6 +381,7 @@ namespace AZ
                         uint64_t m_createdByPassRequest : 1;
                         uint64_t m_initialized : 1;
                         uint64_t m_enabled : 1;
+                        uint64_t m_parentEnabled : 1;
                         uint64_t m_alreadyCreated : 1;
                         uint64_t m_alreadyReset : 1;
                         uint64_t m_alreadyPrepared : 1;

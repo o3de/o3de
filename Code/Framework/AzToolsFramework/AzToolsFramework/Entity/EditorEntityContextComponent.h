@@ -189,8 +189,6 @@ namespace AzToolsFramework
         //! EditorEntityContextRequestBus::Events::AddRequiredComponents()
         AZ::ComponentTypeList m_requiredEditorComponentTypes;
 
-        //! Edit time visibility management integrating entities with the IVisibilitySystem.
-        AzFramework::EntityVisibilityBoundsUnionSystem m_entityVisibilityBoundsUnionSystem;
         bool m_isLegacySliceService;
 
         UndoSystem::UndoCacheInterface* m_undoCacheInterface = nullptr;

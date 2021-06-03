@@ -488,8 +488,8 @@ namespace O3DELauncher
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
-        AZ_TracePrintf("Launcher", R"(Running project "%.*s.)" "\n"
-            R"(The project name value has been successfully set in the Settings Registry at key "%s/project_name)"
+        AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
+            R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"
             R"( for Launcher target "%.*s")" "\n",
             aznumeric_cast<int>(launcherProjectName.size()), launcherProjectName.data(),
             AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey,
@@ -573,11 +573,6 @@ namespace O3DELauncher
         systemInitParams.hWnd = mainInfo.m_window;
         systemInitParams.pPrintSync = mainInfo.m_printSink;
 
-        if (strstr(mainInfo.m_commandLine, "-norandom"))
-        {
-            systemInitParams.bNoRandom = true;
-        }
-
         systemInitParams.bDedicatedServer = IsDedicatedServer();
         if (IsDedicatedServer())
         {
@@ -648,7 +643,8 @@ namespace O3DELauncher
             if (gEnv && gEnv->pConsole)
             {
                 // Execute autoexec.cfg to load the initial level
-                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile("autoexec.cfg");
+                auto autoExecFile = AZ::IO::FixedMaxPath{pathToAssets} / "autoexec.cfg";
+                AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile(autoExecFile.Native());
 
                 // Find out if console command file was passed 
                 // via --console-command-file=%filename% and execute it

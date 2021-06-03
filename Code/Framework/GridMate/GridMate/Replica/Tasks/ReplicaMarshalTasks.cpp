@@ -294,7 +294,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     ReplicaTask::TaskStatus ReplicaMarshalZombieTask::Run(const RunContext& context)
     {
-        if (m_replica->IsMaster() || context.m_replicaManager->IsSyncHost())
+        if (m_replica->IsPrimary() || context.m_replicaManager->IsSyncHost())
         {
             m_replica->PrepareData(context.m_replicaManager->GetGridMate()->GetDefaultEndianType(),
                 // A zombie task occurs right before replica gets removed, by design it needs to set all properties one last time.

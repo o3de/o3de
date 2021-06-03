@@ -23,6 +23,7 @@ endif()
 ly_add_target(
     NAME QtForPython.Editor.Static STATIC
     NAMESPACE Gem
+    find_package(Qt)
     FILES_CMAKE
         qtforpython_editor_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
@@ -40,6 +41,7 @@ ly_add_target(
             Gem::EditorPythonBindings.Static
     RUNTIME_DEPENDENCIES
         3rdParty::pyside2
+        Qt5::Test
 )
 
 ly_add_target(
@@ -53,3 +55,9 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::EditorPythonBindings.Editor
 )
+
+# the above target is used in both builders like AssetProcessor and Tools like the Editor
+# but is not used in clients or servers
+ly_create_alias(NAME QtForPython.Tools     NAMESPACE Gem TARGETS Gem::QtForPython.Editor)
+ly_create_alias(NAME QtForPython.Builders  NAMESPACE Gem TARGETS Gem::QtForPython.Editor)
+

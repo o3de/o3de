@@ -40,7 +40,8 @@ namespace UnitTest
 
         //Create Spawnable
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
-        auto spawnable = ::AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(prefabDom);
+        AzFramework::Spawnable spawnable;
+        AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
 
         EXPECT_EQ(spawnable.GetEntities().size() - 1, normalEntityCount); // 1 for container entity
         const auto& spawnableEntities = spawnable.GetEntities();
@@ -84,7 +85,8 @@ namespace UnitTest
 
         //Create Spawnable
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(thirdInstance->GetTemplateId());
-        auto spawnable = ::AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(prefabDom);
+        AzFramework::Spawnable spawnable;
+        AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
 
         EXPECT_EQ(spawnable.GetEntities().size() - 1, normalEntityCount); // 1 for container entity
         const auto& spawnableEntities = spawnable.GetEntities();

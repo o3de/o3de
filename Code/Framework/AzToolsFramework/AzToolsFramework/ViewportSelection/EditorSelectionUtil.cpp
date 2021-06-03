@@ -13,7 +13,9 @@
 #include "EditorSelectionUtil.h"
 
 #include <AzCore/Math/Aabb.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -28,7 +30,8 @@ namespace AzToolsFramework
     {
         if (Centered(pivot))
         {
-            if (const AZ::Aabb localBound = AzFramework::CalculateEntityLocalBoundsUnion(entityId);
+            const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+            if (const AZ::Aabb localBound = AzFramework::CalculateEntityLocalBoundsUnion(entity);
                 localBound.IsValid())
             {
                 return localBound.GetCenter();
