@@ -24,7 +24,7 @@ namespace AZ
         namespace Internal
         {
             using SizeType = AZ::u64;
-            using SizeType = AZ::s64;
+            using SeekSizeType = AZ::s64;
             using FileHandleType = int;
         }
 
