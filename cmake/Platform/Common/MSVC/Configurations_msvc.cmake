@@ -75,7 +75,6 @@ ly_append_configurations_options(
         /wd4450 # declaration hides global declaration
         /wd4457 # declaration hides function parameter
         /wd4459 # declaration hides global declaration
-        /wd4701 # potentially unintialized local variable
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
