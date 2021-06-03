@@ -31,24 +31,15 @@ namespace AzToolsFramework
         float m_gridSize;
     };
 
-    /// Structure to encapsulate the current grid snapping state.
-    struct GridSnapAction
-    {
-        GridSnapAction(const GridSnapParameters& gridSnapParameters, bool localSnapping);
-
-        GridSnapParameters m_gridSnapParams;
-        bool m_localSnapping;
-    };
-
     /// Structure to hold transformed incoming viewport interaction from world space to manipulator space.
     struct ManipulatorInteraction
     {
         AZ::Vector3 m_localRayOrigin; ///< The ray origin (start) in the reference from of the manipulator.
         AZ::Vector3 m_localRayDirection; ///< The ray direction in the reference from of the manipulator.
-        float m_scaleReciprocal; ///< The scale reciprocal (1.0 / scale) of the transform used to move the
-                                 ///< ray from world space to local space.
         AZ::Vector3 m_nonUniformScaleReciprocal; ///< Handles inverting any non-uniform scale which was applied
                                                  ///< separately from the transform.
+        float m_scaleReciprocal; ///< The scale reciprocal (1.0 / scale) of the transform used to move the
+                                 ///< ray from world space to local space.
     };
 
     /// Build a ManipulatorInteraction structure from the incoming viewport interaction.
@@ -56,10 +47,15 @@ namespace AzToolsFramework
         const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& worldRayOrigin, const AZ::Vector3& worldRayDirection);
 
-    /// Calculate the offset along an axis to adjust a position
-    /// to stay snapped to a given grid size.
+    /// Calculate the offset along an axis to adjust a position to stay snapped to a given grid size.
+    /// @note This is snap up or down to the nearest grid segment (e.g. 0.2 snaps to 0.0 -> delta 0.2,
+    /// 0.7 snaps to 1.0 -> delta 0.3).
     AZ::Vector3 CalculateSnappedOffset(
         const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
+
+    /// Return the amount to snap from the starting position given the current grid size.
+    /// @note A movement of more than half size (in either direction) will cause a snap by size.
+    AZ::Vector3 CalculateSnappedAmount(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, float size);
 
     /// For a given point on the terrain, calculate the closest xy position snapped to the grid
     /// (z position is aligned to terrain height, not snapped to z grid)
