@@ -178,7 +178,10 @@ namespace Camera
         if ((!m_viewSystem)||(!m_system))
         {
             // perform first-time init
-            m_system = gEnv->pSystem;
+            if (gEnv)
+            {
+                m_system = gEnv->pSystem;
+            }
             if (m_system)
             {
                 // Initialize local view.

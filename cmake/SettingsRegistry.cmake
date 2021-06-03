@@ -25,14 +25,15 @@ set(gems_json_template [[
 @target_gem_dependencies_names@
         }
     }
-}]]
+}
+]]
 )
-set(gem_module_template [[
-            "@stripped_gem_target@":
-            {
-                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"],
-                "SourcePaths":["@gem_module_root_relative_to_engine_root@"]
-            }]]
+ string(APPEND gem_module_template
+[=[            "@stripped_gem_target@":]=] "\n"
+[=[            {]=] "\n"
+[=[$<$<NOT:$<IN_LIST:$<TARGET_PROPERTY:@gem_target@,TYPE>,INTERFACE_LIBRARY>>:                "Modules":["$<TARGET_FILE_NAME:@gem_target@>"]]=] "$<COMMA>\n>"
+[=[                "SourcePaths":["@gem_module_root_relative_to_engine_root@"]]=] "\n"
+[=[            }]=]
 )
 
 #!ly_get_gem_load_dependencies: Retrieves the list of "load" dependencies for a target
@@ -161,10 +162,12 @@ function(ly_delayed_generate_settings_registry)
                 message(FATAL_ERROR "Dependency ${gem_target} from ${target} does not exist")
             endif()
 
+            get_property(has_manually_added_dependencies TARGET ${gem_target} PROPERTY MANUALLY_ADDED_DEPENDENCIES SET)
             get_target_property(target_type ${gem_target} TYPE)
-            if (target_type STREQUAL "INTERFACE_LIBRARY")
-                # don't use interface libraries here, we only want ones which produce actual binaries.
-                # we have still already recursed into their dependencies - they'll show up later.
+            if (target_type STREQUAL "INTERFACE_LIBRARY" AND has_manually_added_dependencies)
+                # don't use interface libraries here, we only want ones which produce actual binaries unless the target
+                # is empty. We have still already recursed into their dependencies - they'll show up later.
+                # When the target has no dependencies however we want to add the gem root path to the generated setreg
                 continue()
             endif()
 

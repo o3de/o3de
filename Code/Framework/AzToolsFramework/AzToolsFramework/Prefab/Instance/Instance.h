@@ -93,6 +93,7 @@ namespace AzToolsFramework
             void Reset();
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
+            Instance& AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias instanceAlias);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
 
             /**
