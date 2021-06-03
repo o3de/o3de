@@ -64,6 +64,8 @@ namespace AzToolsFramework
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
             bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
@@ -138,7 +140,12 @@ namespace AzToolsFramework
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState);
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
-            void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
+            void UpdateLinkPatchesWithNewEntityAliases(
+                PrefabDom& linkPatch,
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
+                Instance& newParent);
+
+            static void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);

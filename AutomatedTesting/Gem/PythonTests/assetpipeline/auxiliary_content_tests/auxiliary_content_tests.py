@@ -51,6 +51,11 @@ class TestAuxiliaryContent:
     def test_CreateAuxiliaryContent_DontSkipLevelPaks(self, workspace, level):
         """
         This test ensure that Auxiliary Content contain level.pak files
+
+        Test Steps:
+        1. Run auxiliary content against project under test
+        2. Validate auxiliary content exists
+        3. Verifies that level.pak exists
         """
 
         path_to_dev = workspace.paths.engine_root()
@@ -70,6 +75,11 @@ class TestAuxiliaryContent:
     def test_CreateAuxiliaryContent_SkipLevelPaks(self, workspace, level):
         """
         This test ensure that Auxiliary Content contain no level.pak file
+
+        Test Steps:
+        1. Run auxiliary content against project under test with skiplevelPaks flag
+        2. Validate auxiliary content exists
+        3. Validate level.pak was added to auxiliary content
         """
 
         path_to_dev = workspace.paths.engine_root()

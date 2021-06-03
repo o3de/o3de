@@ -51,7 +51,8 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
         // ModularViewportCameraControllerRequestBus overrides ...
-        void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+        void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) override;
+        AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const override;
 
     private:
         // AzFramework::ViewportDebugDisplayEventBus overrides ...
@@ -71,6 +72,8 @@ namespace AtomToolsFramework
         AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity();
         float m_animationT = 0.0f;
         CameraMode m_cameraMode = CameraMode::Control;
+        AZStd::optional<AZ::Vector3> m_lookAtAfterInterpolation; //!< The look at point after an interpolation has finished.
+                                                                 //!< Will be cleared when the view changes (camera looks away).
         bool m_updatingTransform = false;
 
         AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
