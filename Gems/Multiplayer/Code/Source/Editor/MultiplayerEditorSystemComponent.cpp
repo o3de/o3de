@@ -165,7 +165,7 @@ namespace Multiplayer
 
         // BeginGameMode and Prefab Processing have completed at this point
         IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
-        if (editorsv_enabled && mpTools != nullptr && mpTools->DidProcessNetworkPrefabs())
+        if (editorsv_enabled && mpTools != nullptr)
         {
             const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
         
