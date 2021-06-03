@@ -13,9 +13,10 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
-
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+
 #include <dlfcn.h>
 #include <libgen.h>
 
