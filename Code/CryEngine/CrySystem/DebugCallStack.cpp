@@ -561,7 +561,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
 
     if (pex)
     {
-        MINIDUMP_TYPE mdumpValue;
+        MINIDUMP_TYPE mdumpValue = MiniDumpNormal;
         bool bDump = true;
         switch (g_cvars.sys_dump_type)
         {

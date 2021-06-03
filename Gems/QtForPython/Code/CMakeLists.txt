@@ -55,3 +55,9 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::EditorPythonBindings.Editor
 )
+
+# the above target is used in both builders like AssetProcessor and Tools like the Editor
+# but is not used in clients or servers
+ly_create_alias(NAME QtForPython.Tools     NAMESPACE Gem TARGETS Gem::QtForPython.Editor)
+ly_create_alias(NAME QtForPython.Builders  NAMESPACE Gem TARGETS Gem::QtForPython.Editor)
+

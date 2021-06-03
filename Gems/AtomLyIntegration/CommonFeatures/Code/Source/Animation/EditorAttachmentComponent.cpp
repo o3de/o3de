@@ -21,18 +21,42 @@ namespace AZ
 {
     namespace Render
     {
+        bool EditorAttachmentComponentVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        {
+            if (classElement.GetVersion() < 2)
+            {
+                float uniformScaleOffset = 1.0f;
+
+                int scaleElementIndex = classElement.FindElement(AZ_CRC_CE("Scale Offset"));
+                if (scaleElementIndex != -1)
+                {
+                    AZ::Vector3 oldScaleValue = AZ::Vector3::CreateOne();
+                    AZ::SerializeContext::DataElementNode& dataElementNode = classElement.GetSubElement(scaleElementIndex);
+                    if (dataElementNode.GetData<AZ::Vector3>(oldScaleValue))
+                    {
+                        uniformScaleOffset = oldScaleValue.GetMaxElement();
+                    }
+                    classElement.RemoveElement(scaleElementIndex);
+                }
+
+                classElement.AddElementWithData(context, "Uniform Scale Offset", uniformScaleOffset);
+            }
+
+            return true;
+        }
+
         void EditorAttachmentComponent::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
                 serializeContext->Class<EditorAttachmentComponent, EditorComponentBase>()
-                    ->Version(1)
+                    ->Version(2, &EditorAttachmentComponentVersionConverter)
                     ->Field("Target ID", &EditorAttachmentComponent::m_targetId)
                     ->Field("Target Bone Name", &EditorAttachmentComponent::m_targetBoneName)
                     ->Field("Position Offset", &EditorAttachmentComponent::m_positionOffset)
                     ->Field("Rotation Offset", &EditorAttachmentComponent::m_rotationOffset)
-                    ->Field("Scale Offset", &EditorAttachmentComponent::m_scaleOffset)
+                    ->Field("Uniform Scale Offset", &EditorAttachmentComponent::m_uniformScaleOffset)
                     ->Field("Attached Initially", &EditorAttachmentComponent::m_attachedInitially)
                     ->Field("Scale Source", &EditorAttachmentComponent::m_scaleSource);
 
@@ -70,7 +94,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::Min, -AZ::RadToDeg(AZ::Constants::TwoPi))
                         ->Attribute(AZ::Edit::Attributes::Max, AZ::RadToDeg(AZ::Constants::TwoPi))
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
-                        ->DataElement(0, &EditorAttachmentComponent::m_scaleOffset, "Scale offset", "Local scale offset from target entity")
+                        ->DataElement(0, &EditorAttachmentComponent::m_uniformScaleOffset, "Scale offset", "Local scale offset from target entity")
                         ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetOffsetChanged)
@@ -128,7 +152,7 @@ namespace AZ
         {
             AZ::Transform offset = AZ::ConvertEulerDegreesToTransform(m_rotationOffset);
             offset.SetTranslation(m_positionOffset);
-            offset.MultiplyByScale(m_scaleOffset);
+            offset.MultiplyByUniformScale(m_uniformScaleOffset);
             return offset;
         }
 

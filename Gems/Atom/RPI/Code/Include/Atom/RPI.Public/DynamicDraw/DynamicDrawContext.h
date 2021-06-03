@@ -43,7 +43,7 @@ namespace AZ
             {
                 PrimitiveType = AZ_BIT(0),
                 DepthState = AZ_BIT(1),
-                EnableStencil = AZ_BIT(2),
+                StencilState = AZ_BIT(2),
                 FaceCullMode = AZ_BIT(3),
                 BlendMode = AZ_BIT(4)
             };
@@ -87,6 +87,14 @@ namespace AZ
             //! Finalize and validate initialization. Any initialization functions should be called before EndInit is called. 
             void EndInit();
 
+            //! Set up the DynamicDrawContext for the input Scene.
+            //! This should be called after the last frame is done and before any draw calls.
+            void SetScene(Scene* scene);
+
+            //! Set up the DynamicDrawContext for the input RenderPipeline.
+            //! This should be called after the last frame is done and before any draw calls.
+            void SetRenderPipeline(RenderPipeline* pipeline);
+
             //! Return if this DynamicDrawContext is ready to add draw calls
             bool IsReady();
 
@@ -102,8 +110,8 @@ namespace AZ
 
             //! Set DepthState if DrawStateOptions::DepthState option is enabled
             void SetDepthState(RHI::DepthState depthState);
-            //! Enable/disable stencil if DrawStateOptions::EnableStencil option is enabled
-            void SetEnableStencil(bool enable);
+            //! Set StencilState if DrawStateOptions::StencilState option is enabled
+            void SetStencilState(RHI::StencilState stencilState);
             //! Set CullMode if DrawStateOptions::FaceCullMode option is enabled
             void SetCullMode(RHI::CullMode cullMode);
             //! Set TargetBlendState for target 0 if DrawStateOptions::BlendMode option is enabled
@@ -180,7 +188,7 @@ namespace AZ
                 // states available for change 
                 RHI::CullMode m_cullMode;
                 RHI::DepthState m_depthState;
-                bool m_enableStencil;
+                RHI::StencilState m_stencilState;
                 RHI::PrimitiveTopology m_topology;
                 RHI::TargetBlendState m_blendState0;
 

@@ -123,6 +123,11 @@ namespace ScriptCanvasEditor
     template<typename T>
     AzToolsFramework::PropertyHandlerBase* RegisterGenericLineEditHandler(const EditCtrl::PropertyToStringCB<T>& propertyToStringCB, const EditCtrl::StringToPropertyCB<T>& stringToPropertyCB)
     {
+        if (!AzToolsFramework::PropertyTypeRegistrationMessages::Bus::FindFirstHandler())
+        {
+            return nullptr;
+        }
+
         auto propertyHandler(aznew GenericLineEditHandler<T>(propertyToStringCB, stringToPropertyCB));
         AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType, propertyHandler);
         return propertyHandler;

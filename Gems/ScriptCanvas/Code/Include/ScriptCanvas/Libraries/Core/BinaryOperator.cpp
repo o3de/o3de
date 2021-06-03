@@ -35,15 +35,6 @@ namespace ScriptCanvas
             }
         }
 
-        AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> ArithmeticExpression::GetReplacementSlotsMap() const
-        {
-            AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotsMap;
-            slotsMap.emplace(k_evaluateName, AZStd::vector<AZStd::string>{ "In" });
-            slotsMap.emplace(k_outName, AZStd::vector<AZStd::string>{ "Out" });
-            slotsMap.emplace(k_resultName, AZStd::vector<AZStd::string>{ "Result" });
-            return slotsMap;
-        }
-
         void ArithmeticExpression::OnInit()
         {
             {

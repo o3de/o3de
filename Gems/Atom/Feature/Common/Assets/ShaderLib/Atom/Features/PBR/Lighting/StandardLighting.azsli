@@ -75,7 +75,6 @@ struct PbrLightingOutput
     float4 m_albedo;
     float4 m_specularF0;
     float4 m_normal;
-    float3 m_scatterDistance;
 };
 
 

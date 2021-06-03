@@ -11,68 +11,65 @@
  */
 
 #include <ProjectManagerWindow.h>
-#include <ScreenFactory.h>
+#include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Application/Application.h>
 
 #include <QDir>
 
-#include <Source/ui_ProjectManagerWindow.h>
-
 namespace O3DE::ProjectManager
 {
-    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
+    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
-        , m_ui(new Ui::ProjectManagerWindowClass())
     {
-        m_ui->setupUi(this);
-        QLayout* layout = m_ui->centralWidget->layout();
-        layout->setMargin(0);
-        layout->setSpacing(0);
-        layout->setContentsMargins(0, 0, 0, 0);
-
-        setFixedSize(this->geometry().width(), this->geometry().height());
-
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 
-        m_screensCtrl = new ScreensCtrl();
-        m_ui->verticalLayout->addWidget(m_screensCtrl);
+        setWindowTitle(tr("O3DE Project Manager"));
 
-        connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
-        connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
+        ScreensCtrl* screensCtrl = new ScreensCtrl();
 
+        // currently the tab order on the home page is based on the order of this list
+        QVector<ProjectManagerScreen> screenEnums =
+        {
+            ProjectManagerScreen::Projects,
+            ProjectManagerScreen::EngineSettings,
+            ProjectManagerScreen::CreateProject,
+            ProjectManagerScreen::UpdateProject
+        };
+        screensCtrl->BuildScreens(screenEnums);
+
+        setCentralWidget(screensCtrl);
+
+        // setup stylesheets and hot reloading 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
         const auto qrcPath = QStringLiteral(":/ProjectManager/style");
         AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRootPath);
 
+        // set stylesheet after creating the screens or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
-        QVector<ProjectManagerScreen> screenEnums =
+        // always push the projects screen first so we have something to come back to
+        if (startScreen != ProjectManagerScreen::Projects)
         {
-            ProjectManagerScreen::FirstTimeUse,
-            ProjectManagerScreen::NewProjectSettingsCore,
-            ProjectManagerScreen::ProjectsHome,
-            ProjectManagerScreen::ProjectSettings,
-            ProjectManagerScreen::EngineSettings
-        };
-        m_screensCtrl->BuildScreens(screenEnums);
-        m_screensCtrl->ForceChangeToScreen(ProjectManagerScreen::FirstTimeUse, false);
+            screensCtrl->ForceChangeToScreen(ProjectManagerScreen::Projects);
+        }
+        screensCtrl->ForceChangeToScreen(startScreen);
+
+        if (!projectPath.empty())
+        {
+            const QString path = QString::fromUtf8(projectPath.Native().data(), aznumeric_cast<int>(projectPath.Native().size()));
+            emit screensCtrl->NotifyCurrentProject(path);
+        }
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
         m_pythonBindings.reset();
-    }
-
-    void ProjectManagerWindow::HandleProjectsMenu()
-    {
-        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::ProjectsHome);
-    }
-    void ProjectManagerWindow::HandleEngineMenu()
-    {
-        m_screensCtrl->ChangeToScreen(ProjectManagerScreen::EngineSettings);
     }
 
 } // namespace O3DE::ProjectManager

@@ -205,8 +205,8 @@ namespace LmbrCentral
     {
         m_position = currentTransform.GetTranslation();
         m_quaternion = currentTransform.GetRotation();
-        m_scaledWidth = configuration.m_width * currentTransform.GetScale().GetX() * currentNonUniformScale.GetX();
-        m_scaledHeight = configuration.m_height * currentTransform.GetScale().GetY() * currentNonUniformScale.GetY();
+        m_scaledWidth = configuration.m_width * currentTransform.GetUniformScale() * currentNonUniformScale.GetX();
+        m_scaledHeight = configuration.m_height * currentTransform.GetUniformScale() * currentNonUniformScale.GetY();
     }
 
     const QuadShapeConfig& QuadShape::GetQuadConfiguration() const

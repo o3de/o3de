@@ -12,6 +12,10 @@
 
 #include <NewProjectSettingsScreen.h>
 #include <PythonBindingsInterface.h>
+#include <FormLineEditWidget.h>
+#include <FormBrowseEditWidget.h>
+#include <PathValidator.h>
+#include <EngineInfo.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -23,72 +27,79 @@
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStandardPaths>
+#include <QFrame>
 
 namespace O3DE::ProjectManager
 {
     constexpr const char* k_pathProperty = "Path";
 
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
-        : ScreenWidget(parent)
+        : ProjectSettingsScreen(parent)
     {
-        QHBoxLayout* hLayout = new QHBoxLayout();
-        this->setLayout(hLayout);
+        const QString defaultName{ "NewProject" };
+        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
 
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        m_projectName->lineEdit()->setText(defaultName);
+        m_projectPath->lineEdit()->setText(defaultPath);
 
-        QLabel* projectNameLabel = new QLabel(tr("Project Name"), this);
-        vLayout->addWidget(projectNameLabel);
-
-        m_projectNameLineEdit = new QLineEdit(tr("New Project"), this);
-        vLayout->addWidget(m_projectNameLineEdit);
-
-        QLabel* projectPathLabel = new QLabel(tr("Project Location"), this);
-        vLayout->addWidget(projectPathLabel);
-
+        // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
+        // as a group
+        QFrame* projectTemplateWidget = new QFrame(this);
+        projectTemplateWidget->setObjectName("projectTemplate");
+        QVBoxLayout* containerLayout = new QVBoxLayout();
+        containerLayout->setAlignment(Qt::AlignTop);
         {
-            QHBoxLayout* projectPathLayout = new QHBoxLayout(this);
+            QLabel* projectTemplateLabel = new QLabel(tr("Select a Project Template"));
+            projectTemplateLabel->setObjectName("projectTemplateLabel");
+            containerLayout->addWidget(projectTemplateLabel);
 
-            m_projectPathLineEdit = new QLineEdit(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
-            projectPathLayout->addWidget(m_projectPathLineEdit);
+            QLabel* projectTemplateDetailsLabel = new QLabel(tr("Project templates are pre-configured with relevant Gems that provide "
+                                                                "additional functionality and content to the project."));
+            projectTemplateDetailsLabel->setWordWrap(true);
+            projectTemplateDetailsLabel->setObjectName("projectTemplateDetailsLabel");
+            containerLayout->addWidget(projectTemplateDetailsLabel);
 
-            QPushButton* browseButton = new QPushButton(tr("Browse"), this);
-            connect(browseButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleBrowseButton);
-            projectPathLayout->addWidget(browseButton);
+            QHBoxLayout* templateLayout = new QHBoxLayout(this);
+            containerLayout->addItem(templateLayout);
 
-            vLayout->addLayout(projectPathLayout);
-        }
-
-        QLabel* projectTemplateLabel = new QLabel(this);
-        projectTemplateLabel->setText("Project Template");
-        vLayout->addWidget(projectTemplateLabel);
-
-        QHBoxLayout* templateLayout = new QHBoxLayout(this);
-        vLayout->addItem(templateLayout);
-
-        m_projectTemplateButtonGroup = new QButtonGroup(this);
-        auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
-        if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
-        {
-            for (auto projectTemplate : templatesResult.GetValue())
+            m_projectTemplateButtonGroup = new QButtonGroup(this);
+            m_projectTemplateButtonGroup->setObjectName("templateButtonGroup");
+            auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+            if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
             {
-                QRadioButton* radioButton = new QRadioButton(projectTemplate.m_name, this);
-                radioButton->setProperty(k_pathProperty, projectTemplate.m_path);
-                m_projectTemplateButtonGroup->addButton(radioButton);
+                for (const ProjectTemplateInfo& projectTemplate : templatesResult.GetValue())
+                {
+                    QRadioButton* radioButton = new QRadioButton(projectTemplate.m_name, this);
+                    radioButton->setProperty(k_pathProperty, projectTemplate.m_path);
+                    m_projectTemplateButtonGroup->addButton(radioButton);
 
-                templateLayout->addWidget(radioButton);
+                    containerLayout->addWidget(radioButton);
+                }
+
+                m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
             }
-
-            m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
         }
+        projectTemplateWidget->setLayout(containerLayout);
+        m_verticalLayout->addWidget(projectTemplateWidget);
 
-        QSpacerItem* verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        vLayout->addItem(verticalSpacer);
+        QWidget* projectTemplateDetails = new QWidget(this);
+        projectTemplateDetails->setObjectName("projectTemplateDetails");
+        m_horizontalLayout->addWidget(projectTemplateDetails);
+    }
 
-        hLayout->addItem(vLayout);
-
-        QWidget* gemsListPlaceholder = new QWidget(this);
-        gemsListPlaceholder->setFixedWidth(250);
-        hLayout->addWidget(gemsListPlaceholder);
+    QString NewProjectSettingsScreen::GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
     }
 
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
@@ -96,59 +107,13 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
-    QString NewProjectSettingsScreen::GetNextButtonText()
+    void NewProjectSettingsScreen::NotifyCurrentScreen()
     {
-        return tr("Next");
-    }
-
-    void NewProjectSettingsScreen::HandleBrowseButton()
-    {
-        QString defaultPath = m_projectPathLineEdit->text();
-        if (defaultPath.isEmpty())
-        {
-            defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        }
-
-        QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("New project path"), defaultPath));
-        if (!directory.isEmpty())
-        {
-            m_projectPathLineEdit->setText(directory);
-        }
-    }
-
-    ProjectInfo NewProjectSettingsScreen::GetProjectInfo()
-    {
-        ProjectInfo projectInfo;
-        projectInfo.m_projectName = m_projectNameLineEdit->text();
-        projectInfo.m_path        = QDir::toNativeSeparators(m_projectPathLineEdit->text() + "/" + projectInfo.m_projectName);
-        return projectInfo;
+        Validate();
     }
 
     QString NewProjectSettingsScreen::GetProjectTemplatePath()
     {
         return m_projectTemplateButtonGroup->checkedButton()->property(k_pathProperty).toString();
-    }
-
-    bool NewProjectSettingsScreen::Validate()
-    {
-        bool projectNameIsValid = true;
-        if (m_projectNameLineEdit->text().isEmpty())
-        {
-            projectNameIsValid = false;
-        }
-
-        bool projectPathIsValid = true;
-        if (m_projectPathLineEdit->text().isEmpty())
-        {
-            projectPathIsValid = false;
-        }
-
-        QDir path(QDir::toNativeSeparators(m_projectPathLineEdit->text() + "/" + m_projectNameLineEdit->text()));
-        if (path.exists() && !path.isEmpty())
-        {
-            projectPathIsValid = false;
-        }
-
-        return projectNameIsValid && projectPathIsValid;
     }
 } // namespace O3DE::ProjectManager

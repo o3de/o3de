@@ -39,15 +39,35 @@ namespace AZ
         class SliceConverter : public Converter
         {
         public:
-            static bool ConvertSliceFiles(Application& application);
+            bool ConvertSliceFiles(Application& application);
 
         private:
+            using TemplateEntityIdPair = AZStd::pair<AzToolsFramework::Prefab::TemplateId, AZ::EntityId>;
 
-            static bool ConvertSliceFile(AzToolsFramework::Prefab::PrefabSystemComponent* prefabSystemComponent,
-                AZ::IO::PathView outputPath, bool isDryRun, AZ::Entity* rootEntity);
+            bool ConnectToAssetProcessor();
+            void DisconnectFromAssetProcessor();
 
-            static void PrintPrefab(const AzToolsFramework::Prefab::PrefabDom& prefabDom, const AZ::IO::Path& templatePath);
-            static bool SavePrefab(AzToolsFramework::Prefab::TemplateId templateId);
+            bool ConvertSliceFile(AZ::SerializeContext* serializeContext, const AZStd::string& slicePath, bool isDryRun);
+            bool ConvertSliceToPrefab(
+                AZ::SerializeContext* serializeContext,  AZ::IO::PathView outputPath, bool isDryRun, AZ::Entity* rootEntity);
+            void FixPrefabEntities(AZ::Entity& containerEntity, SliceComponent::EntityList& sliceEntities);
+            bool ConvertNestedSlices(
+                SliceComponent* sliceComponent, AzToolsFramework::Prefab::Instance* sourceInstance,
+                AZ::SerializeContext* serializeContext, bool isDryRun);
+            bool ConvertSliceInstance(
+                AZ::SliceComponent::SliceInstance& instance, AZ::Data::Asset<AZ::SliceAsset>& sliceAsset,
+                AzToolsFramework::Prefab::TemplateReference nestedTemplate, AzToolsFramework::Prefab::Instance* topLevelInstance);
+            void SetParentEntity(const AZ::Entity& entity, const AZ::EntityId& parentId, bool onlySetIfInvalid);
+            void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
+            bool SavePrefab(AZ::IO::PathView outputPath, AzToolsFramework::Prefab::TemplateId templateId);
+
+            // Track all of the entity IDs created and the prefab entity aliases that map to them.  This mapping is used
+            // with nested slice conversion to remap parent entity IDs to the correct prefab entity IDs.
+            AZStd::unordered_map<TemplateEntityIdPair, AzToolsFramework::Prefab::EntityAlias> m_aliasIdMapper;
+
+            // Track all of the created prefab template IDs on a slice conversion so that they can get removed at the end of the
+            // conversion for that file.
+            AZStd::unordered_set<AzToolsFramework::Prefab::TemplateId> m_createdTemplateIds;
         };
     } // namespace SerializeContextTools
 } // namespace AZ

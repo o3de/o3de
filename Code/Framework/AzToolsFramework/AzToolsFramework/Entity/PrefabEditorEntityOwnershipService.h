@@ -170,6 +170,8 @@ namespace AzToolsFramework
         void StartPlayInEditor() override;
         void StopPlayInEditor() override;
 
+        void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) override;
+
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;

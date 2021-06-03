@@ -44,4 +44,12 @@ ly_add_target(
             AZ::AzFramework
             Gem::LmbrCentral
             Gem::GameStateSamples.Headers
+    RUNTIME_DEPENDENCIES
+        Gem::GameState
+        Gem::LocalUser
+        Gem::LmbrCentral
 )
+
+# Clients and Servers use the above module.  There is no editor or tools module required.
+ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS GameStateSamples)
+ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS GameStateSamples)

@@ -33,6 +33,7 @@ namespace AZ
     {
         // forward declares
         class AtomDebugDisplayViewportInterface;
+        class PerViewportDynamicDrawManager;
 
         class AtomBridgeSystemComponent
             : public Component
@@ -82,6 +83,7 @@ namespace AZ
             RPI::ViewPtr m_view = nullptr;
 
             AZStd::unordered_map<AzFramework::ViewportId, AZStd::shared_ptr<AtomDebugDisplayViewportInterface> > m_activeViewportsList;
+            AZStd::unique_ptr<PerViewportDynamicDrawManager> m_dynamicDrawManager;
         };
     }
 } // namespace AZ

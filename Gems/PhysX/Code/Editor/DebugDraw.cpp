@@ -17,13 +17,13 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
-#include <PhysX/Configuration/PhysXConfiguration.h>
-#include <System/PhysXSystem.h>
+#include <PhysX/Debug/PhysXDebugInterface.h>
 
 namespace PhysX
 {
@@ -415,11 +415,16 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                Physics::MaterialFromAssetConfiguration materialConfiguration;
                 const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
-                if (colliderConfig.m_materialSelection.GetMaterialConfiguration(materialConfiguration, materialId))
+
+                AZStd::shared_ptr<Physics::Material> physicsMaterial;
+                Physics::PhysicsMaterialRequestBus::BroadcastResult(
+                    physicsMaterial,
+                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
+                    materialId);
+                if (physicsMaterial)
                 {
-                    debugColor = materialConfiguration.m_configuration.m_debugColor;
+                    debugColor = physicsMaterial->GetDebugColor();
                 }
                 break;
             }
@@ -555,25 +560,37 @@ namespace PhysX
 
             if (meshConfig.GetCachedNativeMesh())
             {
-                const AZ::Transform scaleMatrix = AZ::Transform::CreateScale(meshScale);
-                debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig) * scaleMatrix);
+                debugDisplay.PushMatrix(GetColliderLocalTransform(colliderConfig));
 
                 if (meshConfig.GetMeshType() == Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh)
                 {
-                    DrawTriangleMesh(debugDisplay, colliderConfig, geomIndex);
+                    DrawTriangleMesh(debugDisplay, colliderConfig, geomIndex, meshScale);
                 }
                 else
                 {
-                    DrawConvexMesh(debugDisplay, colliderConfig, geomIndex);
+                    DrawConvexMesh(debugDisplay, colliderConfig, geomIndex, meshScale);
                 }
 
                 debugDisplay.PopMatrix();
             }
         }
 
-        void Collider::DrawTriangleMesh(AzFramework::DebugDisplayRequests& debugDisplay,
-            const Physics::ColliderConfiguration& colliderConfig,
-            AZ::u32 geomIndex) const
+        AZStd::vector<AZ::Vector3> ScalePoints(const AZ::Vector3& scale, const AZStd::vector<AZ::Vector3>& points)
+        {
+            AZStd::vector<AZ::Vector3> scaledPoints;
+            scaledPoints.resize_no_construct(points.size());
+            AZStd::transform(
+                points.begin(), points.end(), scaledPoints.begin(),
+                [scale](const AZ::Vector3& point)
+                {
+                    return scale * point;
+                });
+            return scaledPoints;
+        }
+
+        void Collider::DrawTriangleMesh(
+            AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
+            const AZ::Vector3& meshScale) const
         {
             AZ_Assert(geomIndex < m_geometry.size(), "DrawTriangleMesh: geomIndex is out of range");
 
@@ -581,10 +598,10 @@ namespace PhysX
 
             const AZStd::unordered_map<int, AZStd::vector<AZ::u32>>& triangleIndexesByMaterialSlot
                 = geom.m_triangleIndexesByMaterialSlot;
-            const AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-            const AZStd::vector<AZ::Vector3>& points = geom.m_points;
+            AZStd::vector<AZ::Vector3> scaledVerts = ScalePoints(meshScale, geom.m_verts);
+            AZStd::vector<AZ::Vector3> scaledPoints = ScalePoints(meshScale, geom.m_points);
 
-            if (!verts.empty())
+            if (!scaledVerts.empty())
             {
                 for (const auto& element : triangleIndexesByMaterialSlot)
                 {
@@ -596,30 +613,31 @@ namespace PhysX
                     triangleMeshInfo.m_numTriangles = triangleCount;
                     triangleMeshInfo.m_materialSlotIndex = materialSlot;
 
-                    debugDisplay.DrawTrianglesIndexed(verts, triangleIndexes
+                    debugDisplay.DrawTrianglesIndexed(scaledVerts, triangleIndexes
                         , CalcDebugColor(colliderConfig, triangleMeshInfo));
                 }
-                debugDisplay.DrawLines(points, WireframeColor);
+                debugDisplay.DrawLines(scaledPoints, WireframeColor);
             }
         }
 
-        void Collider::DrawConvexMesh(AzFramework::DebugDisplayRequests& debugDisplay,
-            const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex) const
+        void Collider::DrawConvexMesh(
+            AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
+            const AZ::Vector3& meshScale) const
         {
             AZ_Assert(geomIndex < m_geometry.size(), "DrawConvexMesh: geomIndex is out of range");
 
             const GeometryData& geom = m_geometry[geomIndex];
-            const AZStd::vector<AZ::Vector3>& verts = geom.m_verts;
-            const AZStd::vector<AZ::Vector3>& points = geom.m_points;
+            AZStd::vector<AZ::Vector3> scaledVerts = ScalePoints(meshScale, geom.m_verts);
+            AZStd::vector<AZ::Vector3> scaledPoints = ScalePoints(meshScale, geom.m_points);
 
-            if (!verts.empty())
+            if (!scaledVerts.empty())
             {
-                const AZ::u32 triangleCount = static_cast<AZ::u32>(verts.size() / 3);
+                const AZ::u32 triangleCount = static_cast<AZ::u32>(scaledVerts.size() / 3);
                 ElementDebugInfo convexMeshInfo;
                 convexMeshInfo.m_numTriangles = triangleCount;
 
-                debugDisplay.DrawTriangles(verts, CalcDebugColor(colliderConfig, convexMeshInfo));
-                debugDisplay.DrawLines(points, WireframeColor);
+                debugDisplay.DrawTriangles(scaledVerts, CalcDebugColor(colliderConfig, convexMeshInfo));
+                debugDisplay.DrawLines(scaledPoints, WireframeColor);
             }
         }
 
@@ -685,7 +703,7 @@ namespace PhysX
             // Let each collider decide how to scale itself, so extract the scale here.
             AZ::Transform entityWorldTransformWithoutScale = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(entityWorldTransformWithoutScale, m_entityId, &AZ::TransformInterface::GetWorldTM);
-            entityWorldTransformWithoutScale.ExtractScale();
+            entityWorldTransformWithoutScale.ExtractUniformScale();
 
             auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get();
             if (physXDebug == nullptr)

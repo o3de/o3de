@@ -95,7 +95,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
             AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, bool shouldCreateLinks)
         {
-            AZ::IO::Path relativeFilePath = m_prefabLoader.GetRelativePathToProject(filePath);
+            AZ::IO::Path relativeFilePath = m_prefabLoader.GenerateRelativePath(filePath);
             if (GetTemplateIdFromFilePath(relativeFilePath) != InvalidTemplateId)
             {
                 AZ_Error("Prefab", false,
@@ -652,7 +652,8 @@ namespace AzToolsFramework
             if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
             {
                 instancesValue->get().AddMember(
-                    rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+                    rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
+                    targetTemplateDom.GetAllocator());
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();
@@ -705,14 +706,14 @@ namespace AzToolsFramework
                 "Prefab - PrefabSystemComponent::RemoveLink - "
                 "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
                 "from TemplateToLinkIdsMap.",
-                linkId, link.GetSourceTemplateId(), link.GetInstanceName().c_str());
+                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId());
 
             result = RemoveLinkFromTargetTemplate(linkId, link);
             AZ_Assert(result,
                 "Prefab - PrefabSystemComponent::RemoveLink - "
                 "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
                 "from target Template with Id '%llu'.",
-                linkId, link.GetSourceTemplateId(), link.GetInstanceName().c_str(), link.GetTargetTemplateId());
+                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId(), link.GetTargetTemplateId());
 
             m_linkIdMap.erase(linkId);
 
