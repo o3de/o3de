@@ -34,10 +34,6 @@ namespace AZ
 
         uint32_t ShaderAsset::MakeAssetProductSubId(uint32_t rhiApiUniqueIndex, uint32_t subProductType)
         {
-            static constexpr uint32_t RhiIndexBitPosition = 30;
-            static constexpr uint32_t RhiIndexNumBits = 32 - RhiIndexBitPosition;
-            static constexpr uint32_t RhiIndexMaxValue = (1 << RhiIndexNumBits) - 1;
-
             static constexpr uint32_t SubProductTypeBitPosition = 0;
             static constexpr uint32_t SubProductTypeNumBits = RhiIndexBitPosition - SubProductTypeBitPosition;
             static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
