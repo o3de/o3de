@@ -332,6 +332,8 @@ private:
     // If this flag is set, the next OnIdle() will update, even if the app is in the background, and then
     // this flag will be reset.
     bool m_bForceProcessIdle = false;
+    // This is set while IdleProcessing is running to prevent re-entrancy
+    bool m_idleProcessingRunning = false;
     // Keep the editor alive, even if no focus is set
     bool m_bKeepEditorActive = false;
     // Currently creating a new level

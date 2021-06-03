@@ -2271,6 +2271,14 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         return 0;
     }
 
+    // Ensure we don't get called re-entrantly
+    // This can occur when a nested Qt event loop fires (e.g. by way of a modal dialog calling exec)
+    if (m_idleProcessingRunning)
+    {
+        return 0;
+    }
+    QScopedValueRollback<bool> guard(m_idleProcessingRunning, true);
+
     ////////////////////////////////////////////////////////////////////////
     // Call the update function of the engine
     ////////////////////////////////////////////////////////////////////////
