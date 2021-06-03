@@ -652,7 +652,8 @@ namespace AzToolsFramework
             if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
             {
                 instancesValue->get().AddMember(
-                    rapidjson::StringRef(instanceAlias.c_str()), PrefabDomValue(), targetTemplateDom.GetAllocator());
+                    rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
+                    targetTemplateDom.GetAllocator());
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();
