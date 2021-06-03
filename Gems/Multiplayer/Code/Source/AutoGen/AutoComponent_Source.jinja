@@ -311,7 +311,7 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
 void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
 {
-    constexpr RpcIndex rpcId = static_cast<RpcIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
+    constexpr Multiplayer::RpcIndex rpcId = static_cast<Multiplayer::RpcIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
 {% if Property.attrib['IsReliable']|booleanTrue %}
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Reliable;
 {% else %}
