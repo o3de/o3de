@@ -10,6 +10,6 @@
 #
 
 set(FILES
-    Atom_Feature_Traits_Platform.h
-    Atom_Feature_Traits_Mac.h
+    Atom_RPI_Traits_Platform.h
+    Atom_RPI_Traits_Mac.h
 )
