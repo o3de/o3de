@@ -15,7 +15,6 @@
 namespace AWSCore
 {
     AWSCoreEditorModule::AWSCoreEditorModule()
-        : AWSCoreModule()
     {
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         m_descriptors.insert(m_descriptors.end(), {
@@ -28,10 +27,9 @@ namespace AWSCore
     */
     AZ::ComponentTypeList AWSCoreEditorModule::GetRequiredSystemComponents() const
     {
-        AZ::ComponentTypeList requiredComponents = AWSCoreModule::GetRequiredSystemComponents();
-        requiredComponents.push_back(azrtti_typeid<AWSCoreEditorSystemComponent>());
-
-        return requiredComponents;
+        return AZ::ComponentTypeList{
+            azrtti_typeid<AWSCoreEditorSystemComponent>()
+        };
     }
 
 }
