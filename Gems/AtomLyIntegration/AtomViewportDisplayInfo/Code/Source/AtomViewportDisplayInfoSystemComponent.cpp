@@ -162,7 +162,7 @@ namespace AZ::Render
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
         m_drawParams.m_depthTest = false;
-        m_drawParams.m_virtual800x600ScreenSize = true;
+        m_drawParams.m_virtual800x600ScreenSize = false;
         m_drawParams.m_scaleWithWindow = false;
         m_drawParams.m_multiline = true;
         m_drawParams.m_lineSpacing = 0.5f;

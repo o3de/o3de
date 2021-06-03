@@ -316,7 +316,11 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         version_match = tool_version_regex.search(version_output)
         if not version_match:
             raise RuntimeError()
-        result_version = LooseVersion(str(version_match.group(1)).strip())
+
+
+        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the LooseVersion comparison
+        result_version_str = re.sub(r"[^\.0-9]", "", str(version_match.group(1)).strip())
+        result_version = LooseVersion(result_version_str)
 
         if min_version and result_version < min_version:
             raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",

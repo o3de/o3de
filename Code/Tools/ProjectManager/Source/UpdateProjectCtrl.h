@@ -12,40 +12,57 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "ProjectInfo.h"
+#include <ProjectInfo.h>
 #include <ScreenWidget.h>
-#include <ScreensCtrl.h>
-#include <QPushButton>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QFrame)
 
 namespace O3DE::ProjectManager
 {
-    class UpdateProjectCtrl
-        : public ScreenWidget
+    QT_FORWARD_DECLARE_CLASS(ScreenHeader)
+    QT_FORWARD_DECLARE_CLASS(UpdateProjectSettingsScreen)
+    QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
+
+    class UpdateProjectCtrl : public ScreenWidget
     {
     public:
         explicit UpdateProjectCtrl(QWidget* parent = nullptr);
         ~UpdateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
+    protected:
+        void NotifyCurrentScreen() override;
 
     protected slots:
         void HandleBackButton();
         void HandleNextButton();
+        void HandleGemsButton();
         void UpdateCurrentProject(const QString& projectPath);
 
     private:
-        void UpdateNextButtonText();
+        void Update();
+        void UpdateSettingsScreen();
 
-        ScreensCtrl* m_screensCtrl;
-        QPushButton* m_backButton;
-        QPushButton* m_nextButton;
+        enum ScreenOrder
+        {
+            Settings,
+            Gems
+        };
+
+        ScreenHeader* m_header = nullptr;
+        QStackedWidget* m_stack = nullptr;
+        UpdateProjectSettingsScreen* m_updateSettingsScreen = nullptr;
+        GemCatalogScreen* m_gemCatalogScreen = nullptr;
+
+        QPushButton* m_backButton = nullptr;
+        QPushButton* m_nextButton = nullptr;
         QVector<ProjectManagerScreen> m_screensOrder;
 
         ProjectInfo m_projectInfo;
-
-        ProjectManagerScreen m_screenEnum;
     };
 
 } // namespace O3DE::ProjectManager
