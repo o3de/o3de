@@ -10,7 +10,7 @@
 # {END_LICENSE}
 
 set(ENABLED_GEMS
-    Project::${Name}
+    ${Name}
     Atom_AtomBridge
     Camera
     CameraFramework

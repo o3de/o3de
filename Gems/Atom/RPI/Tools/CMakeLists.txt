@@ -9,14 +9,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_download_associated_package(pyside2)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_pip_install_local_package_editable(${CMAKE_CURRENT_LIST_DIR} atom_rpi_tools)
 
-ly_add_pytest(
-    NAME test_pyside
-    PATH ${CMAKE_CURRENT_LIST_DIR}/tests/test_pyside.py
-)
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_pytest(
+            NAME RPI::atom_rpi_tools_tests
+            PATH ${CMAKE_CURRENT_LIST_DIR}/atom_rpi_tools/tests/
+            TIMEOUT 30
+        )
+    endif()
+endif()
 
-ly_add_pytest(
-    NAME test_projects
-    PATH ${CMAKE_CURRENT_LIST_DIR}/tests/test_projects.py
-)

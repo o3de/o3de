@@ -16,6 +16,9 @@
 #include <ProjectInfo.h>
 #endif
 
+// due to current limitations, customizing template Gems is disabled 
+// #define TEMPLATE_GEM_CONFIGURATION_ENABLED
+
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QLabel)
@@ -36,23 +39,32 @@ namespace O3DE::ProjectManager
         void NotifyCurrentScreen() override;
 
     protected slots:
-        void OnChangeScreenRequest(ProjectManagerScreen screen);
         void HandleBackButton();
-        void HandleSecondaryButton();
         void HandlePrimaryButton();
 
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+        void OnChangeScreenRequest(ProjectManagerScreen screen);
+        void HandleSecondaryButton();
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
     private:
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         void Update();
-        bool CurrentScreenIsValid();
-        void CreateProject();
         void NextScreen();
         void PreviousScreen();
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
+        bool CurrentScreenIsValid();
+        void CreateProject();
 
         QStackedWidget* m_stack;
         ScreenHeader* m_header;
 
-        QPushButton* m_secondaryButton;
         QPushButton* m_primaryButton;
+
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+        QPushButton* m_secondaryButton;
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;

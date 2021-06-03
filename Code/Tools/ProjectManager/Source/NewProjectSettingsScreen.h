@@ -12,8 +12,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
-#include <ProjectInfo.h>
+#include <ProjectSettingsScreen.h>
 #include <ProjectTemplateInfo.h>
 #include <QVector.h>
 #endif
@@ -24,36 +23,24 @@ QT_FORWARD_DECLARE_CLASS(QFrame)
 
 namespace O3DE::ProjectManager
 {
-    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
-    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
     QT_FORWARD_DECLARE_CLASS(TagContainerWidget)
-
     class NewProjectSettingsScreen
-        : public ScreenWidget
+        : public ProjectSettingsScreen
     {
     public:
         explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        ProjectInfo GetProjectInfo();
         QString GetProjectTemplatePath();
 
-        bool Validate();
-
         void NotifyCurrentScreen() override;
-
-    protected slots:
-        void HandleBrowseButton();
-        void ValidateProjectPath();
 
     private:
         QString GetDefaultProjectPath();
         QFrame* CreateTemplateDetails(int margin);
         void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);
 
-        FormLineEditWidget* m_projectName;
-        FormBrowseEditWidget* m_projectPath;
         QButtonGroup* m_projectTemplateButtonGroup;
         QLabel* m_templateDisplayName;
         QLabel* m_templateSummary;

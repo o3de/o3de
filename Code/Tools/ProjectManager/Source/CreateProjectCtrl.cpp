@@ -45,7 +45,6 @@ namespace O3DE::ProjectManager
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
 
         m_newProjectSettingsScreen = new NewProjectSettingsScreen(this);
-        connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
         m_stack->addWidget(m_newProjectSettingsScreen);
 
         m_gemCatalogScreen = new GemCatalogScreen(this);
@@ -56,14 +55,20 @@ namespace O3DE::ProjectManager
         buttons->setObjectName("footer");
         vLayout->addWidget(buttons);
 
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+        connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+
         m_secondaryButton = buttons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_secondaryButton->setProperty("secondary", true);
-        m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
-
+        m_secondaryButton->setVisible(false);
         connect(m_secondaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleSecondaryButton);
-        connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
 
         Update();
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
+        m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
+        connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
+
         setLayout(vLayout);
     }
 
@@ -85,7 +90,10 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() > 0)
         {
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
             PreviousScreen();
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
         }
         else
         {
@@ -93,6 +101,7 @@ namespace O3DE::ProjectManager
         }
     }
 
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
     void CreateProjectCtrl::HandleSecondaryButton()
     {
         if (m_stack->currentIndex() > 0)
@@ -107,21 +116,17 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void CreateProjectCtrl::HandlePrimaryButton()
-    {
-        CreateProject();
-    }
-
     void CreateProjectCtrl::Update()
     {
         if (m_stack->currentWidget() == m_gemCatalogScreen)
         {
             m_header->setSubTitle(tr("Configure project with Gems"));
-            m_secondaryButton->setText(tr("Back"));
+            m_secondaryButton->setVisible(false);
         }
         else
         {
             m_header->setSubTitle(tr("Enter Project Details"));
+            m_secondaryButton->setVisible(true);
             m_secondaryButton->setText(tr("Configure Gems"));
         }
     }
@@ -155,6 +160,12 @@ namespace O3DE::ProjectManager
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
             Update();
         }
+    }
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
+    void CreateProjectCtrl::HandlePrimaryButton()
+    {
+        CreateProject();
     }
 
     bool CreateProjectCtrl::CurrentScreenIsValid()
