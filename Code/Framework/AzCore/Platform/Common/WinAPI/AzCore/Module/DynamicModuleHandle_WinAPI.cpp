@@ -24,7 +24,7 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0);
 
         DynamicModuleHandleWindows(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
