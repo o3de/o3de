@@ -172,7 +172,7 @@ namespace AzFramework
     using ClaimEntitiesCallback = AZStd::function<void(EntitySpawnTicket::Id, SpawnableEntityContainerView)>;
     using BarrierCallback = AZStd::function<void(EntitySpawnTicket::Id)>;
 
-    struct SpawnEntitiesOptionalArgs final
+    struct SpawnAllEntitiesOptionalArgs final
     {
         //! Callback that's called after instances of entities have been created, but before they're spawned into the world. This
         //!     gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.
@@ -184,6 +184,25 @@ namespace AzFramework
         AZ::SerializeContext* m_serializeContext { nullptr };
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority { SpawnablePriority_Default };
+    };
+
+    struct SpawnEntitiesOptionalArgs final
+    {
+        //! Callback that's called after instances of entities have been created, but before they're spawned into the world. This
+        //!     gives the opportunity to modify the entities if needed such as injecting additional components or modifying components.
+        EntityPreInsertionCallback m_preInsertionCallback;
+        //! Callback that's called when spawning entities has completed. This can be called from a different thread than the one that
+        //!     made the function call. The returned list of entities contains all the newly created entities.
+        EntitySpawnCallback m_completionCallback;
+        //! The Serialize Context used to clone entities with. If this is not provided the global Serialize Contetx will be used.
+        AZ::SerializeContext* m_serializeContext{ nullptr };
+        //! The priority at which this call will be executed.
+        SpawnablePriority m_priority{ SpawnablePriority_Default };
+        //! Entity references are resolved by referring to the last entity spawned from a template entity in the spawnable. If this
+        //! is set to false entities from previous spawn calls are not taken into account. If set to true entity references may be
+        //! resolved to a previously spawned entity. A lookup table has to be constructed when true, which may negatively impact
+        //! performance, especially if a large number of entities are present on a ticket.
+        bool m_referencePreviouslySpawnedEntities{ false };
     };
 
     struct DespawnAllEntitiesOptionalArgs final
@@ -250,7 +269,7 @@ namespace AzFramework
         //! Spawn instances of all entities in the spawnable.
         //! @param ticket Stores the results of the call. Use this ticket to spawn additional entities or to despawn them.
         //! @param optionalArgs Optional additional arguments, see SpawnAllEntitiesOptionalArgs
-        virtual void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnEntitiesOptionalArgs optionalArgs = {}) = 0;
+        virtual void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnAllEntitiesOptionalArgs optionalArgs = {}) = 0;
         //! Spawn instances of some entities in the spawnable.
         //! @param ticket Stores the results of the call. Use this ticket to spawn additional entities or to despawn them.
         //! @param priority The priority at which this call will be executed.

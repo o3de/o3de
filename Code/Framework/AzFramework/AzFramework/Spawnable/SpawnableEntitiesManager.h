@@ -37,7 +37,7 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator, 0);
 
         using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
-
+        
         enum class CommandQueueStatus : bool
         {
             HasCommandsLeft,
@@ -57,7 +57,7 @@ namespace AzFramework
         // The following functions are thread safe
         //
 
-        void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
+        void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void SpawnEntities(
             EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
@@ -114,6 +114,7 @@ namespace AzFramework
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
+            bool m_referencePreviouslySpawnedEntities;
         };
         struct DespawnAllEntitiesCommand
         {
@@ -183,12 +184,9 @@ namespace AzFramework
 
         CommandQueueStatus ProcessQueue(Queue& queue);
 
-        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate,
-            AZ::SerializeContext& serializeContext);
-
-        AZ::Entity* CloneSingleEntity(const AZ::Entity& entityTemplate,
-            EntityIdMap& templateToCloneEntityIdMap, AZ::SerializeContext& serializeContext);
-
+        AZ::Entity* CloneSingleEntity(
+            const AZ::Entity& entityTemplate, EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext);
+        
         bool ProcessRequest(SpawnAllEntitiesCommand& request);
         bool ProcessRequest(SpawnEntitiesCommand& request);
         bool ProcessRequest(DespawnAllEntitiesCommand& request);
