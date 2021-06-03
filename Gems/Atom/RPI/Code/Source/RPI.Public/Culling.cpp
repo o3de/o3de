@@ -546,60 +546,37 @@ namespace AZ
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             // setup occlusion culling, if necessary
-            MaskedOcclusionCulling* maskedOcclusionCulling = m_occlusionCullingPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
+            MaskedOcclusionCulling* maskedOcclusionCulling = m_occlusionPlanes.empty() ? nullptr : view.GetMaskedOcclusionCulling();
             if (maskedOcclusionCulling)
             {
                 // frustum cull occlusion planes
-                using OccluderEntry = AZStd::pair<AZ::Transform, float>;
-                AZStd::vector<OccluderEntry> visibleOccluders;
-                for (const AZ::Transform& transform : m_occlusionCullingPlanes)
+                using VisibleOcclusionPlane = AZStd::pair<OcclusionPlane, float>;
+                AZStd::vector<VisibleOcclusionPlane> visibleOccluders;
+                for (const auto& occlusionPlane : m_occlusionPlanes)
                 {
-                    static const AZ::Vector3 BL(-0.5f, -0.5f, 0.0f);
-                    static const AZ::Vector3 TR(0.5f, 0.5f, 0.0f);
-
-                    AZ::Vector3 P1 = transform.TransformPoint(BL);
-                    AZ::Vector3 P2 = transform.TransformPoint(TR);
-
-                    AZ::Vector3 aabbMin = P1.GetMin(P2);
-                    AZ::Vector3 aabbMax = P1.GetMax(P2);
-
-                    AZ::Aabb occluderAabb = Aabb::CreateFromMinMax(aabbMin, aabbMax);
-                    if (ShapeIntersection::Overlaps(frustum, occluderAabb))
+                    if (ShapeIntersection::Overlaps(frustum, occlusionPlane.m_aabb))
                     {
                         // occluder is visible, compute view space distance and add to list
-                        float depth = (view.GetWorldToViewMatrix() * occluderAabb.GetMin()).GetZ();
-                        depth = AZStd::min(depth, (view.GetWorldToViewMatrix() * occluderAabb.GetMax()).GetZ());
+                        float depth = (view.GetWorldToViewMatrix() * occlusionPlane.m_aabb.GetMin()).GetZ();
+                        depth = AZStd::min(depth, (view.GetWorldToViewMatrix() * occlusionPlane.m_aabb.GetMax()).GetZ());
 
-                        visibleOccluders.push_back(AZStd::make_pair(transform, depth));
+                        visibleOccluders.push_back(AZStd::make_pair(occlusionPlane, depth));
                     }
                 }
 
                 // sort the occlusion planes by view space distance, front-to-back
-                AZStd::sort(visibleOccluders.begin(), visibleOccluders.end(), [](const OccluderEntry& LHS, const OccluderEntry& RHS)
+                AZStd::sort(visibleOccluders.begin(), visibleOccluders.end(), [](const VisibleOcclusionPlane& LHS, const VisibleOcclusionPlane& RHS)
                 {
                     return LHS.second > RHS.second;
                 });
 
-                for (const OccluderEntry& occluder : visibleOccluders)
+                for (const VisibleOcclusionPlane& occlusionPlane: visibleOccluders)
                 {
-                    const AZ::Transform& transform = occluder.first;
-
-                    // find the corners of the plane
-                    static const Vector3 BL = Vector3(-0.5f, -0.5f, 0.0f);
-                    static const Vector3 BR = Vector3(0.5f, -0.5f, 0.0f);
-                    static const Vector3 TL = Vector3(-0.5f, 0.5f, 0.0f);
-                    static const Vector3 TR = Vector3(0.5f, 0.5f, 0.0f);
-
-                    Vector3 planeBL = transform.TransformPoint(BL);
-                    Vector3 planeBR = transform.TransformPoint(BR);
-                    Vector3 planeTL = transform.TransformPoint(TL);
-                    Vector3 planeTR = transform.TransformPoint(TR);
-
                     // convert to clip-space
-                    Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(planeBL);
-                    Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(planeBR);
-                    Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(planeTL);
-                    Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(planeTR);
+                    Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBL);
+                    Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
+                    Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTL);
+                    Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTR);
 
                     // store to float array
                     float verts[16];

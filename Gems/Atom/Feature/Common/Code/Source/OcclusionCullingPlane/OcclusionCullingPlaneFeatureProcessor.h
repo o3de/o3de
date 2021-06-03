@@ -57,6 +57,10 @@ namespace AZ
             // list of occlusion planes
             const size_t InitialOcclusionCullingPlanesAllocationSize = 64;
             OcclusionCullingPlaneVector m_occlusionCullingPlanes;
+
+            // prebuilt list of RPI scene occlusion planes
+            RPI::CullingScene::OcclusionPlaneVector m_rpiOcclusionPlanes;
+            bool m_rpiListNeedsUpdate = false;
         };
     } // namespace Render
 } // namespace AZ

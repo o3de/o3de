@@ -215,8 +215,20 @@ namespace AZ
             void Activate(const class Scene* parentScene);
             void Deactivate();
 
+            struct OcclusionPlane
+            {
+                // World space corners of the occluson plane
+                Vector3 m_cornerBL;
+                Vector3 m_cornerBR;
+                Vector3 m_cornerTL;
+                Vector3 m_cornerTR;
+
+                Aabb m_aabb;
+            };
+            using OcclusionPlaneVector = AZStd::vector<OcclusionPlane>;
+
             //! Sets a list of occlusion planes to be used during the culling process.
-            void SetOcclusionCullingPlanes(const AZStd::vector<AZ::Transform>& occlusionCullingPlanes) { m_occlusionCullingPlanes = occlusionCullingPlanes; }
+            void SetOcclusionPlanes(const OcclusionPlaneVector& occlusionPlanes) { m_occlusionPlanes = occlusionPlanes; }
 
             //! Notifies the CullingScene that culling will begin for this frame.
             void BeginCulling(const AZStd::vector<ViewPtr>& views);
@@ -258,7 +270,7 @@ namespace AZ
             AzFramework::IVisibilityScene* m_visScene = nullptr;
             CullingDebugContext m_debugCtx;
             AZStd::concurrency_checker m_cullDataConcurrencyCheck;
-            AZStd::vector<AZ::Transform> m_occlusionCullingPlanes;
+            OcclusionPlaneVector m_occlusionPlanes;
         };
         
 
