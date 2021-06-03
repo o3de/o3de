@@ -116,6 +116,7 @@ bool CImageBT::Load(const QString& fileName, CFloatImage& image)
 
     // Get the BT header data
     BtHeader header;
+    memset(&header, 0, sizeof(BtHeader)); // C4701 potentially uninitialized local variable 'header' used
     bool validData = true;
     validData = validData && (fread(&header, sizeof(BtHeader), 1, file) != 0);
 

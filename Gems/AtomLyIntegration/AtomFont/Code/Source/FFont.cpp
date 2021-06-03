@@ -60,14 +60,7 @@ static const size_t MaxVerts = 8 * 1024; // 2048 quads
 static const size_t MaxIndices = (MaxVerts * 6) / 4; // 6 indices per quad, 6/4 * MaxVerts
 static const char DrawList2DPassName[] = "2dpass";
 
-namespace ShaderInputs
-{
-    static const char TextureIndexName[] = "m_texture";
-    static const char WorldToProjIndexName[] = "m_worldToProj";
-    static const char SamplerIndexName[] = "m_sampler";
-}
-
-AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
+AZ::FFont::FFont(AZ::AtomFont* atomFont, const char* fontName)
     : m_name(fontName)
     , m_atomFont(atomFont)
 {
@@ -78,9 +71,14 @@ AZ::FFont::FFont(AtomFont* atomFont, const char* fontName)
     FontEffect* effect = AddEffect("default");
     effect->AddPass();
 
-    AddRef();
+    // Create cpu memory to cache the font draw data before submit
+    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
+    m_indexBuffer = new u16[MaxIndices];
 
-    AZ::Render::Bootstrap::NotificationBus::Handler::BusConnect();
+    m_vertexCount = 0;
+    m_indexCount = 0;
+
+    AddRef();
 }
 
 AZ::RPI::ViewportContextPtr AZ::FFont::GetDefaultViewportContext() const
@@ -98,54 +96,9 @@ AZ::RPI::WindowContextSharedPtr AZ::FFont::GetDefaultWindowContext() const
     return {};
 }
 
-bool AZ::FFont::InitFont(AZ::RPI::Scene* renderScene)
-{
-    if (!renderScene)
-    {
-        return false;
-    }
-
-    auto initializationState = InitializationState::Uninitialized;
-    // Do an atomic transition to Initializing if we're in the Uninitialized state.
-    // Otherwise, check the current state.
-    // If we're Initialized, there's no more work to be done, return true to indicate we're good to go.
-    // If we're Initializing (on another thread), return false to let the consumer know it's not safe for us to be used yet.
-    if (!m_fontInitializationState.compare_exchange_strong(initializationState, InitializationState::Initializing))
-    {
-        return initializationState == InitializationState::Initialized;
-    }
-
-    // Create and initialize DynamicDrawContext for font draw
-    AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(renderScene);
-
-    // Save draw srg input indices for later use
-    Data::Instance<RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-    const RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
-
-    m_fontShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::TextureIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::TextureIndexName);
-
-    m_fontShaderData.m_viewProjInputIndex = layout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::WorldToProjIndexName));
-    AZ_Error("AtomFont::FFont", m_fontShaderData.m_viewProjInputIndex.IsValid(), "Failed to find shader input constant %s.",
-        ShaderInputs::WorldToProjIndexName);
-
-    // Create cpu memory to cache the font draw data before submit
-    m_vertexBuffer = new SVF_P3F_C4B_T2F[MaxVerts];
-    m_indexBuffer = new u16[MaxIndices];
-
-    m_vertexCount = 0;
-    m_indexCount = 0;
-
-    m_fontInitializationState = InitializationState::Initialized;
-    return true;
-}
-
 AZ::FFont::~FFont()
 {
     AZ_Assert(m_atomFont == nullptr, "The font should already be unregistered through a call to AZ::FFont::Release()");
-
-    AZ::Render::Bootstrap::NotificationBus::Handler::BusDisconnect();
 
     delete[] m_vertexBuffer;
     delete[] m_indexBuffer;
@@ -303,7 +256,8 @@ void AZ::FFont::DrawStringUInternal(
     const TextDrawContext& ctx)
 {
     // Lazily ensure we're initialized before attempting to render.
-    if (!viewportContext || !InitFont(viewportContext->GetRenderScene().get()))
+    // Validate that there is a render scene before attempting to init.
+    if (!viewportContext || !viewportContext->GetRenderScene())
     {
         return;
     }
@@ -319,12 +273,6 @@ void AZ::FFont::DrawStringUInternal(
 
     const size_t fxSize = m_effects.size();
     if (fxSize && !m_fontImage && !InitTexture())
-    {
-        return;
-    }
-
-    // if the font is about to be deleted then m_atomFont can be nullptr
-    if (!m_atomFont)
     {
         return;
     }
@@ -406,14 +354,17 @@ void AZ::FFont::DrawStringUInternal(
 
     if (numQuads)
     {
-        auto dynamicDraw = m_atomFont->GetOrCreateDynamicDrawForScene(viewportContext->GetRenderScene().get());
-        //setup per draw srg
-        auto drawSrg = dynamicDraw->NewDrawSrg();
-        drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
-        drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
-        drawSrg->Compile();
+        AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = AZ::AtomBridge::PerViewportDynamicDraw::Get()->GetDynamicDrawContextForViewport(m_dynamicDrawContextName, viewportContext->GetId());
+        if (dynamicDraw)
+        {
+            //setup per draw srg
+            auto drawSrg = dynamicDraw->NewDrawSrg();
+            drawSrg->SetConstant(m_fontShaderData.m_viewProjInputIndex, modelViewProjMat);
+            drawSrg->SetImageView(m_fontShaderData.m_imageInputIndex, m_fontStreamingImage->GetImageView());
+            drawSrg->Compile();
 
-        dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
+            dynamicDraw->DrawIndexed(m_vertexBuffer, m_vertexCount, m_indexBuffer, m_indexCount, RHI::IndexFormat::Uint16, drawSrg);
+        }
         m_indexCount = 0;
         m_vertexCount = 0;
     }
@@ -690,12 +641,6 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
 
     const size_t fxSize = m_effects.size();
     if (fxSize && !m_fontImage && !InitTexture())
-    {
-        return numQuadsWritten;
-    }
-
-    // if the font is about to be deleted then m_atomFont can be nullptr
-    if (!m_atomFont)
     {
         return numQuadsWritten;
     }
@@ -1523,7 +1468,7 @@ bool AZ::FFont::UpdateTexture()
 {
     using namespace AZ;
 
-    if (m_fontInitializationState != InitializationState::Initialized || !m_fontImage)
+    if (!m_fontImage)
     {
         return false;
     }
@@ -1591,7 +1536,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
     const bool rerenderGlyphs = m_sizeBehavior == SizeBehavior::Rerender;
     const AtomFont::GlyphSize usedGlyphSize = rerenderGlyphs ? glyphSize : AtomFont::defaultGlyphSize;
     bool texUpdateNeeded = m_fontTexture->PreCacheString(str, nullptr, m_sizeRatio, usedGlyphSize, m_fontHintParams) == 1 || m_fontTexDirty;
-    if (m_fontInitializationState == InitializationState::Initialized && updateTexture && texUpdateNeeded && m_fontImage)
+    if (updateTexture && texUpdateNeeded && m_fontImage)
     {
         UpdateTexture();
         m_fontTexDirty = false;
@@ -1623,12 +1568,6 @@ void AZ::FFont::ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) co
 
     x *= width / WindowScaleWidth;
     y *= height / WindowScaleHeight;
-}
-
-
-void AZ::FFont::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
-{
-    InitFont(bootstrapScene);
 }
 
 static void SetCommonContextFlags(AZ::TextDrawContext& ctx, const AzFramework::TextDrawParameters& params)
