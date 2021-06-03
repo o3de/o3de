@@ -1106,7 +1106,7 @@ namespace ImageProcessingAtom
                    //fractional amount to apply change in tap intensity along edge to taps 
                    //  in a perpendicular direction to edge 
                    CP_ITYPE fixupFrac = (CP_ITYPE)(fixupDist - iFixup) / (CP_ITYPE)(fixupDist); 
-                   CP_ITYPE fixupWeight;
+                   CP_ITYPE fixupWeight = 0.0f;
 
                    switch(a_FixupType )
                    {

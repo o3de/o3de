@@ -246,7 +246,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
