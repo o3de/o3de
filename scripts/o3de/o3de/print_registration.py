@@ -413,6 +413,19 @@ def add_parser_args(parser):
                        default=False,
                        help='The external subdirectories.')
 
+    group.add_argument('-pg', '--project-gems', action='store_true', required=False,
+                       default=False,
+                       help='Returns the gems registered with the project.json.')
+    group.add_argument('-pt', '--project-templates', action='store_true', required=False,
+                       default=False,
+                       help='Returns the templates registered with the project.json.')
+    group.add_argument('-prs', '--engine-restricted', action='store_true', required=False,
+                       default=False,
+                       help='The restricted folders.')
+    group.add_argument('-pes', '--project-external-subdirectories', action='store_true', required=False,
+                       default=False,
+                       help='Returns the external subdirectories register with the project.json.')
+
     group.add_argument('-ap', '--all-projects', action='store_true', required=False,
                        default=False,
                        help='Just the local projects. Ignores repos.')
