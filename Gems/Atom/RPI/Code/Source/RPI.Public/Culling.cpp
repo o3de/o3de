@@ -617,7 +617,6 @@ namespace AZ
             jobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
 #endif
 
-
             auto nodeVisitorLambda = [this, jobData, &parentJob, &frustum, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
                 AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "nodeVisitorLambda()");
