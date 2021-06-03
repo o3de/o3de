@@ -157,6 +157,7 @@ namespace LyShine
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
+        CrySystemEventBus::Handler::BusConnect();
 
         // register all the component types internal to the LyShine module
         // These are registered in the order we want them to appear in the Add Component menu
@@ -201,6 +202,7 @@ namespace LyShine
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
         LyShineRequestBus::Handler::BusDisconnect();
+        CrySystemEventBus::Handler::BusDisconnect();
 
         LyShineAllocatorScope::DeactivateAllocators();
     }
@@ -373,7 +375,7 @@ namespace LyShine
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
+    void LyShineSystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& startupParams)
     {
 #if !defined(AZ_MONOLITHIC_BUILD)
         // When module is linked dynamically, we must set our gEnv pointer.

@@ -215,12 +215,12 @@ def get_this_engine() -> dict:
 
 def get_engines() -> list:
     json_data = load_o3de_manifest()
-    return json_data['engines']
+    return json_data['engines'] if 'engines' in json_data else []
 
 
 def get_projects() -> list:
     json_data = load_o3de_manifest()
-    return json_data['projects']
+    return json_data['projects'] if 'projects' in json_data else []
 
 
 def get_gems() -> list:
@@ -233,22 +233,22 @@ def get_gems() -> list:
 
 def get_external_subdirectories() -> list:
     json_data = load_o3de_manifest()
-    return json_data['external_subdirectories']
+    return json_data['external_subdirectories'] if 'external_subdirectories' in json_data else []
 
 
 def get_templates() -> list:
     json_data = load_o3de_manifest()
-    return json_data['templates']
+    return json_data['templates'] if 'templates' in json_data else []
 
 
 def get_restricted() -> list:
     json_data = load_o3de_manifest()
-    return json_data['restricted']
+    return json_data['restricted'] if 'restricted' in json_data else []
 
 
 def get_repos() -> list:
     json_data = load_o3de_manifest()
-    return json_data['repos']
+    return json_data['repos'] if 'repos' in json_data else []
 
 # engine.json queries
 def get_engine_projects() -> list:

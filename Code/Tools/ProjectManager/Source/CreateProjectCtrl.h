@@ -14,6 +14,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
+#include <GemCatalog/GemCatalogScreen.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
@@ -31,6 +32,7 @@ namespace O3DE::ProjectManager
         explicit CreateProjectCtrl(QWidget* parent = nullptr);
         ~CreateProjectCtrl() = default;
         ProjectManagerScreen GetScreenEnum() override;
+        void NotifyCurrentScreen() override;
 
     protected slots:
         void HandleBackButton();
@@ -47,6 +49,8 @@ namespace O3DE::ProjectManager
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;
+
+        GemCatalogScreen* m_gemCatalog = nullptr;
     };
 
 } // namespace O3DE::ProjectManager

@@ -1074,13 +1074,13 @@ namespace UnitTest
         }
     };
 
-    class KdTreeIntersectsFixture
+    class KdTreeIntersectsParameterizedFixture
         : public ModelTests
         , public ::testing::WithParamInterface<KdTreeIntersectParams>
     {
     };
 
-    TEST_P(KdTreeIntersectsFixture, KdTreeIntersects)
+    TEST_P(KdTreeIntersectsParameterizedFixture, KdTreeIntersects)
     {
         TwoSeparatedPlanesMesh mesh;
 
@@ -1090,7 +1090,10 @@ namespace UnitTest
         float distance = AZStd::numeric_limits<float>::max();
         AZ::Vector3 normal;
 
-        EXPECT_THAT(kdTree.RayIntersection(AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance, normal), testing::Eq(GetParam().expectedShouldIntersect));
+        EXPECT_THAT(
+            kdTree.RayIntersection(
+                AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance, normal),
+            testing::Eq(GetParam().expectedShouldIntersect));
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
 
@@ -1119,5 +1122,63 @@ namespace UnitTest
         KdTreeIntersectParams{0.778f, 0.111f, 1.0f, 0.5f, true},
         KdTreeIntersectParams{0.778f, 0.778f, 1.0f, 0.5f, true},
     };
-    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsFixture, ::testing::ValuesIn(intersectTestData));
+
+    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(intersectTestData));
+
+    class KdTreeIntersectsFixture
+        : public ModelTests
+    {
+    public:
+        void SetUp() override
+        {
+            ModelTests::SetUp();
+
+            m_mesh = AZStd::make_unique<TwoSeparatedPlanesMesh>();
+            m_kdTree = AZStd::make_unique<AZ::RPI::ModelKdTree>();
+            ASSERT_TRUE(m_kdTree->Build(m_mesh->GetModel().Get()));
+        }
+
+        void TearDown() override
+        {
+            m_kdTree.reset();
+            m_mesh.reset();
+
+            ModelTests::TearDown();
+        }
+
+        AZStd::unique_ptr<TwoSeparatedPlanesMesh> m_mesh;
+        AZStd::unique_ptr<AZ::RPI::ModelKdTree> m_kdTree;
+    };
+
+    TEST_F(KdTreeIntersectsFixture, KdTreeIntersectionReturnsNormalizedDistance)
+    {
+        float t = AZStd::numeric_limits<float>::max();
+        AZ::Vector3 normal;
+         
+        constexpr float rayLength = 100.0f;
+        EXPECT_THAT(
+            m_kdTree->RayIntersection(
+                AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
+        EXPECT_THAT(t, testing::FloatEq(0.005f));
+    }
+
+    TEST_F(KdTreeIntersectsFixture, KdTreeIntersectionHandlesInvalidStartingNormalizedDistance)
+    {
+        float t = -0.5f; // invalid starting distance
+        AZ::Vector3 normal;
+
+        constexpr float rayLength = 10.0f;
+        EXPECT_THAT(
+            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(0.75f), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
+        EXPECT_THAT(t, testing::FloatEq(0.025f));
+    }
+
+    TEST_F(KdTreeIntersectsFixture, KdTreeIntersectionDoesNotScaleRayByStartingDistance)
+    {
+        float t = 10.0f; // starting distance (used to check it is not read from initially by RayIntersection)
+        AZ::Vector3 normal;
+
+        EXPECT_THAT(
+            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(), t, normal), testing::Eq(false));
+    }
 } // namespace UnitTest
