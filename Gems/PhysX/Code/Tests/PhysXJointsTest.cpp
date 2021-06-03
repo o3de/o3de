@@ -257,8 +257,12 @@ namespace PhysX
         AZ::Vector3 m_childInitialPos;
     };
 
-    using Implementations = testing::Types<D6ApiJointLimitConfiguration, FixedApiJointConfiguration> ;
-    TYPED_TEST_CASE(PhysXJointsApiTest, Implementations);
+    using ApiJointTypes = testing::Types<
+        D6ApiJointLimitConfiguration, 
+        FixedApiJointConfiguration, 
+        BallApiJointConfiguration, 
+        HingeApiJointConfiguration>;
+    TYPED_TEST_CASE(PhysXJointsApiTest, ApiJointTypes);
 
     TYPED_TEST(PhysXJointsApiTest, Joint_ChildFollowsParent)
     {

@@ -18,7 +18,7 @@
 
 namespace PhysX
 {
-    bool GenericApiJointConfiguration::IsFlagSet(GenericApiJointFlag flag) const
+    bool ApiJointGenericProperties::IsFlagSet(GenericApiJointFlag flag) const
     {
         return static_cast<bool>(m_flags & flag);
     }
@@ -66,15 +66,32 @@ namespace PhysX
         }
     }
 
-    void GenericApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    void ApiJointGenericProperties::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<GenericApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+            serializeContext->Class<ApiJointGenericProperties>()
                 ->Version(1)
-                ->Field("Maximum Force", &GenericApiJointConfiguration::m_forceMax)
-                ->Field("Maximum Torque", &GenericApiJointConfiguration::m_torqueMax)
-                ->Field("Flags", &GenericApiJointConfiguration::m_flags)
+                ->Field("Maximum Force", &ApiJointGenericProperties::m_forceMax)
+                ->Field("Maximum Torque", &ApiJointGenericProperties::m_torqueMax)
+                ->Field("Flags", &ApiJointGenericProperties::m_flags)
+                ;
+        }
+    }
+
+    void ApiJointLimitProperties::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ApiJointLimitProperties>()
+                ->Version(1)
+                ->Field("First Limit", &ApiJointLimitProperties::m_limitFirst)
+                ->Field("Second Limit", &ApiJointLimitProperties::m_limitSecond)
+                ->Field("Tolerance", &ApiJointLimitProperties::m_tolerance)
+                ->Field("Is Limited", &ApiJointLimitProperties::m_isLimited)
+                ->Field("Is Soft Limit", &ApiJointLimitProperties::m_isSoftLimit)
+                ->Field("Damping", &ApiJointLimitProperties::m_damping)
+                ->Field("Spring", &ApiJointLimitProperties::m_stiffness)
                 ;
         }
     }
@@ -83,8 +100,33 @@ namespace PhysX
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FixedApiJointConfiguration, GenericApiJointConfiguration>()
+            serializeContext->Class<FixedApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
                 ->Version(1)
+                ->Field("Generic Properties", &FixedApiJointConfiguration::m_genericProperties)
+                ;
+        }
+    }
+
+    void BallApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<BallApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+                ->Version(1)
+                ->Field("Generic Properties", &BallApiJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &BallApiJointConfiguration::m_limitProperties)
+                ;
+        }
+    }
+    
+    void HingeApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<HingeApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+                ->Version(1)
+                ->Field("Generic Properties", &HingeApiJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &HingeApiJointConfiguration::m_limitProperties)
                 ;
         }
     }

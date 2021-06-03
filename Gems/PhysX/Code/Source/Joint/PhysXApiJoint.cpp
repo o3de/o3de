@@ -113,6 +113,24 @@ namespace PhysX
         m_pxJoint = Utils::PxJointFactories::CreatePxFixedJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
+    PhysXBallApiJoint::PhysXBallApiJoint(const BallApiJointConfiguration& configuration,
+        AzPhysics::SceneHandle sceneHandle,
+        AzPhysics::SimulatedBodyHandle parentBodyHandle,
+        AzPhysics::SimulatedBodyHandle childBodyHandle)
+        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+    {
+        m_pxJoint = Utils::PxJointFactories::CreatePxBallJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+    }
+
+    PhysXHingeApiJoint::PhysXHingeApiJoint(const HingeApiJointConfiguration& configuration,
+        AzPhysics::SceneHandle sceneHandle,
+        AzPhysics::SimulatedBodyHandle parentBodyHandle,
+        AzPhysics::SimulatedBodyHandle childBodyHandle)
+        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+    {
+        m_pxJoint = Utils::PxJointFactories::CreatePxHingeJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+    }
+
     AZ::Crc32 PhysXD6Joint::GetNativeType() const
     {
         return NativeTypeIdentifiers::D6Joint;
@@ -121,6 +139,16 @@ namespace PhysX
     AZ::Crc32 PhysXFixedApiJoint::GetNativeType() const
     {
         return NativeTypeIdentifiers::FixedJoint;
+    }
+
+    AZ::Crc32 PhysXBallApiJoint::GetNativeType() const
+    {
+        return NativeTypeIdentifiers::BallJoint;
+    }
+
+    AZ::Crc32 PhysXHingeApiJoint::GetNativeType() const
+    {
+        return NativeTypeIdentifiers::HingeJoint;
     }
 
     void PhysXD6Joint::GenerateJointLimitVisualizationData(

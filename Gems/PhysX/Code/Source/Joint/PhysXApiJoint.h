@@ -78,7 +78,7 @@ namespace PhysX
     {
     public:
         AZ_CLASS_ALLOCATOR(PhysXFixedApiJoint, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysXFixedApiJoint, "{144B2FAF-A3EE-4FE1-9328-2C44FE1E3676}", PhysX::PhysXApiJoint);
+        AZ_RTTI(PhysXFixedApiJoint, "{B821D6D8-7B41-479D-9325-F9BC9754C5F8}", PhysX::PhysXApiJoint);
 
         PhysXFixedApiJoint(const FixedApiJointConfiguration& configuration,
             AzPhysics::SceneHandle sceneHandle,
@@ -86,6 +86,40 @@ namespace PhysX
             AzPhysics::SimulatedBodyHandle childBodyHandle);
 
         virtual ~PhysXFixedApiJoint() = default;
+
+        AZ::Crc32 GetNativeType() const override;
+    };
+
+    //! A ball joint locks 2 bodies relative to one another except about the y and z axes of the joint between them.
+    class PhysXBallApiJoint : public PhysXApiJoint
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PhysXBallApiJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXBallApiJoint, "{9494CE43-3AE2-40AB-ADF7-FDC5F8B0F15A}", PhysX::PhysXApiJoint);
+
+        PhysXBallApiJoint(const BallApiJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+        virtual ~PhysXBallApiJoint() = default;
+
+        AZ::Crc32 GetNativeType() const override;
+    };
+
+    //! A hinge joint locks 2 bodies relative to one another except about the x-axis of the joint between them.
+    class PhysXHingeApiJoint : public PhysXApiJoint
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PhysXHingeApiJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXHingeApiJoint, "{9C5B955C-6C80-45FA-855D-DDA449C85313}", PhysX::PhysXApiJoint);
+
+        PhysXHingeApiJoint(const HingeApiJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+        virtual ~PhysXHingeApiJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
     };
