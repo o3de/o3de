@@ -132,7 +132,7 @@ class TestGraphComponentSync(object):
         # Skip test if running against Debug build
         if "debug" in internal_plugin.build_directory:
             pytest.skip("Does not execute against debug builds.")
-            
+
         cfg_args = [level]
 
         expected_lines = [
