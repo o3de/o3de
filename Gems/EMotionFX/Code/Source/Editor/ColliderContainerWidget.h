@@ -71,7 +71,7 @@ namespace EMotionFX
     public:
         ColliderWidget(QIcon* icon, QWidget* parent, AZ::SerializeContext* serializeContext);
 
-        void Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationPair& collider);
+        void Update(Actor* actor, Node* joint, size_t colliderIndex, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPair& collider);
         void Update();
         void Reset();
 
@@ -99,7 +99,7 @@ namespace EMotionFX
         PhysicsSetup::ColliderConfigType m_colliderType = PhysicsSetup::ColliderConfigType::Unknown;
         Node* m_joint = nullptr;
         size_t m_colliderIndex = MCORE_INVALIDINDEX32;
-        Physics::ShapeConfigurationPair m_collider;
+        AzPhysics::ShapeColliderPair m_collider;
 
         QIcon* m_icon;
     };
@@ -140,7 +140,7 @@ namespace EMotionFX
         ColliderContainerWidget(const QIcon& colliderIcon, QWidget* parent = nullptr);
         ~ColliderContainerWidget();
 
-        void Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const Physics::ShapeConfigurationList& colliders, AZ::SerializeContext* serializeContext);
+        void Update(Actor* actor, Node* joint, PhysicsSetup::ColliderConfigType colliderType, const AzPhysics::ShapeColliderPairList& colliders, AZ::SerializeContext* serializeContext);
         void Update();
         void Reset();
         PhysicsSetup::ColliderConfigType ColliderType() { return m_colliderType; }
@@ -156,7 +156,7 @@ namespace EMotionFX
          * @param[in] renderInfo Needed to access the render util.
          * @param[in] colliderColor The collider color.
          */
-        static void RenderColliders(const Physics::ShapeConfigurationList& colliders,
+        static void RenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
             const ActorInstance* actorInstance,
             const Node* node,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,

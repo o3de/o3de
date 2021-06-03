@@ -9,11 +9,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
+
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <GemCatalog/GemListView.h>
+#include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemModel.h>
 #endif
 
@@ -26,10 +28,12 @@ namespace O3DE::ProjectManager
         explicit GemCatalogScreen(QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetNextButtonText() override;
 
     private:
+        QVector<GemInfo> GenerateTestData();
+
         GemListView* m_gemListView = nullptr;
+        GemInspector* m_gemInspector = nullptr;
         GemModel* m_gemModel = nullptr;
     };
 } // namespace O3DE::ProjectManager

@@ -14,8 +14,16 @@
 
 namespace O3DE::ProjectManager
 {
-    EngineInfo::EngineInfo(const QString& path)
+    EngineInfo::EngineInfo(const QString& path, const QString& name, const QString& version, const QString& thirdPartyPath)
         : m_path(path)
+        , m_name(name)
+        , m_version(version)
+        , m_thirdPartyPath(thirdPartyPath)
     {
+    }
+
+    bool EngineInfo::IsValid() const
+    {
+        return !m_path.isEmpty();
     }
 } // namespace O3DE::ProjectManager

@@ -43,6 +43,9 @@ ly_add_target(
             Gem::LocalUser.Static
 )
 
+# by default, load the above "Gem::LocalUser" module in client applications
+ly_create_alias(NAME LocalUser.Clients NAMESPACE Gem TARGETS Gem::LocalUser)
+
 ################################################################################
 # Tests
 ################################################################################

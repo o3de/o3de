@@ -77,15 +77,14 @@ PSDepthOutput MainPS(VSDepthOutput IN, bool isFrontFace : SV_IsFrontFace)
     
     if(ShouldHandleParallaxInDepthShaders())
     {
-        // We support two UV streams, but only a single stream of tangent/bitangent. So for UV[1+] we generated the tangent/bitangent in screen-space.
-        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, float3(0, 0, 0) };
-        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, float3(0, 0, 0) };
-        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents, 1);
+        float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
+        float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
+        PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
 
         float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
         float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
         
-        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_depthFactor, MaterialSrg::m_depthOffset,
+        GetParallaxInput(IN.m_normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex], MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, OUT.m_depth);
     }

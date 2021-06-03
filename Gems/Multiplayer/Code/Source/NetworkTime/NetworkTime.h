@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Multiplayer/NetworkTime/INetworkTime.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -41,6 +42,8 @@ namespace Multiplayer
         //! @}
 
     private:
+
+        AZStd::vector<NetworkEntityHandle> m_rewoundEntities;
 
         HostFrameId m_hostFrameId = HostFrameId{ 0 };
         HostFrameId m_unalteredFrameId = HostFrameId{ 0 };

@@ -434,8 +434,7 @@ namespace LmbrCentral
             const AZ::Vector3& nonUniformScale = polygonPrism.GetNonUniformScale();
 
             AZ::Transform worldFromLocalUniformScale = worldFromLocal;
-            const float entityScale = worldFromLocalUniformScale.ExtractScale().GetMaxElement();
-            worldFromLocalUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(entityScale));
+            worldFromLocalUniformScale.SetUniformScale(worldFromLocalUniformScale.GetUniformScale());
 
             AZ::Aabb aabb = AZ::Aabb::CreateNull();
             // check base of prism
@@ -465,8 +464,7 @@ namespace LmbrCentral
             const size_t vertexCount = vertices.size();
 
             AZ::Transform worldFromLocalWithUniformScale = worldFromLocal;
-            const float transformScale = worldFromLocalWithUniformScale.ExtractScale().GetMaxElement();
-            worldFromLocalWithUniformScale *= AZ::Transform::CreateScale(AZ::Vector3(transformScale));
+            worldFromLocalWithUniformScale.SetUniformScale(worldFromLocalWithUniformScale.GetUniformScale());
 
             // transform point to local space
             // it's fine to invert the transform including scale here, because it won't affect whether the point is inside the prism
@@ -530,7 +528,7 @@ namespace LmbrCentral
             // but inverting any scale in the transform would mess up the distance, so extract that first and apply scale separately to the
             // prism
             AZ::Transform worldFromLocalNoScale = worldFromLocal;
-            const float transformScale = worldFromLocalNoScale.ExtractScale().GetMaxElement();
+            const float transformScale = worldFromLocalNoScale.ExtractUniformScale();
             const AZ::Vector3 combinedScale = transformScale * nonUniformScale;
             const float scaledHeight = height * combinedScale.GetZ();
 
@@ -606,9 +604,9 @@ namespace LmbrCentral
             }
 
             // transform ray into local space
-            AZ::Transform worldFromLocalNomalized = worldFromLocal;
-            const float entityScale = worldFromLocalNomalized.ExtractScale().GetMaxElement();
-            const AZ::Transform localFromWorldNormalized = worldFromLocalNomalized.GetInverse();
+            AZ::Transform worldFromLocalNormalized = worldFromLocal;
+            const float entityScale = worldFromLocalNormalized.ExtractUniformScale();
+            const AZ::Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
             const float rayLength = 1000.0f;
             const AZ::Vector3 localSrc = localFromWorldNormalized.TransformPoint(src);
             const AZ::Vector3 localDir = localFromWorldNormalized.TransformVector(dir);

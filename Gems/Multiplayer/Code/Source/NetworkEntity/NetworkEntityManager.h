@@ -62,6 +62,8 @@ namespace Multiplayer
             const AZ::Transform& transform
         ) override;
 
+        void SetupNetEntity(AZ::Entity* netEntity, PrefabEntityId prefabEntityId, NetEntityRole netEntityRole) override;
+
         uint32_t GetEntityCount() const override;
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity) override;
         void MarkForRemoval(const ConstNetworkEntityHandle& entityHandle) override;
@@ -93,9 +95,6 @@ namespace Multiplayer
         void RemoveEntities();
         NetEntityId NextId();
 
-        void OnSpawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);
-        void OnDespawned(AZ::Data::Asset<AzFramework::Spawnable> spawnable);
-
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
         MultiplayerComponentRegistry m_multiplayerComponentRegistry;
@@ -123,8 +122,5 @@ namespace Multiplayer
         DeferredRpcMessages m_localDeferredRpcMessages;
 
         NetworkSpawnableLibrary m_networkPrefabLibrary;
-
-        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>>::Handler m_onSpawnedHandler;
-        AZ::Event<AZ::Data::Asset<AzFramework::Spawnable>>::Handler m_onDespawnedHandler;
     };
 }

@@ -57,7 +57,6 @@ AZ_POP_DISABLE_WARNING
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
-#include "Alembic/AlembicCompiler.h"
 #include "UIEnumsDatabase.h"
 #include "RenderHelpers/AxisHelper.h"
 #include "Settings.h"
@@ -185,7 +184,6 @@ CEditorImpl::CEditorImpl()
     m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pAlembicCompiler = new CAlembicCompiler();
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
 
@@ -303,7 +301,6 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pAlembicCompiler)
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager

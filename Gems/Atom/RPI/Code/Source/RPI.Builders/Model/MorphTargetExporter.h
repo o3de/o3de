@@ -64,7 +64,11 @@ namespace AZ
                 const AZStd::string& blendShapeName,
                 const AZStd::shared_ptr<const AZ::SceneAPI::DataTypes::IBlendShapeData>& blendShapeData,
                 const AZ::SceneAPI::DataTypes::MatrixType& globalTransform,
-                const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter);
+                const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter,
+                const AZStd::string& sourceSceneFilename);
+
+            // Find a wrinkle mask for this morph target, if it exists
+            Data::Asset<RPI::StreamingImageAsset> GetWrinkleMask(const AZStd::string& sourceSceneFullFilePath, const AZStd::string& blendShapeName) const;
         };
     } // namespace RPI
 } // namespace AZ

@@ -13,10 +13,16 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <ProjectInfo.h>
 #endif
+
+QT_FORWARD_DECLARE_CLASS(QButtonGroup)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
+    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
+
     class NewProjectSettingsScreen
         : public ScreenWidget
     {
@@ -24,7 +30,19 @@ namespace O3DE::ProjectManager
         explicit NewProjectSettingsScreen(QWidget* parent = nullptr);
         ~NewProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetNextButtonText() override;
+
+        ProjectInfo GetProjectInfo();
+        QString GetProjectTemplatePath();
+
+        bool Validate();
+
+    protected slots:
+        void HandleBrowseButton();
+
+    private:
+        FormLineEditWidget* m_projectName;
+        FormBrowseEditWidget* m_projectPath;
+        QButtonGroup* m_projectTemplateButtonGroup;
     };
 
 } // namespace O3DE::ProjectManager

@@ -14,6 +14,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AWSCoreInternalBus.h>
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 
 namespace AWSCore
@@ -108,17 +109,24 @@ namespace AWSCore
         {
             return "";
         }
+
+        AZStd::string profileName = "default";
+        AWSCoreInternalRequestBus::BroadcastResult(profileName, &AWSCoreInternalRequests::GetProfileName);
+
+        AZStd::string configPath = "";
+        AWSCoreInternalRequestBus::BroadcastResult(configPath, &AWSCoreInternalRequests::GetResourceMappingConfigFolderPath);
+
         if (m_isDebug)
         {
             return AZStd::string::format(
-                "%s debug %s --binaries_path %s --debug",
-                m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str());
+                "%s debug %s --binaries_path %s --debug --profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
+                m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(), profileName.c_str(), configPath.c_str());
         }
         else
         {
             return AZStd::string::format(
-                "%s %s --binaries_path %s",
-                m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str());
+                "%s %s --binaries_path %s --profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
+                m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(), profileName.c_str(), configPath.c_str());
         }
     }
 

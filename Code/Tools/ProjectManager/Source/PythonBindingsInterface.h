@@ -70,11 +70,11 @@ namespace O3DE::ProjectManager
 
         /**
          * Create a project 
-         * @param projectTemplate the project template to use 
+         * @param projectTemplatePath the path to the project template to use 
          * @param projectInfo the project info to use 
          * @return an outcome with ProjectInfo on success 
          */
-        virtual AZ::Outcome<ProjectInfo> CreateProject(const ProjectTemplateInfo& projectTemplate, const ProjectInfo& projectInfo) = 0;
+        virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) = 0;
         
         /**
          * Get info about a project 
@@ -88,6 +88,20 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectInfo>> GetProjects() = 0;
+        
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool AddProject(const QString& path) = 0;
+
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool RemoveProject(const QString& path) = 0;
 
         /**
          * Update a project
@@ -95,6 +109,22 @@ namespace O3DE::ProjectManager
          * @return true on success, false on failure
          */
         virtual bool UpdateProject(const ProjectInfo& projectInfo) = 0;
+
+        /**
+         * Add a gem to a project
+         * @param gemPath the absolute path to the gem 
+         * @param projectPath the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
+
+        /**
+         * Remove gem to a project
+         * @param gemPath the absolute path to the gem 
+         * @param projectPath the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
 
 
         // Project Templates

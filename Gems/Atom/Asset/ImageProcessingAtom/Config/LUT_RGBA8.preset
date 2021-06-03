@@ -10,7 +10,7 @@
             "DestColor": "Linear"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
                 "Name": "LUT_RGBA8",
                 "SourceColor": "Linear",
@@ -22,7 +22,7 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{3A6BB297-B610-4EA5-8DA4-610FB12B9EC0}",
                 "Name": "LUT_RGBA8",
                 "SourceColor": "Linear",

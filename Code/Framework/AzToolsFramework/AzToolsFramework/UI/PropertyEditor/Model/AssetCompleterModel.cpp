@@ -140,8 +140,7 @@ namespace AzToolsFramework
                 ProductAssetBrowserEntry* productEntry = static_cast<ProductAssetBrowserEntry*>(childEntry);
                 AZStd::string assetName;
                 AzFramework::StringFunc::Path::GetFileName(productEntry->GetFullPath().c_str(), assetName);
-                m_assets.push_back({
-                    assetName, productEntry->GetFullPath(), productEntry->GetAssetId()
+                m_assets.push_back({ productEntry->GetName(), productEntry->GetFullPath(), productEntry->GetAssetId()
                 });
             }
 

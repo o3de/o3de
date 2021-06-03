@@ -50,7 +50,7 @@ namespace AZ
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
                 
                 if (currentNode == scene->mRootNode || IsPivotNode(currentNode->mName))

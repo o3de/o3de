@@ -23,7 +23,7 @@ namespace O3DE::ProjectManager
     {
     public:
         ProjectInfo() = default;
-        ProjectInfo(const QString& path, const QString& projectName, const QString& productName, const AZ::Uuid projectId,
+        ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
             const QString& imagePath, const QString& backgroundImagePath, bool isNew);
 
         bool IsValid() const;
@@ -33,8 +33,7 @@ namespace O3DE::ProjectManager
 
         // From project.json
         QString m_projectName;
-        QString m_productName;
-        AZ::Uuid m_projectId;
+        QString m_displayName;
 
         // Used on projects home screen
         QString m_imagePath;

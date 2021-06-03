@@ -26,6 +26,8 @@ aws account, region, resources, etc.
 _PAGINATION_MAX_ITEMS: int = 10
 _PAGINATION_PAGE_SIZE: int = 10
 
+default_session: boto3.session.Session = None
+
 
 class AWSConstants(object):
     CLOUDFORMATION_SERVICE_NAME: str = "cloudformation"
@@ -53,13 +55,18 @@ def _close_client_connection(client: BaseClient) -> None:
 
 def _initialize_boto3_aws_client(service: str, region: str = "") -> BaseClient:
     if region:
-        boto3_client: BaseClient = boto3.client(service, region_name=region)
+        boto3_client: BaseClient = default_session.client(service, region_name=region)
     else:
-        boto3_client: BaseClient = boto3.client(service)
+        boto3_client: BaseClient = default_session.client(service)
     boto3_client.meta.events.register(
         f"after-call.{service}.*", lambda **kwargs: _close_client_connection(boto3_client)
     )
     return boto3_client
+
+
+def setup_default_session(profile: str) -> None:
+    global default_session
+    default_session = boto3.session.Session(profile_name=profile)
 
 
 def get_default_account_id() -> str:
@@ -72,7 +79,7 @@ def get_default_account_id() -> str:
 
 
 def get_default_region() -> str:
-    region: str = boto3.session.Session().region_name
+    region: str = default_session.region_name
     if region:
         return region
     

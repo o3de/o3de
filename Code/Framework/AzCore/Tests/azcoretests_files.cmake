@@ -152,6 +152,7 @@ set(FILES
     Math/PlaneTests.cpp
     Math/QuaternionPerformanceTests.cpp
     Math/QuaternionTests.cpp
+    Math/RandomTests.cpp
     Math/ShapeIntersectionPerformanceTests.cpp
     Math/ShapeIntersectionTests.cpp
     Math/SfmtTests.cpp

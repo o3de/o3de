@@ -47,7 +47,7 @@ namespace AZ::IO
         enum EPakFlags
         {
             // support for absolute and other complex path specifications -
-            // all paths will be treated relatively to the current directory (normally MasterCD)
+            // all paths will be treated relatively to the current directory
             FLAGS_ABSOLUTE_PATHS = 1,
 
             // if this is set, the object will only understand relative to the zip file paths,

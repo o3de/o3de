@@ -21,7 +21,7 @@ namespace AzPhysics
     namespace
     {
         const float TimestepMin = 0.001f; //1000fps
-        const float TimestepMax = 0.05f; //20fps
+        const float TimestepMax = 0.1f; //10fps
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(SystemConfiguration, AZ::SystemAllocator, 0);
@@ -39,6 +39,8 @@ namespace AzPhysics
                 ->Field("ShapecastBufferSize", &SystemConfiguration::m_shapecastBufferSize)
                 ->Field("OverlapBufferSize", &SystemConfiguration::m_overlapBufferSize)
                 ->Field("CollisionConfig", &SystemConfiguration::m_collisionConfig)
+                ->Field("DefaultMaterial", &SystemConfiguration::m_defaultMaterialConfiguration)
+                ->Field("MaterialLibrary", &SystemConfiguration::m_materialLibraryAsset)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -79,7 +81,9 @@ namespace AzPhysics
             m_overlapBufferSize == other.m_overlapBufferSize &&
             AZ::IsClose(m_maxTimestep, other.m_maxTimestep) &&
             AZ::IsClose(m_fixedTimestep, other.m_fixedTimestep) &&
-            m_collisionConfig == other.m_collisionConfig
+            m_collisionConfig == other.m_collisionConfig &&
+            m_defaultMaterialConfiguration == other.m_defaultMaterialConfiguration &&
+            m_materialLibraryAsset == other.m_materialLibraryAsset
             ;
     }
 

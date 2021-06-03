@@ -51,6 +51,25 @@ namespace AZ
             float m_maxY = 0.0f;
             float m_minZ = 0.0f;
             float m_maxZ = 1.0f;
+
+            float GetWidth() const;
+            float GetHeight() const;
+            float GetDepth() const;
         };
     } // namespace RHI
 } // namespace AZ
+
+inline float AZ::RHI::Viewport::GetWidth() const
+{
+    return m_maxX - m_minX;
+}
+
+inline float AZ::RHI::Viewport::GetHeight() const
+{
+    return m_maxY - m_minY;
+}
+
+inline float AZ::RHI::Viewport::GetDepth() const
+{
+    return m_maxZ - m_minZ;
+}
