@@ -1208,7 +1208,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         {
             assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, false, R"(A valid asset platform is missing in "%s/assets" key in the SettingsRegistry.)""\n"
-                R"(This typically done by setting he "assets" field in the bootstrap.cfg for within a .setreg file)""\n"
+                R"(This typically done by setting the "assets" field within a .setreg file)""\n"
                 R"(A fallback of %s will be used.)",
                 AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
                 assetPlatform.c_str());

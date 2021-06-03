@@ -13,6 +13,9 @@
 
 #include <fcntl.h>
 #include <corecrt_io.h>
+#include <sys/stat.h>
+
+#include <AzCore/std/typetraits/underlying_type.h>
 
 namespace AZ
 {
@@ -21,6 +24,7 @@ namespace AZ
         namespace Internal
         {
             using SizeType = AZ::u64;
+            using SeekSizeType = AZ::s64;
             using FileHandleType = void*;
         }
 
