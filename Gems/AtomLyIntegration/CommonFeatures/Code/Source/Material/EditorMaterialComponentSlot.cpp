@@ -78,11 +78,9 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorMaterialComponentSlot>()
-                    ->Version(4, &EditorMaterialComponentSlot::ConvertVersion)
+                    ->Version(5, &EditorMaterialComponentSlot::ConvertVersion)
                     ->Field("id", &EditorMaterialComponentSlot::m_id)
                     ->Field("materialAsset", &EditorMaterialComponentSlot::m_materialAsset)
-                    ->Field("propertyOverrides", &EditorMaterialComponentSlot::m_propertyOverrides)
-                    ->Field("matModUvOverrides", &EditorMaterialComponentSlot::m_matModUvOverrides)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())

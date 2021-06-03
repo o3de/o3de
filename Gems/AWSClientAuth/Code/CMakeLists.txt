@@ -56,9 +56,13 @@ ly_add_target(
         Gem::HttpRequestor
 )
 
-# servers and clients use the above module.
+# Load the "Gem::AWSClientAuth" module in all types of applications.
 ly_create_alias(NAME AWSClientAuth.Servers NAMESPACE Gem TARGETS Gem::AWSClientAuth)
 ly_create_alias(NAME AWSClientAuth.Clients NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AWSClientAuth.Tools NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+    ly_create_alias(NAME AWSClientAuth.Builders NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+endif()
 
 ################################################################################
 # Tests
