@@ -66,7 +66,7 @@ namespace AZ
                 // Therefore an existence check is needed
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
-                    if(AZ::IO::FixedMaxPath projectModulePath;
+                    if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
                         projectModulePath /= AZStd::string_view(m_fileName);
@@ -79,10 +79,11 @@ namespace AZ
             }
             else
             {
-                auto absPathOpt = AZ::Utils::ConvertToAbsolutePath(m_fileName);
-                if (absPathOpt.has_value())
+                // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
+                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
+                if (absPathOptional.has_value())
                 {
-                    m_fileName.assign(absPathOpt.value().c_str(), absPathOpt.value().size());
+                    m_fileName.assign(absPathOptional.value().c_str(), absPathOptional.value().size());
                 }
             }
         }

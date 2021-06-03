@@ -61,10 +61,11 @@ namespace AZ
             // If it doesn't attempt to append the path to the executable path
             if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
-                auto candidatePath = Platform::GetModulePath() / fullFilePath;
+                AZ::IO::FixedMaxPath candidatePath = Platform::GetModulePath() / fullFilePath;
                 if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
                 {
-                    fullFilePath = candidatePath;
+                    m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                    return;
                 }
             }
 
@@ -74,19 +75,26 @@ namespace AZ
             {
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
-                    if(AZ::IO::FixedMaxPath projectModulePath;
+                    if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
                         projectModulePath /= fullFilePath;
                         if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
                         {
-                            fullFilePath = projectModulePath;
+                            m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
                         }
                     }
                 }
             }
-
-            m_fileName = AZStd::string_view{fullFilePath.Native()};
+            else
+            {
+                // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
+                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
+                if (absPathOptional.has_value())
+                {
+                    m_fileName.assign(absPathOptional.value().c_str(), absPathOptional.value().size());
+                }
+            }
         }
 
         ~DynamicModuleHandleUnixLike() override
