@@ -1239,7 +1239,7 @@ namespace GraphCanvas
 
     bool GraphUtils::IsValidModelConnection(const GraphId& graphId, const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint)
     {
-        bool validConnection;
+        bool validConnection = false;
 
         AZStd::unordered_set< Endpoint > finalSourceEndpoints = RemapEndpointForModel(sourceEndpoint);
         AZStd::unordered_set< Endpoint > finalTargetEndpoints = RemapEndpointForModel(targetEndpoint);

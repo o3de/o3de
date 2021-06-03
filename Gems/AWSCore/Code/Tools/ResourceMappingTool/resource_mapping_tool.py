@@ -74,11 +74,18 @@ if __name__ == "__main__":
         logger.warning("Failed to load style sheet for resource mapping tool")
 
     logger.info("Initializing boto3 default session ...")
-    aws_utils.setup_default_session(arguments.profile)
+    try:
+        aws_utils.setup_default_session(arguments.profile)
+    except RuntimeError as error:
+        logger.error(error)
+        environment_utils.cleanup_qt_environment()
+        exit(-1)
 
     logger.info("Initializing configuration manager ...")
     configuration_manager: ConfigurationManager = ConfigurationManager()
-    configuration_manager.setup(arguments.config_path)
+    if not configuration_manager.setup(arguments.config_path):
+        environment_utils.cleanup_qt_environment()
+        exit(-1)
 
     logger.info("Initializing thread manager ...")
     thread_manager: ThreadManager = ThreadManager()
