@@ -49,19 +49,19 @@ namespace Multiplayer
     }
 
     ReplicationRecord::ReplicationRecord(NetEntityRole netEntityRole)
-        : m_netEntityRole(netEntityRole)
+        : m_remoteNetEntityRole(netEntityRole)
     {
         ;
     }
 
-    void ReplicationRecord::SetNetworkRole(NetEntityRole netEntityRole)
+    void ReplicationRecord::SetRemoteNetworkRole(NetEntityRole remoteNetEntityRole)
     {
-        m_netEntityRole = netEntityRole;
+        m_remoteNetEntityRole = remoteNetEntityRole;
     }
 
-    NetEntityRole ReplicationRecord::GetNetworkRole() const
+    NetEntityRole ReplicationRecord::GetRemoteNetworkRole() const
     {
-        return m_netEntityRole;
+        return m_remoteNetEntityRole;
     }
 
     bool ReplicationRecord::AreAllBitsConsumed() const
@@ -196,26 +196,26 @@ namespace Multiplayer
 
     bool ReplicationRecord::ContainsAuthorityToClientBits() const
     {
-        return (m_netEntityRole != NetEntityRole::Authority)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole != NetEntityRole::Authority)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAuthorityToServerBits() const
     {
-        return (m_netEntityRole == NetEntityRole::Server)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole == NetEntityRole::Server)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAuthorityToAutonomousBits() const
     {
-        return (m_netEntityRole == NetEntityRole::Autonomous || m_netEntityRole == NetEntityRole::Server)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole == NetEntityRole::Autonomous || m_remoteNetEntityRole == NetEntityRole::Server)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAutonomousToAuthorityBits() const
     {
-        return (m_netEntityRole == NetEntityRole::Authority)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole == NetEntityRole::Authority)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     uint32_t ReplicationRecord::GetRemainingAuthorityToClientBits() const
