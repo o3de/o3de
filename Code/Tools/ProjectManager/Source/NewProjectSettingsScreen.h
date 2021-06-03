@@ -14,14 +14,18 @@
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <ProjectInfo.h>
+#include <ProjectTemplateInfo.h>
+#include <QVector.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
+QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
     QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
+    QT_FORWARD_DECLARE_CLASS(TagContainerWidget)
 
     class NewProjectSettingsScreen
         : public ScreenWidget
@@ -44,10 +48,18 @@ namespace O3DE::ProjectManager
 
     private:
         QString GetDefaultProjectPath();
+        void UpdateTemplateSummary(const ProjectTemplateInfo& templateInfo);
 
         FormLineEditWidget* m_projectName;
         FormBrowseEditWidget* m_projectPath;
         QButtonGroup* m_projectTemplateButtonGroup;
+        QLabel* m_templateDisplayName;
+        QLabel* m_templateSummary;
+        TagContainerWidget* m_templateIncludedGems;
+        QVector<ProjectTemplateInfo> m_templates;
+
+        inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_templateDetailsContentMargin = 20;
     };
 
 } // namespace O3DE::ProjectManager

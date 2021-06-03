@@ -43,7 +43,9 @@ namespace O3DE::ProjectManager
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
-        m_stack->addWidget(new NewProjectSettingsScreen());
+        NewProjectSettingsScreen* screen = new NewProjectSettingsScreen();
+        connect(screen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+        m_stack->addWidget(screen);
         m_stack->addWidget(new GemCatalogScreen());
         vLayout->addWidget(m_stack);
 
@@ -53,7 +55,7 @@ namespace O3DE::ProjectManager
 
         m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
-        m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+        m_nextButton = backNextButtons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
 
         connect(m_backButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
         connect(m_nextButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleNextButton);
@@ -137,15 +139,23 @@ namespace O3DE::ProjectManager
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
         if (currentScreen && currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
         {
-            m_header->setTitle(tr("Create Project"));
             m_header->setSubTitle(tr("Configure project with Gems"));
-            m_nextButton->setText(tr("Create Project"));
         }
         else
         {
-            m_header->setTitle(tr("Create Project"));
             m_header->setSubTitle(tr("Enter Project Details"));
-            m_nextButton->setText(tr("Next"));
+        }
+    }
+
+    void CreateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
+    {
+        if (screen == ProjectManagerScreen::GemCatalog)
+        {
+            HandleNextButton();
+        }
+        else
+        {
+            emit ChangeScreenRequest(screen);
         }
     }
 

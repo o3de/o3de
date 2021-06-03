@@ -210,9 +210,6 @@ QTabBar::tab:pressed
 
 #projectTemplate {
     margin: 55px 0 0 50px;
-    max-width: 780px;
-    min-height:200px;
-    max-height:200px;
 }
 #projectTemplateLabel {
     font-size:16px;
@@ -227,10 +224,65 @@ QTabBar::tab:pressed
 
 #projectTemplateDetails {
     background-color:#444444;
-    max-width:240px;
+    max-width:20%;
     min-width:240px;
     margin-left:30px;
 }
+
+#projectTemplateDetails #displayName,
+#projectTemplateDetails #includedGemsTitle {
+    font-size:18px;
+}
+
+#projectTemplateDetails #moreGems {
+    font-size:14px;
+    margin-top:20px;
+}
+
+#projectTemplateDetails #includedGemsTitle {
+    margin-top:5px;
+    margin-bottom:5px;
+}
+
+#projectTemplateDetails #summary {
+    padding-bottom:0px;
+    border-bottom:2px solid #555555;
+	min-height:80px;
+    qproperty-alignment: AlignTop;
+}
+
+#projectTemplateDetails #browseCatalog {
+    margin:5px 0px 15px 0px;
+}
+
+#projectTemplate QPushButton {
+    qproperty-flat: true;
+    min-width: 96px;
+    max-width: 96px;
+    min-height: 160px;
+    max-height: 160px;
+}
+#projectTemplate #templateLabel {
+    qproperty-alignment: AlignCenter;
+}
+#projectTemplate QPushButton #templateImage {
+    border:3px solid transparent;
+    border-radius: 4px;
+}
+#projectTemplate QPushButton[Checked="true"] #templateImage {
+    border:3px solid #1e70eb;
+}
+#projectTemplate QPushButton[Checked="true"] #templateLabel {
+    font-weight:bold;
+}
+#projectTemplate QPushButton:hover {
+    background-color: #444444;
+}
+#projectTemplate QPushButton:focus {
+    outline: none;
+    border:none;
+}
+
 
 /************** Projects **************/
 #firstTimeContent > #titleLabel {

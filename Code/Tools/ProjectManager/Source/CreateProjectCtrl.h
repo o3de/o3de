@@ -36,6 +36,7 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleBackButton();
         void HandleNextButton();
+        void OnChangeScreenRequest(ProjectManagerScreen screen);
 
     private:
         void Update();
