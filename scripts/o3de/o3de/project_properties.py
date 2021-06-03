@@ -21,22 +21,23 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
                        new_summary, new_icon, new_tag) -> int:
     proj_json = get_project_props(proj_name, proj_path)
     
-    try:
-        if new_origin and 'origin' in proj_json:
-            proj_json['origin'] = new_origin
-        if new_display and 'display_name' in proj_json:
-            proj_json['display_name'] = new_display
-        if new_summary and 'summary' in proj_json:
-            proj_json['summary'] = new_summary
-        if new_icon and 'icon_path' in proj_json:
-            proj_json['icon_path'] = new_icon
-        if new_tag and 'user_tags' in proj_json:
-            proj_json['user_tags'].append(new_tag)
-    except Exception as e:
-        logger.error(e)
+    if not proj_json:
         return 1
 
-    manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path)/'project.json')
+    if new_origin:
+        proj_json['origin'] = new_origin
+    if new_display:
+        proj_json['display_name'] = new_display
+    if new_summary:
+        proj_json['summary'] = new_summary
+    if new_icon:
+        proj_json['icon_path'] = new_icon
+    if new_tag:
+        if 'user_tags' not in proj_json:
+            proj_json['user_tags'] = []
+        proj_json['user_tags'].append(new_tag)
+
+    manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json')
     return 0
 
 def _edit_project_props(args: argparse) -> int:
@@ -56,7 +57,7 @@ def add_parser_args(parser):
                        help='The name of the project.')
     group = parser.add_argument_group('properties', 'arguments for modifying individual project properties.')
     group.add_argument('-po', '--project-origin', type=str, required=False,
-                       help='Sets description or url for project origin.')
+                       help='Sets description or url for project origin (such as project host, repository, owner...etc).')
     group.add_argument('-pd', '--project-display', type=str, required=False,
                        help='Sets the project display name.')
     group.add_argument('-ps', '--project-summary', type=str, required=False,
@@ -64,11 +65,11 @@ def add_parser_args(parser):
     group.add_argument('-pi', '--project-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
     group.add_argument('-pt', '--project-tag', type=str, required=False,
-                       help='Adds a tag to canonical user tags.')
+                       help='Adds a tag to canonical user tags. These tags are intended for documentation and filtering.')
     parser.set_defaults(func=_edit_project_props)
 
 def add_args(subparsers) -> None:
-    enable_project_props_subparser = subparsers.add_parser('edit-project-props')
+    enable_project_props_subparser = subparsers.add_parser('edit-project-properties')
     add_parser_args(enable_project_props_subparser)
     
 def main():
