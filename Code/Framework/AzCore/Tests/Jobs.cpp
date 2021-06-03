@@ -395,7 +395,8 @@ namespace UnitTest
             }
             else
             {
-                int result1, result2;
+                int result1 = 0;
+                int result2 = 0;
                 Job* job1 = aznew FibonacciJob2(m_n - 1, &result1, m_context);
                 Job* job2 = aznew FibonacciJob2(m_n - 2, &result2, m_context);
                 StartAsChild(job1);

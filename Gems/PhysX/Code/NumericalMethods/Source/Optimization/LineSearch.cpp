@@ -72,7 +72,7 @@ namespace NumericalMethods::Optimization
 
         for (AZ::u32 iteration = 0; iteration < lineSearchIterations; iteration++)
         {
-            ScalarVariable alphaNew;
+            ScalarVariable alphaNew = 0.0;
             if (iteration > 0)
             {
                 // first try selecting a new alpha value based on cubic interpolation through the most recent points
