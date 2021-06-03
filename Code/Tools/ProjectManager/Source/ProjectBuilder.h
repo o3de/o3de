@@ -13,6 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QFuture>
+#include <QFutureWatcher>
 #endif
 
 namespace O3DE::ProjectManager
