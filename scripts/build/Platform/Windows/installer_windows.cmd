@@ -29,22 +29,25 @@ IF NOT EXIST "%WIX_TEMP%" (
 REM Make sure we are using the CMake version of CPack and not the one that comes with chocolatey
 SET CPACK_PATH=
 IF "%LY_CMAKE_PATH%"=="" (
-    FOR /F %%i in ('where cpack') DO (
+    REM quote the paths from 'where' so we can properly tokenize ones in the list with spaces
+    FOR /F delims^=^"^ tokens^=1 %%i in ('where /F cpack') DO (
         REM The cpack in chocolatey expects a number supplied with --version so it will error
         "%%i" --version > NUL
         IF !ERRORLEVEL!==0 (
             SET "CPACK_PATH=%%i"
+            GOTO :run_cpack
         )
     )
 ) ELSE (
     SET "CPACK_PATH=%LY_CMAKE_PATH%\cpack.exe"
 )
 
+:run_cpack
 ECHO [ci_build] "!CPACK_PATH!" --version
 "!CPACK_PATH!" --version
 IF ERRORLEVEL 1 (
     ECHO [ci_build] CPack not found!
-    exit /b 1
+    GOTO :popd_error
 )
 
 ECHO [ci_build] "!CPACK_PATH!" -C %CONFIGURATION%
