@@ -383,7 +383,7 @@ namespace O3DE::ProjectManager
                 engineInfo.m_defaultProjectsFolder   = Py_To_String(o3deData["default_projects_folder"]);
                 engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]);
                 engineInfo.m_defaultTemplatesFolder  = Py_To_String(o3deData["default_templates_folder"]);
-                engineInfo.m_thirdPartyPath          = Py_To_String_Optional(o3deData,"third_party_path","");
+                engineInfo.m_thirdPartyPath          = Py_To_String(o3deData["default_third_party_folder"]);
             }
 
             auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);
@@ -420,6 +420,7 @@ namespace O3DE::ProjectManager
             pybind11::str defaultProjectsFolder  = engineInfo.m_defaultProjectsFolder.toStdString();
             pybind11::str defaultGemsFolder      = engineInfo.m_defaultGemsFolder.toStdString();
             pybind11::str defaultTemplatesFolder = engineInfo.m_defaultTemplatesFolder.toStdString();
+            pybind11::str defaultThridPartyFolder = engineInfo.m_thirdPartyPath.toStdString();
 
             auto registrationResult = m_register.attr("register")(
                 enginePath,       // engine_path 
@@ -432,28 +433,15 @@ namespace O3DE::ProjectManager
                 pybind11::none(), // default_engines_folder
                 defaultProjectsFolder,
                 defaultGemsFolder,
-                defaultTemplatesFolder
+                defaultTemplatesFolder,
+                pybind11::none(), // default_restricted_folder
+                defaultThridPartyFolder
                 );
 
             if (registrationResult.cast<int>() != 0)
             {
                 result = false;
             }
-
-            auto manifest = m_manifest.attr("load_o3de_manifest")();
-            if (pybind11::isinstance<pybind11::dict>(manifest))
-            {
-                try
-                {
-                    manifest["third_party_path"] = engineInfo.m_thirdPartyPath.toStdString();
-                    m_manifest.attr("save_o3de_manifest")(manifest);
-                }
-                catch ([[maybe_unused]] const std::exception& e)
-                {
-                    AZ_Warning("PythonBindings", false, "Failed to set third party path.");
-                }
-            }
-
         });
 
         return result;
