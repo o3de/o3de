@@ -22,7 +22,7 @@
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzTestShared/Math/MathTestHelpers.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
