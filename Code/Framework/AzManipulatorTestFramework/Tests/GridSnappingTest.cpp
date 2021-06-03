@@ -19,10 +19,10 @@
 #include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AZTestShared/Math/MathTestHelpers.h>
 
 namespace UnitTest
 {
@@ -94,7 +94,8 @@ namespace UnitTest
 
     template<typename Manipulator>
     void ValidateManipulatorSnappingBehavior(
-        AZStd::shared_ptr<Manipulator> manipulator, AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
+        AZStd::shared_ptr<Manipulator> manipulator,
+        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
         const AzFramework::CameraState& cameraState)
     {
         manipulator->SetLocalOrientation(AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(180.0f, 0.0f, 135.0f)));
