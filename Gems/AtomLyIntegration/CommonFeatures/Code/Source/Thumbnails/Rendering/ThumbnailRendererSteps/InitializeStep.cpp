@@ -12,7 +12,7 @@
 
 
 #include <AzCore/Math/MatrixUtils.h>
-#include <AZCore/EBus/Results.h>
+#include <AzCore/EBus/Results.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 
