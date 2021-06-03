@@ -25,27 +25,57 @@
 
 namespace PhysX
 {
+    JointComponentConfiguration::JointComponentConfiguration(
+        AZ::Transform localTransformFromFollower,
+        AZ::EntityId leadEntity,
+        AZ::EntityId followerEntity)
+        : m_localTransformFromFollower(localTransformFromFollower)
+        , m_leadEntity(leadEntity)
+        , m_followerEntity(followerEntity)
+    {
+    }
+
+    void JointComponentConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<JointComponentConfiguration>()
+                ->Version(2)
+                ->Field("Follower Local Transform", &JointComponentConfiguration::m_localTransformFromFollower)
+                ->Field("Lead Entity", &JointComponentConfiguration::m_leadEntity)
+                ->Field("Follower Entity", &JointComponentConfiguration::m_followerEntity)
+                ;
+        }
+    }
+
     void JointComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JointComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Joint Configuration", &JointComponent::m_configuration)
+                ->Field("Joint Generic Properties", &JointComponent::m_genericProperties)
                 ->Field("Joint Limits", &JointComponent::m_limits)
                 ;
         }
     }
 
-    JointComponent::JointComponent(const GenericJointConfiguration& config)
-        : m_configuration(config)
+    JointComponent::JointComponent(
+        const JointComponentConfiguration& configuration, 
+        const ApiJointGenericProperties& genericProperties)
+        : m_configuration(configuration)
+        , m_genericProperties(genericProperties)
     {
     }
 
-    JointComponent::JointComponent(const GenericJointConfiguration& config
-        , const GenericJointLimitsConfiguration& limits)
-            : m_configuration(AZStd::move(config))
-            , m_limits(limits)
+    JointComponent::JointComponent(
+        const JointComponentConfiguration& configuration, 
+        const ApiJointGenericProperties& genericProperties,
+        const ApiJointLimitProperties& limitProperties)
+        : m_configuration(configuration)
+        , m_genericProperties(genericProperties)
+        , m_limits(limitProperties)
     {
     }
 
@@ -93,7 +123,7 @@ namespace PhysX
     }
 
     AZ::Transform JointComponent::GetJointTransform(AZ::EntityId entityId
-        , const GenericJointConfiguration& jointConfig)
+        , const JointComponentConfiguration& jointConfig)
     {
         AZ::Transform jointTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
         jointTransform = jointTransform * jointConfig.m_localTransformFromFollower;
@@ -176,27 +206,5 @@ namespace PhysX
         {
             AZ::EntityBus::Handler::BusConnect(m_configuration.m_leadEntity);
         }
-    }
-
-    ApiJointGenericProperties JointComponent::Convert(const GenericJointConfiguration& configuration)
-    {
-        return ApiJointGenericProperties{
-            static_cast<ApiJointGenericProperties::GenericApiJointFlag>(configuration.m_flags),
-            configuration.m_forceMax,
-            configuration.m_torqueMax
-        };
-    }
-
-    ApiJointLimitProperties JointComponent::Convert(const GenericJointLimitsConfiguration& configuration)
-    {
-        return ApiJointLimitProperties{
-            configuration.m_isLimited,
-            configuration.m_isSoftLimit,
-            configuration.m_damping,
-            configuration.m_limitFirst,
-            configuration.m_limitSecond,
-            configuration.m_stiffness,
-            configuration.m_tolerance
-        };
     }
 } // namespace PhysX

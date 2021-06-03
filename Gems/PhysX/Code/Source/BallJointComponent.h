@@ -25,8 +25,10 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         BallJointComponent() = default;
-        BallJointComponent(const GenericJointConfiguration& config
-            , const GenericJointLimitsConfiguration& swingLimit);
+        BallJointComponent(
+            const JointComponentConfiguration& configuration, 
+            const ApiJointGenericProperties& genericProperties,
+            const ApiJointLimitProperties& limitProperties);
         ~BallJointComponent() = default;
 
     protected:

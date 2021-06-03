@@ -28,6 +28,24 @@ namespace AzPhysics
 
 namespace PhysX
 {
+    class JointComponentConfiguration
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(GenericJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(GenericJointConfiguration, "{1454F33F-AA6E-424B-A70C-9E463FBDEA19}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        JointComponentConfiguration() = default;
+        JointComponentConfiguration(
+            AZ::Transform localTransformFromFollower,
+            AZ::EntityId leadEntity,
+            AZ::EntityId followerEntity);
+
+        AZ::EntityId m_leadEntity; ///< EntityID for entity containing body that is lead to this joint constraint.
+        AZ::EntityId m_followerEntity; ///< EntityID for entity containing body that is follower to this joint constraint.
+        AZ::Transform m_localTransformFromFollower; ///< Joint's location and orientation in the frame (coordinate system) of the follower entity.
+    };
+
     /// Base class for game-time generic joint components.
     class JointComponent: public AZ::Component
         , protected AZ::EntityBus::Handler
@@ -37,9 +55,13 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         JointComponent() = default;
-        explicit JointComponent(const GenericJointConfiguration& config);
-        JointComponent(const GenericJointConfiguration& config
-            , const GenericJointLimitsConfiguration& limits);
+        JointComponent(
+            const JointComponentConfiguration& configuration, 
+            const ApiJointGenericProperties& genericProperties);
+        JointComponent(
+            const JointComponentConfiguration& configuration, 
+            const ApiJointGenericProperties& genericProperties,
+            const ApiJointLimitProperties& limitProperties);
 
     protected:
         /// Struct to provide subclasses with native pointers during joint initialization.
@@ -68,7 +90,7 @@ namespace PhysX
             const physx::PxTransform& jointPose);
 
         AZ::Transform GetJointTransform(AZ::EntityId entityId,
-            const GenericJointConfiguration& jointConfig);
+            const JointComponentConfiguration& jointConfig);
 
         /// Used on initialization by sub-classes to get native pointers from entity IDs.
         /// This allows sub-classes to instantiate specific native types. This base class does not need knowledge of any specific joint type.
@@ -77,11 +99,10 @@ namespace PhysX
         /// Issues warnings for invalid scenarios when initializing a joint from entity IDs.
         void WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message);
 
-        ApiJointGenericProperties Convert(const GenericJointConfiguration& configuration);
-        ApiJointLimitProperties Convert(const GenericJointLimitsConfiguration& configuration);
 
-        GenericJointConfiguration m_configuration;
-        GenericJointLimitsConfiguration m_limits;
+        JointComponentConfiguration m_configuration;
+        ApiJointGenericProperties m_genericProperties;
+        ApiJointLimitProperties m_limits;
         AzPhysics::ApiJointHandle m_jointHandle = AzPhysics::InvalidApiJointHandle;
         AzPhysics::SceneHandle m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
     };

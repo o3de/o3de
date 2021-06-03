@@ -36,14 +36,18 @@ namespace PhysX
         }
     }
 
-    FixedJointComponent::FixedJointComponent(const GenericJointConfiguration& config)
-        : JointComponent(config)
+    FixedJointComponent::FixedJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const ApiJointGenericProperties& genericProperties)
+        : JointComponent(configuration, genericProperties)
     {
     }
 
-    FixedJointComponent::FixedJointComponent(const GenericJointConfiguration& config,
-        const GenericJointLimitsConfiguration& limitConfig)
-        : JointComponent(config, limitConfig)
+    FixedJointComponent::FixedJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const ApiJointGenericProperties& genericProperties,
+        const ApiJointLimitProperties& limitProperties)
+        : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
@@ -71,7 +75,7 @@ namespace PhysX
         configuration.m_childLocalPosition = childLocal.GetTranslation();
         configuration.m_childLocalRotation = childLocal.GetRotation();
 
-        configuration.m_genericProperties = Convert(m_configuration);
+        configuration.m_genericProperties = m_genericProperties;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {

@@ -35,9 +35,11 @@ namespace PhysX
         }
     }
 
-    BallJointComponent::BallJointComponent(const GenericJointConfiguration& config
-        , const GenericJointLimitsConfiguration& swingLimit)
-            : JointComponent(config, swingLimit)
+    BallJointComponent::BallJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const ApiJointGenericProperties& genericProperties,
+        const ApiJointLimitProperties& limitProperties)
+        : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
@@ -65,8 +67,8 @@ namespace PhysX
         configuration.m_childLocalPosition = childLocal.GetTranslation();
         configuration.m_childLocalRotation = childLocal.GetRotation();
 
-        configuration.m_genericProperties = Convert(m_configuration);
-        configuration.m_limitProperties = Convert(m_limits);
+        configuration.m_genericProperties = m_genericProperties;
+        configuration.m_limitProperties = m_limits;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
