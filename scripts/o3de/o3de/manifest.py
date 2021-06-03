@@ -546,7 +546,7 @@ def get_template_json_data(template_name: str = None,
     return None
 
 
-def get_restricted_data(restricted_name: str = None,
+def get_restricted_json_data(restricted_name: str = None,
                         restricted_path: str or pathlib.Path = None) -> dict or None:
     if not restricted_name and not restricted_path:
         logger.error('Must specify either a Restricted name or Restricted Path.')
@@ -604,9 +604,7 @@ def get_registered(engine_name: str = None,
                         return engine_path
 
     elif isinstance(project_name, str):
-        enging_projects = get_engine_projects()
-        projects = json_data['projects'].copy()
-        projects.extend(engine_object['projects'])
+        projects = get_all_projects()
         for project_path in projects:
             project_path = pathlib.Path(project_path).resolve()
             project_json = project_path / 'project.json'
@@ -636,9 +634,7 @@ def get_registered(engine_name: str = None,
                         return gem_path
 
     elif isinstance(template_name, str):
-        engine_templates = get_engine_templates()
-        templates = json_data['templates'].copy()
-        templates.extend(engine_templates)
+        templates = get_all_templates()
         for template_path in templates:
             template_path = pathlib.Path(template_path).resolve()
             template_json = template_path / 'template.json'
@@ -653,9 +649,7 @@ def get_registered(engine_name: str = None,
                         return template_path
 
     elif isinstance(restricted_name, str):
-        engine_restricted = get_engine_restricted()
-        restricted = json_data['restricted'].copy()
-        restricted.extend(engine_restricted)
+        restricted = get_all_restricted()
         for restricted_path in restricted:
             restricted_path = pathlib.Path(restricted_path).resolve()
             restricted_json = restricted_path / 'restricted.json'
