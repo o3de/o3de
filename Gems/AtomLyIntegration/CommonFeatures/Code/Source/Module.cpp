@@ -18,7 +18,8 @@
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
 #include <Decals/DecalComponent.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h>
 #include <Grid/GridComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
@@ -47,7 +48,8 @@
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <Decals/EditorDecalComponent.h>
-#include <DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h>
 #include <Grid/EditorGridComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
@@ -111,6 +113,7 @@ namespace AZ
                         EntityReferenceComponent::CreateDescriptor(),
                         GradientWeightModifierComponent::CreateDescriptor(),
                         DiffuseProbeGridComponent::CreateDescriptor(),
+                        DiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
@@ -142,6 +145,7 @@ namespace AZ
                         EditorEntityReferenceComponent::CreateDescriptor(),
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
                         EditorDiffuseProbeGridComponent::CreateDescriptor(),
+                        EditorDiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         EditorDeferredFogComponent::CreateDescriptor(),
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),

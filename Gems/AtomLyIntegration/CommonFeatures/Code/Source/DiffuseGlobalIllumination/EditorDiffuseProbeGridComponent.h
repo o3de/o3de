@@ -16,8 +16,8 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponentConstants.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponentConstants.h>
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 
 namespace AZ

@@ -18,7 +18,7 @@
 #include <Atom/Feature/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponentConstants.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponentConstants.h>
 
 namespace AZ
 {

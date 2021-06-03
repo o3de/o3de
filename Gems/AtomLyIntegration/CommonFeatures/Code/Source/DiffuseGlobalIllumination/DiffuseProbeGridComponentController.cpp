@@ -10,8 +10,8 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridComponentController.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponentConstants.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponentConstants.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>

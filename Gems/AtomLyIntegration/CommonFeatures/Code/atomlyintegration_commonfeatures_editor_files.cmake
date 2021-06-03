@@ -23,8 +23,10 @@ set(FILES
     Source/CoreLights/EditorDirectionalLightComponent.cpp
     Source/Decals/EditorDecalComponent.h
     Source/Decals/EditorDecalComponent.cpp
-    Source/DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h
-    Source/DiffuseProbeGrid/EditorDiffuseProbeGridComponent.cpp
+    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h
+    Source/DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.cpp
+    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h
+    Source/DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.cpp
     Source/Grid/EditorGridComponent.h
     Source/Grid/EditorGridComponent.cpp
     Source/ImageBasedLights/EditorImageBasedLightComponent.h

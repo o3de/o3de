@@ -10,7 +10,7 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
 
 namespace AZ
 {

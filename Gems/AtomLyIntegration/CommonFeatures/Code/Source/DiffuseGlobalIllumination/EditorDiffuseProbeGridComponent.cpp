@@ -10,7 +10,7 @@
 *
 */
 
-#include <DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
