@@ -1,0 +1,21 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "PipelineTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "DepthStencil",
+                    "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "ColorInputOutput",
+                    "SlotType": "InputOutput"
+                }
+            ]
+        }
+    }
+}
