@@ -52,6 +52,10 @@ namespace AZ::Render
         {
             AZStd::array<uint32_t, 2> m_size = { 1, 1 };
             AZStd::array<float, 2> m_rcpSize = { 0.0, 0.0 };
+            
+            AZStd::array<float, 4> m_weights1 = { 0.0 };
+            AZStd::array<float, 4> m_weights2 = { 0.0 };
+            AZStd::array<float, 4> m_weights3 = { 0.0 };
         };
 
         TaaConstants cb;
@@ -61,7 +65,14 @@ namespace AZ::Render
         cb.m_rcpSize[0] = 1.0f / inputSize.m_width;
         cb.m_rcpSize[1] = 1.0f / inputSize.m_height;
         
+        Offset jitterOffset = m_subPixelOffsets.at(m_offsetIndex);
+        GenerateFilterWeights(Vector2(jitterOffset.m_xOffset, jitterOffset.m_yOffset));
+        cb.m_weights1 = { m_filterWeights[0], m_filterWeights[1], m_filterWeights[2], m_filterWeights[3] };
+        cb.m_weights2 = { m_filterWeights[4], m_filterWeights[5], m_filterWeights[6], m_filterWeights[7] };
+        cb.m_weights3 = { m_filterWeights[8], 0.0f, 0.0f, 0.0f };
+
         m_shaderResourceGroup->SetConstant(m_constantDataIndex, cb);
+
 
         Base::CompileResources(context);
     }
@@ -72,9 +83,9 @@ namespace AZ::Render
         Vector2 rcpInputSize = Vector2(1.0 / inputSize.m_width, 1.0 / inputSize.m_height);
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+        m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
         Offset offset = m_subPixelOffsets.at(m_offsetIndex);
         view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
-        m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
 
         m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
         m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
@@ -186,6 +197,44 @@ namespace AZ::Render
                 offset.m_yOffset = 2.0f * offset.m_yOffset - 1.0f;
             }
         );
+    }
+    
+    static float BlackmanHarris(AZ::Vector2 uv)
+    {
+        return expf(-2.29f * (uv.GetX() * uv.GetX() + uv.GetY() * uv.GetY()));
+    }
+
+    void TaaPass::GenerateFilterWeights(AZ::Vector2 jitterOffset)
+    {
+        static const AZStd::array<Vector2, 9> pixelOffsets =
+        {
+            // Center
+            Vector2(0.0f, 0.0f),
+            // Cross
+            Vector2( 1.0f,  0.0f),
+            Vector2( 0.0f,  1.0f),
+            Vector2(-1.0f,  0.0f),
+            Vector2( 0.0f, -1.0f),
+            // Diagonals
+            Vector2( 1.0f,  1.0f),
+            Vector2( 1.0f, -1.0f),
+            Vector2(-1.0f,  1.0f),
+            Vector2(-1.0f, -1.0f),
+        };
+
+        float sum = 0.0f;
+        for (uint32_t i = 0; i < 9; ++i)
+        {
+            m_filterWeights[i] = BlackmanHarris(pixelOffsets[i] + jitterOffset);
+            sum += m_filterWeights[i];
+        }
+
+        // Normalize the weight so the sum of all weights is 1.0.
+        float normalization = 1.0f / sum;
+        for (uint32_t i = 0; i < 9; ++i)
+        {
+            m_filterWeights[i] *= normalization;
+        }
     }
 
 } // namespace AZ::Render

@@ -93,8 +93,16 @@
                 "ShaderDataMappings": {
                     "FloatMappings": [
                         {
-                            "Name": "m_currentFrameMinContribution",
+                            "Name": "m_currentFrameContribution",
                             "Value": 0.1
+                        },
+                        {
+                            "Name": "m_clampGamma",
+                            "Value": 1.0
+                        },
+                        {
+                            "Name": "m_maxDeviationBeforeDampening",
+                            "Value": 0.5
                         }
                     ]
                 },

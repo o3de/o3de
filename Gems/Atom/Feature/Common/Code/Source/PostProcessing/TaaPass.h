@@ -68,6 +68,7 @@ namespace AZ::Render
         void UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment);
 
         void SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length);
+        void GenerateFilterWeights(AZ::Vector2 jitterOffset);
 
         RHI::ShaderInputNameIndex m_outputIndex = "m_output";
         RHI::ShaderInputNameIndex m_lastFrameAccumulationIndex = "m_lastFrameAccumulation";
@@ -92,6 +93,8 @@ namespace AZ::Render
             float m_xOffset = 0.0f;
             float m_yOffset = 0.0f;
         };
+
+        AZStd::array<float, 9> m_filterWeights = { 0.0f };
 
         AZStd::vector<Offset> m_subPixelOffsets;
         uint32_t m_offsetIndex = 0;
