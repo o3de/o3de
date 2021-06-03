@@ -107,7 +107,8 @@ void UiLayoutGridComponent::ApplyLayoutHeight()
         AZStd::vector<AZ::EntityId> childEntityIds;
         EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
         int childIndex = 0;
-        int columnIndex, rowIndex;
+        int columnIndex = 0;
+        int rowIndex = 0;
         for (auto child : childEntityIds)
         {
             // Set the anchors
