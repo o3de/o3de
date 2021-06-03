@@ -68,6 +68,8 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
+            assetData->m_emfxActor->Finalize();
+
             // Clear out the EMFX raw asset data.
             assetData->ReleaseEMotionFXData();
 

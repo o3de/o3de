@@ -128,7 +128,8 @@ namespace EMotionFX
 
             // Mesh asset, skin meta asset and morph target meta asset are sub assets for actor asset.
             // In here we set them as the dependency of the actor asset. That make sure those assets get automatically loaded before actor asset.
-            auto AddAssetAsDependency =
+            // Default to the first product until we are able to establish a link between mesh and actor (ATOM-13590).
+            auto addAssetAsDependency =
                 [](AZ::SceneAPI::Events::ExportProduct& product, ActorGroupExportContext& context, AZ::Data::AssetType type)
             {
                 AZStd::optional<AZ::SceneAPI::Events::ExportProduct> result = GetFirstProducedByType(context, type);
@@ -139,9 +140,9 @@ namespace EMotionFX
                     product.m_productDependencies.emplace_back(exportProduct);
                 }
             };
-            AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::ModelAsset>());
-            AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::SkinMetaAsset>());
-            AddAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::MorphTargetMetaAsset>());
+            addAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::ModelAsset>());
+            addAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::SkinMetaAsset>());
+            addAssetAsDependency(product, context, azrtti_typeid<AZ::RPI::MorphTargetMetaAsset>());
 
             return SceneEvents::ProcessingResult::Success;
         }

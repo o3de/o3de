@@ -1462,7 +1462,7 @@ namespace EMotionFX
         return morphTargetMetaAssetInfo.m_assetId.IsValid();
     }
 
-    void Actor::Finalize(bool requireBlockingLoad)
+    void Actor::Finalize(LoadRequirement loadReq)
     {
         AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
 
@@ -1472,7 +1472,7 @@ namespace EMotionFX
         {
             // Get the mesh asset.
             m_meshAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(m_meshAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-            if (requireBlockingLoad)
+            if (loadReq == LoadRequirement::RequireBlockingLoad)
             {
                 m_meshAsset.BlockUntilLoadComplete();
             }
@@ -1483,7 +1483,7 @@ namespace EMotionFX
             {
                 m_skinMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::SkinMetaAsset>(
                     skinMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                if (requireBlockingLoad)
+                if (loadReq == LoadRequirement::RequireBlockingLoad)
                 {
                     m_skinMetaAsset.BlockUntilLoadComplete();
                 }
@@ -1495,7 +1495,7 @@ namespace EMotionFX
             {
                 m_morphTargetMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MorphTargetMetaAsset>(
                     morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                if (requireBlockingLoad)
+                if (loadReq == LoadRequirement::RequireBlockingLoad)
                 {
                     m_morphTargetMetaAsset.BlockUntilLoadComplete();
                 }

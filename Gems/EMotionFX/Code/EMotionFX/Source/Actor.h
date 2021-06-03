@@ -100,6 +100,12 @@ namespace EMotionFX
             uint8   mFlags;             // bitfield with MIRRORFLAG_ prefix
         };
 
+        enum class LoadRequirement : bool
+        {
+            RequireBlockingLoad,
+            AllowAsyncLoad
+        };
+
         //------------------------------------------------
 
         /**
@@ -899,12 +905,12 @@ namespace EMotionFX
 
         /**
          * Finalize the actor with preload assets (mesh, skinmeta and morph target assets).
-         * @requireBlockingLoad We won't be needing a blocking load if the actor is part of the actor asset, as that will triggers the preload assets
-         * to load and get ready before finalize has been reached. However, if we are calling this on an actor that bypassed the asset system (e.g
-         * loading the actor directly from disk), it will require to call a blocking load. This option is now being used because emfx editor does not
-         * fully integrated with the asset system.
+         * LoadRequirement - We won't be needing a blocking load if the actor is part of the actor asset, as that will triggers the preload assets
+         * to load and get ready before finalize has been reached.
+         * However, if we are calling this on an actor that bypassed the asset system (e.g loading the actor directly from disk), it will require
+         * to call a blocking load. This option is now being used because emfx editor does not fully integrated with the asset system.
          */
-        void Finalize(bool requireBlockingLoad = false);
+        void Finalize(LoadRequirement loadReq = LoadRequirement::AllowAsyncLoad);
 
     private:
         void InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices);
