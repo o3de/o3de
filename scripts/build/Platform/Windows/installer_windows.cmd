@@ -26,23 +26,29 @@ IF NOT EXIST "%WIX_TEMP%" (
     MKDIR "WIX_TEMP%"
 )
 
-REM Make sure we are using the CMake version of CPack and not the one that comes with chocolaty
-SET CMAKE_INSTALL_PATH=
+REM Make sure we are using the CMake version of CPack and not the one that comes with chocolatey
+SET CPACK_PATH=
 IF "%LY_CMAKE_PATH%"=="" (
-    for /f %%i in ('where cmake') do SET "CMAKE_EXE_PATH=%%i"
-    for %%F in ("%CMAKE_EXE_PATH%") do SET "CMAKE_INSTALL_PATH=%%~dpF"
+    FOR /F %%i in ('where cpack') DO (
+        REM The cpack in chocolatey expects a number supplied with --version so it will error
+        %%i --version > NUL
+        IF !ERRORLEVEL!==0 (
+            SET "CPACK_PATH=%%i"
+        )
+    )
 ) ELSE (
-    SET "CMAKE_INSTALL_PATH=%LY_CMAKE_PATH%\"
+    SET "CPACK_PATH=%LY_CMAKE_PATH%\cpack.exe"
 )
 
-IF "%CMAKE_INSTALL_PATH%"=="" (
-    ECHO [ci_build] CPack path not found
-    GOTO :popd_error
+ECHO [ci_build] "%CPACK_PATH%" --version
+"%CPACK_PATH%" --version
+IF ERRORLEVEL 1 (
+    ECHO [ci_build] CPack not found!
+    exit /b 1
 )
-
 REM Run cpack
-ECHO [ci_build] "%CMAKE_INSTALL_PATH%cpack" -C %CONFIGURATION%
-"%CMAKE_INSTALL_PATH%cpack"  -C %CONFIGURATION%
+ECHO [ci_build] "%CPACK_PATH%" -C %CONFIGURATION%
+"%CPACK_PATH%"  -C %CONFIGURATION%
 IF NOT %ERRORLEVEL%==0 GOTO :popd_error
 
 POPD
