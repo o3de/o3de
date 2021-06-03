@@ -138,7 +138,7 @@ private: // -------------------------------------------------------------------
 #endif // !defined(EXCLUDE_NORMAL_LOG)
 
     bool OpenLogFile(const char* filename, int mode);
-    void CloseLogFile(bool force = false);
+    void CloseLogFile();
 
     // will format the message into m_szTemp
     void FormatMessage(const char* szCommand, ...) PRINTF_PARAMS(2, 3);

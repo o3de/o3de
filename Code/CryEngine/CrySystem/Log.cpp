@@ -181,7 +181,7 @@ CLog::~CLog()
 
     UnregisterConsoleVariables();
 
-    CloseLogFile(true);
+    CloseLogFile();
 }
 
 void CLog::UnregisterConsoleVariables()
@@ -195,7 +195,7 @@ void CLog::UnregisterConsoleVariables()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLog::CloseLogFile([[maybe_unused]] bool forceClose)
+void CLog::CloseLogFile()
 {
     m_logFileHandle.Close();
 }
@@ -1535,7 +1535,7 @@ void CLog::FlushAndClose()
 #if defined(KEEP_LOG_FILE_OPEN)
     if (m_logFileHandle.IsOpen())
     {
-        CloseLogFile(true);
+        CloseLogFile();
     }
 #endif
 }
