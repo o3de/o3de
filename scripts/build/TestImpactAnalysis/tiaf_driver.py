@@ -31,6 +31,8 @@ def parse_args():
             return SequenceType.REGULAR
         elif value == "tia":
             return SequenceType.TEST_IMPACT_ANALYSIS
+        elif value == "seed":
+            return SequenceType.SEED
         else:
             raise ValueError(value)
 
@@ -42,23 +44,24 @@ def parse_args():
             
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', dest="config", type=file_path, help="Path to the test impact analysis framework configuration file", required=True)
-    parser.add_argument('--destCommit', dest="dst_commit", help="Commit to run test impact analysis on (if empty, HEAD^ will be used)")
-    parser.add_argument('--sequenceType', dest="sequence_type", type=sequence_type, help="Test sequence type to run ('regular' or 'tia')", required=True)
+    parser.add_argument('--destCommit', dest="dst_commit", help="Commit to run test impact analysis on (not required for seed)")
+    parser.add_argument('--sequenceType', dest="sequence_type", type=sequence_type, help="Test sequence type to run ('regular', 'seed' or 'tia')", required=True)
     parser.add_argument('--suites', dest="suites", nargs='*', help="Suites to include for regular tes sequences (use '*' for all suites)")
-    parser.add_argument('--safeMode', dest='safe_mode', help="If set, will run any test impact analysis runs in safe mode (unselected tests will still be run)")
     parser.add_argument('--testTimeout', dest="test_timeout", type=timout_type, help="Maximum flight time (in seconds) of any test target before being terminated", required=False)
     parser.add_argument('--globalTimeout', dest="global_timeout", type=timout_type, help="Maximum tun time of the sequence before being terminated", required=False)
-    parser.set_defaults(dst_commit="HEAD^")
     parser.set_defaults(suites="*")
     parser.set_defaults(safe_mode=False)
     parser.set_defaults(test_timeout=None)
     parser.set_defaults(global_timeout=None)
     args = parser.parse_args()
+
+    if args.sequence_type == SequenceType.TEST_IMPACT_ANALYSIS and args.dst_commit == None:
+        raise ValueError("Test impact analysis sequence must have a change list")
     
     return args
 
 if __name__ == "__main__":
     args = parse_args()
     tiaf = TestImpact(args.config, args.dst_commit)
-    return_code = tiaf.run(args.sequence_type, args.safe_mode, args.test_timeout, args.global_timeout)
+    return_code = tiaf.run(args.sequence_type, args.test_timeout, args.global_timeout)
     sys.exit(return_code)

@@ -43,6 +43,7 @@ namespace TestImpact
             Seed,
             Regular,
             ImpactAnalysis,
+            ImpactAnalysisNoWrite,
             ImpactAnalysisOrSeed,
             Locality,
             Abort,
@@ -77,6 +78,7 @@ namespace TestImpact
             "seed",
             "regular",
             "tia",
+            "tianowrite",
             "tiaorseed",
             "locality",
             "abort",
@@ -110,6 +112,7 @@ namespace TestImpact
                 {OptionKeys[Seed], TestSequenceType::Seed},
                 {OptionKeys[Regular], TestSequenceType::Regular},
                 {OptionKeys[ImpactAnalysis], TestSequenceType::ImpactAnalysis},
+                {OptionKeys[ImpactAnalysisNoWrite], TestSequenceType::ImpactAnalysisNoWrite},
                 {OptionKeys[ImpactAnalysisOrSeed], TestSequenceType::ImpactAnalysisOrSeed}
             };
 

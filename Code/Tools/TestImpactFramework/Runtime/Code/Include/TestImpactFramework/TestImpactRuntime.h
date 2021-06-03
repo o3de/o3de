@@ -128,6 +128,7 @@ namespace TestImpact
         //! Runs a test sequence where tests are selected according to test impact analysis so long as they are not on the excluded list.
         //! @param changeList The change list used to determine the tests to select.
         //! @param testPrioritizationPolicy Determines how selected tests will be prioritized.
+        //! @param dynamicDependencyMapPolicy The policy to determine how the coverage data of produced by test sequences is used to update the dynamic dependency map.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
         //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
@@ -137,6 +138,7 @@ namespace TestImpact
         TestSequenceResult ImpactAnalysisTestSequence(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy,
+            Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,

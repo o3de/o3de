@@ -10,7 +10,7 @@
  *
  */
 
-#include <TestImpactConfigurationFactory.h>
+#include <TestImpactRuntimeConfigurationFactory.h>
 
 #include <AzTest/AzTest.h>
 

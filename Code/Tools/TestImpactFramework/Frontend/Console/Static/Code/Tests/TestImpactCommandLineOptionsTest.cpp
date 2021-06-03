@@ -282,6 +282,14 @@ namespace UnitTest
         EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::ImpactAnalysis);
     }
 
+    TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasImpactAnalysisNoWriteOption_ExpectImpactAnalysisNoWriteTestSequenceType)
+    {
+        m_args.push_back("-sequence");
+        m_args.push_back("tianowrite");
+        InitOptions();
+        EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::ImpactAnalysisNoWrite);
+    }
+
     TEST_F(CommandLineOptionsTestFixture, TestSequenceTypeHasSafeImpactAnalysisOption_ExpectSafeImpactAnalysisTestSequenceType)
     {
         m_args.push_back("-sequence");

@@ -55,6 +55,13 @@ namespace TestImpact
             Continue //!< Continue the test sequence and report the test failures after the run.
         };
 
+        //! Policy for updating the dynamic dependency map with the coverage data of produced by test sequences.
+        enum class DynamicDependencyMap
+        {
+            Discard, //!< Discard the coverage data produced by test sequences.
+            Update //!< Update the dynamic dependency map with the coverage data produced by test sequences.
+        };
+
         //! Policy for sharding test targets that have been marked for test sharding.
         enum class TestSharding
         {

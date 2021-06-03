@@ -118,13 +118,17 @@ namespace TestImpact
                 m_hasImpactAnalysisData = true;
 
                 // Enumerate new test targets
-                m_testEngine->UpdateEnumerationCache(
-                    m_dynamicDependencyMap->GetNotCoveringTests(),
-                    Policy::ExecutionFailure::Ignore,
-                    Policy::TestFailure::Continue,
-                    AZStd::nullopt,
-                    AZStd::nullopt,
-                    AZStd::nullopt);
+                const auto testTargetsWithNoEnumeraiton = m_dynamicDependencyMap->GetNotCoveringTests();
+                if (!testTargetsWithNoEnumeraiton.empty())
+                {
+                    m_testEngine->UpdateEnumerationCache(
+                        testTargetsWithNoEnumeraiton,
+                        Policy::ExecutionFailure::Ignore,
+                        Policy::TestFailure::Continue,
+                        AZStd::nullopt,
+                        AZStd::nullopt,
+                        AZStd::nullopt);
+                }
             }
         }
         catch (const DependencyException& e)
@@ -168,13 +172,16 @@ namespace TestImpact
         addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
 
         // Enumerate the mutated test targets to ensure their enumeration caches are up to date
-        m_testEngine->UpdateEnumerationCache(
-            testTargets,
-            Policy::ExecutionFailure::Ignore,
-            Policy::TestFailure::Continue,
-            AZStd::nullopt,
-            AZStd::nullopt,
-            AZStd::nullopt);
+        if (!testTargets.empty())
+        {
+            m_testEngine->UpdateEnumerationCache(
+                testTargets,
+                Policy::ExecutionFailure::Ignore,
+                Policy::TestFailure::Continue,
+                AZStd::nullopt,
+                AZStd::nullopt,
+                AZStd::nullopt);
+        }
     }
 
     AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargetsAndUpdateEnumerationCache(
@@ -318,6 +325,7 @@ namespace TestImpact
     TestSequenceResult Runtime::ImpactAnalysisTestSequence(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy,
+        Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
@@ -338,25 +346,47 @@ namespace TestImpact
                 ExtractTestTargetNames(draftedTestTargets));
         }
 
-        const auto [result, testJobs] = m_testEngine->InstrumentedRun(
-            includedSelectedTestTargets,
-            m_testShardingPolicy,
-            m_executionFailurePolicy,
-            Policy::IntegrityFailure::Continue,
-            m_testFailurePolicy,
-            m_targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            TestRunCompleteCallbackHandler(testCompleteCallback));
-
-        UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root));
-
-        if (testSequenceEndCallback.has_value())
+        if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
-            (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
-        }
+            const auto [result, testJobs] = m_testEngine->InstrumentedRun(
+                includedSelectedTestTargets,
+                m_testShardingPolicy,
+                m_executionFailurePolicy,
+                Policy::IntegrityFailure::Continue,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                TestRunCompleteCallbackHandler(testCompleteCallback));
 
-        return result;
+            UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root));
+
+            if (testSequenceEndCallback.has_value())
+            {
+                (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
+            }
+
+            return result;
+        }
+        else
+        {
+            const auto [result, testJobs] = m_testEngine->RegularRun(
+                includedSelectedTestTargets,
+                m_testShardingPolicy,
+                m_executionFailurePolicy,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                TestRunCompleteCallbackHandler(testCompleteCallback));
+
+            if (testSequenceEndCallback.has_value())
+            {
+                (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
+            }
+
+            return result;
+        }
     }
 
     AZStd::pair<TestSequenceResult, TestSequenceResult> Runtime::SafeImpactAnalysisTestSequence(

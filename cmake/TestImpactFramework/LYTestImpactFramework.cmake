@@ -367,8 +367,7 @@ function(ly_test_impact_post_step)
     endif()
 
     # Directory per build config for persistent test impact data (to be checked in)
-    set(persistent_data_dir "${LY_ROOT_FOLDER}/Tests/test_impact_framework/${CMAKE_SYSTEM_NAME}/$<CONFIG>/")
-
+    set(persistent_data_dir "${LY_TEST_IMPACT_WORKING_DIR}/persistent")
     # Directory for binaries built for this profile
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 

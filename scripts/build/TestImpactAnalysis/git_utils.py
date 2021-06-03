@@ -30,6 +30,7 @@ def create_diff_file(src_commit_hash, dst_commit_hash, output_path):
     if not os.path.isfile(output_path):
         raise FileNotFoundError(f"Source commit '{src_commit_hash}' and/or destination commit '{dst_commit_hash}' are invalid")
 
+# Basic representation of a repository
 class Repo:
     def __init__(self, repo_path):
         self.__repo = git.Repo(repo_path)

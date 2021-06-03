@@ -24,89 +24,46 @@ namespace TestImpact
 {
     namespace Console
     {
-        //! Functor for handling test sequence events and outputting pertinent information about said events to the console.
         class TestSequenceEventHandler
         {
-            friend class TestSequenceEventHandlerHelper;
         public:
-            //! Handler for TestRunCompleteCallback events.
-            void operator()(Client::TestRun&& test);
+            TestSequenceEventHandler(const AZStd::unordered_set<AZStd::string>* suiteFilter);
 
-        protected:
-            TestSequenceEventHandler(const AZStd::unordered_set<AZStd::string>& suiteFilter);
-
-            const AZStd::unordered_set<AZStd::string>* m_suiteFilter = nullptr;
-            size_t m_numTests = 0;
-            size_t m_numTestsComplete = 0;
-        };
-
-        //! Functor for handling test sequence events and outputting pertinent information about said events to the console.
-        class RegularTestSequenceEventHandler
-            : public TestSequenceEventHandler
-        {
-        public:
-            using TestSequenceEventHandler::TestSequenceEventHandler;
-
-            //! Handler for TestSequenceStartCallback events.
+            // TestSequenceStartCallback
             void operator()(Client::TestRunSelection&& selectedTests);
 
-            //! Handler for TestSequenceCompleteCallback events.
-            void operator()(Client::SequenceFailure&& failureReport, AZStd::chrono::milliseconds duration);
-        };
-
-        //! Functor for handling test sequence events and outputting pertinent information about said events to the console.
-        class ImpactAnalysisTestSequenceEventHandler
-            : public TestSequenceEventHandler
-        {
-        public:
-            using TestSequenceEventHandler::TestSequenceEventHandler;
-
-            //! Handler for ImpactAnalysisTestSequenceStartCallback events.
+            // ImpactAnalysisTestSequenceStartCallback
             void operator()(
                 Client::TestRunSelection&& selectedTests,
                 AZStd::vector<AZStd::string>&& discardedTests,
                 AZStd::vector<AZStd::string>&& draftedTests);
 
-            //! Handler for TestSequenceCompleteCallback events.
-            void operator()(
-                Client::SequenceFailure&& failureReport,
-                AZStd::chrono::milliseconds duration);
-        };
-
-        //! Functor for handling test sequence events and outputting pertinent information about said events to the console.
-        class SafeImpactAnalysisTestSequenceEventHandler
-            : public TestSequenceEventHandler
-        {
-        public:
-            using TestSequenceEventHandler::TestSequenceEventHandler;
-
-            //! Handler for SafeImpactAnalysisTestSequenceStartCallback events.
+            // SafeImpactAnalysisTestSequenceStartCallback
             void operator()(
                 Client::TestRunSelection&& selectedTests,
                 Client::TestRunSelection&& discardedTests,
                 AZStd::vector<AZStd::string>&& draftedTests);
 
-            //! Handler for SafeTestSequenceCompleteCallback events.
+            // TestSequenceCompleteCallback
+            void operator()(
+                Client::SequenceFailure&& failureReport,
+                AZStd::chrono::milliseconds duration);
+
+            // SafeTestSequenceCompleteCallback
             void operator()(
                 Client::SequenceFailure&& selectedFailureReport,
                 Client::SequenceFailure&& discardedFailureReport,
                 AZStd::chrono::milliseconds duration);
-        };
 
-        //! Functor for handling test sequence events and outputting pertinent information about said events to the console.
-        class SeededTestSequenceEventHandler
-            : public TestSequenceEventHandler
-        {
-        public:
-            using TestSequenceEventHandler::TestSequenceEventHandler;
+            // TestRunCompleteCallback
+            void operator()(Client::TestRun&& test);
 
-            //! Handler for TestSequenceStartCallback events.
-            void operator()(Client::TestRunSelection&& selectedTests);
+        private:
+            void ClearState();
 
-            //! Handler for TestSequenceCompleteCallback events.
-            void operator()(
-                Client::SequenceFailure&& failureReport,
-                AZStd::chrono::milliseconds duration);
+            const AZStd::unordered_set<AZStd::string>* m_suiteFilter = nullptr;
+            size_t m_numTests = 0;
+            size_t m_numTestsComplete = 0;
         };
     } // namespace Console
 } // namespace TestImpact
