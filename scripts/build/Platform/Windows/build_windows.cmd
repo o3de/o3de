@@ -38,14 +38,6 @@ IF NOT EXIST %TMP% (
 REM Compute half the amount of processors so some jobs can run
 SET /a HALF_PROCESSORS = NUMBER_OF_PROCESSORS / 2
 
-IF "%CMAKE_INCLUDE_WIX%"=="True" (
-    REM Explicitly enable wix via command line arg for forensic logging
-    SET CMAKE_OPTIONS=%CMAKE_OPTIONS% -DLY_WIX_PATH="%WIX%"
-) ELSE (
-    REM Disable implicit enabling of windows packing by clearing out the wix variable
-    SET WIX=
-)
-
 SET LAST_CONFIGURE_CMD_FILE=ci_last_configure_cmd.txt
 SET CONFIGURE_CMD=cmake %SOURCE_DIRECTORY% %CMAKE_OPTIONS% %EXTRA_CMAKE_OPTIONS% -DLY_3RDPARTY_PATH="%LY_3RDPARTY_PATH%" -DLY_PROJECTS=%CMAKE_LY_PROJECTS%
 IF NOT EXIST CMakeCache.txt (
