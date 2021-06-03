@@ -311,8 +311,15 @@ namespace AzToolsFramework
         Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance)
         {
             InstanceAlias newInstanceAlias = GenerateInstanceAlias();
+            return AddInstance(AZStd::move(instance), newInstanceAlias);
+        }
+
+        Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias newInstanceAlias)
+        {
             AZ_Assert(instance.get(), "instance argument is nullptr");
-            AZ_Assert(m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(), "InstanceAlias' unique id collision, this should never happen.");
+            AZ_Assert(
+                m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(),
+                "InstanceAlias' unique id collision, this should never happen.");
             instance->m_parent = this;
             instance->m_alias = newInstanceAlias;
             return *(m_nestedInstances[newInstanceAlias] = std::move(instance));

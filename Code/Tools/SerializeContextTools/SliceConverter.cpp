@@ -531,7 +531,22 @@ namespace AZ
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomBefore;
             instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomBefore, *topLevelInstance);
 
-            AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance));
+            // When creating the new instance, we would like to have deterministic instance aliases.  Prefabs that depend on this one
+            // will have patches that reference the alias, so if we reconvert this slice a second time, we would like it to produce
+            // the same results.  To get a deterministic and unique alias, we rely on the slice instance.  The slice instance contains
+            // a map of slice entity IDs to unique instance entity IDs.  We'll just consistently use the first entry in the map as the
+            // unique instance ID.
+            AZStd::string instanceAlias;
+            auto entityIdMap = instance.GetEntityIdMap();
+            if (!entityIdMap.empty())
+            {
+                instanceAlias = AZStd::string::format("Instance_%s", entityIdMap.begin()->second.ToString().c_str());
+            }
+            else
+            {
+                instanceAlias = AZStd::string::format("Instance_%s", AZ::Entity::MakeId().ToString().c_str());
+            }
+            AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance), instanceAlias);
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomAfter;
             instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomAfter, *topLevelInstance);
