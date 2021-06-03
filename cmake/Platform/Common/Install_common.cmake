@@ -27,11 +27,8 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
     # De-alias target name
     ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
 
-    # get the component ID.  if the property isn't set for the target, fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
-    get_target_property(install_componet ${TARGET_NAME} INSTALL_COMPONENT)
-    if("${install_componet}" STREQUAL "install_componet-NOTFOUND")
-        unset(install_componet)
-    endif()
+    # get the component ID.  if the property isn't set for the target, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
+    get_property(install_component TARGET ${TARGET_NAME} PROPERTY INSTALL_COMPONENT)
 
     # All include directories marked PUBLIC or INTERFACE will be installed. We dont use PUBLIC_HEADER because in order to do that
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
@@ -47,7 +44,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
                 unset(current_public_headers)
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${include_location}/${target_source_dir}
-                    COMPONENT ${install_componet}
+                    COMPONENT ${install_component}
                     FILES_MATCHING
                         PATTERN *.h
                         PATTERN *.hpp
@@ -74,13 +71,13 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
         TARGETS ${TARGET_NAME}
         ARCHIVE
             DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${install_componet}
+            COMPONENT ${install_component}
         LIBRARY
             DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
-            COMPONENT ${install_componet}
+            COMPONENT ${install_component}
         RUNTIME
             DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
-            COMPONENT ${install_componet}
+            COMPONENT ${install_component}
     )
 
     # CMakeLists.txt file
@@ -188,7 +185,7 @@ set_property(TARGET ${TARGET_NAME}
     file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
         DESTINATION ${target_source_dir}
-        COMPONENT ${install_componet}
+        COMPONENT ${install_component}
     )
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
@@ -247,11 +244,11 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     )
 
     # get the component ID.  if the property isn't set for the directory, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
-    get_property(install_componet DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
+    get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
 
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/CMakeLists.txt"
         DESTINATION ${target_source_dir}
-        COMPONENT ${install_componet}
+        COMPONENT ${install_component}
     )
 
 endfunction()
