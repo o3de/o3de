@@ -25,7 +25,13 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Session/SessionNotifications.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+
+namespace AzFramework
+{
+    struct SessionConfig;
+}
 
 namespace AzNetworking
 {
@@ -38,6 +44,7 @@ namespace Multiplayer
     class MultiplayerSystemComponent final
         : public AZ::Component
         , public AZ::TickBus::Handler
+        , public AzFramework::SessionNotificationBus::Handler
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
     {
@@ -56,6 +63,13 @@ namespace Multiplayer
         //! @{
         void Activate() override;
         void Deactivate() override;
+        //! @}
+
+        //! AzFramework::SessionNotificationBus::Handler overrides.
+        //! @{
+        bool OnSessionHealthCheck() override;
+        bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
+        bool OnDestroySessionBegin() override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.

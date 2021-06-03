@@ -29,6 +29,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/Session/ISessionRequests.h>
+#include <AzFramework/Session/SessionConfig.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/Framework/INetworking.h>
 
@@ -142,6 +144,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::Activate()
     {
         AZ::TickBus::Handler::BusConnect();
+        AzFramework::SessionNotificationBus::Handler::BusConnect();
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MPNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
         m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         AZ::Interface<IMultiplayer>::Register(this);
@@ -153,7 +156,32 @@ namespace Multiplayer
     void MultiplayerSystemComponent::Deactivate()
     {
         AZ::Interface<IMultiplayer>::Unregister(this);
+        AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    bool MultiplayerSystemComponent::OnSessionHealthCheck()
+    {
+        return true;
+    }
+
+    bool MultiplayerSystemComponent::OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig)
+    {
+        Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(serverType);
+        return m_networkInterface->Listen(sessionConfig.m_port);
+    }
+
+    bool MultiplayerSystemComponent::OnDestroySessionBegin()
+    {
+        bool disconnectSuccessful = true;
+        IConnectionSet& connectionSet = m_networkInterface->GetConnectionSet();
+        connectionSet.VisitConnections([&disconnectSuccessful](IConnection& connection)
+        {
+            bool didDisconnect = connection.Disconnect(DisconnectReason::TerminatedByServer, TerminationEndpoint::Remote);
+            disconnectSuccessful = disconnectSuccessful && didDisconnect;
+        });
+        return disconnectSuccessful;
     }
 
     void MultiplayerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
