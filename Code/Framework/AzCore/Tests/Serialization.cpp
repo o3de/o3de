@@ -2011,6 +2011,10 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
     }
 
 
+    /*
+        This test will dynamic cast (azrtti_cast) between incompatible types, which should always result in nullptr.
+        If this test fails, the RTTI declaration for the relevant type is incorrect.
+    */
     TEST_F(Serialization, AttributeRTTI)
     {
         {
@@ -2018,13 +2022,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
             Attribute* fnDownCast = &fn;
             auto fnUpCast = azrtti_cast<AttributeInvocable<AZStd::function<int(int)>>*>(fnDownCast);
             EXPECT_EQ(fnUpCast, nullptr);
-
-            // If test fails, this would crash:
-            //if (fnUpCast)
-            //{
-            //    int val = (*fnUpCast)(0);
-            //    AZ_TracePrintf("AttributeRTTITest", "Oops: %d", val);
-            //}
         }
 
         {
@@ -2032,13 +2029,6 @@ TEST_F(SerializeBasicTest, BasicTypeTest_Succeed)
             Attribute* fnDownCast = &fn;
             auto fnUpCast = azrtti_cast<AttributeFunction<int(int)>*>(fnDownCast);
             EXPECT_EQ(fnUpCast, nullptr);
-
-            // If test fails, this would crash:
-            //if (fnUpCast)
-            //{
-            //    int val = fnUpCast->Invoke(nullptr, 0);
-            //    AZ_TracePrintf("AttributeRTTITest", "Oops: %d", val);
-            //}
         }
     }
 
