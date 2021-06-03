@@ -12,6 +12,16 @@
 
 set -o errexit # exit on the first failure encountered
 
+# Jenkins defines environment variables for parameters and passes "false" to variables 
+# that are not set. Here we clear them if they are false so we can also just defined them
+# from command line
+if [[ "${CLEAN_ASSETS}" == "false" ]]; then
+    set CLEAN_ASSETS=
+fi
+if [[ "${CLEAN_OUTPUT_DIRECTORY}" == "false" ]]; then
+    set CLEAN_OUTPUT_DIRECTORY=
+fi
+
 if [[ -n "$CLEAN_ASSETS" ]]; then
     echo "[ci_build] CLEAN_ASSETS option set"
     for project in $(echo $CMAKE_LY_PROJECTS | sed "s/;/ /g")
@@ -35,7 +45,7 @@ if [[ -n "$NODE_LABEL" ]]; then
         fi
         # Detect if the node label has changed
         if [[ "${LAST_NODE_LABEL}" != "${NODE_LABEL}" ]]; then
-            echo [ci_build] Last run was done with node label "!LAST_NODE_LABEL!", new node label is "!NODE_LABEL!", forcing CLEAN_OUTPUT_DIRECTORY
+            echo [ci_build] Last run was done with node label \"${LAST_NODE_LABEL}\", new node label is \"${NODE_LABEL}\", forcing CLEAN_OUTPUT_DIRECTORY
             CLEAN_OUTPUT_DIRECTORY=1
         fi
         popd
