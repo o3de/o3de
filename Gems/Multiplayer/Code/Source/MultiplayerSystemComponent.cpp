@@ -38,7 +38,7 @@
 
 #include <AzNetworking/Framework/INetworking.h>
 
-#include <cmath> // for std::powf on linux
+#include <cmath>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -641,7 +641,7 @@ namespace Multiplayer
         m_renderBlendFactor += targetAdjustBlend;
 
         // Linear close to the origin, but asymptote at y = 1
-        const float adjustedBlendFactor = 1.0f - (std::powf(0.2f, m_renderBlendFactor));
+        const float adjustedBlendFactor = 1.0f - (std::pow(0.2f, m_renderBlendFactor));
         AZLOG(NET_Blending, "Computed blend factor of %f", adjustedBlendFactor);
 
         if (Camera::ActiveCameraRequestBus::HasHandlers())
