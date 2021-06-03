@@ -40,7 +40,7 @@ namespace PhysX
 
     }
 
-    bool ApiJointGenericProperties::GetFlag(GenericApiJointFlag flag) const
+    bool ApiJointGenericProperties::IsFlagSet(GenericApiJointFlag flag) const
     {
         return static_cast<bool>(m_flags & flag);
     }

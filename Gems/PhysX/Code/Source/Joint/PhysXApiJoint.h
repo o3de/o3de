@@ -88,14 +88,6 @@ namespace PhysX
         virtual ~PhysXFixedApiJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
-        void GenerateJointLimitVisualizationData(
-            float scale,
-            AZ::u32 angularSubdivisions,
-            AZ::u32 radialSubdivisions,
-            AZStd::vector<AZ::Vector3>& vertexBufferOut,
-            AZStd::vector<AZ::u32>& indexBufferOut,
-            AZStd::vector<AZ::Vector3>& lineBufferOut,
-            AZStd::vector<bool>& lineValidityBufferOut) override;
     };
 
     //! A ball joint locks 2 bodies relative to one another except about the y and z axes of the joint between them.
@@ -113,14 +105,6 @@ namespace PhysX
         virtual ~PhysXBallApiJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
-        void GenerateJointLimitVisualizationData(
-            float scale,
-            AZ::u32 angularSubdivisions,
-            AZ::u32 radialSubdivisions,
-            AZStd::vector<AZ::Vector3>& vertexBufferOut,
-            AZStd::vector<AZ::u32>& indexBufferOut,
-            AZStd::vector<AZ::Vector3>& lineBufferOut,
-            AZStd::vector<bool>& lineValidityBufferOut) override;
     };
 
     //! A hinge joint locks 2 bodies relative to one another except about the x-axis of the joint between them.
@@ -138,13 +122,5 @@ namespace PhysX
         virtual ~PhysXHingeApiJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
-        void GenerateJointLimitVisualizationData(
-            float scale,
-            AZ::u32 angularSubdivisions,
-            AZ::u32 radialSubdivisions,
-            AZStd::vector<AZ::Vector3>& vertexBufferOut,
-            AZStd::vector<AZ::u32>& indexBufferOut,
-            AZStd::vector<AZ::Vector3>& lineBufferOut,
-            AZStd::vector<bool>& lineValidityBufferOut) override;
     };
 } // namespace PhysX
