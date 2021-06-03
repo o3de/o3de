@@ -9,6 +9,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(Code)
-add_subdirectory(Tools)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_pip_install_local_package_editable(${CMAKE_CURRENT_LIST_DIR} atom_rpi_tools)
+
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_pytest(
+            NAME RPI::atom_rpi_tools_tests
+            PATH ${CMAKE_CURRENT_LIST_DIR}/atom_rpi_tools/tests/
+            TIMEOUT 30
+        )
+    endif()
+endif()
 
