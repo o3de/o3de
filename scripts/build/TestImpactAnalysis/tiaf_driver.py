@@ -46,6 +46,9 @@ def parse_args():
     parser.set_defaults(test_timeout=None)
     parser.set_defaults(global_timeout=None)
     args = parser.parse_args()
+
+    if args.sequence_type == SequenceType.TEST_IMPACT_ANALYSIS and args.dst_commit == None:
+        raise ValueError("Test impact analysis sequence must have a change list")
     
     return args
 
