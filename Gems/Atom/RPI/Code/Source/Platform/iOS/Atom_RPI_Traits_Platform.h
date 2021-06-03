@@ -11,4 +11,4 @@
 */
 #pragma once
 
-#include "Atom_Feature_Traits_iOS.h"
+#include "Atom_RPI_Traits_iOS.h"

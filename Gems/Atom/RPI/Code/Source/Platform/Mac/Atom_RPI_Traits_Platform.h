@@ -11,4 +11,4 @@
 */
 #pragma once
 
-#include "Atom_Feature_Traits_Mac.h"
+#include "Atom_RPI_Traits_Mac.h"

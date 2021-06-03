@@ -11,4 +11,4 @@
 */
 #pragma once
 
-#include "Atom_Feature_Traits_Linux.h"
+#include "Atom_RPI_Traits_Linux.h"
