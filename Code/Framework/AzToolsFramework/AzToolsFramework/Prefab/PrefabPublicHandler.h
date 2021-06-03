@@ -73,10 +73,10 @@ namespace AzToolsFramework
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
 
             void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
-                AZStd::vector<AZ::Entity*> entities, PrefabDom& instanceDomAfter,
+                const AZStd::vector<AZ::Entity*>& entities, PrefabDom& instanceDomAfter,
                 EntityIdList& duplicatedEntityIds);
             void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
-                AZStd::vector<Instance*> instances, PrefabDom& instanceDomAfter,
+                const AZStd::vector<Instance*>& instances, PrefabDom& instanceDomAfter,
                 EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
             
             /**

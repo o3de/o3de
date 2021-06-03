@@ -748,7 +748,8 @@ namespace AzToolsFramework
 
             if (!EntitiesBelongToSameInstance(entityIds))
             {
-                return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation. Change your selection to contain entities in the same instance."));
+                return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation."
+                    "Change your selection to contain entities in the same instance."));
             }
 
             // We've already verified the entities are all owned by the same instance,
@@ -759,9 +760,6 @@ namespace AzToolsFramework
             {
                 return AZ::Failure(AZStd::string("Failed to duplicate : Couldn't get a valid owning instance for the common root entity of the entities provided."));
             }
-            AZ_Assert(
-                commonOwningInstance.has_value(),
-                "Failed to duplicate : Couldn't get a valid owning instance for the common root entity of the entities provided");
 
             // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
             // cannot delete an instance from itself.
@@ -804,12 +802,10 @@ namespace AzToolsFramework
 
                 EntityIdList duplicatedEntityAndInstanceIds;
 
-                // Duplicate any nested entities as requested
+                // Duplicate any nested entities and instances as requested
+                AZStd::unordered_map<InstanceAlias, Instance*> newInstanceAliasToOldInstanceMap;
                 DuplicateNestedEntitiesInInstance(commonOwningInstance->get(),
                     entities, instanceDomAfter, duplicatedEntityAndInstanceIds);
-
-                // Duplicate any nested instances as requested
-                AZStd::unordered_map<InstanceAlias, Instance*> newInstanceAliasToOldInstanceMap;
                 DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
                     instances, instanceDomAfter, duplicatedEntityAndInstanceIds,
                     newInstanceAliasToOldInstanceMap);
@@ -820,11 +816,8 @@ namespace AzToolsFramework
                 command->Redo();
 
                 // Create links for our duplicated instances (if any were duplicated)
-                for (auto mapIter : newInstanceAliasToOldInstanceMap)
+                for (auto [newInstanceAlias, oldInstance] : newInstanceAliasToOldInstanceMap)
                 {
-                    InstanceAlias newInstanceAlias = mapIter.first;
-                    Instance* oldInstance = mapIter.second;
-
                     LinkId oldLinkId = oldInstance->GetLinkId();
                     auto linkRef = m_prefabSystemComponentInterface->FindLink(oldLinkId);
                     if (!linkRef.has_value())
@@ -1219,7 +1212,7 @@ namespace AzToolsFramework
         }
 
         void PrefabPublicHandler::DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
-            AZStd::vector<AZ::Entity*> entities, PrefabDom& instanceDomAfter,
+            const AZStd::vector<AZ::Entity*>& entities, PrefabDom& instanceDomAfter,
             EntityIdList& duplicatedEntityIds)
         {
             if (entities.empty())
@@ -1244,7 +1237,7 @@ namespace AzToolsFramework
                 // Keep track of the old alias <-> new alias mapping for this duplicated entity
                 // so we can fixup references later
                 EntityAlias newEntityAlias = Instance::GenerateEntityAlias();
-                oldAliasToNewAliasMap.insert(AZStd::make_pair(oldAlias, newEntityAlias));
+                oldAliasToNewAliasMap.emplace(oldAlias, newEntityAlias);
 
                 rapidjson::StringBuffer buffer;
                 rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -1254,7 +1247,7 @@ namespace AzToolsFramework
                 // so that we can fixup entity alias references before adding it
                 // to the Entities member of our instance DOM
                 QString entityDomString(buffer.GetString());
-                aliasToEntityDomMap.insert(AZStd::make_pair(newEntityAlias, entityDomString));
+                aliasToEntityDomMap.emplace(newEntityAlias, entityDomString);
             }
 
             auto entitiesIter = instanceDomAfter.FindMember(PrefabDomUtils::EntitiesName);
@@ -1264,15 +1257,12 @@ namespace AzToolsFramework
             // through them and replace any previous EntityAlias references with the new ones.
             // These are more than just parent entity references for nested entities, this will
             // also cover any EntityId references that were made in the components between them.
-            for (auto aliasEntityPair : aliasToEntityDomMap)
+            for (auto [newEntityAlias, newEntityDomString] : aliasToEntityDomMap)
             {
-                EntityAlias newEntityAlias = aliasEntityPair.first;
-                QString newEntityDomString = aliasEntityPair.second;
-
                 // Replace all of the old alias references with the new ones
-                for (auto aliasMapIter : oldAliasToNewAliasMap)
+                for (auto [oldAlias, newAlias] : oldAliasToNewAliasMap)
                 {
-                    ReplaceOldAliases(newEntityDomString, aliasMapIter.first, aliasMapIter.second);
+                    ReplaceOldAliases(newEntityDomString, oldAlias, newAlias);
                 }
 
                 // Create the new Entity DOM from parsing the JSON string
@@ -1297,7 +1287,7 @@ namespace AzToolsFramework
         }
 
         void PrefabPublicHandler::DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
-            AZStd::vector<Instance*> instances, PrefabDom& instanceDomAfter,
+            const AZStd::vector<Instance*>& instances, PrefabDom& instanceDomAfter,
             EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap)
         {
             if (instances.empty())
@@ -1317,11 +1307,11 @@ namespace AzToolsFramework
                 // so we can fixup references later
                 InstanceAlias oldAlias = instance->GetInstanceAlias();
                 InstanceAlias newInstanceAlias = Instance::GenerateInstanceAlias();
-                oldInstanceAliasToNewInstanceAliasMap.insert(AZStd::make_pair(oldAlias, newInstanceAlias));
+                oldInstanceAliasToNewInstanceAliasMap.emplace(oldAlias, newInstanceAlias);
 
                 // Keep track of our new instance alias with the Instance it was duplicated from,
                 // so that after all instances are duplicated, we can go back and create links for them
-                newInstanceAliasToOldInstanceMap.insert(AZStd::make_pair(newInstanceAlias, instance));
+                newInstanceAliasToOldInstanceMap.emplace(newInstanceAlias, instance);
 
                 rapidjson::StringBuffer buffer;
                 rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -1331,7 +1321,7 @@ namespace AzToolsFramework
                 // so that we can fixup instance alias references before adding it
                 // to the Instances member of our instance DOM
                 QString instanceDomString(buffer.GetString());
-                aliasToInstanceDomMap.insert(AZStd::make_pair(newInstanceAlias, instanceDomString));
+                aliasToInstanceDomMap.emplace(newInstanceAlias, instanceDomString);
             }
 
             auto instancesIter = instanceDomAfter.FindMember(PrefabDomUtils::InstancesName);
@@ -1339,15 +1329,12 @@ namespace AzToolsFramework
 
             // Now that all the duplicated Instance DOMs have been created, we need to iterate
             // through them and replace any previous InstanceAlias references with the new ones.
-            for (auto aliasInstancePair : aliasToInstanceDomMap)
+            for (auto [newInstanceAlias, newInstanceDomString]: aliasToInstanceDomMap)
             {
-                InstanceAlias newInstanceAlias = aliasInstancePair.first;
-                QString newInstanceDomString = aliasInstancePair.second;
-
                 // Replace all of the old alias references with the new ones
-                for (auto aliasMapIter : oldInstanceAliasToNewInstanceAliasMap)
+                for (auto [oldAlias, newAlias] : oldInstanceAliasToNewInstanceAliasMap)
                 {
-                    ReplaceOldAliases(newInstanceDomString, aliasMapIter.first, aliasMapIter.second);
+                    ReplaceOldAliases(newInstanceDomString, oldAlias, newAlias);
                 }
 
                 // Create the new Instance DOM from parsing the JSON string
