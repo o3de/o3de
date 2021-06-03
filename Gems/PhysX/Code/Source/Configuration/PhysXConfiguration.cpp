@@ -36,6 +36,18 @@ namespace PhysX
 
             return configuration;
         }
+
+        bool PhysXSystemConfigurationConverter([[maybe_unused]] AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& dataElement)
+        {
+            if (dataElement.GetVersion() <= 1)
+            {
+                dataElement.RemoveElementByName(AZ_CRC_CE("DefaultMaterialLibrary"));
+                AZ_Warning("PhysXSystemConfigurationConverter", false,
+                    "Old version of PhysX Configuration data found. Physics material library will be reset to default.");
+            }
+
+            return true;
+        }
     }
 
     AZ_CLASS_ALLOCATOR_IMPL(WindConfiguration, AZ::SystemAllocator, 0);
@@ -89,9 +101,8 @@ namespace PhysX
         if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::PhysXSystemConfiguration, AzPhysics::SystemConfiguration>()
-                ->Version(1)
+                ->Version(2, &PhysXInternal::PhysXSystemConfigurationConverter)
                 ->Field("WindConfiguration", &PhysXSystemConfiguration::m_windConfiguration)
-                ->Field("MaterialLibrary", &PhysXSystemConfiguration::m_defaultMaterialLibrary)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -115,7 +126,6 @@ namespace PhysX
     bool PhysXSystemConfiguration::operator==(const PhysXSystemConfiguration& other) const
     {
         return AzPhysics::SystemConfiguration::operator==(other) &&
-            m_defaultMaterialLibrary == other.m_defaultMaterialLibrary &&
             m_windConfiguration == other.m_windConfiguration
             ;
     }

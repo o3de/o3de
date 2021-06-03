@@ -64,6 +64,10 @@ ly_add_target(
             Gem::EditorPythonBindings.Static
 )
 
+# builders and tools use EditorPythonBindings.Editor
+ly_create_alias(NAME EditorPythonBindings.Builders NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
+ly_create_alias(NAME EditorPythonBindings.Tools    NAMESPACE Gem TARGETS EditorPythonBindings.Editor)
+
 ################################################################################
 # Tests
 ################################################################################

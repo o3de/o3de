@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/std/string/string.h>
 
 namespace AzFramework::ProjectManager
 {
@@ -21,8 +22,16 @@ namespace AzFramework::ProjectManager
         ProjectManagerLaunched = 0,
         ProjectPathFound = 1
     };
-    // Check for a project name, if not found, attempts to launch project manager and returns false
+
+    //! Check for a project name, if not found, attempts to launch project manager and returns false
+    //! @param argc the number of arguments in argv
+    //! @param argv arguments provided to this executable
+    //! @return a ProjectPathCheckResult
     ProjectPathCheckResult CheckProjectPathProvided(const int argc, char* argv[]);
-    // Attempt to Launch the project manager.  Requires locating the engine root, project manager script, and python.
-    bool LaunchProjectManager(const AZ::IO::FixedMaxPath& engineRootPath);
+
+    //! Attempt to Launch the project manager, assuming the o3de executable exists in same folder as
+    //! current executable. Requires the o3de cli and python.
+    //! @param commandLineArgs additional command line arguments to provide to the project manager
+    //! @return true on success, false if failed to find or launch the executable
+    bool LaunchProjectManager(const AZStd::string& commandLineArgs = "");
 } // AzFramework::ProjectManager

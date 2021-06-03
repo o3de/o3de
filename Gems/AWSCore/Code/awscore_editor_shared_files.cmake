@@ -11,7 +11,5 @@
 
 set(FILES
     Include/Private/AWSCoreEditorModule.h
-    Include/Private/AWSCoreModule.h
     Source/AWSCoreEditorModule.cpp
-    Source/AWSCoreModule.cpp
 )

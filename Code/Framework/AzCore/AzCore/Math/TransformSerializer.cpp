@@ -67,7 +67,7 @@ namespace AZ
 
             result.Combine(loadResult);
 
-            transformInstance->SetScale(AZ::Vector3(scale));
+            transformInstance->SetUniformScale(scale);
         }
 
         return context.Report(

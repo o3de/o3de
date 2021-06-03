@@ -89,6 +89,8 @@
 #include <ImGui/ImGuiPass.h>
 
 #include <RayTracing/RayTracingAccelerationStructurePass.h>
+#include <RayTracing/RayTracingPass.h>
+#include <RayTracing/RayTracingPassData.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridRayTracingPass.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridBlendIrradiancePass.h>
 #include <DiffuseProbeGrid/DiffuseProbeGridBlendDistancePass.h>
@@ -128,6 +130,7 @@ namespace AZ
             SMAAFeatureProcessor::Reflect(context);
             PostProcessFeatureProcessor::Reflect(context);
             ImGuiPassData::Reflect(context);
+            RayTracingPassData::Reflect(context);
 
             LightingPreset::Reflect(context);
             ModelPreset::Reflect(context);
@@ -270,6 +273,9 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
+
+            // Add RayTracing pas
+            passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
 
             // setup handler for load pass template mappings
             m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });

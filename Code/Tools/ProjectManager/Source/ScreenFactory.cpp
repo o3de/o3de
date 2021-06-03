@@ -16,7 +16,7 @@
 #include <NewProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
 #include <ProjectsScreen.h>
-#include <ProjectSettingsScreen.h>
+#include <UpdateProjectSettingsScreen.h>
 #include <EngineSettingsScreen.h>
 
 namespace O3DE::ProjectManager
@@ -42,8 +42,8 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::UpdateProject):
             newScreen = new UpdateProjectCtrl(parent);
             break;
-        case (ProjectManagerScreen::ProjectSettings):
-            newScreen = new ProjectSettingsScreen(parent);
+        case (ProjectManagerScreen::UpdateProjectSettings):
+            newScreen = new UpdateProjectSettingsScreen(parent);
             break;
         case (ProjectManagerScreen::EngineSettings):
             newScreen = new EngineSettingsScreen(parent);
