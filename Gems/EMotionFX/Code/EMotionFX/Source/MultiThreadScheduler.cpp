@@ -319,9 +319,9 @@ namespace EMotionFX
                 step.mDependencies.Clear(false);
 
                 // calculate the new dependencies for this step
-                for (ActorInstance* actorInstance : step.mActorInstances)
+                for (ActorInstance* stepActorInstance : step.mActorInstances)
                 {
-                    AddDependenciesToStep(actorInstance, &step);
+                    AddDependenciesToStep(stepActorInstance, &step);
                 }
 
                 // assume that there is only one of the same actor instance in the whole schedule

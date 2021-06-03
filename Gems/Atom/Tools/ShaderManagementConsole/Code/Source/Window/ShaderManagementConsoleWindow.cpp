@@ -510,9 +510,9 @@ namespace ShaderManagementConsole
         AZStd::vector<AZ::Uuid> documentIdsToClose;
         documentIdsToClose.reserve(m_tabWidget->count());
         const AZ::Uuid documentIdToKeepOpen = GetDocumentIdFromTab(tabIndex);
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
+        for (int tabI = 0; tabI < m_tabWidget->count(); ++tabI)
         {
-            const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
+            const AZ::Uuid documentId = GetDocumentIdFromTab(tabI);
             if (documentId != documentIdToKeepOpen)
             {
                 documentIdsToClose.push_back(documentId);

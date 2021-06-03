@@ -4063,23 +4063,23 @@ namespace ScriptCanvas
                 auto userFunctionIter = m_userInsThatRequireTopology.find(nodeling);
                 if (userFunctionIter != m_userInsThatRequireTopology.end())
                 {
-                    auto& node = *userFunctionIter->first;
-                    auto outSlots = node.GetSlotsByType(CombinedSlotType::ExecutionOut);
+                    auto& userFunctionNode = *userFunctionIter->first;
+                    auto outSlots = userFunctionNode.GetSlotsByType(CombinedSlotType::ExecutionOut);
                     
                     if (outSlots.empty() || !outSlots.front())
                     {
-                        AddError(node.GetEntityId(), nullptr, ScriptCanvas::ParseErrors::NoOutSlotInFunctionDefinitionStart);
+                        AddError(userFunctionNode.GetEntityId(), nullptr, ScriptCanvas::ParseErrors::NoOutSlotInFunctionDefinitionStart);
                         return;
                     }
 
-                    if (!ExecutionContainsCyclesCheck(node, *outSlots.front()))
+                    if (!ExecutionContainsCyclesCheck(userFunctionNode, *outSlots.front()))
                     {
                         auto definition = userFunctionIter->second;
                         auto entrySlot = definition->GetId().m_slot;
                         AZ_Assert(entrySlot, "Bad accounting in user function definition node");
                         AZStd::vector<VariablePtr> returnValues;
                         UserOutCallCollector userOutCallCollector;
-                        TraverseExecutionConnections(node, *entrySlot, userOutCallCollector);
+                        TraverseExecutionConnections(userFunctionNode, *entrySlot, userOutCallCollector);
 
                         const AZStd::unordered_set<const ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>& uniqueNodelingsOut = userOutCallCollector.GetOutCalls();
                         for (const auto& returnCall : uniqueNodelingsOut)
