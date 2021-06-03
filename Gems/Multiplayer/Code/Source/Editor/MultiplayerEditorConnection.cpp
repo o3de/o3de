@@ -109,7 +109,11 @@ namespace Multiplayer
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
             INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
 
-            uint16_t serverPort = GetGameServerPort();
+            uint16_t serverPort = DefaultServerPort;
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            {
+                console->GetCvarValue("sv_port", serverPort);
+            }
             networkInterface->Listen(serverPort);
 
             AZLOG_INFO("Editor Server completed asset receive, responding to Editor...");
@@ -134,20 +138,20 @@ namespace Multiplayer
             if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
             {
                 AZ::CVarFixedString remoteAddress;
-                uint16_t remotePort = GetGameServerPort();
-                if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound)
-                {
-                    // Connect the Editor to the editor server for Multiplayer simulation
-                    AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-                    INetworkInterface* networkInterface =
-                        AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+                uint16_t remotePort;
+                if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
+                    console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
+                    {
+                        // Connect the Editor to the editor server for Multiplayer simulation
+                        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
+                        INetworkInterface* networkInterface =
+                            AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
 
-                    // Connecting to DefaultServerPort here 
-                    const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
-                    networkInterface->Connect(ipAddress);
+                        const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
+                        networkInterface->Connect(ipAddress);
 
-                    AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
-                }
+                        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
+                    }
             }
         }
         return true;
@@ -182,15 +186,4 @@ namespace Multiplayer
     {
         ;
     }
-
-    uint16_t MultiplayerEditorConnection::GetGameServerPort()
-    {
-        uint16_t serverPort = DefaultServerPort;
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-        {
-            console->GetCvarValue("sv_port", serverPort);
-        }
-        return serverPort;
-    }
-
 }

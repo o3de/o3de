@@ -39,7 +39,7 @@ namespace Multiplayer
 
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerInit& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReady& packet);
-
+        
         //! IConnectionListener interface
         //! @{
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
@@ -50,7 +50,6 @@ namespace Multiplayer
         //! @}
 
     private:
-        uint16_t GetGameServerPort();
 
         AzNetworking::INetworkInterface* m_networkEditorInterface = nullptr;
         AZStd::vector<uint8_t> m_buffer;
