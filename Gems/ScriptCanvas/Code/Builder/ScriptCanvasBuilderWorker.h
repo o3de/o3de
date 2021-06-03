@@ -59,6 +59,7 @@ namespace ScriptCanvasBuilder
         QuantumLeap,
         DependencyArguments,
         DependencyRequirementsData,
+        AddAssetDependencySearch,
         // add new entries above
         Current,
     };

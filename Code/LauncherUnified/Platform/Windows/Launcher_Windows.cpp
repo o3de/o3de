@@ -50,7 +50,6 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
     {
         // HACK HACK HACK - is this still needed?!?!
         // CrySystem module can get loaded multiple times (even from within CrySystem itself)
-        // and currently there is no way to track them (\ref _CryMemoryManagerPoolHelper::Init() in CryMemoryManager_impl.h)
         // so we will release it as many times as it takes until it actually unloads.
         void* hModule = CryLoadLibraryDefName("CrySystem");
         if (hModule)

@@ -54,11 +54,6 @@ namespace LmbrCentral
         return "Icons/Components/Decal.svg";
     }
 
-    AZ::Uuid MaterialAssetTypeInfo::GetComponentTypeId() const
-    {
-        return AZ::Uuid("{BA3890BD-D2E7-4DB6-95CD-7E7D5525567A}");
-    }
-
     // DccMaterialAssetTypeInfo
 
     DccMaterialAssetTypeInfo::~DccMaterialAssetTypeInfo()

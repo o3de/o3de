@@ -61,7 +61,7 @@ namespace AZ
             float m_shadowFarClipDistance = 100.f;
 
             //! Width/Height of shadowmap images.
-            ShadowmapSize m_shadowmapSize = MaxShadowmapImageSize;
+            ShadowmapSize m_shadowmapSize = ShadowmapSize::Size1024;
 
             //! Number of cascades.
             uint32_t m_cascadeCount = 4;
@@ -117,7 +117,7 @@ namespace AZ
             //! It is used only when the pixel is predicted as on the boundary.
             uint16_t m_filteringSampleCount = 32;
 
-            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
+            PcfMethod m_pcfMethod = PcfMethod::Bicubic;
 
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;

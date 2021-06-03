@@ -13,6 +13,9 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponentMode.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 
 namespace AzToolsFramework
@@ -52,6 +55,9 @@ namespace AzToolsFramework
 
             AZ::Vector3 m_scale = AZ::Vector3::CreateOne();
             AZ::NonUniformScaleChangedEvent m_scaleChangedEvent;
+
+            //! Responsible for detecting ComponentMode activation and creating a concrete ComponentMode.
+            AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate;
         };
     } // namespace Components
 } // namespace AzToolsFramework

@@ -441,10 +441,10 @@ namespace AZ
         const Transform& worldFromLocal, const Vector3& src, const Vector3& dir, const Spline& spline)
     {
         Transform worldFromLocalNormalized = worldFromLocal;
-        const Vector3 scale = worldFromLocalNormalized.ExtractScale();
+        const float scale = worldFromLocalNormalized.ExtractUniformScale();
         const Transform localFromWorldNormalized = worldFromLocalNormalized.GetInverse();
 
-        const Vector3 localRayOrigin = localFromWorldNormalized.TransformPoint(src) * scale.GetReciprocal();
+        const Vector3 localRayOrigin = localFromWorldNormalized.TransformPoint(src) / scale;
         const Vector3 localRayDirection = localFromWorldNormalized.TransformVector(dir);
         return spline.GetNearestAddressRay(localRayOrigin, localRayDirection);
     }

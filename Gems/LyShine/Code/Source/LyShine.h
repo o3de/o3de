@@ -19,6 +19,9 @@
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 
+#include <Atom/Bootstrap/BootstrapNotificationBus.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
+
 #if !defined(_RELEASE)
 #define LYSHINE_INTERNAL_UNIT_TEST
 #endif
@@ -41,6 +44,7 @@ class CLyShine
     , public AzFramework::InputChannelEventListener
     , public AzFramework::InputTextEventListener
     , public AZ::TickBus::Handler
+    , protected AZ::Render::Bootstrap::NotificationBus::Handler
 {
 public:
 
@@ -111,6 +115,10 @@ public:
     int GetTickOrder() override;
     // ~TickEvents
 
+    // AZ::Render::Bootstrap::NotificationBus
+    void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
+    // ~AZ::Render::Bootstrap::NotificationBus
+
     // Get the UIRenderer for the game (which is owned by CLyShine). This is not exposed outside the gem.
     UiRenderer* GetUiRenderer();
 
@@ -128,6 +136,7 @@ private: // member functions
 
     AZ_DISABLE_COPY_MOVE(CLyShine);
 
+    void LoadUiCursor();
     void RenderUiCursor();
 
 private:  // static member functions
@@ -146,7 +155,8 @@ private: // data
 
     std::unique_ptr<UiCanvasManager> m_uiCanvasManager;
 
-    ITexture* m_uiCursorTexture;
+    AZStd::string m_cursorImagePathToLoad;
+    AZ::Data::Instance<AZ::RPI::Image> m_uiCursorTexture;
     int m_uiCursorVisibleCounter;
 
     bool m_updatingLoadedCanvases = false;  // guard against nested updates

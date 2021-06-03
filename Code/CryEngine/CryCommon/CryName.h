@@ -19,7 +19,6 @@
 #include <StlUtils.h>
 #include <CrySizer.h>
 #include <CryCrc32.h>
-#include <STLGlobalAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 
 class CNameTable;

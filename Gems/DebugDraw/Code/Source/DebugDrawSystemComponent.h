@@ -32,6 +32,9 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #endif // DEBUGDRAW_GEM_EDITOR
 
+#include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/Bootstrap/BootstrapNotificationBus.h>
+
 namespace DebugDraw
 {
     // DebugDraw elements that don't have corresponding component representations yet
@@ -61,10 +64,11 @@ namespace DebugDraw
 
     class DebugDrawSystemComponent
         : public AZ::Component
-        , public AZ::TickBus::Handler
         , public AZ::EntityBus::MultiHandler
         , protected DebugDrawRequestBus::Handler
         , protected DebugDrawInternalRequestBus::Handler
+        , public AZ::RPI::SceneNotificationBus::Handler
+        , public AZ::Render::Bootstrap::NotificationBus::Handler
 
 #ifdef DEBUGDRAW_GEM_EDITOR
         , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
@@ -113,20 +117,22 @@ namespace DebugDraw
         void Activate() override;
         void Deactivate() override;
 
-        // TickBus
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override { return AZ::ComponentTickBus::TICK_DEFAULT; }
+        // SceneNotificationBus
+        void OnBeginPrepareRender() override;
+
+        // AZ::Render::Bootstrap::NotificationBus
+        void OnBootstrapSceneReady(AZ::RPI::Scene* scene);
 
         // EntityBus
         void OnEntityDeactivated(const AZ::EntityId& entityId) override;
 
         // Ticking functions for drawing debug elements
-        void OnTickAabbs();
-        void OnTickLines();
-        void OnTickObbs();
-        void OnTickRays();
-        void OnTickSpheres();
-        void OnTickText();
+        void OnTickAabbs(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickLines(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickObbs(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickRays(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickSpheres(AzFramework::DebugDisplayRequests& debugDisplay);
+        void OnTickText(AzFramework::DebugDisplayRequests& debugDisplay);
 
         // Element creation functions, used when DebugDraw components register themselves
         void CreateAabbEntryForComponent(const AZ::EntityId& componentEntityId, const DebugDrawAabbElement& element);
@@ -154,7 +160,7 @@ namespace DebugDraw
 
         double m_currentTime;
 
-        AZStd::vector<Vec3> m_batchPoints;
-        AZStd::vector<ColorB> m_batchColors;
+        AZStd::vector<AZ::Vector3> m_batchPoints;
+        AZStd::vector<AZ::Color> m_batchColors;
     };
 }

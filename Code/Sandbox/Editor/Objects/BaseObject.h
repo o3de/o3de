@@ -604,9 +604,6 @@ public:
 
     virtual IStatObj* GetIStatObj() {   return NULL; }
 
-    //! Display length of each axis.
-    void DrawDimensionsImpl(DisplayContext& dc, const AABB& localBoundBox, AABB* pMergedBoundBox = NULL);
-
     // Invalidates cached transformation matrix.
     // nWhyFlags - Flags that indicate the reason for matrix invalidation.
     virtual void InvalidateTM(int nWhyFlags);
@@ -678,8 +675,6 @@ protected:
     virtual void DrawTextureIcon(DisplayContext& dc, const Vec3& pos, float alpha = 1.0f);
     //! Draw warning icons
     virtual void DrawWarningIcons(DisplayContext& dc, const Vec3& pos);
-    //! Display text with a 3d world coordinate.
-    void DrawTextOn2DBox(DisplayContext& dc, const Vec3& pos, const char* text, float textScale, const ColorF& TextColor, const ColorF& TextBackColor);
     //! Check if dimension's figures can be displayed before draw them.
     virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = NULL);
 

@@ -31,6 +31,7 @@
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 
 #include <WIndow/MaterialEditorBrowserInteractions.h>
+#include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
@@ -246,6 +247,24 @@ namespace MaterialEditor
                             return;
                         }
                     }
+                }
+            });
+
+        menu->addSeparator();
+
+        QAction* createMaterialAction = menu->addAction(QObject::tr("Create Material..."));
+        QObject::connect(createMaterialAction, &QAction::triggered, caller, [caller, entry]()
+            {
+                CreateMaterialDialog createDialog(entry->GetFullPath().c_str(), caller);
+                createDialog.adjustSize();
+
+                if (createDialog.exec() == QDialog::Accepted &&
+                    !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
+                    !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
+                {
+                    MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                        createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
+                        createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
                 }
             });
     }

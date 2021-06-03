@@ -72,25 +72,8 @@ namespace LmbrCentral
             return;
         }
 
-        ISystem* crySystem = GetISystem();
-        if (!crySystem)
-        {
-            return;
-        }
-
-        IRenderer* renderer = crySystem->GetIRenderer();
-        if (!renderer)
-        {
-            return;
-        }
-
-        IRenderAuxGeom* auxGeom = renderer->GetIRenderAuxGeom();
-        if (!auxGeom)
-        {
-            return;
-        }
-
-        float x = 10;
+        // ToDo: Remove class or update to work with Atom? LYN-3672
+        /*float x = 10;
         float y = 15;
         ColorF color(1, 1, 1);
         constexpr bool center = false;
@@ -161,7 +144,7 @@ namespace LmbrCentral
                     StatusToString(asset.GetStatus()).c_str(),
                     activeAssetLoadTime.count());
             }
-        }
+        }*/
     }
 
     void AssetSystemDebugComponent::AssetStatusUpdate(AZ::Data::AssetId id, AZ::Data::AssetData::AssetStatus status)

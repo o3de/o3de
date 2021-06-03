@@ -124,131 +124,29 @@ namespace AssetProcessor
 
     NativeLegacyRCCompiler::NativeLegacyRCCompiler()
         : m_resourceCompilerInitialized(false)
-        , m_systemRoot()
-        , m_rcExecutableFullPath()
         , m_requestedQuit(false)
     {
     }
-
-    bool NativeLegacyRCCompiler::Initialize(const QString& systemRoot, const QString& rcExecutableFullPath)
+    
+    bool NativeLegacyRCCompiler::Initialize()
     {
-        // QFile::exists(normalizedPath)
-        if (!QDir(systemRoot).exists())
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, QString("Cannot locate system root dir %1").arg(systemRoot).toUtf8().data());
-            return false;
-        }
-
-        if (!AZ::IO::SystemFile::Exists(rcExecutableFullPath.toUtf8().data()))
-        {
-            AZ_TracePrintf(AssetProcessor::DebugChannel, QString("Invalid executable path '%1'").arg(rcExecutableFullPath).toUtf8().data());
-            return false;
-        }
-        this->m_systemRoot.setPath(systemRoot);
-        this->m_rcExecutableFullPath = rcExecutableFullPath;
         this->m_resourceCompilerInitialized = true;
         return true;
     }
 
-    bool NativeLegacyRCCompiler::Execute(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier,
-        const QString& params, const QString& dest, const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const
+    bool NativeLegacyRCCompiler::Execute(
+        [[maybe_unused]] const QString& inputFile,
+        [[maybe_unused]] const QString& watchFolder,
+        [[maybe_unused]] const QString& platformIdentifier,
+        [[maybe_unused]] const QString& params,
+        [[maybe_unused]] const QString& dest,
+        [[maybe_unused]] const AssetBuilderSDK::JobCancelListener* jobCancelListener,
+        [[maybe_unused]] Result& result) const
     {
-        if (!this->m_resourceCompilerInitialized)
-        {
-            result.m_exitCode = JobExitCode_RCCouldNotBeLaunched;
-            result.m_crashed = false;
-            AZ_Warning("RC Builder", false, "RC Compiler has not been initialized before use.");
-            return false;
-        }
+        // running RC.EXE is deprecated.
+        AZ_Error("RC Builder", false, "running RC.EXE is deprecated");
 
-        // build the command line:
-        QString commandString = NativeLegacyRCCompiler::BuildCommand(inputFile, watchFolder, platformIdentifier, params, dest);
-
-        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-        // while it might be tempting to set the executable in processLaunchInfo.m_processExecutableString, it turns out that RC.EXE
-        // won't work if you do that because it assumes the first command line param is the exe name, which is not the case if you do it that way...
-
-        QString formatter("\"%1\" %2");
-        processLaunchInfo.m_commandlineParameters = QString(formatter).arg(m_rcExecutableFullPath).arg(commandString).toUtf8().data();
-        processLaunchInfo.m_showWindow = false;
-        processLaunchInfo.m_workingDirectory = m_systemRoot.absolutePath().toUtf8().data();
-        processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
-
-        AZ_TracePrintf("RC Builder", "Executing RC.EXE: '%s' ...\n", processLaunchInfo.m_commandlineParameters.c_str());
-        AZ_TracePrintf("Rc Builder", "Executing RC.EXE with working directory: '%s' ...\n", processLaunchInfo.m_workingDirectory.c_str());
-
-        AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
-
-        if (!watcher)
-        {
-            result.m_exitCode = JobExitCode_RCCouldNotBeLaunched;
-            result.m_crashed = false;
-            AZ_Error("RC Builder", false, "RC failed to execute\n");
-
-            return false;
-        }
-
-        QElapsedTimer ticker;
-        ticker.start();
-
-        // it created the process, wait for it to exit:
-        bool finishedOK = false;
-        {
-            CommunicatorTracePrinter tracer(watcher->GetCommunicator(), "RC Builder"); // allow this to go out of scope...
-            while ((!m_requestedQuit) && (!finishedOK))
-            {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(NativeLegacyRCCompiler::s_maxSleepTime));
-
-                tracer.Pump();
-
-                if (ticker.elapsed() > s_jobMaximumWaitTime || (jobCancelListener && jobCancelListener->IsCancelled()))
-                {
-                    break;
-                }
-
-                AZ::u32 exitCode = 0;
-                if (!watcher->IsProcessRunning(&exitCode))
-                {
-                    finishedOK = true; // we either cant wait for it, or it finished.
-                    result.m_exitCode = exitCode;
-                    result.m_crashed = (exitCode == 100) || (exitCode == 101); // these indicate fatal errors.
-                    break;
-                }
-            }
-            tracer.Pump(); // empty whats left if possible.
-        }
-        if (!finishedOK)
-        {
-            if (watcher->IsProcessRunning())
-            {
-                watcher->TerminateProcess(0xFFFFFFFF);
-            }
-
-            if (!this->m_requestedQuit)
-            {
-                if (jobCancelListener == nullptr || !jobCancelListener->IsCancelled())
-                {
-                    AZ_Error("RC Builder", false, "RC failed to complete within the maximum allowed time and was terminated. please see %s/rc_log.log for details", result.m_outputDir.toUtf8().data());
-                }
-                else
-                {
-                    AZ_TracePrintf("RC Builder", "RC was terminated. There was a request to cancel the job.\n");
-                    result.m_exitCode = JobExitCode_JobCancelled;
-                }
-            }
-            else
-            {
-                AZ_Warning("RC Builder", false, "RC terminated because the application is shutting down.\n");
-                result.m_exitCode = JobExitCode_JobCancelled;
-            }
-            result.m_crashed = false;
-        }
-        AZ_TracePrintf("RC Builder", "RC.EXE execution has ended\n");
-
-        delete watcher;
-
-        return finishedOK;
+        return false;
     }
 
     QString NativeLegacyRCCompiler::BuildCommand(const QString& inputFile, const QString& watchFolder, const QString& platformIdentifier, const QString& params, const QString& dest)
@@ -438,22 +336,7 @@ namespace AssetProcessor
     bool InternalRecognizerBasedBuilder::Initialize(const RecognizerConfiguration& recognizerConfig)
     {
         InitializeAssetRecognizers(recognizerConfig.GetAssetRecognizerContainer());
-
-        // Get the engine root since rc.exe will exist there and not in any external project folder
-        QString systemRoot;
-        QString rcFullPath;
-
-        // Validate that the engine root contains the necessary rc.exe
-        if (!FindRC(rcFullPath))
-        {
-            return false;
-        }
-        if (!m_rcCompiler->Initialize(systemRoot, rcFullPath))
-        {
-            AssetBuilderSDK::BuilderLog(m_internalRecognizerBuilderUuid, "Unable to find rc.exe from the engine root (%1).", rcFullPath.toUtf8().data());
-            return false;
-        }
-        return true;
+        return m_rcCompiler->Initialize();
     }
 
 

@@ -1,25 +1,10 @@
 {
     "gem_name": "Atom_Component_DebugCamera",
-    "Dependencies": [
-        {
-            "Uuid": "a218db9eb2114477b46600fea4441a6c",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom RPI"
-        }
+    "display_name": "Atom Debug Camera Component",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
     ],
-    "GemFormatVersion": 4,
-    "Uuid": "013d1b42ad314c929b292c143bcbf045",
-    "Version": "0.1.0",
-    "Name": "Atom_Component_DebugCamera",
-    "DisplayName": "Atom.Component.DebugCamera",
-    "Tags": ["Atom", "Camera", "Debug"],
-    "Summary": "Debug Camera for testing RPI/RHI",
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
+    "user_tags": [
     ]
 }

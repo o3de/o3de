@@ -49,7 +49,6 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/GizmoManager.h"
 #include "Objects/AxisGizmo.h"
 #include "DisplaySettings.h"
-#include "ShaderEnum.h"
 #include "KeyboardCustomizationSettings.h"
 #include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
@@ -58,9 +57,7 @@ AZ_POP_DISABLE_WARNING
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
-#include "Alembic/AlembicCompiler.h"
 #include "UIEnumsDatabase.h"
-#include "Util/Ruler.h"
 #include "RenderHelpers/AxisHelper.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
@@ -68,12 +65,9 @@ AZ_POP_DISABLE_WARNING
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 
-#include "BackgroundTaskManager.h"
-#include "BackgroundScheduleManager.h"
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
 
-#include "SettingsBlock.h"
 #include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
@@ -97,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 #ifdef _RELEASE
 #undef _RELEASE
 #endif
-#include <CrtDebugStats.h>
 
 #include "Core/QtEditorApplication.h"                               // for Editor::EditorQtApplication
 
@@ -134,7 +127,6 @@ CEditorImpl::CEditorImpl()
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
-    , m_pShaderEnum(nullptr)
     , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
     , m_pAxisGizmo(nullptr)
@@ -149,7 +141,6 @@ CEditorImpl::CEditorImpl()
     , m_pSourceControl(nullptr)
     , m_pSelectionTreeManager(nullptr)
     , m_pUIEnumsDatabase(nullptr)
-    , m_pRuler(nullptr)
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
@@ -181,11 +172,8 @@ CEditorImpl::CEditorImpl()
     regCtx.pCommandManager = m_pCommandManager;
     regCtx.pClassFactory = m_pClassFactory;
     m_pEditorFileMonitor.reset(new CEditorFileMonitor());
-    m_pBackgroundTaskManager.reset(new BackgroundTaskManager::CTaskManager);
-    m_pBackgroundScheduleManager.reset(new BackgroundScheduleManager::CScheduleManager);
     m_pUIEnumsDatabase = new CUIEnumsDatabase;
     m_pDisplaySettings = new CDisplaySettings;
-    m_pShaderEnum = new CShaderEnum;
     m_pDisplaySettings->LoadRegistry();
     m_pPluginManager = new CPluginManager;
 
@@ -196,13 +184,11 @@ CEditorImpl::CEditorImpl()
     m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
-    m_pAlembicCompiler = new CAlembicCompiler();
     m_pSequenceManager = new CTrackViewSequenceManager;
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
     m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
-    m_pRuler = new CRuler;
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -315,7 +301,6 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pAlembicCompiler)
     SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
@@ -335,8 +320,6 @@ CEditorImpl::~CEditorImpl()
     }
 
     SAFE_DELETE(m_pDisplaySettings)
-    SAFE_DELETE(m_pRuler)
-    SAFE_DELETE(m_pShaderEnum)
     SAFE_DELETE(m_pToolBoxManager)
     SAFE_DELETE(m_pCommandManager)
     SAFE_DELETE(m_pClassFactory)
@@ -419,7 +402,6 @@ void CEditorImpl::Update()
     m_bUpdates = false;
 
     FUNCTION_PROFILER(GetSystem(), PROFILE_EDITOR);
-    m_pRuler->Update();
 
     //@FIXME: Restore this latter.
     //if (GetGameEngine() && GetGameEngine()->IsLevelLoaded())
@@ -438,15 +420,6 @@ void CEditorImpl::Update()
 ISystem* CEditorImpl::GetSystem()
 {
     return m_pSystem;
-}
-
-IRenderer*  CEditorImpl::GetRenderer()
-{
-    if (gEnv)
-    {
-        return gEnv->pRenderer;
-    }
-    return nullptr;
 }
 
 IEditorClassFactory* CEditorImpl::GetClassFactory()
@@ -862,16 +835,6 @@ IIconManager* CEditorImpl::GetIconManager()
     return m_pIconManager;
 }
 
-IBackgroundTaskManager* CEditorImpl::GetBackgroundTaskManager()
-{
-    return m_pBackgroundTaskManager.get();
-}
-
-IBackgroundScheduleManager* CEditorImpl::GetBackgroundScheduleManager()
-{
-    return m_pBackgroundScheduleManager.get();
-}
-
 IEditorFileMonitor* CEditorImpl::GetFileMonitor()
 {
     return m_pEditorFileMonitor.get();
@@ -1180,11 +1143,6 @@ XmlNodeRef CEditorImpl::FindTemplate(const QString& templateName)
 void CEditorImpl::AddTemplate(const QString& templateName, XmlNodeRef& tmpl)
 {
     m_templateRegistry.AddTemplate(templateName, tmpl);
-}
-
-CShaderEnum* CEditorImpl::GetShaderEnum()
-{
-    return m_pShaderEnum;
 }
 
 bool CEditorImpl::ExecuteConsoleApp(const QString& CommandLine, QString& OutputText, [[maybe_unused]] bool bNoTimeOut, bool bShowWindow)
@@ -1569,7 +1527,6 @@ void CEditorImpl::ReduceMemory()
     GetIEditor()->GetUndoManager()->ClearRedoStack();
     GetIEditor()->GetUndoManager()->ClearUndoStack();
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_FREE_GAME_DATA);
-    gEnv->pRenderer->FreeResources(FRR_TEXTURES);
 
 #if defined(AZ_PLATFORM_WINDOWS)
     HANDLE hHeap = GetProcessHeap();
@@ -1624,16 +1581,9 @@ void CEditorImpl::AddUIEnums()
     m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
 }
 
-void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, ESystemConfigPlatform platform)
+void CEditorImpl::SetEditorConfigSpec(ESystemConfigSpec spec, [[maybe_unused]]ESystemConfigPlatform platform)
 {
     gSettings.editorConfigSpec = spec;
-    if (m_pSystem->GetConfigSpec(true) != spec || m_pSystem->GetConfigPlatform() != platform)
-    {
-        m_pSystem->SetConfigSpec(spec, platform, true);
-        gSettings.editorConfigSpec = m_pSystem->GetConfigSpec(true);
-        GetObjectManager()->SendEvent(EVENT_CONFIG_SPEC_CHANGE);
-        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::OnEditorSpecChange);
-    }
 }
 
 ESystemConfigSpec CEditorImpl::GetEditorConfigSpec() const
@@ -1648,8 +1598,6 @@ ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const
 
 void CEditorImpl::InitFinished()
 {
-    SProjectSettingsBlock::Load();
-
     if (!m_bInitialized)
     {
         m_bInitialized = true;

@@ -1,0 +1,88 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#pragma once
+
+#if !defined(Q_MOC_RUN)
+#include <LinkWidget.h>
+#include <TagWidget.h>
+#include <GemCatalog/GemInfo.h>
+#include <GemCatalog/GemModel.h>
+#include <QItemSelection>
+#include <QScrollArea>
+#include <QWidget>
+#endif
+
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+
+namespace O3DE::ProjectManager
+{
+    class GemInspector
+        : public QScrollArea
+    {
+        Q_OBJECT // AUTOMOC
+
+    public:
+        explicit GemInspector(GemModel* model, QWidget* parent = nullptr);
+        ~GemInspector() = default;
+
+        void Update(const QModelIndex& modelIndex);
+        static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
+
+        // Colors
+        inline constexpr static const char* s_headerColor = "#FFFFFF";
+        inline constexpr static const char* s_textColor = "#DDDDDD";
+        inline constexpr static const char* s_creatorColor = "#94D2FF";
+
+    private slots:
+        void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+
+    private:
+        // Title, description and tag widget container used for the depending and conflicting gems
+        class GemsSubWidget
+            : public QWidget
+        {
+        public:
+            GemsSubWidget(QWidget* parent = nullptr);
+            void Update(const QString& title, const QString& text, const QStringList& gemNames);
+
+        private:
+            QLabel* m_titleLabel = nullptr;
+            QLabel* m_textLabel = nullptr;
+            QVBoxLayout* m_layout = nullptr;
+            TagContainerWidget* m_tagWidget = nullptr;
+        };
+
+        void InitMainWidget();
+
+        GemModel* m_model = nullptr;
+        QWidget* m_mainWidget = nullptr;
+        QVBoxLayout* m_mainLayout = nullptr;
+
+        // General info (top) section
+        QLabel* m_nameLabel = nullptr;
+        QLabel* m_creatorLabel = nullptr;
+        QLabel* m_summaryLabel = nullptr;
+        LinkLabel* m_directoryLinkLabel = nullptr;
+        LinkLabel* m_documentationLinkLabel = nullptr;
+
+        // Depending and conflicting gems
+        GemsSubWidget* m_dependingGems = nullptr;
+        GemsSubWidget* m_conflictingGems = nullptr;
+
+        // Additional information
+        QLabel* m_versionLabel = nullptr;
+        QLabel* m_lastUpdatedLabel = nullptr;
+        QLabel* m_binarySizeLabel = nullptr;
+    };
+} // namespace O3DE::ProjectManager

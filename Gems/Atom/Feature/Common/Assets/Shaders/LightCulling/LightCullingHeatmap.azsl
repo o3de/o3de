@@ -242,7 +242,7 @@ PSOutput MainPS(VSOutput IN)
     
     // Set this value to > 0 to actually see this pass. It is currently always active.
     OUT.m_color.w = PassSrg::m_heatmapOpacity;     
-    // https://jira.agscollab.com/browse/ATOM-3682 (improve heatmap integration with the pass system)
+    // ATOM-3682 (improve heatmap integration with the pass system)
 
     return OUT;
 }

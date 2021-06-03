@@ -21,7 +21,6 @@
 
 // Editor
 #include "TrackViewEventNode.h"
-#include "TrackViewGeomCacheAnimationTrack.h"
 
 
 CTrackViewAnimNode* CTrackViewAnimNodeFactory::BuildAnimNode(IAnimSequence* pSequence, IAnimNode* pAnimNode, CTrackViewNode* pParentNode)
@@ -43,12 +42,5 @@ CTrackViewAnimNode* CTrackViewAnimNodeFactory::BuildAnimNode(IAnimSequence* pSeq
 CTrackViewTrack* CTrackViewTrackFactory::BuildTrack(IAnimTrack* pTrack, CTrackViewAnimNode* pTrackAnimNode,
     CTrackViewNode* pParentNode, bool bIsSubTrack, unsigned int subTrackIndex)
 {
-#if defined(USE_GEOM_CACHES)
-    if (pTrack->GetParameterType() == AnimParamType::TimeRanges && pTrackAnimNode->GetType() == AnimNodeType::GeomCache)
-    {
-        return new CTrackViewGeomCacheAnimationTrack(pTrack, pTrackAnimNode, pParentNode, bIsSubTrack, subTrackIndex);
-    }
-#endif
-
     return new CTrackViewTrack(pTrack, pTrackAnimNode, pParentNode, bIsSubTrack, subTrackIndex);
 }

@@ -11,7 +11,7 @@
 */
 
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
-#include <Source/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>
@@ -56,6 +56,8 @@ namespace Multiplayer
 
     ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection)
         : m_controlledEntity(controlledEntity)
+        , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
+        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
@@ -63,7 +65,7 @@ namespace Multiplayer
     {
         AZ::Entity* entity = m_controlledEntity.GetEntity();
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
-        m_controlledEntityTransform = entity->GetTransform();
+        m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
         AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
 
         //// this one is optional
@@ -74,7 +76,9 @@ namespace Multiplayer
         //}
 
         m_updateWindowEvent.Enqueue(sv_ClientReplicationWindowUpdateMs, true);
-        AZ::EntitySystemBus::Handler::BusConnect();
+
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityDeactivatedEventHandler(m_entityDeactivatedEventHandler);
     }
 
     bool ServerToClientReplicationWindow::ReplicationSetUpdateReady()
@@ -146,24 +150,29 @@ namespace Multiplayer
             }
         );
 
+        NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();
+
         // Add all the neighbors
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
-            // TODO: Discard entities that don't have a NetBindComponent
-
             //if (mp_ControlledFilteredEntityComponent && mp_ControlledFilteredEntityComponent->IsEntityFiltered(iterator.Get()))
             //{
             //    continue;
             //}
 
             // We want to find the closest extent to the player and prioritize using that distance
-            const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
-            const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
-            const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
-            const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
-            NetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
-            AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+            NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
+            if (entryNetBindComponent != nullptr)
+            {
+                const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
+                const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
+                const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
+                const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
+
+                NetworkEntityHandle entityHandle(entryNetBindComponent, networkEntityTracker);
+                AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+            }
         }
 
         // Add in Autonomous Entities
@@ -200,10 +209,8 @@ namespace Multiplayer
         //}
     }
 
-    void ServerToClientReplicationWindow::OnEntityActivated(const AZ::EntityId& entityId)
+    void ServerToClientReplicationWindow::OnEntityActivated(AZ::Entity* entity)
     {
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
-
         ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
         if (netBindComponent != nullptr)
@@ -231,10 +238,8 @@ namespace Multiplayer
         }
     }
 
-    void ServerToClientReplicationWindow::OnEntityDeactivated(const AZ::EntityId& entityId)
+    void ServerToClientReplicationWindow::OnEntityDeactivated(AZ::Entity* entity)
     {
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
-
         ConstNetworkEntityHandle entityHandle(entity, GetNetworkEntityTracker());
         NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
         if (netBindComponent != nullptr)

@@ -305,7 +305,7 @@ void CryAssertTrace(const char* _pszFormat, ...)
     {
         return;
     }
-    if (!gEnv->bIgnoreAllAsserts || gEnv->bTesting)
+    if (!gEnv->bIgnoreAllAsserts)
     {
         if (NULL == _pszFormat)
         {

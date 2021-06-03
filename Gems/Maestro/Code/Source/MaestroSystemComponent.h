@@ -43,13 +43,6 @@ namespace Maestro
     };
 
     //////////////////////////////////////////////////////////////////////////
-    struct CSystemEventListener_Movie
-        : public ISystemEventListener
-    {
-        void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
-    };
-
-    //////////////////////////////////////////////////////////////////////////
     class MaestroSystemComponent
         : public AZ::Component
         , protected MaestroRequestBus::Handler
@@ -91,6 +84,5 @@ namespace Maestro
     private:
         // singletons representing the movie system
         AZStd::unique_ptr<CMovieSystem> m_movieSystem;
-        AZStd::unique_ptr<CSystemEventListener_Movie> m_movieSystemEventListener;
     };
 }

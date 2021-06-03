@@ -112,24 +112,25 @@ ly_add_target(
             3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
-            Legacy::CryCommon.EngineSettings.Static
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
             Legacy::NewsShared
             AZ::AWSNativeSDKInit
-            Legacy::CryCommonTools
             AZ::AtomCore
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Static
             Gem::AtomToolsFramework.Static
+            Gem::AtomViewportDisplayInfo
             ${additional_dependencies}
         PUBLIC
             3rdParty::AWSNativeSDK::Core
             3rdParty::Qt::Network
             Legacy::EditorCore
+    RUNTIME_DEPENDENCIES
+        Gem::AtomViewportDisplayInfo
 )
 ly_add_source_properties(
     SOURCES CryEdit.cpp
@@ -174,6 +175,12 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Legacy::CrySystem
         Legacy::EditorLib
+        ProjectManager
+)
+set_property(SOURCE
+    CryEdit.cpp
+    APPEND PROPERTY
+        COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
 )
 ly_add_translations(
     TARGETS Editor
@@ -184,15 +191,8 @@ ly_add_translations(
 )
 ly_add_dependencies(Editor AssetProcessor)
 
-if(TARGET Editor)
-    set_property(SOURCE
-        CryEdit.cpp
-        APPEND PROPERTY
-            COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
-    )
-else()
-    message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to Editor as the target doesn't exist anymore."
-        " Perhaps it has been renamed")
+if(LY_FIRST_PROJECT_PATH)
+    set_property(TARGET Editor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_FIRST_PROJECT_PATH}\"")
 endif()
 
 ################################################################################
@@ -244,8 +244,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 Legacy::EditorLib
-                Gem::LmbrCentral
-                Legacy::CryCommonTools
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests

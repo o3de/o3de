@@ -113,12 +113,6 @@ void CScreenFaderTrack::PreloadTextures()
             GetKey(nKeyIndex, &key);
             if (!key.m_strTexture.empty())
             {
-                ITexture* pTexture = gEnv->pRenderer->EF_LoadTexture(key.m_strTexture.c_str(), FT_DONT_STREAM | FT_STATE_CLAMP);
-                if (pTexture)
-                {
-                    pTexture->SetClamp(true);
-                    m_preloadedTextures.push_back(pTexture);
-                }
             }
             else
             {

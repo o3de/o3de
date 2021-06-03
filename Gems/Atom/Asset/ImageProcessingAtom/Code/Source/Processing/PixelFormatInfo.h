@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <AzDXGIFormat.h>            // DX10+ formats. DXGI_FORMAT
+#include <Processing/AzDXGIFormat.h>            // DX10+ formats. DXGI_FORMAT
 
 #include <Atom/ImageProcessing/PixelFormats.h>
 

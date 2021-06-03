@@ -18,6 +18,7 @@
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
 
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 
@@ -322,6 +323,13 @@ sys.version
         void SetUp() override
         {
             PythonTestingFixture::SetUp();
+
+            auto registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
+                + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_app.RegisterComponentDescriptor(EditorPythonBindings::PythonSystemComponent::CreateDescriptor());
         }
 

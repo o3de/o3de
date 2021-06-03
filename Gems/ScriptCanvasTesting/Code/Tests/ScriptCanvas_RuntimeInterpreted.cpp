@@ -90,6 +90,11 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseRawBehaviorProperties");
+}
+
 TEST_F(ScriptCanvasTestFixture, StringSanitization)
 {
     RunUnitTestGraph("LY_SC_UnitTest_StringSanitization");

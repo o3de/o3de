@@ -45,6 +45,35 @@ namespace AWSCore
         };
 
     public:
+        static constexpr const char AWSResourceMappingManagerName[] = "AWSResourceMappingManager";
+        static constexpr const char ManagerUnexpectedStatusErrorMessage[] =
+            "AWSResourceMappingManager is in unexpected status.";
+        static constexpr const char ResourceMappingFileInvalidPathErrorMessage[] =
+            "Failed to get resource mapping config file path.";
+        static constexpr const char ResourceMappingKeyNotFoundErrorMessage[] =
+            "Failed to find resource mapping key: %s";
+        static constexpr const char ResourceMappingFileNotLoadedErrorMessage[] =
+            "Resource mapping config file is not loaded, please confirm %s is setup correctly.";
+        static constexpr const char ResourceMappingFileLoadFailureErrorMessage[] =
+            "Resource mapping config file failed to load, please confirm file is present and in correct format.";
+        static constexpr const char ResourceMappingRESTApiIdAndStageInconsistentErrorMessage[] =
+            "Resource mapping %s and %s have inconsistent region value, return empty service url.";
+        static constexpr const char ResourceMappingRESTApiInvalidServiceUrlErrorMessage[] =
+            "Unable to format REST Api url with RESTApiId=%s, RESTApiRegion=%s, RESTApiStage=%s, return empty service url.";
+        static constexpr const char ResourceMappingFileInvalidJsonFormatErrorMessage[] =
+            "Failed to read resource mapping config file: %s";
+        static constexpr const char ResourceMappingFileInvalidSchemaErrorMessage[] =
+            "Failed to load resource mapping config file json schema.";
+        static constexpr const char ResourceMappingFileInvalidContentErrorMessage[] =
+            "Failed to parse resource mapping config file: %s";
+
+        enum class Status : AZ::u8
+        {
+            NotLoaded = 0,
+            Ready = 1,
+            Error = 2
+        };
+
         AWSResourceMappingManager();
         ~AWSResourceMappingManager() = default;
 
@@ -63,7 +92,12 @@ namespace AWSCore
             const AZStd::string& restApiIdKeyName, const AZStd::string& restApiStageKeyName) const override;
         void ReloadConfigFile(bool reloadConfigFileName = false) override;
 
+        Status GetStatus() const;
+
     private:
+        // Get resource attribute error message based on the status
+        AZStd::string GetResourceAttributeErrorMessageByStatus(const AZStd::string& resourceKeyName) const;
+
         // Get resource attribute from resource mappings
         AZStd::string GetResourceAttribute(
             AZStd::function<AZStd::string(const AWSResourceMappingAttributes&)> getAttributeFunction,
@@ -83,6 +117,7 @@ namespace AWSCore
         // Validate JSON document against schema
         bool ValidateJsonDocumentAgainstSchema(const rapidjson::Document& jsonDocument);
 
+        Status m_status;
         // Resource mapping related data
         AZStd::string m_defaultAccountId;
         AZStd::string m_defaultRegion;

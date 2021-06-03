@@ -22,9 +22,9 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerNullComponent.h>
 
 #include <Source/AssetDatabaseLocationListener.h>
-#include <Source/ThumbnailerNullComponent.h>
 #include <Source/LUA/LUAEditorContext.h>
 #include <Source/LUA/LUADebuggerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -55,7 +55,7 @@ namespace LUAEditor
         RegisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::AssetSystem::AssetSystemComponent::CreateDescriptor());
-        RegisterComponentDescriptor(LUAEditor::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor());
+        RegisterComponentDescriptor(AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::AssetBrowser::AssetBrowserComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Components::EditorSelectionAccentSystemComponent::CreateDescriptor());
 
@@ -75,7 +75,7 @@ namespace LUAEditor
         EnsureComponentCreated(AzToolsFramework::Components::PropertyManagerComponent::RTTI_Type());
         EnsureComponentCreated(AzFramework::AssetSystem::AssetSystemComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::AssetSystem::AssetSystemComponent::RTTI_Type());
-        EnsureComponentCreated(LUAEditor::Thumbnailer::ThumbnailerNullComponent::RTTI_Type());
+        EnsureComponentCreated(AzToolsFramework::Thumbnailer::ThumbnailerNullComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::AssetBrowser::AssetBrowserComponent::RTTI_Type());
         EnsureComponentCreated(AzToolsFramework::Components::EditorSelectionAccentSystemComponent::RTTI_Type());
     }

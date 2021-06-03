@@ -26,7 +26,7 @@ then
     exit 1
 fi
 
-UBUNTU_DISTRO="`lsb_release -c | awk '{print $2}'`"
+UBUNTU_DISTRO="$(lsb_release -c | awk '{print $2}')"
 if [ "$UBUNTU_DISTRO" == "bionic" ]
 then
     echo "Setup for Ubuntu 18.04 LTS ($UBUNTU_DISTRO)"
@@ -49,14 +49,14 @@ then
     apt-get update
     apt-get install git -y
 else
-    GIT_VERSION=`git --version | awk '{print $3}'`
+    GIT_VERSION=$(git --version | awk '{print $3}')
     echo Git $GIT_VERSION already Installed. Skipping Git installation
 fi
 
 #
 # Setup Git-LFS if needed
 #
-GIT_LFS_PACKAGE_COUNT=`apt list --installed 2>/dev/null | grep git-lfs/ | wc -l`
+GIT_LFS_PACKAGE_COUNT=$(apt list --installed 2>/dev/null | grep git-lfs/ | wc -l)
 if [ $GIT_LFS_PACKAGE_COUNT -eq 0 ]
 then
     echo Setting up Git-LFS
@@ -87,7 +87,7 @@ then
     dpkg -i $GCM_PACKAGE_NAME
     popd
 else
-    GCM_VERSION=`git-credential-manager-core --version`
+    GCM_VERSION=$(git-credential-manager-core --version)
     echo Git Credential Manager \(GCM\) version $GCM_VERSION already installed. Skipping GCM installation
 fi
 

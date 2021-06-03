@@ -29,6 +29,7 @@ namespace LmbrCentral
     {
         incompatible.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
         incompatible.push_back(AZ_CRC("SphereShapeService", 0x90c8dc80));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void SphereShapeComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

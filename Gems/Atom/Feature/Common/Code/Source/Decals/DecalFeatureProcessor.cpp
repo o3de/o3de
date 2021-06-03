@@ -264,7 +264,12 @@ namespace AZ
 
         void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world)
         {
-            // https://jira.agscollab.com/browse/ATOM-4330
+            SetDecalTransform(handle, world, AZ::Vector3::CreateOne());
+        }
+
+        void DecalFeatureProcessor::SetDecalTransform(DecalHandle handle, const AZ::Transform& world, const AZ::Vector3& nonUniformScale)
+        {
+            // ATOM-4330
             // Original Open 3D Engine uploads a 4x4 matrix rather than quaternion, rotation, scale.
             // That is more memory but less calculation because it is doing a matrix inverse rather than a polar decomposition
             // I've done some experiments and uploading a 3x4 transform matrix with 3x3 matrix inverse should be possible
@@ -274,7 +279,7 @@ namespace AZ
             if (handle.IsValid())
             {
                 Quaternion orientation = world.GetRotation();
-                Vector3 scale = world.GetScale();
+                Vector3 scale = world.GetUniformScale() * nonUniformScale;
 
                 SetDecalHalfSize(handle, scale);
                 SetDecalPosition(handle, world.GetTranslation());

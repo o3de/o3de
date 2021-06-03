@@ -87,14 +87,13 @@ namespace ScriptCanvas
                 bool IsObjectClass(AZStd::string_view objectClass) const { return objectClass.compare(m_className) == 0; }
 
                 //! Attempts to initialize node with a BehaviorContext BehaviorMethod
-                //! If the className is empty, then the methodName is searched on the BehaviorContext
-                //! If className is not empty the className is used to look for a registered BehaviorEBus in the BehaviorContext
-                //! and if found, the methodName is searched among the BehaviorEBus events
-                //! Otherwise the className is used to look for a registered BehaviorClass in the BehaviorContext
-                //! and if found, the methodName is searched among the BehaviorClass methods
-                void InitializeBehaviorMethod(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName);
+                //! 1) If the names match an overloaded method, including one using ExplicitOverloadInfo, then that method is used. Else:
+                //! 2) If the class name is empty, then search for a free method is searched for in the BehaviorContext and there is a warning if not found.
+                //! 3) If the class name matches an ebus, methodName is searched among the BehaviorEBus events, and there is a warning if not found.
+                //! 4) if the class name does NOT match an ebus, className and methodName are used to look for a registered BehaviorClass in the BehaviorContext, and there is a warning if not found.
+                void InitializeBehaviorMethod(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus);
 
-                void InitializeClass(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName);
+                void InitializeClass(const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName, PropertyStatus propertyStatus);
 
                 void InitializeEvent(const NamespacePath& namespaces, AZStd::string_view busName, AZStd::string_view eventName);
 
@@ -126,10 +125,14 @@ namespace ScriptCanvas
 
                 virtual DynamicDataType GetOverloadedOutputType(size_t resultIndex) const;
 
+                PropertyStatus GetPropertyStatus() const;
+
             protected:
                 void ConfigureMethod(const AZ::BehaviorMethod& method, const AZ::BehaviorClass* bcClass);
 
                 const Slot* GetIfBranchSlot(bool branch) const;
+
+                AZ_INLINE const AZStd::string& GetLookupName() const { return m_lookupName; }
 
                 AZ_INLINE AZStd::recursive_mutex& GetMutex() { return m_mutex; }
 
@@ -158,6 +161,8 @@ namespace ScriptCanvas
                 virtual void OnInitializeOutputPre(MethodOutputConfig&) {}
 
                 bool SanityCheckBranchOnResultMethod(const AZ::BehaviorMethod& branchOnResultMethod) const;
+
+                AZ_INLINE void SetClassNamePretty(AZStd::string_view classNamePretty) { m_classNamePretty = classNamePretty; }
 
                 void SetMethodUnchecked(const AZ::BehaviorMethod* method, const AZ::BehaviorClass* behaviorClass);
 

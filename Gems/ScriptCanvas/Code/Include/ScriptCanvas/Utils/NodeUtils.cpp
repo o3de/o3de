@@ -58,7 +58,7 @@ namespace ScriptCanvas
             }
             else
             {
-                return ConstructMethodNodeIdentifier(methodNode->GetRawMethodClassName(), methodNode->GetName());
+                return ConstructMethodNodeIdentifier(methodNode->GetRawMethodClassName(), methodNode->GetName(), methodNode->GetPropertyStatus());
             }
         }
         else if (auto ebusNode = azrtti_cast<const Nodes::Core::EBusEventHandler*>(scriptCanvasNode))
@@ -158,13 +158,14 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    NodeTypeIdentifier NodeUtils::ConstructMethodNodeIdentifier(AZStd::string_view methodClass, AZStd::string_view methodName)
+    NodeTypeIdentifier NodeUtils::ConstructMethodNodeIdentifier(AZStd::string_view methodClass, AZStd::string_view methodName, ScriptCanvas::PropertyStatus propertyStatus)
     {
         NodeTypeIdentifier resultHash = 0;
 
         AZStd::hash_combine(resultHash, AZStd::hash<AZ::Uuid>()(azrtti_typeid<ScriptCanvas::Nodes::Core::Method>()));
         AZStd::hash_combine(resultHash, AZStd::hash<AZStd::string_view>()(methodClass));
         AZStd::hash_combine(resultHash, AZStd::hash<AZStd::string>()(methodName));
+        AZStd::hash_combine(resultHash, AZStd::hash<AZ::u8>()(static_cast<AZ::u8>(propertyStatus)));
 
         return resultHash;
     }
@@ -253,7 +254,7 @@ namespace ScriptCanvas
         if (auto* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(node))
         {
             ScriptCanvas::NamespacePath emptyNamespaces;
-            method->InitializeBehaviorMethod(emptyNamespaces, config.m_className, config.m_methodName);
+            method->InitializeBehaviorMethod(emptyNamespaces, config.m_className, config.m_methodName, config.m_propertyStatus);
         }
     }
 }

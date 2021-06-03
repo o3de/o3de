@@ -21,13 +21,13 @@ function GetShaderOptionDependencies()
 end
 
 function Process(context)
-    local textureMap = context:GetMaterialPropertyValue_image("roughness.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("roughness.textureMap")
     local useTexture = context:GetMaterialPropertyValue_bool("roughness.useTexture")
     context:SetShaderOptionValue_bool("o_roughness_useTexture", useTexture and textureMap ~= nil)
 end
 
 function ProcessEditor(context)
-    local textureMap = context:GetMaterialPropertyValue_image("roughness.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("roughness.textureMap")
     local useTexture = context:GetMaterialPropertyValue_bool("roughness.useTexture")
 
     if(nil == textureMap) then

@@ -15,11 +15,9 @@
 #Note this does not actually change the working directory
 SCRIPT_DIR=$(cd `dirname $0` && pwd)
 
-#The engine root is always the parent of the scripts directory, so $(dirname "$SCRIPT_DIR") should get us engine root
-ENGINE_ROOT=$(dirname "$SCRIPT_DIR")
-
-#The engines python is in the engineroot/python
-PYTHON_DIRECTORY="$ENGINE_ROOT/python"
+#python should be in the base path
+BASE_PATH=$(dirname "$SCRIPT_DIR")
+PYTHON_DIRECTORY="$BASE_PATH/python"
 
 #If engine python exists use it, if not try the system python
 if [ ! -d "$PYTHON_DIRECTORY" ]; then
@@ -34,3 +32,4 @@ fi
 
 #run the o3de.py pass along the command
 $PYTHON_EXECUTABLE "$SCRIPT_DIR/o3de.py" $*
+exit $?

@@ -63,8 +63,6 @@
 #include "Unhandled/UI/FontAssetTypeInfo.h"
 #include "Unhandled/UI/UICanvasAssetTypeInfo.h"
 
-#include <LoadScreenComponent.h>
-
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Script/ScriptAsset.h>
@@ -371,7 +369,6 @@ namespace LmbrCentral
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<DccMaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<CharacterDefinitionAsset>::Uuid());
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<GeomCacheAsset>::Uuid());
 
             assetCatalog->AddExtension("cgf");
             assetCatalog->AddExtension("chr");

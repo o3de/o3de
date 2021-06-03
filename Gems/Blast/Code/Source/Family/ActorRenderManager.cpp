@@ -74,7 +74,7 @@ namespace Blast
         {
             if (m_chunkActors[chunkId])
             {
-                m_meshFeatureProcessor->SetTransform(m_chunkMeshHandles[chunkId], m_chunkActors[chunkId]->GetWorldBody()->GetTransform(), m_scale);
+                m_meshFeatureProcessor->SetTransform(m_chunkMeshHandles[chunkId], m_chunkActors[chunkId]->GetSimulatedBody()->GetTransform(), m_scale);
             }
         }
     }

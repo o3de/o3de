@@ -2019,21 +2019,6 @@ inline CryStackStringT<T, S> CryStackStringT<T, S>::Tokenize(const_str charSet, 
     return CryStackStringT<T, S>();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Specialization providing efficient move semantics for array classes.
-template <class T, size_t S>
-bool raw_movable(const CryStackStringT<T, S>& str)
-{
-    return false;
-}
-
-template <class T, size_t S>
-void move_init(CryStackStringT<T, S>& dest, CryStackStringT<T, S>& source)
-{
-    dest.move(source);
-}
-
-
 #if defined(_RELEASE)
 #define ASSERT_LEN        (void)(0)
 #define ASSERT_WLEN       (void)(0)

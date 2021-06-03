@@ -1,5 +1,7 @@
 {
     "template_name": "DefaultProject",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates",
     "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
     "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "DefaultProject",
@@ -23,6 +25,12 @@
             "isOptional": false
         },
         {
+            "file": "EngineFinder.cmake",
+            "origin": "EngineFinder.cmake",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
             "file": "Code/${NameLower}_files.cmake",
             "origin": "Code/${NameLower}_files.cmake",
             "isTemplated": true,
@@ -39,6 +47,12 @@
             "origin": "Code/CMakeLists.txt",
             "isTemplated": true,
             "isOptional": false
+        },
+        {
+            "file": "Code/gem.json",
+            "origin": "Code/gem.json",
+            "isTemplated": true,
+            "isOptional": true
         },
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
@@ -65,24 +79,6 @@
             "isOptional": false
         },
         {
-            "file": "Code/Platform/Android/android_runtime_dependencies.cmake",
-            "origin": "Code/Platform/Android/android_runtime_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/android_server_dependencies.cmake",
-            "origin": "Code/Platform/Android/android_server_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/android_tool_dependencies.cmake",
-            "origin": "Code/Platform/Android/android_tool_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
             "origin": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
             "isTemplated": true,
@@ -97,24 +93,6 @@
         {
             "file": "Code/Platform/Linux/PAL_linux.cmake",
             "origin": "Code/Platform/Linux/PAL_linux.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Linux/linux_runtime_dependencies.cmake",
-            "origin": "Code/Platform/Linux/linux_runtime_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Linux/linux_server_dependencies.cmake",
-            "origin": "Code/Platform/Linux/linux_server_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Linux/linux_tool_dependencies.cmake",
-            "origin": "Code/Platform/Linux/linux_tool_dependencies.cmake",
             "isTemplated": true,
             "isOptional": false
         },
@@ -137,24 +115,6 @@
             "isOptional": false
         },
         {
-            "file": "Code/Platform/Mac/mac_runtime_dependencies.cmake",
-            "origin": "Code/Platform/Mac/mac_runtime_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Mac/mac_server_dependencies.cmake",
-            "origin": "Code/Platform/Mac/mac_server_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Mac/mac_tool_dependencies.cmake",
-            "origin": "Code/Platform/Mac/mac_tool_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
             "origin": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
             "isTemplated": true,
@@ -169,24 +129,6 @@
         {
             "file": "Code/Platform/Windows/PAL_windows.cmake",
             "origin": "Code/Platform/Windows/PAL_windows.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Windows/windows_runtime_dependencies.cmake",
-            "origin": "Code/Platform/Windows/windows_runtime_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Windows/windows_server_dependencies.cmake",
-            "origin": "Code/Platform/Windows/windows_server_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Windows/windows_tool_dependencies.cmake",
-            "origin": "Code/Platform/Windows/windows_tool_dependencies.cmake",
             "isTemplated": true,
             "isOptional": false
         },
@@ -209,24 +151,6 @@
             "isOptional": false
         },
         {
-            "file": "Code/Platform/iOS/ios_runtime_dependencies.cmake",
-            "origin": "Code/Platform/iOS/ios_runtime_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/ios_server_dependencies.cmake",
-            "origin": "Code/Platform/iOS/ios_server_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/ios_tool_dependencies.cmake",
-            "origin": "Code/Platform/iOS/ios_tool_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/Source/${Name}Module.cpp",
             "origin": "Code/Source/${Name}Module.cpp",
             "isTemplated": true,
@@ -245,20 +169,8 @@
             "isOptional": false
         },
         {
-            "file": "Code/runtime_dependencies.cmake",
-            "origin": "Code/runtime_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/server_dependencies.cmake",
-            "origin": "Code/server_dependencies.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/tool_dependencies.cmake",
-            "origin": "Code/tool_dependencies.cmake",
+            "file": "Code/enabled_gems.cmake",
+            "origin": "Code/enabled_gems.cmake",
             "isTemplated": true,
             "isOptional": false
         },
@@ -266,12 +178,6 @@
             "file": "Config/shader_global_build_options.json",
             "origin": "Config/shader_global_build_options.json",
             "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "EngineFinder.cmake",
-            "origin": "EngineFinder.cmake",
-            "isTemplated": true,
             "isOptional": false
         },
         {
@@ -569,6 +475,12 @@
             "isOptional": false
         },
         {
+            "file": "ShaderLib/README.md",
+            "origin": "ShaderLib/README.md",
+            "isTemplated": true,
+            "isOptional": true
+        },
+        {
             "file": "ShaderLib/scenesrg.srgi",
             "origin": "ShaderLib/scenesrg.srgi",
             "isTemplated": true,
@@ -583,6 +495,12 @@
         {
             "file": "Shaders/CommonVS.azsli",
             "origin": "Shaders/CommonVS.azsli",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
+            "origin": "Shaders/ShaderResourceGroups/SceneSrg.azsli",
             "isTemplated": true,
             "isOptional": false
         },

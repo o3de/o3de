@@ -460,14 +460,14 @@ namespace PhysX
         characterEntity->Activate();
 
         bool physicsEnabled = false;
-        Physics::WorldBodyRequestBus::EventResult(physicsEnabled, characterEntity->GetId(),
-            &Physics::WorldBodyRequestBus::Events::IsPhysicsEnabled);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(physicsEnabled, characterEntity->GetId(),
+            &AzPhysics::SimulatedBodyComponentRequestsBus::Events::IsPhysicsEnabled);
         EXPECT_TRUE(physicsEnabled);
 
         // when physics is disabled
-        Physics::WorldBodyRequestBus::Event(characterEntity->GetId(), &Physics::WorldBodyRequestBus::Events::DisablePhysics);
-        Physics::WorldBodyRequestBus::EventResult(physicsEnabled, characterEntity->GetId(),
-            &Physics::WorldBodyRequestBus::Events::IsPhysicsEnabled);
+        AzPhysics::SimulatedBodyComponentRequestsBus::Event(characterEntity->GetId(), &AzPhysics::SimulatedBodyComponentRequestsBus::Events::DisablePhysics);
+        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(physicsEnabled, characterEntity->GetId(),
+            &AzPhysics::SimulatedBodyComponentRequestsBus::Events::IsPhysicsEnabled);
         EXPECT_FALSE(physicsEnabled);
 
         // expect no error occurs when sending common events 

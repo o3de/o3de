@@ -42,6 +42,7 @@ class TestAssetPicker(object):
 
     @pytest.mark.test_case_id("C13751579", "C1508814")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.xfail      # ATOM-15493
     def test_AssetPicker_UI_UX(self, request, editor, level, launcher_platform):
         expected_lines = [
             "TestEntity Entity successfully created",

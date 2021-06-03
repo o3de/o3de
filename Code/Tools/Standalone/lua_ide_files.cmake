@@ -14,8 +14,6 @@ set(FILES
     Source/LuaIDEApplication.cpp
     Source/AssetDatabaseLocationListener.h
     Source/AssetDatabaseLocationListener.cpp
-    Source/ThumbnailerNullComponent.h
-    Source/ThumbnailerNullComponent.cpp
     Source/Editor/LuaEditor.h
     Source/Editor/LuaEditor.cpp
     Source/LUA/BasicScriptChecker.h

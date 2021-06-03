@@ -46,7 +46,7 @@ public:
     void CreateTestSetRegFile(const AZStd::string& setregContent)
     {
         m_normalizedSetRegFilePath = AZStd::string::format("%s/%s",
-            m_normalizedSetRegFolderPath.c_str(), AWSCore::AWSCoreConfiguration::AWSCORE_CONFIGURATION_FILENAME);
+            m_normalizedSetRegFolderPath.c_str(), AWSCore::AWSCoreConfiguration::AWSCoreConfigurationFileName);
         AzFramework::StringFunc::Path::Normalize(m_normalizedSetRegFilePath);
         CreateTestFile(m_normalizedSetRegFilePath, setregContent);
     }
@@ -177,7 +177,7 @@ TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadValidSettingsRegistryAf
     auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
     auto actualProfileName = m_awsCoreConfiguration->GetProfileName();
     EXPECT_TRUE(actualConfigFilePath.empty());
-    EXPECT_TRUE(actualProfileName == AWSCoreConfiguration::AWSCORE_DEFAULT_PROFILE_NAME);
+    EXPECT_TRUE(actualProfileName == AWSCoreConfiguration::AWSCoreDefaultProfileName);
 
     CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
     m_awsCoreConfiguration->ReloadConfiguration();
@@ -185,5 +185,24 @@ TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadValidSettingsRegistryAf
     actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
     actualProfileName = m_awsCoreConfiguration->GetProfileName();
     EXPECT_FALSE(actualConfigFilePath.empty());
-    EXPECT_TRUE(actualProfileName != AWSCoreConfiguration::AWSCORE_DEFAULT_PROFILE_NAME);
+    EXPECT_TRUE(actualProfileName != AWSCoreConfiguration::AWSCoreDefaultProfileName);
+}
+
+TEST_F(AWSCoreConfigurationTest, ReloadConfiguration_LoadInvalidSettingsRegistryAfterValidOne_ReturnEmptyConfigFilePath)
+{
+    CreateTestSetRegFile(TEST_VALID_RESOURCE_MAPPING_SETREG);
+    m_awsCoreConfiguration->InitConfig();
+
+    auto actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    auto actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    EXPECT_FALSE(actualConfigFilePath.empty());
+    EXPECT_TRUE(actualProfileName != AWSCoreConfiguration::AWSCoreDefaultProfileName);
+
+    CreateTestSetRegFile(TEST_INVALID_RESOURCE_MAPPING_SETREG);
+    m_awsCoreConfiguration->ReloadConfiguration();
+
+    actualConfigFilePath = m_awsCoreConfiguration->GetResourceMappingConfigFilePath();
+    actualProfileName = m_awsCoreConfiguration->GetProfileName();
+    EXPECT_TRUE(actualConfigFilePath.empty());
+    EXPECT_TRUE(actualProfileName == AWSCoreConfiguration::AWSCoreDefaultProfileName);
 }

@@ -93,6 +93,10 @@
                 "Path": "Passes/SkyBox.pass"
             },
             {
+                "Name": "SkyBoxTwoOutputsTemplate",
+                "Path": "Passes/SkyBox_TwoOutputs.pass"
+            },
+            {
                 "Name": "UIPassTemplate",
                 "Path": "Passes/UI.pass"
             },
@@ -483,6 +487,18 @@
             {
                 "Name": "UIParentTemplate",
                 "Path": "Passes/UIParent.pass"
+            },
+            {
+                "Name": "LightAdaptationParentTemplate",
+                "Path": "Passes/LightAdaptationParent.pass"
+            },
+            {
+                "Name": "LowEndForwardPassTemplate",
+                "Path": "Passes/LowEndForward.pass"
+            },
+            {
+                "Name": "LowEndPipelineTemplate",
+                "Path": "Passes/LowEndPipeline.pass"
             }
         ]
     }

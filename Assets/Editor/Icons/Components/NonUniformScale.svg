@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Icons / Toolbar / Non Uniform Scaling</title>
+    <defs>
+        <rect id="path-1" x="3" y="3" width="18" height="18"></rect>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="0" y="0" width="18" height="18" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+    </defs>
+    <g id="Icons-/-Toolbar-/-Non-Uniform-Scaling" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group">
+            <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+            <g id="Group-3" transform="translate(4.644661, 5.000000)" fill="#65C98C">
+                <rect id="Rectangle" x="3.16582489" y="1.21320344" width="1.95262146" height="5"></rect>
+                <polygon id="Rectangle" points="4.14213562 -1.71418435e-13 8.28427125 4.14213562 -1.11910481e-13 4.14213562"></polygon>
+            </g>
+            <g id="Group-4" transform="translate(13.073593, 10.857864)" fill="#65C98C">
+                <g id="Group-2" transform="translate(0.000000, 0.000000)">
+                    <rect id="Rectangle" x="0" y="3.16582489" width="4" height="1.95262146"></rect>
+                    <polygon id="Rectangle" points="5.71320344 4.14213562 1.57106781 8.28427125 1.57106781 1.14575016e-13"></polygon>
+                </g>
+            </g>
+            <rect id="Rectangle" stroke="#65C98C" fill="#65C98C" x="3.5" y="12.5" width="8" height="8"></rect>
+            <use id="Rectangle" stroke="#65C98C" mask="url(#mask-2)" stroke-width="2" stroke-dasharray="1" xlink:href="#path-1"></use>
+        </g>
+    </g>
+</svg>

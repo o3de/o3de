@@ -125,18 +125,18 @@ namespace GridMate
         return false;
     }
     //-----------------------------------------------------------------------------
-    bool ReplicaChunkBase::IsMaster() const
+    bool ReplicaChunkBase::IsPrimary() const
     {
         if (m_replica)
         {
-            return m_replica->IsMaster();
+            return m_replica->IsPrimary();
         }
         return true;
     }
     //-----------------------------------------------------------------------------
     bool ReplicaChunkBase::IsProxy() const
     {
-        return !IsMaster();
+        return !IsPrimary();
     }
     //-----------------------------------------------------------------------------
     bool ReplicaChunkBase::IsDirty(AZ::u32 marshalFlags) const
@@ -398,8 +398,8 @@ namespace GridMate
         {
             if (mc.m_peer != m_replica->m_upstreamHop)
             {
-                AZ_TracePrintf("GridMate", "Received dataset updates for replica id %08x(%s) from unexpected peer.", GetReplicaId(), IsActive() && IsMaster() ? "master" : "proxy");
-                if (IsMaster())
+                AZ_TracePrintf("GridMate", "Received dataset updates for replica id %08x(%s) from unexpected peer.", GetReplicaId(), IsActive() && IsPrimary() ? "primary" : "proxy");
+                if (IsPrimary())
                 {
                     mc.m_iBuf->Skip(mc.m_iBuf->Left());
                     return;
@@ -547,7 +547,7 @@ namespace GridMate
                             AZ_Assert(false, "Discarding non-authoritative RPC <%s> because s_allowNonAuthoritativeRequests trait is disabled!", GetDescriptor()->GetRpcName(this, rpc));
                             isRpcValid = false;
                         }
-                        if (!rpc->IsAllowNonAuthoritativeRequestsRelay() && !IsMaster())
+                        if (!rpc->IsAllowNonAuthoritativeRequestsRelay() && !IsPrimary())
                         {
                             AZ_Assert(false, "Discarding non-authoritative RPC <%s> because s_allowNonAuthoritativeRequestRelay trait is disabled!", GetDescriptor()->GetRpcName(this, rpc));
                             isRpcValid = false;
@@ -639,19 +639,19 @@ namespace GridMate
         for (RPCQueue::iterator iRPC = m_rpcQueue.begin(); iRPC != m_rpcQueue.end(); )
         {
             Internal::RpcRequest* request = *iRPC;
-            bool isMaster = IsMaster(); // need to do this check after each RPC because ownership may change
+            bool isPrimary = IsPrimary(); // need to do this check after each RPC because ownership may change
 
             if (!m_replica->IsActive()) // this can happen if replica was deactivated within a previous RPC call
             {
                 request->m_relayed = true;
             }
-            else if (!request->m_processed && (isMaster || request->m_authoritative))
+            else if (!request->m_processed && (isPrimary || request->m_authoritative))
             {
                 request->m_realTime = rc.m_realTime;
                 request->m_localTime = rc.m_localTime;
                 bool ret = request->m_rpc->Invoke(request);
                 request->m_processed = true;
-                if (isMaster)
+                if (isPrimary)
                 {
                     if (ret)
                     {

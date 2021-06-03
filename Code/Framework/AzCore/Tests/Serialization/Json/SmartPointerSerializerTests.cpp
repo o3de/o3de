@@ -32,6 +32,11 @@ namespace JsonSerializationTests
             return AZStd::make_shared<AZ::JsonSmartPointerSerializer>();
         }
 
+        AZStd::shared_ptr<SmartPointer> CreateDefaultConstructedInstance() override
+        {
+            return AZStd::make_shared<SmartPointer>();
+        }
+
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<SmartPointer>();
@@ -228,11 +233,17 @@ namespace JsonSerializationTests
     public:
         using SmartPointer = typename SmartPointerSimpleDerivedClassTestDescription<T>::SmartPointer;
 
-        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        // This test is specific for derived classes being used as a default value.
+        AZStd::shared_ptr<SmartPointer> CreateDefaultConstructedInstance() override
         {
             auto result = AZStd::make_shared<SmartPointer>();
             *result = SmartPointer(aznew SimpleInheritence());
             return result;
+        }
+
+        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        {
+            return CreateDefaultConstructedInstance();
         }
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
@@ -386,11 +397,17 @@ namespace JsonSerializationTests
     public:
         using SmartPointer = typename SmartPointerComplexDerivedClassTestDescription<T>::SmartPointer;
 
-        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        // This test is specific for derived classes being used as a default value.
+        AZStd::shared_ptr<SmartPointer> CreateDefaultConstructedInstance() override
         {
             auto result = AZStd::make_shared<SmartPointer>();
             *result = SmartPointer(aznew MultipleInheritence());
             return result;
+        }
+
+        AZStd::shared_ptr<SmartPointer> CreateDefaultInstance() override
+        {
+            return CreateDefaultConstructedInstance();
         }
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override

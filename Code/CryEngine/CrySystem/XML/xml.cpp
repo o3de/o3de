@@ -1809,8 +1809,6 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         ParseEnd();
     }
 
-    SYNCHRONOUS_LOADING_TICK();
-
     delete [] pFileContents;
 
     return root;

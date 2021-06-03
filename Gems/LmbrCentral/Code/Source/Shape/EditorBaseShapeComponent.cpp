@@ -12,7 +12,7 @@
 
 #include "LmbrCentral_precompiled.h"
 #include "EditorBaseShapeComponent.h"
-
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
@@ -214,8 +214,7 @@ namespace LmbrCentral
     {
         if (changeReason == ShapeChangeReasons::ShapeChanged)
         {
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
         }
     }
 } // namespace LmbrCentral

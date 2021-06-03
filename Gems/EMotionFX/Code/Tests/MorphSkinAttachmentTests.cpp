@@ -168,8 +168,8 @@ namespace EMotionFX
         // The skin attachment should now receive morph values from the main actor.
         const Pose& attachPose = *m_attachmentActorInstance->GetTransformData()->GetCurrentPose();
         ASSERT_EQ(attachPose.GetNumMorphWeights(), 4);
-        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(0), 0.0f);    // Once we auto register missing morphs this should be 0.5. See https://jira.agscollab.com/browse/LY-100212
-        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(1), 0.0f);    // Once we auto register missing morphs this should be 0.6. See https://jira.agscollab.com/browse/LY-100212
+        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(0), 0.0f);    // Once we auto register missing morphs this should be 0.5. See LY-100212
+        EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(1), 0.0f);    // Once we auto register missing morphs this should be 0.6. See LY-100212
         EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(2), 0.1f);
         EXPECT_FLOAT_EQ(attachPose.GetMorphWeight(3), 0.2f);
     };

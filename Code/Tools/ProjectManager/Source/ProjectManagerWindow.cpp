@@ -11,96 +11,65 @@
  */
 
 #include <ProjectManagerWindow.h>
-#include <ScreenFactory.h>
+#include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzFramework/Application/Application.h>
 
 #include <QDir>
 
-#include <Source/ui_ProjectManagerWindow.h>
-
 namespace O3DE::ProjectManager
 {
-    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath)
+    ProjectManagerWindow::ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath, const AZ::IO::PathView& projectPath, ProjectManagerScreen startScreen)
         : QMainWindow(parent)
-        , m_ui(new Ui::ProjectManagerWindowClass())
     {
-        m_ui->setupUi(this);
+        m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
 
-        ConnectSlotsAndSignals();
+        setWindowTitle(tr("O3DE Project Manager"));
 
+        ScreensCtrl* screensCtrl = new ScreensCtrl();
+
+        // currently the tab order on the home page is based on the order of this list
+        QVector<ProjectManagerScreen> screenEnums =
+        {
+            ProjectManagerScreen::Projects,
+            ProjectManagerScreen::EngineSettings,
+            ProjectManagerScreen::CreateProject,
+            ProjectManagerScreen::UpdateProject
+        };
+        screensCtrl->BuildScreens(screenEnums);
+
+        setCentralWidget(screensCtrl);
+
+        // setup stylesheets and hot reloading 
         QDir rootDir = QString::fromUtf8(engineRootPath.Native().data(), aznumeric_cast<int>(engineRootPath.Native().size()));
         const auto pathOnDisk = rootDir.absoluteFilePath("Code/Tools/ProjectManager/Resources");
-        const auto qrcPath = QStringLiteral(":/ProjectManagerWindow");
-        AzQtComponents::StyleManager::addSearchPaths("projectmanagerwindow", pathOnDisk, qrcPath, engineRootPath);
+        const auto qrcPath = QStringLiteral(":/ProjectManager/style");
+        AzQtComponents::StyleManager::addSearchPaths("style", pathOnDisk, qrcPath, engineRootPath);
 
-        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("projectlauncherwindow:ProjectManagerWindow.qss"));
+        // set stylesheet after creating the screens or their styles won't get updated
+        AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:ProjectManager.qss"));
 
-        BuildScreens();
+        // always push the projects screen first so we have something to come back to
+        if (startScreen != ProjectManagerScreen::Projects)
+        {
+            screensCtrl->ForceChangeToScreen(ProjectManagerScreen::Projects);
+        }
+        screensCtrl->ForceChangeToScreen(startScreen);
 
-        ChangeToScreen(ProjectManagerScreen::FirstTimeUse);
+        if (!projectPath.empty())
+        {
+            const QString path = QString::fromUtf8(projectPath.Native().data(), aznumeric_cast<int>(projectPath.Native().size()));
+            emit screensCtrl->NotifyCurrentProject(path);
+        }
     }
 
     ProjectManagerWindow::~ProjectManagerWindow()
     {
-    }
-
-    void ProjectManagerWindow::BuildScreens()
-    {
-        // Basically just iterate over the ProjectManagerScreen enum creating each screen
-        // Could add some fancy to do this but there are few screens right now
-
-        ResetScreen(ProjectManagerScreen::FirstTimeUse);
-        ResetScreen(ProjectManagerScreen::NewProjectSettings);
-        ResetScreen(ProjectManagerScreen::GemCatalog);
-        ResetScreen(ProjectManagerScreen::ProjectsHome);
-        ResetScreen(ProjectManagerScreen::ProjectSettings);
-        ResetScreen(ProjectManagerScreen::EngineSettings);
-    }
-
-    QStackedWidget* ProjectManagerWindow::GetScreenStack()
-    {
-        return m_ui->stackedScreens;
-    }
-
-    void ProjectManagerWindow::ChangeToScreen(ProjectManagerScreen screen)
-    {
-        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
-        m_ui->stackedScreens->setCurrentIndex(index);
-    }
-
-    void ProjectManagerWindow::ResetScreen(ProjectManagerScreen screen)
-    {
-        int index = aznumeric_cast<int, ProjectManagerScreen>(screen);
-
-        // Fine the old screen if it exists and get rid of it so we can start fresh
-        QWidget* oldScreen = m_ui->stackedScreens->widget(index);
-
-        if (oldScreen)
-        {
-            m_ui->stackedScreens->removeWidget(oldScreen);
-            oldScreen->deleteLater();
-        }
-
-        // Add new screen
-        QWidget* newScreen = BuildScreen(this, screen);
-        m_ui->stackedScreens->insertWidget(index, newScreen);
-    }
-
-    void ProjectManagerWindow::ConnectSlotsAndSignals()
-    {
-        QObject::connect(m_ui->projectsMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleProjectsMenu);
-        QObject::connect(m_ui->engineMenu, &QMenu::aboutToShow, this, &ProjectManagerWindow::HandleEngineMenu);
-    }
-
-    void ProjectManagerWindow::HandleProjectsMenu()
-    {
-        ChangeToScreen(ProjectManagerScreen::ProjectsHome);
-    }
-    void ProjectManagerWindow::HandleEngineMenu()
-    {
-        ChangeToScreen(ProjectManagerScreen::EngineSettings);
+        m_pythonBindings.reset();
     }
 
 } // namespace O3DE::ProjectManager

@@ -62,7 +62,7 @@ namespace AZ
             bool m_enableShadow = false;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
-            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;
+            PcfMethod m_pcfMethod = PcfMethod::Bicubic;
             float m_boundaryWidthInDegrees = 0.25f;
             uint16_t m_predictionSampleCount = 4;
             uint16_t m_filteringSampleCount = 12;

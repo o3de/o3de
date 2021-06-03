@@ -136,6 +136,7 @@ namespace EMotionFX
             {
                 incompatible.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
                 incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
+                incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

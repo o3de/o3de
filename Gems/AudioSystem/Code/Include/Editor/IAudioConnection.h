@@ -14,8 +14,6 @@
 #pragma once
 
 #include <ACETypes.h>
-#include <Serialization/IArchive.h>
-#include <Serialization/STL.h>
 
 namespace AudioControls
 {
@@ -38,10 +36,6 @@ namespace AudioControls
         virtual bool HasProperties()
         {
             return false;
-        }
-
-        virtual void Serialize([[maybe_unused]] Serialization::IArchive& ar)
-        {
         }
 
     private:

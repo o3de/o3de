@@ -14,7 +14,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{8BCC23A5-D08E-458E-B0B3-087C65FA1D31}",
                 "Name": "MuzzleFlash",
                 "SuppressEngineReduce": true,
@@ -34,7 +34,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{8BCC23A5-D08E-458E-B0B3-087C65FA1D31}",
                 "Name": "MuzzleFlash",
                 "SuppressEngineReduce": true,

@@ -537,6 +537,20 @@ namespace ScriptCanvas
             return azrtti_istypeof<const ScriptCanvas::Nodes::Logic::Break*>(execution->GetId().m_node);
         }
 
+        bool IsClassPropertyRead(ExecutionTreeConstPtr execution)
+        {
+            return execution->GetSymbol() == Symbol::FunctionCall
+                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::Method*>(execution->GetId().m_node)
+                && azrtti_cast<const ScriptCanvas::Nodes::Core::Method*>(execution->GetId().m_node)->GetPropertyStatus() == PropertyStatus::Getter;
+        }
+
+        bool IsClassPropertyWrite(ExecutionTreeConstPtr execution)
+        {
+            return execution->GetSymbol() == Symbol::FunctionCall
+                && azrtti_istypeof<const ScriptCanvas::Nodes::Core::Method*>(execution->GetId().m_node)
+                && azrtti_cast<const ScriptCanvas::Nodes::Core::Method*>(execution->GetId().m_node)->GetPropertyStatus() == PropertyStatus::Setter;
+        }
+
         bool IsCodeConstructable(Grammar::VariableConstPtr value)
         {
             return Data::IsValueType(value->m_datum.GetType())
@@ -1279,7 +1293,6 @@ namespace ScriptCanvas
             ProtectReservedWords(identifier);
             return identifier;
         }
-
 
         ExecutionTraversalResult TraverseExecutionConnectionsRecurse(const EndpointsResolved& nextEndpoints, AZStd::unordered_set<const Slot*>& previousIns, GraphExecutionPathTraversalListener& listener);
 

@@ -41,6 +41,8 @@ namespace LmbrCentral
             provided.push_back(AZ_CRC("CompoundShapeService", 0x4f7c640a));
         }
 
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
         AZ::u32 ConfigurationChanged();
 
     private:

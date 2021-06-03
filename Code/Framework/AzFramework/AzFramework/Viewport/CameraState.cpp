@@ -74,7 +74,6 @@ namespace AzFramework
 
     void SetCameraClippingVolumeFromPerspectiveFovMatrixRH(CameraState& cameraState, const AZ::Matrix4x4& clipFromView)
     {
-        const float m11 = clipFromView(1, 1);
         const float m22 = clipFromView(2, 2);
         const float m23 = clipFromView(2, 3);
         cameraState.m_nearClip = m23 / m22;
@@ -84,7 +83,12 @@ namespace AzFramework
         {
             AZStd::swap(cameraState.m_nearClip, cameraState.m_farClip);
         }
-        cameraState.m_fovOrZoom = 2 * (AZ::Constants::HalfPi - atanf(m11));
+        cameraState.m_fovOrZoom = RetrieveFov(clipFromView);
+    }
+
+    float RetrieveFov(const AZ::Matrix4x4& clipFromView)
+    {
+        return 2.0f * (AZ::Constants::HalfPi - AZStd::atan(clipFromView(1, 1)));
     }
 
     void CameraState::Reflect(AZ::SerializeContext& serializeContext)

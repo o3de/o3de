@@ -33,7 +33,6 @@ enum ObjectEvent
     EVENT_DBLCLICK,         //!< Signals that object have been double clicked.
     EVENT_KEEP_HEIGHT,  //!< Signals that object must preserve its height over changed terrain.
     EVENT_RELOAD_ENTITY,//!< Signals that entities scripts must be reloaded.
-    EVENT_RELOAD_TEXTURES,//!< Signals that all possible textures in objects should be reloaded.
     EVENT_RELOAD_GEOM,  //!< Signals that all possible geometries should be reloaded.
     EVENT_UNLOAD_GEOM,  //!< Signals that all possible geometries should be unloaded.
     EVENT_MISSION_CHANGE,   //!< Signals that mission have been changed.

@@ -644,27 +644,6 @@ void CLayoutViewPane::SetFullscren(bool f)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::SetFullscreenViewport(bool b)
-{
-    if (!m_viewport)
-    {
-        return;
-    }
-
-    if (b)
-    {
-        m_viewport->setParent(0);
-
-        GetIEditor()->GetRenderer()->ChangeResolution(800, 600, 32, 80, true, false);
-    }
-    else
-    {
-        m_viewport->setParent(this);
-        GetIEditor()->GetRenderer()->ChangeResolution(800, 600, 32, 80, false, false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::SetFocusToViewport()
 {
     if (m_viewport)

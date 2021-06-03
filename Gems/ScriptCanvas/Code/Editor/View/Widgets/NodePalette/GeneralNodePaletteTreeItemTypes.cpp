@@ -51,14 +51,16 @@ namespace ScriptCanvasEditor
                 ->Field("ClassName", &CreateClassMethodMimeEvent::m_className)
                 ->Field("MethodName", &CreateClassMethodMimeEvent::m_methodName)
                 ->Field("IsOverload", &CreateClassMethodMimeEvent::m_isOverload)
+                ->Field("propertyStatus", &CreateClassMethodMimeEvent::m_propertyStatus)
                 ;
         }
     }
 
-    CreateClassMethodMimeEvent::CreateClassMethodMimeEvent(const QString& className, const QString& methodName, bool isOverload)
+    CreateClassMethodMimeEvent::CreateClassMethodMimeEvent(const QString& className, const QString& methodName, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus)
         : m_className(className.toUtf8().data())
         , m_methodName(methodName.toUtf8().data())
         , m_isOverload(isOverload)
+        , m_propertyStatus(propertyStatus)
     {
     }
 
@@ -70,7 +72,7 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            return Nodes::CreateObjectMethodNode(m_className, m_methodName, scriptCanvasId);
+            return Nodes::CreateObjectMethodNode(m_className, m_methodName, scriptCanvasId, m_propertyStatus);
         }
     }
 
@@ -78,11 +80,12 @@ namespace ScriptCanvasEditor
     // ClassMethodEventPaletteTreeItem
     ////////////////////////////////////
 
-    ClassMethodEventPaletteTreeItem::ClassMethodEventPaletteTreeItem(AZStd::string_view className, AZStd::string_view methodName, bool isOverload)
+    ClassMethodEventPaletteTreeItem::ClassMethodEventPaletteTreeItem(AZStd::string_view className, AZStd::string_view methodName, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus)
         : DraggableNodePaletteTreeItem(methodName, ScriptCanvasEditor::AssetEditorId)
         , m_className(className.data())
         , m_methodName(methodName.data())
         , m_isOverload(isOverload)
+        , m_propertyStatus(propertyStatus)
     {
         AZStd::string displayMethodName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, m_className.toUtf8().data(), m_methodName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Name);
 
@@ -93,6 +96,15 @@ namespace ScriptCanvasEditor
         else
         {
             SetName(displayMethodName.c_str());
+        }
+
+        if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
+        {
+            SetName(AZStd::string::format("Get %s", GetName().toUtf8().data()).data());
+        }
+        else if (propertyStatus == ScriptCanvas::PropertyStatus::Setter)
+        {
+            SetName(AZStd::string::format("Set %s", GetName().toUtf8().data()).data());
         }
 
         AZStd::string displayEventTooltip = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, m_className.toUtf8().data(), m_methodName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Tooltip);
@@ -107,7 +119,7 @@ namespace ScriptCanvasEditor
 
     GraphCanvas::GraphCanvasMimeEvent* ClassMethodEventPaletteTreeItem::CreateMimeEvent() const
     {
-        return aznew CreateClassMethodMimeEvent(m_className, m_methodName, m_isOverload);
+        return aznew CreateClassMethodMimeEvent(m_className, m_methodName, m_isOverload, m_propertyStatus);
     }
 
     AZStd::string ClassMethodEventPaletteTreeItem::GetClassMethodName() const
@@ -123,6 +135,11 @@ namespace ScriptCanvasEditor
     bool ClassMethodEventPaletteTreeItem::IsOverload() const
     {
         return m_isOverload;
+    }
+
+    ScriptCanvas::PropertyStatus ClassMethodEventPaletteTreeItem::GetPropertyStatus() const
+    {
+        return m_propertyStatus;
     }
 
     //! Implementation of the CreateGlobalMethod Mime Event

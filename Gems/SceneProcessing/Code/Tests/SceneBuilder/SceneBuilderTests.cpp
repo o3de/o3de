@@ -13,6 +13,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -30,6 +31,12 @@ class SceneBuilderTests
 protected:
     void SetUp() override
     {
+        AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+        auto projectPathKey =
+            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
         m_app.Start(AZ::ComponentApplication::Descriptor());
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

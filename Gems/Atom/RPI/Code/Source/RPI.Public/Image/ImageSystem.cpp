@@ -148,10 +148,16 @@ namespace AZ
             CreateDefaultResources(desc);
 
             Interface<ImageSystemInterface>::Register(this);
+
+            m_initialized = true;
         }
 
         void ImageSystem::Shutdown()
         {
+            if (!m_initialized)
+            {
+                return;
+            }
             Interface<ImageSystemInterface>::Unregister(this);
 
             m_defaultStreamingImageControllerAsset.Release();
@@ -167,6 +173,7 @@ namespace AZ
             Data::InstanceDatabase<StreamingImageController>::Destroy();
 
             m_activeStreamingPools.clear();
+            m_initialized = false;
         }
 
         void ImageSystem::Update()

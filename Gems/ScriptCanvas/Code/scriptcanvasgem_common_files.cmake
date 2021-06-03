@@ -454,6 +454,11 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
+    Include/ScriptCanvas/Libraries/Spawning/Spawning.h
+    Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
+    Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
+    Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/String/Contains.cpp
     Include/ScriptCanvas/Libraries/String/Contains.h
     Include/ScriptCanvas/Libraries/String/Contains.ScriptCanvasGrammar.xml
@@ -597,10 +602,6 @@ set(FILES
     Include/ScriptCanvas/Variable/GraphVariable.cpp
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.h
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.cpp
-    Include/ScriptCanvas/Variable/GraphVariableNetBindings.h
-    Include/ScriptCanvas/Variable/GraphVariableNetBindings.cpp
-    Include/ScriptCanvas/Variable/GraphVariableMarshal.h
-    Include/ScriptCanvas/Variable/GraphVariableMarshal.cpp
     Include/ScriptCanvas/Variable/VariableCore.h
     Include/ScriptCanvas/Variable/VariableCore.cpp
     Include/ScriptCanvas/Variable/VariableData.h
