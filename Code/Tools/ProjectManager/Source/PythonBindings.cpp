@@ -572,6 +572,7 @@ namespace O3DE::ProjectManager
                 pybind11::none(),   // default_gems_folder
                 pybind11::none(),   // default_templates_folder
                 pybind11::none(),   // default_restricted_folder
+                pybind11::none(),   // default_third_party_folder
                 pybind11::none(),   // external_subdir_engine_path
                 pybind11::none(),   // external_subdir_project_path
                 true,               // remove
