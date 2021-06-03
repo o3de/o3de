@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
@@ -49,8 +50,7 @@ namespace AzToolsFramework
             m_alias = GenerateInstanceAlias();
             m_containerEntity = containerEntity ? AZStd::move(containerEntity)
                                                 : AZStd::make_unique<AZ::Entity>();
-            EntityAlias containerEntityAlias = GenerateEntityAlias();
-            RegisterEntity(m_containerEntity->GetId(), containerEntityAlias);
+            RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
         Instance::~Instance()
