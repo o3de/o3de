@@ -3,7 +3,13 @@ import ly_test_tools
 import ly_test_tools.log.log_monitor
 import os
 import logging
+import json
+import time
+from typing import List
 
+import boto3
+from boto3.dynamodb.table import TableResource
+from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
 from AWS.Windows.cdk.cdk import cdk
 from AWS.common.aws_utils import aws_utils
@@ -12,11 +18,42 @@ from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
 AWS_CORE_FEATURE_NAME = 'AWSCore'
 AWS_CORE_DEFAULT_PROFILE_NAME = 'default'
+AWS_RESOURCE_MAPPING_FILE_NAME = 'aws_resource_mappings.json'
 
 
 GAME_LOG_NAME = 'Game.log'
 
 logger = logging.getLogger(__name__)
+
+
+def write_test_table_data(region: str):
+    """
+    Write a list of items to a DynamoDB table using the batch_writer.
+
+    Each item must contain at least the keys required by the schema, which for the example
+    is just 'id'
+    """
+    session = boto3.Session(region_name=region)
+
+    aws_resource_directory = os.path.join("../../../../../Config", AWS_RESOURCE_MAPPING_FILE_NAME)
+    with open(aws_resource_directory, "r") as aws_resource:
+        aws_resource_data = json.load(aws_resource)
+
+    table_name = aws_resource_data["AWSResourceMappings"]["AWSCore.ExampleDynamoTableOutput"]["Name/ID"]
+
+    dynamodb = session.resource('dynamodb')
+    table = dynamodb.Table(table_name)
+
+    try:
+        with table.batch_writer() as writer:
+            item = {
+                'test_value': 'ItWorked'
+            }
+            writer.put_item(Item=item)
+        logger.info(f'Loaded data into table {table.name}')
+    except ClientError:
+        logger.exception(f'Failed to load data into table {table.name}')
+        raise
 
 
 @pytest.mark.usefixtures('asset_processor')
@@ -96,6 +133,9 @@ class TestAWSCoreDownloadFromS3(object):
 
         launcher.args = ['+LoadLevel', level]
 
+        if not os.path.exists('s3download'):
+            os.makedirs('s3download')
+
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
                 expected_lines=['(Script) - head object request is done',
@@ -103,7 +143,7 @@ class TestAWSCoreDownloadFromS3(object):
                                 '(Script) - Object example.txt is found.',
                                 '(Script) - Object example.txt is downloaded.'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
-                                  '(Script) - '],
+                                  '(Script) - Head Object Error: No response body.'],
                 halt_on_unexpected=True,
                 )
 
@@ -111,18 +151,13 @@ class TestAWSCoreDownloadFromS3(object):
 
         download_dir = os.path.join(os.getcwd(), 's3download/output.txt')
 
-        assert os.path.exists(download_dir), 'The expected file wasn\'t successfully downloaded'
+        file_was_downloaded = os.path.exists(download_dir)
+        # clean up the file directories.
+        if file_was_downloaded:
+            os.remove('s3download/output.txt')
+        os.rmdir('./s3download')
 
-    def test_download_from_s3_raw(self,
-                                  level: str,
-                                  launcher: pytest.fixture,
-                                  cdk: pytest.fixture,
-                                  resource_mappings: pytest.fixture,
-                                  workspace: pytest.fixture,
-                                  asset_processor: pytest.fixture
-                                  ):
-
-        assert True
+        assert file_was_downloaded, 'The expected file wasn\'t successfully downloaded'
 
     def test_invoke_lambda(self,
                            level: str,
@@ -137,6 +172,9 @@ class TestAWSCoreDownloadFromS3(object):
         Tests: Runs the test level.
         Verification: Searches the logs for the expected output from the example lambda.
         """
+        logger.info(f'Cdk stack names:\n{cdk.list()}')
+        stacks = cdk.deploy(additonal_params=['--all'])
+        resource_mappings.populate_output_keys(stacks)
 
         project_log = launcher.workspace.paths.project_log()
         file_to_monitor = os.path.join(project_log, GAME_LOG_NAME)
@@ -146,24 +184,13 @@ class TestAWSCoreDownloadFromS3(object):
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
-                expected_lines=['(Script) - No response body.'
-                                '(Script) - Success: {"statusCode": 200, "body": event}'],
+                expected_lines=['(Script) - Success: {"statusCode": 200, "body": event}'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
                                   '(Script) - '],
                 halt_on_unexpected=True,
             )
 
         assert result
-
-    def test_invoke_lambda_raw(self,
-                               level: str,
-                               launcher: pytest.fixture,
-                               cdk: pytest.fixture,
-                               resource_mappings: pytest.fixture,
-                               workspace: pytest.fixture,
-                               asset_processor: pytest.fixture
-                               ):
-        assert False
 
     def test_get_dynamodb_value(self,
                                 level: str,
@@ -178,6 +205,10 @@ class TestAWSCoreDownloadFromS3(object):
         Test: Runs a launcher with a level that loads a scriptcanvas that pulls a DynamoDB table value.
         Verification: The value is output in the logs and verified by the test.
         """
+        logger.info(f'Cdk stack names:\n{cdk.list()}')
+        stacks = cdk.deploy(additonal_params=['--all'])
+        resource_mappings.populate_output_keys(stacks)
+        write_test_table_data("us-west-2")
 
         project_log = launcher.workspace.paths.project_log()
         file_to_monitor = os.path.join(project_log, GAME_LOG_NAME)
@@ -187,7 +218,7 @@ class TestAWSCoreDownloadFromS3(object):
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
-                expected_lines=['(Script) - id: {"S":	"It Worked"}'],
+                expected_lines=['(Script) - test_value: {"S":	"ItWorked"}'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
                                   '(Script) - '],
                 halt_on_unexpected=True,
