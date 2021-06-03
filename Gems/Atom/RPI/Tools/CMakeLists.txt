@@ -9,15 +9,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Include/Atom/Feature/Material/MaterialAssignment.h
-    Include/Atom/Feature/Material/MaterialAssignmentId.h
-    Include/Atom/Feature/Utils/LightingPreset.h
-    Include/Atom/Feature/Utils/ModelPreset.h
-    Source/Material/MaterialAssignment.cpp
-    Source/Material/MaterialAssignmentId.cpp
-    Source/Material/MaterialAssignmentSerializer.cpp
-    Source/Material/MaterialAssignmentSerializer.h
-    Source/Utils/LightingPreset.cpp
-    Source/Utils/ModelPreset.cpp
-)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_pip_install_local_package_editable(${CMAKE_CURRENT_LIST_DIR} atom_rpi_tools)
+
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        ly_add_pytest(
+            NAME RPI::atom_rpi_tools_tests
+            PATH ${CMAKE_CURRENT_LIST_DIR}/atom_rpi_tools/tests/
+            TIMEOUT 30
+        )
+    endif()
+endif()
+
