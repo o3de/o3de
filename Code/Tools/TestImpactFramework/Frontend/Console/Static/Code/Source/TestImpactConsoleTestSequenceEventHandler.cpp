@@ -23,7 +23,7 @@ namespace TestImpact
         public:
             static void TestSequenceStartCallback(TestSequenceEventHandler& sequence, Client::TestRunSelection&& selectedTests)
             {
-                sequence.ResetSequence();
+                ResetSequence(sequence);
 
                 std::cout << "Test suite filter: [";
                 if (sequence.m_suiteFilter->empty())
@@ -48,17 +48,17 @@ namespace TestImpact
                 sequence.m_numTests = selectedTests.GetNumIncludedTestRuns();
                 std::cout << sequence.m_numTests << " tests selected, " << selectedTests.GetNumExcludedTestRuns() << " excluded.\n";
             }
+
+            static void ResetSequence(TestSequenceEventHandler& sequence)
+            {
+                sequence.m_numTests = 0;
+                sequence.m_numTestsComplete = 0;
+            }
         };
 
         TestSequenceEventHandler::TestSequenceEventHandler(const AZStd::unordered_set<AZStd::string>& suiteFilter)
             : m_suiteFilter(&suiteFilter)
         {
-        }
-
-        void TestSequenceEventHandler::ClearState()
-        {
-            m_numTests = 0;
-            m_numTestsComplete = 0;
         }
 
         // TestRunCompleteCallback
@@ -106,7 +106,7 @@ namespace TestImpact
 
         }
 
-        //! Handler for TestSequenceCompleteCallback
+        // TestSequenceCompleteCallback
         void RegularTestSequenceEventHandler::operator()(Client::SequenceFailure&& failureReport, AZStd::chrono::milliseconds duration)
         {
 

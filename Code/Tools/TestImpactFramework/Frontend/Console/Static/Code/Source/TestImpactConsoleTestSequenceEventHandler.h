@@ -24,52 +24,6 @@ namespace TestImpact
 {
     namespace Console
     {
-        ////! Functor for handling test sequence events and outputting pertinent information about said events to the console.
-        //class TestSequenceEventHandler
-        //{
-        //public:
-        //    TestSequenceEventHandler(const AZStd::unordered_set<AZStd::string>* suiteFilter);
-
-        //    //! Handler for TestSequenceStartCallback events.
-        //    void operator()(Client::TestRunSelection&& selectedTests);
-
-        //    //! Handler for  ImpactAnalysisTestSequenceStartCallback events.
-        //    void operator()(
-        //        Client::TestRunSelection&& selectedTests,
-        //        AZStd::vector<AZStd::string>&& discardedTests,
-        //        AZStd::vector<AZStd::string>&& draftedTests);
-
-        //    //! Handler for  SafeImpactAnalysisTestSequenceStartCallback events.
-        //    void operator()(
-        //        Client::TestRunSelection&& selectedTests,
-        //        Client::TestRunSelection&& discardedTests,
-        //        AZStd::vector<AZStd::string>&& draftedTests);
-
-        //    //! Handler for  TestSequenceCompleteCallback events.
-        //    void operator()(
-        //        Client::SequenceFailure&& failureReport,
-        //        AZStd::chrono::milliseconds duration);
-
-        //    //! Handler for  SafeTestSequenceCompleteCallback events.
-        //    void operator()(
-        //        Client::SequenceFailure&& selectedFailureReport,
-        //        Client::SequenceFailure&& discardedFailureReport,
-        //        AZStd::chrono::milliseconds duration);
-
-        //    //! Handler for  TestRunCompleteCallback events.
-        //    void operator()(Client::TestRun&& test);
-
-        //private:
-        //    void ClearState();
-
-        //    const AZStd::unordered_set<AZStd::string>* m_suiteFilter = nullptr;
-        //    size_t m_numTests = 0;
-        //    size_t m_numTestsComplete = 0;
-        //    bool m_isUpdatingTestImpactData = false;
-        //};
-
-        //class TestSequenceEventHandlerHelper;
-
         //! Functor for handling test sequence events and outputting pertinent information about said events to the console.
         class TestSequenceEventHandler
         {
@@ -80,7 +34,6 @@ namespace TestImpact
 
         protected:
             TestSequenceEventHandler(const AZStd::unordered_set<AZStd::string>& suiteFilter);
-            void ResetSequence();
 
             const AZStd::unordered_set<AZStd::string>* m_suiteFilter = nullptr;
             size_t m_numTests = 0;
