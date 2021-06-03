@@ -1072,8 +1072,7 @@ namespace GraphCanvas
 
                     if (!id.empty())
                     {
-                        Selector selector = Selector::Get(id);
-                        result.emplace_back(selector);
+                        result.emplace_back(Selector::Get(id));
                         continue;
                     }
 
@@ -1111,8 +1110,7 @@ namespace GraphCanvas
                         {
                             bits.emplace_back(stateSelector);
                         }
-                        Selector selector = aznew CompoundSelector(std::move(bits));
-                        nestedSelectors.emplace_back(selector);
+                        nestedSelectors.emplace_back(aznew CompoundSelector(std::move(bits)));
                     }
                 }
 

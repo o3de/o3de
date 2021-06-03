@@ -64,6 +64,8 @@ namespace AzToolsFramework
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
             bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
@@ -88,8 +90,8 @@ namespace AzToolsFramework
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
-             * \param sourceInstance The instance that corresponds to the source template of the link.
-             * \param targetInstance The id of the target template.
+             * \param sourceInstance The instance that corresponds to the source template of the link (child).
+             * \param targetInstance The id of the target template (parent).
              * \param undoBatch The undo batch to set as parent for this create link action.
              * \param patch The patch to store in the newly created link dom.
              * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
@@ -132,7 +134,18 @@ namespace AzToolsFramework
             bool IsCyclicalDependencyFound(
                 InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
-            void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
+            static void Internal_HandleContainerOverride(
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId);
+            static void Internal_HandleEntityChange(
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState);
+            void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
+
+            void UpdateLinkPatchesWithNewEntityAliases(
+                PrefabDom& linkPatch,
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
+                Instance& newParent);
+
+            static void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);

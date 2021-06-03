@@ -12,7 +12,6 @@
 
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
-
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
@@ -24,15 +23,24 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/SessionConfig.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+#include <AzFramework/Spawnable/Spawnable.h>
+
 #include <AzNetworking/Framework/INetworking.h>
+
+#include <cmath>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -76,6 +84,7 @@ namespace Multiplayer
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(AZ::TimeMs, cl_defaultNetworkEntityActivationTimeSliceMs, AZ::TimeMs{ 0 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Max Ms to use to activate entities coming from the network, 0 means instantiate everything");
+    AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
     AZ_CVAR(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset, "prefabs/player.network.spawnable", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default spawnable to use when a new player connects");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -184,10 +193,26 @@ namespace Multiplayer
         return disconnectSuccessful;
     }
 
-    void MultiplayerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
-        AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
+        const AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
+        const AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
+        const AZ::TimeMs serverRateMs = static_cast<AZ::TimeMs>(sv_serverSendRateMs);
+        const float serverRateSeconds = static_cast<float>(serverRateMs) / 1000.0f;
+
+        TickVisibleNetworkEntities(deltaTime, serverRateSeconds);
+
+        if (GetAgentType() == MultiplayerAgentType::ClientServer
+         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        {
+            m_serverSendAccumulator += deltaTime;
+            if (m_serverSendAccumulator < serverRateSeconds)
+            {
+                return;
+            }
+            m_serverSendAccumulator -= serverRateSeconds;
+            m_networkTime.IncrementHostFrameId();
+        }
 
         // Handle deferred local rpc messages that were generated during the updates
         m_networkEntityManager.DispatchLocalDeferredRpcMessages();
@@ -393,13 +418,21 @@ namespace Multiplayer
         }
 
         EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
-        
-        // Ignore a_Request.GetServerGameTimePoint(), clients can't affect the server gametime
+
+        if ((GetAgentType() == MultiplayerAgentType::Client) && (packet.GetHostFrameId() > m_lastReplicatedHostFrameId))
+        {
+            // Update client to latest server time
+            m_renderBlendFactor = 0.0f;
+            m_lastReplicatedHostTimeMs = packet.GetHostTimeMs();
+            m_lastReplicatedHostFrameId = packet.GetHostFrameId();
+            m_networkTime.AlterTime(m_lastReplicatedHostFrameId, m_lastReplicatedHostTimeMs, AzNetworking::InvalidConnectionId);
+        }
+
         for (AZStd::size_t i = 0; i < packet.GetEntityMessages().size(); ++i)
         {
             const NetworkEntityUpdateMessage& updateMessage = packet.GetEntityMessages()[i];
             handledAll &= replicationManager.HandleEntityUpdateMessage(connection, packetHeader, updateMessage);
-            AZ_Assert(handledAll, "GameServerToClientNetworkRequestHandler EntityUpdates Did not handle all updates");
+            AZ_Assert(handledAll, "EntityUpdates did not handle all update messages");
         }
 
         return handledAll;
@@ -468,7 +501,7 @@ namespace Multiplayer
 
         // Hosts will spawn a new default player prefab for the user that just connected
         if (GetAgentType() == MultiplayerAgentType::ClientServer
-            || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
             NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
             if (controlledEntity.Exists())
@@ -628,6 +661,74 @@ namespace Multiplayer
         AZLOG_INFO("Total RPCs sent bytes: %llu", aznumeric_cast<AZ::u64>(rpcsSent.m_totalBytes));
         AZLOG_INFO("Total RPCs received: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalCalls));
         AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalBytes));
+    }
+
+    void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
+    {
+        const float targetAdjustBlend = AZStd::clamp(deltaTime / serverRateSeconds, 0.0f, 1.0f);
+        m_renderBlendFactor += targetAdjustBlend;
+
+        // Linear close to the origin, but asymptote at y = 1
+        const float adjustedBlendFactor = 1.0f - (std::pow(0.2f, m_renderBlendFactor));
+        AZLOG(NET_Blending, "Computed blend factor of %f", adjustedBlendFactor);
+
+        if (Camera::ActiveCameraRequestBus::HasHandlers())
+        {
+            // If there's a camera, update only what's visible
+            AZ::Transform activeCameraTransform;
+            Camera::Configuration activeCameraConfiguration;
+            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraConfiguration, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraConfiguration);
+
+            const AZ::ViewFrustumAttributes frustumAttributes
+            (
+                activeCameraTransform,
+                activeCameraConfiguration.m_frustumHeight / activeCameraConfiguration.m_frustumWidth,
+                activeCameraConfiguration.m_fovRadians,
+                activeCameraConfiguration.m_nearClipDistance,
+                activeCameraConfiguration.m_farClipDistance
+            );
+            const AZ::Frustum viewFrustum = AZ::Frustum(frustumAttributes);
+
+            // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
+            AZStd::vector<NetBindComponent*> gatheredEntities;
+            AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
+                [&gatheredEntities, entityBoundsUnion](const AzFramework::IVisibilityScene::NodeData& nodeData)
+            {
+                gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
+                for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+                {
+                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                    {
+                        AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+                        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                        if (netBindComponent != nullptr)
+                        {
+                            gatheredEntities.push_back(netBindComponent);
+                        }
+                    }
+                }
+            });
+
+            for (NetBindComponent* netBindComponent : gatheredEntities)
+            {
+                netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+            }
+        }
+        else
+        {
+            // If there's no camera, fall back to updating all net entities
+            for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))
+            {
+                AZ::Entity* entity = iter.second;
+                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                if (netBindComponent != nullptr)
+                {
+                    netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+                }
+            }
+        }
     }
 
     void MultiplayerSystemComponent::OnConsoleCommandInvoked
