@@ -22,8 +22,6 @@
 #include <QMenu>
 #include <QSpacerItem>
 
-//#define SHOW_ALL_PROJECT_ACTIONS
-
 namespace O3DE::ProjectManager
 {
     inline constexpr static int s_projectImageWidth = 210;
@@ -96,10 +94,6 @@ namespace O3DE::ProjectManager
         m_removeProjectAction = newProjectMenu->addAction(tr("Remove from O3DE"));
         m_deleteProjectAction = newProjectMenu->addAction(tr("Delete this Project"));
 
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-        m_editProjectGemsAction = newProjectMenu->addAction(tr("Cutomize Gems..."));
-#endif
-
         QFrame* footer = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(0, 0, 0, 0);
@@ -121,10 +115,6 @@ namespace O3DE::ProjectManager
         connect(m_copyProjectAction, &QAction::triggered, [this]() { emit CopyProject(m_projectInfo.m_path); });
         connect(m_removeProjectAction, &QAction::triggered, [this]() { emit RemoveProject(m_projectInfo.m_path); });
         connect(m_deleteProjectAction, &QAction::triggered, [this]() { emit DeleteProject(m_projectInfo.m_path); });
-
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-        connect(m_editProjectGemsAction, &QAction::triggered, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
-#endif
     }
 
     void ProjectButton::SetButtonEnabled(bool enabled)

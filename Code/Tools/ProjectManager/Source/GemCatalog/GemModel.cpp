@@ -38,6 +38,7 @@ namespace O3DE::ProjectManager
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
         item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
         item->setData(gemInfo.m_summary, RoleSummary);
+        item->setData(false, RoleWasPreviouslyAdded);
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
         item->setData(gemInfo.m_directoryLink, RoleDirectoryLink);
         item->setData(gemInfo.m_documentationLink, RoleDocLink);
@@ -47,6 +48,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_lastUpdatedDate, RoleLastUpdated);
         item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
         item->setData(gemInfo.m_features, RoleFeatures);
+        item->setData(gemInfo.m_path, RolePath);
 
         appendRow(item);
 
@@ -87,11 +89,6 @@ namespace O3DE::ProjectManager
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleSummary).toString();
-    }
-
-    bool GemModel::IsAdded(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleIsAdded).toBool();
     }
 
     QString GemModel::GetDirectoryLink(const QModelIndex& modelIndex)
@@ -179,5 +176,63 @@ namespace O3DE::ProjectManager
     QStringList GemModel::GetFeatures(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleFeatures).toStringList();
+    }
+
+    QString GemModel::GetPath(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RolePath).toString();
+    }
+
+    bool GemModel::IsAdded(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleIsAdded).toBool();
+    }
+
+    void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
+    {
+        model.setData(modelIndex, isAdded, RoleIsAdded);
+    }
+
+    void GemModel::SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded)
+    {
+        model.setData(modelIndex, wasAdded, RoleWasPreviouslyAdded);
+    }
+
+    bool GemModel::NeedsToBeAdded(const QModelIndex& modelIndex)
+    {
+        return (!modelIndex.data(RoleWasPreviouslyAdded).toBool() && modelIndex.data(RoleIsAdded).toBool());
+    }
+
+    bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex)
+    {
+        return (modelIndex.data(RoleWasPreviouslyAdded).toBool() && !modelIndex.data(RoleIsAdded).toBool());
+    }
+
+    QVector<QModelIndex> GemModel::GatherGemsToBeAdded() const
+    {
+        QVector<QModelIndex> result;
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeAdded(modelIndex))
+            {
+                result.push_back(modelIndex);
+            }
+        }
+        return result;
+    }
+
+    QVector<QModelIndex> GemModel::GatherGemsToBeRemoved() const
+    {
+        QVector<QModelIndex> result;
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeRemoved(modelIndex))
+            {
+                result.push_back(modelIndex);
+            }
+        }
+        return result;
     }
 } // namespace O3DE::ProjectManager
