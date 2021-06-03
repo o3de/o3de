@@ -264,8 +264,8 @@ namespace EMotionFX
         BlendTreeBlendNNode* m_blendNNode = nullptr;
     };
 
-    // Make sure we don't crash when we have no inputs, such as reported by bug LY-114828
-    // Also make sure removing connections on BlendN doesn't crash, as reported by LY-114846
+    // Make sure we don't crash when we have no inputs
+    // Also make sure removing connections on BlendN doesn't crash
     TEST_F(BlendTreeBlendNNodeTests, NoInputsNoCrashTest)
     {
         // Remove all input connections of the blendN node.
