@@ -32,7 +32,7 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class EntryDelegate;
 
-        class AssetBrowserTableView
+        class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
             : public QTableView
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
