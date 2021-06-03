@@ -20,6 +20,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QFrame)
 
 namespace O3DE::ProjectManager
 {
@@ -48,7 +49,8 @@ namespace O3DE::ProjectManager
 
     private:
         QString GetDefaultProjectPath();
-        void UpdateTemplateSummary(const ProjectTemplateInfo& templateInfo);
+        QFrame* CreateTemplateDetails(int margin);
+        void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);
 
         FormLineEditWidget* m_projectName;
         FormBrowseEditWidget* m_projectPath;

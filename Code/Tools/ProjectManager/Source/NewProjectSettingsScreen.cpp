@@ -107,7 +107,7 @@ namespace O3DE::ProjectManager
                         if (button && button->property(k_templateIndexProperty).isValid())
                         {
                             int projectIndex = button->property(k_templateIndexProperty).toInt();
-                            UpdateTemplateSummary(m_templates.at(projectIndex));
+                            UpdateTemplateDetails(m_templates.at(projectIndex));
                         }
                     });
 
@@ -154,54 +154,8 @@ namespace O3DE::ProjectManager
 
         hLayout->addWidget(projectSettingsFrame);
 
-        QFrame* projectTemplateDetails = new QFrame(this);
-        projectTemplateDetails->setObjectName("projectTemplateDetails");
-        QVBoxLayout* templateDetailsLayout = new QVBoxLayout();
-        templateDetailsLayout->setContentsMargins(s_templateDetailsContentMargin, s_templateDetailsContentMargin, s_templateDetailsContentMargin, s_templateDetailsContentMargin);
-        templateDetailsLayout->setAlignment(Qt::AlignTop);
-        {
-            m_templateDisplayName = new QLabel(this);
-            m_templateDisplayName->setObjectName("displayName");
-            templateDetailsLayout->addWidget(m_templateDisplayName);
-
-            m_templateSummary = new QLabel(this);
-            m_templateSummary->setObjectName("summary");
-            m_templateSummary->setWordWrap(true);
-            templateDetailsLayout->addWidget(m_templateSummary);
-
-            QLabel* includedGemsTitle = new QLabel(tr("Included Gems"), this);
-            includedGemsTitle->setObjectName("includedGemsTitle");
-            templateDetailsLayout->addWidget(includedGemsTitle);
-
-            m_templateIncludedGems = new TagContainerWidget();
-            m_templateIncludedGems->setObjectName("includedGems");
-            templateDetailsLayout->addWidget(m_templateIncludedGems);
-
-            QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
-            moreGemsLabel->setObjectName("moreGems");
-            templateDetailsLayout->addWidget(moreGemsLabel);
-
-            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
-            browseCatalogLabel->setObjectName("browseCatalog");
-            browseCatalogLabel->setWordWrap(true);
-            templateDetailsLayout->addWidget(browseCatalogLabel);
-
-            QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
-            connect(configureGemsButton, &QPushButton::clicked, this, [=]()
-                    {
-                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
-                    });
-            templateDetailsLayout->addWidget(configureGemsButton);
-
-            templateDetailsLayout->addWidget(m_templateIncludedGems);
-        }
-        projectTemplateDetails->setLayout(templateDetailsLayout);
+        QFrame* projectTemplateDetails = CreateTemplateDetails(s_templateDetailsContentMargin);
         hLayout->addWidget(projectTemplateDetails);
-
-        if (!m_templates.isEmpty())
-        {
-            UpdateTemplateSummary(m_templates.first());
-        }
 
         this->setLayout(hLayout);
     }
@@ -233,6 +187,11 @@ namespace O3DE::ProjectManager
 
     void NewProjectSettingsScreen::NotifyCurrentScreen()
     {
+        if (!m_templates.isEmpty())
+        {
+            UpdateTemplateDetails(m_templates.first());
+        }
+
         Validate();
     }
 
@@ -293,7 +252,52 @@ namespace O3DE::ProjectManager
         return projectNameIsValid && projectPathIsValid;
     }
 
-    void NewProjectSettingsScreen::UpdateTemplateSummary(const ProjectTemplateInfo& templateInfo)
+    QFrame* NewProjectSettingsScreen::CreateTemplateDetails(int margin)
+    {
+        QFrame* projectTemplateDetails = new QFrame(this);
+        projectTemplateDetails->setObjectName("projectTemplateDetails");
+        QVBoxLayout* templateDetailsLayout = new QVBoxLayout();
+        templateDetailsLayout->setContentsMargins(margin, margin, margin, margin);
+        templateDetailsLayout->setAlignment(Qt::AlignTop);
+        {
+            m_templateDisplayName = new QLabel(this);
+            m_templateDisplayName->setObjectName("displayName");
+            templateDetailsLayout->addWidget(m_templateDisplayName);
+
+            m_templateSummary = new QLabel(this);
+            m_templateSummary->setObjectName("summary");
+            m_templateSummary->setWordWrap(true);
+            templateDetailsLayout->addWidget(m_templateSummary);
+
+            QLabel* includedGemsTitle = new QLabel(tr("Included Gems"), this);
+            includedGemsTitle->setObjectName("includedGemsTitle");
+            templateDetailsLayout->addWidget(includedGemsTitle);
+
+            m_templateIncludedGems = new TagContainerWidget(this);
+            m_templateIncludedGems->setObjectName("includedGems");
+            templateDetailsLayout->addWidget(m_templateIncludedGems);
+
+            QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
+            moreGemsLabel->setObjectName("moreGems");
+            templateDetailsLayout->addWidget(moreGemsLabel);
+
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
+            browseCatalogLabel->setObjectName("browseCatalog");
+            browseCatalogLabel->setWordWrap(true);
+            templateDetailsLayout->addWidget(browseCatalogLabel);
+
+            QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
+            connect(configureGemsButton, &QPushButton::clicked, this, [=]()
+                    {
+                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+                    });
+            templateDetailsLayout->addWidget(configureGemsButton);
+        }
+        projectTemplateDetails->setLayout(templateDetailsLayout);
+        return projectTemplateDetails;
+    }
+
+    void NewProjectSettingsScreen::UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo)
     {
         m_templateDisplayName->setText(templateInfo.m_displayName);
         m_templateSummary->setText(templateInfo.m_summary);

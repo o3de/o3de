@@ -23,6 +23,8 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ScreenHeader)
+    QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
+    QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
 
     class CreateProjectCtrl
         : public ScreenWidget
@@ -34,21 +36,29 @@ namespace O3DE::ProjectManager
         void NotifyCurrentScreen() override;
 
     protected slots:
-        void HandleBackButton();
-        void HandleNextButton();
         void OnChangeScreenRequest(ProjectManagerScreen screen);
+        void HandleBackButton();
+        void HandleSecondaryButton();
+        void HandlePrimaryButton();
 
     private:
         void Update();
+        bool CurrentScreenIsValid();
+        void CreateProject();
+        void NextScreen();
+        void PreviousScreen();
 
         QStackedWidget* m_stack;
         ScreenHeader* m_header;
 
-        QPushButton* m_backButton;
-        QPushButton* m_nextButton;
+        QPushButton* m_secondaryButton;
+        QPushButton* m_primaryButton;
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;
+        
+        NewProjectSettingsScreen* m_newProjectSettingsScreen;
+        GemCatalogScreen* m_gemCatalogScreen;
     };
 
 } // namespace O3DE::ProjectManager
