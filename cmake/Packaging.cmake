@@ -54,7 +54,7 @@ endif()
 if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
     message(FATAL_ERROR
         "The desired version of CMake to be included in the package is "
-        "is below the minium required version of CMake to run")
+        "is below the minimum required version of CMake to run")
 endif()
 
 # pull down the desired copy of CMake so it can be included in the package
