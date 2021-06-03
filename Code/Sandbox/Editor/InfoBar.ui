@@ -167,29 +167,6 @@
     </spacer>
    </item>
    <item>
-    <widget class="QToolButton" name="m_physicsBtn">
-     <property name="toolTip">
-      <string>Simulate (Ctrl+P)</string>
-     </property>
-     <property name="text">
-      <string>Simulate (Ctrl+P)</string>
-     </property>
-     <property name="icon">
-      <iconset resource="InfoBar.qrc">
-       <normaloff>:/InfoBar/PhysicsCol-default.svg</normaloff>:/InfoBar/PhysicsCol-default.svg</iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>18</width>
-       <height>18</height>
-      </size>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QToolButton" name="m_physSingleStepBtn">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">

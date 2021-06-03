@@ -177,8 +177,37 @@
      </property>
     </widget>
    </item>
+   <item>
+     <widget class="QMenuBar" name="menuBar">
+       <widget class="QMenu" name="m_overflowMenu">
+         <property name="icon">
+           <iconset>
+             <normaloff>:/stylesheet/img/UI20/Helpers.svg</normaloff>:/stylesheet/img/UI20/Helpers.svg
+           </iconset>
+         </property>
+         <addaction name="m_testAction"/>
+         <addaction name="m_testAction2"/>
+       </widget>
+       <addaction name="m_overflowMenu"/>
+     </widget>
+   </item>
   </layout>
- </widget>
+   <action name="m_testAction">
+     <property name="text">
+       <string>Test...</string>
+     </property>
+     <property name="toolTip">
+       <string>Testing.</string>
+     </property>
+   </action>
+   <action name="m_testAction2">
+     <property name="text">
+       <string>Test2...</string>
+     </property>
+     <property name="toolTip">
+       <string>Testing2.</string>
+     </property>
+   </action> </widget>
  <customwidgets>
   <customwidget>
    <class>AzQtComponents::ButtonDivider</class>

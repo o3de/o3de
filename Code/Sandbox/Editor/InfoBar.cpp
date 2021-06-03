@@ -73,7 +73,6 @@ CInfoBar::CInfoBar(QWidget* parent)
     AzQtComponents::Style::addClass(ui->m_physDoStepBtn, "expanderMenu_hide");
     AzQtComponents::Style::addClass(ui->m_physSingleStepBtn, "expanderMenu_hide");
 
-    connect(ui->m_physicsBtn, &QToolButton::clicked, this, &CInfoBar::OnBnClickedPhysics);
     connect(ui->m_physSingleStepBtn, &QToolButton::clicked, this, &CInfoBar::OnBnClickedSingleStepPhys);
     connect(ui->m_physDoStepBtn, &QToolButton::clicked, this, &CInfoBar::OnBnClickedDoStepPhys);
     connect(ui->m_syncPlayerBtn, &QToolButton::clicked, this, &CInfoBar::OnBnClickedSyncplayer);
@@ -83,9 +82,6 @@ CInfoBar::CInfoBar(QWidget* parent)
 
     connect(this, &CInfoBar::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
 
-    connect(ui->m_physicsBtn, &QAbstractButton::toggled, ui->m_physicsBtn, [this](bool checked) {
-        ui->m_physicsBtn->setToolTip(checked ? tr("Stop Simulation (Ctrl+P)") : tr("Simulate (Ctrl+P)"));
-    });
     connect(ui->m_physSingleStepBtn, &QAbstractButton::toggled, ui->m_physSingleStepBtn, [this](bool checked) {
         ui->m_physSingleStepBtn->setToolTip(checked ? tr("Disable Physics/AI Single-step Mode ('<' in Game Mode)") : tr("Enable Physics/AI Single-step Mode ('<' in Game Mode)"));
     });
@@ -113,17 +109,11 @@ CInfoBar::CInfoBar(QWidget* parent)
     SetSpeedComboBox(cameraMoveSpeed);
 
     ui->m_moveSpeed->setInsertPolicy(QComboBox::NoInsert);
-
-    using namespace AzToolsFramework::ComponentModeFramework;
-    EditorComponentModeNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
 }
 
 //////////////////////////////////////////////////////////////////////////
 CInfoBar::~CInfoBar()
 {
-    using namespace AzToolsFramework::ComponentModeFramework;
-    EditorComponentModeNotificationBus::Handler::BusDisconnect();
-
     GetIEditor()->UnregisterNotifyListener(this);
 
     AZ::VR::VREventBus::Handler::BusDisconnect();
@@ -144,19 +134,11 @@ void CInfoBar::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
     else if (event == eNotify_OnBeginLoad || event == eNotify_OnCloseScene)
     {
-        // make sure AI/Physics is disabled on level load (CE-4229)
-        if (GetIEditor()->GetGameEngine()->GetSimulationMode())
-        {
-            OnBnClickedPhysics();
-        }
-
-        ui->m_physicsBtn->setEnabled(false);
         ui->m_physSingleStepBtn->setEnabled(false);
         ui->m_physDoStepBtn->setEnabled(false);
     }
     else if (event == eNotify_OnEndLoad || event == eNotify_OnEndNewScene)
     {
-        ui->m_physicsBtn->setEnabled(true);
         ui->m_physSingleStepBtn->setEnabled(true);
         ui->m_physDoStepBtn->setEnabled(true);
     }
@@ -225,13 +207,6 @@ void CInfoBar::IdleUpdate()
     }
 
     {
-        bool bPhysics = GetIEditor()->GetGameEngine()->GetSimulationMode();
-        if ((ui->m_physicsBtn->isChecked() && !bPhysics) ||
-            (!ui->m_physicsBtn->isChecked() && bPhysics))
-        {
-            ui->m_physicsBtn->setChecked(bPhysics);
-        }
-
         // Unsupported for Phyics:: atm
         bool bSingleStep = false;
         if (ui->m_physSingleStepBtn->isChecked() != bSingleStep)
@@ -280,10 +255,6 @@ void CInfoBar::OnInitDialog()
 
     ui->m_moveSpeed->setFixedWidth(width);
 
-    ui->m_physicsBtn->setEnabled(false);
-    ui->m_physSingleStepBtn->setEnabled(false);
-    ui->m_physDoStepBtn->setEnabled(false);
-    
     ui->m_muteBtn->setChecked(gSettings.bMuteAudio);
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
 
@@ -311,23 +282,6 @@ void CInfoBar::OnHMDShutdown()
 void CInfoBar::OnBnClickedTerrainCollision()
 {
     emit ActionTriggered(ID_TERRAIN_COLLISION);
-}
-
-void CInfoBar::OnBnClickedPhysics()
-{
-    if (!ui->m_physicsBtn->isEnabled())
-    {
-        return;
-    }
-
-    bool bPhysics = GetIEditor()->GetGameEngine()->GetSimulationMode();
-    ui->m_physicsBtn->setChecked(bPhysics);
-    emit ActionTriggered(ID_SWITCH_PHYSICS);
-
-    if (bPhysics && ui->m_physSingleStepBtn->isChecked())
-    {
-        OnBnClickedSingleStepPhys();
-    }
 }
 
 void CInfoBar::OnBnClickedSingleStepPhys()
@@ -364,16 +318,6 @@ void CInfoBar::OnBnClickedEnableVR()
 {
     gSettings.bEnableGameModeVR = !gSettings.bEnableGameModeVR;
     ui->m_vrBtn->setChecked(gSettings.bEnableGameModeVR);
-}
-
-void CInfoBar::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
-{
-    ui->m_physicsBtn->setDisabled(true);
-}
-
-void CInfoBar::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
-{
-    ui->m_physicsBtn->setEnabled(true);
 }
 
 void CInfoBar::SetSpeedComboBox(double value)

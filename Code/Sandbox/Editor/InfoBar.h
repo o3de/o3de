@@ -19,7 +19,6 @@
 //
 
 #if !defined(Q_MOC_RUN)
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <IAudioSystem.h>
 #include <HMDBus.h>
 #endif
@@ -35,7 +34,6 @@ class CInfoBar
     : public QWidget
     , public IEditorNotifyListener
     , public AZ::VR::VREventBus::Handler
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
 {
     Q_OBJECT
 
@@ -65,7 +63,6 @@ protected:
     void OnSpeedComboBoxEnter();
     void OnUpdateMoveSpeedText(const QString&);
     void OnBnClickedTerrainCollision();
-    void OnBnClickedPhysics();
     void OnBnClickedSingleStepPhys();
     void OnBnClickedDoStepPhys();
     void OnBnClickedMuteAudio();
@@ -78,10 +75,6 @@ protected:
     void OnHMDInitialized() override;
     void OnHMDShutdown() override;
     //////////////////////////////////////////////////////////////////////////
-
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
     float m_width, m_height;
     //int m_heightMapX,m_heightMapY;
