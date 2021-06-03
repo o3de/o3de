@@ -353,6 +353,7 @@ namespace AzFramework
 
         // Get the dimensions of the display device on which the window is currently displayed.
         MONITORINFO monitorInfo;
+        memset(&monitorInfo, 0, sizeof(MONITORINFO)); // C4701 potentially uninitialized local variable 'monitorInfo' used
         monitorInfo.cbSize = sizeof(MONITORINFO);
         const BOOL success = monitor ? GetMonitorInfo(monitor, &monitorInfo) : FALSE;
         if (!success)

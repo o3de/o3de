@@ -51,11 +51,11 @@ namespace Audio
             // To avoid errors, we initialize COM here with the same model.
             CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-            const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
-            const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+            const CLSID CLSID_MMDeviceEnumerator_UUID = __uuidof(MMDeviceEnumerator);
+            const IID IID_IMMDeviceEnumerator_UUID = __uuidof(IMMDeviceEnumerator);
             HRESULT hresult = CoCreateInstance(
-                CLSID_MMDeviceEnumerator, nullptr,
-                CLSCTX_ALL, IID_IMMDeviceEnumerator,
+                CLSID_MMDeviceEnumerator_UUID, nullptr,
+                CLSCTX_ALL, IID_IMMDeviceEnumerator_UUID,
                 reinterpret_cast<void**>(&m_enumerator)
             );
 
@@ -133,8 +133,8 @@ namespace Audio
             AZ_Assert(m_device != nullptr, "Attempting to start a Microphone session while the device is uninitialized - Windows!\n");
 
             // Get the IAudioClient from the device
-            const IID IID_IAudioClient = __uuidof(IAudioClient);
-            HRESULT hresult = m_device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&m_audioClient));
+            const IID IID_IAudioClient_UUID = __uuidof(IAudioClient);
+            HRESULT hresult = m_device->Activate(IID_IAudioClient_UUID, CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&m_audioClient));
 
             if (FAILED(hresult))
             {
@@ -182,8 +182,8 @@ namespace Audio
             }
 
             // Get the IAudioCaptureClient
-            const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
-            hresult = m_audioClient->GetService(IID_IAudioCaptureClient, reinterpret_cast<void**>(&m_audioCaptureClient));
+            const IID IID_IAudioCaptureClient_UUID = __uuidof(IAudioCaptureClient);
+            hresult = m_audioClient->GetService(IID_IAudioCaptureClient_UUID, reinterpret_cast<void**>(&m_audioCaptureClient));
 
             if (FAILED(hresult))
             {

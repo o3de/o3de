@@ -290,6 +290,9 @@ namespace O3DE::ProjectManager
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
 
+            // make sure the engine is registered
+            RegisterThisEngine();
+
             return result == 0 && !PyErr_Occurred();
         } catch ([[maybe_unused]] const std::exception& e)
         {
@@ -310,6 +313,36 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
         }
         return !PyErr_Occurred();
+    }
+
+    bool PythonBindings::RegisterThisEngine()
+    {
+        bool registrationResult = true; // already registered is considered successful
+        bool pythonResult = ExecuteWithLock(
+            [&]
+            {
+                // check current engine path against all other registered engines
+                // to see if we are already registered
+                auto allEngines = m_manifest.attr("get_engines")();
+                if (pybind11::isinstance<pybind11::list>(allEngines))
+                {
+                    for (auto engine : allEngines)
+                    {
+                        AZ::IO::FixedMaxPath enginePath(Py_To_String(engine["path"]));
+                        if (enginePath.Compare(m_enginePath) == 0)
+                        {
+                            return;
+                        }
+                    }
+                }
+
+                auto result = m_register.attr("register")(m_enginePath.c_str());
+                registrationResult = (result.cast<int>() == 0);
+            });
+
+        bool finalResult = (registrationResult && pythonResult);
+        AZ_Assert(finalResult, "Registration of this engine failed!");
+        return finalResult;
     }
 
     AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
@@ -426,7 +459,7 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path)  
+    AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path)
     {
         GemInfo gemInfo = GemInfoFromPath(pybind11::str(path.toStdString()));
         if (gemInfo.IsValid())
