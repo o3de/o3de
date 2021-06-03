@@ -132,11 +132,11 @@ namespace AzToolsFramework
             bool IsCyclicalDependencyFound(
                 InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
-            static void GenerateUndoNodeForContainerOverride(
+            static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId);
-            static void GenerateUndoNodeForEntityChange(
+            static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState);
-            void GenerateUndoNodeForReparenting(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
+            void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
 

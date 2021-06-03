@@ -618,7 +618,7 @@ namespace AzToolsFramework
             if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
             {
                 bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
-                bool isGettingReparented = false;
+                bool isNewParentOwnedByDifferentInstance = false;
 
                 if (beforeParentId != afterParentId)
                 {
@@ -629,15 +629,15 @@ namespace AzToolsFramework
                     if (beforeOwningInstance.has_value() && afterOwningInstance.has_value() &&
                         (&beforeOwningInstance->get() != &afterOwningInstance->get()))
                     {
-                        isGettingReparented = true;
+                        isNewParentOwnedByDifferentInstance = true;
                     }
                 }
 
                 if (isInstanceContainerEntity)
                 {
-                    if (isGettingReparented)
+                    if (isNewParentOwnedByDifferentInstance)
                     {
-                        GenerateUndoNodeForReparenting(parentUndoBatch, entity, beforeParentId, afterParentId);
+                        Internal_HandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
 
                         PrefabDom afterStateafterReparenting;
                         m_instanceToTemplateInterface->GenerateDomForEntity(afterStateafterReparenting, *entity);
@@ -649,22 +649,22 @@ namespace AzToolsFramework
                         InstanceOptionalReference owningInstanceAfterReparenting =
                             m_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-                        GenerateUndoNodeForContainerOverride(
+                        Internal_HandleContainerOverride(
                             parentUndoBatch, entityId, newPatch, owningInstanceAfterReparenting->get().GetLinkId());
                     }
                     else
                     {
-                        GenerateUndoNodeForContainerOverride(
+                        Internal_HandleContainerOverride(
                             parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
                     }
                 }
                 else
                 {
-                    GenerateUndoNodeForEntityChange(parentUndoBatch, entityId, beforeState, afterState);
+                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState);
 
-                    if (isGettingReparented)
+                    if (isNewParentOwnedByDifferentInstance)
                     {
-                        GenerateUndoNodeForReparenting(parentUndoBatch, entity, beforeParentId, afterParentId);
+                        Internal_HandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
                     }
                 }
             }
@@ -672,7 +672,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.UpdateCache(entityId);
         }
 
-        void PrefabPublicHandler::GenerateUndoNodeForContainerOverride(
+        void PrefabPublicHandler::Internal_HandleContainerOverride(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId)
         {
             // Save these changes as patches to the link
@@ -683,7 +683,7 @@ namespace AzToolsFramework
             linkUpdate->Redo();
         }
 
-        void PrefabPublicHandler::GenerateUndoNodeForEntityChange(
+        void PrefabPublicHandler::Internal_HandleEntityChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState)
         {
             // Update the state of the entity
@@ -694,7 +694,7 @@ namespace AzToolsFramework
             state->Redo();
         }
 
-        void PrefabPublicHandler::GenerateUndoNodeForReparenting(
+        void PrefabPublicHandler::Internal_HandleInstanceChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId)
         {
             // If the entity parent changed, verify if the owning instance changed too
@@ -721,13 +721,10 @@ namespace AzToolsFramework
 
                     if (linkRef.has_value())
                     {
-                        PrefabDom& linkDom = linkRef->get().GetLinkDom();
-                        PrefabDomPath linkPatchesPath("/Patches");
-
-                        auto patches = linkPatchesPath.Get(linkDom);
-                        if (patches)
+                        auto patches = linkRef->get().GetLinkPatches();
+                        if (patches.has_value())
                         {
-                            oldLinkPatches.CopyFrom(*patches, oldLinkPatches.GetAllocator());
+                            oldLinkPatches.CopyFrom(patches->get(), oldLinkPatches.GetAllocator());
                         }
                     }
 
