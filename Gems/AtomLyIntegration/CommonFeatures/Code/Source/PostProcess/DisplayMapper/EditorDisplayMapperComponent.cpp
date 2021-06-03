@@ -10,10 +10,9 @@
 *
 */
 
-#include "Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h"
-
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 namespace AZ
 {
@@ -180,7 +179,7 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<DisplayMapperComponent>()->RequestBus("DisplayMapperComponentRequestBus");
+                behaviorContext->Class<EditorDisplayMapperComponent>()->RequestBus("DisplayMapperComponentRequestBus");
 
                 behaviorContext->ConstantProperty("EditorDisplayMapperComponentTypeId", BehaviorConstant(Uuid(EditorDisplayMapperComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")

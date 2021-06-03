@@ -26,6 +26,11 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            AZ_RTTI(AZ::Render::DisplayMapperComponentRequests, "{9E2E8AF5-1176-44B4-A461-E09867753349}");
+
+            /// Overrides the default AZ::EBusTraits handler policy to allow one listener only.
+            static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
+
             //! Load preconfigured preset for specific ODT mode
             virtual void LoadPreset(OutputDeviceTransformType preset) = 0;
             //! Set display mapper type

@@ -122,10 +122,14 @@ namespace AZ
         void DisplayMapperComponentController::Activate(EntityId entityId)
         {
             m_entityId = entityId;
+
+            DisplayMapperComponentRequestBus::Handler::BusConnect(m_entityId);
         }
 
         void DisplayMapperComponentController::Deactivate()
         {
+            DisplayMapperComponentRequestBus::Handler::BusDisconnect(m_entityId);
+
             m_postProcessInterface = nullptr;
             m_entityId.SetInvalid();
         }
@@ -186,6 +190,10 @@ namespace AZ
 
         void DisplayMapperComponentController::SetOverrideAcesParameters(bool value)
         {
+            if (m_configuration.m_acesParameterOverrides.m_overrideDefaults == value)
+            {
+                return; // prevents flickering when set via TrackView
+            }
             m_configuration.m_acesParameterOverrides.m_overrideDefaults = value;
             if (m_configuration.m_displayMapperOperation == DisplayMapperOperationType::Aces)
             {
@@ -200,6 +208,10 @@ namespace AZ
 
         void DisplayMapperComponentController::SetAlterSurround(bool value)
         {
+            if (m_configuration.m_acesParameterOverrides.m_alterSurround != value)
+            {
+                return; // prevents flickering when set via TrackView
+            }
             m_configuration.m_acesParameterOverrides.m_alterSurround = value;
             if (m_configuration.m_displayMapperOperation == DisplayMapperOperationType::Aces)
             {
@@ -214,6 +226,10 @@ namespace AZ
 
         void DisplayMapperComponentController::SetApplyDesaturation(bool value)
         {
+            if (m_configuration.m_acesParameterOverrides.m_applyDesaturation != value)
+            {
+                return; // prevents flickering when set via TrackView
+            }
             m_configuration.m_acesParameterOverrides.m_applyDesaturation = value;
             if (m_configuration.m_displayMapperOperation == DisplayMapperOperationType::Aces)
             {
@@ -228,6 +244,10 @@ namespace AZ
 
         void DisplayMapperComponentController::SetApplyCATD60toD65(bool value)
         {
+            if (m_configuration.m_acesParameterOverrides.m_applyCATD60toD65 != value)
+            {
+                return; // prevents flickering when set via TrackView
+            }
             m_configuration.m_acesParameterOverrides.m_applyCATD60toD65 = value;
             if (m_configuration.m_displayMapperOperation == DisplayMapperOperationType::Aces)
             {
