@@ -195,40 +195,4 @@ namespace PhysX
         lineBufferOut.push_back(AZ::Vector3::CreateZero());
         lineBufferOut.push_back(childAxis);
     }
-
-    void PhysXFixedApiJoint::GenerateJointLimitVisualizationData(
-        [[maybe_unused]] float scale,
-        [[maybe_unused]] AZ::u32 angularSubdivisions,
-        [[maybe_unused]] AZ::u32 radialSubdivisions,
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertexBufferOut,
-        [[maybe_unused]] AZStd::vector<AZ::u32>& indexBufferOut,
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& lineBufferOut,
-        [[maybe_unused]] AZStd::vector<bool>& lineValidityBufferOut)
-    {
-        
-    }
-
-    void PhysXBallApiJoint::GenerateJointLimitVisualizationData(
-        [[maybe_unused]] float scale,
-        [[maybe_unused]] AZ::u32 angularSubdivisions,
-        [[maybe_unused]] AZ::u32 radialSubdivisions,
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertexBufferOut,
-        [[maybe_unused]] AZStd::vector<AZ::u32>& indexBufferOut,
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& lineBufferOut,
-        [[maybe_unused]] AZStd::vector<bool>& lineValidityBufferOut)
-    {
-        
-    }
-
-    void PhysXHingeApiJoint::GenerateJointLimitVisualizationData(
-        [[maybe_unused]] float scale,
-        [[maybe_unused]] AZ::u32 angularSubdivisions,
-        [[maybe_unused]] AZ::u32 radialSubdivisions,
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& vertexBufferOut,
-        [[maybe_unused]] AZStd::vector<AZ::u32>& indexBufferOut,
-        [[maybe_unused]] AZStd::vector<AZ::Vector3>& lineBufferOut,
-        [[maybe_unused]] AZStd::vector<bool>& lineValidityBufferOut)
-    {
-        
-    }
 } // namespace PhysX

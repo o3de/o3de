@@ -232,9 +232,9 @@ namespace PhysX
                 childConfiguration.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(colliderConfig, shapeConfiguration);
                 
                 // Put the child body a bit to the lower side of X to avoid it colliding with parent
-                childConfiguration.m_position.SetX(childConfiguration.m_position.GetX() - 2);
+                childConfiguration.m_position.SetX(childConfiguration.m_position.GetX() - 2.0f);
                 m_childInitialPos = childConfiguration.m_position;
-                parentConfiguration.m_initialLinearVelocity.SetX(10.);
+                parentConfiguration.m_initialLinearVelocity.SetX(10.0f);
 
                 m_parentBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &parentConfiguration);
                 m_childBodyHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &childConfiguration);
@@ -257,17 +257,17 @@ namespace PhysX
         AZ::Vector3 m_childInitialPos;
     };
 
-    typedef testing::Types<
+    using ApiJointTypes = testing::Types<
         D6ApiJointLimitConfiguration, 
         FixedApiJointConfiguration, 
         BallApiJointConfiguration, 
-        HingeApiJointConfiguration> ApiJointTypes;
+        HingeApiJointConfiguration>;
     TYPED_TEST_CASE(PhysXJointsApiTest, ApiJointTypes);
 
     TYPED_TEST(PhysXJointsApiTest, Joint_ChildFollowsParent)
     {
         TypeParam jointConfiguration;
-        AzPhysics::ApiJointHandle jointHandle;
+        AzPhysics::ApiJointHandle jointHandle = AzPhysics::InvalidApiJointHandle;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {

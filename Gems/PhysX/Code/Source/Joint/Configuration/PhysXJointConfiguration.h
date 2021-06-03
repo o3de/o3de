@@ -29,6 +29,7 @@ namespace PhysX
         float m_twistLimitUpper = 45.0f; ///< Upper limit in degrees for rotation about the X axis of the joint frame.
     };
 
+    //! Properties that are common for several types of joints.
     struct ApiJointGenericProperties
     {
         enum class GenericApiJointFlag : AZ::u16
@@ -42,9 +43,11 @@ namespace PhysX
         AZ_RTTI(ApiJointGenericProperties, "{6CB15399-24F6-4F03-AAEF-1AE013B683E0}");
         static void Reflect(AZ::ReflectContext* context);
 
-        bool GetFlag(GenericApiJointFlag flag) const; ///< Returns if a particular flag is set as a bool.
+        bool IsFlagSet(GenericApiJointFlag flag) const; ///< Returns if a particular flag is set as a bool.
 
-        GenericApiJointFlag m_flags = GenericApiJointFlag::None; ///< Flags that indicates if joint is breakable, self-colliding, etc.. Converting joint between breakable/non-breakable at game time is allowed.
+        /// Flags that indicates if joint is breakable, self-colliding, etc. 
+        /// Converting joint between breakable/non-breakable at game time is allowed.
+        GenericApiJointFlag m_flags = GenericApiJointFlag::None;
         float m_forceMax = 1.0f; ///< Max force joint can tolerate before breaking.
         float m_torqueMax = 1.0f; ///< Max torque joint can tolerate before breaking.
     };

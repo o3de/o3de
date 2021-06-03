@@ -131,9 +131,9 @@ namespace PhysX {
             PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
             nativeJoint->setConstraintFlag(
                 physx::PxConstraintFlag::eCOLLISION_ENABLED,
-                properties.GetFlag(ApiJointGenericProperties::GenericApiJointFlag::SelfCollide));
+                properties.IsFlagSet(ApiJointGenericProperties::GenericApiJointFlag::SelfCollide));
 
-            if (properties.GetFlag(ApiJointGenericProperties::GenericApiJointFlag::Breakable))
+            if (properties.IsFlagSet(ApiJointGenericProperties::GenericApiJointFlag::Breakable))
             {
                 nativeJoint->setBreakForce(properties.m_forceMax, properties.m_torqueMax);
             }
