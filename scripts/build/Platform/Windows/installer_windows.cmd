@@ -20,7 +20,7 @@ IF NOT EXIST %OUTPUT_DIRECTORY% (
 )
 PUSHD %OUTPUT_DIRECTORY%
 
-REM Override the temporary directory used by wix to the EBS volume
+REM Override the temporary directory used by wix to the workspace
 SET "WIX_TEMP=!WORKSPACE!/temp/wix"
 IF NOT EXIST "%WIX_TEMP%" (
     MKDIR "%WIX_TEMP%"
