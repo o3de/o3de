@@ -25,6 +25,57 @@
 namespace PhysX {
     namespace Utils 
     {
+        struct PxJointActorData 
+        {
+            static PxJointActorData InvalidPxJointActorData;
+
+            physx::PxRigidActor* parentActor = nullptr;
+            physx::PxTransform parentLocalTransform;
+            
+            physx::PxRigidActor* childActor = nullptr;
+            physx::PxTransform childLocalTransform;
+        };
+        PxJointActorData PxJointActorData::InvalidPxJointActorData;
+
+        PxJointActorData CalculateActorData(
+            const AzPhysics::ApiJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle)
+        {
+            auto* parentBody = GetSimulatedBodyFromHandle(sceneHandle, parentBodyHandle);
+            auto* childBody = GetSimulatedBodyFromHandle(sceneHandle, childBodyHandle);
+
+            if (!IsAtLeastOneDynamic(parentBody, childBody))
+            {
+                AZ_Warning("PhysX Joint", false, "CreateJoint failed - at least one body must be dynamic.");
+                return PxJointActorData::InvalidPxJointActorData;
+            }
+
+            physx::PxRigidActor* parentActor = GetPxRigidActor(sceneHandle, parentBodyHandle);
+            physx::PxRigidActor* childActor = GetPxRigidActor(sceneHandle, childBodyHandle);
+
+            if (!parentActor && !childActor)
+            {
+                AZ_Warning("PhysX Joint", false, "CreateJoint failed - at least one body must be a PxRigidActor.");
+                return PxJointActorData::InvalidPxJointActorData;
+            }
+
+            const physx::PxTransform parentWorldTransform = parentActor ? parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
+            const physx::PxTransform childWorldTransform = childActor ? childActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
+            const physx::PxVec3 childOffset = childWorldTransform.p - parentWorldTransform.p;
+            physx::PxTransform parentLocalTransform(PxMathConvert(configuration.m_parentLocalRotation).getNormalized());
+            const physx::PxTransform childLocalTransform(PxMathConvert(configuration.m_childLocalRotation).getNormalized());
+            parentLocalTransform.p = parentWorldTransform.q.rotateInv(childOffset);
+
+            return PxJointActorData{
+                parentActor,
+                parentLocalTransform,
+                childActor,
+                childLocalTransform
+            };
+        }
+
         bool IsAtLeastOneDynamic(AzPhysics::SimulatedBody* body0,
             AzPhysics::SimulatedBody* body1)
         {
@@ -54,7 +105,7 @@ namespace PhysX {
             return nullptr;
         }
 
-        void releasePxJoint(physx::PxJoint* joint)
+        void ReleasePxJoint(physx::PxJoint* joint)
         {
             PHYSX_SCENE_WRITE_LOCK(joint->getScene());
             joint->userData = nullptr;
@@ -71,6 +122,23 @@ namespace PhysX {
             return nullptr;
         }
 
+        void InitializeGenericProperties(const GenericApiJointConfiguration& configuration, physx::PxJoint* nativeJoint) 
+        {
+            if (!nativeJoint)
+            {
+                return;
+            }
+            PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
+            nativeJoint->setConstraintFlag(
+                physx::PxConstraintFlag::eCOLLISION_ENABLED,
+                configuration.IsFlagSet(GenericApiJointConfiguration::GenericApiJointFlag::SelfCollide));
+
+            if (configuration.IsFlagSet(GenericApiJointConfiguration::GenericApiJointFlag::Breakable))
+            {
+                nativeJoint->setBreakForce(configuration.m_forceMax, configuration.m_torqueMax);
+            }
+        }
+
         namespace PxJointFactories
         {   
             PxJointUniquePtr CreatePxD6Joint(
@@ -79,33 +147,16 @@ namespace PhysX {
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
             {
-                auto* parentBody = GetSimulatedBodyFromHandle(sceneHandle, parentBodyHandle);
-                auto* childBody = GetSimulatedBodyFromHandle(sceneHandle, childBodyHandle);
+                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
 
-                if (!IsAtLeastOneDynamic(parentBody, childBody))
+                if (!actorData.parentActor || !actorData.childActor)
                 {
-                    AZ_Warning("PhysX Joint", false, "CreateJoint failed - at least one body must be dynamic.");
                     return nullptr;
                 }
 
-                physx::PxRigidActor* parentActor = GetPxRigidActor(sceneHandle, parentBodyHandle);
-                physx::PxRigidActor* childActor = GetPxRigidActor(sceneHandle, childBodyHandle);
-
-                if (!parentActor && !childActor)
-                {
-                    AZ_Warning("PhysX Joint", false, "CreateJoint failed - at least one body must be a PxRigidActor.");
-                    return nullptr;
-                }
-
-                const physx::PxTransform parentWorldTransform = parentActor ? parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
-                const physx::PxTransform childWorldTransform = childActor ? childActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
-                const physx::PxVec3 childOffset = childWorldTransform.p - parentWorldTransform.p;
-                physx::PxTransform parentLocalTransform(PxMathConvert(configuration.m_parentLocalRotation).getNormalized());
-                const physx::PxTransform childLocalTransform(PxMathConvert(configuration.m_childLocalRotation).getNormalized());
-                parentLocalTransform.p = parentWorldTransform.q.rotateInv(childOffset);
-
-                physx::PxD6Joint* joint = PxD6JointCreate(PxGetPhysics(), parentActor, parentLocalTransform,
-                    childActor, childLocalTransform);
+                physx::PxD6Joint* joint = PxD6JointCreate(PxGetPhysics(), 
+                    actorData.parentActor, actorData.parentLocalTransform,
+                    actorData.childActor, actorData.childLocalTransform);
 
                 joint->setMotion(physx::PxD6Axis::eTWIST, physx::PxD6Motion::eLIMITED);
                 joint->setMotion(physx::PxD6Axis::eSWING1, physx::PxD6Motion::eLIMITED);
@@ -114,8 +165,10 @@ namespace PhysX {
                 AZ_Warning("PhysX Joint",
                     configuration.m_swingLimitY >= JointConstants::MinSwingLimitDegrees && configuration.m_swingLimitZ >= JointConstants::MinSwingLimitDegrees,
                     "Very small swing limit requested for joint between \"%s\" and \"%s\", increasing to %f degrees to improve stability",
-                    parentActor ? parentActor->getName() : "world", childActor ? childActor->getName() : "world",
+                    actorData.parentActor ? actorData.parentActor->getName() : "world", 
+                    actorData.childActor ? actorData.childActor->getName() : "world",
                     JointConstants::MinSwingLimitDegrees);
+                
                 const float swingLimitY = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitY));
                 const float swingLimitZ = AZ::DegToRad(AZ::GetMax(JointConstants::MinSwingLimitDegrees, configuration.m_swingLimitZ));
                 physx::PxJointLimitCone limitCone(swingLimitY, swingLimitZ);
@@ -126,9 +179,37 @@ namespace PhysX {
                 physx::PxJointAngularLimitPair twistLimitPair(twistLower, twistUpper);
                 joint->setTwistLimit(twistLimitPair);
 
-                return Utils::PxJointUniquePtr(joint, releasePxJoint);
+                return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
             }
-        }
-    }
-}
-        
+
+            PxJointUniquePtr CreatePxFixedJoint(
+                const PhysX::FixedApiJointConfiguration& configuration,
+                AzPhysics::SceneHandle sceneHandle,
+                AzPhysics::SimulatedBodyHandle parentBodyHandle,
+                AzPhysics::SimulatedBodyHandle childBodyHandle) 
+            {
+                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+
+                if (!actorData.parentActor || !actorData.childActor)
+                {
+                    return nullptr;
+                }
+
+                physx::PxFixedJoint* joint;
+
+                {
+                    PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
+                    joint = physx::PxFixedJointCreate(PxGetPhysics(), 
+                        actorData.parentActor, actorData.parentLocalTransform,
+                        actorData.childActor, actorData.childLocalTransform);
+                }
+
+                InitializeGenericProperties(
+                    static_cast<const GenericApiJointConfiguration&>(configuration), 
+                    static_cast<physx::PxJoint*>(joint));
+
+                return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
+            }
+        } // namespace PxJointFactories
+    } // namespace Utils
+} // namespace PhysX

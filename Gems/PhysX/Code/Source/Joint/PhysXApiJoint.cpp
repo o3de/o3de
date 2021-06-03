@@ -90,6 +90,11 @@ namespace PhysX
         }
     }
 
+    void* PhysXApiJoint::GetNativePointer() const
+    {
+        return m_pxJoint.get();
+    }
+
     PhysXD6Joint::PhysXD6Joint(const D6ApiJointLimitConfiguration& configuration,
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
@@ -99,14 +104,23 @@ namespace PhysX
         m_pxJoint = Utils::PxJointFactories::CreatePxD6Joint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
-    void* PhysXApiJoint::GetNativePointer() const
+    PhysXFixedApiJoint::PhysXFixedApiJoint(const FixedApiJointConfiguration& configuration,
+        AzPhysics::SceneHandle sceneHandle,
+        AzPhysics::SimulatedBodyHandle parentBodyHandle,
+        AzPhysics::SimulatedBodyHandle childBodyHandle)
+        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
-        return m_pxJoint.get();
+        m_pxJoint = Utils::PxJointFactories::CreatePxFixedJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
     AZ::Crc32 PhysXD6Joint::GetNativeType() const
     {
         return NativeTypeIdentifiers::D6Joint;
+    }
+
+    AZ::Crc32 PhysXFixedApiJoint::GetNativeType() const
+    {
+        return NativeTypeIdentifiers::FixedJoint;
     }
 
     void PhysXD6Joint::GenerateJointLimitVisualizationData(

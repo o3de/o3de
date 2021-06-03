@@ -72,4 +72,21 @@ namespace PhysX
             AZStd::vector<AZ::Vector3>& lineBufferOut,
             AZStd::vector<bool>& lineValidityBufferOut) override;
     };
+
+    //! A fixed joint locks 2 bodies relative to one another on all axes of freedom.
+    class PhysXFixedApiJoint : public PhysXApiJoint
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(PhysXFixedApiJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXFixedApiJoint, "{144B2FAF-A3EE-4FE1-9328-2C44FE1E3676}", PhysX::PhysXApiJoint);
+
+        PhysXFixedApiJoint(const FixedApiJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle);
+
+        virtual ~PhysXFixedApiJoint() = default;
+
+        AZ::Crc32 GetNativeType() const override;
+    };
 } // namespace PhysX

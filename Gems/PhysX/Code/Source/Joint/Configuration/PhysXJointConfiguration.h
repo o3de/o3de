@@ -29,4 +29,37 @@ namespace PhysX
         float m_twistLimitLower = -45.0f; ///< Lower limit in degrees for rotation about the X axis of the joint frame.
         float m_twistLimitUpper = 45.0f; ///< Upper limit in degrees for rotation about the X axis of the joint frame.
     };
+
+    //! Properties that are common for several types of joints.
+    class GenericApiJointConfiguration : public AzPhysics::ApiJointConfiguration
+    {
+    public:
+        enum class GenericApiJointFlag : AZ::u16
+        {
+            None = 0,
+            Breakable = 1,
+            SelfCollide = 1 << 1
+        };
+
+        AZ_CLASS_ALLOCATOR(GenericApiJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(GenericApiJointConfiguration, "{6CB15399-24F6-4F03-AAEF-1AE013B683E0}", AzPhysics::ApiJointConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+
+        bool IsFlagSet(GenericApiJointFlag flag) const; ///< Returns if a particular flag is set as a bool.
+
+        /// Flags that indicates if joint is breakable, self-colliding, etc. 
+        /// Converting joint between breakable/non-breakable at game time is allowed.
+        GenericApiJointFlag m_flags = GenericApiJointFlag::None;
+        float m_forceMax = 1.0f; ///< Max force joint can tolerate before breaking.
+        float m_torqueMax = 1.0f; ///< Max torque joint can tolerate before breaking.
+    };
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(PhysX::GenericApiJointConfiguration::GenericApiJointFlag)
+
+    class FixedApiJointConfiguration : public GenericApiJointConfiguration 
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(FixedApiJointConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(FixedApiJointConfiguration, "{9BCB368B-8D71-4928-B231-0225907E3BD9}", GenericApiJointConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+    };
 } // namespace PhysX

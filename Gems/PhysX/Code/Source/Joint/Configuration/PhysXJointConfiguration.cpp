@@ -18,6 +18,11 @@
 
 namespace PhysX
 {
+    bool GenericApiJointConfiguration::IsFlagSet(GenericApiJointFlag flag) const
+    {
+        return static_cast<bool>(m_flags & flag);
+    }
+
     void D6ApiJointLimitConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -58,6 +63,29 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
                 ;
             }
+        }
+    }
+
+    void GenericApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<GenericApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+                ->Version(1)
+                ->Field("Maximum Force", &GenericApiJointConfiguration::m_forceMax)
+                ->Field("Maximum Torque", &GenericApiJointConfiguration::m_torqueMax)
+                ->Field("Flags", &GenericApiJointConfiguration::m_flags)
+                ;
+        }
+    }
+
+    void FixedApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<FixedApiJointConfiguration, GenericApiJointConfiguration>()
+                ->Version(1)
+                ;
         }
     }
 } // namespace PhysX

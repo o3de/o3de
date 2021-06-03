@@ -68,13 +68,13 @@ namespace AzPhysics
         virtual void SetChildBody(AzPhysics::SimulatedBodyHandle childBody) = 0;
 
         virtual void GenerateJointLimitVisualizationData(
-            float scale,
-            AZ::u32 angularSubdivisions,
-            AZ::u32 radialSubdivisions,
-            AZStd::vector<AZ::Vector3>& vertexBufferOut,
-            AZStd::vector<AZ::u32>& indexBufferOut,
-            AZStd::vector<AZ::Vector3>& lineBufferOut,
-            AZStd::vector<bool>& lineValidityBufferOut) = 0;
+            [[ maybe_unused ]] float scale,
+            [[ maybe_unused ]] AZ::u32 angularSubdivisions,
+            [[ maybe_unused ]] AZ::u32 radialSubdivisions,
+            [[ maybe_unused ]] AZStd::vector<AZ::Vector3>& vertexBufferOut,
+            [[ maybe_unused ]] AZStd::vector<AZ::u32>& indexBufferOut,
+            [[ maybe_unused ]] AZStd::vector<AZ::Vector3>& lineBufferOut,
+            [[ maybe_unused ]] AZStd::vector<bool>& lineValidityBufferOut) { }
 
     private:
         void* m_customUserData = nullptr;
