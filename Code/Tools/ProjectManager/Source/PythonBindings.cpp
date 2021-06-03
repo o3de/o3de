@@ -706,6 +706,13 @@ namespace O3DE::ProjectManager
                         templateInfo.m_canonicalTags.push_back(Py_To_String(tag));
                     }
                 }
+                if (data.contains("included_gems"))
+                {
+                    for (auto gem : data["included_gems"])
+                    {
+                        templateInfo.m_includedGems.push_back(Py_To_String(gem));
+                    }
+                }
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
