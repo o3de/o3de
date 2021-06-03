@@ -184,7 +184,7 @@ namespace AZ
             void MaterialPropertyInspector::AddUvNamesGroup()
             {
                 const AZStd::string groupNameId = AZ::RPI::UvGroupName;
-                const AZStd::string groupDisplayName = "UV Names";
+                const AZStd::string groupDisplayName = "UV Sets";
                 const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
                 auto& group = m_groups[groupNameId];
 
@@ -304,6 +304,11 @@ namespace AZ
                 for (auto& groupPair : m_groups)
                 {
                     AZ::RPI::MaterialPropertyGroupDynamicMetadata& metadata = propertyGroupDynamicMetadata[AZ::Name{groupPair.first}];
+                    
+                    for (auto& property : groupPair.second.m_properties)
+                    {
+                        AtomToolsFramework::ConvertToPropertyMetaData(propertyDynamicMetadata[property.GetId()], property.GetConfig());
+                    }
 
                     // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
                     // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context

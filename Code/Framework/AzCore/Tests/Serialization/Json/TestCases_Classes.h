@@ -134,6 +134,35 @@ namespace JsonSerializationTests
         SimpleRawEnum m_rawEnum{};
     };
 
+    struct NonReflectedEnumWrapper
+    {
+        enum class SimpleEnumClass
+        {
+            Option1 = 1,
+            Option2,
+        };
+        enum SimpleRawEnum
+        {
+            RawOption1 = 1,
+            RawOption2,
+        };
+        AZ_CLASS_ALLOCATOR(NonReflectedEnumWrapper, AZ::SystemAllocator, 0);
+        AZ_RTTI(NonReflectedEnumWrapper, "{A80D5B6B-2FD1-46E9-A7A9-44C5E2650526}");
+        
+        static constexpr bool SupportsPartialDefaults = true;
+
+        NonReflectedEnumWrapper() = default;
+        virtual ~NonReflectedEnumWrapper() = default;
+
+        bool Equals(const NonReflectedEnumWrapper& rhs, bool fullReflection) const;
+        static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
+        static InstanceWithSomeDefaults<NonReflectedEnumWrapper> GetInstanceWithSomeDefaults();
+        static InstanceWithoutDefaults<NonReflectedEnumWrapper> GetInstanceWithoutDefaults();
+
+        SimpleEnumClass m_enumClass{};
+        SimpleRawEnum m_rawEnum{};
+    };
+
     template<typename T>
     struct TemplatedClass
     {
@@ -158,5 +187,7 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(JsonSerializationTests::SimpleEnumWrapper::SimpleEnumClass, "{AF6F1964-5B20-4689-BF23-F36B9C9AAE6A}");
     AZ_TYPE_INFO_SPECIALIZE(JsonSerializationTests::SimpleEnumWrapper::SimpleRawEnum, "{EB24207F-B48F-4D8B-940D-3CD06A371739}");
+    AZ_TYPE_INFO_SPECIALIZE(JsonSerializationTests::NonReflectedEnumWrapper::SimpleEnumClass, "{E80E4A41-B29E-4B7C-B630-3B599172C837}");
+    AZ_TYPE_INFO_SPECIALIZE(JsonSerializationTests::NonReflectedEnumWrapper::SimpleRawEnum, "{C42AF28D-4F84-4540-972A-5B6EEFAB13FF}");
     AZ_TYPE_INFO_TEMPLATE(JsonSerializationTests::TemplatedClass, "{CA4ADF74-66E7-4D16-B4AC-F71278C60EC7}", AZ_TYPE_INFO_TYPENAME);
 }

@@ -798,7 +798,8 @@ namespace MaterialEditor
                 propertyConfig.m_showThumbnail = true;
                 propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                 propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
-                propertyConfig.m_groupName = m_materialTypeSourceData.FindGroup(groupNameId)->m_displayName;
+                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupNameId);
+                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupNameId;
                 m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
             }
             return true;
@@ -818,10 +819,10 @@ namespace MaterialEditor
         // is implemented.
         AtomToolsFramework::DynamicPropertyConfig propertyConfig;
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "details.materialType";
+        propertyConfig.m_id = "overview.materialType";
         propertyConfig.m_nameId = "materialType";
         propertyConfig.m_displayName = "Material Type";
-        propertyConfig.m_groupName = "Details";
+        propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description = "The material type defines the layout, properties, default values, shader connections, and other "
                                        "data needed to create and edit a derived material.";
         propertyConfig.m_defaultValue = AZStd::any(materialTypeAsset);
@@ -833,10 +834,10 @@ namespace MaterialEditor
 
         propertyConfig = {};
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "details.parentMaterial";
+        propertyConfig.m_id = "overview.parentMaterial";
         propertyConfig.m_nameId = "parentMaterial";
         propertyConfig.m_displayName = "Parent Material";
-        propertyConfig.m_groupName = "Details";
+        propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description =
             "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.";
         propertyConfig.m_defaultValue = AZStd::any(parentMaterialAsset);
@@ -859,7 +860,7 @@ namespace MaterialEditor
             propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
             propertyConfig.m_nameId = shaderInput;
             propertyConfig.m_displayName = shaderInput;
-            propertyConfig.m_groupName = "UV Names";
+            propertyConfig.m_groupName = "UV Sets";
             propertyConfig.m_description = shaderInput;
             propertyConfig.m_defaultValue = uvName;
             propertyConfig.m_originalValue = uvName;

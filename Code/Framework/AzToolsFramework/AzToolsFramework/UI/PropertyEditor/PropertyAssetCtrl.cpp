@@ -769,6 +769,31 @@ namespace AzToolsFramework
         // Request the AssetBrowser Dialog and set a type filter
         AssetSelectionModel selection = GetAssetSelectionModel();
         selection.SetSelectedAssetId(m_selectedAssetID);
+
+        AZStd::string defaultDirectory;
+        if (m_defaultDirectoryCallback)
+        {
+            m_defaultDirectoryCallback->Invoke(m_editNotifyTarget, defaultDirectory);
+            selection.SetDefaultDirectory(defaultDirectory);
+        }
+
+        if (m_hideProductFilesInAssetPicker)
+        {
+            FilterConstType displayFilter = selection.GetDisplayFilter();
+
+            EntryTypeFilter* productsFilter = new EntryTypeFilter();
+            productsFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+
+            InverseFilter* noProductsFilter = new InverseFilter();
+            noProductsFilter->SetFilter(FilterConstType(productsFilter));
+
+            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            compFilter->AddFilter(FilterConstType(displayFilter));
+            compFilter->AddFilter(FilterConstType(noProductsFilter));
+
+            selection.SetDisplayFilter(FilterConstType(compFilter));
+        }
+
         AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
         if (selection.IsValid())
         {
@@ -928,11 +953,16 @@ namespace AzToolsFramework
             return;
         }
 
-        const AZ::Data::AssetId assetID = GetCurrentAssetID();
-        m_currentAssetHint = "";
-
-        if (!m_unnamedType)
+        const AZStd::string& folderPath = GetFolderSelection();
+        if (!folderPath.empty())
         {
+            m_currentAssetHint = folderPath;
+        }
+        else
+        {
+            const AZ::Data::AssetId assetID = GetCurrentAssetID();
+            m_currentAssetHint = "";
+
             AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
 
@@ -946,7 +976,7 @@ namespace AzToolsFramework
 
                 if (!jobs.empty())
                 {
-                    // The default behavior is show to the source filename.
+                    // The default behavior is to show the source filename.
                     assetPath = jobs[0].m_sourceFile;
 
                     AZStd::string errorLog;
@@ -1080,6 +1110,11 @@ namespace AzToolsFramework
         m_editNotifyCallback = editNotifyCallback;
     }
 
+    void PropertyAssetCtrl::SetDefaultDirectoryCallback(DefaultDirectoryCallbackType* callback)
+    {
+        m_defaultDirectoryCallback = callback;
+    }
+
     void PropertyAssetCtrl::SetClearNotifyCallback(ClearCallbackType* clearNotifyCallback)
     {
         m_clearNotifyCallback = clearNotifyCallback;
@@ -1159,6 +1194,16 @@ namespace AzToolsFramework
         return m_showProductAssetName;
     }
 
+    void PropertyAssetCtrl::SetHideProductFilesInAssetPicker(bool hide)
+    {
+        m_hideProductFilesInAssetPicker = hide;
+    }
+
+    bool PropertyAssetCtrl::GetHideProductFilesInAssetPicker() const
+    {
+        return m_hideProductFilesInAssetPicker;
+    }
+
     void PropertyAssetCtrl::SetShowThumbnail(bool enable)
     {
         m_showThumbnail = enable;
@@ -1213,6 +1258,11 @@ namespace AzToolsFramework
             {
                 GUI->SetTitle(title.c_str());
             }
+        }
+        else if (attrib == AZ_CRC_CE("DefaultStartingDirectoryCallback"))
+        {
+            // This is assumed to be an Asset Browser path to a specific folder to be used as a default by the asset picker if provided
+            GUI->SetDefaultDirectoryCallback(azdynamic_cast<PropertyAssetCtrl::DefaultDirectoryCallbackType*>(attrValue->GetAttribute()));
         }
         else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
         {
@@ -1277,6 +1327,14 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(showProductAssetName))
             {
                 GUI->SetShowProductAssetName(showProductAssetName);
+            }
+        }
+        else if(attrib == AZ::Edit::Attributes::HideProductFilesInAssetPicker)
+        {
+            bool hideProductFilesInAssetPicker = false;
+            if (attrValue->Read<bool>(hideProductFilesInAssetPicker))
+            {
+                GUI->SetHideProductFilesInAssetPicker(hideProductFilesInAssetPicker);
             }
         }
         else if (attrib == AZ::Edit::Attributes::ClearNotify)

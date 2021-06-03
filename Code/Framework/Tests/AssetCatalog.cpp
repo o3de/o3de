@@ -23,6 +23,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -304,6 +305,13 @@ namespace UnitTest
             m_app.reset(aznew AzFramework::Application());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
+            
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_app->Start(desc);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

@@ -41,6 +41,12 @@ ly_add_target(
             Gem::ExpressionEvaluation.Static
 )
 
+# all types of applications use the above module
+ly_create_alias(NAME ExpressionEvaluation.Clients  NAMESPACE Gem TARGETS ExpressionEvaluation)
+ly_create_alias(NAME ExpressionEvaluation.Servers  NAMESPACE Gem TARGETS ExpressionEvaluation)
+ly_create_alias(NAME ExpressionEvaluation.Builders NAMESPACE Gem TARGETS ExpressionEvaluation)
+ly_create_alias(NAME ExpressionEvaluation.Tools    NAMESPACE Gem TARGETS ExpressionEvaluation)
+
 ################################################################################
 # Tests
 ################################################################################

@@ -17,6 +17,7 @@
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+#include <Atom/RHI.Reflect/ShaderInputNameIndex.h>
 
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -45,12 +46,11 @@ namespace AZ
             static RPI::Ptr<EyeAdaptationPass> Create(const RPI::PassDescriptor& descriptor);
 
             // Check if we should enable of disable this pass
-            void UpdateEnable();
+            bool IsEnabled() const override;
 
         protected:
             EyeAdaptationPass(const RPI::PassDescriptor& descriptor);
             void InitBuffer();
-            void UpdateInputBufferIndices();
 
             // A StructuredBuffer for exposure calculation on the GPU.
             struct ExposureCalculationData
@@ -65,7 +65,7 @@ namespace AZ
             AZ::Data::Instance<RPI::Buffer> m_buffer;
 
             // SRG binding indices...
-            AZ::RHI::ShaderInputBufferIndex m_exposureControlBufferInputIndex;
+            AZ::RHI::ShaderInputNameIndex m_exposureControlBufferInputIndex = "m_exposureControl";
         };
     }   // namespace Render
 }   // namespace AZ

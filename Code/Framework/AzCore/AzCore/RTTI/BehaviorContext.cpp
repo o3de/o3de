@@ -165,7 +165,7 @@ namespace AZ
 
         if (HasResult() != overload->HasResult())
         {
-            AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all");
+            AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all: %s", m_name.c_str());
             return false;
         }
 
@@ -176,7 +176,7 @@ namespace AZ
 
             if (!(methodResult->m_typeId == overloadResult->m_typeId && methodResult->m_traits == overloadResult->m_traits))
             {
-                AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all");
+                AZ_Error("Reflection", false, "Overload failure, all methods must have the same result, or none at all: %s", m_name.c_str());
                 return false;
             }
         }
@@ -575,7 +575,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error("BehaviorContext", false, "safety check declared for method %s but it was not found in the class");
+                    AZ_Error("BehaviorContext", false, "Method: %s, declared safety check: %s, but it was not found in class: %s", method.m_name.c_str(), m_name.c_str(), checkedOperationInfo.m_safetyCheckName.c_str());
                 }
             }
         }

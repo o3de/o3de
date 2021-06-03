@@ -613,6 +613,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
+            m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
             return AZStd::move(m_containerEntity);
         }
     }

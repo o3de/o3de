@@ -25,10 +25,13 @@ namespace AZ
         : public SerializeContext::IDataSerializer
     {
     public:
-        // number of floats in the serialized representation, 4 for rotation, 3 for scale and 3 for translation
-        static constexpr int NumFloats = 10;
+        // number of floats in the serialized representation, 4 for rotation, 1 for scale and 3 for translation
+        static constexpr int NumFloats = 8;
 
-        // number of floats in the old format, which stored a 3x4 matrix
+        // number of floats in version 1, which used 4 for rotation, 3 for scale and 3 for translation
+        static constexpr int NumFloatsVersion1 = 10;
+
+        // number of floats in version 0, which stored a 3x4 matrix
         static constexpr int NumFloatsVersion0 = 12;
 
         size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
@@ -45,7 +48,7 @@ namespace AZ
     static constexpr float MaxTransformScale = 1e9f;
     //! @}
 
-    //! The basic transformation class, represented using a quaternion rotation, vector scale and vector translation.
+    //! The basic transformation class, represented using a quaternion rotation, float scale and vector translation.
     //! By design, cannot represent skew transformations.
     class Transform
     {
@@ -63,7 +66,7 @@ namespace AZ
         Transform() = default;
 
         //! Construct a transform from components.
-        Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
+        Transform(const Vector3& translation, const Quaternion& rotation, float scale);
 
         //! Creates an identity transform.
         static Transform CreateIdentity();
@@ -82,15 +85,22 @@ namespace AZ
         static Transform CreateFromQuaternionAndTranslation(const class Quaternion& q, const Vector3& p);
 
         //! Constructs from a Matrix3x3, translation is set to zero.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x3(const class Matrix3x3& value);
 
-        //! Constructs from a Matrix3x3, translation is set to zero.
+        //! Constructs from a Matrix3x3 and translation Vector3.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x3AndTranslation(const class Matrix3x3& value, const Vector3& p);
 
+        //! Constructs from a Matrix3x4.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
 
-        //! Sets the matrix to be a scale matrix, translation is set to zero.
-        static Transform CreateScale(const Vector3& scale);
+        //! Sets the transform to apply (uniform) scale only, no rotation or translation.
+        static Transform CreateUniformScale(const float scale);
 
         //! Sets the matrix to be a translation matrix, rotation part is set to identity.
         static Transform CreateTranslation(const Vector3& translation);
@@ -119,13 +129,13 @@ namespace AZ
         const Quaternion& GetRotation() const;
         void SetRotation(const Quaternion& rotation);
 
-        const Vector3& GetScale() const;
-        void SetScale(const Vector3& v);
+        float GetUniformScale() const;
+        void SetUniformScale(const float scale);
 
-        //! Sets the transforms scale to a unit value and returns the previous scale value.
-        Vector3 ExtractScale();
+        //! Sets the transform's scale to a unit value and returns the previous scale value.
+        float ExtractUniformScale();
 
-        void MultiplyByScale(const Vector3& scale);
+        void MultiplyByUniformScale(float scale);
 
         Transform operator*(const Transform& rhs) const;
         Transform& operator*=(const Transform& rhs);
@@ -159,7 +169,7 @@ namespace AZ
     private:
 
         Quaternion m_rotation;
-        Vector3 m_scale;
+        float m_scale;
         Vector3 m_translation;
     };
 

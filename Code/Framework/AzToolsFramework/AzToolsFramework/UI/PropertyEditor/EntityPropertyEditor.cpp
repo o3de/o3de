@@ -1154,7 +1154,8 @@ namespace AzToolsFramework
         {
             // Build up components to display
             SharedComponentArray sharedComponentArray;
-            BuildSharedComponentArray(sharedComponentArray, selectionEntityTypeInfo != SelectionEntityTypeInfo::OnlyStandardEntities);
+            BuildSharedComponentArray(sharedComponentArray,
+                !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities));
 
             if (sharedComponentArray.size() == 0)
             {

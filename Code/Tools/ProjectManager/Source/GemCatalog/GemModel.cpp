@@ -33,14 +33,13 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         item->setData(gemInfo.m_name, RoleName);
-        const QString uuidString = gemInfo.m_uuid.ToString<AZStd::string>().c_str();
-        item->setData(uuidString, RoleUuid);
         item->setData(gemInfo.m_creator, RoleCreator);
+        item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
         item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
         item->setData(gemInfo.m_summary, RoleSummary);
+        item->setData(false, RoleWasPreviouslyAdded);
         item->setData(gemInfo.m_isAdded, RoleIsAdded);
-
         item->setData(gemInfo.m_directoryLink, RoleDirectoryLink);
         item->setData(gemInfo.m_documentationLink, RoleDocLink);
         item->setData(gemInfo.m_dependingGemUuids, RoleDependingGems);
@@ -48,12 +47,13 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_version, RoleVersion);
         item->setData(gemInfo.m_lastUpdatedDate, RoleLastUpdated);
         item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
-
         item->setData(gemInfo.m_features, RoleFeatures);
+        item->setData(gemInfo.m_path, RolePath);
 
         appendRow(item);
 
-        m_uuidToNameMap[uuidString] = gemInfo.m_displayName;
+        const QModelIndex modelIndex = index(rowCount()-1, 0);
+        m_nameToIndexMap[gemInfo.m_name] = modelIndex;
     }
 
     void GemModel::Clear()
@@ -71,9 +71,9 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleCreator).toString();
     }
 
-    QString GemModel::GetUuidString(const QModelIndex& modelIndex)
+    GemInfo::GemOrigin GemModel::GetGemOrigin(const QModelIndex& modelIndex)
     {
-        return modelIndex.data(RoleUuid).toString();
+        return static_cast<GemInfo::GemOrigin>(modelIndex.data(RoleGemOrigin).toInt());
     }
 
     GemInfo::Platforms GemModel::GetPlatforms(const QModelIndex& modelIndex)
@@ -91,11 +91,6 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleSummary).toString();
     }
 
-    bool GemModel::IsAdded(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleIsAdded).toBool();
-    }
-
     QString GemModel::GetDirectoryLink(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleDirectoryLink).toString();
@@ -106,40 +101,61 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleDocLink).toString();
     }
 
-    AZ::Outcome<QString> GemModel::FindGemNameByUuidString(const QString& uuidString) const
+    QModelIndex GemModel::FindIndexByNameString(const QString& nameString) const
     {
-        const auto iterator = m_uuidToNameMap.find(uuidString);
-        if (iterator != m_uuidToNameMap.end())
+        const auto iterator = m_nameToIndexMap.find(nameString);
+        if (iterator != m_nameToIndexMap.end())
         {
-            return AZ::Success(iterator.value());
+            return iterator.value();
         }
 
-        return AZ::Failure();
+        return {};
     }
 
-    QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
+    void GemModel::FindGemNamesByNameStrings(QStringList& inOutGemNames)
     {
-        QStringList result = modelIndex.data(RoleDependingGems).toStringList();
+        for (QString& dependingGemString : inOutGemNames)
+        {
+            QModelIndex modelIndex = FindIndexByNameString(dependingGemString);
+            if (modelIndex.isValid())
+            {
+                dependingGemString = GetName(modelIndex);
+            }
+        }
+    }
+
+    QStringList GemModel::GetDependingGemUuids(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleDependingGems).toStringList();
+    }
+
+    QStringList GemModel::GetDependingGemNames(const QModelIndex& modelIndex)
+    {
+        QStringList result = GetDependingGemUuids(modelIndex);
         if (result.isEmpty())
         {
             return {};
         }
 
-        for (QString& dependingGemString : result)
-        {
-            AZ::Outcome<QString> gemNameOutcome = FindGemNameByUuidString(dependingGemString);
-            if (gemNameOutcome.IsSuccess())
-            {
-                dependingGemString = gemNameOutcome.GetValue();
-            }
-        }
-
+        FindGemNamesByNameStrings(result);
         return result;
     }
 
-    QStringList GemModel::GetConflictingGems(const QModelIndex& modelIndex)
+    QStringList GemModel::GetConflictingGemUuids(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleConflictingGems).toStringList();
+    }
+
+    QStringList GemModel::GetConflictingGemNames(const QModelIndex& modelIndex)
+    {
+        QStringList result = GetConflictingGemUuids(modelIndex);
+        if (result.isEmpty())
+        {
+            return {};
+        }
+
+        FindGemNamesByNameStrings(result);
+        return result;
     }
 
     QString GemModel::GetVersion(const QModelIndex& modelIndex)
@@ -160,5 +176,63 @@ namespace O3DE::ProjectManager
     QStringList GemModel::GetFeatures(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleFeatures).toStringList();
+    }
+
+    QString GemModel::GetPath(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RolePath).toString();
+    }
+
+    bool GemModel::IsAdded(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleIsAdded).toBool();
+    }
+
+    void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
+    {
+        model.setData(modelIndex, isAdded, RoleIsAdded);
+    }
+
+    void GemModel::SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded)
+    {
+        model.setData(modelIndex, wasAdded, RoleWasPreviouslyAdded);
+    }
+
+    bool GemModel::NeedsToBeAdded(const QModelIndex& modelIndex)
+    {
+        return (!modelIndex.data(RoleWasPreviouslyAdded).toBool() && modelIndex.data(RoleIsAdded).toBool());
+    }
+
+    bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex)
+    {
+        return (modelIndex.data(RoleWasPreviouslyAdded).toBool() && !modelIndex.data(RoleIsAdded).toBool());
+    }
+
+    QVector<QModelIndex> GemModel::GatherGemsToBeAdded() const
+    {
+        QVector<QModelIndex> result;
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeAdded(modelIndex))
+            {
+                result.push_back(modelIndex);
+            }
+        }
+        return result;
+    }
+
+    QVector<QModelIndex> GemModel::GatherGemsToBeRemoved() const
+    {
+        QVector<QModelIndex> result;
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeRemoved(modelIndex))
+            {
+                result.push_back(modelIndex);
+            }
+        }
+        return result;
     }
 } // namespace O3DE::ProjectManager

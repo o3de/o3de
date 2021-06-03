@@ -83,8 +83,11 @@ namespace AZ
 
         static Quaternion CreateShortestArc(const Vector3& v1, const Vector3& v2);
 
-        /// Creates a quaternion using rotation in degrees about the axes. First rotated about the X axis, followed by the Y axis, then the Z axis.
-        static const Quaternion CreateFromEulerAnglesDegrees(Vector3& anglesInDegrees);
+        //! Creates a quaternion using rotation in degrees about the axes. First rotated about the X axis, followed by the Y axis, then the Z axis.
+        static const Quaternion CreateFromEulerAnglesDegrees(const Vector3& anglesInDegrees);
+
+        //! Creates a quaternion using rotation in radians about the axes. First rotated about the X axis, followed by the Y axis, then the Z axis.
+        static const Quaternion CreateFromEulerAnglesRadians(const Vector3& anglesInRadians);
 
         //! Stores the vector to an array of 4 floats. The floats need only be 4 byte aligned, 16 byte alignment is not required.
         void StoreToFloat4(float* values) const;

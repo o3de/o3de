@@ -33,6 +33,11 @@ ly_add_target(
             AZ::CrashHandler
 )
 
+# Load the "Gem::CrashReporting" module in Clients and Servers
+ly_create_alias(NAME CrashReporting.Clients NAMESPACE Gem TARGETS Gem::CrashReporting)
+ly_create_alias(NAME CrashReporting.Servers NAMESPACE Gem TARGETS Gem::CrashReporting)
+
+
 ly_add_target(
     NAME CrashReporting.Uploader APPLICATION
     NAMESPACE AZ

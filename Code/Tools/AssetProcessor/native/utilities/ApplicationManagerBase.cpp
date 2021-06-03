@@ -1191,6 +1191,7 @@ bool ApplicationManagerBase::Activate()
     QDir projectCache;
     if (!AssetUtilities::ComputeProjectCacheRoot(projectCache))
     {
+        AZ_Error("AssetProcessor", false, "Could not compute project cache root, please configure your project correctly to launch Asset Processor.");
         return false;
     }
 
@@ -1200,22 +1201,27 @@ bool ApplicationManagerBase::Activate()
     // Shutdown if the disk has less than 128MB of free space
     if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
     {
+        // CheckSufficientDiskSpace reports an error if disk space is low.
         return false;
     }
 
     bool appInited = InitApplicationServer();
     if (!appInited)
     {
+        AZ_Error(
+            "AssetProcessor", false, "InitApplicationServer failed, something internal to Asset Processor has failed, please report this to support if you encounter this error.");
         return false;
     }
 
     if (!InitAssetDatabase())
     {
+        // AssetDatabaseConnection::OpenDatabase reports any errors it encounters.
         return false;
     }
 
     if (!ApplicationManager::Activate())
     {
+        // ApplicationManager::Activate() reports any errors it encounters.
         return false;
     }
 
@@ -1230,6 +1236,7 @@ bool ApplicationManagerBase::Activate()
     m_isCurrentlyLoadingGems = true;
     if (!ActivateModules())
     {
+        // ActivateModules reports any errors it encounters.
         m_isCurrentlyLoadingGems = false;
         return false;
     }
@@ -1299,6 +1306,7 @@ bool ApplicationManagerBase::Activate()
     {
         if (!m_applicationServer->startListening())
         {
+            // startListening reports any errors it encounters.
             return false;
         }
     }

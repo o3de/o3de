@@ -10,7 +10,7 @@
 *
 */
 
-#include "GemItemDelegate.h"
+#include <GemCatalog/GemItemDelegate.h>
 #include "GemModel.h"
 #include <QEvent>
 #include <QPainter>
@@ -18,15 +18,15 @@
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(GemModel* gemModel, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, QObject* parent)
         : QStyledItemDelegate(parent)
-        , m_gemModel(gemModel)
+        , m_model(model)
     {
-        AddPlatformIcon(GemInfo::Android, ":/Resources/Android.svg");
-        AddPlatformIcon(GemInfo::iOS, ":/Resources/iOS.svg");
-        AddPlatformIcon(GemInfo::Linux, ":/Resources/Linux.svg");
-        AddPlatformIcon(GemInfo::macOS, ":/Resources/macOS.svg");
-        AddPlatformIcon(GemInfo::Windows, ":/Resources/Windows.svg");
+        AddPlatformIcon(GemInfo::Android, ":/Android.svg");
+        AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
+        AddPlatformIcon(GemInfo::Linux, ":/Linux.svg");
+        AddPlatformIcon(GemInfo::macOS, ":/macOS.svg");
+        AddPlatformIcon(GemInfo::Windows, ":/Windows.svg");
     }
 
     void GemItemDelegate::AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath)
@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         painter->setRenderHint(QPainter::Antialiasing);
 
         QRect fullRect, itemRect, contentRect;
-        CalcRects(options, modelIndex, fullRect, itemRect, contentRect);
+        CalcRects(options, fullRect, itemRect, contentRect);
 
         QFont standardFont(options.font);
         standardFont.setPixelSize(s_fontSize);
@@ -78,7 +78,7 @@ namespace O3DE::ProjectManager
         }
 
         // Gem name
-        const QString gemName = m_gemModel->GetName(modelIndex);
+        const QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
         gemNameFont.setPixelSize(s_gemNameFontSize);
         gemNameFont.setBold(true);
@@ -90,7 +90,7 @@ namespace O3DE::ProjectManager
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem creator
-        const QString gemCreator = m_gemModel->GetCreator(modelIndex);
+        const QString gemCreator = GemModel::GetCreator(modelIndex);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
         gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
 
@@ -99,13 +99,13 @@ namespace O3DE::ProjectManager
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 4, contentRect.height());
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_itemMargins.right() * 3, contentRect.height());
         const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
 
         painter->setFont(standardFont);
         painter->setPen(m_textColor);
 
-        const QString summary = m_gemModel->GetSummary(modelIndex);
+        const QString summary = GemModel::GetSummary(modelIndex);
         painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
 
 
@@ -131,15 +131,29 @@ namespace O3DE::ProjectManager
             return false;
         }
 
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+            const QRect buttonRect = CalcButtonRect(contentRect);
+
+            if (buttonRect.contains(mouseEvent->pos()))
+            {
+                const bool isAdded = GemModel::IsAdded(modelIndex);
+                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                return true;
+            }
+        }
+
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
 
-    void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, const QModelIndex& modelIndex, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const
+    void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const
     {
-        const bool isFirst = modelIndex.row() == 0;
-
         outFullRect = QRect(option.rect);
-        outItemRect = QRect(outFullRect.adjusted(s_itemMargins.left(), isFirst ? s_itemMargins.top() * 2 : s_itemMargins.top(), -s_itemMargins.right(), -s_itemMargins.bottom()));
+        outItemRect = QRect(outFullRect.adjusted(s_itemMargins.left(), s_itemMargins.top(), -s_itemMargins.right(), -s_itemMargins.bottom()));
         outContentRect = QRect(outItemRect.adjusted(s_contentMargins.left(), s_contentMargins.top(), -s_contentMargins.right(), -s_contentMargins.bottom()));
     }
 
@@ -158,7 +172,7 @@ namespace O3DE::ProjectManager
 
     void GemItemDelegate::DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
-        const GemInfo::Platforms platforms = m_gemModel->GetPlatforms(modelIndex);
+        const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
         int startX = 0;
 
         // Iterate and draw the platforms in the order they are defined in the enum.
@@ -188,18 +202,18 @@ namespace O3DE::ProjectManager
         QPoint circleCenter;
         QString buttonText;
 
-        const bool isAdded = m_gemModel->IsAdded(modelIndex);
+        const bool isAdded = GemModel::IsAdded(modelIndex);
         if (isAdded)
         {
             painter->setBrush(m_buttonEnabledColor);
             painter->setPen(m_buttonEnabledColor);
 
-            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius, 1);
+            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
             buttonText = "Added";
         }
         else
         {
-            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius + 1, 1);
+            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius, 1);
             buttonText = "Get";
         }
 

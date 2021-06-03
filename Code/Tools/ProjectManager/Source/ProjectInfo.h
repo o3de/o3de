@@ -25,6 +25,8 @@ namespace O3DE::ProjectManager
         ProjectInfo() = default;
         ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
             const QString& imagePath, const QString& backgroundImagePath, bool isNew);
+        bool operator==(const ProjectInfo& rhs);
+        bool operator!=(const ProjectInfo& rhs);
 
         bool IsValid() const;
 

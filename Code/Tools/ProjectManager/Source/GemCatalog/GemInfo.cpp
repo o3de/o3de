@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
     
     bool GemInfo::IsValid() const
     {
-        return !m_path.isEmpty() && !m_uuid.IsNull();
+        return !m_name.isEmpty() && !m_path.isEmpty();
     }
 
     QString GemInfo::GetPlatformString(Platform platform)
@@ -62,8 +62,26 @@ namespace O3DE::ProjectManager
         }
     }
 
+    QString GemInfo::GetGemOriginString(GemOrigin origin)
+    {
+        switch (origin)
+        {
+        case O3DEFoundation:
+            return "Open 3D Foundation";
+        case Local:
+            return "Local";
+        default:
+            return "<Unknown Gem Origin>";
+        }
+    }
+
     bool GemInfo::IsPlatformSupported(Platform platform) const
     {
         return (m_platforms & platform);
+    }
+
+    bool GemInfo::operator<(const GemInfo& gemInfo) const
+    {
+        return (m_displayName < gemInfo.m_displayName);
     }
 } // namespace O3DE::ProjectManager

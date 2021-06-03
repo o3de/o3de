@@ -334,6 +334,7 @@ namespace AZ
             if (it == m_propertyMetadata.end())
             {
                 AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property: %s.", propertyName.GetCStr());
+                return nullptr;
             }
 
             return &it->second;
@@ -345,6 +346,7 @@ namespace AZ
             if (it == m_propertyGroupMetadata.end())
             {
                 AZ_Error("MaterialFunctor", false, "Couldn't find metadata for material property group: %s.", propertyGroupName.GetCStr());
+                return nullptr;
             }
 
             return &it->second;

@@ -11,7 +11,7 @@
             "IsPowerOf2": true
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{884B5F7C-44AC-4E9E-8B8A-559D098BE2C7}",
                 "Name": "CloudShadows",
                 "DestColor": "Linear",
@@ -25,7 +25,7 @@
                 "PixelFormat": "EAC_R11",
                 "IsPowerOf2": true
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{884B5F7C-44AC-4E9E-8B8A-559D098BE2C7}",
                 "Name": "CloudShadows",
                 "DestColor": "Linear",

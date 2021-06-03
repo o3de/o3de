@@ -46,6 +46,80 @@ namespace Multiplayer
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
             }
         }
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<NetBindComponent>("NetBindComponent")
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+
+                ->Method("IsAuthority", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "NetBindComponent", false, "NetBindComponent IsAuthority failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    NetBindComponent* netBindComponent = entity-> FindComponent<NetBindComponent>();
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning( "NetBindComponent", false, "NetBindComponent IsAuthority failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return netBindComponent->IsAuthority();
+                })
+                ->Method("IsAutonomous", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "NetBindComponent", false, "NetBindComponent IsAutonomous failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent IsAutonomous failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return netBindComponent->IsAutonomous();
+                })
+                ->Method("IsClient", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "NetBindComponent", false, "NetBindComponent IsClient failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent IsClient failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return netBindComponent->IsClient();
+                })
+                ->Method("IsServer", [](AZ::EntityId id) -> bool {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning( "NetBindComponent", false, "NetBindComponent IsServer failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return false;
+                    }
+
+                    NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                    if (!netBindComponent)
+                    {
+                        AZ_Warning("NetBindComponent", false, "NetBindComponent IsServer failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
+                        return false;
+                    }
+                    return netBindComponent->IsServer();
+                })
+            ;
+        }
     }
 
     void NetBindComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

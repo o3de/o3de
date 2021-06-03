@@ -142,23 +142,11 @@ namespace Physics
 
         virtual AZStd::shared_ptr<Shape> CreateShape(const ColliderConfiguration& colliderConfiguration, const ShapeConfiguration& configuration) = 0;
 
+        virtual AZStd::shared_ptr<Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) = 0;
+
         /// Releases the mesh object created by the physics backend.
         /// @param nativeMeshObject Pointer to the mesh object.
         virtual void ReleaseNativeMeshObject(void* nativeMeshObject) = 0;
-
-        //////////////////////////////////////////////////////////////////////////
-        //// Physics Materials
-
-        virtual AZStd::shared_ptr<Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) = 0;
-        virtual AZStd::shared_ptr<Material> GetDefaultMaterial() = 0;
-        virtual AZStd::vector<AZStd::shared_ptr<Material>> CreateMaterialsFromLibrary(const Physics::MaterialSelection& materialSelection) = 0;
-
-
-        /// Updates the collider material selection from the physics asset or sets it to default if there's no asset provided.
-        /// @param shapeConfiguration The shape information
-        /// @param colliderConfiguration The collider information
-        virtual bool UpdateMaterialSelection(const Physics::ShapeConfiguration& shapeConfiguration,
-            Physics::ColliderConfiguration& colliderConfiguration) = 0;
 
         //////////////////////////////////////////////////////////////////////////
         //// Joints
