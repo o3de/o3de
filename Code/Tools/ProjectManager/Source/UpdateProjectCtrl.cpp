@@ -97,6 +97,9 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::HandleGemsButton()
     {
+        // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
+        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
+
         m_stack->setCurrentWidget(m_gemCatalogScreen);
         Update();
     }
@@ -113,6 +116,7 @@ namespace O3DE::ProjectManager
             emit GotoPreviousScreenRequest();
         }
     }
+
     void UpdateProjectCtrl::HandleNextButton()
     {
         if (m_stack->currentIndex() == ScreenOrder::Settings)
@@ -150,6 +154,12 @@ namespace O3DE::ProjectManager
 
                 m_projectInfo = newProjectSettings;
             }
+        }
+
+        if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
+        {
+            // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
+            m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
         }
 
         emit ChangeScreenRequest(ProjectManagerScreen::Projects);
