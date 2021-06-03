@@ -23,7 +23,6 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
