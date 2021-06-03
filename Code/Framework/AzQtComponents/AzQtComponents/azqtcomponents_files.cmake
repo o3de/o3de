@@ -7,6 +7,8 @@
 
 set(FILES
     AzQtComponentsAPI.h
+    Application/ToolsApplication.cpp
+    Application/ToolsApplication.h
     Buses/DragAndDrop.h
     Buses/ShortcutDispatch.h
     DragAndDrop/MainWindowDragAndDrop.h
