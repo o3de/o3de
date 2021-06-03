@@ -27,6 +27,6 @@ namespace NumericalMethods::Optimization
     const double epsilon = 1e-7;
 
     // values recommended in Nocedal and Wright for constants in the Wolfe conditions for satisfactory solution improvement
-    const double c1 = 1e-4;
-    const double c2 = 0.9;
+    const double WolfeConditionsC1 = 1e-4;
+    const double WolfeConditionsC2 = 0.9;
 } // namespace NumericalMethods::Optimization

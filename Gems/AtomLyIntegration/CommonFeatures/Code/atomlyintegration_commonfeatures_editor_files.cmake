@@ -10,11 +10,12 @@
 #
 
 set(FILES
+    Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h
+    Include/AtomLyIntegration/CommonFeatures/ReflectionProbe/EditorReflectionProbeBus.h
+    Include/AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h
     Source/Module.cpp
     Source/Animation/EditorAttachmentComponent.h
     Source/Animation/EditorAttachmentComponent.cpp
-    Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h
-    Include/AtomLyIntegration/CommonFeatures/ReflectionProbe/EditorReflectionProbeBus.h
     Source/EditorCommonFeaturesSystemComponent.h
     Source/EditorCommonFeaturesSystemComponent.cpp
     Source/CoreLights/EditorAreaLightComponent.h

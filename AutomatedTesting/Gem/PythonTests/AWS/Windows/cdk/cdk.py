@@ -97,16 +97,19 @@ class Cdk:
             env=self._cdk_env,
             shell=True)
 
-    def deploy(self, context_variable: str = '') -> List[str]:
+    def deploy(self, context_variable: str = '', additonal_params: List[str] = None) -> List[str]:
         """
         Deploys all the CDK stacks.
         :param context_variable: Context variable for enabling optional features.
+        :param additonal_params: Additonal parameters like --all can be passed in this way.
         :return List of deployed stack arns.
         """
         if not self._cdk_path:
             return []
 
         deploy_cdk_application_cmd = ['cdk', 'deploy', '--require-approval', 'never']
+        if additonal_params:
+            deploy_cdk_application_cmd.extend(additonal_params)
         if context_variable:
             deploy_cdk_application_cmd.extend(['-c', f'{context_variable}'])
 
