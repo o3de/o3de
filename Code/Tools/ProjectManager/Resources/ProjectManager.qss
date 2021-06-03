@@ -136,11 +136,9 @@ QTabBar::tab:pressed
 #header QPushButton:focus {
     border:none;
 }
-#header QPushButton:hover {
-    background:#333333 url(:/ArrowBack.svg) no-repeat center;
-}
+#header QPushButton:hover,
 #header QPushButton:pressed {
-    background:#222222 url(:/ArrowBack.svg) no-repeat center;
+    background:transparent url(:/ArrowBack_Hover.svg) no-repeat center;
 }
 
 #headerTitle {
