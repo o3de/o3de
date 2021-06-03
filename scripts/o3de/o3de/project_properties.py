@@ -34,9 +34,7 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
     if new_icon:
         proj_json['icon_path'] = new_icon
     if new_tag:
-        if 'user_tags' not in proj_json:
-            proj_json['user_tags'] = []
-        proj_json['user_tags'].append(new_tag)
+        proj_json.setdefault('user_tags', []).append(new_tag)
     if remove_tag:
         if 'user_tags' in proj_json:
             if remove_tag in proj_json['user_tags']:
@@ -75,9 +73,9 @@ def add_parser_args(parser):
     group.add_argument('-pi', '--project-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
     group.add_argument('-pt', '--project-tag', type=str, required=False,
-                       help='Adds a tag to user tags. These tags are intended for documentation and filtering.')
+                       help='Adds a tag to user_tags property. These tags are intended for documentation and filtering.')
     group.add_argument('-rt', '--remove-tag', type=str, required=False,
-                       help='Removes a tag from user tags. These tags are intended for documentation and filtering.')
+                       help='Removes a tag from the user_tags property.')
     parser.set_defaults(func=_edit_project_props)
 
 def add_args(subparsers) -> None:
