@@ -131,7 +131,7 @@ class Cdk:
         """
         Destroys the cdk application.
         """
-        destroy_cdk_application_cmd = ['cdk', 'destroy', '-f']
+        destroy_cdk_application_cmd = ['cdk', 'destroy', '-f', '--all']
         process_utils.check_output(
             destroy_cdk_application_cmd,
             cwd=self._cdk_path,
