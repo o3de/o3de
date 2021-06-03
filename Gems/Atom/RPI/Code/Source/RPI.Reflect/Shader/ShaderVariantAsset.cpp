@@ -10,6 +10,7 @@
 *
 */
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/SerializeContext.h>
