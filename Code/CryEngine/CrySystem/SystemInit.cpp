@@ -634,7 +634,7 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
     IConsole* pConsole = GetIConsole();
 
     ICVar* pOldVar = pConsole->GetCVar (szVarName);
-    int nDefault;
+    int nDefault = 0;
     if (pOldVar)
     {
         nDefault = pOldVar->GetIVal();
