@@ -101,7 +101,7 @@ endif()
 
 install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
-    COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
 # IMPORTANT: required to be included AFTER setting all property overrides
@@ -141,7 +141,7 @@ endfunction()
 
 # configure ALL components here
 ly_configure_cpack_component(
-    ${LY_DEFAULT_INSTALL_COMPONENT} REQUIRED
+    ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} REQUIRED
     DISPLAY_NAME "${PROJECT_NAME} Core"
     DESCRIPTION "${PROJECT_NAME} Headers, Libraries and Tools"
 )
