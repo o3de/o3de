@@ -77,6 +77,7 @@ namespace AZ
             // UI settings
             // the user can select between a baked cubemap or an authored cubemap asset
             bool m_useBakedCubemap = true;
+            BakedCubeMapQualityLevel m_bakedCubeMapQualityLevel = BakedCubeMapQualityLevel::Medium;
             AZStd::string m_bakedCubeMapRelativePath;
             Data::Asset<RPI::StreamingImageAsset> m_bakedCubeMapAsset;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
