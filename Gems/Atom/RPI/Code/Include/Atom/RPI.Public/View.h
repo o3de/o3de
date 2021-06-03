@@ -202,7 +202,7 @@ namespace AZ
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;
 
-            // Software occlusion culling
+            // Masked Occlusion Culling interface
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
         };
 
