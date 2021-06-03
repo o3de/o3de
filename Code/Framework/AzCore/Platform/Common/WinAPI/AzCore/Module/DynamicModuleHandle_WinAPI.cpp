@@ -83,7 +83,7 @@ namespace AZ
                 AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
                 if (absPathOptional.has_value())
                 {
-                    m_fileName.assign(absPathOptional.value().c_str(), absPathOptional.value().size());
+                    m_fileName.assign(absPathOptional->c_str(), absPathOptional->size());
                 }
             }
         }
