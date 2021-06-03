@@ -155,21 +155,23 @@ namespace AzToolsFramework
                             // If a link was created for a nested instance before the changes were propagated,
                             // then we associate it correctly here
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
-                                if (nestedInstance->GetLinkId() == InvalidLinkId)
+                                if (nestedInstance->GetLinkId() != InvalidLinkId)
                                 {
-                                    for (auto linkId : currentTemplate.GetLinks())
-                                    {
-                                        LinkReference nestedLink = m_prefabSystemComponentInterface->FindLink(linkId);
-                                        if (!nestedLink.has_value())
-                                        {
-                                            continue;
-                                        }
+                                    return;
+                                }
 
-                                        if (nestedLink->get().GetInstanceName() == nestedInstance->GetInstanceAlias())
-                                        {
-                                            nestedInstance->SetLinkId(linkId);
-                                            break;
-                                        }
+                                for (auto linkId : currentTemplate.GetLinks())
+                                {
+                                    LinkReference nestedLink = m_prefabSystemComponentInterface->FindLink(linkId);
+                                    if (!nestedLink.has_value())
+                                    {
+                                        continue;
+                                    }
+
+                                    if (nestedLink->get().GetInstanceName() == nestedInstance->GetInstanceAlias())
+                                    {
+                                        nestedInstance->SetLinkId(linkId);
+                                        break;
                                     }
                                 }
                             });

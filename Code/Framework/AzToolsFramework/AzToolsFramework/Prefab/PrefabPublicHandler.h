@@ -74,11 +74,31 @@ namespace AzToolsFramework
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
 
+            /**
+             * Duplicate a list of entities owned by a common owning instance by directly
+             * copying/modifying their entries in the instance DOM
+             *
+             * \param commonOwningInstance The common owning instance of all the entities being duplicated.
+             * \param entities The list of Entities that will be duplicated.
+             * \param domToAddDuplicatedEntitiesUnder The DOM of the common owning instance where the duplicated
+             *      entity DOM values will be added to.
+             * \param duplicatedEntityIds A list of EntityIds corresponding to the entities that were duplicated.
+             */
             void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
-                const AZStd::vector<AZ::Entity*>& entities, PrefabDom& instanceDomAfter,
+                const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
                 EntityIdList& duplicatedEntityIds);
+            /**
+             * Duplicate a list of instances owned by a common owning instance by directly
+             * copying/modifying their entries in the instance DOM
+             *
+             * \param commonOwningInstance The common owning instance of all the instances being duplicated.
+             * \param entities The list of Instances that will be duplicated.
+             * \param domToAddDuplicatedInstancesUnder The DOM of the common owning instance where the duplicated
+             *      instance DOM values will be added to.
+             * \param duplicatedEntityIds A list of EntityIds corresponding to the instances that were duplicated.
+             */
             void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
-                const AZStd::vector<Instance*>& instances, PrefabDom& instanceDomAfter,
+                const AZStd::vector<Instance*>& instances, PrefabDom& domToAddDuplicatedInstancesUnder,
                 EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
             
             /**
