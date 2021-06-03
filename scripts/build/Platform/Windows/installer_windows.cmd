@@ -31,7 +31,7 @@ SET CPACK_PATH=
 IF "%LY_CMAKE_PATH%"=="" (
     FOR /F %%i in ('where cpack') DO (
         REM The cpack in chocolatey expects a number supplied with --version so it will error
-        %%i --version > NUL
+        "%%i" --version > NUL
         IF !ERRORLEVEL!==0 (
             SET "CPACK_PATH=%%i"
         )
