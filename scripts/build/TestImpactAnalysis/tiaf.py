@@ -25,8 +25,12 @@ def is_child_path(parent_path, child_path):
 
 # Enumerations for test sequence types
 class SequenceType(Enum):
+    # Regular sequence as-per the tiaf regular sequence
     REGULAR = 1
+     # TIA sequence as-per the tiaf read-only impact analysis sequence
     TEST_IMPACT_ANALYSIS = 2
+    # Seed sequence as-per the tiaf seed sequence
+    SEED = 3
 
 class TestImpact:
     def __init__(self, config_file, dst_commit):
@@ -43,7 +47,6 @@ class TestImpact:
             self.__tiaf_bin = config["repo"]["tiaf_bin"]
             if not os.path.isfile(self.__tiaf_bin):
                 raise FileNotFoundError("Could not find tiaf binary")
-            self.__source_of_truth = config["repo"]["source_of_truth"]
             self.__active_workspace = config["workspace"]["active"]["root"]
             self.__historic_workspace = config["workspace"]["historic"]["root"]
             self.__temp_workspace = config["workspace"]["temp"]["root"]
@@ -58,16 +61,7 @@ class TestImpact:
         self.__dst_commit = dst_commit
         self.__src_commit = None
         self.__has_src_commit = False
-        if self.__repo.current_branch == self.__source_of_truth:
-            self.__is_source_of_truth = True
-        else:
-            self.__is_source_of_truth = False
         print(f"The repository is located at '{self.__repo_dir}' and the current branch is '{self.__branch}'.")
-        print(f"The source of truth branch is '{self.__source_of_truth}'.")
-        if self.__is_source_of_truth:
-            print("I am the source of truth.")
-        else:
-            print("I am *not* the source of truth.")
 
     # Restricts change lists from checking in test impact analysis files
     def __check_for_restricted_files(self, file_path):
@@ -77,7 +71,7 @@ class TestImpact:
     def __read_last_run_hash(self):
         self.__has_src_commit = False
         if os.path.isfile(self.__last_commit_hash_path):
-            print(f"Previous commit hash found at 'self.__last_commit_hash_path'")            
+            print(f"Previous commit hash found at '{self.__last_commit_hash_path}'")            
             with open(self.__last_commit_hash_path) as file:
                 self.__src_commit = file.read()
                 self.__has_src_commit = True
@@ -104,7 +98,7 @@ class TestImpact:
                 print(e)
                 return
             # A diff was generated, attempt to parse the diff and construct the change list
-            print(f"Generated diff between commits {self.__src_commit} and {self.__dst_commit}.") 
+            print(f"Generated diff between commits '{self.__src_commit}' and '{self.__dst_commit}': '{diff_path}'.") 
             change_list = {}
             change_list["createdFiles"] = []
             change_list["updatedFiles"] = []
@@ -152,35 +146,27 @@ class TestImpact:
     # Runs the specified test sequence
     def run(self, sequence_type, safe_mode, test_timeout, global_timeout):
         args = []
-        if self.__has_change_list:
-            args.append(f"-changelist={self.__change_list_path}")
-            if sequence_type == SequenceType.REGULAR:
-                print("Sequence type: regular.")
-                args.append("--sequence=regular")
-            elif sequence_type == SequenceType.TEST_IMPACT_ANALYSIS:
-                print("Sequence type: test impact analysis.")
-                if self.__is_source_of_truth:
-                    # Source of truth branch will allways attempt a seed if no test impact analysis data is available
-                    print("This branch is the source of truth, a seed sequence will be run if there is no test impact analysis data.")
-                    args.append("--sequence=tiaorseed")
-                    args.append("--fpolicy=continue")
-                else:
-                    # Non source of truth branches will fall back to a regular test run if no test impact analysis data is available
-                    print("This branch is not the source of truth, a regular sequence will be run if there is no test impact analysis data.")
-                    args.append("--sequence=tia")
-                    args.append("--fpolicy=abort")
-                
-                if safe_mode == True:
-                    print("Safe mode is on, the discarded test targets will be run after the selected test targets.")
-                    args.append("--safemode=on")
-                else:
-                    print("Safe mode is off, the discarded test targets will not be run.")
-            else:
-                raise ValueError(sequence_type)
-        else:
-            print(f"No change list was generated, this will cause test impact analysis sequences on branches other than the source of truth to fall back to a regular sequence.")
-            print("Sequence type: Regular.")
+        print("Please note: test impact analysis sequences will be run in read-only mode (seed sequences are unaffected).")
+        if sequence_type == SequenceType.REGULAR:
+            print("Sequence type: regular.")
             args.append("--sequence=regular")
+            args.append("--fpolicy=abort")
+        elif sequence_type == SequenceType.SEED:
+            print("Sequence type: seed.")
+            args.append("--sequence=seed")
+            args.append("--fpolicy=continue")
+        elif sequence_type == SequenceType.TEST_IMPACT_ANALYSIS:
+            print("Sequence type: test impact analysis (no write).")
+            args.append("--fpolicy=abort")
+            if self.__has_change_list:
+                args.append(f"-changelist={self.__change_list_path}")
+                args.append("--sequence=tianowrite")
+            else:
+                print(f"No change list was generated, falling back to a regular sequence.")
+                print("Sequence type: Regular.")
+                args.append("--sequence=regular")
+        else:
+            raise ValueError(sequence_type)
 
         if test_timeout != None:
             args.append(f"--ttimeout={test_timeout}")
@@ -193,8 +179,10 @@ class TestImpact:
         print(*args)
         result = subprocess.run([self.__tiaf_bin] + args)
         if result.returncode == 0:
-            print("Test impact analysis runtime returned successfully. Updating historical artifacts...")
-            self.__write_last_run_hash(self.__dst_commit)
+            print("Test impact analysis runtime returned successfully.")
+            if sequence_type == SequenceType.SEED:
+                print("Writing historical meta-data...")
+                self.__write_last_run_hash(self.__dst_commit)
             print("Complete!")
         else:
             print(f"The test impact analysis runtime returned with error: '{result.returncode}'.")

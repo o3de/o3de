@@ -21,6 +21,7 @@
     ],
     "steps": [
       "debug_vs2019",
+      "test_impact_seed",
       "test_debug_vs2019"
     ]
   },
@@ -30,6 +31,7 @@
     ],
     "steps": [
       "profile_vs2019",
+      "test_impact_analysis",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]
@@ -78,6 +80,24 @@
       "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
+  "test_impact_seed": {
+    "TAGS": [
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
+      "SCRIPT_PARAMETERS": "--sequenceType seed --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.debug.json\""
+    }
+  },
+  "test_impact_analysis": {
+    "TAGS": [
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
+      "SCRIPT_PARAMETERS": "--sequenceType tia --destCommit !CHANGE_ID! --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.profile.json\""
+    }
+  },
   "debug_vs2019": {
     "TAGS": [
         "weekly-build-metrics"
@@ -86,7 +106,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=\"c:\\ly\\3rdParty\\ackages\\OpenCppCoverage\\Binary\\windows-x64\\OpenCppCoverage.exe\"",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -117,7 +137,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE  -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=\"c:\\ly\\3rdParty\\ackages\\OpenCppCoverage\\Binary\\windows-x64\\OpenCppCoverage.exe\"",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
