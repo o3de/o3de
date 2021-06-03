@@ -13,7 +13,7 @@
 set -o errexit # exit on the first failure encountered
 
 # Jenkins defines environment variables for parameters and passes "false" to variables 
-# that are not set. Here we clear them if they are false so we can also just defined them
+# that are not set. Here we clear them if they are false so we can also just define them
 # from command line
 if [[ "${CLEAN_ASSETS}" == "false" ]]; then
     CLEAN_ASSETS=

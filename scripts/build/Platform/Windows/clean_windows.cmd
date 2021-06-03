@@ -13,7 +13,7 @@ REM
 SETLOCAL EnableDelayedExpansion
 
 REM Jenkins defines environment variables for parameters and passes "false" to variables 
-REM that are not set. Here we clear them if they are false so we can also just defined them
+REM that are not set. Here we clear them if they are false so we can also just define them
 REM from command line
 IF "%CLEAN_ASSETS%"=="false" (
     set CLEAN_ASSETS=
