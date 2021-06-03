@@ -164,6 +164,6 @@ namespace EMotionFX
 
     private:
         AZStd::vector<Preset*>   m_presets;
-        size_t                   m_activePresetIndex;
+        AZ::u64                  m_activePresetIndex;
     };
 } // namespace EMotionFX

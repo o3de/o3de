@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Math/Crc.h>
+#include <AzCore/std/string/string_view.h>
 #include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -181,7 +183,7 @@ namespace EMotionFX
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AnimGraphGameControllerSettings::AnimGraphGameControllerSettings()
-        : m_activePresetIndex(MCORE_INVALIDINDEX32)
+        : m_activePresetIndex(InvalidIndex)
     {
     }
 
@@ -369,6 +371,22 @@ namespace EMotionFX
     }
 
 
+    static bool AnimGraphGameControllerSettingsVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& element)
+    {
+        if (element.GetVersion() < 2)
+        {
+            constexpr AZStd::string_view activePresetIndex{"activePresetIndex"};
+            if (AZ::SerializeContext::DataElementNode* presetIndexElement = element.FindSubElement(AZ::Crc32(activePresetIndex)))
+            {
+                uint32 value;
+                presetIndexElement->GetData(value);
+                presetIndexElement->Convert<AZ::u64>(context);
+                presetIndexElement->SetData(context, static_cast<AZ::u64>(value));
+            }
+        }
+        return true;
+    }
+
     void AnimGraphGameControllerSettings::Reflect(AZ::ReflectContext* context)
     {
         ParameterInfo::Reflect(context);
@@ -383,7 +401,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<AnimGraphGameControllerSettings>()
-            ->Version(1)
+            ->Version(2, &AnimGraphGameControllerSettingsVersionConverter)
             ->Field("activePresetIndex", &AnimGraphGameControllerSettings::m_activePresetIndex)
             ->Field("presets", &AnimGraphGameControllerSettings::m_presets)
             ;
