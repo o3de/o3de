@@ -16,10 +16,10 @@ set -o errexit # exit on the first failure encountered
 # that are not set. Here we clear them if they are false so we can also just defined them
 # from command line
 if [[ "${CLEAN_ASSETS}" == "false" ]]; then
-    set CLEAN_ASSETS=
+    CLEAN_ASSETS=
 fi
 if [[ "${CLEAN_OUTPUT_DIRECTORY}" == "false" ]]; then
-    set CLEAN_OUTPUT_DIRECTORY=
+    CLEAN_OUTPUT_DIRECTORY=
 fi
 
 if [[ -n "$CLEAN_ASSETS" ]]; then
