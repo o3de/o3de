@@ -52,6 +52,11 @@ namespace AZ
 
             bool HairSkinningComputePass::AcquireFeatureProcessor()
             {
+                if (m_featureProcessor)
+                {
+                    return true;
+                }
+
                 RPI::Scene* scene = GetScene();
                 if (scene)
                 {
@@ -88,7 +93,7 @@ namespace AZ
             {
                 ComputePass::BuildAttachmentsInternal();
 
-                if (!m_featureProcessor && !AcquireFeatureProcessor())
+                if (!AcquireFeatureProcessor())
                 {
                     return;
                 }
@@ -108,7 +113,7 @@ namespace AZ
             {
                 if (m_buildShaderAndData)
                 {   // Shader rebuild is required - the async callback did not succeed (missing FP?)
-                    if (m_featureProcessor || AcquireFeatureProcessor())
+                    if (AcquireFeatureProcessor())
                     {   // FP exists or can be acquired
                         LoadShader();   // this will happen in this frame
                         // The following will force rebuild in the next frame keeping this frame clean.
@@ -219,7 +224,7 @@ namespace AZ
             void HairSkinningComputePass::BuildShaderAndRenderData()
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                if (!m_featureProcessor && !AcquireFeatureProcessor())
+                if (!AcquireFeatureProcessor())
                 {
                     m_buildShaderAndData = true;
                     return;
