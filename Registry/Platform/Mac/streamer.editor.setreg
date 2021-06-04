@@ -18,6 +18,11 @@
                                 // can have open is set to 256. So we need to set this to a lower value than on PC.
                                 // This limit is set by "launchctl limit maxfiles"
                                 "MaxFileHandles": 65
+                            },
+                            {
+                                "$type": "AzFramework::RemoteStorageDriveConfig",
+                                // The maximum number of file handles that the drive will cache.
+                                "MaxFileHandles": 1024
                             }
                         ]
                     }
