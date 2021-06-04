@@ -21,6 +21,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QDir>
+#include <QProcessEnvironment>
 
 
 //#define MOCK_BUILD_PROJECT true 
@@ -28,7 +29,7 @@
 namespace O3DE::ProjectManager
 {
     // 10 Minutes
-    static const int MaxBuildTimeMSecs = 600000;
+    constexpr int MaxBuildTimeMSecs = 600000;
     static const QString BuildPathPostfix = "windows_vs2019";
     static const QString ErrorLogPathPostfix = "CMakeFiles/CMakeProjectBuildError.log";
 
@@ -64,8 +65,18 @@ namespace O3DE::ProjectManager
         // Show some kind of progress with very approximate estimates
         UpdateProgress(1);
 
+        QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
+        // Append cmake path to PATH incase it is missing
+        QDir cmakePath(engineInfo.m_path);
+        cmakePath.cd("cmake/runtime");
+        QString pathValue = currentEnvironment.value("PATH");
+        pathValue += ";" + cmakePath.path();
+        currentEnvironment.insert("PATH", pathValue);
+
         QProcess configProjectProcess;
         configProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
+        configProjectProcess.setWorkingDirectory(m_projectInfo.m_path);
+        configProjectProcess.setProcessEnvironment(currentEnvironment);
 
         configProjectProcess.start(
             "cmake",
@@ -93,7 +104,7 @@ namespace O3DE::ProjectManager
         }
 
         QString configProjectOutput(configProjectProcess.readAllStandardOutput());
-        if (!configProjectOutput.contains("Generating done"))
+        if (configProjectProcess.exitCode() != 0 || !configProjectOutput.contains("Generating done"))
         {
             WriteErrorLog(configProjectOutput);
             emit Done(tr("Configuring project failed. See log for details."));
@@ -104,6 +115,8 @@ namespace O3DE::ProjectManager
 
         QProcess buildProjectProcess;
         buildProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
+        buildProjectProcess.setWorkingDirectory(m_projectInfo.m_path);
+        buildProjectProcess.setProcessEnvironment(currentEnvironment);
 
         buildProjectProcess.start(
             "cmake",
@@ -113,6 +126,7 @@ namespace O3DE::ProjectManager
                 QDir(m_projectInfo.m_path).filePath(BuildPathPostfix),
                 "--target",
                 m_projectInfo.m_projectName + ".GameLauncher",
+                "Editor",
                 "--config",
                 "profile"
             });
@@ -130,8 +144,7 @@ namespace O3DE::ProjectManager
         }
 
         QString buildProjectOutput(buildProjectProcess.readAllStandardOutput());
-        auto error = configProjectProcess.error();
-        if (error != QProcess::NormalExit)
+        if (configProjectProcess.exitCode() != 0)
         {
             WriteErrorLog(buildProjectOutput);
             emit Done(tr("Building project failed. See log for details."));
