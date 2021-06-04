@@ -11,7 +11,7 @@
 
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
-ly_set(LY_DEFAULT_INSTALL_COMPONENT Core)
+ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
 
 file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
@@ -27,6 +27,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
     # De-alias target name
     ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
 
+    # get the component ID.  if the property isn't set for the target, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
+    get_property(install_component TARGET ${TARGET_NAME} PROPERTY INSTALL_COMPONENT)
+
     # All include directories marked PUBLIC or INTERFACE will be installed. We dont use PUBLIC_HEADER because in order to do that
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
     # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
@@ -41,7 +44,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
                 unset(current_public_headers)
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${include_location}/${target_source_dir}
-                    COMPONENT ${ly_install_target_COMPONENT}
+                    COMPONENT ${install_component}
                     FILES_MATCHING
                         PATTERN *.h
                         PATTERN *.hpp
@@ -68,13 +71,13 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
         TARGETS ${TARGET_NAME}
         ARCHIVE
             DESTINATION ${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-            COMPONENT ${ly_install_target_COMPONENT}
+            COMPONENT ${install_component}
         LIBRARY
             DESTINATION ${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}
-            COMPONENT ${ly_install_target_COMPONENT}
+            COMPONENT ${install_component}
         RUNTIME
             DESTINATION ${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_runtime_output_subdirectory}
-            COMPONENT ${ly_install_target_COMPONENT}
+            COMPONENT ${install_component}
     )
 
     # CMakeLists.txt file
@@ -182,7 +185,7 @@ set_property(TARGET ${TARGET_NAME}
     file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
         DESTINATION ${target_source_dir}
-        COMPONENT ${ly_install_target_COMPONENT}
+        COMPONENT ${install_component}
     )
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
@@ -239,9 +242,13 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
     )
+
+    # get the component ID.  if the property isn't set for the directory, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
+    get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
+
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/CMakeLists.txt"
         DESTINATION ${target_source_dir}
-        COMPONENT ${ly_install_target_COMPONENT}
+        COMPONENT ${install_component}
     )
 
 endfunction()
@@ -262,7 +269,6 @@ function(ly_setup_cmake_install)
 
     install(DIRECTORY "${LY_ROOT_FOLDER}/cmake"
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         PATTERN "__pycache__" EXCLUDE
         REGEX "Findo3de.cmake" EXCLUDE
         REGEX "Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
@@ -290,7 +296,6 @@ function(ly_setup_cmake_install)
             "${LY_ROOT_FOLDER}/CMakeLists.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json"
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Collect all Find files that were added with ly_add_external_target_path
@@ -303,7 +308,6 @@ function(ly_setup_cmake_install)
     endforeach()
     install(FILES ${additional_find_files}
         DESTINATION cmake/3rdParty
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
@@ -320,7 +324,6 @@ function(ly_setup_cmake_install)
     configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
@@ -340,7 +343,6 @@ function(ly_setup_cmake_install)
     )
     install(FILES "${pal_builtin_file}"
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
@@ -362,7 +364,6 @@ endfunction()
 function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     unset(runtime_commands)
@@ -408,7 +409,6 @@ endfunction()"
     list(REMOVE_DUPLICATES runtime_commands)
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
     install(CODE "${runtime_commands_str}"
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
@@ -427,7 +427,6 @@ function(ly_setup_others)
 
         install(DIRECTORY "${LY_ROOT_FOLDER}/${dir}"
             DESTINATION ${install_path}
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
             PATTERN "__pycache__" EXCLUDE
         )
 
@@ -438,14 +437,12 @@ function(ly_setup_others)
     install(FILES
         ${o3de_scripts}
         DESTINATION ./scripts
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/scripts/bundler
         ${LY_ROOT_FOLDER}/scripts/o3de
         DESTINATION ./scripts
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         PATTERN "__pycache__" EXCLUDE
         PATTERN "CMakeLists.txt" EXCLUDE
         PATTERN "tests" EXCLUDE
@@ -453,7 +450,6 @@ function(ly_setup_others)
 
     install(DIRECTORY "${LY_ROOT_FOLDER}/python"
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         REGEX "downloaded_packages" EXCLUDE
         REGEX "runtime" EXCLUDE
     )
@@ -462,19 +458,16 @@ function(ly_setup_others)
     install(DIRECTORY
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Registry
         DESTINATION ./${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/Registry
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Engine Source Assets
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/Assets
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Gem Source Assets and Registry
@@ -494,7 +487,6 @@ function(ly_setup_others)
             # the "Assets" folder from being copied underneath the <gem-root>/Assets folder
             install(DIRECTORY ${gem_abs_assets_path}
                 DESTINATION ${gem_assets_path}
-                COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
             )
         endif()
     endforeach()
@@ -510,7 +502,6 @@ function(ly_setup_others)
         get_filename_component(gem_relative_path ${gem_json_path} DIRECTORY)
         install(FILES ${gem_json_path}
             DESTINATION ${gem_relative_path}
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endforeach()
 
@@ -518,14 +509,12 @@ function(ly_setup_others)
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/Gems/Atom/Asset/ImageProcessingAtom/Config
         DESTINATION Gems/Atom/Asset/ImageProcessingAtom
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Templates
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/Templates
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # Misc
@@ -534,7 +523,6 @@ function(ly_setup_others)
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
         DESTINATION .
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()
@@ -548,15 +536,12 @@ function(ly_setup_target_generator)
         ${LY_ROOT_FOLDER}/Code/LauncherUnified/LauncherProject.cpp
         ${LY_ROOT_FOLDER}/Code/LauncherUnified/StaticModules.in
         DESTINATION LauncherGenerator
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(DIRECTORY ${LY_ROOT_FOLDER}/Code/LauncherUnified/Platform
         DESTINATION LauncherGenerator
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
     install(FILES ${LY_ROOT_FOLDER}/Code/LauncherUnified/FindLauncherGenerator.cmake
         DESTINATION cmake
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
 endfunction()

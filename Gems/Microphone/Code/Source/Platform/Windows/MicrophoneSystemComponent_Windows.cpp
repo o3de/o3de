@@ -422,12 +422,12 @@ namespace Audio
                 if (stereoToMono)
                 {
                     // Samples are interleaved now, copy only left channel to the output
-                    float* inputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                    float* outputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
+                    float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
+                    float* bufferOutputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
                     for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                     {
-                        outputData[frame] = *inputData++;
-                        ++inputData;
+                        bufferOutputData[frame] = *bufferInputData++;
+                        ++bufferInputData;
                     }
                 }
                 else // monoToStereo
@@ -435,21 +435,21 @@ namespace Audio
                     // Split single samples to both left and right channels
                     if (shouldDeinterleave)
                     {
-                        float* inputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                        float** outputData = reinterpret_cast<float**>(m_conversionBufferOut.m_data);
+                        float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
+                        float** bufferOutputData = reinterpret_cast<float**>(m_conversionBufferOut.m_data);
                         for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                         {
-                            outputData[0][frame] = outputData[1][frame] = inputData[frame];
+                            bufferOutputData[0][frame] = bufferOutputData[1][frame] = bufferInputData[frame];
                         }
                     }
                     else
                     {
-                        float* inputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                        float* outputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
+                        float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
+                        float* bufferOutputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
                         for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                         {
-                            *outputData++ = inputData[frame];
-                            *outputData++ = inputData[frame];
+                            *bufferOutputData++ = bufferInputData[frame];
+                            *bufferOutputData++ = bufferInputData[frame];
                         }
                     }
                 }
