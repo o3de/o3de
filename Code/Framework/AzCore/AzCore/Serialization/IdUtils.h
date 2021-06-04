@@ -29,7 +29,7 @@ namespace AZ
     namespace IdUtils
     {
         /**
-        * \param AllowDuplicates - If true allows the same id to be registered multiple time,
+        * \param AllowDuplicates - If true allows the same id to be registered multiple times,
             with the newer value overwriting the stored value. If false, duplicates are not allowed and
             the first stored value is kept.The default is false.
         */
