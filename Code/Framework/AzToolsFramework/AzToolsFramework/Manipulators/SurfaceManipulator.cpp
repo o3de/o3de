@@ -29,12 +29,11 @@ namespace AzToolsFramework
         const AZ::Transform localFromWorldUniform = worldFromLocalUniform.GetInverse();
 
         const AZ::Vector3 localFinalSurfacePosition = snapping
-            ? CalculateSnappedTerrainPosition(
-                  // note: gridSize is not scaled by scaleRecip here as localStartPosition is
-                  // unscaled itself so the position returned by CalculateSnappedTerrainPosition
-                  // must be in the same space (if localStartPosition were also scaled, gridSize
-                  // would need to be multiplied by scaleRecip)
-                  worldSurfacePosition, worldFromLocalUniform, viewportId, gridSize)
+            // note: gridSize is not scaled by scaleRecip here as localStartPosition is
+            // unscaled itself so the position returned by CalculateSnappedTerrainPosition
+            // must be in the same space (if localStartPosition were also scaled, gridSize
+            // would need to be multiplied by scaleRecip)
+            ? CalculateSnappedTerrainPosition(worldSurfacePosition, worldFromLocalUniform, viewportId, gridSize)
             : localFromWorldUniform.TransformPoint(worldSurfacePosition);
 
         // delta/offset between initial vertex position and terrain pick position
