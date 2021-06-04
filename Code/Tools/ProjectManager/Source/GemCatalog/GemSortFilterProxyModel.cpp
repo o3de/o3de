@@ -137,8 +137,8 @@ namespace O3DE::ProjectManager
         m_gemOriginFilter = {};
         m_platformFilter = {};
         m_typeFilter = {};
+        m_featureFilter = {};
 
         InvalidateFilter();
-
     }
 } // namespace O3DE::ProjectManager
