@@ -70,6 +70,12 @@ namespace AZ
                 }
             }
 
+            if (classElement.GetVersion() < 5)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("matModUvOverrides"));
+                classElement.RemoveElementByName(AZ_CRC_CE("propertyOverrides"));
+            }
+
             return true;
         }
 
