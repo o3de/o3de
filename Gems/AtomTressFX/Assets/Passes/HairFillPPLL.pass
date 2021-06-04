@@ -8,11 +8,11 @@
             "PassClass": "HairPPLLRasterPass",
             "Slots": [
                 // Input/Outputs...
-                { 
+                {
                     // Super important to keep this as it is used to set the size of the Head PPLL image buffer.
                     // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                     "Name": "DepthLinear",
-                    "SlotType": "Input",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {

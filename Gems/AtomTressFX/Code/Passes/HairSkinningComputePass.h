@@ -85,6 +85,7 @@ namespace AZ
 
                 // Attach here all the pass buffers
                 void BuildAttachmentsInternal() override;
+                void FrameBeginInternal(FramePrepareParams params) override;
 
                 void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
 
@@ -93,16 +94,25 @@ namespace AZ
                 void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
                 void OnShaderVariantReinitialized(const AZ::RPI::Shader& shader, const AZ::RPI::ShaderVariantId& shaderVariantId, AZ::RPI::ShaderVariantStableId shaderVariantStableId) override;
 
+                bool AcquireFeatureProcessor();
+                void BuildShaderAndRenderData();
+
             private:
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
-                bool m_allowSimIterations = false;   
+                bool m_allowSimIterations = false;
+                bool m_initialized = false;
+                bool m_buildShaderAndData = false;  // If shader is updated, mark it for build
 
                 AZStd::mutex m_mutex;
 
                 //! list of dispatch items, each represents a single hair object that
                 //!  will be used by the skinning compute shader.
                 AZStd::unordered_set<const RHI::DispatchItem*> m_dispatchItems;
+
+                //! List of new render objects that their Per Object (dynamic) Srg should be bound
+                //!  to the resources.  Done once per pass per object only.
+                AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
             };
 
         }   // namespace Hair

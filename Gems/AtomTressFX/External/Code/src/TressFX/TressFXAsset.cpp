@@ -911,7 +911,7 @@ namespace AMD
         bool success = LoadHairData(stream);
         if (!success)
         {
-            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Error in Guide Hair asset data");
             return false;
         }
 
@@ -924,7 +924,7 @@ namespace AMD
         success &= ProcessAsset();
         if (!success)
         {
-            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Error in Follow Hair asset data");
             return false;
         }
 
@@ -935,7 +935,7 @@ namespace AMD
         success &= LoadBoneData(stream);
         if (!success)
         {
-            AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
+            AZ_Warning("Hair Gem", false, "Loading: Error in Hair Bones asset data");
             return false;
         }
 
@@ -948,7 +948,7 @@ namespace AMD
             success &= m_collisionMesh->LoadMeshData(stream);
             if (!success)
             {
-                AZ_Warning("Hair Gem", false, "Loading: Hair properties files was not processed properly");
+                AZ_Warning("Hair Gem", false, "Loading: Possibly Error in Hair collision object data - this file is optional");
                 return false;
             }
         }

@@ -199,10 +199,10 @@ namespace AZ
                         AZ_Error("Hair Gem", false, "Dynamic BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
                         return false;
                     }
-                } 
-                m_initialized = BindSrgBufferViewsAndOffsets();
+                }
 
-                return m_initialized;
+                m_initialized = true;
+                return true;
             }
 
             //! Data upload - copy the hair mesh asset data (positions and tangents) into the buffers.
@@ -254,28 +254,28 @@ namespace AZ
             void HairRenderObject::PrepareHairGenerationSrgDescriptors(uint32_t vertexCount, uint32_t strandsCount)
             {
                 m_hairGenerationDescriptors.resize(uint8_t(HairGenerationBuffersSemantics::NumBufferStreams));
-
+                AZStd::string objectNumber = AZStd::to_string(s_objectCounter);
                 // static StructuredBuffers for the various hair strands and bones static data.
                 // [To Do] Adi: verify that when setting RHI::Format we can use StructuredBuffer on the shader side.
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::InitialHairPositions)] = {
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32A32_FLOAT, sizeof(AZ::Vector4), vertexCount,
-                    Name{"InitialHairPositions" + s_objectCounter }, Name{"m_initialHairPositions"}, 0, 0
+                    Name{"InitialHairPositions" + objectNumber }, Name{"m_initialHairPositions"}, 0, 0
                 };
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::HairRestLengthSRV)] = {
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_FLOAT, sizeof(float), vertexCount,
-                    Name{"HairRestLengthSRV" + s_objectCounter }, Name{"m_hairRestLengthSRV"}, 1, 0
+                    Name{"HairRestLengthSRV" + objectNumber }, Name{"m_hairRestLengthSRV"}, 1, 0
                 };
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::HairStrandType)] = {
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_UINT, sizeof(uint32_t), strandsCount,
-                    Name{"HairStrandType" + s_objectCounter }, Name{"m_hairStrandType"}, 2, 0
+                    Name{"HairStrandType" + objectNumber }, Name{"m_hairStrandType"}, 2, 0
                 };
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::FollowHairRootOffset)] = {
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32B32A32_FLOAT, sizeof(AZ::Vector4), strandsCount,
-                    Name{"FollowHairRootOffset" + s_objectCounter }, Name{"m_followHairRootOffset"}, 3, 0
+                    Name{"FollowHairRootOffset" + objectNumber }, Name{"m_followHairRootOffset"}, 3, 0
                 };
                 // StructuredBuffer with strandsCount elements specifying hair blend bones and their weight
                 // Format set to Format::Unknown to avoid set size by type but follow the specified size.
@@ -283,7 +283,7 @@ namespace AZ
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::BoneSkinningData)] = {
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::Unknown, sizeof(AMD::TressFXBoneSkinningData), strandsCount,
-                    Name{"BoneSkinningData" + s_objectCounter }, Name{"m_boneSkinningData"}, 4, 0
+                    Name{"BoneSkinningData" + objectNumber }, Name{"m_boneSkinningData"}, 4, 0
                 };
 
                 // Constant Buffer.  RHI::Format::Unknown will create is as structured buffer per
@@ -291,7 +291,7 @@ namespace AZ
                 m_hairGenerationDescriptors[uint8_t(HairGenerationBuffersSemantics::TressFXSimulationConstantBuffer)] = {
                     RPI::CommonBufferPoolType::Constant,
                     RHI::Format::Unknown, sizeof(AMD::TressFXSimulationParams), 1,
-                    Name{"TressFXSimConstantBuffer" + s_objectCounter }, Name{"m_tressfxSimParameters"}, 5, 0
+                    Name{"TressFXSimConstantBuffer" + objectNumber }, Name{"m_tressfxSimParameters"}, 5, 0
                 };
             }
 
@@ -366,31 +366,32 @@ namespace AZ
                 AZ_Error("Hair Gem", m_hairRenderSrg, "Error - m_hairRenderSrg was not created yet");
 
                 m_hairRenerDescriptors.resize(uint8_t(HairRenderBuffersSemantics::NumBufferStreams));
+                AZStd::string objectNumber = AZStd::to_string(s_objectCounter);
 
                 // Rendering constant buffers creation
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::RenderCB)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
                     sizeof(AMD::TressFXRenderParams), 1,
-                    Name{ "TressFXRenderConstantBuffer" + s_objectCounter  }, Name{ "m_tressFXRenderParameters" }, 0, 0
+                    Name{ "TressFXRenderConstantBuffer" + objectNumber  }, Name{ "m_tressFXRenderParameters" }, 0, 0
                 );
 
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandCB)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Constant, RHI::Format::Unknown,
                     sizeof(AMD::TressFXStrandParams), 1,
-                    Name{ "TressFXStrandConstantBuffer" + s_objectCounter}, Name{ "m_tressFXStrandParameters" }, 0, 0
+                    Name{ "TressFXStrandConstantBuffer" + objectNumber}, Name{ "m_tressFXStrandParameters" }, 0, 0
                 );
 
                 // Albedo texture Srg binding indices
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Invalid, RHI::Format::R32_UINT, sizeof(uint32_t), 1,
-                    Name{"HairBaseAlbedo" + s_objectCounter}, Name{"m_baseAlbedoTexture"}, 0, 0
+                    Name{"HairBaseAlbedo" + objectNumber}, Name{"m_baseAlbedoTexture"}, 0, 0
                 );
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)].m_resourceShaderIndex =
                     m_hairRenderSrg->FindShaderInputImageIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::BaseAlbedo)].m_paramNameInSrg).GetIndex();
 
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::Invalid, RHI::Format::R32_UINT, sizeof(uint32_t), 1,
-                    Name{"HairStrandAlbedo" + s_objectCounter}, Name{"m_strandAlbedoTexture"}, 0, 0
+                    Name{"HairStrandAlbedo" + objectNumber}, Name{"m_strandAlbedoTexture"}, 0, 0
                 );
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)].m_resourceShaderIndex =
                     m_hairRenderSrg->FindShaderInputImageIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::StrandAlbedo)].m_paramNameInSrg).GetIndex();
@@ -400,7 +401,7 @@ namespace AZ
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32_FLOAT, sizeof(float), m_NumTotalVertices,
-                    Name{ "HairVertRenderParams" + s_objectCounter}, Name{ "m_hairThicknessCoeffs" }, 0, 0
+                    Name{ "HairVertRenderParams" + objectNumber}, Name{ "m_hairThicknessCoeffs" }, 0, 0
                 );
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)].m_resourceShaderIndex =
                     m_hairRenderSrg->FindShaderInputBufferIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairVertexRenderParams)].m_paramNameInSrg).GetIndex();
@@ -409,7 +410,7 @@ namespace AZ
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)] = SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadOnly,
                     RHI::Format::R32G32_FLOAT, 2.0 * sizeof(float), m_NumTotalStrands,
-                    Name{"HairTexCoords" + s_objectCounter}, Name{"m_hairStrandTexCd"}, 0, 0
+                    Name{"HairTexCoords" + objectNumber}, Name{"m_hairStrandTexCd"}, 0, 0
                 );
                 m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)].m_resourceShaderIndex =
                     m_hairRenderSrg->FindShaderInputBufferIndex(m_hairRenerDescriptors[uint8_t(HairRenderBuffersSemantics::HairTexCoords)].m_paramNameInSrg).GetIndex();
