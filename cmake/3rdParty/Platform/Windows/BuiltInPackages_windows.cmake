@@ -30,11 +30,11 @@ ly_associate_package(PACKAGE_NAME azslc-1.7.21-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME glad-2.0.0-beta-rev2-multiplatform                    TARGETS glad                        PACKAGE_HASH ff97ee9664e97d0854b52a3734c2289329d9f2b4cd69478df6d0ca1f1c9392ee)
 ly_associate_package(PACKAGE_NAME lux_core-2.2-rev5-multiplatform                       TARGETS lux_core                    PACKAGE_HASH c8c13cf7bc351643e1abd294d0841b24dee60e51647dff13db7aec396ad1e0b5)
 ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform                       TARGETS xxhash                      PACKAGE_HASH e81f3e6c4065975833996dd1fcffe46c3cf0f9e3a4207ec5f4a1b564ba75861e)
-ly_associate_package(PACKAGE_NAME Blast-1.1.7-rev1-multiplatform                        TARGETS Blast                       PACKAGE_HASH 36b8f393bcd25d0f85cfc7a831ebbdac881e6054c4f0735649966aa6aa86e6f0)
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform                  TARGETS PVRTexTool                  PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
 ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.1-rev1-windows               TARGETS AWSGameLiftServerSDK        PACKAGE_HASH a0586b006e4def65cc25f388de17dc475e417dc1e6f9d96749777c88aa8271b0)
+ly_associate_package(PACKAGE_NAME Blast-v1.1.7_rc2-9-geb169fe-rev1-windows              TARGETS Blast                       PACKAGE_HASH 216df71f4ffaf4a6ea3f2e77e5f27d68f2325e717fbd1626b00c785b82cd1b67)
 ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-windows   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH decc53e97c7ddda9c7f853a30af7808a7b652a912f59ad2cd4bca5d308aae2c4)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-windows                    TARGETS SPIRVCross                  PACKAGE_HASH 7d601ea9d625b1d509d38bd132a1f433d7e895b16adab76bac6103567a7a6817)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-windows                            TARGETS freetype                    PACKAGE_HASH 88dedc86ccb8c92f14c2c033e51ee7d828fa08eafd6475c6aa963938a99f4bf3)

@@ -40,13 +40,11 @@ namespace AZ
 
             if (m_bufferIndex.IsValid())
             {
-                AZStd::string bufferName = AZStd::string::format("%s_%" PRIXPTR, descriptor.m_bufferName.c_str(), reinterpret_cast<uintptr_t>(this));
-
                 uint32_t byteCount = RHI::NextPowerOfTwo(GetMax<uint32_t>(BufferMinSize, m_elementCount * m_elementSize));
                 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                desc.m_bufferName = bufferName;
+                desc.m_bufferName = descriptor.m_bufferName;
                 desc.m_byteCount = byteCount;
                 desc.m_elementSize = descriptor.m_elementSize;
 
