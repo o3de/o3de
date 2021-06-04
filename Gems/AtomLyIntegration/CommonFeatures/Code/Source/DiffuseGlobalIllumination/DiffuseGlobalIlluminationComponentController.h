@@ -14,11 +14,8 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
-
+#include <Atom/Feature/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessorInterface.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.h>
-
-//#include <Atom/Feature/PostProcess/PostProcessSettingsInterface.h>
-//#include <Atom/Feature/PostProcess/PostProcessFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -49,7 +46,7 @@ namespace AZ
             void OnConfigChanged();
 
             DiffuseGlobalIlluminationComponentConfig m_configuration;
-            EntityId m_entityId;
+            DiffuseGlobalIlluminationFeatureProcessorInterface* m_featureProcessor = nullptr;
         };
     }
 }

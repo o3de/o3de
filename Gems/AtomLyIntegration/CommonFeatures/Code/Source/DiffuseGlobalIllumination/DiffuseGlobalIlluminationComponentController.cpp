@@ -11,11 +11,8 @@
 */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-
-//#include <Atom/RPI.Public/Scene.h>
-
+#include <Atom/RPI.Public/Scene.h>
 #include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h>
-//#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 namespace AZ
 {
@@ -55,18 +52,22 @@ namespace AZ
 
         void DiffuseGlobalIlluminationComponentController::Activate(EntityId entityId)
         {
-            m_entityId = entityId;
+            AZ_UNUSED(entityId);
+
+            const RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+            m_featureProcessor = scene->GetFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessorInterface>();
+
+            OnConfigChanged();
         }
 
         void DiffuseGlobalIlluminationComponentController::Deactivate()
         {
-            //m_postProcessInterface = nullptr;
-            m_entityId.SetInvalid();
         }
 
         void DiffuseGlobalIlluminationComponentController::SetConfiguration(const DiffuseGlobalIlluminationComponentConfig& config)
         {
             m_configuration = config;
+
             OnConfigChanged();
         }
 
@@ -77,15 +78,7 @@ namespace AZ
 
         void DiffuseGlobalIlluminationComponentController::OnConfigChanged()
         {
-            // Register the configuration with the  AcesDisplayMapperFeatureProcessor for this scene.
-            //const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-            //DisplayMapperFeatureProcessorInterface* fp = scene->GetFeatureProcessor<DisplayMapperFeatureProcessorInterface>();
-            //DisplayMapperConfigurationDescriptor desc;
-            //desc.m_operationType = m_configuration.m_displayMapperOperation;
-            //desc.m_ldrGradingLutEnabled = m_configuration.m_ldrColorGradingLutEnabled;
-            //desc.m_ldrColorGradingLut = m_configuration.m_ldrColorGradingLut;
-            //desc.m_acesParameterOverrides = m_configuration.m_acesParameterOverrides;
-            //fp->RegisterDisplayMapperConfiguration(desc);
+            m_featureProcessor->SetQualityLevel(m_configuration.m_qualityLevel);
         }
 
     } // namespace Render

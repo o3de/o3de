@@ -10,38 +10,42 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridBlendIrradiancePass.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h>
+#include <Atom/RPI.Reflect/Pass/PassTemplate.h>
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
     namespace Render
     {
-        RPI::Ptr<DiffuseProbeGridBlendIrradiancePass> DiffuseProbeGridBlendIrradiancePass::Create(const RPI::PassDescriptor& descriptor)
+        RPI::Ptr<DiffuseProbeGridRelocationPass> DiffuseProbeGridRelocationPass::Create(const RPI::PassDescriptor& descriptor)
         {
-            RPI::Ptr<DiffuseProbeGridBlendIrradiancePass> pass = aznew DiffuseProbeGridBlendIrradiancePass(descriptor);
+            RPI::Ptr<DiffuseProbeGridRelocationPass> pass = aznew DiffuseProbeGridRelocationPass(descriptor);
             return AZStd::move(pass);
         }
 
-        DiffuseProbeGridBlendIrradiancePass::DiffuseProbeGridBlendIrradiancePass(const RPI::PassDescriptor& descriptor)
+        DiffuseProbeGridRelocationPass::DiffuseProbeGridRelocationPass(const RPI::PassDescriptor& descriptor)
             : RPI::RenderPass(descriptor)
         {
             LoadShader();
         }
 
-        void DiffuseProbeGridBlendIrradiancePass::LoadShader()
+        void DiffuseProbeGridRelocationPass::LoadShader()
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiance.azshader";
+            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRelocation.azshader";
             m_shader = RPI::LoadShader(shaderFilePath);
             if (m_shader == nullptr)
             {
@@ -72,7 +76,7 @@ namespace AZ
 
                 if (!validArgs)
                 {
-                    AZ_Error("PassSystem", false, "[DiffuseProbeBlendIrradiancePass '%s']: Shader '%s' contains invalid numthreads arguments.", GetPathName().GetCStr(), shaderFilePath.c_str());
+                    AZ_Error("PassSystem", false, "[DiffuseProbeRelocationPass '%s']: Shader '%s' contains invalid numthreads arguments.", GetPathName().GetCStr(), shaderFilePath.c_str());
                     return;
                 }
 
@@ -82,7 +86,7 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBlendIrradiancePass::FrameBeginInternal(FramePrepareParams params)
+        void DiffuseProbeGridRelocationPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
@@ -94,7 +98,7 @@ namespace AZ
             }
 
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridBlendIrradiancePass requires the RayTracingFeatureProcessor");
+            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridRelocationPass requires the RayTracingFeatureProcessor");
 
             if (!rayTracingFeatureProcessor->GetSubMeshCount())
             {
@@ -102,10 +106,34 @@ namespace AZ
                 return;
             }
 
+            // create the Relocation Srgs for each DiffuseProbeGrid, and check to see if any grids need relocation
+            bool needRelocation = false;
+            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
+            {
+                uint32_t rayTracingDataRevision = rayTracingFeatureProcessor->GetRevision();
+                if (rayTracingDataRevision != m_rayTracingDataRevision)
+                {
+                    // the TLAS changed, relocate probes
+                    m_rayTracingDataRevision = rayTracingDataRevision;
+                    diffuseProbeGrid->ResetRemainingRelocationIterations();
+                }
+
+                if (diffuseProbeGrid->GetRemainingRelocationIterations() > 0)
+                {
+                    needRelocation = true;
+                }
+            }
+
+            if (!needRelocation)
+            {
+                // no diffuseProbeGrids require relocation, this pass can be skipped entirely
+                return;
+            }
+
             RenderPass::FrameBeginInternal(params);
         }
 
-        void DiffuseProbeGridBlendIrradiancePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+        void DiffuseProbeGridRelocationPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
 
@@ -123,21 +151,11 @@ namespace AZ
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
 
-                // probe irradiance image
+                // probe relocation image
                 {
                     RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetIrradianceImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeIrradianceImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
-                }
-
-                // probe classification image
-                {
-                    RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetClassificationImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeClassificationImageViewDescriptor;
+                    desc.m_attachmentId = diffuseProbeGrid->GetRelocationImageAttachmentId();
+                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeRelocationImageViewDescriptor;
                     desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
@@ -145,31 +163,33 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBlendIrradiancePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
+        void DiffuseProbeGridRelocationPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                diffuseProbeGrid->UpdateBlendIrradianceSrg(m_srgAsset);
+                diffuseProbeGrid->UpdateRelocationSrg(m_srgAsset);
 
-                diffuseProbeGrid->GetBlendIrradianceSrg()->Compile();
+                diffuseProbeGrid->GetRelocationSrg()->Compile();
+
+                // relocation stops after a limited number of iterations
+                diffuseProbeGrid->DecrementRemainingRelocationIterations();
             }
         }
 
-        void DiffuseProbeGridBlendIrradiancePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
+        void DiffuseProbeGridRelocationPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
             RHI::CommandList* commandList = context.GetCommandList();
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            // submit the DispatchItem for each DiffuseProbeGrid
+            // submit the DispatchItems for each DiffuseProbeGrid
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetRealTimeProbeGrids())
             {
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBlendIrradianceSrg()->GetRHIShaderResourceGroup();
+                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetRelocationSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 uint32_t probeCountX;
@@ -179,8 +199,8 @@ namespace AZ
                 RHI::DispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
-                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;
-                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY * dispatchItem.m_arguments.m_direct.m_threadsPerGroupY;
+                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
+                dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsY = probeCountY;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsZ = 1;
 
                 commandList->Submit(dispatchItem);

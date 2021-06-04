@@ -14,20 +14,12 @@
 
 #include <AzCore/Component/Component.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <Atom/Feature/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessorInterface.h>
 
 namespace AZ
 {
     namespace Render
     {
-        enum class DiffuseGlobalIlluminationQualityLevel : uint32_t
-        {
-            Low,
-            Medium,
-            High,
-
-            Count
-        };
-
         class DiffuseGlobalIlluminationComponentConfig final
             : public ComponentConfig
         {

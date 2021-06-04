@@ -10,7 +10,6 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridRayTracingPass.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
@@ -25,7 +24,8 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
