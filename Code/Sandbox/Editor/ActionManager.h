@@ -319,7 +319,7 @@ public:
     QAction* GetAction(int id) const;
     QList<QAction*> GetActions() const;
 
-    // AzToolsFramework::EditorActionRequests
+    // AzToolsFramework::EditorActionRequestBus override ...
     void AddActionViaBus(int id, QAction* action, QObject * parent) override;
     void AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* parent) override;
     void RemoveActionViaBus(QAction* action) override;
@@ -331,29 +331,35 @@ public:
     template<typename T>
     void RegisterUpdateCallback(int id, T* object, void (T::*method)(QAction*))
     {
-        size_t size = m_shortcutDispatcher->m_allActions.size();
-
-        for (size_t i = 0; i < size; i++)
-        {
-            if (m_shortcutDispatcher->m_allActions[i].second->data() == id)
+        const auto found = AZStd::find_if(
+            m_shortcutDispatcher->m_allActions.cbegin(), m_shortcutDispatcher->m_allActions.cend(),
+            [id](const CrcActionMapping& action)
             {
-                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_allActions[i].second, object, method] {
-                    AZStd::invoke(method, object, action);
-                };
-            }
+                return action.second->data().toInt() == id;
+            });
+
+        if (found != m_shortcutDispatcher->m_allActions.end())
+        {
+            m_updateCallbacks[id] = [action = (*found).second, object, method]
+            {
+                AZStd::invoke(method, object, action);
+            };
         }
     }
 
     template<typename Fn>
     void RegisterUpdateCallback(int id, Fn&& fn)
     {
-        size_t size = m_shortcutDispatcher->m_allActions.size();
-        for (size_t i = 0; i < size; i++)
-        {
-            if (m_shortcutDispatcher->m_allActions[i].second->data().toInt() == id)
+        const auto found = AZStd::find_if(
+            m_shortcutDispatcher->m_allActions.cbegin(), m_shortcutDispatcher->m_allActions.cend(),
+            [id](const CrcActionMapping& action)
             {
-                m_updateCallbacks[id] = [action = m_shortcutDispatcher->m_allActions[i].second, fn] { fn(action); };
-            }
+                return action.second->data().toInt() == id;
+            });
+
+        if (found != m_shortcutDispatcher->m_allActions.end())
+        {
+            m_updateCallbacks[id] = [action = (*found).second, fn] { fn(action); };
         }
     }
 

@@ -92,6 +92,8 @@ class QKeyEvent;
 
        If you've read this far you can now press 'Ctrl+Q' and hope it closes your editor ;)
  */
+using CrcActionMapping = AZStd::pair<AZ::Crc32, QAction*>;
+
 class Shortcut;
 class ShortcutDispatcher
     : public QObject
@@ -115,7 +117,7 @@ public:
     void AddNewAction(QAction* new_action, AZ::Crc32 r_url);
     void AddNewAction(QAction* new_action);
 
-    AZStd::vector<AZStd::pair<AZ::Crc32, QAction*>> m_allActions;
+    AZStd::vector<CrcActionMapping> m_allActions;
 
 private:
     bool shortcutFilter(QObject* obj, QShortcutEvent* ev);
