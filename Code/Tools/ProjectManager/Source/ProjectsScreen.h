@@ -42,6 +42,7 @@ namespace O3DE::ProjectManager
 
     protected:
         void NotifyCurrentScreen() override;
+        void ProjectBuildDone();
 
     protected slots:
         void HandleNewProjectButton();
@@ -52,8 +53,8 @@ namespace O3DE::ProjectManager
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
 
+        void SuggestBuildProject(const ProjectInfo& projectInfo);
         void QueueBuildProject(const ProjectInfo& projectInfo);
-        void ProjectBuildDone();
 
         void paintEvent(QPaintEvent* event) override;
 
@@ -65,6 +66,9 @@ namespace O3DE::ProjectManager
         bool ShouldDisplayFirstTimeContent();
 
         void StartProjectBuild(const ProjectInfo& projectInfo);
+        QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);
+        bool BuildQueueContainsProject(const QString& projectPath);
+        bool WarnIfInBuildQueue(const QString& projectPath);
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
@@ -72,6 +76,7 @@ namespace O3DE::ProjectManager
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
         QStackedWidget* m_stack = nullptr;
+        QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
 

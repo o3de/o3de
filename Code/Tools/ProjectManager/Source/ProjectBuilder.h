@@ -13,6 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ProjectInfo.h>
+#include <AzCore/Outcome/Outcome.h>
 
 #include <QThread>
 #endif
@@ -29,18 +30,24 @@ namespace O3DE::ProjectManager
         explicit ProjectBuilderWorker(const ProjectInfo& projectInfo);
         ~ProjectBuilderWorker() = default;
 
+        QString LogFilePath() const;
+
     public slots:
         void BuildProject();
 
     signals:
         void UpdateProgress(int progress);
-        void Done(const QString& result);
+        void Done(QString result);
 
     private:
+        void WriteErrorLog(const QString& log);
+
         ProjectInfo m_projectInfo;
 
         // 10 Minutes
         inline constexpr static int s_maxBuildTimeMSecs = 600000;
+        static const QString s_buildPathPostfix;
+        static const QString s_errorLogPathPostfix;
     };
 
     class ProjectBuilderController : public QObject
@@ -64,6 +71,7 @@ namespace O3DE::ProjectManager
 
     private:
         ProjectInfo m_projectInfo;
+        ProjectBuilderWorker* m_worker;
         QThread m_workerThread;
         ProjectButton* m_projectButton;
         QWidget* m_parent;

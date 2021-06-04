@@ -23,8 +23,6 @@
 #include <QSpacerItem>
 #include <QProgressBar>
 
-//#define SHOW_PROJECT_PROGRESS_BAR true
-
 namespace O3DE::ProjectManager
 {
     inline constexpr static int s_projectImageWidth = 210;
@@ -46,6 +44,9 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setAlignment(Qt::AlignCenter);
         m_overlayLabel->setVisible(false);
         vLayout->addWidget(m_overlayLabel);
+
+        m_buildButton = new QPushButton(tr("Build Project"), this);
+        m_buildButton->setVisible(false);
 
         m_progressBar = new QProgressBar(this);
         m_progressBar->setObjectName("labelButtonProgressBar");
@@ -80,6 +81,11 @@ namespace O3DE::ProjectManager
     QProgressBar* LabelButton::ProgressBar()
     {
         return m_progressBar;
+    }
+
+    QPushButton* LabelButton::BuildButton()
+    {
+        return m_buildButton;
     }
 
     ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
@@ -134,23 +140,23 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ProcessingSetup()
     {
-        m_projectImageLabel->OverlayLabel()->setAlignment(Qt::AlignBottom);
+        m_projectImageLabel->OverlayLabel()->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
         m_projectImageLabel->SetEnabled(false);
         m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
 
-#ifdef SHOW_PROJECT_PROGRESS_BAR
         QProgressBar* progressBar = m_projectImageLabel->ProgressBar();
         progressBar->setVisible(true);
         progressBar->setValue(0);
-#endif
     }
 
     void ProjectButton::ReadySetup()
     {
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
+        connect(m_projectImageLabel->BuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
 
         QMenu* menu = new QMenu(this);
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
         menu->addSeparator();
         menu->addAction(tr("Open Project folder..."), this, [this]()
         { 
@@ -168,9 +174,18 @@ namespace O3DE::ProjectManager
         m_projectFooter->layout()->addWidget(projectMenuButton);
     }
 
-    void ProjectButton::SetButtonEnabled(bool enabled)
+    void ProjectButton::SetLaunchButtonEnabled(bool enabled)
     {
         m_projectImageLabel->SetEnabled(enabled);
+    }
+
+    void ProjectButton::ShowBuildButton(bool show)
+    {
+        QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        m_projectImageLabel->layout()->addItem(buttonSpacer);
+        m_projectImageLabel->layout()->addWidget(m_projectImageLabel->BuildButton());
+        m_projectImageLabel->BuildButton()->setVisible(show);
     }
 
     void ProjectButton::SetButtonOverlayText(const QString& text)

@@ -39,6 +39,7 @@ namespace O3DE::ProjectManager
 
         QLabel* OverlayLabel();
         QProgressBar* ProgressBar();
+        QPushButton* BuildButton();
 
     signals:
         void triggered();
@@ -49,6 +50,7 @@ namespace O3DE::ProjectManager
     private:
         QLabel* m_overlayLabel;
         QProgressBar* m_progressBar;
+        QPushButton* m_buildButton;
         bool m_enabled = true;
     };
 
@@ -60,7 +62,8 @@ namespace O3DE::ProjectManager
     public: explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
         ~ProjectButton() = default;
 
-        void SetButtonEnabled(bool enabled);
+        void SetLaunchButtonEnabled(bool enabled);
+        void ShowBuildButton(bool show);
         void SetButtonOverlayText(const QString& text);
         void SetProgressBarValue(int progress);
 
@@ -70,6 +73,7 @@ namespace O3DE::ProjectManager
         void CopyProject(const QString& projectName);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
+        void BuildProject(const ProjectInfo& projectInfo);
 
     private:
         void BaseSetup();

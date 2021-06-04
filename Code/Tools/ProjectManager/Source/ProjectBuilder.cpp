@@ -15,11 +15,20 @@
 #include <PythonBindingsInterface.h>
 
 #include <QProcess>
+#include <QFile>
+#include <QTextStream>
+#include <QMessageBox>
+#include <QDesktopServices>
+#include <QUrl>
+
 
 //#define MOCK_BUILD_PROJECT true 
 
 namespace O3DE::ProjectManager
 {
+    const QString ProjectBuilderWorker::s_buildPathPostfix = "/windows_vs2019";
+    const QString ProjectBuilderWorker::s_errorLogPathPostfix = "/CMakeFiles/CMakeProjectBuildError.log";
+
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
         , m_projectInfo(projectInfo)
@@ -36,8 +45,6 @@ namespace O3DE::ProjectManager
         }
         Done(m_projectPath);
 #else
-        static QString standardBuildPath("/windows_vs2019");
-
         EngineInfo engineInfo;
 
         AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
@@ -45,6 +52,14 @@ namespace O3DE::ProjectManager
         {
             engineInfo = engineInfoResult.GetValue();
         }
+        else
+        {
+            emit Done(tr("Failed to get engine info."));
+            return;
+        }
+
+        // Show some kind of progress with very approximate estimates
+        UpdateProgress(1);
 
         QProcess configProjectProcess;
         configProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
@@ -54,28 +69,36 @@ namespace O3DE::ProjectManager
             QStringList
             {
                 "-B",
-                m_projectInfo.m_path + standardBuildPath,
+                m_projectInfo.m_path + s_buildPathPostfix,
                 "-S",
                 m_projectInfo.m_path,
                 "-G",
                 "Visual Studio 16",
-                "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath,
+                "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath
             });
 
-        if (!configProjectProcess.waitForStarted() || !configProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        if (!configProjectProcess.waitForStarted())
         {
-            emit Done("Failed");
+            emit Done(tr("Configuring project failed to start."));
+            return;
+        }
+        if (!configProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        {
+            WriteErrorLog(configProjectProcess.readAllStandardOutput());
+            emit Done(tr("Configuring project timed out. See log for details"));
             return;
         }
 
         QString configProjectOutput(configProjectProcess.readAllStandardOutput());
-        if (1)
+        if (configProjectProcess.error() != QProcess::NormalExit || !configProjectOutput.contains("Generating done"))
         {
-            emit Done("Succeeded");
+            WriteErrorLog(configProjectOutput);
+            emit Done(tr("Configuring project failed. See log for details."));
             return;
         }
 
-        /*
+        UpdateProgress(20);
+
         QProcess buildProjectProcess;
         buildProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
 
@@ -83,29 +106,54 @@ namespace O3DE::ProjectManager
             "cmake",
             QStringList
             {
-                "-B",
-                m_projectPath + standardBuildPath,
-                "-S",
-                m_projectPath,
-                "-G",
-                "Visual Studio 16",
-                "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath,
+                "--build",
+                m_projectInfo.m_path + s_buildPathPostfix,
+                "--target",
+                m_projectInfo.m_projectName + ".GameLauncher",
+                "-config",
+                "profile"
             });
 
-        if (!buildProjectProcess.waitForStarted() || !buildProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        if (!buildProjectProcess.waitForStarted())
         {
-            emit Done("Failed");
+            emit Done(tr("Building project failed to start."));
+            return;
+        }
+        if (!buildProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        {
+            WriteErrorLog(configProjectProcess.readAllStandardOutput());
+            emit Done(tr("Building project timed out. See log for details"));
             return;
         }
 
         QString buildProjectOutput(buildProjectProcess.readAllStandardOutput());
-        if (1)
+        if (configProjectProcess.error() != QProcess::NormalExit)
         {
-            emit Done("Succeeded");
-            return;
+            WriteErrorLog(buildProjectOutput);
+            emit Done(tr("Building project failed. See log for details."));
         }
-        */
+        else
+        {
+            emit Done("");
+        }
 #endif
+    }
+
+    QString ProjectBuilderWorker::LogFilePath() const
+    {
+        return m_projectInfo.m_path + s_buildPathPostfix + s_errorLogPathPostfix;
+    }
+
+    void ProjectBuilderWorker::WriteErrorLog(const QString& log)
+    {
+        QFile logFile(LogFilePath());
+        // Overwrite file with truncate
+        if (logFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        {
+            QTextStream output(&logFile);
+            output << log;
+            logFile.close();
+        }
     }
 
     ProjectBuilderController::ProjectBuilderController(const ProjectInfo& projectInfo, ProjectButton* projectButton, QWidget* parent)
@@ -114,13 +162,13 @@ namespace O3DE::ProjectManager
         , m_projectButton(projectButton)
         , m_parent(parent)
     {
-        ProjectBuilderWorker* worker = new ProjectBuilderWorker(m_projectInfo);
-        worker->moveToThread(&m_workerThread);
+        m_worker = new ProjectBuilderWorker(m_projectInfo);
+        m_worker->moveToThread(&m_workerThread);
 
-        connect(&m_workerThread, &QThread::finished, worker, &ProjectBuilderWorker::deleteLater);
-        connect(&m_workerThread, &QThread::started, worker, &ProjectBuilderWorker::BuildProject);
-        connect(worker, &ProjectBuilderWorker::Done, this, &ProjectBuilderController::HandleResults);
-        connect(worker, &ProjectBuilderWorker::UpdateProgress, this, &ProjectBuilderController::UpdateUIProgress);
+        connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
+        connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
+        connect(m_worker, &ProjectBuilderWorker::Done, this, &ProjectBuilderController::HandleResults);
+        connect(m_worker, &ProjectBuilderWorker::UpdateProgress, this, &ProjectBuilderController::UpdateUIProgress);
     }
 
     ProjectBuilderController::~ProjectBuilderController()
@@ -154,10 +202,31 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void ProjectBuilderController::HandleResults([[maybe_unused]] const QString& result)
+    void ProjectBuilderController::HandleResults(const QString& result)
     {
+        if (!result.isEmpty())
+        {
+            if (result.contains(tr("log")))
+            {
+                QMessageBox::StandardButton openLog = QMessageBox::critical(
+                    m_parent,
+                    tr("Project Failed to Build!"),
+                    result + tr("\n\nWould you like to view log?"),
+                    QMessageBox::No | QMessageBox::Yes);
+
+                if (openLog == QMessageBox::Yes)
+                {
+                    // Open application assigned to this file type
+                    QDesktopServices::openUrl(QUrl("file:///" + m_worker->LogFilePath()));
+                }
+            }
+            else
+            {
+                QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
+            }
+        }
+
         emit Done();
-        return;
     }
 
 } // namespace O3DE::ProjectManager
