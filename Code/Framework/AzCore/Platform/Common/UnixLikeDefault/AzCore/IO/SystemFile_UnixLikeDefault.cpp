@@ -86,9 +86,9 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
 
     if (createPath)
     {
-        CreatePath(m_fileName);
+        CreatePath(m_fileName.c_str());
     }
-    m_handle = open(m_fileName, desiredAccess, permissions);
+    m_handle = open(m_fileName.c_str(), desiredAccess, permissions);
 
     if (m_handle == PlatformSpecificInvalidHandle)
     {
@@ -119,7 +119,7 @@ namespace Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SizeType offset, SystemFile::SeekMode mode)
+    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {

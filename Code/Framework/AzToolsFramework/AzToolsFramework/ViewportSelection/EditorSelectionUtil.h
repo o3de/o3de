@@ -60,6 +60,9 @@ namespace AzToolsFramework
     /// Wrapper for EBus call to return the CameraState for a given viewport.
     AzFramework::CameraState GetCameraState(int viewportId);
 
+    /// Wrapper for EBus call to return the DPI scaling for a given viewport.
+    float GetScreenDisplayScaling(const int viewportId);
+
     /// A utility to return the center of several points.
     /// Take several positions and store the min and max of each in
     /// turn - when all points have been added return the center/midpoint.
