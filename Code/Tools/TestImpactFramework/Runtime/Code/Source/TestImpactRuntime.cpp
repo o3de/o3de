@@ -72,6 +72,7 @@ namespace TestImpact
 
     Runtime::Runtime(
         RuntimeConfig&& config,
+        SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::ExecutionFailureDrafting executionFailureDraftingPolicy,
         Policy::TestFailure testFailurePolicy,
@@ -80,6 +81,7 @@ namespace TestImpact
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<size_t> maxConcurrency)
         : m_config(AZStd::move(config))
+        , m_suiteFilter(suiteFilter)
         , m_executionFailurePolicy(executionFailurePolicy)
         , m_executionFailureDraftingPolicy(executionFailureDraftingPolicy)
         , m_testFailurePolicy(testFailurePolicy)
@@ -89,7 +91,7 @@ namespace TestImpact
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
         // Construct the dynamic dependency map from the build target descriptors
-        m_dynamicDependencyMap = ConstructDynamicDependencyMap(m_config.m_buildTargetDescriptor, m_config.m_testTargetMeta);
+        m_dynamicDependencyMap = ConstructDynamicDependencyMap(suiteFilter, m_config.m_buildTargetDescriptor, m_config.m_testTargetMeta);
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
         m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
@@ -110,7 +112,8 @@ namespace TestImpact
         try
         {
             // Populate the dynamic dependency map with the existing source coverage data (if any)
-            const auto tiaDataRaw = ReadFileContents<Exception>(m_config.m_workspace.m_active.m_sparTIAFile);
+            m_sparTIAFile = m_config.m_workspace.m_active.m_sparTIAFiles[static_cast<size_t>(m_suiteFilter)].String();
+            const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTIAFile);
             const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
             if (tiaData.GetNumSources())
             {
@@ -118,13 +121,17 @@ namespace TestImpact
                 m_hasImpactAnalysisData = true;
 
                 // Enumerate new test targets
-                m_testEngine->UpdateEnumerationCache(
-                    m_dynamicDependencyMap->GetNotCoveringTests(),
-                    Policy::ExecutionFailure::Ignore,
-                    Policy::TestFailure::Continue,
-                    AZStd::nullopt,
-                    AZStd::nullopt,
-                    AZStd::nullopt);
+                const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
+                if (!testTargetsWithNoEnumeration.empty())
+                {
+                    m_testEngine->UpdateEnumerationCache(
+                        testTargetsWithNoEnumeration,
+                        Policy::ExecutionFailure::Ignore,
+                        Policy::TestFailure::Continue,
+                        AZStd::nullopt,
+                        AZStd::nullopt,
+                        AZStd::nullopt);
+                }
             }
         }
         catch (const DependencyException& e)
@@ -136,8 +143,10 @@ namespace TestImpact
         }
         catch ([[maybe_unused]]const Exception& e)
         {
-            AZ_Printf("No test impact analysis data found at %s", m_config.m_workspace.m_active.m_sparTIAFile.c_str());
-        }        
+            AZ_Printf("TestImpactRuntime",
+                AZStd::string::format(
+                    "No test impact analysis data found for suite '%s' at %s", GetSuiteTypeName(m_suiteFilter).c_str(), m_sparTIAFile.c_str()).c_str());
+        }
     }
 
     Runtime::~Runtime() = default;
@@ -168,13 +177,16 @@ namespace TestImpact
         addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
 
         // Enumerate the mutated test targets to ensure their enumeration caches are up to date
-        m_testEngine->UpdateEnumerationCache(
-            testTargets,
-            Policy::ExecutionFailure::Ignore,
-            Policy::TestFailure::Continue,
-            AZStd::nullopt,
-            AZStd::nullopt,
-            AZStd::nullopt);
+        if (!testTargets.empty())
+        {
+            m_testEngine->UpdateEnumerationCache(
+                testTargets,
+                Policy::ExecutionFailure::Ignore,
+                Policy::TestFailure::Continue,
+                AZStd::nullopt,
+                AZStd::nullopt,
+                AZStd::nullopt);
+        }
     }
 
     AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargetsAndUpdateEnumerationCache(
@@ -233,7 +245,7 @@ namespace TestImpact
 
     void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
-        DeleteFile(m_config.m_workspace.m_active.m_sparTIAFile);
+        DeleteFile(m_sparTIAFile);
         m_dynamicDependencyMap->ClearAllSourceCoverage();
     }
 
@@ -247,12 +259,11 @@ namespace TestImpact
         m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-        WriteFileContents<RuntimeException>(sparTIAData, m_config.m_workspace.m_active.m_sparTIAFile);
+        WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
         m_hasImpactAnalysisData = true;
     }
 
     TestSequenceResult Runtime::RegularTestSequence(
-        const AZStd::unordered_set<AZStd::string> suitesFilter,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
@@ -268,21 +279,7 @@ namespace TestImpact
         {
             if (!m_testTargetExcludeList.contains(&testTarget))
             {
-                if (suitesFilter.empty())
-                {
-                    // Suite filter is empty, all tests that are not on the excluded list are included
-                    includedTestTargets.push_back(&testTarget);
-                }
-                else if(suitesFilter.contains(testTarget.GetSuite()))
-                {
-                    // Test target belonging to a suite in the suite filter are included, provided that are not on the exclude list
-                    includedTestTargets.push_back(&testTarget);
-                }
-                else
-                {
-                    // Test target not belonging to a suite in the suite filter are excluded
-                    excludedTestTargets.push_back(&testTarget);
-                }
+                includedTestTargets.push_back(&testTarget);
             }
             else
             {
@@ -318,6 +315,7 @@ namespace TestImpact
     TestSequenceResult Runtime::ImpactAnalysisTestSequence(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy,
+        Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
@@ -338,30 +336,51 @@ namespace TestImpact
                 ExtractTestTargetNames(draftedTestTargets));
         }
 
-        const auto [result, testJobs] = m_testEngine->InstrumentedRun(
-            includedSelectedTestTargets,
-            m_testShardingPolicy,
-            m_executionFailurePolicy,
-            Policy::IntegrityFailure::Continue,
-            m_testFailurePolicy,
-            m_targetOutputCapture,
-            testTargetTimeout,
-            globalTimeout,
-            TestRunCompleteCallbackHandler(testCompleteCallback));
-
-        UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root));
-
-        if (testSequenceEndCallback.has_value())
+        if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
-            (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
-        }
+            const auto [result, testJobs] = m_testEngine->InstrumentedRun(
+                includedSelectedTestTargets,
+                m_testShardingPolicy,
+                m_executionFailurePolicy,
+                Policy::IntegrityFailure::Continue,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                TestRunCompleteCallbackHandler(testCompleteCallback));
 
-        return result;
+            UpdateAndSerializeDynamicDependencyMap(CreateSourceCoveringTestFromTestCoverages(testJobs, m_config.m_repo.m_root));
+
+            if (testSequenceEndCallback.has_value())
+            {
+                (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
+            }
+
+            return result;
+        }
+        else
+        {
+            const auto [result, testJobs] = m_testEngine->RegularRun(
+                includedSelectedTestTargets,
+                m_testShardingPolicy,
+                m_executionFailurePolicy,
+                m_testFailurePolicy,
+                m_targetOutputCapture,
+                testTargetTimeout,
+                globalTimeout,
+                TestRunCompleteCallbackHandler(testCompleteCallback));
+
+            if (testSequenceEndCallback.has_value())
+            {
+                (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
+            }
+
+            return result;
+        }
     }
 
     AZStd::pair<TestSequenceResult, TestSequenceResult> Runtime::SafeImpactAnalysisTestSequence(
         const ChangeList& changeList,
-        const AZStd::unordered_set<AZStd::string> suitesFilter,
         Policy::TestPrioritization testPrioritizationPolicy,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,

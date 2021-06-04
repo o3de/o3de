@@ -30,6 +30,7 @@ namespace TestImpact
 {
     //! Construct a dynamic dependency map from the build target descriptors and test target metas.
     AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
+        SuiteType suiteFilter,
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
 

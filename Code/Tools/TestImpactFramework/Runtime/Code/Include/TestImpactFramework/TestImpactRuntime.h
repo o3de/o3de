@@ -92,6 +92,7 @@ namespace TestImpact
     public:
         //! Constructs a runtime with the specified configuration and policies.
         //! @param config The configuration used for this runtime instance.
+        //! @param suiteFilter The test suite for which the coverage data and test selection will draw from.
         //! @param executionFailurePolicy Determines how to handle test targets that fail to execute.
         //! @param executionFailureDraftingPolicy Determines how test targets that previously failed to execute are drafted into subsequent test sequences.
         //! @param testFailurePolicy Determines how to handle test targets that report test failures.
@@ -99,6 +100,7 @@ namespace TestImpact
         //! @param testShardingPolicy  Determines how to handle test targets that have opted in to test sharding.
         Runtime(
             RuntimeConfig&& config,
+            SuiteType suiteFilter,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::ExecutionFailureDrafting executionFailureDraftingPolicy,
             Policy::TestFailure testFailurePolicy,
@@ -110,7 +112,6 @@ namespace TestImpact
         ~Runtime();
 
         //! Runs a test sequence where all tests with a matching suite in the suite filter and also not on the excluded list are selected.
-        //! @param suitesFilter The test suites that will be included in the test selection.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
         //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
@@ -118,7 +119,6 @@ namespace TestImpact
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         //! @returns
         TestSequenceResult RegularTestSequence(
-            const AZStd::unordered_set<AZStd::string> suitesFilter,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
@@ -128,6 +128,7 @@ namespace TestImpact
         //! Runs a test sequence where tests are selected according to test impact analysis so long as they are not on the excluded list.
         //! @param changeList The change list used to determine the tests to select.
         //! @param testPrioritizationPolicy Determines how selected tests will be prioritized.
+        //! @param dynamicDependencyMapPolicy The policy to determine how the coverage data of produced by test sequences is used to update the dynamic dependency map.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
         //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
         //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the tests.
@@ -137,6 +138,7 @@ namespace TestImpact
         TestSequenceResult ImpactAnalysisTestSequence(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy,
+            Policy::DynamicDependencyMap dynamicDependencyMapPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
@@ -145,7 +147,6 @@ namespace TestImpact
 
         //! Runs a test sequence as per the ImpactAnalysisTestSequence where the tests not selected are also run (albeit without instrumentation).
         //! @param changeList The change list used to determine the tests to select.
-        //! @param suitesFilter The test suites that will be included in the test selection.
         //! @param testPrioritizationPolicy Determines how selected tests will be prioritized.
         //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
         //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
@@ -155,7 +156,6 @@ namespace TestImpact
         //! @returns
         AZStd::pair<TestSequenceResult, TestSequenceResult> SafeImpactAnalysisTestSequence(
             const ChangeList& changeList,
-            const AZStd::unordered_set<AZStd::string> suitesFilter,
             Policy::TestPrioritization testPrioritizationPolicy,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
@@ -207,6 +207,8 @@ namespace TestImpact
         void UpdateAndSerializeDynamicDependencyMap(const SourceCoveringTestsList& sourceCoverageTestsList);
 
         RuntimeConfig m_config;
+        SuiteType m_suiteFilter;
+        RepoPath m_sparTIAFile;
         Policy::ExecutionFailure m_executionFailurePolicy;
         Policy::ExecutionFailureDrafting m_executionFailureDraftingPolicy;
         Policy::TestFailure m_testFailurePolicy;

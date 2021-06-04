@@ -241,12 +241,18 @@ function(ly_add_test)
 
     endif()
 
-    # Store the test so we can walk through all of them in LYTestImpactFramework.cmake
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${ly_add_test_NAME})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_SUITE ${ly_add_test_TEST_SUITE})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_TIMEOUT ${ly_add_test_TIMEOUT})
-
+    # Check to see whether or not this test target has been stored in the global list for walking by the test impact analysis framework
+    get_property(all_tests GLOBAL PROPERTY LY_ALL_TESTS)
+    if(NOT "${LY_ALL_TESTS_TARGET_NAME}" IN_LIST all_tests)
+        # This is the first reference to this test target so add it to the global list
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${LY_ALL_TESTS_TARGET_NAME})
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ALL_TESTS_TARGET_NAME}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
+    endif()
+    # Add the test suite and timeout value to the test target params
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
+    # Store the params for this test target
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${LY_ALL_TESTS_TARGET_NAME}_PARAMS ${LY_TEST_PARAMS})
 endfunction()
 
 #! ly_add_pytest: registers target PyTest-based test with CTest
@@ -288,6 +294,11 @@ function(ly_add_pytest)
 
     string(REPLACE "::" "_" pytest_report_directory "${PYTEST_XML_OUTPUT_DIR}/${ly_add_pytest_NAME}.xml")
 
+    # Set the name of the current test target for storage in the global list
+    set(LY_ALL_TESTS_TARGET_NAME ${ly_add_pytest_NAME})
+    # Add the script path to the test target params
+    set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
+
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
@@ -298,7 +309,6 @@ function(ly_add_pytest)
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
 endfunction()
 
@@ -341,6 +351,10 @@ function(ly_add_editor_python_test)
 
     file(REAL_PATH ${ly_add_editor_python_test_TEST_PROJECT} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
 
+    # Set the name of the current test target for storage in the global list
+    set(LY_ALL_TESTS_TARGET_NAME ${ly_add_editor_python_test_NAME})
+    # Add the script path to the test target params
+    set(LY_TEST_PARAMS "${ly_add_editor_python_test_PATH}")
     # Run test via the run_epbtest.cmake script.
     # Parameters used are explained in run_epbtest.cmake.
     ly_add_test(
@@ -362,8 +376,6 @@ function(ly_add_editor_python_test)
         TIMEOUT ${ly_add_editor_python_test_TIMEOUT}
         COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
-
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_editor_python_test_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_editor_python_test_TEST_SERIAL}")
 endfunction()
 
@@ -431,17 +443,22 @@ function(ly_add_googletest)
         set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunUnitTests)
         # Add AzTestRunner as a build dependency
         ly_add_dependencies(${build_target} AZ::AzTestRunner)
+        # Start the test target params and dd the command runner command
         # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND "AzRunUnitTests")
+        set(LY_TEST_PARAMS "AzRunUnitTests")
     else()
         set(full_test_command ${ly_add_googletest_TEST_COMMAND})
         # Remove the generator expressions so we are left with the argument(s) required to run unit tests for executable targets
         string(REPLACE ";" "" stripped_test_command ${full_test_command})
         string(GENEX_STRIP ${stripped_test_command} stripped_test_command)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND ${stripped_test_command})
+        # Start the test target params and dd the command runner command
+        set(LY_TEST_PARAMS "${stripped_test_command}")
     endif()
 
     string(REPLACE "::" "_" report_directory "${GTEST_XML_OUTPUT_DIR}/${ly_add_googletest_NAME}.xml")
+
+    # Set the name of the current test target for storage in the global list
+    set(LY_ALL_TESTS_TARGET_NAME ${target_name})
 
     # Invoke the lower level ly_add_test command to add the actual ctest and setup the test labels to add_dependencies on the target
     ly_add_test(
@@ -520,16 +537,21 @@ function(ly_add_googlebenchmark)
 
         # If command is not supplied attempts, uses the AzTestRunner to run googlebenchmarks on the supplied TARGET
         set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunBenchmarks ${output_format_args})
+        # Start the test target params and dd the command runner command
         # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googlebenchmark_NAME}_TEST_COMMAND "AzRunUnitTests")
+        set(LY_TEST_PARAMS "AzRunUnitTests")
     else()
         set(full_test_command ${ly_add_googlebenchmark_TEST_COMMAND})
         # Remove the generator expressions so we are left with the argument(s) required to run unit tests for executable targets
         string(REPLACE ";" "" stripped_test_command ${full_test_command})
         string(GENEX_STRIP ${stripped_test_command} stripped_test_command)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND ${stripped_test_command})
+        # Start the test target params and dd the command runner command
+        set(LY_TEST_PARAMS "${stripped_test_command}")
     endif()
-
+    
+    # Set the name of the current test target for storage in the global list
+    set(LY_ALL_TESTS_TARGET_NAME ${ly_add_googlebenchmark_NAME})
+    # Set the name of the current test target for storage in the global list
     ly_add_test(
         NAME ${ly_add_googlebenchmark_NAME}
         TEST_REQUIRES ${ly_add_googlebenchmark_TEST_REQUIRES}

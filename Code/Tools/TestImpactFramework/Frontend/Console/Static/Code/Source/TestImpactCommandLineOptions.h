@@ -18,7 +18,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/containers/unordered_set.h>
 
 namespace TestImpact
 {
@@ -29,6 +28,8 @@ namespace TestImpact
         Seed, //!< Removes any prior coverage data and runs all test targets with instrumentation to reseed the data from scratch.
         Regular, //!< Runs all of the test targets without any instrumentation to generate coverage data (any prior coverage data is left intact).
         ImpactAnalysis, //!< Uses any prior coverage data to run the instrumented subset of selected tests (if no prior coverage data a regular run is performed instead).
+        ImpactAnalysisNoWrite, //!< Uses any prior coverage data to run the uninstrumented subset of selected tests (if no prior coverage data a regular run is performed instead).
+                               //!< The coverage data is not updated with the subset of selected tests.
         ImpactAnalysisOrSeed //!< Uses any prior coverage data to run the instrumented subset of selected tests (if no prior coverage data a seed run is performed instead).
     };
 
@@ -87,8 +88,8 @@ namespace TestImpact
         //! Returns the global test sequence timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
 
-        //! Returns the filter for test suites that will be allowed to be run.
-        const AZStd::unordered_set<AZStd::string>& GetSuitesFilter() const;
+        //! Returns the filter for test suite that will be allowed to be run.
+        SuiteType GetSuiteFilter() const;
 
     private:
         RepoPath m_configurationFile;
@@ -105,7 +106,7 @@ namespace TestImpact
         AZStd::optional<size_t> m_maxConcurrency;
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
-        AZStd::unordered_set<AZStd::string> m_suitesFilter;
+        SuiteType m_suiteFilter;
         bool m_safeMode = false;
     };
 } // namespace TestImpact
