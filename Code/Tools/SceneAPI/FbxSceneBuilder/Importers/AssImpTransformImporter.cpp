@@ -61,7 +61,7 @@ namespace AZ
                     }
                 }
             }
-
+#pragma optimize("", off)
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
@@ -79,6 +79,11 @@ namespace AZ
                 auto boneIterator = boneLookup.find(currentNode->mName.C_Str());
                 const bool isBone = boneIterator != boneLookup.end();
 
+                if (currentNode->mName.C_Str() == AZStd::string("FrontCloth_02"))
+                {
+                    __debugbreak();
+                }
+
                 aiMatrix4x4 combinedTransform;
 
                 if (isBone)
@@ -87,20 +92,67 @@ namespace AZ
 
                     aiMatrix4x4 offsetMatrix = boneIterator->second->mOffsetMatrix;
                     aiMatrix4x4 parentOffset {};
+                    aiMatrix4x4 parentTransform{};
+
+                    if (parentNode)
+                    {
+                        parentTransform = parentNode->mTransformation;
+                    }
+
+                    auto azOffset = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(offsetMatrix);
+                    decltype(azOffset) azParentOffset{};
+                    AZStd::vector<DataTypes::MatrixType> transforms, offsets, inverseTransforms, inverseOffsets;
+
+                    auto addTransform = [&](AZStd::string, aiMatrix4x4 mat)
+                    {
+                        auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(mat);
+                        transforms.push_back(azMat);
+                        inverseTransforms.push_back(azMat.GetInverseFull());
+                    };
+                    auto addOffset = [&]([[maybe_unused]] auto name, aiMatrix4x4 mat)
+                    {
+                        auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(mat);
+                        offsets.push_back(azMat);
+                        inverseOffsets.push_back(azMat.GetInverseFull());
+                    };
+
+                    auto curNode = currentNode;
+
+                    while (curNode && boneLookup.count(curNode->mName.C_Str()))
+                    {
+                        AZStd::string name = curNode->mName.C_Str();
+                        addOffset(name, boneLookup.at(name)->mOffsetMatrix);
+                        addTransform(name, curNode->mTransformation);
+
+                        curNode = curNode->mParent;
+                    }
+
+                    // Go up the tree to find the root bone.  It's parent will be the scene mRootNode
+                    while (parentNode && parentNode->mParent && parentNode->mParent != scene->mRootNode)
+                    {
+                        parentNode = parentNode->mParent;
+                    }
 
                     auto parentBoneIterator = boneLookup.find(parentNode->mName.C_Str());
+                    aiMatrix4x4 rootOffsetMatrix{};
 
-                    if (parentNode && parentBoneIterator != boneLookup.end())
+                    if (parentBoneIterator != boneLookup.end())
                     {
-                        const auto& parentBone = parentBoneIterator->second;
-
-                        parentOffset = parentBone->mOffsetMatrix;
+                        rootOffsetMatrix = parentBoneIterator->second->mOffsetMatrix;
                     }
 
                     auto inverseOffset = offsetMatrix;
                     inverseOffset.Inverse();
 
-                    combinedTransform = parentOffset * inverseOffset;
+                    auto parentTransformInverse = parentTransform;
+                    parentTransformInverse.Inverse();
+
+                    //auto azInverse = azOffset.GetInverseFull();
+                    //auto azCombined = azParentOffset * azInverse;
+                    //combinedTransform = parentOffset * inverseOffset;
+
+                    //parentTransform ^-1 * parentParent * azOffsetInverse
+                    combinedTransform = parentTransformInverse * rootOffsetMatrix * inverseOffset;
                 }
                 else
                 {
