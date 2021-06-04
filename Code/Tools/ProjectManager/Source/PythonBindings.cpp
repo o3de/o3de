@@ -754,7 +754,7 @@ namespace O3DE::ProjectManager
     ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
     {
         ProjectTemplateInfo templateInfo;
-        templateInfo.m_path = Py_To_String(path);
+        templateInfo.m_path = Py_To_String(pybind11::str(path));
 
         auto data = m_manifest.attr("get_template_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(data))
@@ -779,6 +779,13 @@ namespace O3DE::ProjectManager
                     for (auto tag : data["user_tags"])
                     {
                         templateInfo.m_canonicalTags.push_back(Py_To_String(tag));
+                    }
+                }
+                if (data.contains("included_gems"))
+                {
+                    for (auto gem : data["included_gems"])
+                    {
+                        templateInfo.m_includedGems.push_back(Py_To_String(gem));
                     }
                 }
             }
