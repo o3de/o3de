@@ -12,5 +12,4 @@
 add_subdirectory(detect_file_changes)
 add_subdirectory(commit_validation)
 add_subdirectory(o3de)
-add_subdirectory(project_manager)
 add_subdirectory(ctest)

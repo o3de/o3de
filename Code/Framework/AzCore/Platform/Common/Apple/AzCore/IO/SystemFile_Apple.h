@@ -22,9 +22,10 @@ namespace AZ
         namespace Internal
         {
             using SizeType = AZ::u64;
+            using SeekSizeType = AZ::s64;
             using FileHandleType = int;
         }
-    
+
         namespace PosixInternal
         {
             enum class OpenFlags : int
@@ -36,7 +37,7 @@ namespace AZ
 #else
                 Temporary    = 0,            // (Not applicable for this platform) Applies only when used with CREAT. Creates a file as temporary; the file is deleted when the last file descriptor is closed. PermissionMode equired when CREAT is specified.
 #endif
-                Exclusive    = O_EXCL,       // Applies only when used with CREAT. Returns an error value if a file specified by filename exists. 
+                Exclusive    = O_EXCL,       // Applies only when used with CREAT. Returns an error value if a file specified by filename exists.
                 Truncate     = O_TRUNC,      // Opens a file and truncates it to zero length; the file must have write permission. Cannot be specified with RDONLY.
                                              // Note: The TRUNC flag destroys the contents of the specified file.
 

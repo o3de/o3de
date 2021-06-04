@@ -125,7 +125,8 @@ int main(int argc, char** argv)
         }
         else if (AZ::StringFunc::Equal("convert-slice", action.c_str()))
         {
-            result = SliceConverter::ConvertSliceFiles(application);
+            SliceConverter sliceConverter;
+            result = sliceConverter.ConvertSliceFiles(application);
         }
         else
         {
