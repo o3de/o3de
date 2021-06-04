@@ -10,12 +10,12 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridRenderPass.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ

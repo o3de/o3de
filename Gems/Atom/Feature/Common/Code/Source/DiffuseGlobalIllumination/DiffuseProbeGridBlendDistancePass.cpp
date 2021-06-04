@@ -10,7 +10,6 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridBlendDistancePass.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
@@ -18,7 +17,8 @@
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ

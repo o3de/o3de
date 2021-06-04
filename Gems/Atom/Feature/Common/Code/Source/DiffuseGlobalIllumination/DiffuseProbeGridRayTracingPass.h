@@ -19,7 +19,7 @@
 #include <Atom/RHI/RayTracingShaderTable.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <DiffuseProbeGrid/DiffuseProbeGrid.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGrid.h>
 
 namespace AZ
 {

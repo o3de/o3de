@@ -12,7 +12,6 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/ScopeProducer.h>
@@ -22,7 +21,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <DiffuseProbeGrid/DiffuseProbeGrid.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGrid.h>
 
 namespace AZ
 {

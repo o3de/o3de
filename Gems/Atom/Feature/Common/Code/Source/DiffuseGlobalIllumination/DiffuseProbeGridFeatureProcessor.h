@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <Atom/Feature/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
-#include <DiffuseProbeGrid/DiffuseProbeGrid.h>
+#include <Atom/Feature/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessorInterface.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGrid.h>
 
 namespace AZ
 {

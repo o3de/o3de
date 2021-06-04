@@ -10,7 +10,6 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridClassificationPass.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
@@ -22,7 +21,8 @@
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ

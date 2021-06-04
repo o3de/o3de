@@ -17,7 +17,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/Math/Aabb.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridTextureReadback.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h>
 
 namespace AZ
 {

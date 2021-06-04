@@ -14,7 +14,7 @@
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/Feature/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessorInterface.h>
+#include <Atom/Feature/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessorInterface.h>
 
 namespace AZ
 {
