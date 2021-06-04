@@ -289,7 +289,7 @@ namespace AZ
 
                 if (!m_hairAsset.GetId().IsValid() || !m_hairAsset.IsReady())
                 {
-                    AZ_Warning("Hair Gem", false, "Hair Asset is not loaded yet");
+                    AZ_Warning("Hair Gem", false, "Hair Asset was not ready - second attempt will be made when ready");
                     return false;
                 }
 

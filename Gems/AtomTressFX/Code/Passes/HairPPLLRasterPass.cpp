@@ -181,7 +181,7 @@ namespace AZ
 
             bool HairPPLLRasterPass::BuildDrawPacket(HairRenderObject* hairObject)
             {
-                if (!m_shader || !m_pipelineState || !m_shaderResourceGroup)
+                if (!m_initialized)
                 {
                     return false;
                 }

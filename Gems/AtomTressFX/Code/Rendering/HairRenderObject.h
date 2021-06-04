@@ -116,17 +116,17 @@ namespace AZ
                 {
                     PrepareSrgDescriptors(m_dynamicBuffersDescriptors, vertexCount, strandsCount);
                 }
- 
-                Data::Instance<RPI::ShaderResourceGroup> GetSimSRG() { return m_simSrg; }
-
-            private:
 
                 //! Matching between the buffers Srg and its buffers descriptors, this method fills the Srg with
                 //!  the views of the buffers to be used by the hair instance.
                 //! Do not call this method manually as it is called from CreateAndBindGPUResources.
                 bool BindSrgBufferViewsAndOffsets();
+ 
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSRG() { return m_simSrg; }
 
+                bool IsInitialized() { return m_initialized;  }
 
+            private:
                 //! The descriptors required to allocate and associate the dynamic buffers with the SRGs
                 //! Each descriptor also contains the byte offsets of the sub-buffers in the global dynamic
                 //!  array for the data copy.
@@ -225,6 +225,11 @@ namespace AZ
                 Data::Instance<RPI::ShaderResourceGroup> GetHairSimSrg()
                 {
                     return m_dynamicHairData.GetSimSRG();
+                }
+
+                bool BindDynamicSrgResources()
+                {
+                    return m_dynamicHairData.IsInitialized() ? m_dynamicHairData.BindSrgBufferViewsAndOffsets() : false;
                 }
 
                 //!-----------------------------------------------------------------
@@ -331,8 +336,6 @@ namespace AZ
                 uint32_t m_SimulationFrame = 0;
                 // Adi: check if we need this: for parameter indexing of frame % 2
                 uint32_t m_RenderIndex = 0;
-
-
 
                 //!-----------------------------------------------------------------
                 //! The hair dynamic per instance buffers such as vertices, tangents, etc..

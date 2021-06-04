@@ -199,10 +199,10 @@ namespace AZ
                         AZ_Error("Hair Gem", false, "Dynamic BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
                         return false;
                     }
-                } 
-                m_initialized = BindSrgBufferViewsAndOffsets();
+                }
 
-                return m_initialized;
+                m_initialized = true;
+                return true;
             }
 
             //! Data upload - copy the hair mesh asset data (positions and tangents) into the buffers.
