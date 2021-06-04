@@ -420,6 +420,13 @@
                                 "Pass": "DebugOverlayPass",
                                 "Attachment": "InputOutput"
                             }
+                        },
+                        {
+                            "LocalSlot": "DepthInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
                         }
                     ]
                 },
