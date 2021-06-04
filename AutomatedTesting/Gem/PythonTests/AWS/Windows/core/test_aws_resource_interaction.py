@@ -120,12 +120,13 @@ class TestAWSCoreDownloadFromS3(object):
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
-                expected_lines=['(Script) - head object request is done',
-                                '(Script) - get object request is done',
-                                '(Script) - Object example.txt is found.',
-                                '(Script) - Object example.txt is downloaded.'],
-                unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
-                                  '(Script) - Head Object Error: No response body.'],
+                expected_lines=['(Script) - [S3] Head object request is done',
+                                '(Script) - [S3] Head object success: Object example.txt is found.',
+                                '(Script) - [S3] Get object request is done',
+                                '(Script) - [S3] Head object success: Object example.txt is found.',
+                                '(Script) - [S3] Get object success: Object example.txt is downloaded.'],
+                unexpected_lines=['(Script) - [S3] Head object error: No response body.',
+                                  '(Script) - [S3] Get object error: Request validation failed, output file directory doesn\'t exist.'],
                 halt_on_unexpected=True,
                 )
 
@@ -169,7 +170,8 @@ class TestAWSCoreDownloadFromS3(object):
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
-                expected_lines=['(Script) - Success: {"statusCode": 200, "body": event}'],
+                expected_lines=['(Script) - [Lambda] Completed Invoke',
+                                '(Script) - [Lambda] Invoke success: {"statusCode": 200, "body": {}}'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
                                   '(Script) - '],
                 halt_on_unexpected=True,
@@ -206,7 +208,7 @@ class TestAWSCoreDownloadFromS3(object):
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
-                expected_lines=['(Script) - test_value: {"S":	"ItWorked"}'],
+                expected_lines=['(Script) - [DynamoDB] Results finished'],
                 unexpected_lines=['(Script) - Request validation failed, output file miss full path.',
                                   '(Script) - '],
                 halt_on_unexpected=True,
