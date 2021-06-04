@@ -9,5 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set (PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED FALSE)
-set (PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED FALSE)
+set(FILES
+    External/MaskedOcclusionCulling/MaskedOcclusionCulling.h
+    External/MaskedOcclusionCulling/MaskedOcclusionCullingCommon.inl
+    External/MaskedOcclusionCulling/MaskedOcclusionCulling.cpp
+    External/MaskedOcclusionCulling/MaskedOcclusionCullingAVX2.cpp
+    External/MaskedOcclusionCulling/MaskedOcclusionCullingAVX512.cpp
+)

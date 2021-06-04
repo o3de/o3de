@@ -25,6 +25,7 @@
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
 #include <ReflectionProbe/ReflectionProbeComponent.h>
+#include <OcclusionCullingPlane/OcclusionCullingPlaneComponent.h>
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
@@ -57,6 +58,7 @@
 #include <Mesh/EditorMeshComponent.h>
 #include <Mesh/EditorMeshSystemComponent.h>
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
+#include <OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
@@ -117,6 +119,7 @@ namespace AZ
                         DeferredFogComponent::CreateDescriptor(),
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
+                        OcclusionCullingPlaneComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
@@ -149,6 +152,7 @@ namespace AZ
                         EditorDeferredFogComponent::CreateDescriptor(),
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),
+                        EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
 #endif
                     });
             }

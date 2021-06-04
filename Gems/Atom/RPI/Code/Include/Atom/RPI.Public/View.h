@@ -24,6 +24,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Name/Name.h>
 
+class MaskedOcclusionCulling;
+
 namespace AZ
 {
     namespace  RHI
@@ -57,7 +59,7 @@ namespace AZ
             //! Only use this function to create a new view object. And force using smart pointer to manage view's life time
             static ViewPtr CreateView(const AZ::Name& name, UsageFlags usage);
 
-            ~View() = default;
+            ~View();
 
             void SetDrawListMask(const RHI::DrawListMask& drawListMask);
             RHI::DrawListMask GetDrawListMask() const { return m_drawListMask; }
@@ -126,6 +128,12 @@ namespace AZ
             //! Notifies consumers when the world to clip matrix has changed.
             void ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
 
+            //! Prepare for view culling
+            void BeginCulling();
+
+            //! Returns the masked occlusion culling interface
+            MaskedOcclusionCulling* GetMaskedOcclusionCulling();
+
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
@@ -193,6 +201,9 @@ namespace AZ
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;
+
+            // Masked Occlusion Culling interface
+            MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);
