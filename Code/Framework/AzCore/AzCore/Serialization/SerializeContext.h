@@ -101,6 +101,9 @@ namespace AZ
     class SerializeContext
         : public ReflectContext
     {
+        static const unsigned int VersionClassDeprecated = (unsigned int)-1;
+
+    public:
         /// @cond EXCLUDE_DOCS
         friend class EditContext;
         class ClassBuilder;
@@ -108,9 +111,6 @@ namespace AZ
         /// @endcond
         class EnumBuilder;
 
-        static const unsigned int VersionClassDeprecated = (unsigned int)-1;
-
-    public:
         class ClassData;
         struct EnumerateInstanceCallContext;
         struct ClassElement;
@@ -1131,6 +1131,7 @@ namespace AZ
          *      ->Version(3,&MyVersionConverter)
          *      ->Field("data",&MyStruct::m_data);
          */
+    public:
         class ClassBuilder
         {
             friend class SerializeContext;
@@ -1330,7 +1331,8 @@ namespace AZ
             AZStd::vector<AttributeSharedPair, AZStdFunctorAllocator>* m_currentAttributes = nullptr;
         };
 
-        EditContext*    m_editContext;  ///< Pointer to optional edit context.
+    private:
+        EditContext* m_editContext;  ///< Pointer to optional edit context.
         UuidToClassMap  m_uuidMap;      ///< Map for all class in this serialize context
         AZStd::unordered_multimap<AZ::Crc32, AZ::Uuid> m_classNameToUuid;  /// Map all class names to their uuid
         AZStd::unordered_multimap<Uuid, GenericClassInfo*>  m_uuidGenericMap;      ///< Uuid to ClassData map of reflected classes with GenericTypeInfo

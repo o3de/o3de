@@ -27,7 +27,7 @@ namespace Multiplayer
         , m_sentRecords(net_EntityReplicatorRecordsMax)
     {
         AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
-        m_pendingRecord.SetNetworkRole(remoteNetworkRole);
+        m_pendingRecord.SetRemoteNetworkRole(remoteNetworkRole);
     }
 
     bool PropertyPublisher::IsDeleting() const
@@ -67,7 +67,7 @@ namespace Multiplayer
 
     void PropertyPublisher::SetRebasing()
     {
-        AZ_Assert(m_pendingRecord.GetNetworkRole() == NetEntityRole::Autonomous, "Expected to be rebasing on a Autonomous entity");
+        AZ_Assert(m_pendingRecord.GetRemoteNetworkRole() == NetEntityRole::Autonomous, "Expected to be rebasing on a Autonomous entity");
         m_replicatorState = EntityReplicatorState::Rebasing;
     }
 
@@ -118,7 +118,7 @@ namespace Multiplayer
         m_sentRecords.clear();
         m_netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
         // Don't send predictable properties back to the Autonomous unless we correct them
-        if (m_pendingRecord.GetNetworkRole() == NetEntityRole::Autonomous)
+        if (m_pendingRecord.GetRemoteNetworkRole() == NetEntityRole::Autonomous)
         {
             m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
         }
@@ -137,7 +137,7 @@ namespace Multiplayer
         // We need to clear out old records, and build up a list of everything that has changed since the last acked packet
         m_sentRecords.push_front(m_pendingRecord);
         auto iter = m_sentRecords.begin();
-        ++iter;  // consider everything after the record we are going to send
+        ++iter; // Consider everything after the record we are going to send
         for (; iter != m_sentRecords.end(); ++iter)
         {
             // Sequence wasn't acked, so we need to send these bits again
@@ -145,7 +145,7 @@ namespace Multiplayer
         }
 
         // Don't send predictable properties back to the Autonomous unless we correct them
-        if (m_pendingRecord.GetNetworkRole() == NetEntityRole::Autonomous)
+        if (m_pendingRecord.GetRemoteNetworkRole() == NetEntityRole::Autonomous)
         {
             m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
         }
