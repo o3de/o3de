@@ -521,7 +521,7 @@ def register_default_restricted_folder(json_data: dict,
                                                'default_restricted_folder')
 
 def register_default_third_party_folder(json_data: dict,
-                                       default_third_party_folder: str or pathlib.Path,
+                                       default_third_party_folder: pathlib.Path,
                                        remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_third_party_folder() if remove else default_third_party_folder,
@@ -539,7 +539,7 @@ def register(engine_path: str or pathlib.Path = None,
              default_gems_folder: str or pathlib.Path = None,
              default_templates_folder: str or pathlib.Path = None,
              default_restricted_folder: str or pathlib.Path = None,
-             default_third_party_folder: str or pathlib.Path = None,
+             default_third_party_folder: pathlib.Path = None,
              external_subdir_engine_path: pathlib.Path = None,
              external_subdir_project_path: pathlib.Path = None,
              remove: bool = False,
@@ -628,7 +628,7 @@ def register(engine_path: str or pathlib.Path = None,
     elif isinstance(default_restricted_folder, str) or isinstance(default_restricted_folder, pathlib.PurePath):
         result = register_default_restricted_folder(json_data, default_restricted_folder, remove)
 
-    elif isinstance(default_third_party_folder, str) or isinstance(default_third_party_folder, pathlib.PurePath):
+    elif default_third_party_folder:
         result = register_default_third_party_folder(json_data, default_third_party_folder, remove)
 
     # engine is done LAST
@@ -825,7 +825,7 @@ def add_parser_args(parser):
                        help='The default templates folder to register/remove.')
     group.add_argument('-drf', '--default-restricted-folder', type=str, required=False,
                        help='The default restricted folder to register/remove.')
-    group.add_argument('-dtpf', '--default-third-party-folder', type=str, required=False,
+    group.add_argument('-dtpf', '--default-third-party-folder', type=pathlib.Path, required=False,
                        help='The default 3rd Party folder to register/remove.')
     group.add_argument('-u', '--update', action='store_true', required=False,
                        default=False,
