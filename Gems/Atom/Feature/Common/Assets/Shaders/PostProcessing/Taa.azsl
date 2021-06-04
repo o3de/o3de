@@ -264,7 +264,7 @@ void MainCS(
     color = color * (1.0 + luminance);
 
     // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
-    color = -min(0.0, -color);
+    color = max(0.0, color);
 
     PassSrg::m_outputColor[pixelCoord].rgb = color;
     

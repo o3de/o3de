@@ -67,7 +67,6 @@
                 {
                     "Name": "SMAA1xApplyLinearHDRColorPass",
                     "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
-                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",
