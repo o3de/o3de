@@ -198,12 +198,19 @@ namespace AZ::Render
             }
         );
     }
-    
+
+    // Approximation of a Blackman Harris window function of width 3.3.
+    // https://en.wikipedia.org/wiki/Window_function#Blackman%E2%80%93Harris_window
     static float BlackmanHarris(AZ::Vector2 uv)
     {
         return expf(-2.29f * (uv.GetX() * uv.GetX() + uv.GetY() * uv.GetY()));
     }
-
+    
+    // Generates filter weights for the 3x3 neighborhood of a pixel. Since jitter positions are the
+    // same for every pixel we can calculate this once here and upload to the SRG.
+    // Jitter weights are based on a window function centered at the pixel center (we use Blackman-Harris).
+    // As the jitter position moves around, some neighborhood locations decrease in weight, and others
+    // increase in weight based on their distance from the center of the pixel.
     void TaaPass::GenerateFilterWeights(AZ::Vector2 jitterOffset)
     {
         static const AZStd::array<Vector2, 9> pixelOffsets =

@@ -99,18 +99,23 @@ float3 YCoCgToRgb(float3 yCoCg)
     return mul(conversionMatrix, yCoCg);
 }
 
-// Sample a texture with a 5 tap Catmull-Rom. Consider ripping this out a general location.
-float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSampler, float2 uv, float2 textureSize, float sharpness)
+// Sample a texture with a 5 tap Catmull-Rom. Consider ripping this out and putting in a more general location.
+// This function samples a 4x4 neighborhood around the uv. By taking advantage of bilinear filtering this can be
+// done with only 9 taps on the edges between pixels. The cost is further reduced by dropping the 4 diagonal
+// samples as their influence is negligible.
+float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSampler, float2 uv, float2 textureSize, float2 rcpTextureSize, float sharpness)
 {
-    // Find the position in texture space then round it to get the center position of the texel
+    // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
+    // a bottom right coordinate of 3,3.
+
+    // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
     float2 texelPos = uv * textureSize;
-    float2 textureSizeInverse = rcp(textureSize);
-    float2 centerPos = floor(texelPos - 0.5) + 0.5;
+    float2 tc1= floor(texelPos - 0.5) + 0.5;
 
     // Offset from center position to texel
-    float2 f = texelPos - centerPos;
+    float2 f = texelPos - tc1;
 
-    // Compute Catmull-Rom weights
+    // Compute Catmull-Rom weights based on the offset and sharpness
     float c = sharpness;
     float2 w0 = f * (-c + f * (2.0 * c - c * f));
     float2 w1 = 1.0 + f * f * (c -3.0 + (2.0 - c) * f);
@@ -120,9 +125,9 @@ float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSample
     float2 w12 = w1 + w2;
 
     // Compute uv coordinates for sampling the texture
-    float2 tc0 = (centerPos - 1.0f) * textureSizeInverse;
-    float2 tc3 = (centerPos + 2.0f) * textureSizeInverse;
-    float2 tc12 = (centerPos + w2 / w12) * textureSizeInverse;
+    float2 tc0 = (tc1 - 1.0f) * rcpTextureSize;
+    float2 tc3 = (tc1 + 2.0f) * rcpTextureSize;
+    float2 tc12 = (tc1 + w2 / w12) * rcpTextureSize;
 
     // Compute sample weights
     float sw0 = w12.x * w0.y;
@@ -201,6 +206,13 @@ void MainCS(
     // Variance clipping, see http://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
     float3 mean = sum / 9.0;
     float3 standardDeviation = max(0.0, sqrt(sumOfSquares / 9.0 - mean * mean));
+    standardDeviation *= PassSrg::m_clampGamma;
+
+    // Grab the motion vector from the closest pixel in the 3x3 neighborhood. This is done so that motion vectors correctly
+    // track edges. For instance, if a pixel lies on the edge of a moving object, where the color is a blend of the
+    // forground and background, it's possible for the pixel center to hit the (not moving) background. However, the correct
+    // history for this pixel will be the location this edge was the previous frame. By choosing the motion of the nearest
+    // pixel in the neighborhood that edge will be correctly tracked.
 
     // Motion vectors store the direction of movement, so to look up where things were in the previous frame, it's negated.
     float2 previousPositionOffset = -PassSrg::m_motionVectors[nearestDepthPixelCoord];
@@ -212,10 +224,8 @@ void MainCS(
     float2 previousPositionOffsetInPixels = float2(PassSrg::m_constantData.m_inputColorSize) * previousPositionOffset;
     
     // Sample the last frame using a 5-tap Catmull-Rom
-    float3 lastFrameColor = SampleCatmullRom5Tap(PassSrg::m_lastFrameAccumulation, PassSrg::LinearSampler, uvOld, PassSrg::m_constantData.m_inputColorSize, 0.5).rgb;
+    float3 lastFrameColor = SampleCatmullRom5Tap(PassSrg::m_lastFrameAccumulation, PassSrg::LinearSampler, uvOld, PassSrg::m_constantData.m_inputColorSize, PassSrg::m_constantData.m_inputColorRcpSize, 0.5).rgb;
     lastFrameColor = RgbToYCoCg(lastFrameColor);
-
-    standardDeviation *= PassSrg::m_clampGamma;
 
     // Last frame color relative to mean
     float3 centerColorOffset = lastFrameColor - mean;
@@ -233,7 +243,7 @@ void MainCS(
     float3 sdFromLastFrame = standardDeviationWeight / abs(lastFrameClampedColor.r - thisFrameColor.r);
 
     float currentFrameWeight = PassSrg::m_currentFrameContribution;
-    currentFrameWeight *= min(sdFromLastFrame * sdFromLastFrame, 1.0);
+    currentFrameWeight *= saturate(sdFromLastFrame * sdFromLastFrame);
 
     // Back to Rgb space
     thisFrameColor = YCoCgToRgb(thisFrameColor);
