@@ -53,8 +53,8 @@ namespace AZ
             RHI::Format m_elementFormat = RHI::Format::Unknown; //<! [optional] If it's specified with a valid format, the size of this format will be used instead of m_elementSize
             AZ::u64 m_byteCount = 0;
             const void* m_bufferData = nullptr;     //<! [optional] Initial data content of this buffer. This data buffer size needs to be same as m_bufferSizeInbytes
-            //! Set to true if you want this buffer can be found by BufferSystemInterface::FindCommonBuffer by using m_bufferName.
-            //! And create buffer may fail if there is a buffer with the same name. 
+            //! Set to true if you want this buffer to be discoverable by BufferSystemInterface::FindCommonBuffer using m_bufferName.
+            //! Note that create buffer may fail if there is a buffer with the same name.
             bool m_isUniqueName = false;
         };
 
