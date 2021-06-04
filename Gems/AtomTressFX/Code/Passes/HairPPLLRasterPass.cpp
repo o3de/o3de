@@ -59,6 +59,11 @@ namespace AZ
 
             bool HairPPLLRasterPass::AcquireFeatureProcessor()
             {
+                if (m_featureProcessor)
+                {
+                    return true;
+                }
+
                 RPI::Scene* scene = GetScene();
                 if (scene)
                 {
@@ -79,7 +84,7 @@ namespace AZ
             {
                 RasterPass::BuildAttachmentsInternal();
 
-                if (!m_featureProcessor && !AcquireFeatureProcessor())
+                if (!AcquireFeatureProcessor())
                 {
                     return;
                 }
@@ -231,7 +236,7 @@ namespace AZ
             void HairPPLLRasterPass::FrameBeginInternal(FramePrepareParams params)
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                if (!m_initialized && (m_featureProcessor || AcquireFeatureProcessor()))
+                if (!m_initialized && AcquireFeatureProcessor())
                 {
                     LoadShaderAndPipelineState();
                     m_featureProcessor->ForceRebuildRenderData();
@@ -270,7 +275,7 @@ namespace AZ
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 m_initialized = false;  // make sure we initialize it even if not in this frame
-                if (m_featureProcessor || AcquireFeatureProcessor())
+                if (AcquireFeatureProcessor())
                 {
                     LoadShaderAndPipelineState();
                     m_featureProcessor->ForceRebuildRenderData();

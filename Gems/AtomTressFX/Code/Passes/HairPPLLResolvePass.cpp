@@ -65,6 +65,11 @@ namespace AZ
 
             bool HairPPLLResolvePass::AcquireFeatureProcessor()
             {
+                if (m_featureProcessor)
+                {
+                    return true;
+                }
+
                 RPI::Scene* scene = GetScene();
                 if (scene)
                 {
@@ -91,7 +96,7 @@ namespace AZ
             {
                 FullscreenTrianglePass::SetupFrameGraphDependencies(frameGraph);
 
-                if (!m_shaderResourceGroup || (!m_featureProcessor && !AcquireFeatureProcessor()))
+                if (!m_shaderResourceGroup || !AcquireFeatureProcessor())
                 {
                     AZ_Error("Hair Gem", false, "HairPPLLResolvePass: PPLL list data was not bound - missing Srg or Feature Processor");
                     return;
