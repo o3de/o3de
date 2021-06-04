@@ -247,6 +247,5 @@ namespace O3DE::ProjectManager
 
             return ProjectManagerScreen::Invalid;
         }
-
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

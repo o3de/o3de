@@ -43,11 +43,6 @@ namespace O3DE::ProjectManager
         void WriteErrorLog(const QString& log);
 
         ProjectInfo m_projectInfo;
-
-        // 10 Minutes
-        inline constexpr static int s_maxBuildTimeMSecs = 600000;
-        static const QString s_buildPathPostfix;
-        static const QString s_errorLogPathPostfix;
     };
 
     class ProjectBuilderController : public QObject
@@ -59,7 +54,7 @@ namespace O3DE::ProjectManager
         ~ProjectBuilderController();
 
         void SetProjectButton(ProjectButton* projectButton);
-        QString ProjectPath();
+        QString GetProjectPath() const;
 
     public slots:
         void Start();

@@ -20,14 +20,17 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QDir>
 
 
 //#define MOCK_BUILD_PROJECT true 
 
 namespace O3DE::ProjectManager
 {
-    const QString ProjectBuilderWorker::s_buildPathPostfix = "/windows_vs2019";
-    const QString ProjectBuilderWorker::s_errorLogPathPostfix = "/CMakeFiles/CMakeProjectBuildError.log";
+    // 10 Minutes
+    static const int MaxBuildTimeMSecs = 600000;
+    static const QString BuildPathPostfix = "windows_vs2019";
+    static const QString ErrorLogPathPostfix = "CMakeFiles/CMakeProjectBuildError.log";
 
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
@@ -69,7 +72,7 @@ namespace O3DE::ProjectManager
             QStringList
             {
                 "-B",
-                m_projectInfo.m_path + s_buildPathPostfix,
+                QDir(m_projectInfo.m_path).filePath(BuildPathPostfix),
                 "-S",
                 m_projectInfo.m_path,
                 "-G",
@@ -82,7 +85,7 @@ namespace O3DE::ProjectManager
             emit Done(tr("Configuring project failed to start."));
             return;
         }
-        if (!configProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        if (!configProjectProcess.waitForFinished(MaxBuildTimeMSecs))
         {
             WriteErrorLog(configProjectProcess.readAllStandardOutput());
             emit Done(tr("Configuring project timed out. See log for details"));
@@ -90,7 +93,7 @@ namespace O3DE::ProjectManager
         }
 
         QString configProjectOutput(configProjectProcess.readAllStandardOutput());
-        if (configProjectProcess.error() != QProcess::NormalExit || !configProjectOutput.contains("Generating done"))
+        if (!configProjectOutput.contains("Generating done"))
         {
             WriteErrorLog(configProjectOutput);
             emit Done(tr("Configuring project failed. See log for details."));
@@ -107,10 +110,10 @@ namespace O3DE::ProjectManager
             QStringList
             {
                 "--build",
-                m_projectInfo.m_path + s_buildPathPostfix,
+                QDir(m_projectInfo.m_path).filePath(BuildPathPostfix),
                 "--target",
                 m_projectInfo.m_projectName + ".GameLauncher",
-                "-config",
+                "--config",
                 "profile"
             });
 
@@ -119,7 +122,7 @@ namespace O3DE::ProjectManager
             emit Done(tr("Building project failed to start."));
             return;
         }
-        if (!buildProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        if (!buildProjectProcess.waitForFinished(MaxBuildTimeMSecs))
         {
             WriteErrorLog(configProjectProcess.readAllStandardOutput());
             emit Done(tr("Building project timed out. See log for details"));
@@ -127,7 +130,8 @@ namespace O3DE::ProjectManager
         }
 
         QString buildProjectOutput(buildProjectProcess.readAllStandardOutput());
-        if (configProjectProcess.error() != QProcess::NormalExit)
+        auto error = configProjectProcess.error();
+        if (error != QProcess::NormalExit)
         {
             WriteErrorLog(buildProjectOutput);
             emit Done(tr("Building project failed. See log for details."));
@@ -141,7 +145,9 @@ namespace O3DE::ProjectManager
 
     QString ProjectBuilderWorker::LogFilePath() const
     {
-        return m_projectInfo.m_path + s_buildPathPostfix + s_errorLogPathPostfix;
+        QDir logFilePath(m_projectInfo.m_path);
+        logFilePath.cd(BuildPathPostfix);
+        return logFilePath.filePath(ErrorLogPathPostfix);
     }
 
     void ProjectBuilderWorker::WriteErrorLog(const QString& log)
@@ -188,7 +194,7 @@ namespace O3DE::ProjectManager
         m_projectButton = projectButton;
     }
 
-    QString ProjectBuilderController::ProjectPath()
+    QString ProjectBuilderController::GetProjectPath() const
     {
         return m_projectInfo.m_path;
     }
@@ -197,7 +203,7 @@ namespace O3DE::ProjectManager
     {
         if (m_projectButton)
         {
-            m_projectButton->SetButtonOverlayText(QString(tr("Building Project... (%1%)\n\n")).arg(progress));
+            m_projectButton->SetButtonOverlayText(QString("%1 (%2%)\n\n").arg(tr("Building Project..."), QString::number(progress)));
             m_projectButton->SetProgressBarValue(progress);
         }
     }
@@ -228,5 +234,4 @@ namespace O3DE::ProjectManager
 
         emit Done();
     }
-
 } // namespace O3DE::ProjectManager

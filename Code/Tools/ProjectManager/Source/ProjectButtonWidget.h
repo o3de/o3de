@@ -37,9 +37,9 @@ namespace O3DE::ProjectManager
         void SetEnabled(bool enabled);
         void SetOverlayText(const QString& text);
 
-        QLabel* OverlayLabel();
-        QProgressBar* ProgressBar();
-        QPushButton* BuildButton();
+        QLabel* GetOverlayLabel();
+        QProgressBar* GetProgressBar();
+        QPushButton* GetBuildButton();
 
     signals:
         void triggered();
@@ -59,7 +59,8 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
 
-    public: explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
+    public:
+        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
         ~ProjectButton() = default;
 
         void SetLaunchButtonEnabled(bool enabled);

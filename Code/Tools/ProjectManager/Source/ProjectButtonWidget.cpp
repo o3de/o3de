@@ -73,17 +73,17 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setText(text);
     }
 
-    QLabel* LabelButton::OverlayLabel()
+    QLabel* LabelButton::GetOverlayLabel()
     {
         return m_overlayLabel;
     }
 
-    QProgressBar* LabelButton::ProgressBar()
+    QProgressBar* LabelButton::GetProgressBar()
     {
         return m_progressBar;
     }
 
-    QPushButton* LabelButton::BuildButton()
+    QPushButton* LabelButton::GetBuildButton()
     {
         return m_buildButton;
     }
@@ -140,11 +140,11 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ProcessingSetup()
     {
-        m_projectImageLabel->OverlayLabel()->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+        m_projectImageLabel->GetOverlayLabel()->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
         m_projectImageLabel->SetEnabled(false);
         m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
 
-        QProgressBar* progressBar = m_projectImageLabel->ProgressBar();
+        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
         progressBar->setVisible(true);
         progressBar->setValue(0);
     }
@@ -152,7 +152,7 @@ namespace O3DE::ProjectManager
     void ProjectButton::ReadySetup()
     {
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
-        connect(m_projectImageLabel->BuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
+        connect(m_projectImageLabel->GetBuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
 
         QMenu* menu = new QMenu(this);
         menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
@@ -184,8 +184,8 @@ namespace O3DE::ProjectManager
         QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
 
         m_projectImageLabel->layout()->addItem(buttonSpacer);
-        m_projectImageLabel->layout()->addWidget(m_projectImageLabel->BuildButton());
-        m_projectImageLabel->BuildButton()->setVisible(show);
+        m_projectImageLabel->layout()->addWidget(m_projectImageLabel->GetBuildButton());
+        m_projectImageLabel->GetBuildButton()->setVisible(show);
     }
 
     void ProjectButton::SetButtonOverlayText(const QString& text)
@@ -195,6 +195,6 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::SetProgressBarValue(int progress)
     {
-        m_projectImageLabel->ProgressBar()->setValue(progress);
+        m_projectImageLabel->GetProgressBar()->setValue(progress);
     }
 } // namespace O3DE::ProjectManager

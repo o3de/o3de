@@ -258,7 +258,7 @@ namespace O3DE::ProjectManager
         {
             ProjectButton* projectButtonPtr;
 
-            m_projectsContent = CreateProjectsContent(m_currentBuilder->ProjectPath(), &projectButtonPtr);
+            m_projectsContent = CreateProjectsContent(m_currentBuilder->GetProjectPath(), &projectButtonPtr);
             m_currentBuilder->SetProjectButton(projectButtonPtr);
         }
         else
@@ -410,8 +410,9 @@ namespace O3DE::ProjectManager
     {
         if (!WarnIfInBuildQueue(projectPath))
         {
-            QMessageBox::StandardButton warningResult = QMessageBox::warning(
-                this, tr("Delete Project"), tr("Are you sure?\nProject will be removed from O3DE and directory will be deleted!"),
+            QMessageBox::StandardButton warningResult = QMessageBox::warning(this,
+                tr("Delete Project"),
+                tr("Are you sure?\nProject will be unregistered from O3DE and project directory will be deleted from your disk."),
                 QMessageBox::No | QMessageBox::Yes);
 
             if (warningResult == QMessageBox::Yes)
@@ -434,7 +435,7 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::information(this,
                 tr("Project Should be rebuilt."),
-                tr("%1 project likely needs to be rebuilt.").arg(projectInfo.m_projectName));
+                projectInfo.m_projectName + tr(" project likely needs to be rebuilt."));
         }
     }
 
