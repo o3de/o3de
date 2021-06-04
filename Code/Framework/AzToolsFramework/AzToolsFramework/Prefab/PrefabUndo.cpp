@@ -293,7 +293,7 @@ namespace AzToolsFramework
 
         void PrefabUndoLinkUpdate::Do(InstanceOptionalReference instanceToExclude)
         {
-            UpdateLink(m_linkDomPrevious, instanceToExclude);
+            UpdateLink(m_linkDomNext, instanceToExclude);
         }
 
         void PrefabUndoLinkUpdate::Undo()

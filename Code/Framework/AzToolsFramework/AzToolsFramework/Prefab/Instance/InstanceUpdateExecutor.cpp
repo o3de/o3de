@@ -237,7 +237,16 @@ namespace AzToolsFramework
                             isUpdateSuccessful = false;
                         }
                     }
-
+                    for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
+                    {
+                        // Since entities get recreated during propagation, we need to check whether the entities
+                        // corresponding to the list of selected entity ids are present or not.
+                        AZ::Entity* entity = GetEntityById(*entityIdIterator);
+                        if (entity == nullptr)
+                        {
+                            selectedEntityIds.erase(entityIdIterator--);
+                        }
+                    }
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
                     // Notify Propagation has ended
