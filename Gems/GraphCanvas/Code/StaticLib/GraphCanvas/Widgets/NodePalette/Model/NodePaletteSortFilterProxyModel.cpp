@@ -147,8 +147,9 @@ namespace GraphCanvas
             return true;
         }
 
-        QString test = model->data(index).toString();
-
+        // Ignore whitespace when filtering node names
+        QString test = model->data(index).toString().simplified().replace(" ", "");
+        
         bool showRow = false;
         int regexIndex = test.lastIndexOf(m_filterRegex);
 
@@ -283,7 +284,10 @@ namespace GraphCanvas
 
     void NodePaletteSortFilterProxyModel::SetFilter(const QString& filter)
     {
-        m_filter = QRegExp::escape(filter);
+        // Remove whitespace and escape() so every regexp special character is escaped with a backslash
+        // Removing the whitespace will allow us to find nodes even if the node is written with or without spaces.
+        // Example: "OnGraphStart" or "On Graph Start"
+        m_filter = QRegExp::escape(filter.simplified().replace(" ", ""));
         m_filterRegex = QRegExp(m_filter, Qt::CaseInsensitive);
     }
 
