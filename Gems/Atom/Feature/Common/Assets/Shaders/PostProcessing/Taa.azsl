@@ -184,9 +184,6 @@ void MainCS(
         uint2 neighborhoodPixelCoord = pixelCoord + offsets[i];
         float3 neighborhoodColor = PassSrg::m_inputColor[neighborhoodPixelCoord].rgb;
 
-        // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
-        neighborhoodColor = max(0.0, neighborhoodColor);
-
         // Convert to YCoCg space for better clipping.
         neighborhoodColor = RgbToYCoCg(neighborhoodColor);
 
@@ -265,6 +262,10 @@ void MainCS(
 
     // Un-tonemap color
     color = color * (1.0 + luminance);
+
+    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
+    color = max(0.0, color);
+
     PassSrg::m_outputColor[pixelCoord].rgb = color;
     
 }
