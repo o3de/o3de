@@ -45,7 +45,7 @@ namespace EMotionFX
 
             //! Get the mesh asset id to which the actor is linked to by default.
             AZStd::optional<AZ::Data::AssetId> GetMeshAssetId(const ActorGroupExportContext& context) const;
-            static AZStd::optional<AZ::SceneAPI::Events::ExportProduct> GetFirstProducedByType(
+            static AZStd::optional<AZ::SceneAPI::Events::ExportProduct> GetFirstProductByType(
                 const ActorGroupExportContext& context, AZ::Data::AssetType type);
 
             AutoRegisteredActor m_actor;

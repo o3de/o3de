@@ -1467,15 +1467,12 @@ namespace EMotionFX
         AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
 
         // Load the mesh asset, skin meta asset and morph target asset.
-        // Those sub assets should already been setup as dependency of actor asset, so they should already been loaded when we reach here.
+        // Those sub assets should have already been setup as dependency of actor asset, so they should already be loaded when we reach here.
+        // Only exception is that when the actor is not loaded by an actor asset, for which we need to do a blocking load.
         if (m_meshAssetId.IsValid())
         {
             // Get the mesh asset.
             m_meshAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(m_meshAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-            if (loadReq == LoadRequirement::RequireBlockingLoad)
-            {
-                m_meshAsset.BlockUntilLoadComplete();
-            }
 
             // Get the skin meta asset.
             const AZ::Data::AssetId skinMetaAssetId = ConstructSkinMetaAssetId(m_meshAssetId);
@@ -1483,10 +1480,6 @@ namespace EMotionFX
             {
                 m_skinMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::SkinMetaAsset>(
                     skinMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                if (loadReq == LoadRequirement::RequireBlockingLoad)
-                {
-                    m_skinMetaAsset.BlockUntilLoadComplete();
-                }
             }
 
             // Get the morph target meta asset.
@@ -1495,9 +1488,21 @@ namespace EMotionFX
             {
                 m_morphTargetMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MorphTargetMetaAsset>(
                     morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-                if (loadReq == LoadRequirement::RequireBlockingLoad)
+            }
+
+            if (loadReq == LoadRequirement::RequireBlockingLoad)
+            {
+                if (m_skinMetaAsset.IsLoading())
+                {
+                    m_skinMetaAsset.BlockUntilLoadComplete();
+                }
+                if (m_morphTargetMetaAsset.IsLoading())
                 {
                     m_morphTargetMetaAsset.BlockUntilLoadComplete();
+                }
+                if (m_meshAsset.IsLoading())
+                {
+                    m_meshAsset.BlockUntilLoadComplete();
                 }
             }
         }

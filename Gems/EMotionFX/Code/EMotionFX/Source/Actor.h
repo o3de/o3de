@@ -905,10 +905,10 @@ namespace EMotionFX
 
         /**
          * Finalize the actor with preload assets (mesh, skinmeta and morph target assets).
-         * LoadRequirement - We won't be needing a blocking load if the actor is part of the actor asset, as that will triggers the preload assets
+         * LoadRequirement - We won't need a blocking load if the actor is part of the actor asset, as that will trigger the preload assets
          * to load and get ready before finalize has been reached.
          * However, if we are calling this on an actor that bypassed the asset system (e.g loading the actor directly from disk), it will require
-         * to call a blocking load. This option is now being used because emfx editor does not fully integrated with the asset system.
+         * a blocking load. This option is now being used because emfx editor does not fully integrate with the asset system.
          */
         void Finalize(LoadRequirement loadReq = LoadRequirement::AllowAsyncLoad);
 
