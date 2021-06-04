@@ -311,7 +311,6 @@ function(ly_add_pytest)
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
 endfunction()
 
@@ -392,6 +391,9 @@ function(ly_add_googletest)
     endif()
 
     string(REPLACE "::" "_" report_directory "${GTEST_XML_OUTPUT_DIR}/${ly_add_googletest_NAME}.xml")
+
+    # Set the name of the current test target for storage in the global list
+    set(LY_ALL_TESTS_TARGET_NAME ${target_name})
 
     # Invoke the lower level ly_add_test command to add the actual ctest and setup the test labels to add_dependencies on the target
     ly_add_test(
