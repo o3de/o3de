@@ -10,8 +10,8 @@
 *
 */
 
-#include <DiffuseProbeGrid/DiffuseProbeGridTextureReadback.h>
-#include <DiffuseProbeGrid/DiffuseProbeGrid.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGrid.h>
 
 namespace AZ
 {

@@ -9,11 +9,6 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
-"""
-C24064528: The File menu options function normally
-C16780778: The File menu options function normally-New view interaction Model enabled
-"""
-
 import os
 import sys
 
@@ -54,7 +49,10 @@ class TestFileMenuOptions(EditorTestHelper):
             ("Save",),
             ("Save As",),
             ("Save Level Statistics",),
-            ("Project Settings", "Project Settings Tool"),
+            ("Edit Project Settings",),
+            ("Edit Platform Settings",),
+            ("New Project",),
+            ("Open Project",),
             ("Show Log File",),
             ("Resave All Slices",),
             ("Exit",),

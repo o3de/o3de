@@ -191,8 +191,8 @@ ly_add_translations(
 )
 ly_add_dependencies(Editor AssetProcessor)
 
-if(LY_FIRST_PROJECT_PATH)
-    set_property(TARGET Editor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_FIRST_PROJECT_PATH}\"")
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET Editor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
 endif()
 
 ################################################################################

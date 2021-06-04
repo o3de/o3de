@@ -12,7 +12,7 @@
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
-#include <DiffuseProbeGrid/DiffuseProbeGrid.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGrid.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/RHISystemInterface.h>

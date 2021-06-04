@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <DiffuseProbeGrid/DiffuseProbeGridComponentController.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponentConstants.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponentConstants.h>
 #include <AzFramework/Components/ComponentAdapter.h>
 
 namespace AZ
