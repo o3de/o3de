@@ -1,0 +1,24 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        [
+                            {
+                                "$type": "AZ::IO::StorageDriveConfig",
+                                "MaxFileHandles": 65
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
