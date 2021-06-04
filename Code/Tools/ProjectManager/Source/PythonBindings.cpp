@@ -421,7 +421,7 @@ namespace O3DE::ProjectManager
             pybind11::str defaultProjectsFolder = engineInfo.m_defaultProjectsFolder.toStdString();
             pybind11::str defaultGemsFolder = engineInfo.m_defaultGemsFolder.toStdString();
             pybind11::str defaultTemplatesFolder = engineInfo.m_defaultTemplatesFolder.toStdString();
-            pybind11::str defaultThridPartyFolder = engineInfo.m_thirdPartyPath.toStdString();
+            pybind11::str defaultThirdPartyFolder = engineInfo.m_thirdPartyPath.toStdString();
 
             auto registrationResult = m_register.attr("register")(
                 enginePath,       // engine_path
@@ -436,7 +436,7 @@ namespace O3DE::ProjectManager
                 defaultGemsFolder,
                 defaultTemplatesFolder,
                 pybind11::none(), // default_restricted_folder
-                defaultThridPartyFolder
+                defaultThirdPartyFolder
                 );
 
             if (registrationResult.cast<int>() != 0)
