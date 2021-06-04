@@ -67,6 +67,7 @@
                 {
                     "Name": "SMAA1xApplyLinearHDRColorPass",
                     "TemplateName": "SMAA1xApplyLinearHDRColorTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",
@@ -87,7 +88,7 @@
                 {
                     "Name": "TaaPass",
                     "TemplateName": "TaaTemplate",
-                    "Enabled": true,
+                    "Enabled": false,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",
@@ -170,7 +171,7 @@
                 {
                     "Name": "ContrastAdaptiveSharpeningPass",
                     "TemplateName": "ContrastAdaptiveSharpeningTemplate",
-                    "Enabled": true,
+                    "Enabled": false,
                     "Connections": [
                         {
                             "LocalSlot": "InputColor",
