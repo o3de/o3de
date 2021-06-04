@@ -1,8 +1,5 @@
 {
     "Source": "Taa",
-    "CompilerHints": {
-        "DisableOptimizations": false
-    },
     "ProgramSettings": {
         "EntryPoints": [
             {

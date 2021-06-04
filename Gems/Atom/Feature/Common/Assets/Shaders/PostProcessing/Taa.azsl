@@ -35,21 +35,119 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressW = Clamp;
     };
 
-    float m_currentFrameMinContribution;
+    // Current frame's default contribution to the history. 
+    float m_currentFrameContribution;
+
+     // Increase this value for weaker clamping, decrease for stronger clamping, default 1.0.
+    float m_clampGamma;
+
+    // Default 0.5, used for flicker reduction. Any sample further than this many standard deviations outside the neighborhood
+    // will have its weight decreased. The further outside the max deviation, the more its weight is reduced.
+    float m_maxDeviationBeforeDampening;
 
     struct Constants
     {
         uint2 m_inputColorSize;
         float2 m_inputColorRcpSize;
+
+        // 3x3 filter weights
+        // 8  2  6
+        // 3  0  1
+        // 7  4  5
+        float4 m_weights1; // 0 1 2 3
+        float4 m_weights2; // 4 5 6 7
+        float4 m_weights3; // 8 x x x
     };
     Constants m_constantData;
 }
 
-// Do fancy LDS stuff after initial implementation works.
-/*
-groupshared float3 shared_samples[(TILE_DIM_X + 2) * (TILE_DIM_Y + 2)];
-groupshared float shared_depth[(TILE_DIM_X + 2) * (TILE_DIM_Y + 2)];
-*/
+static const int2 offsets[9] = 
+{
+    // Center
+    int2(0, 0),
+    // Cross
+    int2( 1, 0),
+    int2( 0,-1),
+    int2(-1, 0),
+    int2( 0, 1),
+    // Diagonals
+    int2( 1,-1),
+    int2( 1, 1),
+    int2(-1,-1),
+    int2(-1, 1),
+};
+
+float3 RgbToYCoCg(float3 rgb)
+{
+    const float3x3 conversionMatrix = 
+    {
+         0.25,  0.50,  0.25,
+         0.50,  0.00, -0.50,
+        -0.25,  0.50, -0.25
+    };
+    return mul(conversionMatrix, rgb);
+}
+
+float3 YCoCgToRgb(float3 yCoCg)
+{
+    const float3x3 conversionMatrix = 
+    {
+        1.0,  1.0, -1.0,
+        1.0,  0.0,  1.0,
+        1.0, -1.0, -1.0
+    };
+    return mul(conversionMatrix, yCoCg);
+}
+
+// Sample a texture with a 5 tap Catmull-Rom. Consider ripping this out and putting in a more general location.
+// This function samples a 4x4 neighborhood around the uv. By taking advantage of bilinear filtering this can be
+// done with only 9 taps on the edges between pixels. The cost is further reduced by dropping the 4 diagonal
+// samples as their influence is negligible.
+float4 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSampler, float2 uv, float2 textureSize, float2 rcpTextureSize, float sharpness)
+{
+    // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
+    // a bottom right coordinate of 3,3.
+
+    // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
+    float2 texelPos = uv * textureSize;
+    float2 tc1= floor(texelPos - 0.5) + 0.5;
+
+    // Offset from center position to texel
+    float2 f = texelPos - tc1;
+
+    // Compute Catmull-Rom weights based on the offset and sharpness
+    float c = sharpness;
+    float2 w0 = f * (-c + f * (2.0 * c - c * f));
+    float2 w1 = 1.0 + f * f * (c -3.0 + (2.0 - c) * f);
+    float2 w2 = f * (c + f * ((3.0 - 2.0 * c) - (2.0 - c) * f));
+    float2 w3 = f * f * (c * f - c);
+    
+    float2 w12 = w1 + w2;
+
+    // Compute uv coordinates for sampling the texture
+    float2 tc0 = (tc1 - 1.0f) * rcpTextureSize;
+    float2 tc3 = (tc1 + 2.0f) * rcpTextureSize;
+    float2 tc12 = (tc1 + w2 / w12) * rcpTextureSize;
+
+    // Compute sample weights
+    float sw0 = w12.x * w0.y;
+    float sw1 = w0.x  * w12.y;
+    float sw2 = w12.x * w12.y;
+    float sw3 = w3.x  * w12.y;
+    float sw4 = w12.x * w3.y;
+
+    // total weight of samples to normalize result.
+    float totalWeight = sw0 + sw1 + sw2 + sw3 + sw4;
+
+    float4 result = 0.0f;
+    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc0.y), 0.0) * sw0;
+    result += texture.SampleLevel(linearSampler, float2( tc0.x, tc12.y), 0.0) * sw1;
+    result += texture.SampleLevel(linearSampler, float2(tc12.x, tc12.y), 0.0) * sw2;
+    result += texture.SampleLevel(linearSampler, float2( tc3.x, tc12.y), 0.0) * sw3;
+    result += texture.SampleLevel(linearSampler, float2(tc12.x,  tc3.y), 0.0) * sw4;
+
+    return result / totalWeight;
+}
 
 [numthreads(TILE_DIM_X, TILE_DIM_Y, 1)]
 void MainCS(
@@ -57,41 +155,99 @@ void MainCS(
     uint3 groupID : SV_GroupID, 
     uint groupIndex : SV_GroupIndex)
 {
-    // Get color / depth / motion for current frame.
     uint2 pixelCoord = dispatchThreadID.xy;
-    float3 color = PassSrg::m_inputColor[pixelCoord].rgb;
-    float depth = PassSrg::m_inputDepth[pixelCoord].r;
+
+    const float filterWeights[9] =
+    {
+        PassSrg::m_constantData.m_weights1.x,
+        PassSrg::m_constantData.m_weights1.y,
+        PassSrg::m_constantData.m_weights1.z,
+        PassSrg::m_constantData.m_weights1.w,
+        PassSrg::m_constantData.m_weights2.x,
+        PassSrg::m_constantData.m_weights2.y,
+        PassSrg::m_constantData.m_weights2.z,
+        PassSrg::m_constantData.m_weights2.w,
+        PassSrg::m_constantData.m_weights3.x,
+    };
+
+    float3 sum = 0.0;
+    float3 sumOfSquares = 0.0;
+    float nearestDepth = 1.0;
+    uint2 nearestDepthPixelCoord;
+
+    float3 thisFrameColor = float3(0.0, 0.0, 0.0);
+
+    // Sample the neighborhood to filter the current pixel, gather statistics about
+    // its neighbors, and find the closest neighbor to choose a motion vector.
+    [unroll] for (int i = 0; i < 9; ++i)
+    {
+        uint2 neighborhoodPixelCoord = pixelCoord + offsets[i];
+        float3 neighborhoodColor = PassSrg::m_inputColor[neighborhoodPixelCoord].rgb;
+
+        // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
+        neighborhoodColor = max(0.0, neighborhoodColor);
+
+        // Convert to YCoCg space for better clipping.
+        neighborhoodColor = RgbToYCoCg(neighborhoodColor);
+
+        sum += neighborhoodColor;
+        sumOfSquares += neighborhoodColor * neighborhoodColor;
+        thisFrameColor += neighborhoodColor * filterWeights[i];
+
+        // Find the coordinate of the nearest depth
+        float neighborhoodDepth = PassSrg::m_inputDepth[neighborhoodPixelCoord].r;
+        if (neighborhoodDepth < nearestDepth)
+        {
+            nearestDepth = neighborhoodDepth;
+            nearestDepthPixelCoord = neighborhoodPixelCoord;
+        }
+    }
+
+    // Variance clipping, see http://developer.download.nvidia.com/gameworks/events/GDC2016/msalvi_temporal_supersampling.pdf
+    float3 mean = sum / 9.0;
+    float3 standardDeviation = max(0.0, sqrt(sumOfSquares / 9.0 - mean * mean));
+    standardDeviation *= PassSrg::m_clampGamma;
+
+    // Grab the motion vector from the closest pixel in the 3x3 neighborhood. This is done so that motion vectors correctly
+    // track edges. For instance, if a pixel lies on the edge of a moving object, where the color is a blend of the
+    // forground and background, it's possible for the pixel center to hit the (not moving) background. However, the correct
+    // history for this pixel will be the location this edge was the previous frame. By choosing the motion of the nearest
+    // pixel in the neighborhood that edge will be correctly tracked.
 
     // Motion vectors store the direction of movement, so to look up where things were in the previous frame, it's negated.
-    float2 previousPositionOffset = -PassSrg::m_motionVectors[pixelCoord];
-
-    // NaN protection (without this NaNs could get in the history buffer and quickly consume the frame)
-    color = max(0.0, color);
-
-    // Tonemap color so that the blend with history is in perceptual space. Without this, bright values can dominate
-    // against the history and increase aliasing.
-    float luminance = GetLuminance(color);
-    color = color / (1.0 + luminance);
-
+    float2 previousPositionOffset = -PassSrg::m_motionVectors[nearestDepthPixelCoord];
+    
     // Get the uv coordinate for the previous frame.
     float2 rcpSize = PassSrg::m_constantData.m_inputColorRcpSize;
     float2 uvCoord = (pixelCoord + 0.5f) * rcpSize;
-    float2 uvOld = float2(uvCoord) + previousPositionOffset;
+    float2 uvOld = uvCoord + previousPositionOffset;
+    float2 previousPositionOffsetInPixels = float2(PassSrg::m_constantData.m_inputColorSize) * previousPositionOffset;
+    
+    // Sample the last frame using a 5-tap Catmull-Rom
+    float3 lastFrameColor = SampleCatmullRom5Tap(PassSrg::m_lastFrameAccumulation, PassSrg::LinearSampler, uvOld, PassSrg::m_constantData.m_inputColorSize, PassSrg::m_constantData.m_inputColorRcpSize, 0.5).rgb;
+    lastFrameColor = RgbToYCoCg(lastFrameColor);
 
-    // For now just rely on hardware bilinear filtering but this is something that will be improved.
-    // Color in rgb, Depth in a
-    float4 lastFrameColorDepth = PassSrg::m_lastFrameAccumulation.SampleLevel(PassSrg::LinearSampler, uvOld, 0.0);
+    // Last frame color relative to mean
+    float3 centerColorOffset = lastFrameColor - mean;
+    float3 colorOffsetStandardDeviationRatio = abs(standardDeviation / centerColorOffset);
 
-    // Tonemap last frame color
-    lastFrameColorDepth.rgb = lastFrameColorDepth / (1.0 + luminance);
+    // Clamp the color by the aabb of the standardDeviation. Can never be greater than 1, so will always be inside or on the bounds of the aabb.
+    float clampedColorLength = min(min(min(1, colorOffsetStandardDeviationRatio.x), colorOffsetStandardDeviationRatio.y), colorOffsetStandardDeviationRatio.z);
 
-    float currentFrameWeight = PassSrg::m_currentFrameMinContribution;
+    // Calculate the true clamped color by offsetting it back from the mean.
+    float3 lastFrameClampedColor = mean + centerColorOffset * clampedColorLength;
 
-    // Basic depth rejection
-    if (abs(depth - lastFrameColorDepth.a) > 0.001)
-    {
-        currentFrameWeight = 1.0f;
-    }
+    // Anti-flickering - Reduce current frame weight the more it deviates from the history based on the standard deviation of the neighborhood.
+    // Start reducing weight at differences greater than m_maxDeviationBeforeDampening standard deviations in luminance.
+    float standardDeviationWeight = standardDeviation.r * PassSrg::m_maxDeviationBeforeDampening; 
+    float3 sdFromLastFrame = standardDeviationWeight / abs(lastFrameClampedColor.r - thisFrameColor.r);
+
+    float currentFrameWeight = PassSrg::m_currentFrameContribution;
+    currentFrameWeight *= saturate(sdFromLastFrame * sdFromLastFrame);
+
+    // Back to Rgb space
+    thisFrameColor = YCoCgToRgb(thisFrameColor);
+    lastFrameClampedColor = YCoCgToRgb(lastFrameClampedColor);
 
     // Out of bounds protection.
     if (any(uvOld > 1.0) || any(uvOld < 0.0))
@@ -99,16 +255,16 @@ void MainCS(
         currentFrameWeight = 1.0f;
     }
 
+    // Blend should be in perceptual space, so tonemap first
+    float luminance = GetLuminance(thisFrameColor);
+    thisFrameColor = thisFrameColor / (1 + luminance);
+    lastFrameClampedColor = lastFrameClampedColor / (1 + luminance);
+
     // Blend color with history
-    color = lerp(lastFrameColorDepth.rgb, color, currentFrameWeight);
+    float3 color = lerp(lastFrameClampedColor, thisFrameColor, currentFrameWeight);
 
     // Un-tonemap color
     color = color * (1.0 + luminance);
-
     PassSrg::m_outputColor[pixelCoord].rgb = color;
-
-    // Output depth to check against next frame. This is much higher precision than necessary for a depth rejection, so we'll either move this to a
-    // separate buffer or stuff some additional data useful to taa in the same spot.
-    PassSrg::m_outputColor[pixelCoord].a = depth;
     
 }
