@@ -219,9 +219,9 @@ namespace AZ
             {
                 // World space corners of the occluson plane
                 Vector3 m_cornerBL;
-                Vector3 m_cornerBR;
                 Vector3 m_cornerTL;
                 Vector3 m_cornerTR;
+                Vector3 m_cornerBR;
 
                 Aabb m_aabb;
             };

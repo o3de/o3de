@@ -574,18 +574,18 @@ namespace AZ
                 {
                     // convert to clip-space
                     Vector4 projectedBL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBL);
-                    Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
                     Vector4 projectedTL = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTL);
                     Vector4 projectedTR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerTR);
+                    Vector4 projectedBR = view.GetWorldToClipMatrix() * Vector4(occlusionPlane.first.m_cornerBR);
 
                     // store to float array
                     float verts[16];
                     projectedBL.StoreToFloat4(&verts[0]);
-                    projectedBR.StoreToFloat4(&verts[4]);
-                    projectedTL.StoreToFloat4(&verts[8]);
-                    projectedTR.StoreToFloat4(&verts[12]);
+                    projectedTL.StoreToFloat4(&verts[4]);
+                    projectedTR.StoreToFloat4(&verts[8]);
+                    projectedBR.StoreToFloat4(&verts[12]);
 
-                    static uint32_t indices[6] = { 0, 2, 1, 2, 3, 1 };
+                    static uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 
                     // render into the occlusion buffer, specifying BACKFACE_NONE so it functions as a double-sided occluder
                     maskedOcclusionCulling->RenderTriangles((float*)verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);

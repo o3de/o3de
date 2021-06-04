@@ -64,18 +64,18 @@ namespace AZ
 
                     RPI::CullingScene::OcclusionPlane rpiOcclusionPlane;
 
-                    static const Vector3 BL = Vector3(-0.5f, -0.5f, 0.0f);
-                    static const Vector3 BR = Vector3(0.5f, -0.5f, 0.0f);
-                    static const Vector3 TL = Vector3(-0.5f, 0.5f, 0.0f);
-                    static const Vector3 TR = Vector3(0.5f, 0.5f, 0.0f);
+                    static const Vector3 BL = Vector3(-0.5f, 0.0f, -0.5f);
+                    static const Vector3 TL = Vector3(-0.5f, 0.0f,  0.5f);
+                    static const Vector3 TR = Vector3( 0.5f, 0.0f,  0.5f);
+                    static const Vector3 BR = Vector3( 0.5f, 0.0f, -0.5f);
 
                     const AZ::Transform& transform = occlusionCullingPlane->GetTransform();
 
                     // convert corners to world space
                     rpiOcclusionPlane.m_cornerBL = transform.TransformPoint(BL);
-                    rpiOcclusionPlane.m_cornerBR = transform.TransformPoint(BR);
                     rpiOcclusionPlane.m_cornerTL = transform.TransformPoint(TL);
                     rpiOcclusionPlane.m_cornerTR = transform.TransformPoint(TR);
+                    rpiOcclusionPlane.m_cornerBR = transform.TransformPoint(BR);
 
                     // build world space AABB
                     AZ::Vector3 aabbMin = rpiOcclusionPlane.m_cornerBL.GetMin(rpiOcclusionPlane.m_cornerTR);
