@@ -89,13 +89,13 @@ namespace AZ
                     // Create the transform buffer, grow by powers of two
                     RPI::CommonBufferDescriptor desc2;
                     desc2.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc2.m_bufferName =  AZStd::string::format("'m_objectToWorldBuffer_%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
+                    desc2.m_bufferName =  "m_objectToWorldBuffer";
                     desc2.m_byteCount = byteCount;
                     desc2.m_elementSize = elementSize;
 
                     m_objectToWorldBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc2);
 
-                    desc2.m_bufferName = AZStd::string::format("'m_objectToWorldHistoryBuffer_%p", this);
+                    desc2.m_bufferName = "m_objectToWorldHistoryBuffer";
                     m_objectToWorldHistoryBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc2);
                 }
                 else
@@ -119,7 +119,7 @@ namespace AZ
                     // Create the normal buffer, grow by powers of two
                     RPI::CommonBufferDescriptor desc2;
                     desc2.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc2.m_bufferName = AZStd::string::format("'m_objectToWorldInverseTransposeBuffer_%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
+                    desc2.m_bufferName = "m_objectToWorldInverseTransposeBuffer";
                     desc2.m_byteCount = byteCount;
                     desc2.m_elementSize = elementSize;
 

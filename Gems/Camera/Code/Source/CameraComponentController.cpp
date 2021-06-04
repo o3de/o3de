@@ -387,6 +387,11 @@ namespace Camera
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
+        if (m_updatingTransformFromEntity)
+        {
+            return;
+        }
+
         if (m_view)
         {
             CCamera& camera = m_view->GetCamera();
