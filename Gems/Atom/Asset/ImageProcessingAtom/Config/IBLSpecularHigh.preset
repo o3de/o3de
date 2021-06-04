@@ -4,20 +4,19 @@
     "ClassName": "MultiplatformPresetSettings",
     "ClassData": {
         "DefaultPreset": {
-            "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
-            "Name": "IBLSpecular",
+            "UUID": "{B66395E1-8D0E-4159-989B-FC2B9F091B75}",
+            "Name": "IBLSpecularHigh",
             "Description": "The input cubemap generates an IBL specular output cubemap.",
             "FileMasks": [
-                "_iblspecularcm",
-                "_iblspecularcm256"
+                "_iblspecularcm512"
             ],
             "SourceColor": "Linear",
             "DestColor": "Linear",
             "SuppressEngineReduce": true,
             "PixelFormat": "R9G9B9E5",
             "DiscardAlpha": true,
-            "MinTextureSize": 256,
-            "MaxTextureSize": 256,
+            "MinTextureSize": 512,
+            "MaxTextureSize": 512,
             "IsPowerOf2": true,
             "CubemapSettings": {
                 "Filter": "GGX",
@@ -32,19 +31,18 @@
         },
         "PlatformsPresets": {
             "android": {
-                "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
-                "Name": "IBLSpecular",
+                "UUID": "{B66395E1-8D0E-4159-989B-FC2B9F091B75}",
+                "Name": "IBLSpecularHigh",
                 "FileMasks": [
-                    "_iblspecularcm",
-                    "_iblspecularcm256"
+                    "_iblspecularcm512"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true,
                 "PixelFormat": "R9G9B9E5",
                 "DiscardAlpha": true,
-                "MinTextureSize": 256,
-                "MaxTextureSize": 256,
+                "MinTextureSize": 512,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "CubemapSettings": {
                     "Filter": "GGX",
@@ -58,19 +56,18 @@
                 }
             },
             "ios": {
-                "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
-                "Name": "IBLSpecular",
+                "UUID": "{B66395E1-8D0E-4159-989B-FC2B9F091B75}",
+                "Name": "IBLSpecularHigh",
                 "FileMasks": [
-                    "_iblspecularcm",
-                    "_iblspecularcm256"
+                    "_iblspecularcm512"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true,
                 "PixelFormat": "R9G9B9E5",
                 "DiscardAlpha": true,
-                "MinTextureSize": 256,
-                "MaxTextureSize": 256,
+                "MinTextureSize": 512,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "CubemapSettings": {
                     "Filter": "GGX",
@@ -84,19 +81,18 @@
                 }
             },
             "mac": {
-                "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
-                "Name": "IBLSpecular",
+                "UUID": "{B66395E1-8D0E-4159-989B-FC2B9F091B75}",
+                "Name": "IBLSpecularHigh",
                 "FileMasks": [
-                    "_iblspecularcm",
-                    "_iblspecularcm256"
+                    "_iblspecularcm512"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true,
                 "PixelFormat": "R9G9B9E5",
                 "DiscardAlpha": true,
-                "MinTextureSize": 256,
-                "MaxTextureSize": 256,
+                "MinTextureSize": 512,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "CubemapSettings": {
                     "Filter": "GGX",
@@ -110,19 +106,18 @@
                 }
             },
             "provo": {
-                "UUID": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
-                "Name": "IBLSpecular",
+                "UUID": "{B66395E1-8D0E-4159-989B-FC2B9F091B75}",
+                "Name": "IBLSpecularHigh",
                 "FileMasks": [
-                    "_iblspecularcm",
-                    "_iblspecularcm256"
+                    "_iblspecularcm512"
                 ],
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "SuppressEngineReduce": true,
                 "PixelFormat": "R9G9B9E5",
                 "DiscardAlpha": true,
-                "MinTextureSize": 256,
-                "MaxTextureSize": 256,
+                "MinTextureSize": 512,
+                "MaxTextureSize": 512,
                 "IsPowerOf2": true,
                 "CubemapSettings": {
                     "Filter": "GGX",
