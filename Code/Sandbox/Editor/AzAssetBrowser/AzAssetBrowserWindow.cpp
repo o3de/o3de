@@ -74,9 +74,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
 
-    namespace AB = AzToolsFramework::AssetBrowser;
+    namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
-    AB::AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AB::AssetBrowserComponentRequests::GetAssetBrowserModel);
+    AzAssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AzAssetBrowser::AssetBrowserComponentRequests::GetAssetBrowserModel);
     AZ_Assert(m_assetBrowserModel, "Failed to get filebrowser model");
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
@@ -90,34 +90,34 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setSourceModel(m_filterModel.data());
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
         connect(
-            m_filterModel.data(), &AB::AssetBrowserFilterModel::filterChanged, m_tableModel.data(),
-            &AB::AssetBrowserTableModel::UpdateTableModelMaps);
+            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, m_tableModel.data(),
+            &AzAssetBrowser::AssetBrowserTableModel::UpdateTableModelMaps);
         connect(
-            m_ui->m_assetBrowserTableViewWidget, &AB::AssetBrowserTableView::selectionChangedSignal, this,
+            m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
             &AzAssetBrowserWindow::SelectionChangedSlot);
         connect(
             m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this,
             &AzAssetBrowserWindow::DoubleClickedItemTableModel);
         connect(
-            m_ui->m_assetBrowserTableViewWidget, &AB::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
-            &AB::SearchWidget::ClearStringFilter);
+            m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
+            &AzAssetBrowser::SearchWidget::ClearStringFilter);
         connect(
-            m_ui->m_assetBrowserTableViewWidget, &AB::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
-            &AB::SearchWidget::ClearTypeFilter);
+            m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
+            &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
 
-        connect(m_filterModel.data(), &AB::AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
+        connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
         connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::LockToDefaultView);
     }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
 
     connect(
-        m_ui->m_searchWidget->GetFilter().data(), &AB::AssetBrowserEntryFilter::updatedSignal, m_filterModel.data(),
-        &AB::AssetBrowserFilterModel::filterUpdatedSlot);
+        m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal, m_filterModel.data(),
+        &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
     connect(
-        m_filterModel.data(), &AB::AssetBrowserFilterModel::filterChanged, this,
+        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
         [this]()
         {
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
@@ -126,17 +126,17 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         });
 
     connect(
-        m_ui->m_assetBrowserTreeViewWidget, &AB::AssetBrowserTreeView::selectionChangedSignal, this,
+        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::selectionChangedSignal, this,
         &AzAssetBrowserWindow::SelectionChangedSlot);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
     connect(
-        m_ui->m_assetBrowserTreeViewWidget, &AB::AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget,
-        &AB::SearchWidget::ClearStringFilter);
+        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearStringFilter, m_ui->m_searchWidget,
+        &AzAssetBrowser::SearchWidget::ClearStringFilter);
     connect(
-        m_ui->m_assetBrowserTreeViewWidget, &AB::AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget,
-        &AB::SearchWidget::ClearTypeFilter);
+        m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget,
+        &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }
@@ -232,21 +232,21 @@ void AzAssetBrowserWindow::SelectionChangedSlot(const QItemSelection& /*selected
 // just becuase on some OS clicking once is activation.
 void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex& element)
 {
-    namespace AB = AzToolsFramework::AssetBrowser;
+    namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
     
     // assumption: Double clicking an item selects it before telling us we double clicked it.
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
-    for (const AB::AssetBrowserEntry* entry : selectedAssets)
+    for (const AzAssetBrowser::AssetBrowserEntry* entry : selectedAssets)
     {
         AZ::Data::AssetId assetIdToOpen;
         AZStd::string fullFilePath;
 
-        if (const AB::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AB::ProductAssetBrowserEntry*>(entry))
+        if (const AzAssetBrowser::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AzAssetBrowser::ProductAssetBrowserEntry*>(entry))
         {
             assetIdToOpen = productEntry->GetAssetId();
             fullFilePath = entry->GetFullPath();
         }
-        else if (const AB::SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const AB::SourceAssetBrowserEntry*>(entry))
+        else if (const AzAssetBrowser::SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const AzAssetBrowser::SourceAssetBrowserEntry*>(entry))
         {
             // manufacture an empty AssetID with the source's UUID
             assetIdToOpen = AZ::Data::AssetId(sourceEntry->GetSourceUuid(), 0);
@@ -256,8 +256,8 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
         bool handledBySomeone = false;
         if (assetIdToOpen.IsValid())
         {
-            AB::AssetBrowserInteractionNotificationBus::Broadcast(
-                &AB::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
+            AzAssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                &AzAssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
         }
 
         if (!handledBySomeone && !fullFilePath.empty())
@@ -269,20 +269,19 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
 
 void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QModelIndex& element)
 {
-    namespace AB = AzToolsFramework::AssetBrowser;
-    // assumption: Double clicking an item selects it before telling us we double clicked it.
+    namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
     const auto& selectedAssets = m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
-    for (const AB::AssetBrowserEntry* entry : selectedAssets)
+    for (const AzAssetBrowser::AssetBrowserEntry* entry : selectedAssets)
     {
         AZ::Data::AssetId assetIdToOpen;
         AZStd::string fullFilePath;
 
-        if (const AB::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AB::ProductAssetBrowserEntry*>(entry))
+        if (const AzAssetBrowser::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AzAssetBrowser::ProductAssetBrowserEntry*>(entry))
         {
             assetIdToOpen = productEntry->GetAssetId();
             fullFilePath = entry->GetFullPath();
         }
-        else if (const AB::SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const AB::SourceAssetBrowserEntry*>(entry))
+        else if (const AzAssetBrowser::SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const AzAssetBrowser::SourceAssetBrowserEntry*>(entry))
         {
             // manufacture an empty AssetID with the source's UUID
             assetIdToOpen = AZ::Data::AssetId(sourceEntry->GetSourceUuid(), 0);
@@ -292,8 +291,8 @@ void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QM
         bool handledBySomeone = false;
         if (assetIdToOpen.IsValid())
         {
-            AB::AssetBrowserInteractionNotificationBus::Broadcast(
-                &AB::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
+            AzAssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                &AzAssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
         }
 
         if (!handledBySomeone && !fullFilePath.empty())

@@ -95,13 +95,13 @@ namespace AzToolsFramework
                     remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
                     remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
                 }
-                QString displayString = qvariant_cast<QString>(index.data(index.column()));
+                QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                    : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
                 style->drawItemText(
                     painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
-                    index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
-                        ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
-                        : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path))),
+                    displayString,
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }
