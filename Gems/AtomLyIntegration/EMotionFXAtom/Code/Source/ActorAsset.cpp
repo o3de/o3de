@@ -595,7 +595,7 @@ namespace AZ
             // Create a buffer and populate it with the transforms
             RPI::CommonBufferDescriptor descriptor;
             descriptor.m_bufferData = boneTransforms.data();
-            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s_%s", actorInstance->GetActor()->GetName(), Uuid::CreateRandom().ToString<AZStd::string>().c_str());
+            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s", actorInstance->GetActor()->GetName());
             descriptor.m_byteCount = boneTransforms.size() * sizeof(float);
             descriptor.m_elementSize = floatsPerBone * sizeof(float);
             descriptor.m_poolType = RPI::CommonBufferPoolType::ReadOnly;

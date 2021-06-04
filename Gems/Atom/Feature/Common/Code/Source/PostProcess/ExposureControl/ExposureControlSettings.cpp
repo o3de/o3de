@@ -100,16 +100,9 @@ namespace AZ
 
         bool ExposureControlSettings::InitCommonBuffer()
         {
-            // generate a UUID for the buffer name to keep it unique
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-
-            AZStd::string bufferName = AZStd::string::format("%s_%s", ExposureControlBufferBaseName, uuidString.c_str());
-
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::Constant;
-            desc.m_bufferName = bufferName;
+            desc.m_bufferName = ExposureControlBufferName;
             desc.m_byteCount = sizeof(ShaderParameters);
             desc.m_elementSize = sizeof(ShaderParameters);
 
@@ -117,7 +110,7 @@ namespace AZ
 
             if (!m_buffer)
             {
-                AZ_Assert(false, "Failed to create the RPI::Buffer[%s] which is used for the exposure control feature.", bufferName.c_str());
+                AZ_Assert(false, "Failed to create the RPI::Buffer[%s] which is used for the exposure control feature.", desc.m_bufferName.c_str());
                 return false;
             }
 
