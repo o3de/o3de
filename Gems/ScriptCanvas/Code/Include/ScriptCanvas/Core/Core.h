@@ -250,7 +250,6 @@ namespace ScriptCanvas
     };
 
     using ScriptCanvasSettingsRequestBus = AZ::EBus<ScriptCanvasSettingsRequests>;
-
 }
 
 namespace AZStd
