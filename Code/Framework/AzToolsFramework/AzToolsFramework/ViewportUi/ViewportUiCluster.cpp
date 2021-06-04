@@ -110,14 +110,16 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiCluster::SetButtonLocked(const ButtonId buttonId, const bool isLocked)
     {
-        const AZStd::vector<Button*> buttons = m_buttonGroup->GetButtons();
+        const auto& buttons = m_buttonGroup->GetButtons();
 
         // unlocked previously locked button
         if (m_lockedButtonId.has_value() && isLocked)
         {
-            auto foundLocked = [this](Button* button) { return (button->m_buttonId == m_lockedButtonId); };
-            if (auto lockedButtonIt = AZStd::find_if(buttons.begin(), buttons.end(), foundLocked); lockedButtonIt != buttons.end())
+            // find the button to extract the old icon (without overlay)
+            auto findLocked = [this](const Button* button) { return (button->m_buttonId == m_lockedButtonId); };
+            if (auto lockedButtonIt = AZStd::find_if(buttons.begin(), buttons.end(), findLocked); lockedButtonIt != buttons.end())
             {
+                // get the action corresponding to the lockedButtonId 
                 if (auto actionEntry = m_buttonActionMap.find(m_lockedButtonId.value()); actionEntry != m_buttonActionMap.end())
                 {
                     // remove the overlay

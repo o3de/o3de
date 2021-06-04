@@ -42,9 +42,6 @@
 #include <QApplication>
 #include <QRect>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorTransformComponentSelection, AZ::SystemAllocator, 0)
@@ -2623,7 +2620,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    m_spaceCluster.m_spaceLock = ReferenceFrame::Local;         
+                    m_spaceCluster.m_spaceLock = ReferenceFrame::Local;
                 }
             }
             else if (buttonId == m_spaceCluster.m_parentButtonId)
@@ -2650,10 +2647,9 @@ namespace AzToolsFramework
                     m_spaceCluster.m_spaceLock = ReferenceFrame::World;
                 }
             }
-            bool isLocked = m_spaceCluster.m_spaceLock ? true : false;
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonLocked,
-                m_spaceCluster.m_spaceClusterId, buttonId, isLocked);
+                m_spaceCluster.m_spaceClusterId, buttonId, m_spaceCluster.m_spaceLock.has_value());
         };
 
         m_spaceCluster.m_spaceSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
