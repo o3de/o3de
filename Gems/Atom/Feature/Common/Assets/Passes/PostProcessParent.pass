@@ -44,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "LightAdaptation",
-                        "Attachment": "Output"
+                        "Pass": "ContrastAdaptiveSharpeningPass",
+                        "Attachment": "OutputColor"
                     }
                 },
                 {
@@ -163,6 +163,20 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ContrastAdaptiveSharpeningPass",
+                    "TemplateName": "ContrastAdaptiveSharpeningTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "LightAdaptation",
+                                "Attachment": "Output"
                             }
                         }
                     ]
