@@ -106,7 +106,6 @@ namespace AZ
 
             void HairSkinningComputePass::FrameBeginInternal(FramePrepareParams params)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 if (m_buildShaderAndData)
                 {   // Shader rebuild is required - the async callback did not succeed (missing FP?)
                     if (m_featureProcessor || AcquireFeatureProcessor())
@@ -120,6 +119,16 @@ namespace AZ
                     // Clear the dispatch items. They are invalid and will be re-populated next frame
                     m_dispatchItems.clear();
                 }
+
+                // This will bind the Per Object resources since the binding is triggering
+                // the RHI validation that will use attachment for its validation.  The attachments
+                // are invalidated outside the render begin / end frame.
+                for (HairRenderObject* newObject : m_newRenderObjects)
+                {
+                    newObject->BindDynamicSrgResources();
+                }
+                // Clear the objects, hence this is only done once per object/shader lifetime
+                m_newRenderObjects.clear();
 
                 RPI::ComputePass::FrameBeginInternal(params);
             }
@@ -148,6 +157,7 @@ namespace AZ
 
             bool HairSkinningComputePass::BuildDispatchItem(HairRenderObject* hairObject, DispatchLevel dispatchLevel)
             {
+                m_newRenderObjects.insert(hairObject);
                 return hairObject->BuildDispatchItem(m_shader.get(), dispatchLevel);
             }
 
@@ -184,7 +194,6 @@ namespace AZ
 
             void HairSkinningComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 if (m_buildShaderAndData)
                 {   // Protect against shader and data async change that were not carried out
                     m_dispatchItems.clear();

@@ -109,6 +109,10 @@ namespace AZ
                 //! list of dispatch items, each represents a single hair object that
                 //!  will be used by the skinning compute shader.
                 AZStd::unordered_set<const RHI::DispatchItem*> m_dispatchItems;
+
+                //! List of new render objects that their Per Object (dynamic) Srg should be bound
+                //!  to the resources.  Done once per pass per object only.
+                AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
             };
 
         }   // namespace Hair
