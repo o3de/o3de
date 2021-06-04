@@ -393,6 +393,7 @@ namespace AZ
                         uint64_t m_parentEnabled : 1;
 
                         uint64_t m_initialized : 1;
+                        uint64_t m_alreadyCreated : 1;
 
                         uint64_t m_partOfHierarchy : 1;
                         uint64_t m_hasDrawListTag : 1;

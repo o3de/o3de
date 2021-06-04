@@ -28,6 +28,8 @@ namespace AZ
         LuxCoreTexturePass::LuxCoreTexturePass(const RPI::PassDescriptor& descriptor)
             : ParentPass(descriptor)
         {
+            m_flags.m_alreadyCreated = false;
+
             RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
 
             // Create render target pass

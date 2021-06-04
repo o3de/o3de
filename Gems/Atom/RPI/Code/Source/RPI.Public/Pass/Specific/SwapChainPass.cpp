@@ -26,6 +26,8 @@ namespace AZ
             , m_windowContext(windowContext)
             , m_childTemplateName(childTemplateName)
         {
+            m_flags.m_alreadyCreated = false;
+
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             // Create child pass

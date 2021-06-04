@@ -242,19 +242,22 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
-            if(!m_initializePassList.empty())
+            while (!m_initializePassList.empty())
             {
+                AZStd::vector< Ptr<Pass> > initListCopy = m_initializePassList;
+                m_initializePassList.clear();
+
                 // Erase passes which were removed from pass tree already (which parent is empty)
-                auto unused = AZStd::remove_if(m_initializePassList.begin(), m_initializePassList.end(),
+                auto unused = AZStd::remove_if(initListCopy.begin(), initListCopy.end(),
                     [](const RHI::Ptr<Pass>& currentPass)
                     {
                         return !currentPass->m_flags.m_partOfHierarchy;
                     });
-                m_initializePassList.erase(unused, m_initializePassList.end());
+                initListCopy.erase(unused, initListCopy.end());
 
-                SortPassListAscending(m_initializePassList);
+                SortPassListAscending(initListCopy);
 
-                for (const Ptr<Pass>& pass : m_initializePassList)
+                for (const Ptr<Pass>& pass : initListCopy)
                 {
                     pass->Initialize();
                 }

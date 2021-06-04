@@ -46,6 +46,8 @@ namespace AZ
         DisplayMapperPass::DisplayMapperPass(const RPI::PassDescriptor& descriptor)
             : RPI::ParentPass(descriptor)
         {
+            m_flags.m_alreadyCreated = false;
+
             AzFramework::NativeWindowHandle windowHandle = nullptr;
             AzFramework::WindowSystemRequestBus::BroadcastResult(
                 windowHandle,

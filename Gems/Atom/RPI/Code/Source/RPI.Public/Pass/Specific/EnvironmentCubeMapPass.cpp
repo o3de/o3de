@@ -37,6 +37,8 @@ namespace AZ
         EnvironmentCubeMapPass::EnvironmentCubeMapPass(const PassDescriptor& passDescriptor)
             : ParentPass(passDescriptor)
         {
+            m_flags.m_alreadyCreated = false;
+
             // load pass data
             const EnvironmentCubeMapPassData* passData = PassUtils::GetPassData<EnvironmentCubeMapPassData>(passDescriptor);
             if (passData == nullptr)

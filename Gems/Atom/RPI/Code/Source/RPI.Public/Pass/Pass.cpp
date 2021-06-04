@@ -151,6 +151,7 @@ namespace AZ
         {
             AZ_RPI_PASS_ASSERT(m_parent != nullptr, "Trying to remove pass from parent but pointer to the parent pass is null.");
             m_parent->RemoveChild(Ptr<Pass>(this));
+            m_queueState = PassQueueState::NoQueue;
         }
 
         void Pass::OnOrphan()
@@ -358,7 +359,7 @@ namespace AZ
         void Pass::QueueForBuild()
         {
             // Don't queue if we're in building phase
-            if (PassSystemInterface::Get()->GetState() != PassSystemState::Building &&
+            if (m_state != PassState::Building &&
                 (m_queueState == PassQueueState::NoQueue || m_queueState == PassQueueState::QueuedForInitialization))
             {
                 PassSystemInterface::Get()->QueueForBuild(this);
@@ -374,7 +375,7 @@ namespace AZ
         void Pass::QueueForInitialization()
         {
             // Don't queue if we're in initialization phase
-            if (PassSystemInterface::Get()->GetState() != PassSystemState::Initializing && m_queueState == PassQueueState::NoQueue)
+            if (m_queueState == PassQueueState::NoQueue)
             {
                 PassSystemInterface::Get()->QueueForInitialization(this);
                 m_queueState = PassQueueState::QueuedForInitialization;
@@ -1086,11 +1087,12 @@ namespace AZ
 
         void Pass::Build()
         {
-            if (m_queueState != PassQueueState::QueuedForBuild || m_state != PassState::Resetting)
+            if (m_queueState != PassQueueState::QueuedForBuild || (m_state != PassState::Queued && m_state != PassState::Resetting))
             {
                 return;
             }
             m_state = PassState::Building;
+            m_queueState = PassQueueState::NoQueue;
 
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
@@ -1115,7 +1117,6 @@ namespace AZ
             UpdateAttachmentUsageIndices();
 
             // Queue for Initialization
-            m_queueState = PassQueueState::NoQueue;
             QueueForInitialization();
         }
 
@@ -1123,6 +1124,7 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
+            m_flags.m_alreadyCreated = false;
             m_importedAttachmentStore.clear();
             OnBuildFinishedInternal();
         }
@@ -1133,6 +1135,7 @@ namespace AZ
             {
                 return;
             }
+            m_queueState = PassQueueState::NoQueue;
 
             m_state = PassState::Initializing;
             InitializeInternal();

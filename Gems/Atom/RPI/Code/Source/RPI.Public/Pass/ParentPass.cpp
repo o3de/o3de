@@ -248,6 +248,12 @@ namespace AZ
 
         void ParentPass::CreateChildPasses()
         {
+            if (m_flags.m_alreadyCreated)
+            {
+                return;
+            }
+            m_flags.m_alreadyCreated = true;
+
             RemoveChildren();
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
