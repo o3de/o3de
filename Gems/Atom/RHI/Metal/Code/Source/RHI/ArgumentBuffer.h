@@ -119,8 +119,17 @@ namespace AZ
             using ResourceBindingsMap =  AZStd::unordered_map<AZ::Name, ResourceBindingsSet>;
             ResourceBindingsMap m_resourceBindings;
             
-            void ApplyUseResourceToCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingData) const;
-            void ApplyUseResourceToGraphic(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet) const;
+            static const int MaxEntriesInArgTable = 31;
+            struct MetalResourceArray
+            {
+                AZStd::array<id <MTLResource>, MaxEntriesInArgTable> m_resourceArray;
+                int m_resourceArrayLen = 0;
+            };
+            using ComputeResourcesToMakeResidentMap =  AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;
+            using GraphicsResourcesToMakeResidentMap =  AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, MetalResourceArray>;
+            
+            void ApplyUseResourceToCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingData, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
+            void ApplyUseResourceToGraphic(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
             //! Use visibility information to call UseResource on all resources for this Argument Buffer
             void ApplyUseResource(id<MTLCommandEncoder> encoder,
                                   const ResourceBindingsMap& resourceMap,
@@ -144,8 +153,6 @@ namespace AZ
 #endif
             
             ShaderResourceGroupPool* m_srgPool = nullptr;
-            
-            static const int MaxEntriesInArgTable = 31;
             NSCache* m_samplerCache;
         };
     }

@@ -70,6 +70,7 @@ namespace AZ
             
             m_srgVisibilities.resize(RHI::Limits::Pipeline::ShaderResourceGroupCountMax);
             m_srgResourcesVisibility.resize(RHI::Limits::Pipeline::ShaderResourceGroupCountMax);
+            m_srgResourcesVisibilityHash.resize(RHI::Limits::Pipeline::ShaderResourceGroupCountMax);
             for (uint32_t srgLayoutIdx = 0; srgLayoutIdx < groupLayoutCount; ++srgLayoutIdx)
             {
                 const RHI::ShaderResourceGroupLayout& srgLayout = *descriptor.GetShaderResourceGroupLayout(srgLayoutIdx);
@@ -111,6 +112,7 @@ namespace AZ
 
                 m_srgVisibilities[srgIndex] = mask;
                 m_srgResourcesVisibility[srgIndex] = srgVis;
+                m_srgResourcesVisibilityHash[srgIndex] = srgVis.GetHash();
             }           
             
             // Cache the inline constant size and slot index
@@ -141,6 +143,11 @@ namespace AZ
             return m_srgResourcesVisibility[index];
         }
 
+        const AZ::HashValue64 PipelineLayout::GetSrgResourcesVisibilityHash(uint32_t index) const
+        {
+            return m_srgResourcesVisibilityHash[index];
+        }
+    
         uint32_t PipelineLayout::GetRootConstantsSize() const
         {
             return m_rootConstantsSize;

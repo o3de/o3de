@@ -386,6 +386,11 @@ namespace AZ
     
         void ArgumentBuffer::AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
         {
+            
+            ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
+            GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
+            
+            //Cache the constant buffer associated with a srg
             if (m_constantBufferSize)
             {
                 uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgResourcesVisInfo.m_constantDataStageMask));
@@ -393,28 +398,19 @@ namespace AZ
                 {
                     if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
                     {
-                        [static_cast<id<MTLComputeCommandEncoder>>(commandEncoder) useResource:m_constantBuffer.GetGpuAddress<id<MTLBuffer>>()  usage:MTLResourceUsageRead];
+                        resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArray[resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArrayLen++] = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
                     }
                     else
                     {
                         MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
-                        [static_cast<id<MTLRenderCommandEncoder>>(commandEncoder) useResource:m_constantBuffer.GetGpuAddress<id<MTLBuffer>>()
-                                usage:MTLResourceUsageRead
-                                stages:mtlRenderStages];
+                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);
+                        resourcesToMakeResidentGraphics[key].m_resourceArray[resourcesToMakeResidentGraphics[key].m_resourceArrayLen++] = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
                     }
-                    
                 }
             }
-            ApplyUseResource(commandEncoder, m_resourceBindings, srgResourcesVisInfo);
-        }
-
-        void ArgumentBuffer::ApplyUseResource(id<MTLCommandEncoder> encoder,
-                              const ResourceBindingsMap& resourceMap,
-                              const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
-        {
-
-            CommandEncoderType encodeType = CommandEncoderType::Invalid;
-            for (const auto& it : resourceMap)
+            
+            //Cach all the resources within a srg that are used by the shader based on the visibility information
+            for (const auto& it : m_resourceBindings)
             {
                 //Extract the visibility mask for the give resource
                 auto visMaskIt = srgResourcesVisInfo.m_resourcesStageMask.find(it.first);
@@ -426,75 +422,50 @@ namespace AZ
                 {
                     if(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
                     {
-                        //Call UseResource on all resources for Compute stage
-                        ApplyUseResourceToCompute(encoder, it.second);
-                        encodeType = CommandEncoderType::Compute;
+                        ApplyUseResourceToCompute(commandEncoder, it.second, resourcesToMakeResidentCompute);
                     }
                     else
                     {
-                        //Call UseResource on all resources for Vertex and Fragment stages
                         AZ_Assert(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment), "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
-                        ApplyUseResourceToGraphic(encoder, visMaskIt->second, it.second);
-                        encodeType = CommandEncoderType::Render;
+                        ApplyUseResourceToGraphic(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }
                 }
             }
-        }
-    
-        void ArgumentBuffer::ApplyUseResourceToCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingDataSet) const
-        {
-            for (const auto& resourceBindingData : resourceBindingDataSet)
-            {
-                ResourceType rescType = resourceBindingData.m_resourcPtr->GetResourceType();
-                switch(rescType)
-                {
-                    case ResourceType::MtlTextureType:
-                    {
-                        MTLResourceUsage resourceUsage = GetImageResourceUsage(resourceBindingData.m_imageAccess);
-                        [static_cast<id<MTLComputeCommandEncoder>>(encoder) useResource:resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLTexture>>() usage:resourceUsage];
-
-                        break;
-                    }
-                    case ResourceType::MtlBufferType:
-                    {
-                        MTLResourceUsage resourceUsage = GetBufferResourceUsage(resourceBindingData.m_bufferAccess);
-                        [static_cast<id<MTLComputeCommandEncoder>>(encoder) useResource:resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLBuffer>>() usage:resourceUsage];
-
-                        break;
-                    }
-                    default:
-                    {
-                        AZ_Assert(false, "Undefined Resource type");
-                    }
-                }
-            }
-        }
-
-        void ArgumentBuffer::ApplyUseResourceToGraphic(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet) const
-        {
             
-            MTLRenderStages mtlRenderStages = GetRenderStages(visShaderMask);
+            //Call UseResource on all resources for Compute stage
+            for (const auto& key : resourcesToMakeResidentCompute)
+            {
+                [static_cast<id<MTLComputeCommandEncoder>>(commandEncoder) useResources: key.second.m_resourceArray.data()
+                                                                                  count: key.second.m_resourceArrayLen
+                                                                                  usage: key.first];
+            }
+            
+            //Call UseResource on all resources for Vertex and Fragment stages
+            for (const auto& key : resourcesToMakeResidentGraphics)
+            {
+                [static_cast<id<MTLRenderCommandEncoder>>(commandEncoder) useResources: key.second.m_resourceArray.data()
+                                                                                 count: key.second.m_resourceArrayLen
+                                                                                 usage: key.first.first
+                                                                                stages: key.first.second];
+            }
+        }
+
+        void ArgumentBuffer::ApplyUseResourceToCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingDataSet, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
+        {
             for (const auto& resourceBindingData : resourceBindingDataSet)
             {
                 ResourceType rescType = resourceBindingData.m_resourcPtr->GetResourceType();
+                MTLResourceUsage resourceUsage = MTLResourceUsageRead;
                 switch(rescType)
                 {
                     case ResourceType::MtlTextureType:
                     {
-                        MTLResourceUsage resourceUsage = GetImageResourceUsage(resourceBindingData.m_imageAccess);
-                        [static_cast<id<MTLRenderCommandEncoder>>(encoder) useResource:resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLTexture>>()
-                                                                 usage:resourceUsage
-                                                                 stages:mtlRenderStages];
-
+                        resourceUsage |= GetImageResourceUsage(resourceBindingData.m_imageAccess);
                         break;
                     }
                     case ResourceType::MtlBufferType:
                     {
-                        MTLResourceUsage resourceUsage = GetBufferResourceUsage(resourceBindingData.m_bufferAccess);
-                        [static_cast<id<MTLRenderCommandEncoder>>(encoder) useResource:resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLBuffer>>()
-                                                                 usage:resourceUsage
-                                                                 stages:mtlRenderStages];
-
+                        resourceUsage |= GetBufferResourceUsage(resourceBindingData.m_bufferAccess);
                         break;
                     }
                     default:
@@ -502,8 +473,38 @@ namespace AZ
                         AZ_Assert(false, "Undefined Resource type");
                     }
                 }
+                resourcesToMakeResidentMap[resourceUsage].m_resourceArray[resourcesToMakeResidentMap[resourceUsage].m_resourceArrayLen++] = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
             }
         }
- 
+
+        void ArgumentBuffer::ApplyUseResourceToGraphic(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
+        {
+   
+            MTLRenderStages mtlRenderStages = GetRenderStages(visShaderMask);
+            MTLResourceUsage resourceUsage = MTLResourceUsageRead;
+            for (const auto& resourceBindingData : resourceBindingDataSet)
+            {
+                ResourceType rescType = resourceBindingData.m_resourcPtr->GetResourceType();
+                switch(rescType)
+                {
+                    case ResourceType::MtlTextureType:
+                    {
+                        resourceUsage |= GetImageResourceUsage(resourceBindingData.m_imageAccess);
+                        break;
+                    }
+                    case ResourceType::MtlBufferType:
+                    {
+                        resourceUsage |= GetBufferResourceUsage(resourceBindingData.m_bufferAccess);
+                        break;
+                    }
+                    default:
+                    {
+                        AZ_Assert(false, "Undefined Resource type");
+                    }
+                }
+                AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(resourceUsage, mtlRenderStages);
+                resourcesToMakeResidentMap[key].m_resourceArray[resourcesToMakeResidentMap[key].m_resourceArrayLen++] = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
+            }
+        }
     }
 }

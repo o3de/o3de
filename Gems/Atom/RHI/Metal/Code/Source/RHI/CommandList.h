@@ -99,6 +99,7 @@ namespace AZ
             {
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgsByIndex;
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgsBySlot;
+                AZStd::array<AZ::HashValue64, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgVisHashByIndex;
             };
             
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);            
