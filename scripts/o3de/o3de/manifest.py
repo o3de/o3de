@@ -97,6 +97,12 @@ def get_o3de_logs_folder() -> pathlib.Path:
     return logs_folder
 
 
+def get_o3de_third_party_folder() -> pathlib.Path:
+    third_party_folder = get_o3de_folder() / '3rdParty'
+    third_party_folder.mkdir(parents=True, exist_ok=True)
+    return third_party_folder
+
+
 # o3de manifest file methods
 def get_o3de_manifest() -> pathlib.Path:
     manifest_path = get_o3de_folder() / 'o3de_manifest.json'
@@ -113,6 +119,7 @@ def get_o3de_manifest() -> pathlib.Path:
         default_gems_folder = get_o3de_gems_folder()
         default_templates_folder = get_o3de_templates_folder()
         default_restricted_folder = get_o3de_restricted_folder()
+        default_third_party_folder = get_o3de_third_party_folder()
 
         default_projects_restricted_folder = default_projects_folder / 'Restricted'
         default_projects_restricted_folder.mkdir(parents=True, exist_ok=True)
@@ -129,6 +136,7 @@ def get_o3de_manifest() -> pathlib.Path:
         json_data.update({'default_gems_folder': default_gems_folder.as_posix()})
         json_data.update({'default_templates_folder': default_templates_folder.as_posix()})
         json_data.update({'default_restricted_folder': default_restricted_folder.as_posix()})
+        json_data.update({'default_third_party_folder': default_third_party_folder.as_posix()})
 
         json_data.update({'projects': []})
         json_data.update({'external_subdirectories': []})
