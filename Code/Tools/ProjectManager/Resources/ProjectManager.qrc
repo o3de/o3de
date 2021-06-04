@@ -28,5 +28,8 @@
         <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
         <file>ArrowDownLine.svg</file>
         <file>ArrowUpLine.svg</file>
+        <file>CarrotArrowDown.svg</file>
+        <file>Summary.svg</file>
+        <file>WindowClose.svg</file>
     </qresource>
 </RCC>

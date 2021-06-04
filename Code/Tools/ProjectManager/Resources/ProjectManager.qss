@@ -115,7 +115,7 @@ QTabBar::tab:pressed
 /************** General (Modal windows) **************/
 
 #header {
-	background-color:#111111;
+    background-color:#111111;
     min-height:80px;
     max-height:80px;
 }
@@ -170,8 +170,8 @@ QTabBar::tab:pressed
 
 #footer > QPushButton {
     qproperty-flat: true;
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #0095f2, stop: 1.0 #1e70eb);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
     border-radius: 3px;
     min-height: 28px;
     max-height: 28px;
@@ -179,26 +179,26 @@ QTabBar::tab:pressed
     margin-right:30px;
 }
 #footer > QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
 }
 #footer > QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #0085e2, stop: 1.0 #0e60db);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0085e2, stop: 1.0 #0e60db);
 }
 
 #footer > QPushButton[secondary="true"] {
     margin-right: 10px;
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #888888, stop: 1.0 #555555);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
 }
 #footer > QPushButton[secondary="true"]:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #999999, stop: 1.0 #666666);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
 }
 #footer > QPushButton[secondary="true"]:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #555555, stop: 1.0 #777777);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
 }
 
 /************** Project Settings **************/
@@ -405,6 +405,20 @@ QTabBar::tab:pressed
 
 #GemCatalogTitle {
     font-size: 18px;
+}
+
+#GemCatalogCart {
+    background-color: #555555;
+}
+
+#GemCatalogCartCountLabel {
+    font-size: 12px;
+    background-color: #4285F4;
+    border-radius: 3px;
+}
+
+#GemCatalogCartOverlaySectionLabel {
+    font-weight: 600;
 }
 
 /************** Gem Catalog (Inspector) **************/
