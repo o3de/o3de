@@ -93,6 +93,7 @@ namespace AzToolsFramework
             void Reset();
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
+            Instance& AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias instanceAlias);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
 
             /**
@@ -173,6 +174,8 @@ namespace AzToolsFramework
             static EntityAlias GenerateEntityAlias();
             AliasPath GetAbsoluteInstanceAliasPath() const;
 
+            static InstanceAlias GenerateInstanceAlias();
+
         protected:
             /**
             * Gets the entities owned by this instance
@@ -188,8 +191,6 @@ namespace AzToolsFramework
 
             bool RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const EntityAlias& entityAlias);
-
-            static InstanceAlias GenerateInstanceAlias();
 
             // Provide access to private data members in the serializer
             friend class JsonInstanceSerializer;

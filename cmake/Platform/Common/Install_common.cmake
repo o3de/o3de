@@ -441,7 +441,6 @@ function(ly_setup_others)
 
     install(DIRECTORY
         ${LY_ROOT_FOLDER}/scripts/bundler
-        ${LY_ROOT_FOLDER}/scripts/project_manager
         ${LY_ROOT_FOLDER}/scripts/o3de
         DESTINATION ./scripts
         PATTERN "__pycache__" EXCLUDE

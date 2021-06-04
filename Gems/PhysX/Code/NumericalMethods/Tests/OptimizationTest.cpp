@@ -158,12 +158,12 @@ namespace NumericalMethods::Optimization
         double f_x0 = f_alpha0;
         double df_x0 = df_alpha0;
         LineSearchResult lineSearchResult = SelectStepSizeFromInterval(alpha0, alpha1, f_alpha0, f_alpha1, df_alpha0,
-            testFunctionRosenbrock, x0, searchDirection, f_x0, df_x0, c1, c2);
+            testFunctionRosenbrock, x0, searchDirection, f_x0, df_x0, WolfeConditionsC1, WolfeConditionsC2);
 
         EXPECT_TRUE(lineSearchResult.m_outcome == LineSearchOutcome::Success);
         // check that the Wolfe conditions are satisfied by the returned step size
-        EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + c1 * df_x0 * lineSearchResult.m_stepSize);
-        EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -c2 * df_x0);
+        EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + WolfeConditionsC1 * df_x0 * lineSearchResult.m_stepSize);
+        EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -WolfeConditionsC2 * df_x0);
     }
 
     TEST(OptimizationTest, LineSearch_VariousSearchDirections_SatisfiesWolfeCondition)
@@ -180,8 +180,8 @@ namespace NumericalMethods::Optimization
 
             EXPECT_TRUE(lineSearchResult.m_outcome == LineSearchOutcome::Success);
             // check that the Wolfe conditions are satisfied by the returned step size
-            EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + c1 * df_x0 * lineSearchResult.m_stepSize);
-            EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -c2 * df_x0);
+            EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + WolfeConditionsC1 * df_x0 * lineSearchResult.m_stepSize);
+            EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -WolfeConditionsC2 * df_x0);
         }
     }
 

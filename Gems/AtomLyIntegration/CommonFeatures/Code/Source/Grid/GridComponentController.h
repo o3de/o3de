@@ -46,6 +46,10 @@ namespace AZ
             void SetConfiguration(const GridComponentConfig& config);
             const GridComponentConfig& GetConfiguration() const;
 
+            static constexpr float MinGridSize = 0.0f;
+            static constexpr float MaxGridSize = 1000000.0f;
+            static constexpr float MinSpacing = 0.01f;
+
         private:
             AZ_DISABLE_COPY(GridComponentController);
 
