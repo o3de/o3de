@@ -124,4 +124,15 @@ namespace AzToolsFramework
         
         return cameraState;
     }
+
+    float GetScreenDisplayScaling(const int viewportId)
+    {
+        float scaling = 1.0f;
+        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            scaling, viewportId,
+            &ViewportInteraction::ViewportInteractionRequestBus::Events::DeviceScalingFactor);
+
+        return scaling;
+    }
+
 } // namespace AzToolsFramework

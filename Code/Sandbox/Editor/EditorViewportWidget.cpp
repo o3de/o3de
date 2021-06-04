@@ -1233,7 +1233,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
         auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
         controller->SetCameraListBuilderCallback(
-            [](AzFramework::Cameras& cameras)
+            [id](AzFramework::Cameras& cameras)
             {
                 auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
                 auto firstPersonPanCamera =
@@ -1243,17 +1243,17 @@ void EditorViewportWidget::SetViewportId(int id)
 
                 auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
                 orbitCamera->SetLookAtFn(
-                    [](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
+                    [id](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
                     {
-                        AZStd::optional<AZ::Transform> manipulatorTransform;
-                        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-                            manipulatorTransform, AzToolsFramework::GetEntityContextId(),
-                            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+                        AZStd::optional<AZ::Vector3> lookAtAfterInterpolation;
+                        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+                            lookAtAfterInterpolation, id,
+                            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
 
-                        // initially attempt to use manipulator transform if one exists (there is a selection)
-                        if (manipulatorTransform)
+                        // initially attempt to use the last set look at point after an interpolation has finished
+                        if (lookAtAfterInterpolation.has_value())
                         {
-                            return manipulatorTransform->GetTranslation();
+                            return *lookAtAfterInterpolation;
                         }
 
                         const float RayDistance = 1000.0f;
@@ -2887,9 +2887,12 @@ void EditorViewportWidget::UpdateCameraFromViewportContext()
     AZ::Matrix3x4 matrix;
     matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
     auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
+
+    m_updatingCameraPosition = true;
     SetViewTM(m);
     SetFOV(cameraState.m_fovOrZoom);
     m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+    m_updatingCameraPosition = false;
 }
 
 void EditorViewportWidget::SetAsActiveViewport()
