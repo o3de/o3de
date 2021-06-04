@@ -112,7 +112,7 @@ namespace UnitTest
 
         // callback to update the manipulator's current position
         manipulator->InstallMouseMoveCallback(
-            [manipulator](const Manipulator::Action& action)
+            [manipulator](const typename Manipulator::Action& action)
             {
                 manipulator->SetLocalPosition(action.LocalPosition());
             });
