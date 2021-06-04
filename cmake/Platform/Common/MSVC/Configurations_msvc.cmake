@@ -71,7 +71,6 @@ ly_append_configurations_options(
         /wd4324 # structure was padded due to alignment specifier
         /wd4366 # the result of unary operator may be unaligned
         /wd4389 # comparison, signed/unsigned mismatch
-        /wd4436 # the result of unary operator may be unaligned
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
