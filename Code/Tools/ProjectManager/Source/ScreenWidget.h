@@ -13,7 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
-#include <BuildProjectInfo.h>
+#include <ProjectInfo.h>
 
 #include <QWidget>
 #include <QStyleOption>
@@ -62,7 +62,7 @@ namespace O3DE::ProjectManager
         void GotoPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
         void NotifyCurrentProject(const QString& projectPath);
-        void NotifyBuildProject(const BuildProjectInfo& buildProjectInfo);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
 
     };
 

@@ -194,7 +194,7 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool IsVS2019Installed()
+        static bool IsVS2019Installed_internal()
         {
             QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
             QString programFilesPath = environment.value("ProgramFiles(x86)");
@@ -208,16 +208,8 @@ namespace O3DE::ProjectManager
 
                 vsWhereProcess.start(
                     vsWherePath,
-                    QStringList
-                    {
-                        "-version",
-                        "16.0",
-                        "-latest",
-                        "-requires",
-                        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-                        "-property",
-                        "isComplete"
-                    });
+                    QStringList{ "-version", "16.0", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                                 "-property", "isComplete" });
 
                 if (!vsWhereProcess.waitForStarted())
                 {
@@ -225,7 +217,8 @@ namespace O3DE::ProjectManager
                 }
 
                 while (vsWhereProcess.waitForReadyRead())
-                {}
+                {
+                }
 
                 QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
                 if (vsWhereOutput.startsWith("1"))
@@ -235,6 +228,13 @@ namespace O3DE::ProjectManager
             }
 
             return false;
+        }
+
+        bool IsVS2019Installed()
+        {
+            static bool vs2019Installed = IsVS2019Installed_internal();
+
+            return vs2019Installed;
         }
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen)

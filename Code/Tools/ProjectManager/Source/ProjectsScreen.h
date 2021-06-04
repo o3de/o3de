@@ -13,7 +13,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
-#include <BuildProjectInfo.h>
 #include <ProjectInfo.h>
 
 #include <QQueue>
@@ -53,7 +52,7 @@ namespace O3DE::ProjectManager
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
 
-        void QueueBuildProject(const BuildProjectInfo& buildProjectInfo);
+        void QueueBuildProject(const ProjectInfo& projectInfo);
         void ProjectBuildDone();
 
         void paintEvent(QPaintEvent* event) override;
@@ -65,7 +64,7 @@ namespace O3DE::ProjectManager
         void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
 
-        void StartProjectBuild(const BuildProjectInfo& buildProjectInfo);
+        void StartProjectBuild(const ProjectInfo& projectInfo);
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
@@ -73,7 +72,7 @@ namespace O3DE::ProjectManager
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
         QStackedWidget* m_stack = nullptr;
-        QQueue<BuildProjectInfo> m_buildQueue;
+        QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
 
         const QString m_projectPreviewImagePath = "/preview.png";

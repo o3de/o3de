@@ -20,9 +20,9 @@
 
 namespace O3DE::ProjectManager
 {
-    ProjectBuilderWorker::ProjectBuilderWorker(const QString& projectPath)
+    ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
-        , m_projectPath(projectPath)
+        , m_projectInfo(projectInfo)
     {
     }
 
@@ -54,6 +54,36 @@ namespace O3DE::ProjectManager
             QStringList
             {
                 "-B",
+                m_projectInfo.m_path + standardBuildPath,
+                "-S",
+                m_projectInfo.m_path,
+                "-G",
+                "Visual Studio 16",
+                "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath,
+            });
+
+        if (!configProjectProcess.waitForStarted() || !configProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
+        {
+            emit Done("Failed");
+            return;
+        }
+
+        QString configProjectOutput(configProjectProcess.readAllStandardOutput());
+        if (1)
+        {
+            emit Done("Succeeded");
+            return;
+        }
+
+        /*
+        QProcess buildProjectProcess;
+        buildProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
+
+        buildProjectProcess.start(
+            "cmake",
+            QStringList
+            {
+                "-B",
                 m_projectPath + standardBuildPath,
                 "-S",
                 m_projectPath,
@@ -62,31 +92,29 @@ namespace O3DE::ProjectManager
                 "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath,
             });
 
-        if (!configProjectProcess.waitForStarted())
+        if (!buildProjectProcess.waitForStarted() || !buildProjectProcess.waitForFinished(s_maxBuildTimeMSecs))
         {
             emit Done("Failed");
             return;
         }
 
-        while (configProjectProcess.waitForReadyRead())
-        {}
-
-        QString vsWhereOutput(configProjectProcess.readAllStandardOutput());
+        QString buildProjectOutput(buildProjectProcess.readAllStandardOutput());
         if (1)
         {
             emit Done("Succeeded");
             return;
         }
+        */
 #endif
     }
 
-    ProjectBuilderController::ProjectBuilderController(const QString& projectPath, ProjectButton* projectButton, QWidget* parent)
+    ProjectBuilderController::ProjectBuilderController(const ProjectInfo& projectInfo, ProjectButton* projectButton, QWidget* parent)
         : QObject()
-        , m_projectPath(projectPath)
+        , m_projectInfo(projectInfo)
         , m_projectButton(projectButton)
         , m_parent(parent)
     {
-        ProjectBuilderWorker* worker = new ProjectBuilderWorker(projectPath);
+        ProjectBuilderWorker* worker = new ProjectBuilderWorker(m_projectInfo);
         worker->moveToThread(&m_workerThread);
 
         connect(&m_workerThread, &QThread::finished, worker, &ProjectBuilderWorker::deleteLater);
@@ -114,13 +142,16 @@ namespace O3DE::ProjectManager
 
     QString ProjectBuilderController::ProjectPath()
     {
-        return m_projectPath;
+        return m_projectInfo.m_path;
     }
 
     void ProjectBuilderController::UpdateUIProgress(int progress)
     {
-        m_projectButton->SetButtonOverlayText(QString(tr("Building Project... (%1%)\n\n")).arg(progress));
-        m_projectButton->SetProgressBarValue(progress);
+        if (m_projectButton)
+        {
+            m_projectButton->SetButtonOverlayText(QString(tr("Building Project... (%1%)\n\n")).arg(progress));
+            m_projectButton->SetProgressBarValue(progress);
+        }
     }
 
     void ProjectBuilderController::HandleResults([[maybe_unused]] const QString& result)

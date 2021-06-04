@@ -142,8 +142,6 @@ namespace O3DE::ProjectManager
                         QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
                         return;
                     }
-
-                    shouldRebuild = true;
                 }
 
                 // Check if project path has changed and move it
@@ -154,8 +152,6 @@ namespace O3DE::ProjectManager
                         QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                         return;
                     }
-
-                    shouldRebuild = true;
                 }
 
                 m_projectInfo = newProjectSettings;
@@ -171,7 +167,7 @@ namespace O3DE::ProjectManager
 
         if (shouldRebuild)
         {
-            emit NotifyBuildProject(BuildProjectInfo{ m_projectInfo.m_path, false });
+            emit NotifyBuildProject(m_projectInfo);
         }
 
         emit ChangeScreenRequest(ProjectManagerScreen::Projects);

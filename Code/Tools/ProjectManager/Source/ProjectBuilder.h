@@ -12,6 +12,8 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <ProjectInfo.h>
+
 #include <QThread>
 #endif
 
@@ -24,7 +26,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectBuilderWorker(const QString& projectPath);
+        explicit ProjectBuilderWorker(const ProjectInfo& projectInfo);
         ~ProjectBuilderWorker() = default;
 
     public slots:
@@ -35,7 +37,10 @@ namespace O3DE::ProjectManager
         void Done(const QString& result);
 
     private:
-        QString m_projectPath;
+        ProjectInfo m_projectInfo;
+
+        // 10 Minutes
+        inline constexpr static int s_maxBuildTimeMSecs = 600000;
     };
 
     class ProjectBuilderController : public QObject
@@ -43,7 +48,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectBuilderController(const QString& projectPath, ProjectButton* projectButton, QWidget* parent = nullptr);
+        explicit ProjectBuilderController(const ProjectInfo& projectInfo, ProjectButton* projectButton, QWidget* parent = nullptr);
         ~ProjectBuilderController();
 
         void SetProjectButton(ProjectButton* projectButton);
@@ -58,7 +63,7 @@ namespace O3DE::ProjectManager
         void Done();
 
     private:
-        QString m_projectPath;
+        ProjectInfo m_projectInfo;
         QThread m_workerThread;
         ProjectButton* m_projectButton;
         QWidget* m_parent;

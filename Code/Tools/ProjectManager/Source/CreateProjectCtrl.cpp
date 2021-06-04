@@ -143,7 +143,7 @@ namespace O3DE::ProjectManager
 
             if (shouldRebuild)
             {
-                emit NotifyBuildProject(BuildProjectInfo{ m_projectInfo.m_path, true });
+                emit NotifyBuildProject(m_projectInfo);
             }
         }
     }

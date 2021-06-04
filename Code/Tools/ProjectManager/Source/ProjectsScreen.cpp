@@ -396,15 +396,15 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void ProjectsScreen::QueueBuildProject(const BuildProjectInfo& buildProjectInfo)
+    void ProjectsScreen::QueueBuildProject(const ProjectInfo& projectInfo)
     {
         if (m_buildQueue.empty() && !m_currentBuilder)
         {
-            StartProjectBuild(buildProjectInfo);
+            StartProjectBuild(projectInfo);
         }
         else
         {
-            m_buildQueue.append(buildProjectInfo);
+            m_buildQueue.append(projectInfo);
         }
     }
 
@@ -438,19 +438,24 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
-    void ProjectsScreen::StartProjectBuild(const BuildProjectInfo& buildProjectInfo)
+    void ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
     {
-        if (ProjectUtils::IsVS2019Installed() && true || buildProjectInfo.m_force)
+        if (ProjectUtils::IsVS2019Installed())
         {
-            m_currentBuilder = new ProjectBuilderController(buildProjectInfo.m_projectPath, nullptr, this);
-            ResetProjectsContent();
-            connect(m_currentBuilder, &ProjectBuilderController::Done, this, &ProjectsScreen::ProjectBuildDone);
+            if (projectInfo.m_isNew)
+            {
+                m_currentBuilder = new ProjectBuilderController(projectInfo, nullptr, this);
+                ResetProjectsContent();
+                connect(m_currentBuilder, &ProjectBuilderController::Done, this, &ProjectsScreen::ProjectBuildDone);
 
-            m_currentBuilder->Start();
-        }
-        else
-        {
-            ProjectBuildDone();
+                m_currentBuilder->Start();
+            }
+            else
+            {
+                // Suggest they should rebuild
+
+                ProjectBuildDone();
+            }
         }
     }
 
