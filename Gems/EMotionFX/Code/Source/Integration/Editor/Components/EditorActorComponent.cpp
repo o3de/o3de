@@ -156,8 +156,6 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
-            EMotionFX::ActorNotificationBus::Handler::BusConnect();
-
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -185,8 +183,6 @@ namespace EMotionFX
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
-
-            EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
             DestroyActorInstance();
             m_actorAsset.Release();
@@ -234,13 +230,6 @@ namespace EMotionFX
                 AZ::Data::AssetBus::Handler::BusDisconnect();
                 AZ::Data::AssetBus::Handler::BusConnect(m_actorAsset.GetId());
                 m_actorAsset.QueueLoad();
-
-                // In case the asset was already loaded fully, create the actor directly.
-                if (m_actorAsset.IsReady() &&
-                    m_actorAsset->GetActor())
-                {
-                    m_actorAsset->GetActor()->LoadRemainingAssets();
-                }
             }
             else
             {
@@ -475,27 +464,13 @@ namespace EMotionFX
             Actor* actor = m_actorAsset->GetActor();
             AZ_Assert(m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
 
-            actor->LoadRemainingAssets();
-            actor->CheckFinalizeActor();
+            CheckActorCreation();
         }
 
         void EditorActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             DestroyActorInstance();
-
-            const Actor* oldActor = m_actorAsset->GetActor();
-            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset = oldActor->GetMeshAsset();
-            AZ::Data::Asset<AZ::RPI::SkinMetaAsset> skinMetaAsset = oldActor->GetSkinMetaAsset();
-            AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> morphTargetMetaAsset = oldActor->GetMorphTargetMetaAsset();
-
-            m_actorAsset = asset;
-            Actor* newActor = m_actorAsset->GetActor();
-            AZ_Assert(m_actorAsset.IsReady() && newActor, "Actor asset should be loaded and actor valid.");
-
-            newActor->SetMeshAsset(meshAsset);
-            newActor->SetSkinMetaAsset(skinMetaAsset);
-            newActor->SetMorphTargetMetaAsset(morphTargetMetaAsset);
-            newActor->CheckFinalizeActor();
+            OnAssetReady(asset);
         }
 
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
@@ -505,7 +480,7 @@ namespace EMotionFX
             Actor* actor = m_actorAsset->GetActor();
             if (actor)
             {
-                OnActorReady(actor);
+                CheckActorCreation();
             }
         }
 
@@ -816,14 +791,6 @@ namespace EMotionFX
         bool EditorActorComponent::IsAtomDisabled() const
         {
             return false;
-        }
-
-        void EditorActorComponent::OnActorReady(Actor* actor)
-        {
-            if (m_actorAsset && m_actorAsset->GetActor() == actor)
-            {
-                CheckActorCreation();
-            }
         }
 
         void EditorActorComponent::CheckActorCreation()

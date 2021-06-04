@@ -57,6 +57,12 @@ namespace ScriptCanvas
         constexpr const char* MissingVariableForEBusHandlerAddress = "missing variable for ebus handler address";
         constexpr const char* MissingVariableForEBusHandlerAddressConnected = "missing variable for ebus handler address";
         constexpr const char* MultipleExecutionOutConnections = "This node has multiple, unordered execution Out connections";
+        constexpr const char* MultipleFunctionCallFromSingleSlotMultipleVariadic = "Only one variadic call (the last one) is supported in the multi-call per single slot.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotNoChildren = "Node missing from parent children.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotNotEnoughInput = "Not enough input to support multi call input information.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotNotEnoughInputForThis = "Node doesn't have enough input for a parsed this pointer.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotReused = "Multiple function slot reused an input slot";
+        constexpr const char* MultipleFunctionCallFromSingleSlotUnused = "Multiple function slot left an input slot unused.";
         constexpr const char* MultipleSimulaneousInputValues = "Multiple values routed to the same single input with no way to discern which to take.";
         constexpr const char* MultipleStartNodes = "Multiple Start nodes in a single graph. Only one is allowed.";
         constexpr const char* NoChildrenAfterRoot = "No children after parsing function root";

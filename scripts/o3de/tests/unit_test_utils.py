@@ -11,7 +11,7 @@
 
 import pytest
 
-from . import utils
+from o3de import utils
 
 @pytest.mark.parametrize(
     "value, expected_result", [

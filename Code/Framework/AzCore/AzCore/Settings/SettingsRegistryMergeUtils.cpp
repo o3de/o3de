@@ -641,6 +641,8 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         else
         {
+            // Set the default ProjectUserPath to the <engine-root>/user directory
+            registry.Set(FilePathKey_ProjectUserPath, (engineRoot / "user").LexicallyNormal().Native());
             AZ_TracePrintf("SettingsRegistryMergeUtils",
                 R"(Project path isn't set in the Settings Registry at "%.*s". Project-related filepaths will not be set)" "\n",
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
