@@ -57,20 +57,20 @@ namespace O3DE::ProjectManager
         bool CurrentScreenIsValid();
         void CreateProject();
 
-        QStackedWidget* m_stack;
-        ScreenHeader* m_header;
+        QStackedWidget* m_stack = nullptr;
+        ScreenHeader* m_header = nullptr;
 
-        QPushButton* m_primaryButton;
+        QPushButton* m_primaryButton = nullptr;
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-        QPushButton* m_secondaryButton;
+        QPushButton* m_secondaryButton = nullptr;
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
         QString m_projectTemplatePath;
         ProjectInfo m_projectInfo;
         
-        NewProjectSettingsScreen* m_newProjectSettingsScreen;
-        GemCatalogScreen* m_gemCatalogScreen;
+        NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
+        GemCatalogScreen* m_gemCatalogScreen = nullptr;
     };
 
 } // namespace O3DE::ProjectManager

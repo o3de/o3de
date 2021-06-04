@@ -22,7 +22,7 @@
 namespace O3DE::ProjectManager
 {
 
-    TemplateButton::TemplateButton([[maybe_unused]] const QString& imagePath, [[maybe_unused]] const QString& labelText, QWidget* parent)
+    TemplateButton::TemplateButton(const QString& imagePath, const QString& labelText, QWidget* parent)
         : QPushButton(parent)
     {
         setAutoExclusive(true);
