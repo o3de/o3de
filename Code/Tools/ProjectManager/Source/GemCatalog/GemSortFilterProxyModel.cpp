@@ -130,4 +130,15 @@ namespace O3DE::ProjectManager
         invalidate();
         emit OnInvalidated();
     }
+
+    void GemSortFilterProxyModel::ResetFilters()
+    {
+        m_searchString.clear();
+        m_gemOriginFilter = {};
+        m_platformFilter = {};
+        m_typeFilter = {};
+
+        InvalidateFilter();
+
+    }
 } // namespace O3DE::ProjectManager
