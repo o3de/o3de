@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
+
 #include <AzCore/base.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
@@ -57,6 +59,7 @@ namespace AZ
             class HairFeatureProcessor final
                 : public RPI::FeatureProcessor
                 , private AZ::TickBus::Handler
+                , private LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler
             {
                 Name TestSkinningPass;
                 Name GlobalShapeConstraintsPass;
@@ -67,7 +70,7 @@ namespace AZ
                 Name UpdateFollowHairPass;
 
             public:
-                AZ_RTTI(AZ::Render::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
+                AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", RPI::FeatureProcessor);
                 AZ_FEATURE_PROCESSOR(HairFeatureProcessor);
 
                 static void Reflect(AZ::ReflectContext* context);
@@ -75,9 +78,15 @@ namespace AZ
                 HairFeatureProcessor();
                 virtual ~HairFeatureProcessor() = default;
 
+
                 void UpdateHairSkinning();
 
                 bool Init();
+
+                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides in
+                //!  order to make sure that the hair FP is registered to the Thumbnail scene so we
+                //!  avoid initialization errors due to matching pipeline with mainline. 
+                const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
 
                 // FeatureProcessor overrides ...
                 void Activate() override;
@@ -100,16 +109,12 @@ namespace AZ
                 void OnBeginPrepareRender() override;
                 void OnEndPrepareRender() override;
 
-                Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass() { return m_computePasses[TestSkinningPass]; }
-                Data::Instance<HairSkinningComputePass> GetHairGlobalShapeConstraintsComputegPass() { return m_computePasses[GlobalShapeConstraintsPass]; }
-                Data::Instance<HairSkinningComputePass> GetHairUpdateFollowHairPass() { return m_computePasses[UpdateFollowHairPass]; }
-                Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass() { return m_hairPPLLRasterPass; }
-                Data::Instance<HairPPLLResolvePass> GetHairPPLLResolvePass() { return m_hairPPLLResolvePass; }
+                Data::Instance<HairSkinningComputePass> GetHairSkinningComputegPass();
+                Data::Instance<HairPPLLRasterPass> GetHairPPLLRasterPass();
 
                 //! Update the hair objects materials array.
                 void FillHairMaterialsArray(std::vector<const AMD::TressFXRenderParams*>& renderSettings);
 
-                Data::Instance<RPI::Buffer> GetSharedBuffer() { return m_sharedDynamicBuffer->GetBuffer(); }
                 Data::Instance<RPI::Buffer> GetPerPixelListBuffer() { return m_linkedListNodesBuffer; }
                 Data::Instance<RPI::Buffer> GetPerPixelCounterBuffer() { return m_linkedListCounterBuffer;  }
                 HairUniformBuffer<AMD::TressFXShadeParams>& GetMaterialsArray() { return m_hairObjectsMaterialsCB;  }
@@ -139,6 +144,9 @@ namespace AZ
 
                 static const char* s_featureProcessorName;
 
+                //! The following will serve to register the FP in the Thumbnail system
+                AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
+
                 //! The Hair Objects in the scene (one per hair component)
                 AZStd::list<Data::Instance<HairRenderObject>> m_hairRenderObjects;
 
@@ -149,9 +157,8 @@ namespace AZ
                 Data::Instance<HairPPLLRasterPass> m_hairPPLLRasterPass = nullptr;
                 Data::Instance<HairPPLLResolvePass> m_hairPPLLResolvePass = nullptr;
 
-
                 //--------------------------------------------------------------
-                //              Per Pass Resources for all passes
+                //                      Per Pass Resources 
                 //--------------------------------------------------------------
                 //! The shared buffer used by all dynamic buffer views for the hair skinning / simulation
                 AZStd::unique_ptr<SharedBuffer> m_sharedDynamicBuffer;  // used for the hair data changed between passes.
@@ -174,6 +181,7 @@ namespace AZ
                 bool m_forceClearRenderData = false;
                 bool m_initialized = false;
                 bool m_isEnabled = true;
+                static uint32_t s_instanceCount;
             };
         } // namespace Hair
     } // namespace Render

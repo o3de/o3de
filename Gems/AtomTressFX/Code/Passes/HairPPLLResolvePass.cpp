@@ -63,38 +63,39 @@ namespace AZ
                 }
             }
 
-            //---------------------------------------------------------------------
+            bool HairPPLLResolvePass::AcquireFeatureProcessor()
+            {
+                RPI::Scene* scene = GetScene();
+                if (scene)
+                {
+                    m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
+                }
+
+                if (!m_featureProcessor)
+                {
+                    AZ_Warning("Hair Gem", false,
+                        "HairPPLLResolvePass [%s] - Failed to retrieve Hair feature processor from the scene",
+                        GetName().GetCStr());
+                    return false;
+                }
+                return true;
+            }
+
             void HairPPLLResolvePass::BuildAttachmentsInternal()
             {
                 // No need to attach any buffer / image - it is done in the fill pass
                 FullscreenTrianglePass::BuildAttachmentsInternal();
-
-                if (!m_featureProcessor)
-                {
-                    RPI::Scene* scene = GetScene();
-                    if (scene)
-                    {
-                        m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
-                    }
-                    if (!m_featureProcessor)
-                    {
-                        AZ_Error("Hair Gem", false, "HairPPLLResolvePass - Failed to retrieve Hair feature processor from the scene");
-                        return;
-                    }
-                }
             }
 
             void HairPPLLResolvePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
             {
                 FullscreenTrianglePass::SetupFrameGraphDependencies(frameGraph);
 
-                if (!m_shaderResourceGroup || !m_featureProcessor)
+                if (!m_shaderResourceGroup || (!m_featureProcessor && !AcquireFeatureProcessor()))
                 {
+                    AZ_Error("Hair Gem", false, "HairPPLLResolvePass: PPLL list data was not bound - missing Srg or Feature Processor");
                     return;
                 }
-
-                AZ_Error("Hair Gem", m_shaderResourceGroup && m_featureProcessor,
-                    "HairPPLLResolvePass::SetupFrameGraphDependencies - m_shaderResourceGroup or Feature processor not initialized");
                 
                 {
                     SrgBufferDescriptor descriptor = SrgBufferDescriptor(

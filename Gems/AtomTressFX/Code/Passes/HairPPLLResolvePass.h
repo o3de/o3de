@@ -53,6 +53,8 @@ namespace AZ
 
                 static RPI::Ptr<HairPPLLResolvePass> Create(const RPI::PassDescriptor& descriptor);
 
+                bool AcquireFeatureProcessor();
+
                 void SetFeatureProcessor(HairFeatureProcessor* featureProcessor)
                 {
                     m_featureProcessor = featureProcessor;

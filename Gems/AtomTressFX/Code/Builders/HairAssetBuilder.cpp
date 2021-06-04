@@ -31,7 +31,7 @@ namespace AZ
                 builderDesc.m_patterns.emplace_back(AssetBuilderSDK::AssetBuilderPattern(
                     AZStd::string::format("*.%s", AMD::TFXFileExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 builderDesc.m_busId = azrtti_typeid<HairAssetBuilder>();
-                builderDesc.m_version = 2;
+                builderDesc.m_version = 3;
                 builderDesc.m_createJobFunction =
                     AZStd::bind(&HairAssetBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
                 builderDesc.m_processJobFunction =

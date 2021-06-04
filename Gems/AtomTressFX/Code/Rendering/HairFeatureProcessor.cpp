@@ -50,6 +50,7 @@ namespace AZ
         namespace Hair
         {
             const char* HairFeatureProcessor::s_featureProcessorName = "HairFeatureProcessor";
+            uint32_t HairFeatureProcessor::s_instanceCount = 0;
 
             HairFeatureProcessor::HairFeatureProcessor()
             {
@@ -60,6 +61,16 @@ namespace AZ
                 LocalShapeConstraintsPass = Name{ "HairLocalShapeConstraintsComputePassTemplate" };
                 LengthConstriantsWindAndCollisionPass = Name{ "HairLengthConstraintsWindAndCollisionComputePassTemplate" };
                 UpdateFollowHairPass = Name{ "HairUpdateFollowHairComputePassTemplate" };
+
+                ++s_instanceCount;
+
+                // Create right away for everyone to use
+                if (!CreatePerPassResources())
+                {   // this might not be an error - if the pass system is still empty / minimal
+                    //  and these passes are not part of the minimal pipeline, they will not
+                    //  be created.
+                    AZ_Error("Hair Gem", false, "Failed to create the PerPass Srg.");
+                }
             }
 
             void HairFeatureProcessor::Reflect(ReflectContext* context)
@@ -74,13 +85,8 @@ namespace AZ
 
             void HairFeatureProcessor::Activate()
             {
-                // Create right away for everyone to use
-                if (!CreatePerPassResources())
-                {   // this might not be an error - if the pass system is still empty / minimal
-                    //  and these passes are not part of the minimal pipeline, they will not
-                    //  be created.
-                    AZ_Error("Hair Gem", false, "Failed to create the PerPass Srg.");
-                }
+                m_hairFeatureProcessorRegistryName = { "AZ::Render::Hair::HairFeatureProcessor" };
+                LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
                 EnableSceneNotification();
                 TickBus::Handler::BusConnect();
@@ -88,6 +94,7 @@ namespace AZ
 
             void HairFeatureProcessor::Deactivate()
             {
+                LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
                 DisableSceneNotification();
                 TickBus::Handler::BusDisconnect();
 
@@ -369,12 +376,18 @@ namespace AZ
                 }
 
                 SrgBufferDescriptor descriptor;
+                AZStd::string instanceNumber = AZStd::to_string(s_instanceCount);
 
                 // Shared buffer - this is a persistent buffer that needs to be created manually.
                 {
                     AZStd::vector<SrgBufferDescriptor> hairDynamicDescriptors;
                     DynamicHairData::PrepareSrgDescriptors(hairDynamicDescriptors, 1, 1);
-                    m_sharedDynamicBuffer = AZStd::make_unique<SharedBuffer>("HairSharedDynamicBuffer", hairDynamicDescriptors);
+                    Name sharedBufferName = Name{ "HairSharedDynamicBuffer" + instanceNumber };
+                    if (!SharedBufferInterface::Get())
+                    {   // SInce there can be several pipelines, allocate the shared buffer only for the
+                        // first one and from that moment on it will be used through its interface
+                        m_sharedDynamicBuffer = AZStd::make_unique<SharedBuffer>(sharedBufferName.GetCStr(), hairDynamicDescriptors);
+                    }
                 }
 
                 // PPLL nodes buffer
@@ -382,7 +395,7 @@ namespace AZ
                     descriptor = SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
                         PPLL_NODE_SIZE, RESERVED_PIXELS_FOR_OIT,
-                        Name{ "LinkedListNodesPPLL" }, Name{ "m_linkedListNodes" }, 0, 0
+                        Name{ "LinkedListNodesPPLL" + instanceNumber}, Name{ "m_linkedListNodes" }, 0, 0
                     );
                     m_linkedListNodesBuffer = UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr);
                     if (!m_linkedListNodesBuffer)
@@ -397,7 +410,7 @@ namespace AZ
                     descriptor = SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
                         sizeof(uint32_t), 1,
-                        Name{ "LinkedListCounterPPLL" }, Name{ "m_linkedListCounter" }, 0, 0
+                        Name{ "LinkedListCounterPPLL" + instanceNumber }, Name{ "m_linkedListCounter" }, 0, 0
                     );
                     m_linkedListCounterBuffer = UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr );
                     if (!m_linkedListCounterBuffer)
@@ -522,6 +535,30 @@ namespace AZ
                 m_computePasses[UpdateFollowHairPass]->BuildDispatchItem(
                     renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
             }
+
+            Data::Instance<HairSkinningComputePass> HairFeatureProcessor::GetHairSkinningComputegPass()
+            {
+                if (!m_computePasses[TestSkinningPass])
+                {   
+                    Init();
+                }
+                return m_computePasses[TestSkinningPass];
+            }
+
+            Data::Instance<HairPPLLRasterPass> HairFeatureProcessor::GetHairPPLLRasterPass()
+            {
+                if (!m_hairPPLLRasterPass)
+                {
+                    Init();
+                }
+                return m_hairPPLLRasterPass;
+            }
+
+            const AZStd::vector<AZStd::string>& HairFeatureProcessor::GetCustomFeatureProcessors() const
+            {
+                return m_hairFeatureProcessorRegistryName;
+            }
+
         } // namespace Hair
     } // namespace Render
 } // namespace AZ

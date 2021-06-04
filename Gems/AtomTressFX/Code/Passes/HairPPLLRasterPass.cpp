@@ -57,39 +57,34 @@ namespace AZ
             {
             }
 
-            // [To Do] Adi: remove the following two methods since they are no longer required - test with RHI validation
-            void HairPPLLRasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
+            bool HairPPLLRasterPass::AcquireFeatureProcessor()
             {
-                RasterPass::SetupFrameGraphDependencies(frameGraph);
-            }
+                RPI::Scene* scene = GetScene();
+                if (scene)
+                {
+                    m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
+                }
 
-            void HairPPLLRasterPass::OnBuildAttachmentsFinishedInternal()
-            {
-                RasterPass::OnBuildAttachmentsFinishedInternal();
+                if (!m_featureProcessor)
+                {
+                    AZ_Warning("Hair Gem", false,
+                        "HairPPLLRasterPass [%s] - Failed to retrieve Hair feature processor from the scene",
+                        GetName().GetCStr());
+                    return false;
+                }
+                return true;
             }
 
             void HairPPLLRasterPass::BuildAttachmentsInternal()
             {
                 RasterPass::BuildAttachmentsInternal();
 
-                if (!m_featureProcessor)
+                if (!m_featureProcessor && !AcquireFeatureProcessor())
                 {
-                    RPI::Scene* scene = GetScene();
-                    if (scene)
-                    {
-                        m_featureProcessor = scene->GetFeatureProcessor<HairFeatureProcessor>();
-                    }
-
-                    if (!m_featureProcessor)
-                    {
-                        AZ_Error("Hair Gem", false, "HairPPLLRasterPass - Failed to retrieve Hair feature processor from the scene");
-                        return;
-                    }
+                    return;
                 }
 
-                LoadShaderAndPipelineState();
-
-                if (!m_featureProcessor || !m_shaderResourceGroup)
+                if (!LoadShaderAndPipelineState())
                 {
                     return;
                 }
@@ -98,7 +93,7 @@ namespace AZ
                 // This is the buffer that is shared between all objects and dispatches and contains
                 // the dynamic data that can change between passes.
                 // NO need to define it - this is already defined by the Compute pass
-//                AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, m_featureProcessor->GetSharedBuffer());
+//                AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, SharedBufferInterface::Get()->GetBuffer());
 
                 // Output
                 AttachBufferToSlot(Name{ "PPLLIndexCounter" }, m_featureProcessor->GetPerPixelCounterBuffer());
@@ -235,6 +230,14 @@ namespace AZ
 
             void HairPPLLRasterPass::FrameBeginInternal(FramePrepareParams params)
             {
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                if (!m_initialized && (m_featureProcessor || AcquireFeatureProcessor()))
+                {
+                    LoadShaderAndPipelineState();
+                    m_featureProcessor->ForceRebuildRenderData();
+                }
+
+                if (m_featureProcessor && m_initialized)
                 {
                     if (auto ppllCounterBuffer = m_featureProcessor->GetPerPixelCounterBuffer())
                     {   // This is crucial to be able to count properly from 0. Currently trying to
@@ -263,22 +266,30 @@ namespace AZ
                 RPI::RasterPass::CompileResources(context);
             }
 
+            void HairPPLLRasterPass::BuildShaderAndRenderData()
+            {
+                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                m_initialized = false;  // make sure we initialize it even if not in this frame
+                if (m_featureProcessor || AcquireFeatureProcessor())
+                {
+                    LoadShaderAndPipelineState();
+                    m_featureProcessor->ForceRebuildRenderData();
+                }
+            }
+
             void HairPPLLRasterPass::OnShaderReinitialized([[maybe_unused]] const RPI::Shader & shader)
             {
-                LoadShaderAndPipelineState();
-                m_featureProcessor->ForceRebuildRenderData();
+                BuildShaderAndRenderData();
             }
 
             void HairPPLLRasterPass::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
             {
-                LoadShaderAndPipelineState();
-                m_featureProcessor->ForceRebuildRenderData();
+                BuildShaderAndRenderData();
             }
 
             void HairPPLLRasterPass::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
             {
-                LoadShaderAndPipelineState();
-                m_featureProcessor->ForceRebuildRenderData();
+                BuildShaderAndRenderData();
             }
         } // namespace Hair
     }   // namespace Render
