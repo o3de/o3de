@@ -145,10 +145,21 @@ namespace O3DE::ProjectManager
 
     void CreateProjectCtrl::NextScreen()
     {
-        if (CurrentScreenIsValid() && m_stack->currentIndex() < m_stack->count())
+        if (m_stack->currentIndex() < m_stack->count())
         {
-            m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
-            Update();
+            if(CurrentScreenIsValid())
+            {
+                m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
+
+                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+                m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
+
+                Update();
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            }
         }
     }
 
@@ -191,7 +202,10 @@ namespace O3DE::ProjectManager
                 // automatically register the project
                 PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
-                // adding gems is not implemented yet because we don't know what targets to add or how to add them
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+                m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
