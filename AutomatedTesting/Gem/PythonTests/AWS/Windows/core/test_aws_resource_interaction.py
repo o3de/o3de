@@ -1,6 +1,7 @@
 import pytest
 import ly_test_tools
 import ly_test_tools.log.log_monitor
+import ly_test_tools.environment.process_utils as process_utils
 import os
 import logging
 import json
@@ -20,10 +21,21 @@ AWS_CORE_FEATURE_NAME = 'AWSCore'
 AWS_CORE_DEFAULT_PROFILE_NAME = 'default'
 AWS_RESOURCE_MAPPING_FILE_NAME = 'aws_resource_mappings.json'
 
+AP_PROCESSES = [
+            'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder', 'CrySCompileServer',
+            'rc'  # Resource Compiler
+        ]
+
+process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill ProjectManager windows
 
 GAME_LOG_NAME = 'Game.log'
 
 logger = logging.getLogger(__name__)
+
+
+def kill_asset_processor(targets):
+    for target in targets:
+        process_utils.kill_processes_named(target, ignore_extensions=True)  # Kill AssetProcessor
 
 
 def write_test_table_data(region: str):
@@ -47,45 +59,15 @@ def write_test_table_data(region: str):
     try:
         with table.batch_writer() as writer:
             item = {
-                'test_value': 'ItWorked'
+                'id': 'Item1',
+                'value': 123,
+                'timestamp': int(time.time())
             }
             writer.put_item(Item=item)
         logger.info(f'Loaded data into table {table.name}')
     except ClientError:
         logger.exception(f'Failed to load data into table {table.name}')
         raise
-
-
-@pytest.mark.usefixtures('asset_processor')
-@pytest.mark.usefixtures('cdk')
-@pytest.mark.parametrize('feature_name', [AWS_CORE_FEATURE_NAME])
-@pytest.mark.usefixtures('aws_utils')
-@pytest.mark.parametrize('region_name', ['us-west-2'])
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
-@pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
-@pytest.mark.usefixtures('workspace')
-@pytest.mark.parametrize('project', ['AutomatedTesting'])
-@pytest.mark.parametrize('level', ['AWS/Core'])
-@pytest.mark.usefixtures('resource_mappings')
-@pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
-@pytest.fixture()
-def setup_environment(request, cdk: pytest.fixture, workspace: pytest.fixture, resource_mappings: pytest.fixture, asset_processor: pytest.fixture):
-    """
-    Sets up the CDK before tests are run. Runs the Asset Processor.
-    """
-
-    logger.info(f'Cdk stack names:\n{cdk.list()}')
-    stacks = cdk.deploy(additonal_params=['--all'])
-    resource_mappings.populate_output_keys(stacks)
-    asset_processor.start()
-    asset_processor.wait_for_idle()
-
-    def teardown():
-        asset_processor.stop()
-
-    request.addfinalizer(teardown)
-
-    return stacks
 
 
 @pytest.mark.SUITE_periodic
@@ -102,7 +84,6 @@ def setup_environment(request, cdk: pytest.fixture, workspace: pytest.fixture, r
 @pytest.mark.parametrize('level', ['AWS/Core'])
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
-# @pytest.mark.usefixtures('setup_environment')
 class TestAWSCoreDownloadFromS3(object):
     """
     Test class to verify AWSCore can downloading a file from S3.
@@ -122,6 +103,7 @@ class TestAWSCoreDownloadFromS3(object):
         Verification: Log monitor looks for success download. The existence and contents of the file are also verified.
         """
 
+        kill_asset_processor(AP_PROCESSES)
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
         resource_mappings.populate_output_keys(stacks)
@@ -172,9 +154,12 @@ class TestAWSCoreDownloadFromS3(object):
         Tests: Runs the test level.
         Verification: Searches the logs for the expected output from the example lambda.
         """
+        kill_asset_processor(AP_PROCESSES)
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
         resource_mappings.populate_output_keys(stacks)
+        asset_processor.start()
+        asset_processor.wait_for_idle()
 
         project_log = launcher.workspace.paths.project_log()
         file_to_monitor = os.path.join(project_log, GAME_LOG_NAME)
@@ -205,10 +190,13 @@ class TestAWSCoreDownloadFromS3(object):
         Test: Runs a launcher with a level that loads a scriptcanvas that pulls a DynamoDB table value.
         Verification: The value is output in the logs and verified by the test.
         """
+        kill_asset_processor(AP_PROCESSES)
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
         resource_mappings.populate_output_keys(stacks)
         write_test_table_data("us-west-2")
+        asset_processor.start()
+        asset_processor.wait_for_idle()
 
         project_log = launcher.workspace.paths.project_log()
         file_to_monitor = os.path.join(project_log, GAME_LOG_NAME)
