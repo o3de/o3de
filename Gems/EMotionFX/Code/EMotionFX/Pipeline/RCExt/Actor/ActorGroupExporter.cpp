@@ -135,7 +135,7 @@ namespace EMotionFX
                 azrtti_typeid<AZ::RPI::MorphTargetMetaAsset>()
             };
 
-            for (const AZ::Data::AssetType assetDependency : assetDependencyList)
+            for (const AZ::Data::AssetType& assetDependency : assetDependencyList)
             {
                 AZStd::optional<AZ::SceneAPI::Events::ExportProduct> result = GetFirstProductByType(context, assetDependency);
                 if (result != AZStd::nullopt)
