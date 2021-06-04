@@ -13,6 +13,9 @@ set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
 include(cmake/LyAutoGen.cmake)
+if(PAL_TRAIT_BUILD_HOST_QT_SUPPORTED)
+    include(cmake/Qt.cmake)
+endif()
 
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
 include(${pal_dir}/LYWrappers_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -334,11 +337,7 @@ function(ly_add_target)
 
         detect_qt_dependency(${ly_add_target_NAME} QT_DEPENDENCY)
         if(QT_DEPENDENCY)
-            if(NOT COMMAND ly_qt_deploy)
-                message(FATAL_ERROR "Could not find function \"ly_qt_deploy\", this function should be defined in cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Qt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
-            endif()
-
-            ly_qt_deploy(TARGET ${ly_add_target_NAME})
+            ly_qt_deploy_qtconf(${ly_add_target_NAME})
         endif()
     endif()
 
