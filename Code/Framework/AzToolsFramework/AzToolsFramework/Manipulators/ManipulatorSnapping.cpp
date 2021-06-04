@@ -58,8 +58,8 @@ namespace AzToolsFramework
     struct SnapAdjustment
     {
         float m_existingSnapDistance; //!< How far to snap up or down to align to the grid.
-        float m_nextSnapDistance; //!< The snap increment (will return full signed value when distance moved
-                                  //!< is greather than half of size in either direction).
+        float m_nextSnapDistance; //!< The snap increment (will return full signed value (grid size) when distance
+                                  //!< moved is greater than half of the grid size in either direction).
     };
 
     static SnapAdjustment CalculateSnapDistance(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, const float size)
