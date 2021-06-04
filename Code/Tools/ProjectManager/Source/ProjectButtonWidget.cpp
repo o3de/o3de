@@ -97,7 +97,7 @@ namespace O3DE::ProjectManager
         menu->addSeparator();
         menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo.m_path); });
         menu->addSeparator();
-        menu->addAction(tr("Remote from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
         menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
 
         QFrame* footer = new QFrame(this);
