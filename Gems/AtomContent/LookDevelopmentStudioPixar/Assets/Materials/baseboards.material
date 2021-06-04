@@ -37,9 +37,6 @@
             "factor": 0.4343433976173401,
             "textureMap": "Materials/Bricks038_8K/Bricks038_8K_Roughness.png",
             "useTexture": false
-        },
-        "subsurfaceScattering": {
-            "useThicknessMap": false
         }
     }
 }
