@@ -79,9 +79,5 @@ namespace O3DE::ProjectManager
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
         QFrame* m_projectFooter;
-        QAction* m_editProjectAction;
-        QAction* m_copyProjectAction;
-        QAction* m_removeProjectAction;
-        QAction* m_deleteProjectAction;
     };
 } // namespace O3DE::ProjectManager
