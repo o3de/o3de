@@ -48,7 +48,8 @@ class ConfigurationManager(object):
     def configuration(self, new_configuration: ConfigurationManager) -> None:
         self._configuration = new_configuration
 
-    def setup(self, config_path: str) -> None:
+    def setup(self, config_path: str) -> bool:
+        result: bool = True
         logger.info("Setting up default configuration ...")
         try:
             normalized_config_path: str = file_utils.normalize_file_path(config_path);
@@ -63,5 +64,7 @@ class ConfigurationManager(object):
             self._configuration.account_id = aws_utils.get_default_account_id()
             self._configuration.region = aws_utils.get_default_region()
         except (RuntimeError, FileNotFoundError) as e:
-            logger.exception(e)
+            logger.error(e)
+            result = False
         logger.debug(self._configuration)
+        return result

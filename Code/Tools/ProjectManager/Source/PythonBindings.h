@@ -65,8 +65,10 @@ namespace O3DE::ProjectManager
         GemInfo GemInfoFromPath(pybind11::handle path);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path);
+        bool RegisterThisEngine();
         bool StartPython();
         bool StopPython();
+
 
         AZ::IO::FixedMaxPath m_enginePath;
         pybind11::handle m_engineTemplate;

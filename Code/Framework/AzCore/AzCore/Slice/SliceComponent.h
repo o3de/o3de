@@ -971,6 +971,10 @@ namespace AZ
          */
         void RestoreCachedInstances();
 
+        /// Returns data flags for use when instantiating an instance of this slice.
+        /// These data flags include those harvested from the entire slice ancestry.
+        const DataFlagsPerEntity& GetDataFlagsForInstances() const;
+
     protected:
 
         //////////////////////////////////////////////////////////////////////////
@@ -1004,9 +1008,6 @@ namespace AZ
         DataFlagsPerEntity* GetCorrectBundleOfDataFlags(EntityId entityId);
         const DataFlagsPerEntity* GetCorrectBundleOfDataFlags(EntityId entityId) const;
 
-        /// Returns data flags for use when instantiating an instance of this slice.
-        /// These data flags include those harvested from the entire slice ancestry.
-        const DataFlagsPerEntity& GetDataFlagsForInstances() const;
         void BuildDataFlagsForInstances();
 
         /**
