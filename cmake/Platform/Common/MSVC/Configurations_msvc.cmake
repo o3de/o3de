@@ -127,7 +127,7 @@ ly_append_configurations_options(
         /INCREMENTAL:NO
 )
 
-set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
+set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = FALSE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
     ly_append_configurations_options(
         COMPILATION_DEBUG
