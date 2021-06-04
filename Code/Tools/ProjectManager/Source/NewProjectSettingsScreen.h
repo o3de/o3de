@@ -14,7 +14,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ProjectSettingsScreen.h>
 #include <ProjectTemplateInfo.h>
-#include <QVector.h>
+#include <QVector>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
