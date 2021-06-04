@@ -13,6 +13,7 @@ REM
 SETLOCAL EnableDelayedExpansion
 
 CALL %~dp0env_windows.cmd
+CALL %~dp0clean_windows.cmd
 
 IF NOT EXIST "%OUTPUT_DIRECTORY%" (
     MKDIR %OUTPUT_DIRECTORY%.

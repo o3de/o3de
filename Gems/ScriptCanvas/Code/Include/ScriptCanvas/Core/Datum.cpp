@@ -1476,9 +1476,11 @@ namespace ScriptCanvas
 
     const void* Datum::GetValueAddress() const
     {
-        return m_type.GetType() != Data::eType::BehaviorContextObject 
-             ? AZStd::any_cast<void>(&m_storage) 
-             : (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage))->Get();
+        return !m_storage.empty()
+            ? m_type.GetType() != Data::eType::BehaviorContextObject 
+                 ?  AZStd::any_cast<void>(&m_storage) 
+                 : (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage))->Get()
+            : nullptr;
     }
 
     bool Datum::Initialize(const Data::Type& type, eOriginality originality, const void* source, const AZ::Uuid& sourceTypeID)

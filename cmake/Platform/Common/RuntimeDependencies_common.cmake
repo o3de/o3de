@@ -105,7 +105,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
                 set(skip_imported TRUE)
             endif()
         endif()
-        if(target_type MATCHES "(INTERFACE_LIBRARY|STATIC_LIBRARY)")
+        if(target_type MATCHES "(STATIC_LIBRARY)")
             # No need to copy these dependencies since the outputs are not used at runtime
             set(skip_imported TRUE)
         endif()
