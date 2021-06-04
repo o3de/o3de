@@ -12,6 +12,7 @@
 
 #include "AzManipulatorTestFrameworkTestFixtures.h"
 
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
@@ -19,7 +20,6 @@
 #include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
