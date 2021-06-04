@@ -70,7 +70,7 @@ namespace AzToolsFramework
     bool AngleSnapping(int viewportId);
 
     //! Wrapper for angle snapping increment bus call.
-    //! @return Angle in degrees
+    //! @return Angle in degrees.
     float AngleStep(int viewportId);
 
     //! Wrapper for grid rendering check call.

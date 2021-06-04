@@ -97,7 +97,7 @@ namespace AzManipulatorTestFramework
         if (m_logging)
         {
             AZStd::string message = AZStd::string::format(format, args...);
-            AZ_Printf("[ActionDispatcher] %s", << message.c_str());
+            AZ_Printf("[ActionDispatcher] %s", message.c_str());
         }
     }
 

@@ -340,7 +340,7 @@ namespace AzToolsFramework
         //! This helper function calculates the intersecting point between a ray and a plane.
         //! @param rayOrigin                     The origin of the ray to test.
         //! @param rayDirection                  The direction of the ray to test.
-        //! @param maxRayLength
+        //! @param maxRayLength                  The maximum length of the ray to test.
         //! @param pointOnPlane                  A point on the plane.
         //! @param planeNormal                   The normal vector of the plane.
         //! @param[out] resultIntersectingPoint  This stores the result intersecting point. It will be left unchanged

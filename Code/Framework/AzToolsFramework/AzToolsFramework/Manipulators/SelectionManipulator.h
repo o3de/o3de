@@ -20,7 +20,7 @@ namespace AzToolsFramework
 {
     class ManipulatorView;
 
-    //! Represents a sphere that can be clicked on to trigger a particular behavior
+    //! Represents a sphere that can be clicked on to trigger a particular behavior.
     //! For example clicking a preview point to create a translation manipulator.
     class SelectionManipulator
         : public BaseManipulator

@@ -30,12 +30,12 @@ namespace AzToolsFramework
     class ManipulatorManagerRequests : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy =
-            AZ::EBusAddressPolicy::ById; /**< We can have multiple manipulator managers.
-                                              In the case where there are multiple viewports, each displaying
-                                              a different set of entities, a different manipulator manager is required
-                                              to provide a different collision space for each viewport so that mouse
-                                              hit detection can be handled properly. */
+        //! We can have multiple manipulator managers.
+        //! In the case where there are multiple viewports, each displaying
+        //! a different set of entities, a different manipulator manager is required
+        //! to provide a different collision space for each viewport so that mouse
+        //! hit detection can be handled properly.
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = ManipulatorManagerId;
 
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -65,7 +65,7 @@ namespace AzToolsFramework
         virtual bool Interacting() const = 0;
 
         //! Update the bound for a manipulator.
-        //! If \ref boundId hasn't been registered before or it's invalid, a new bound is created and set using \ref boundShapeData
+        //! If \ref boundId hasn't been registered before or it's invalid, a new bound is created and set using \ref boundShapeData.
         //! @param manipulatorId The id of the manipulator whose bound needs to update.
         //! @param boundId The id of the bound that needs to update.
         //! @param boundShapeData The pointer to the new bound shape data.

@@ -27,7 +27,7 @@ namespace AzToolsFramework
         AZ_RTTI(TranslationManipulators, "{D5E49EA2-30E0-42BC-A51D-6A7F87818260}")
         AZ_CLASS_ALLOCATOR(TranslationManipulators, AZ::SystemAllocator, 0)
 
-        //! How many dimensions does this translation manipulator have
+        //! How many dimensions does this translation manipulator have.
         enum class Dimensions
         {
             Two,
