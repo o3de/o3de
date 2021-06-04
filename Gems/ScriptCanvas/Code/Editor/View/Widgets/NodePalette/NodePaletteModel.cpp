@@ -340,31 +340,31 @@ namespace
                 }
 
                 // Pass in the associated class data so we can do more intensive lookups?
-                const AZ::SerializeContext::ClassData* classData = serializeContext.FindClassData(node.first);
+                const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(node.first);
 
-                if (classData == nullptr)
+                if (nodeClassData == nullptr)
                 {
                     continue;
                 }
 
                 // Detect primitive types os we avoid making nodes out of them.
                 // Or anything that is 'pure data' and should be populated through a different mechanism.
-                if (classData->m_azRtti && classData->m_azRtti->IsTypeOf<ScriptCanvas::PureData>())
+                if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::PureData>())
                 {
                     continue;
                 }
                 // Skip over some of our more dynamic nodes that we want to populate using different means
-                else if (classData->m_azRtti && classData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
                 {
                     continue;
                 }
-                else if (classData->m_azRtti && classData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
                 {
                     continue;
                 }
                 else
                 {
-                    nodePaletteModel.RegisterCustomNode(categoryPath, node.first, node.second, classData);
+                    nodePaletteModel.RegisterCustomNode(categoryPath, node.first, node.second, nodeClassData);
                 }
             }
 

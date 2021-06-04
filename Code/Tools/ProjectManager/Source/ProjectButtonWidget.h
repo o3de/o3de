@@ -62,7 +62,6 @@ namespace O3DE::ProjectManager
     signals:
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
-        void EditProjectGems(const QString& projectName);
         void CopyProject(const QString& projectName);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
@@ -72,10 +71,5 @@ namespace O3DE::ProjectManager
 
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
-        QAction* m_editProjectAction;
-        QAction* m_editProjectGemsAction;
-        QAction* m_copyProjectAction;
-        QAction* m_removeProjectAction;
-        QAction* m_deleteProjectAction;
     };
 } // namespace O3DE::ProjectManager

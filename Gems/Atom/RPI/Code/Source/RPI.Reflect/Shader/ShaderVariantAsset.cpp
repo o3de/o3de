@@ -10,6 +10,7 @@
 *
 */
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -24,10 +25,6 @@ namespace AZ
         uint32_t ShaderVariantAsset::MakeAssetProductSubId(
             uint32_t rhiApiUniqueIndex, ShaderVariantStableId variantStableId, uint32_t subProductType)
         {
-            static constexpr uint32_t RhiIndexBitPosition = 30;
-            static constexpr uint32_t RhiIndexNumBits = 32 - RhiIndexBitPosition;
-            static constexpr uint32_t RhiIndexMaxValue = (1 << RhiIndexNumBits) - 1;
-
             static constexpr uint32_t SubProductTypeBitPosition = 17;
             static constexpr uint32_t SubProductTypeNumBits = RhiIndexBitPosition - SubProductTypeBitPosition;
             static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;

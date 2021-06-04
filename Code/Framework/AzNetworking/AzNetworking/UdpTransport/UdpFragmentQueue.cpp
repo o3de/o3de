@@ -139,7 +139,7 @@ namespace AzNetworking
 
         NetworkOutputSerializer networkSerializer(buffer.GetBuffer(), buffer.GetSize());
         {
-            ISerializer& serializer = networkSerializer; // To get the default typeinfo parameters in ISerializer
+            ISerializer& networkISerializer = networkSerializer; // To get the default typeinfo parameters in ISerializer
 
             // First, serialize out the header
             if (!header.SerializePacketFlags(networkSerializer))
@@ -148,7 +148,7 @@ namespace AzNetworking
                 return false;
             }
 
-            if (!serializer.Serialize(header, "Header"))
+            if (!networkISerializer.Serialize(header, "Header"))
             {
                 AZLOG(NET_FragmentQueue, "Reconstructed fragmented packet failed header serialization");
                 return false;

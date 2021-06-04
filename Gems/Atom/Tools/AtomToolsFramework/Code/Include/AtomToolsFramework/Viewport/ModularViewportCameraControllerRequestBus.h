@@ -32,7 +32,12 @@ namespace AtomToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         //! Begin a smooth transition of the camera to the requested transform.
-        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
+        //! @param worldFromLocal The transform of where the camera should end up.
+        //! @param lookAtDistance The distance between the camera transform and the imagined look at point.
+        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) = 0;
+
+        //! Look at point after an interpolation has finished and no translation has occurred.
+        virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

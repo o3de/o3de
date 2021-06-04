@@ -51,6 +51,8 @@ namespace O3DE::ProjectManager
         void TabChanged(int index);
 
     private:
+        int GetScreenTabIndex(ProjectManagerScreen screen);
+
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;

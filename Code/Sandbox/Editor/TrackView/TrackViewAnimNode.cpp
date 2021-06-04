@@ -205,10 +205,10 @@ CTrackViewAnimNode::CTrackViewAnimNode(IAnimSequence* pSequence, IAnimNode* anim
         for (int i = 0; i < nodeCount; ++i)
         {
             IAnimNode* node = pSequence->GetNode(i);
-            IAnimNode* pParentNode = node->GetParent();
+            IAnimNode* pNodeParentNode = node->GetParent();
 
             // If our node is the parent, then the current node is a child of it
-            if (animNode == pParentNode)
+            if (animNode == pNodeParentNode)
             {
                 CTrackViewAnimNodeFactory animNodeFactory;
                 CTrackViewAnimNode* pNewTVAnimNode = animNodeFactory.BuildAnimNode(pSequence, node, this);

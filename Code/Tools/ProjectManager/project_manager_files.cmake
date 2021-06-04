@@ -38,6 +38,8 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/ProjectUtils.h
     Source/ProjectUtils.cpp
+    Source/UpdateProjectSettingsScreen.h
+    Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
     Source/CreateProjectCtrl.h
@@ -48,7 +50,6 @@ set(FILES
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
-    Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/ProjectButtonWidget.h

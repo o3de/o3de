@@ -185,9 +185,35 @@ namespace AzToolsFramework
 
                         if (instanceDomFromRoot.has_value())
                         {
+                            // If a link was created for a nested instance before the changes were propagated,
+                            // then we associate it correctly here
                             instanceDomFromRootDoc.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDoc.GetAllocator());
                             if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDoc))
                             {
+                                Template& currentTemplate = currentTemplateReference->get();
+                                instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
+                                {
+                                    if (nestedInstance->GetLinkId() != InvalidLinkId)
+                                    {
+                                        return;
+                                    }
+
+                                    for (auto linkId : currentTemplate.GetLinks())
+                                    {
+                                        LinkReference nestedLink = m_prefabSystemComponentInterface->FindLink(linkId);
+                                        if (!nestedLink.has_value())
+                                        {
+                                            continue;
+                                        }
+
+                                        if (nestedLink->get().GetInstanceName() == nestedInstance->GetInstanceAlias())
+                                        {
+                                            nestedInstance->SetLinkId(linkId);
+                                            break;
+                                        }
+                                    }
+                                });
+
                                 AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                     &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
                             }

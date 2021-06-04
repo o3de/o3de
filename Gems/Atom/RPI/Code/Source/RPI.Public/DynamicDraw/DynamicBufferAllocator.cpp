@@ -30,7 +30,7 @@ namespace AZ
             // Create the ring buffer from common pool
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::DynamicInputAssembly;
-            desc.m_bufferName = AZStd::string::format("DyanmicBufferRing_%p", this);
+            desc.m_bufferName = "DyanmicBufferRing";
             desc.m_elementSize = 1;
             desc.m_byteCount = ringBufferSize;
             m_ringBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
