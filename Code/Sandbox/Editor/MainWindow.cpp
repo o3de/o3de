@@ -780,7 +780,11 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"))
         .SetParent(this);
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"))
-        .SetParent(this);
+		.SetParent(this);
+    am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."))
+		.SetParent(this);
+    am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."))
+		.SetParent(this);
     am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High"))
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)

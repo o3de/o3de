@@ -182,10 +182,6 @@ namespace O3DE::ProjectManager
                     connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
                     connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
                     connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
-
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-                    connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
-#endif
                 }
 
                 layout->addWidget(projectsScrollArea);
@@ -293,13 +289,7 @@ namespace O3DE::ProjectManager
     void ProjectsScreen::HandleEditProject(const QString& projectPath)
     {
         emit NotifyCurrentProject(projectPath);
-        emit ResetScreenRequest(ProjectManagerScreen::UpdateProject);
         emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
-    }
-    void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)
-    {
-        emit NotifyCurrentProject(projectPath);
-        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
     }
     void ProjectsScreen::HandleCopyProject(const QString& projectPath)
     {
@@ -341,6 +331,16 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            // refresh the projects content by re-creating it for now
+            if (m_projectsContent)
+            {
+                m_stack->removeWidget(m_projectsContent);
+                m_projectsContent->deleteLater();
+            }
+
+            m_projectsContent = CreateProjectsContent();
+
+            m_stack->addWidget(m_projectsContent);
             m_stack->setCurrentWidget(m_projectsContent);
         }
     }

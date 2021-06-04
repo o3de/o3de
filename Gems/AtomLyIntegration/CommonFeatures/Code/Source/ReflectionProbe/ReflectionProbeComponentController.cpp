@@ -46,6 +46,7 @@ namespace AZ
                     ->Field("InnerLength", &ReflectionProbeComponentConfig::m_innerLength)
                     ->Field("InnerWidth", &ReflectionProbeComponentConfig::m_innerWidth)
                     ->Field("UseBakedCubemap", &ReflectionProbeComponentConfig::m_useBakedCubemap)
+                    ->Field("BakedCubemapQualityLevel", &ReflectionProbeComponentConfig::m_bakedCubeMapQualityLevel)
                     ->Field("BakedCubeMapRelativePath", &ReflectionProbeComponentConfig::m_bakedCubeMapRelativePath)
                     ->Field("BakedCubeMapAsset", &ReflectionProbeComponentConfig::m_bakedCubeMapAsset)
                     ->Field("AuthoredCubeMapAsset", &ReflectionProbeComponentConfig::m_authoredCubeMapAsset)

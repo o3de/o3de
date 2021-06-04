@@ -15,7 +15,6 @@
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
 #include <ScreenHeaderWidget.h>
-#include <GemCatalog/GemCatalogScreen.h>
 
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
@@ -42,9 +41,10 @@ namespace O3DE::ProjectManager
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
-        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
+        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
         m_stack->addWidget(new NewProjectSettingsScreen());
-        m_stack->addWidget(new GemCatalogScreen());
+        m_gemCatalog = new GemCatalogScreen();
+        m_stack->addWidget(m_gemCatalog);
         vLayout->addWidget(m_stack);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
@@ -67,6 +67,15 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::CreateProject;
     }
 
+    void CreateProjectCtrl::NotifyCurrentScreen()
+    {
+        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
+        if (currentScreen)
+        {
+            currentScreen->NotifyCurrentScreen();
+        }
+    }
+
     void CreateProjectCtrl::HandleBackButton()
     {
         if (m_stack->currentIndex() > 0)
@@ -79,6 +88,7 @@ namespace O3DE::ProjectManager
             emit GotoPreviousScreenRequest();
         }
     }
+
     void CreateProjectCtrl::HandleNextButton()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
@@ -97,6 +107,9 @@ namespace O3DE::ProjectManager
 
                 m_projectInfo         = newProjectScreen->GetProjectInfo();
                 m_projectTemplatePath = newProjectScreen->GetProjectTemplatePath();
+
+                // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
+                m_gemCatalog->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/true);
             }
         }
 
@@ -110,6 +123,9 @@ namespace O3DE::ProjectManager
             auto result = PythonBindingsInterface::Get()->CreateProject(m_projectTemplatePath, m_projectInfo);
             if (result.IsSuccess())
             {
+                // automatically register the project
+                PythonBindingsInterface::Get()->AddProject(m_projectInfo.m_path);
+
                 // adding gems is not implemented yet because we don't know what targets to add or how to add them
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
@@ -117,6 +133,9 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
             }
+
+            // Enable/disable gems for the newly created project.
+            m_gemCatalog->EnableDisableGemsForProject(m_projectInfo.m_path);
         }
     }
 

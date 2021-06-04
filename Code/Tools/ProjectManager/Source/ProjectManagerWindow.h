@@ -14,6 +14,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 #include <PythonBindings.h>
+#include <ScreenDefs.h>
 #endif
 
 namespace O3DE::ProjectManager
@@ -24,7 +25,8 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath);
+        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath, const AZ::IO::PathView& projectPath,
+            ProjectManagerScreen startScreen = ProjectManagerScreen::Projects);
         ~ProjectManagerWindow();
 
     private:

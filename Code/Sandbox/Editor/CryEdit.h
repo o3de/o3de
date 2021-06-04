@@ -229,6 +229,9 @@ public:
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
+    void OnOpenProjectManagerSettings();
+    void OnOpenProjectManagerNew();
+    void OnOpenProjectManager();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
@@ -332,6 +335,8 @@ private:
     // If this flag is set, the next OnIdle() will update, even if the app is in the background, and then
     // this flag will be reset.
     bool m_bForceProcessIdle = false;
+    // This is set while IdleProcessing is running to prevent re-entrancy
+    bool m_idleProcessingRunning = false;
     // Keep the editor alive, even if no focus is set
     bool m_bKeepEditorActive = false;
     // Currently creating a new level
@@ -366,6 +371,7 @@ private:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
+    void OpenProjectManager(const AZStd::string& screen);
     void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
