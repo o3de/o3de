@@ -42,7 +42,7 @@ namespace AZ
             void SetInputReferenceAttachmentName(const Name& attachmentName);
 
             // Pass behavior overrides
-            virtual void BuildAttachmentsInternal() override;
+            virtual void BuildInternal() override;
 
         protected:
             explicit DisplayMapperFullScreenPass(const RPI::PassDescriptor& descriptor);

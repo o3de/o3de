@@ -113,7 +113,7 @@ namespace AZ
             }
         }
 
-        void ReflectionScreenSpaceBlurPass::BuildAttachmentsInternal()
+        void ReflectionScreenSpaceBlurPass::BuildInternal()
         {
             RemoveChildren();
 
@@ -166,9 +166,9 @@ namespace AZ
             // create child passes, one vertical and one horizontal blur per mip level
             CreateChildPasses(mipLevels - 1);
 
-            // call ParentPass::BuildAttachmentsInternal() first to configure the slots and auto-add the empty bindings,
+            // call ParentPass::BuildInternal() first to configure the slots and auto-add the empty bindings,
             // then we will assign attachments to the bindings
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
 
             // setup attachment bindings on vertical blur child passes
             uint32_t attachmentIndex = 0;

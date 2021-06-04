@@ -329,9 +329,8 @@ namespace AZ
                 if (validation.IsValid())
                 {
                     // Remove old pass
-                    bool deletePass = true;
                     m_rootPass->SetRenderPipeline(nullptr);
-                    m_rootPass->QueueForRemoval(deletePass);
+                    m_rootPass->QueueForRemoval();
 
                     // Set new root
                     m_rootPass = newRoot;

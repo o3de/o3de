@@ -62,9 +62,9 @@ namespace AZ
             m_bufferRef = bufferRef;
         }
 
-        void DepthOfFieldWriteFocusDepthFromGpuPass::BuildAttachmentsInternal()
+        void DepthOfFieldWriteFocusDepthFromGpuPass::BuildInternal()
         {
-            AZ_Assert(m_bufferRef != nullptr, "%s has a null buffer when calling BuildAttachmentsInternal.", GetPathName().GetCStr());
+            AZ_Assert(m_bufferRef != nullptr, "%s has a null buffer when calling BuildInternal.", GetPathName().GetCStr());
 
             AttachBufferToSlot(Name("DofDepthInputOutput"), m_bufferRef);
         }

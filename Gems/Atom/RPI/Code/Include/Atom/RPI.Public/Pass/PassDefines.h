@@ -21,3 +21,28 @@
 // Set this to 1 locally on your machine to facilitate pass debugging and get extra information
 // about passes in the output window. DO NOT SUBMIT with value set to 1
 #define AZ_RPI_ENABLE_PASS_DEBUGGING 0
+
+namespace AZ
+{
+    namespace RPI
+    {
+        enum class PassState : u8
+        {
+            Uninitialized,
+            Queued,
+            Resetting,
+            Building,
+            Initializing,
+            Initialized,
+            Rendering
+        };
+
+        enum class PassQueueState : u8
+        {
+            NoQueue,
+            QueuedForRemoval,
+            QueuedForBuild,
+            QueuedForInitialization,
+        };
+    }
+}

@@ -93,11 +93,15 @@ namespace AZ
 
         void PassSystem::Init()
         {
+            m_state = PassSystemState::Initializing;
+
             Interface<PassSystemInterface>::Register(this);
             m_passLibrary.Init();
             m_passFactory.Init(&m_passLibrary);
             m_rootPass = CreatePass<ParentPass>(Name{"Root"});
             m_rootPass->m_flags.m_partOfHierarchy = true;
+
+            m_state = PassSystemState::Idle;
         }
 
         void PassSystem::InitPassTemplates()
@@ -118,16 +122,22 @@ namespace AZ
             JsonSerializationUtils::SaveObjectToFile(&passAsset, assetFilePath);
         }
 
-        void PassSystem::QueueForBuildAttachments(Pass* pass)
+        void PassSystem::QueueForBuild(Pass* pass)
         {
-            AZ_Assert(pass != nullptr, "Queuing nullptr pass in PassSystem::QueueForBuildAttachments");
-            m_buildAttachmentsList.push_back(pass);
+            AZ_Assert(pass != nullptr, "Queuing nullptr pass in PassSystem::QueueForBuild");
+            m_buildPassList.push_back(pass);
         }
 
         void PassSystem::QueueForRemoval(Pass* pass)
         {
             AZ_Assert(pass != nullptr, "Queuing nullptr pass in PassSystem::QueueForRemoval");
             m_removePassList.push_back(pass);
+        }
+
+        void PassSystem::QueueForInitialization(Pass* pass)
+        {
+            AZ_Assert(pass != nullptr, "Queuing nullptr pass in PassSystem::QueueForInitialization");
+            m_initializePassList.push_back(pass);
         }
 
         // Sort so passes with less depth (closer to the root) are first. Used when changes 
@@ -155,6 +165,7 @@ namespace AZ
 
         void PassSystem::RemovePasses()
         {
+            m_state = PassSystemState::RemovingPasses;
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: RemovePasses");
 
             if (!m_removePassList.empty())
@@ -168,24 +179,25 @@ namespace AZ
 
                 m_removePassList.clear();
             }
+
+            m_state = PassSystemState::Idle;
         }
 
-        void PassSystem::BuildPassAttachments()
+        void PassSystem::BuildPasses()
         {
+            m_state = PassSystemState::Building;
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
-            m_isBuilding = true;
+            m_passHierarchyChanged = !m_buildPassList.empty();
 
-            m_passHierarchyChanged = !m_buildAttachmentsList.empty();
-
-            // While loop is for the event in which passes being built add more pass to m_buildAttachmentsList
-            while(!m_buildAttachmentsList.empty())
+            // While loop is for the event in which passes being built add more pass to m_buildPassList
+            while(!m_buildPassList.empty())
             {
                 AZ_Assert(m_removePassList.empty(), "Passes shouldn't be queued removal during build attachment process");
 
-                AZStd::vector< Ptr<Pass> > buildListCopy = m_buildAttachmentsList;
-                m_buildAttachmentsList.clear();
+                AZStd::vector< Ptr<Pass> > buildListCopy = m_buildPassList;
+                m_buildPassList.clear();
 
                 // Erase passes which were removed from pass tree already (which parent is empty)
                 auto unused = AZStd::remove_if(buildListCopy.begin(), buildListCopy.end(),
@@ -203,15 +215,15 @@ namespace AZ
                 }
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    pass->BuildAttachments();
+                    pass->Build();
                 }
-
-                // Signal all passes that we have finished building
-                m_rootPass->OnBuildAttachmentsFinished();
             }
 
             if (m_passHierarchyChanged)
             {
+                // Signal all passes that we have finished building
+                m_rootPass->OnBuildFinished();
+
 #if AZ_RPI_ENABLE_PASS_DEBUGGING
                 if (!m_isHotReloading)
                 {
@@ -221,11 +233,39 @@ namespace AZ
 #endif
             }
 
-            m_isBuilding = false;
+            m_state = PassSystemState::Idle;
+        }
+
+        void PassSystem::InitializePasses()
+        {
+            m_state = PassSystemState::Initializing;
+            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
+
+            if(!m_initializePassList.empty())
+            {
+                // Erase passes which were removed from pass tree already (which parent is empty)
+                auto unused = AZStd::remove_if(m_initializePassList.begin(), m_initializePassList.end(),
+                    [](const RHI::Ptr<Pass>& currentPass)
+                    {
+                        return !currentPass->m_flags.m_partOfHierarchy;
+                    });
+                m_initializePassList.erase(unused, m_initializePassList.end());
+
+                SortPassListAscending(m_initializePassList);
+
+                for (const Ptr<Pass>& pass : m_initializePassList)
+                {
+                    pass->Initialize();
+                }
+            }
+
+            m_state = PassSystemState::Idle;
         }
 
         void PassSystem::Validate()
         {
+            m_state = PassSystemState::Validating;
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: Validate");
 
             if (PassValidation::IsEnabled())
@@ -241,12 +281,15 @@ namespace AZ
                 m_rootPass->Validate(validationResults);
                 validationResults.PrintValidationIfError();
             }
+
+            m_state = PassSystemState::Idle;
         }
 
         void PassSystem::ProcessQueuedChanges()
         {
             RemovePasses();
-            BuildPassAttachments();
+            BuildPasses();
+            InitializePasses();
             Validate();
         }
 
@@ -256,6 +299,8 @@ namespace AZ
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: FrameUpdate");
 
             ProcessQueuedChanges();
+
+            m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
             m_rootPass->FrameBegin(params);
         }
@@ -263,6 +308,8 @@ namespace AZ
         void PassSystem::FrameEnd()
         {
             AZ_ATOM_PROFILE_FUNCTION("RHI", "PassSystem: FrameEnd");
+
+            m_state = PassSystemState::FrameEnd;
 
             m_rootPass->FrameEnd();
 
@@ -278,12 +325,14 @@ namespace AZ
             }
 
             m_passHierarchyChanged = false;
+
+            m_state = PassSystemState::Idle;
         }
 
         void PassSystem::Shutdown()
         {
             RemovePasses();
-            m_buildAttachmentsList.clear();
+            m_buildPassList.clear();
             m_rootPass = nullptr;
             m_passFactory.Shutdown();
             m_passLibrary.Shutdown();
@@ -296,9 +345,9 @@ namespace AZ
             return m_rootPass;
         }
 
-        bool PassSystem::IsBuilding() const
+        PassSystemState PassSystem::GetState() const
         {
-            return m_isBuilding;
+            return m_state;
         }
 
         bool PassSystem::IsHotReloading() const

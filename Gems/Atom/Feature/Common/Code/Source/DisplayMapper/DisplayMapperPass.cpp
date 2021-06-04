@@ -46,8 +46,6 @@ namespace AZ
         DisplayMapperPass::DisplayMapperPass(const RPI::PassDescriptor& descriptor)
             : RPI::ParentPass(descriptor)
         {
-            m_flags.m_alreadyCreated = false;
-
             AzFramework::NativeWindowHandle windowHandle = nullptr;
             AzFramework::WindowSystemRequestBus::BroadcastResult(
                 windowHandle,
@@ -137,7 +135,7 @@ namespace AZ
             }
         }
 
-        void DisplayMapperPass::BuildAttachmentsInternal()
+        void DisplayMapperPass::BuildInternal()
         {
             const Name outputName = Name{ "Output" };
             Name inputPass = Name{ "Parent" };
@@ -187,7 +185,7 @@ namespace AZ
 
             m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
 
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void DisplayMapperPass::FrameBeginInternal(FramePrepareParams params)

@@ -59,7 +59,7 @@ namespace AZ
             child->m_parent = this;
             child->OnHierarchyChange();
 
-            QueueForBuildAttachments();
+            QueueForBuild();
 
             // Notify pipeline
             if (m_pipeline)
@@ -248,13 +248,6 @@ namespace AZ
 
         void ParentPass::CreateChildPasses()
         {
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyCreated)
-            {
-                return;
-            }
-            m_flags.m_alreadyCreated = true;
             RemoveChildren();
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
@@ -277,19 +270,27 @@ namespace AZ
             }
         }
 
-        void ParentPass::BuildAttachmentsInternal()
+        void ParentPass::BuildInternal()
         {
             for (const Ptr<Pass>& child : m_children)
             {
-                child->BuildAttachments();
+                child->Build();
             }
         }
 
-        void ParentPass::OnBuildAttachmentsFinishedInternal()
+        void ParentPass::OnBuildFinishedInternal()
         {
             for (const Ptr<Pass>& child : m_children)
             {
-                child->OnBuildAttachmentsFinished();
+                child->OnBuildFinished();
+            }
+        }
+
+        void ParentPass::InitializeInternal()
+        {
+            for (const Ptr<Pass>& child : m_children)
+            {
+                child->Initialize();
             }
         }
 

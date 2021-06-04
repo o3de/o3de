@@ -26,8 +26,6 @@ namespace AZ
             , m_windowContext(windowContext)
             , m_childTemplateName(childTemplateName)
         {
-            m_flags.m_alreadyCreated = false;
-
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             // Create child pass
@@ -112,7 +110,7 @@ namespace AZ
             AddChild(m_childPass);
         }
 
-        void SwapChainPass::BuildAttachmentsInternal()
+        void SwapChainPass::BuildInternal()
         {
             if (m_windowContext->GetSwapChain() == nullptr)
             {
@@ -124,7 +122,7 @@ namespace AZ
 
             SetupSwapChainAttachment();
 
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
@@ -154,7 +152,7 @@ namespace AZ
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
-            QueueForBuildAttachments();
+            QueueForBuild();
         }
 
         void SwapChainPass::ReadbackSwapChain(AZStd::shared_ptr<AttachmentReadback> readback)

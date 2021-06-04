@@ -94,7 +94,7 @@ namespace AZ
             explicit ImGuiPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behaviour Overrides...
-            void OnBuildAttachmentsFinishedInternal() override;
+            void OnBuildFinishedInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions

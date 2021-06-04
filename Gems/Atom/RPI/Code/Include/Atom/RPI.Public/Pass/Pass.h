@@ -80,7 +80,7 @@ namespace AZ
         //! ending with 'Internal' to define the behavior of your passes. These virtual are recursively
         //! called in Preorder order throughout the pass tree. Only FramePrepare and FrameEnd are
         //! guaranteed to be called per frame. The other override-able functions are called as needed 
-        //! when scheduled with the PassSystem. See QueueForBuildAttachments and QueueForRemoval.
+        //! when scheduled with the PassSystem. See QueueForBuild and QueueForRemoval.
         //! 
         //! Passes are created by the PassFactory. They can be created using either Pass Name,
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
@@ -153,11 +153,14 @@ namespace AZ
 
             // --- Utility functions ---
             
-            //! Queues the pass to have BuildAttachments() called by the PassSystem on frame update 
-            void QueueForBuildAttachments();
+            //! Queues the pass to have Build() called by the PassSystem on frame update 
+            void QueueForBuild();
 
             //! Queues the pass to have RemoveFromParent() called by the PassSystem on frame update
-            void QueueForRemoval(bool needsDeletion = false);
+            void QueueForRemoval();
+
+            //! Queues the pass to have Initialize() called by the PassSystem on frame update 
+            void QueueForInitialization();
 
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
@@ -173,8 +176,8 @@ namespace AZ
 
             //! Attach an external buffer resource as attachment to specified slot
             //! The buffer will be added as a pass attachment then attach to the pass slot
-            //! Note: the pass attachment and binding will be removed after the general BuildAttachments call.
-            //!       you can add this call in pass' BuildAttachmentsInternal so it will be added whenever attachments get rebuilt
+            //! Note: the pass attachment and binding will be removed after the general Build call.
+            //!       you can add this call in pass' BuildInternal so it will be added whenever attachments get rebuilt
             void AttachBufferToSlot(AZStd::string_view slot, Data::Instance<Buffer> buffer);
             void AttachBufferToSlot(const Name& slot, Data::Instance<Buffer> buffer);
             void AttachImageToSlot(const Name& slot, Data::Instance<AttachmentImage> image);
@@ -256,6 +259,8 @@ namespace AZ
             //! Returns pointer to the parent pass
             ParentPass* GetParent() const;
 
+            PassState GetPassState() const;
+
         protected:
             explicit Pass(const PassDescriptor& descriptor);
 
@@ -309,18 +314,23 @@ namespace AZ
             // customize it's behavior, hence why these functions are called the pass behavior functions.
 
             // Resets everything in the pass (like Attachments).
-            // Called from PassSystem when pass is QueueForBuildAttachments.
+            // Called from PassSystem when pass is QueueForBuild.
             void Reset();
             virtual void ResetInternal() { }
 
             // Builds and sets up any attachments and input/output connections the pass needs.
-            // Called from PassSystem when pass is QueueForBuildAttachments.
-            void BuildAttachments();
-            virtual void BuildAttachmentsInternal() { }
+            // Called from PassSystem when pass is QueueForBuild.
+            void Build();
+            virtual void BuildInternal() { }
 
             // Called after the pass build phase has finished. Allows passes to reset build flags.
-            void OnBuildAttachmentsFinished();
-            virtual void OnBuildAttachmentsFinishedInternal() { };
+            void OnBuildFinished();
+            virtual void OnBuildFinishedInternal() { };
+
+            // Allows for additional pass initialization between building and rendering
+            // Can be queued independently of Build so as to only invoke Initialize without Build
+            void Initialize();
+            virtual void InitializeInternal() { };
 
             // The Pass's 'Render' function. Called every frame, here the pass sets up it's rendering logic with
             // the FrameGraphBuilder. This is where your derived pass needs to call ImportScopeProducer on
@@ -379,20 +389,16 @@ namespace AZ
                     struct
                     {
                         uint64_t m_createdByPassRequest : 1;
-                        uint64_t m_initialized : 1;
                         uint64_t m_enabled : 1;
                         uint64_t m_parentEnabled : 1;
-                        uint64_t m_alreadyCreated : 1;
-                        uint64_t m_alreadyReset : 1;
-                        uint64_t m_alreadyPrepared : 1;
+
+                        uint64_t m_initialized : 1;
+
                         uint64_t m_partOfHierarchy : 1;
                         uint64_t m_hasDrawListTag : 1;
                         uint64_t m_hasPipelineViewTag : 1;
-                        uint64_t m_queuedForBuildAttachment : 1;
                         uint64_t m_timestampQueryEnabled : 1;
                         uint64_t m_pipelineStatisticsQueryEnabled : 1;
-                        uint64_t m_isBuildingAttachments : 1;
-                        uint64_t m_isRendering : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -510,6 +516,12 @@ namespace AZ
             // Depth of the tree hierarchy this pass is at.
             // Example: Root would be depth 0, Root.Ssao.Downsample depth 2
             uint32_t m_treeDepth = 0;
+
+            // Used to track what phase of build/execution the pass is in
+            PassState m_state = PassState::Uninitialized;
+
+            // Used to track what phases of build/initialization the pass is queued for
+            PassQueueState m_queueState = PassQueueState::NoQueue;
         };
 
         //! Struct used to return results from Pass hierarchy validation

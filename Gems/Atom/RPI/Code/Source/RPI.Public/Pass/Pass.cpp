@@ -71,7 +71,7 @@ namespace AZ
             }
 
             PassSystemInterface::Get()->RegisterPass(this);
-            QueueForBuildAttachments();
+            QueueForBuild();
         }
 
         Pass::~Pass()
@@ -161,6 +161,11 @@ namespace AZ
         }
 
         // --- Getters & Setters ---
+
+        PassState Pass::GetPassState() const
+        {
+            return m_state;
+        }
 
         ParentPass* Pass::GetParent() const
         {
@@ -350,28 +355,49 @@ namespace AZ
 
         // --- Queuing functions with PassSystem ---
 
-        void Pass::QueueForBuildAttachments()
+        void Pass::QueueForBuild()
         {
             // Don't queue if we're in building phase
-            if (!PassSystemInterface::Get()->IsBuilding())
+            if (PassSystemInterface::Get()->GetState() != PassSystemState::Building &&
+                (m_queueState == PassQueueState::NoQueue || m_queueState == PassQueueState::QueuedForInitialization))
             {
-                // m_queuedForBuildAttachment makes sure the pass only be queue for once
-                if (!m_flags.m_queuedForBuildAttachment)
-                {
-                    PassSystemInterface::Get()->QueueForBuildAttachments(this);
-                    m_flags.m_queuedForBuildAttachment = true;
+                PassSystemInterface::Get()->QueueForBuild(this);
+                m_queueState = PassQueueState::QueuedForBuild;
 
-                    // Set these two flags to false since when queue build attachments request, they should all be already be false except one use
-                    // case that the pass system processed all queued requests when active a scene. 
-                    m_flags.m_alreadyPrepared = false;
-                    m_flags.m_alreadyReset = false;
+                if (m_state != PassState::Rendering)
+                {
+                    m_state = PassState::Queued;
                 }
             }
         }
 
-        void Pass::QueueForRemoval([[maybe_unused]] bool needsDeletion)
+        void Pass::QueueForInitialization()
         {
-            PassSystemInterface::Get()->QueueForRemoval(this);
+            // Don't queue if we're in initialization phase
+            if (PassSystemInterface::Get()->GetState() != PassSystemState::Initializing && m_queueState == PassQueueState::NoQueue)
+            {
+                PassSystemInterface::Get()->QueueForInitialization(this);
+                m_queueState = PassQueueState::QueuedForInitialization;
+
+                if(m_state != PassState::Rendering)
+                {
+                    m_state = PassState::Queued;
+                }
+            }
+        }
+
+        void Pass::QueueForRemoval()
+        {
+            if (m_queueState != PassQueueState::QueuedForRemoval)
+            {
+                PassSystemInterface::Get()->QueueForRemoval(this);
+                m_queueState = PassQueueState::QueuedForRemoval;
+
+                if (m_state != PassState::Rendering)
+                {
+                    m_state = PassState::Queued;
+                }
+            }
         }
 
         // --- PassTemplate related functions ---
@@ -990,7 +1016,7 @@ namespace AZ
         {
             Ptr<PassAttachment> targetAttachment = nullptr;
 
-            if (!m_flags.m_isBuildingAttachments && !IsEnabled() && binding.m_slotType == PassSlotType::Output && binding.m_fallbackBinding)
+            if (m_state != PassState::Building && !IsEnabled() && binding.m_slotType == PassSlotType::Output && binding.m_fallbackBinding)
             {
                 targetAttachment = binding.m_fallbackBinding->m_attachment;
             }
@@ -1037,13 +1063,11 @@ namespace AZ
 
         void Pass::Reset()
         {
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyReset)
+            if (m_queueState != PassQueueState::QueuedForBuild || m_state != PassState::Queued)
             {
                 return;
             }
-            m_flags.m_alreadyReset = true;
+            m_state = PassState::Resetting;
 
             // Store references to imported attachments to underlying images and buffers aren't deleted during attachment building
             StoreImportedAttachmentReferences();
@@ -1060,18 +1084,13 @@ namespace AZ
             ResetInternal();
         }
 
-        void Pass::BuildAttachments()
+        void Pass::Build()
         {
-            m_flags.m_queuedForBuildAttachment = false;
-
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyPrepared)
+            if (m_queueState != PassQueueState::QueuedForBuild || m_state != PassState::Resetting)
             {
                 return;
             }
-            m_flags.m_alreadyPrepared = true;
-            m_flags.m_isBuildingAttachments = true;
+            m_state = PassState::Building;
 
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
@@ -1084,7 +1103,7 @@ namespace AZ
             SetupInputsFromTemplate();
 
             // Custom pass behavior
-            BuildAttachmentsInternal();
+            BuildInternal();
 
             // Outputs
             SetupOutputsFromTemplate();
@@ -1095,21 +1114,29 @@ namespace AZ
             UpdateOwnedAttachments();
             UpdateAttachmentUsageIndices();
 
-            m_flags.m_isBuildingAttachments = false;
+            // Queue for Initialization
+            m_queueState = PassQueueState::NoQueue;
+            QueueForInitialization();
         }
 
-        void Pass::OnBuildAttachmentsFinished()
+        void Pass::OnBuildFinished()
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            // These flags are to prevent a pass from being built multiple times.
-            // We reset them after each build phase.
-            m_flags.m_alreadyCreated = false;
-            m_flags.m_alreadyPrepared = false;
-            m_flags.m_alreadyReset = false;
-            m_flags.m_queuedForBuildAttachment = false;
             m_importedAttachmentStore.clear();
-            OnBuildAttachmentsFinishedInternal();
+            OnBuildFinishedInternal();
+        }
+
+        void Pass::Initialize()
+        {
+            if (m_queueState != PassQueueState::QueuedForInitialization || m_state != PassState::Queued)
+            {
+                return;
+            }
+
+            m_state = PassState::Initializing;
+            InitializeInternal();
+            m_state = PassState::Initialized;
         }
 
         void Pass::Validate(PassValidationResults& validationResults)
@@ -1165,7 +1192,7 @@ namespace AZ
                 UpdateConnectedBindings();
                 return;
             }
-            m_flags.m_isRendering = true;
+            m_state = PassState::Rendering;
 
             UpdateConnectedBindings();
             UpdateOwnedAttachments();
@@ -1180,10 +1207,10 @@ namespace AZ
 
         void Pass::FrameEnd()
         {
-            if (m_flags.m_isRendering)
+            if (m_state == PassState::Rendering)
             {
                 FrameEndInternal();
-                m_flags.m_isRendering = false;
+                m_state = (m_queueState == PassQueueState::NoQueue) ? PassState::Initialized : PassState::Queued;
             }
         }
 

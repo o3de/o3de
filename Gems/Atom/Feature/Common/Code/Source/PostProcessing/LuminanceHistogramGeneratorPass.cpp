@@ -86,7 +86,7 @@ namespace AZ
             return colorBuffer->m_descriptor.m_image.m_size;
         }
 
-        void LuminanceHistogramGeneratorPass::BuildAttachmentsInternal()
+        void LuminanceHistogramGeneratorPass::BuildInternal()
         {
             CreateHistogramBuffer();
             AttachHistogramBuffer();

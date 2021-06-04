@@ -44,7 +44,7 @@ namespace AZ
 
             // Pass Overrides...
             void ResetInternal() override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_verticalBlurChildPasses;
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_horizontalBlurChildPasses;

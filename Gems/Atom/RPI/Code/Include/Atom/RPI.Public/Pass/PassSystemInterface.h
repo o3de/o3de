@@ -40,6 +40,18 @@ namespace AZ
 
         using PassCreator = AZStd::function<Ptr<Pass>(const PassDescriptor& descriptor)>;
 
+        enum class PassSystemState : u32
+        {
+            Unitialized,
+            Idle,
+            RemovingPasses,
+            Building,
+            Initializing,
+            Validating,
+            Rendering,
+            FrameEnd,
+        };
+
         class PassSystemInterface
         {
             friend class Pass;
@@ -76,9 +88,6 @@ namespace AZ
 
             //! Prints the entire pass hierarchy from the root
             virtual void DebugPrintPassHierarchy() = 0;
-
-            //! Returns whether the Pass System is currently in it's build phase
-            virtual bool IsBuilding() const = 0;
 
             //! Returns whether the Pass System is currently hot reloading
             virtual bool IsHotReloading() const = 0;
@@ -157,14 +166,19 @@ namespace AZ
             //! The handler can add new pass templates or load pass template mappings from assets
             virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
 
+            virtual PassSystemState GetState() const = 0;
+
         private:
             // These functions are only meant to be used by the Pass class
 
-            // Schedules a pass to have it's BuildAttachments() function called during frame update
-            virtual void QueueForBuildAttachments(Pass* pass) = 0;
+            // Schedules a pass to have it's Build() function called during frame update
+            virtual void QueueForBuild(Pass* pass) = 0;
 
             // Schedules a pass to be deleted during frame update
             virtual void QueueForRemoval(Pass* pass) = 0;
+
+            // Schedules a pass to be initialized during frame update
+            virtual void QueueForInitialization(Pass* pass) = 0;
 
             //! Registers the pass with the pass library. Called in the Pass constructor.
             virtual void RegisterPass(Pass* pass) = 0;

@@ -109,8 +109,9 @@ namespace AZ
             // --- Pass Behaviour Overrides ---
 
             void ResetInternal() override;
-            void BuildAttachmentsInternal() override;
-            void OnBuildAttachmentsFinishedInternal() override;
+            void BuildInternal() override;
+            void OnBuildFinishedInternal() override;
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 

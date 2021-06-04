@@ -37,8 +37,6 @@ namespace AZ
         EnvironmentCubeMapPass::EnvironmentCubeMapPass(const PassDescriptor& passDescriptor)
             : ParentPass(passDescriptor)
         {
-            m_flags.m_alreadyCreated = false;
-
             // load pass data
             const EnvironmentCubeMapPassData* passData = PassUtils::GetPassData<EnvironmentCubeMapPassData>(passDescriptor);
             if (passData == nullptr)
@@ -113,7 +111,7 @@ namespace AZ
             AddChild(m_childPass);
         }
 
-        void EnvironmentCubeMapPass::BuildAttachmentsInternal()
+        void EnvironmentCubeMapPass::BuildInternal()
         {
             // create output image descriptor
             m_outputImageDesc = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::Color | RHI::ImageBindFlags::CopyRead, CubeMapFaceSize, CubeMapFaceSize, RHI::Format::R16G16B16A16_FLOAT);
@@ -135,7 +133,7 @@ namespace AZ
 
             m_attachmentBindings.push_back(outputAttachment);
 
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void EnvironmentCubeMapPass::FrameBeginInternal(FramePrepareParams params)

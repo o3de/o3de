@@ -108,7 +108,7 @@ namespace AZ
             return -1;
         }
 
-        void LightCullingRemap::BuildAttachmentsInternal()
+        void LightCullingRemap::BuildInternal()
         {
             m_tileDataIndex = FindInputOutputBinding(AZ::Name("TileLightData"));
             m_tileDim = GetTileDataBufferResolution();
