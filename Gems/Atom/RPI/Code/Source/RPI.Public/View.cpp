@@ -15,18 +15,28 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Culling.h>
-
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <Atom_RPI_Traits_Platform.h>
+
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+#include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
+#endif
 
 namespace AZ
 {
     namespace RPI
     {
+        // fixed-size software occlusion culling buffer
+        const uint32_t MaskedSoftwareOcclusionCullingWidth = 1920;
+        const uint32_t MaskedSoftwareOcclusionCullingHeight = 1080;
+
         ViewPtr View::CreateView(const AZ::Name& name, UsageFlags usage)
         {
             View* view = aznew View(name, usage);
@@ -51,6 +61,21 @@ namespace AZ
             {
                 m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgAsset);
             }
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();
+            m_maskedOcclusionCulling->SetResolution(MaskedSoftwareOcclusionCullingWidth, MaskedSoftwareOcclusionCullingHeight);
+#endif
+        }
+
+        View::~View()
+        {
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            if (m_maskedOcclusionCulling)
+            {
+                MaskedOcclusionCulling::Destroy(m_maskedOcclusionCulling);
+                m_maskedOcclusionCulling = nullptr;
+            }
+#endif
         }
 
         void View::SetDrawListMask(const RHI::DrawListMask& drawListMask)
@@ -394,5 +419,16 @@ namespace AZ
             m_clipSpaceOffset.Set(0);
         }
 
+        void View::BeginCulling()
+        {
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            m_maskedOcclusionCulling->ClearBuffer();
+#endif
+        }
+
+        MaskedOcclusionCulling* View::GetMaskedOcclusionCulling()
+        {
+            return m_maskedOcclusionCulling;
+        }
     } // namespace RPI
 } // namespace AZ
