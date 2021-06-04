@@ -68,7 +68,7 @@ namespace O3DE::ProjectManager
         QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
         // Append cmake path to PATH incase it is missing
         QDir cmakePath(engineInfo.m_path);
-        cmakePath.cd("cmake/runtime");
+        cmakePath.cd("cmake/runtime/bin");
         QString pathValue = currentEnvironment.value("PATH");
         pathValue += ";" + cmakePath.path();
         currentEnvironment.insert("PATH", pathValue);
