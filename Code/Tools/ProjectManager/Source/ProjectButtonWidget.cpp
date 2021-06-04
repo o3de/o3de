@@ -11,7 +11,7 @@
  */
 
 #include <ProjectButtonWidget.h>
-
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -81,18 +81,24 @@ namespace O3DE::ProjectManager
         m_projectImageLabel = new LabelButton(this);
         m_projectImageLabel->setFixedSize(s_projectImageWidth, s_projectImageHeight);
         m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
 
         m_projectImageLabel->setPixmap(
             QPixmap(m_projectInfo.m_imagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
-        QMenu* newProjectMenu = new QMenu(this);
-        m_editProjectAction = newProjectMenu->addAction(tr("Edit Project Settings..."));
-        newProjectMenu->addSeparator();
-        m_copyProjectAction = newProjectMenu->addAction(tr("Duplicate"));
-        newProjectMenu->addSeparator();
-        m_removeProjectAction = newProjectMenu->addAction(tr("Remove from O3DE"));
-        m_deleteProjectAction = newProjectMenu->addAction(tr("Delete this Project"));
+        QMenu* menu = new QMenu(this);
+        menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+        menu->addSeparator();
+        menu->addAction(tr("Open Project folder..."), this, [this]()
+        { 
+            AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
+        });
+        menu->addSeparator();
+        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo.m_path); });
+        menu->addSeparator();
+        menu->addAction(tr("Remote from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
 
         QFrame* footer = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
@@ -104,17 +110,11 @@ namespace O3DE::ProjectManager
 
             QPushButton* projectMenuButton = new QPushButton(this);
             projectMenuButton->setObjectName("projectMenuButton");
-            projectMenuButton->setMenu(newProjectMenu);
+            projectMenuButton->setMenu(menu);
             hLayout->addWidget(projectMenuButton);
         }
 
         vLayout->addWidget(footer);
-
-        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
-        connect(m_editProjectAction, &QAction::triggered, [this]() { emit EditProject(m_projectInfo.m_path); });
-        connect(m_copyProjectAction, &QAction::triggered, [this]() { emit CopyProject(m_projectInfo.m_path); });
-        connect(m_removeProjectAction, &QAction::triggered, [this]() { emit RemoveProject(m_projectInfo.m_path); });
-        connect(m_deleteProjectAction, &QAction::triggered, [this]() { emit DeleteProject(m_projectInfo.m_path); });
     }
 
     void ProjectButton::SetButtonEnabled(bool enabled)
