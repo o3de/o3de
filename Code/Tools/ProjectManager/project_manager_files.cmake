@@ -34,6 +34,7 @@ set(FILES
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
+    Source/BuildProjectInfo.h
     Source/ProjectInfo.h
     Source/ProjectInfo.cpp
     Source/ProjectUtils.h

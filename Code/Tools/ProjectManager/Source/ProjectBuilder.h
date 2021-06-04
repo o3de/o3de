@@ -12,20 +12,55 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QFuture>
-#include <QFutureWatcher>
+#include <QThread>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    class ProjectBuilder
+    QT_FORWARD_DECLARE_CLASS(ProjectButton)
+
+    class ProjectBuilderWorker : public QObject
     {
+        Q_OBJECT
+
     public:
-        explicit ProjectBuilder();
-        void AddJob(const QString& projectPath);
+        explicit ProjectBuilderWorker(const QString& projectPath);
+        ~ProjectBuilderWorker() = default;
+
+    public slots:
+        void BuildProject();
+
+    signals:
+        void UpdateProgress(int progress);
+        void Done(const QString& result);
 
     private:
-        QList<QFuture<QString>> m_futures;
-        QList<QFutureWatcher<QFuture<QString>>> m_futureWatchers;
+        QString m_projectPath;
+    };
+
+    class ProjectBuilderController : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        explicit ProjectBuilderController(const QString& projectPath, ProjectButton* projectButton, QWidget* parent = nullptr);
+        ~ProjectBuilderController();
+
+        void SetProjectButton(ProjectButton* projectButton);
+        QString ProjectPath();
+
+    public slots:
+        void Start();
+        void UpdateUIProgress(int progress);
+        void HandleResults(const QString& result);
+
+    signals:
+        void Done();
+
+    private:
+        QString m_projectPath;
+        QThread m_workerThread;
+        ProjectButton* m_projectButton;
+        QWidget* m_parent;
     };
 } // namespace O3DE::ProjectManager

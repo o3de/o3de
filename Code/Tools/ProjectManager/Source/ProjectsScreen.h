@@ -13,21 +13,29 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <BuildProjectInfo.h>
+#include <ProjectInfo.h>
+
+#include <QQueue>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+QT_FORWARD_DECLARE_CLASS(QLayout)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(ProjectBuilderController);
+    QT_FORWARD_DECLARE_CLASS(ProjectButton);
+
     class ProjectsScreen
         : public ScreenWidget
     {
 
     public:
         explicit ProjectsScreen(QWidget* parent = nullptr);
-        ~ProjectsScreen() = default;
+        ~ProjectsScreen();
 
         ProjectManagerScreen GetScreenEnum() override;
         QString GetTabText() override;
@@ -45,19 +53,28 @@ namespace O3DE::ProjectManager
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
 
+        void QueueBuildProject(const BuildProjectInfo& buildProjectInfo);
+        void ProjectBuildDone();
+
         void paintEvent(QPaintEvent* event) override;
 
     private:
         QFrame* CreateFirstTimeContent();
-        QFrame* CreateProjectsContent();
+        QFrame* CreateProjectsContent(QString buildProjectPath = "", ProjectButton** projectButton = nullptr);
+        ProjectButton* CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing = false);
+        void ResetProjectsContent();
         bool ShouldDisplayFirstTimeContent();
 
-        QAction* m_createNewProjectAction;
-        QAction* m_addExistingProjectAction;
+        void StartProjectBuild(const BuildProjectInfo& buildProjectInfo);
+
+        QAction* m_createNewProjectAction = nullptr;
+        QAction* m_addExistingProjectAction = nullptr;
         QPixmap m_background;
-        QFrame* m_firstTimeContent;
-        QFrame* m_projectsContent;
-        QStackedWidget* m_stack;
+        QFrame* m_firstTimeContent = nullptr;
+        QFrame* m_projectsContent = nullptr;
+        QStackedWidget* m_stack = nullptr;
+        QQueue<BuildProjectInfo> m_buildQueue;
+        ProjectBuilderController* m_currentBuilder = nullptr;
 
         const QString m_projectPreviewImagePath = "/preview.png";
 

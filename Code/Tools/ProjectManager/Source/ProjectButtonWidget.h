@@ -57,12 +57,12 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
 
-    public:
-        explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr);
+    public: explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
         ~ProjectButton() = default;
 
         void SetButtonEnabled(bool enabled);
         void SetButtonOverlayText(const QString& text);
+        void SetProgressBarValue(int progress);
 
     signals:
         void OpenProject(const QString& projectName);

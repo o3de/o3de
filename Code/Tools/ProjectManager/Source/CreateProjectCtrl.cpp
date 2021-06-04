@@ -120,11 +120,15 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            bool shouldRebuild = false;
+
             auto result = PythonBindingsInterface::Get()->CreateProject(m_projectTemplatePath, m_projectInfo);
             if (result.IsSuccess())
             {
                 // automatically register the project
                 PythonBindingsInterface::Get()->AddProject(m_projectInfo.m_path);
+
+                shouldRebuild = true;
 
                 // adding gems is not implemented yet because we don't know what targets to add or how to add them
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
@@ -136,6 +140,11 @@ namespace O3DE::ProjectManager
 
             // Enable/disable gems for the newly created project.
             m_gemCatalog->EnableDisableGemsForProject(m_projectInfo.m_path);
+
+            if (shouldRebuild)
+            {
+                emit NotifyBuildProject(BuildProjectInfo{ m_projectInfo.m_path, true });
+            }
         }
     }
 

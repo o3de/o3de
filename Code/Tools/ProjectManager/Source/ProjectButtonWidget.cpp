@@ -12,7 +12,6 @@
 
 #include <ProjectButtonWidget.h>
 
-
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QResizeEvent>
@@ -80,7 +79,7 @@ namespace O3DE::ProjectManager
         return m_progressBar;
     }
 
-    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent)
+    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
         : QFrame(parent)
         , m_projectInfo(projectInfo)
     {
@@ -90,8 +89,14 @@ namespace O3DE::ProjectManager
         }
 
         BaseSetup();
-        //ReadySetup();
-        ProcessingSetup();
+        if (processing)
+        {
+            ProcessingSetup();
+        }
+        else
+        {
+            ReadySetup();
+        }
     }
 
     void ProjectButton::BaseSetup()
@@ -127,11 +132,11 @@ namespace O3DE::ProjectManager
     {
         m_projectImageLabel->OverlayLabel()->setAlignment(Qt::AlignBottom);
         m_projectImageLabel->SetEnabled(false);
-        m_projectImageLabel->SetOverlayText("Installing Gems... (25%)\n\n");
+        m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
 
         QProgressBar* progressBar = m_projectImageLabel->ProgressBar();
         progressBar->setVisible(true);
-        progressBar->setValue(35);
+        progressBar->setValue(0);
     }
 
     void ProjectButton::ReadySetup()
@@ -164,5 +169,10 @@ namespace O3DE::ProjectManager
     void ProjectButton::SetButtonOverlayText(const QString& text)
     {
         m_projectImageLabel->SetOverlayText(text);
+    }
+
+    void ProjectButton::SetProgressBarValue(int progress)
+    {
+        m_projectImageLabel->ProgressBar()->setValue(progress);
     }
 } // namespace O3DE::ProjectManager
