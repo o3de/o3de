@@ -433,6 +433,11 @@ namespace AzToolsFramework
         return m_manipulatorSpaceWithLocalTransform.GetSpace();
     }
 
+    const AZ::Vector3& Manipulators::GetNonUniformScale() const
+    {
+        return m_manipulatorSpaceWithLocalTransform.GetNonUniformScale();
+    }
+
     void Manipulators::SetSpace(const AZ::Transform& worldFromLocal)
     {
         m_manipulatorSpaceWithLocalTransform.SetSpace(worldFromLocal);

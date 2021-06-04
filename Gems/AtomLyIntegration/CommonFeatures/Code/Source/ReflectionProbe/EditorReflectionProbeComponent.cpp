@@ -39,6 +39,7 @@ namespace AZ
                 serializeContext->Class<EditorReflectionProbeComponent, BaseClass>()
                     ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
                     ->Field("useBakedCubemap", &EditorReflectionProbeComponent::m_useBakedCubemap)
+                    ->Field("bakedCubeMapQualityLevel", &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel)
                     ->Field("bakedCubeMapRelativePath", &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath)
                     ->Field("authoredCubeMapAsset", &EditorReflectionProbeComponent::m_authoredCubeMapAsset)
                 ;
@@ -67,6 +68,13 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorReflectionProbeComponent::OnUseBakedCubemapValidate)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel, "Baked Cubemap Quality", "Resolution of the baked cubemap")
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                                ->EnumAttribute(BakedCubeMapQualityLevel::VeryLow, "Very Low")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::Low, "Low")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::Medium, "Medium")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::High, "High")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::VeryHigh, "Very High")
                             ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath, "Baked Cubemap Path", "Baked Cubemap Path")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
@@ -332,6 +340,12 @@ namespace AZ
                     // clear it to force the generation of a new filename
                     cubeMapRelativePath.clear();
                 }
+
+                // if the quality level changed we need to generate a new filename
+                if (m_controller.m_configuration.m_bakedCubeMapQualityLevel != m_bakedCubeMapQualityLevel)
+                {
+                    cubeMapRelativePath.clear();
+                }
             }
 
             // build a new cubemap path if necessary
@@ -345,7 +359,10 @@ namespace AZ
                 AZStd::string uuidString;
                 uuid.ToString(uuidString);
 
-                cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + "_iblspecularcm.dds";
+                // determine the filemask suffix from the cubemap quality level setting
+                AZStd::string fileSuffix = BakedCubeMapFileSuffixes[aznumeric_cast<uint32_t>(m_bakedCubeMapQualityLevel)];
+
+                cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + fileSuffix;
 
                 // replace any invalid filename characters
                 auto invalidCharacters = [](char letter)
@@ -384,6 +401,7 @@ namespace AZ
             // save the relative source path in the configuration
             AzToolsFramework::ScopedUndoBatch undoBatch("Cubemap path changed.");
             m_controller.m_configuration.m_bakedCubeMapRelativePath = cubeMapRelativePath;
+            m_controller.m_configuration.m_bakedCubeMapQualityLevel = m_bakedCubeMapQualityLevel;
             SetDirty();
 
             // update UI cubemap path display

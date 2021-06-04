@@ -127,13 +127,14 @@ namespace AZ
      */
     class EditContext
     {
+    public:
         /// @cond EXCLUDE_DOCS
         class ClassBuilder;
         class EnumBuilder;
         using ClassInfo = ClassBuilder; ///< @deprecated Use EditContext::ClassBuilder
         using EnumInfo = EnumBuilder; ///< @deprecated Use EditContext::EnumBuilder
         /// @endcond
-    public:
+
         AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator, 0);
 
         /**
@@ -186,6 +187,7 @@ namespace AZ
          *  look at the unit tests and example to see use cases.
          *
          */
+    public:
         class ClassBuilder
         {
             friend EditContext;
@@ -399,6 +401,7 @@ namespace AZ
             EnumBuilder* Value(const char* name, E value);
         };
 
+    private:
         typedef AZStd::list<Edit::ClassData> ClassDataListType;
         typedef AZStd::unordered_map<AZ::Uuid, Edit::ElementData> EnumDataMapType;
 
