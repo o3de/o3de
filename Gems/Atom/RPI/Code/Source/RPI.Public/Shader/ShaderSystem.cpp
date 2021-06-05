@@ -81,7 +81,7 @@ namespace AZ
                 {
                     return ShaderResourceGroup::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
                 };
-                Data::InstanceDatabase<ShaderResourceGroup>::Create(azrtti_typeid<ShaderResourceGroup>(), handler);
+                Data::InstanceDatabase<ShaderResourceGroup, false /*useAssetTypeAsKeyForHandlers*/>::Create(azrtti_typeid<ShaderResourceGroup>(), handler);
             }
 
             {
@@ -90,7 +90,7 @@ namespace AZ
                 {
                     return ShaderResourceGroupPool::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
                 };
-                Data::InstanceDatabase<ShaderResourceGroupPool>::Create(azrtti_typeid<ShaderResourceGroup>(), handler);
+                Data::InstanceDatabase<ShaderResourceGroupPool, false /*useAssetTypeAsKeyForHandlers*/>::Create(azrtti_typeid<ShaderResourceGroupPool>(), handler);
             }
         }
 

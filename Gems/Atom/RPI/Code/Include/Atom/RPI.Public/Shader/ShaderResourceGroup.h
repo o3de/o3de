@@ -54,7 +54,8 @@ namespace AZ
             : public AZ::Data::InstanceData
         {
             friend class ShaderSystem;
-            friend class ShaderResourceGroupPool
+            friend class ShaderResourceGroupPool;
+
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroup, "{88B52D0C-9CBF-4B4D-B9E2-180BA602E1EA}");
             AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
@@ -84,7 +85,7 @@ namespace AZ
             RHI::ShaderInputImageUnboundedArrayIndex  FindShaderInputImageUnboundedArrayIndex(const Name& name) const;
 
             /// Returns the parent shader shader asset where the SRG layout data came from.
-            const Data::Asset<ShaderAsset>& GetAsset() const;
+            /// const Data::Asset<ShaderAsset>& GetAsset() const;
 
             /// Returns the RHI shader resource group layout.
             const RHI::ShaderResourceGroupLayout* GetLayout() const;
@@ -286,7 +287,7 @@ namespace AZ
             //! the AZ::Data::InstanceId. This works well when there's a one-to-one relationship between the Asset and the InstanceData.
             //!
             //! ShaderResourceGroup & ShaderResourceGroupPool are different because one ShaderAsset can have several
-            //! ShaderResourceGroupLayouts define in it. This means using only the AssetId is not sufficient.
+            //! ShaderResourceGroupLayouts defined in it. This means that using only the AssetId is not sufficient.
             //!
             //! This function searches the ShaderResourceGroupLayout of the given @srgName in the @shaderAsset. If it finds such
             //! ShaderResourceGroupLayout it makes an InstanceId based on:

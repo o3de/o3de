@@ -327,5 +327,8 @@ namespace AZ
             /// The computed hash value.
             HashValue64 m_hash = HashValue64{ 0 };
         };
+
+        // Suitable for functions that return a null const RHI::Ptr<RHI::ShaderResourceGroupLayout>&.
+        static const RHI::Ptr<RHI::ShaderResourceGroupLayout> NullSrgLayout;
     }
 }

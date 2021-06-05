@@ -83,11 +83,6 @@ namespace AZ
                     AZ_Assert(false, "ShaderResourceGroupLayout cannot be finalized when calling this method.");
                     return false;
                 }
-                if (m_azslFileOrigin.empty())
-                {
-                    AZ_Assert(false, "ShaderResourceGroupLayout source file of origin is empty.");
-                    return false;
-                }
             }
             return true;
         }       
@@ -257,6 +252,12 @@ namespace AZ
         {
             if (!ValidateFinalizeState(ValidateFinalizeStateExpect::NotFinalized))
             {
+                return false;
+            }
+
+            if (m_azslFileOfOrigin.empty())
+            {
+                AZ_Assert(false, "ShaderResourceGroupLayout source file of origin is empty.");
                 return false;
             }
 
