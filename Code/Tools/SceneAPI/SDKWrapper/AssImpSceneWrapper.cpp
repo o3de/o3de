@@ -42,7 +42,7 @@ namespace AZ
         }
 
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
-        void signal_handler(int signal) 
+        void signal_handler([[maybe_unused]] int signal) 
         {
             AZ_TracePrintf(
                 SceneAPI::Utilities::ErrorWindow,

@@ -12,17 +12,22 @@
 
 #pragma once
 
-#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
-#include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/Manipulators/ManipulatorBus.h>
+#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Manipulators/PlanarManipulator.h>
 
 namespace AzManipulatorTestFramework
 {
-    //! Create a linear manipulator with a unit sphere bounds.
+    //! Create a linear manipulator with a unit sphere bound.
     AZStd::shared_ptr<AzToolsFramework::LinearManipulator> CreateLinearManipulator(
-        const AzToolsFramework::ManipulatorManagerId manipulatorManagerId,
-        const AZ::Vector3& position = AZ::Vector3::CreateZero(),
-        const float radius = 1.0f);
+        const AzToolsFramework::ManipulatorManagerId manipulatorManagerId, const AZ::Vector3& position = AZ::Vector3::CreateZero(),
+        float radius = 1.0f);
+
+    //! Create a planar manipulator with a unit sphere bound.
+    AZStd::shared_ptr<AzToolsFramework::PlanarManipulator> CreatePlanarManipulator(
+        const AzToolsFramework::ManipulatorManagerId manipulatorManagerId, const AZ::Vector3& position = AZ::Vector3::CreateZero(),
+        float radius = 1.0f);
 
     //! Create a mouse pick from the specified ray and screen point.
     AzToolsFramework::ViewportInteraction::MousePick CreateMousePick(
@@ -34,14 +39,12 @@ namespace AzManipulatorTestFramework
 
     //! Create a mouse interaction from the specified pick, buttons, interaction id and keyboard modifiers.
     AzToolsFramework::ViewportInteraction::MouseInteraction CreateMouseInteraction(
-        const AzToolsFramework::ViewportInteraction::MousePick& mousePick,
-        AzToolsFramework::ViewportInteraction::MouseButtons buttons,
+        const AzToolsFramework::ViewportInteraction::MousePick& mousePick, AzToolsFramework::ViewportInteraction::MouseButtons buttons,
         AzToolsFramework::ViewportInteraction::InteractionId interactionId,
         AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers);
 
     //! Create a mouse buttons from the specified mouse button.
-    AzToolsFramework::ViewportInteraction::MouseButtons CreateMouseButtons(
-        AzToolsFramework::ViewportInteraction::MouseButton button);
+    AzToolsFramework::ViewportInteraction::MouseButtons CreateMouseButtons(AzToolsFramework::ViewportInteraction::MouseButton button);
 
     //! Create a mouse interaction event from the specified interaction and event.
     AzToolsFramework::ViewportInteraction::MouseInteractionEvent CreateMouseInteractionEvent(
@@ -61,5 +64,5 @@ namespace AzManipulatorTestFramework
     AzFramework::ScreenPoint GetCameraStateViewportCenter(const AzFramework::CameraState& cameraState);
 
     //! Default viewport size (1080p) in 16:9 aspect ratio.
-    const auto DefaultViewportSize = AZ::Vector2(1920.0f, 1080.0f);
+    inline const auto DefaultViewportSize = AZ::Vector2(1920.0f, 1080.0f);
 } // namespace AzManipulatorTestFramework

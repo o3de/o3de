@@ -14,7 +14,12 @@
 #include <PythonBindingsInterface.h>
 #include <FormLineEditWidget.h>
 #include <FormBrowseEditWidget.h>
+#include <TemplateButtonWidget.h>
 #include <PathValidator.h>
+#include <EngineInfo.h>
+#include <CreateProjectCtrl.h>
+#include <TagWidget.h>
+#include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -27,89 +32,119 @@
 #include <QSpacerItem>
 #include <QStandardPaths>
 #include <QFrame>
+#include <QScrollArea>
+#include <QAbstractButton>
 
 namespace O3DE::ProjectManager
 {
-    constexpr const char* k_pathProperty = "Path";
+    constexpr const char* k_templateIndexProperty = "TemplateIndex";
 
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
-        : ScreenWidget(parent)
+        : ProjectSettingsScreen(parent)
     {
-        QHBoxLayout* hLayout = new QHBoxLayout(this);
-        hLayout->setAlignment(Qt::AlignLeft);
-        hLayout->setContentsMargins(0,0,0,0);
+        const QString defaultName{ "NewProject" };
+        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
 
-        // if we don't provide a parent for this box layout the stylesheet doesn't take
-        // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
-        QFrame* projectSettingsFrame = new QFrame(this);
-        projectSettingsFrame->setObjectName("projectSettings");
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        m_projectName->lineEdit()->setText(defaultName);
+        m_projectPath->lineEdit()->setText(defaultPath);
 
-        // you cannot remove content margins in qss
-        vLayout->setContentsMargins(0,0,0,0);
-        vLayout->setAlignment(Qt::AlignTop);
+        // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
+        // as a group
+        QFrame* projectTemplateWidget = new QFrame(this);
+        projectTemplateWidget->setObjectName("projectTemplate");
+        QVBoxLayout* containerLayout = new QVBoxLayout();
+        containerLayout->setAlignment(Qt::AlignTop);
         {
-            m_projectName = new FormLineEditWidget(tr("Project name"), tr("New Project"), this);
-            m_projectName->setErrorLabelText(
-                tr("A project with this name already exists at this location. Please choose a new name or location."));
-            vLayout->addWidget(m_projectName);
+            QLabel* projectTemplateLabel = new QLabel(tr("Select a Project Template"));
+            projectTemplateLabel->setObjectName("projectTemplateLabel");
+            containerLayout->addWidget(projectTemplateLabel);
 
-            m_projectPath =
-                new FormBrowseEditWidget(tr("Project Location"), QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
-            m_projectPath->lineEdit()->setReadOnly(true);
-            m_projectPath->setErrorLabelText(tr("Please provide a valid path to a folder that exists"));
-            m_projectPath->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
-            vLayout->addWidget(m_projectPath);
+            QLabel* projectTemplateDetailsLabel = new QLabel(tr("Project templates are pre-configured with relevant Gems that provide "
+                                                                "additional functionality and content to the project."));
+            projectTemplateDetailsLabel->setWordWrap(true);
+            projectTemplateDetailsLabel->setObjectName("projectTemplateDetailsLabel");
+            containerLayout->addWidget(projectTemplateDetailsLabel);
 
-            // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
-            // as a group
-            QFrame* projectTemplateWidget = new QFrame(this);
-            projectTemplateWidget->setObjectName("projectTemplate");
-            QVBoxLayout* containerLayout = new QVBoxLayout();
-            containerLayout->setAlignment(Qt::AlignTop);
-            {
-                QLabel* projectTemplateLabel = new QLabel(tr("Select a Project Template"));
-                projectTemplateLabel->setObjectName("projectTemplateLabel");
-                containerLayout->addWidget(projectTemplateLabel);
 
-                QLabel* projectTemplateDetailsLabel = new QLabel(tr("Project templates are pre-configured with relevant Gems that provide "
-                                                                    "additional functionality and content to the project."));
-                projectTemplateDetailsLabel->setWordWrap(true);
-                projectTemplateDetailsLabel->setObjectName("projectTemplateDetailsLabel");
-                containerLayout->addWidget(projectTemplateDetailsLabel);
+            // we might have enough templates that we need to scroll
+            QScrollArea* templatesScrollArea = new QScrollArea(this);
+            QWidget* scrollWidget = new QWidget();
 
-                QHBoxLayout* templateLayout = new QHBoxLayout(this);
-                containerLayout->addItem(templateLayout);
+            FlowLayout* flowLayout = new FlowLayout(0, s_spacerSize, s_spacerSize);
+            scrollWidget->setLayout(flowLayout);
 
-                m_projectTemplateButtonGroup = new QButtonGroup(this);
-                m_projectTemplateButtonGroup->setObjectName("templateButtonGroup");
-                auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
-                if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+            templatesScrollArea->setWidget(scrollWidget);
+            templatesScrollArea->setWidgetResizable(true);
+
+            m_projectTemplateButtonGroup = new QButtonGroup(this);
+            m_projectTemplateButtonGroup->setObjectName("templateButtonGroup");
+
+            // QButtonGroup has overloaded buttonClicked methods so we need the QOverload
+            connect(
+                m_projectTemplateButtonGroup, QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked), this,
+                [=](QAbstractButton* button)
                 {
-                    for (auto projectTemplate : templatesResult.GetValue())
+                    if (button && button->property(k_templateIndexProperty).isValid())
                     {
-                        QRadioButton* radioButton = new QRadioButton(projectTemplate.m_name, this);
-                        radioButton->setProperty(k_pathProperty, projectTemplate.m_path);
-                        m_projectTemplateButtonGroup->addButton(radioButton);
-
-                        containerLayout->addWidget(radioButton);
+                        int projectIndex = button->property(k_templateIndexProperty).toInt();
+                        UpdateTemplateDetails(m_templates.at(projectIndex));
                     }
+                });
 
-                    m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
+            auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+            if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
+            {
+                m_templates = templatesResult.GetValue();
+
+                // sort alphabetically by display name because they could be in any order
+                std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
+                {
+                    return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                });
+
+                for (int index = 0; index < m_templates.size(); ++index)
+                {
+                    ProjectTemplateInfo projectTemplate = m_templates.at(index);
+                    QString projectPreviewPath = projectTemplate.m_path + "/Template/preview.png";
+                    QFileInfo doesPreviewExist(projectPreviewPath);
+                    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+                    {
+                        projectPreviewPath = ":/DefaultTemplate.png";
+                    }
+                    TemplateButton* templateButton = new TemplateButton(projectPreviewPath, projectTemplate.m_displayName, this);
+                    templateButton->setCheckable(true);
+                    templateButton->setProperty(k_templateIndexProperty, index);
+                    
+                    m_projectTemplateButtonGroup->addButton(templateButton);
+
+                    flowLayout->addWidget(templateButton);
                 }
+
+                m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
             }
-            projectTemplateWidget->setLayout(containerLayout);
-            vLayout->addWidget(projectTemplateWidget);
+            containerLayout->addWidget(templatesScrollArea);
         }
-        projectSettingsFrame->setLayout(vLayout);
+        projectTemplateWidget->setLayout(containerLayout);
+        m_verticalLayout->addWidget(projectTemplateWidget);
 
-        hLayout->addWidget(projectSettingsFrame);
-
-        QWidget* projectTemplateDetails = new QWidget(this);
+        QFrame* projectTemplateDetails = CreateTemplateDetails(s_templateDetailsContentMargin);
         projectTemplateDetails->setObjectName("projectTemplateDetails");
-        hLayout->addWidget(projectTemplateDetails);
+        m_horizontalLayout->addWidget(projectTemplateDetails);
+    }
 
-        this->setLayout(hLayout);
+    QString NewProjectSettingsScreen::GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
     }
 
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
@@ -117,40 +152,73 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
-
-    ProjectInfo NewProjectSettingsScreen::GetProjectInfo()
+    void NewProjectSettingsScreen::NotifyCurrentScreen()
     {
-        ProjectInfo projectInfo;
-        projectInfo.m_projectName = m_projectName->lineEdit()->text();
-        projectInfo.m_path        = QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + projectInfo.m_projectName);
-        return projectInfo;
+        if (!m_templates.isEmpty())
+        {
+            UpdateTemplateDetails(m_templates.first());
+        }
+
+        Validate();
     }
 
     QString NewProjectSettingsScreen::GetProjectTemplatePath()
     {
-        return m_projectTemplateButtonGroup->checkedButton()->property(k_pathProperty).toString();
+        const int templateIndex = m_projectTemplateButtonGroup->checkedButton()->property(k_templateIndexProperty).toInt();
+        return m_templates.at(templateIndex).m_path;
     }
 
-    bool NewProjectSettingsScreen::Validate()
+    QFrame* NewProjectSettingsScreen::CreateTemplateDetails(int margin)
     {
-        bool projectNameIsValid = true;
-        if (m_projectName->lineEdit()->text().isEmpty())
+        QFrame* projectTemplateDetails = new QFrame(this);
+        projectTemplateDetails->setObjectName("projectTemplateDetails");
+        QVBoxLayout* templateDetailsLayout = new QVBoxLayout();
+        templateDetailsLayout->setContentsMargins(margin, margin, margin, margin);
+        templateDetailsLayout->setAlignment(Qt::AlignTop);
         {
-            projectNameIsValid = false;
-        }
+            m_templateDisplayName = new QLabel(this);
+            m_templateDisplayName->setObjectName("displayName");
+            templateDetailsLayout->addWidget(m_templateDisplayName);
 
-        bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
-        {
-            projectPathIsValid = false;
-        }
+            m_templateSummary = new QLabel(this);
+            m_templateSummary->setObjectName("summary");
+            m_templateSummary->setWordWrap(true);
+            templateDetailsLayout->addWidget(m_templateSummary);
 
-        QDir path(QDir::toNativeSeparators(m_projectPath->lineEdit()->text() + "/" + m_projectName->lineEdit()->text()));
-        if (path.exists() && !path.isEmpty())
-        {
-            projectPathIsValid = false;
-        }
+            QLabel* includedGemsTitle = new QLabel(tr("Included Gems"), this);
+            includedGemsTitle->setObjectName("includedGemsTitle");
+            templateDetailsLayout->addWidget(includedGemsTitle);
 
-        return projectNameIsValid && projectPathIsValid;
+            m_templateIncludedGems = new TagContainerWidget(this);
+            m_templateIncludedGems->setObjectName("includedGems");
+            templateDetailsLayout->addWidget(m_templateIncludedGems);
+
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+            QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
+            moreGemsLabel->setObjectName("moreGems");
+            templateDetailsLayout->addWidget(moreGemsLabel);
+
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
+            browseCatalogLabel->setObjectName("browseCatalog");
+            browseCatalogLabel->setWordWrap(true);
+            templateDetailsLayout->addWidget(browseCatalogLabel);
+
+            QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
+            connect(configureGemsButton, &QPushButton::clicked, this, [=]()
+                    {
+                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+                    });
+            templateDetailsLayout->addWidget(configureGemsButton);
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED 
+        }
+        projectTemplateDetails->setLayout(templateDetailsLayout);
+        return projectTemplateDetails;
+    }
+
+    void NewProjectSettingsScreen::UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo)
+    {
+        m_templateDisplayName->setText(templateInfo.m_displayName);
+        m_templateSummary->setText(templateInfo.m_summary);
+        m_templateIncludedGems->Update(templateInfo.m_includedGems);
     }
 } // namespace O3DE::ProjectManager

@@ -313,13 +313,13 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
                 script: 'python/get_python.bat'
         }
 
-        if(env.CLEAN_OUTPUT_DIRECTORY?.toBoolean() || env.CLEAN_ASSETS?.toBoolean()) {
-            def command = "${pipelineConfig.PYTHON_DIR}/python"
-            if(env.IS_UNIX) command += '.sh'
-            else command += '.cmd'
-            command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
-            palSh(command, "Running ${platform} clean")
-        }
+        // Always run the clean step, the scripts detect what variables were set, but it also cleans if
+        // the NODE_LABEL has changed
+        def command = "${pipelineConfig.PYTHON_DIR}/python"
+        if(env.IS_UNIX) command += '.sh'
+        else command += '.cmd'
+        command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+        palSh(command, "Running ${platform} clean")
     }
 }
 

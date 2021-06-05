@@ -288,7 +288,7 @@ namespace Blast
         m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
         m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
             AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
-            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), transform.GetScale());
+            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
 
         // Spawn the family
         m_family->Spawn(transform);

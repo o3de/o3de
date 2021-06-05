@@ -1628,18 +1628,18 @@ namespace MCommon
         }
         else
         {
-            const float screenWidth     = static_cast<float>(camera->GetScreenWidth());
-            const float screenHeight    = static_cast<float>(camera->GetScreenHeight());
+            const float cameraScreenWidth     = static_cast<float>(camera->GetScreenWidth());
+            const float cameraScreenHeight    = static_cast<float>(camera->GetScreenHeight());
 
             // find the 4 corners of the frustum
             AZ::Vector3 corners[4];
             const AZ::Matrix4x4 inversedProjectionMatrix = MCore::InvertProjectionMatrix(camera->GetProjectionMatrix());
             const AZ::Matrix4x4 inversedViewMatrix = MCore::InvertProjectionMatrix(camera->GetViewMatrix());
 
-            corners[0] = MCore::Unproject(0.0f, 0.0f, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
-            corners[1] = MCore::Unproject(screenWidth, 0.0f, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
-            corners[2] = MCore::Unproject(screenWidth, screenHeight, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
-            corners[3] = MCore::Unproject(0.0f, screenHeight, screenWidth, screenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[0] = MCore::Unproject(0.0f, 0.0f, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[1] = MCore::Unproject(cameraScreenWidth, 0.0f, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[2] = MCore::Unproject(cameraScreenWidth, cameraScreenHeight, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
+            corners[3] = MCore::Unproject(0.0f, cameraScreenHeight, cameraScreenWidth, cameraScreenHeight, camera->GetFarClipDistance(), inversedProjectionMatrix, inversedViewMatrix);
 
             // calculate the intersection points with the ground plane and create an AABB around those
             // if there is no intersection point then use the ray target as point, which is the projection onto the far plane basically

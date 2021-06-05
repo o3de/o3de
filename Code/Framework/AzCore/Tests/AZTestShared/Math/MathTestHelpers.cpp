@@ -68,7 +68,7 @@ namespace AZ
         return os
             << "translation: " << transform.GetTranslation()
             << " rotation: " << transform.GetRotation()
-            << " scale: " << transform.GetScale();
+            << " scale: " << transform.GetUniformScale();
     }
 
     std::ostream& operator<<(std::ostream& os, const Color& color)

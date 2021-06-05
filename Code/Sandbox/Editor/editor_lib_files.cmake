@@ -586,6 +586,8 @@ set(FILES
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
     EditorPreferencesPageExperimentalLighting.cpp
+    EditorPreferencesPageAWS.h
+    EditorPreferencesPageAWS.cpp
     EditorPreferencesDialog.h
     EditorPreferencesDialog.cpp
     EditorPreferencesDialog.ui

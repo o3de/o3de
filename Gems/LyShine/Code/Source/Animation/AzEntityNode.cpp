@@ -691,7 +691,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& 
             return nullptr;
         }
 
-        EUiAnimValue valueType;
+        EUiAnimValue valueType = eUiAnimValue_Unknown;
         switch (numElements)
         {
         case 2:

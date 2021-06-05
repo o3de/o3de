@@ -24,7 +24,9 @@ namespace O3DE::ProjectManager
     public:
         ProjectInfo() = default;
         ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
-            const QString& imagePath, const QString& backgroundImagePath, bool isNew);
+            const QString& imagePath, const QString& backgroundImagePath, bool needsBuild);
+        bool operator==(const ProjectInfo& rhs);
+        bool operator!=(const ProjectInfo& rhs);
 
         bool IsValid() const;
 
@@ -40,6 +42,6 @@ namespace O3DE::ProjectManager
         QString m_backgroundImagePath;
 
         // Used in project creation
-        bool m_isNew = false; //! Is this a new project or existing
+        bool m_needsBuild = false; //! Does this project need to be built
     };
 } // namespace O3DE::ProjectManager

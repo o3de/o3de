@@ -15,14 +15,27 @@
 namespace O3DE::ProjectManager
 {
     ProjectInfo::ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
-        const QString& imagePath, const QString& backgroundImagePath, bool isNew)
+        const QString& imagePath, const QString& backgroundImagePath, bool needsBuild)
         : m_path(path)
         , m_projectName(projectName)
         , m_displayName(displayName)
         , m_imagePath(imagePath)
         , m_backgroundImagePath(backgroundImagePath)
-        , m_isNew(isNew)
+        , m_needsBuild(needsBuild)
     {
+    }
+
+    bool ProjectInfo::operator==(const ProjectInfo& rhs)
+    {
+        return m_path == rhs.m_path
+            && m_projectName == rhs.m_projectName
+            && m_imagePath == rhs.m_imagePath
+            && m_backgroundImagePath == rhs.m_backgroundImagePath;
+    }
+
+    bool ProjectInfo::operator!=(const ProjectInfo& rhs)
+    {
+        return !operator==(rhs);
     }
 
     bool ProjectInfo::IsValid() const

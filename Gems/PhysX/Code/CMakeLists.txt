@@ -128,6 +128,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOMOC
         FILES_CMAKE
             physx_editor_shared_files.cmake
+        COMPILE_DEFINITIONS
+            PUBLIC
+                PHYSX_ENABLE_MULTI_THREADING
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
