@@ -21,7 +21,10 @@ namespace AWSCore
 
         bool AWSAtrributionSuccessResponse::OnJsonKey(const char* key, AWSCore::JsonReader& reader)
         {
-            if (strcmp(key, AwsAttributionServiceResultResponseKey) == 0) return reader.Accept(result);
+            if (strcmp(key, AwsAttributionServiceResultResponseKey) == 0)
+            {
+                return reader.Accept(result);
+            }
             return reader.Ignore();
         }
 

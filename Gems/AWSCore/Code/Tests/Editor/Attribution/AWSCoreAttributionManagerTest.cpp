@@ -15,9 +15,11 @@
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/base.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -26,6 +28,8 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Module/ModuleManagerBus.h>
 
 #include <TestFramework/AWSCoreFixture.h>
 
@@ -34,17 +38,86 @@ using namespace AWSCore;
 
 namespace AWSAttributionUnitTest
 {
+    class ModuleDataMock:
+        public AZ::ModuleData
+    {
+    public:
+        AZStd::shared_ptr<AZ::Entity> m_entity;
+        ModuleDataMock(AZStd::string name)
+        {
+            m_entity = AZStd::make_shared<AZ::Entity>();
+            m_entity->SetName(name);
+        }
+        virtual ~ModuleDataMock()
+        {
+            m_entity.reset();
+        }
+
+        AZ::DynamicModuleHandle* GetDynamicModuleHandle() const override
+        {
+            return nullptr;
+        }
+        /// Get the handle to the module class
+        AZ::Module* GetModule() const override
+        {
+            return nullptr;
+        }
+        /// Get the entity this module uses as a System Entity
+        AZ::Entity* GetEntity() const override
+        {
+            return m_entity.get();
+        }
+        /// Get the debug name of the module
+        const char* GetDebugName() const override
+        {
+            return m_entity->GetName().c_str();
+        }
+    };
+
+    class ModuleManagerRequestBusMock
+        : public AZ::ModuleManagerRequestBus::Handler
+    {
+    public:
+
+        void EnumerateModulesMock(AZ::ModuleManagerRequests::EnumerateModulesCallback perModuleCallback)
+        {
+            auto data = ModuleDataMock("AWSCore.Editor.dll");
+            perModuleCallback(data);
+            data = ModuleDataMock("AWSClientAuth.so");
+            perModuleCallback(data);
+        }
+
+        ModuleManagerRequestBusMock()
+        {
+            AZ::ModuleManagerRequestBus::Handler::BusConnect();
+            ON_CALL(*this, EnumerateModules(testing::_)).WillByDefault(testing::Invoke(this, &ModuleManagerRequestBusMock::EnumerateModulesMock));
+        }
+
+        ~ModuleManagerRequestBusMock()
+        {
+            AZ::ModuleManagerRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD1(EnumerateModules, void(AZ::ModuleManagerRequests::EnumerateModulesCallback perModuleCallback));
+        MOCK_METHOD3(LoadDynamicModule, AZ::ModuleManagerRequests::LoadModuleOutcome(const char* modulePath, AZ::ModuleInitializationSteps lastStepToPerform, bool maintainReference));
+        MOCK_METHOD3(LoadDynamicModules, AZ::ModuleManagerRequests::LoadModulesResult(const AZ::ModuleDescriptorList& modules, AZ::ModuleInitializationSteps lastStepToPerform, bool maintainReferences));
+        MOCK_METHOD2(LoadStaticModules, AZ::ModuleManagerRequests::LoadModulesResult(AZ::CreateStaticModulesCallback staticModulesCb, AZ::ModuleInitializationSteps lastStepToPerform));
+        MOCK_METHOD1(IsModuleLoaded, bool(const char* modulePath));
+    };
 
     class AWSAttributionManagerMock
         : public AWSAttributionManager
     {
     public:
+        using AWSAttributionManager::SubmitMetric;
+        using AWSAttributionManager::UpdateMetric;
+        using AWSAttributionManager::SetApiEndpointAndRegion;
+
 
         AWSAttributionManagerMock()
         {
             ON_CALL(*this, SubmitMetric(testing::_)).WillByDefault(testing::Invoke(this, &AWSAttributionManagerMock::SubmitMetricMock));
         }
-        using AWSAttributionManager::SubmitMetric;
 
         MOCK_METHOD1(SubmitMetric, void(AttributionMetric& metric));
 
@@ -70,6 +143,7 @@ namespace AWSAttributionUnitTest
         AZStd::unique_ptr<AZ::JobCancelGroup> m_jobCancelGroup;
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
         AZStd::array<char, AZ::IO::MaxPathLength> m_resolvedSettingsPath;
+        ModuleManagerRequestBusMock m_moduleManagerRequestBusMock;
 
         void SetUp() override
         {
@@ -82,7 +156,7 @@ namespace AWSAttributionUnitTest
             m_localFileIO->ResolvePath("@user@/Registry/", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
             AZ::IO::SystemFile::CreateDir(m_resolvedSettingsPath.data());
 
-            m_localFileIO->ResolvePath("@user@/Registry/editorpreferences.setreg", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
+            m_localFileIO->ResolvePath("@user@/Registry/editor_aws_preferences.setreg", m_resolvedSettingsPath.data(), m_resolvedSettingsPath.size());
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
@@ -136,9 +210,8 @@ namespace AWSAttributionUnitTest
        
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
-                "Preferences": {
-                    "EnablePrefabSystem": false,
-                    "AWS": {
+                "AWS": {
+                    "Preferences": {
                         "AWSAttributionEnabled": false,
                         "AWSAttributionDelaySeconds": 30
                     }
@@ -147,13 +220,15 @@ namespace AWSAttributionUnitTest
         })");
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(0);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(0);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
+        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
-        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == 0);
 
         RemoveFile(m_resolvedSettingsPath.data());
@@ -167,9 +242,8 @@ namespace AWSAttributionUnitTest
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
-                "Preferences": {
-                    "EnablePrefabSystem": false,
-                    "AWS": {
+                "AWS": {
+                    "Preferences": {
                         "AWSAttributionEnabled": true,
                         "AWSAttributionDelaySeconds": 30,
                     }
@@ -178,13 +252,15 @@ namespace AWSAttributionUnitTest
         })");
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
+        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
-        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
 
 
@@ -199,9 +275,8 @@ namespace AWSAttributionUnitTest
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
-                "Preferences": {
-                    "EnablePrefabSystem": false,
-                    "AWS": {
+                "AWS": {
+                    "Preferences": {
                         "AWSAttributionEnabled": true,
                         "AWSAttributionDelaySeconds": 30,
                         "AWSAttributionLastTimeStamp": 629400
@@ -211,13 +286,15 @@ namespace AWSAttributionUnitTest
         })");
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
+        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
-        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp > 0);
 
         RemoveFile(m_resolvedSettingsPath.data());
@@ -232,9 +309,8 @@ namespace AWSAttributionUnitTest
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
-                "Preferences": {
-                    "EnablePrefabSystem": false,
-                    "AWS": {
+                "AWS": {
+                    "Preferences": {
                         "AWSAttributionEnabled": true,
                         "AWSAttributionDelaySeconds": 300,
                         "AWSAttributionLastTimeStamp": 0
@@ -244,16 +320,18 @@ namespace AWSAttributionUnitTest
         })");
 
         AZ::u64 delayInSeconds = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count();
-        ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp", delayInSeconds));
+        ASSERT_TRUE(m_settingsRegistry->Set("/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp", delayInSeconds));
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
+        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
-        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp == delayInSeconds);
 
         RemoveFile(m_resolvedSettingsPath.data());
@@ -267,24 +345,70 @@ namespace AWSAttributionUnitTest
 
         CreateFile(m_resolvedSettingsPath.data(), R"({
             "Amazon": {
-                "Preferences": {
-                    "EnablePrefabSystem": false,
-                    "AWS": {
+                "AWS": {
+                    "Preferences": {
                     }
                 }
             }
         })");
 
         EXPECT_CALL(manager, SubmitMetric(testing::_)).Times(1);
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
 
         // WHEN
         manager.MetricCheck();
 
         // THEN
+        m_settingsRegistry->MergeSettingsFile(m_resolvedSettingsPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         AZ::u64 timeStamp = 0;
-        m_settingsRegistry->Get(timeStamp, "/Amazon/Preferences/AWS/AWSAttributionLastTimeStamp");
+        m_settingsRegistry->Get(timeStamp, "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp");
         ASSERT_TRUE(timeStamp != 0);
 
         RemoveFile(m_resolvedSettingsPath.data());
     }
+
+    TEST_F(AttributionManagerTest, SetApiEndpointAndRegion_Success)
+    {
+        // GIVEN
+        AWSAttributionManagerMock manager;
+        AWSCore::ServiceAPI::AWSAttributionRequestJob::Config* config = aznew AWSCore::ServiceAPI::AWSAttributionRequestJob::Config();
+
+        // WHEN
+        manager.SetApiEndpointAndRegion(config);
+
+        // THEN
+        ASSERT_TRUE(config->region  == Aws::Region::US_WEST_2);
+        ASSERT_TRUE(config->endpointOverride->find("execute-api.us-west-2.amazonaws.com") != Aws::String::npos);
+
+        delete config;
+    }
+
+    TEST_F(AttributionManagerTest, UpdateMetric_Success)
+    {
+        // GIVEN
+        AWSAttributionManagerMock manager;
+        AttributionMetric metric;
+
+        AZStd::array<char, AZ::IO::MaxPathLength> engineJsonPath;
+        m_localFileIO->ResolvePath("@user@/Registry/engine.json", engineJsonPath.data(), engineJsonPath.size());
+        CreateFile(engineJsonPath.data(), R"({"O3DEVersion": "1.0.0.0"})");
+
+        m_localFileIO->ResolvePath("@user@/Registry/", engineJsonPath.data(), engineJsonPath.size());
+        m_settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, engineJsonPath.data());
+
+        EXPECT_CALL(m_moduleManagerRequestBusMock, EnumerateModules(testing::_)).Times(1);
+
+        // WHEN
+        manager.UpdateMetric(metric);
+
+        // THEN
+        AZStd::string serializedMetricValue = metric.SerializeToJson();
+        ASSERT_TRUE(serializedMetricValue.find("\"o3de_version\":\"1.0.0.0\"") != AZStd::string::npos);
+        ASSERT_TRUE(serializedMetricValue.find(AZ::GetPlatformName(AZ::g_currentPlatform)) != AZStd::string::npos);
+        ASSERT_TRUE(serializedMetricValue.find("AWSCore.Editor") != AZStd::string::npos);
+        ASSERT_TRUE(serializedMetricValue.find("AWSClientAuth") != AZStd::string::npos);
+
+        RemoveFile(engineJsonPath.data());
+    }
+
 } // namespace AWSCoreUnitTest

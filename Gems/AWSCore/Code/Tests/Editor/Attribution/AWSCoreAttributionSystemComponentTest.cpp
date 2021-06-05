@@ -125,10 +125,7 @@ namespace AWSCoreUnitTest
     TEST_F(AWSAttributionSystemComponentTest, SystemComponentInitActivate_Success)
     {
         m_entity->Init();
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
         m_entity->Activate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 }
 

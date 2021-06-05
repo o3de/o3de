@@ -13,6 +13,7 @@
 
 #include "Include/IPreferencesPage.h"
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <QIcon>
 
@@ -25,7 +26,7 @@ public:
     static void Reflect(AZ::SerializeContext& serialize);
 
     CEditorPreferencesPage_AWS();
-    virtual ~CEditorPreferencesPage_AWS() = default;
+    virtual ~CEditorPreferencesPage_AWS();
 
     // IPreferencesPage interface methods.
     virtual const char* GetCategory() override { return "AWS"; }
@@ -47,6 +48,13 @@ protected:
 
 private:
     void InitializeSettings();
+    void SaveSettingsRegistryFile();
     UsageOptions m_usageOptions;
     QIcon m_icon;
+    AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+
+    static constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
+    static constexpr char EditorPreferencesFileName[] = "editorpreferences.setreg";
+    static constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
+    static constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
 };

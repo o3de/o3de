@@ -13,11 +13,10 @@
 #pragma once
 
 #include <Framework/ServiceRequestJob.h>
+#include <Editor/Attribution/AWSCoreAttributionMetric.h>
 
 namespace AWSCore
 {
-
-    class AttributionMetric;
     namespace ServiceAPI
     {
         //! Struct for storing the success response.
