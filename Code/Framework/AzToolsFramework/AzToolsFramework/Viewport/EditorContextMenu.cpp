@@ -65,7 +65,7 @@ namespace AzToolsFramework
 
                 if (!contextMenu.m_menu->isEmpty())
                 {
-                    // Use popup instead, this avoids blocking input event processing while the menu dialog is active
+                    // Use popup instead of exec; this avoids blocking input event processing while the menu dialog is active
                     contextMenu.m_menu->popup(QCursor::pos());
                 }
             }
