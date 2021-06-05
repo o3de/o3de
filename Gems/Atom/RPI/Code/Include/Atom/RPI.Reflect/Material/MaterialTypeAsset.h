@@ -65,6 +65,8 @@ namespace AZ
             static const char* Group;
             static const char* Extension;
 
+            static constexpr uint32_t InvalidShaderIndex = static_cast<uint32_t>(-1);
+
             static void Reflect(ReflectContext* context);
 
             virtual ~MaterialTypeAsset();
@@ -81,29 +83,35 @@ namespace AZ
             //! for a material's shaders.
             //! All shaders in a material will have the same per-material SRG layout.
             //! @param supervariantIndex: supervariant index to get the layout from.
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const;
 
             //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
             //! because it will discover the index from the name.  
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout(const AZ::Name& supervariantName) const;
 
             //! Just like the original GetMaterialSrgLayout() where it uses the index of the default supervariant.
             //! See the definition of DefaultSupervariantIndex.
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetMaterialSrgLayout() const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetMaterialSrgLayout() const;
+
+            //! Returns a ShaderAsset from @m_shaderCollection that contains the MaterialSrg layout.
+            const Data::Asset<ShaderAsset>& GetShaderAssetForMaterialSrg() const;
 
             //! Returns the shader resource group layout that has per-object frequency. What constitutes an "object" is an
             //! agreement between the FeatureProcessor and the shaders, but an example might be world-transform for a model.
             //! All shaders in a material will have the same per-object SRG layout.
             //! @param supervariantIndex: supervariant index to get the layout from.
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const;
 
             //! Same as above but accepts the supervariant name. There's a minor penalty when using this function
             //! because it will discover the index from the name.  
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout(const AZ::Name& supervariantName) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout(const AZ::Name& supervariantName) const;
 
             //! Just like the original GetObjectSrgLayout() where it uses the index of the default supervariant.
             //! See the definition of DefaultSupervariantIndex.
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetObjectSrgLayout() const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetObjectSrgLayout() const;
+
+            //! Returns a ShaderAsset from @m_shaderCollection that contains the ObjectSrg layout.
+            const Data::Asset<ShaderAsset>& GetShaderAssetForObjectSrg() const;
 
             //! Returns a layout that includes a list of MaterialPropertyDescriptors for each material property.
             const MaterialPropertiesLayout* GetMaterialPropertiesLayout() const;
@@ -120,8 +128,8 @@ namespace AZ
         private:
             bool PostLoadInit();
 
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSrgLayout(uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex) const;
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSrgLayout(uint32_t srgBindingSlot, const AZ::Name& supervariantName) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex, uint32_t shaderIndex) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t srgBindingSlot, const AZ::Name& supervariantName, uint32_t shaderIndex) const;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
@@ -145,6 +153,13 @@ namespace AZ
             //! Material functors provide custom logic and calculations to configure shaders, render states, and more.
             //! See MaterialFunctor.h for details.
             MaterialFunctorList m_materialFunctors;
+
+            //! Index in @m_shaderCollection of the shader asset that contains the MaterialSrg.
+            uint32_t m_materialSrgShaderIndex = InvalidShaderIndex;
+
+            //! Index in @m_shaderCollection of the shader asset that contains the ObjectSrg.
+            uint32_t m_objectSrgShaderIndex = InvalidShaderIndex;
+
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>
