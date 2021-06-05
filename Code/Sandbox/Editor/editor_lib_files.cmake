@@ -424,10 +424,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    InfoBar.cpp
-    InfoBar.qrc
-    InfoBar.h
-    InfoBar.ui
     LayoutConfigDialog.cpp
     LayoutConfigDialog.h
     LayoutConfigDialog.ui

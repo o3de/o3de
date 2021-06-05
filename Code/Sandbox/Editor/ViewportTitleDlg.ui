@@ -61,153 +61,46 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="m_fovLabel">
-     <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>FOV:</string>
-     </property>
-    </widget>
+     <widget class="QToolButton" name="m_cameraMenu">
+       <property name="icon">
+         <iconset>
+           <normaloff>:/stylesheet/img/UI20/Camera.svg</normaloff>:/stylesheet/img/UI20/Camera.svg
+         </iconset>
+       </property>
+     </widget>
+   </item>   
+   <item>
+     <widget class="QToolButton" name="m_debugInformationMenu">
+       <property name="icon">
+         <iconset>
+           <normaloff>:/stylesheet/img/UI20/debug.svg</normaloff>:/stylesheet/img/UI20/debug.svg
+         </iconset>
+       </property>
+       <property name="checkable">
+         <bool>true</bool>
+       </property>
+     </widget>
+   </item>   
+   <item>
+     <widget class="QToolButton" name="m_resolutionMenu">
+       <property name="icon">
+         <iconset>
+           <normaloff>:/stylesheet/img/UI20/resolution.svg</normaloff>:/stylesheet/img/UI20/resolution.svg
+         </iconset>
+       </property>
+     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="m_fovStaticCtrl">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>120°</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="m_ratioLabel">
-     <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>Ratio:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="m_ratioStaticCtrl">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>40</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>000:000</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="m_sizeStaticCtrl">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>60</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::CustomContextMenu</enum>
-     </property>
-     <property name="text">
-      <string>0000 x 0000</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="AzQtComponents::ButtonDivider" name="divider1" native="true"/>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_toggleDisplayInfoBtn">
-      <property name="text">
-        <string>Toggle display info</string>
-      </property>
-     <property name="toolTip">
-      <string>Toggle display info</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normaloff>:/stylesheet/img/UI20/Info.svg</normaloff>:/stylesheet/img/UI20/Info.svg</iconset>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QToolButton" name="m_toggleHelpersBtn">
-     <property name="text">
-      <string>Toggle display helpers</string>
-     </property>
-     <property name="toolTip">
-      <string>Toggle display helpers</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normaloff>:/stylesheet/img/UI20/Helpers.svg</normaloff>:/stylesheet/img/UI20/Helpers.svg</iconset>
-     </property>
-     <property name="checkable">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-     <widget class="QMenuBar" name="menuBar">
-       <widget class="QMenu" name="m_overflowMenu">
-         <property name="icon">
-           <iconset>
-             <normaloff>:/stylesheet/img/UI20/Helpers.svg</normaloff>:/stylesheet/img/UI20/Helpers.svg
-           </iconset>
-         </property>
-         <addaction name="m_testAction"/>
-         <addaction name="m_testAction2"/>
-       </widget>
-       <addaction name="m_overflowMenu"/>
+     <widget class="QToolButton" name="m_overflowBtn">
+       <property name="icon">
+         <iconset>
+           <normaloff>:/stylesheet/img/UI20/menu-centered.svg</normaloff>:/stylesheet/img/UI20/menu-centered.svg
+         </iconset>
+       </property>
      </widget>
    </item>
   </layout>
-   <action name="m_testAction">
-     <property name="text">
-       <string>Test...</string>
-     </property>
-     <property name="toolTip">
-       <string>Testing.</string>
-     </property>
-   </action>
-   <action name="m_testAction2">
-     <property name="text">
-       <string>Test2...</string>
-     </property>
-     <property name="toolTip">
-       <string>Testing2.</string>
-     </property>
-   </action> </widget>
+ </widget>
  <customwidgets>
   <customwidget>
    <class>AzQtComponents::ButtonDivider</class>

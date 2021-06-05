@@ -297,68 +297,6 @@ namespace
     }
 }
 
-class SnapToWidget
-    : public QWidget
-{
-public:
-    typedef AZStd::function<void(double)> SetValueCallback;
-    typedef AZStd::function<double()> GetValueCallback;
-
-    SnapToWidget(QAction* defaultAction, SetValueCallback setValueCallback, GetValueCallback getValueCallback)
-        : m_setValueCallback(setValueCallback)
-        , m_getValueCallback(getValueCallback)
-    {
-        QHBoxLayout* layout = new QHBoxLayout();
-        setLayout(layout);
-
-        m_toolButton = new QToolButton();
-        m_toolButton->setAutoRaise(true);
-        m_toolButton->setCheckable(false);
-        m_toolButton->setDefaultAction(defaultAction);
-
-        m_spinBox = new AzQtComponents::DoubleSpinBox();
-
-        layout->addWidget(m_toolButton);
-        layout->addWidget(m_spinBox);
-
-        m_spinBox->setEnabled(defaultAction->isChecked());
-        m_spinBox->setMinimum(1e-2f);
-
-        {
-            QSignalBlocker signalBlocker(m_spinBox);
-            m_spinBox->setValue(m_getValueCallback());
-        }
-
-        QObject::connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &SnapToWidget::OnValueChanged);
-        QObject::connect(defaultAction, &QAction::changed, this, &SnapToWidget::OnActionChanged);
-    }
-
-    void SetIcon(QIcon icon)
-    {
-        m_toolButton->setIcon(icon);
-    }
-
-protected:
-
-    void OnValueChanged(double value)
-    {
-        m_setValueCallback(value);
-    }
-
-    void OnActionChanged()
-    {
-        m_spinBox->setEnabled(m_toolButton->isChecked());
-    }
-
-private:
-
-    QToolButton* m_toolButton = nullptr;
-    AzQtComponents::DoubleSpinBox* m_spinBox = nullptr;
-
-    SetValueCallback m_setValueCallback;
-    GetValueCallback m_getValueCallback;
-};
-
 /////////////////////////////////////////////////////////////////////////////
 // MainWindow
 /////////////////////////////////////////////////////////////////////////////
@@ -1274,36 +1212,6 @@ void UndoRedoToolButton::Update(int count)
     setEnabled(count > 0);
 }
 
-QWidget* MainWindow::CreateSnapToGridWidget()
-{
-    SnapToWidget::SetValueCallback setCallback = [](double snapStep)
-    {
-        SandboxEditor::SetGridSnappingSize(snapStep);
-    };
-
-    SnapToWidget::GetValueCallback getCallback = []()
-    {
-        return SandboxEditor::GridSnappingSize();
-    };
-
-    return new SnapToWidget(m_actionManager->GetAction(ID_SNAP_TO_GRID), setCallback, getCallback);
-}
-
-QWidget* MainWindow::CreateSnapToAngleWidget()
-{
-    SnapToWidget::SetValueCallback setCallback = [](double snapAngle)
-    {
-        SandboxEditor::SetAngleSnappingSize(snapAngle);
-    };
-
-    SnapToWidget::GetValueCallback getCallback = []()
-    {
-        return SandboxEditor::AngleSnappingSize();
-    };
-
-    return new SnapToWidget(m_actionManager->GetAction(ID_SNAPANGLE), setCallback, getCallback);
-}
-
 bool MainWindow::IsPreview() const
 {
     return GetIEditor()->IsInPreviewMode();
@@ -2017,10 +1925,8 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         w = CreateUndoRedoButton(ID_REDO);
         break;
     case ID_TOOLBAR_WIDGET_SNAP_GRID:
-        w = CreateSnapToGridWidget();
         break;
     case ID_TOOLBAR_WIDGET_SNAP_ANGLE:
-        w = CreateSnapToAngleWidget();
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();
