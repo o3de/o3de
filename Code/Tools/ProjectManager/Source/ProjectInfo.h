@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
 
         // Used on projects home screen
         QString m_imagePath;
-        QStringList m_backgroundImagePath;
+        QString m_backgroundImagePath;
 
         // Used in project creation
         bool m_isNew = false; //! Is this a new project or existing
