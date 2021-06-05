@@ -132,6 +132,25 @@ namespace O3DE::ProjectManager
          */
         virtual AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
 
+         /**
+         * Change property in project json file
+         * @param path the absolute path to the gem
+         * @param origin the description or url for project origin (such as project host, repository, owner...etc)
+         * @param displayName the project display name
+         * @param summary short description of the project
+         * @param icon image used to represent the project
+         * @param addTag user tag to be added
+         * @param removeTag user tag to be removed
+         */
+        virtual AZ::Outcome<void, AZStd::string> ModifyProjectProperties(
+            const QString& path,
+            const QString& origin = 0,
+            const QString& displayName = 0,
+            const QString& summary = 0,
+            const QString& icon = 0,
+            const QString& addTag = 0,
+            const QString& removeTag = 0) = 0;
+
         /**
          * Remove gem to a project
          * @param gemPath the absolute path to the gem 

@@ -289,6 +289,7 @@ namespace O3DE::ProjectManager
             m_engineTemplate = pybind11::module::import("o3de.engine_template");
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
+            m_editProjectProperties = pybind11::module::import("o3de.project_properties");
 
             // make sure the engine is registered
             RegisterThisEngine();
@@ -684,6 +685,23 @@ namespace O3DE::ProjectManager
         }
 
         return projectInfo;
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::ModifyProjectProperties(const QString& path, const QString& origin, const QString& displayName,
+                                                const QString& summary, const QString& icon, const QString& addTag, const QString& removeTag)
+    {
+        return ExecuteWithLockErrorHandling([&]
+        {
+            m_editProjectProperties.attr("edit_project_props")(
+                pybind11::str(path.toStdString()), //proj_path
+                pybind11::none(), //proj_name not used
+                origin.isNull() ? pybind11::none() : pybind11::str(origin.toStdString()), //new_origin
+                displayName.isNull() ? pybind11::none() : pybind11::str(displayName.toStdString()), //new_display
+                summary.isNull() ? pybind11::none() : pybind11::str(summary.toStdString()), //new_summary
+                icon.isNull() ? pybind11::none() : pybind11::str(icon.toStdString()), //new_icon
+                addTag.isNull() ? pybind11::none() : pybind11::str(addTag.toStdString()), //new_tag
+                removeTag.isNull() ? pybind11::none() : pybind11::str(removeTag.toStdString())); //remove_tag
+        });
     }
 
     AZ::Outcome<QVector<ProjectInfo>> PythonBindings::GetProjects()
