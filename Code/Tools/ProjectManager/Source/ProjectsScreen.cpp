@@ -200,11 +200,11 @@ namespace O3DE::ProjectManager
                     // Safe if no building project because it is just an empty string
                     if (project.m_path != buildProjectPath)
                     {
-                        ProjectButton* projectButton = CreateProjectButton(project, flowLayout);
+                        ProjectButton* projectButtonWidget = CreateProjectButton(project, flowLayout);
 
                         if (RequiresBuildProjectIterator(project.m_path) != m_requiresBuild.end())
                         {
-                            projectButton->ShowBuildButton(true);
+                            projectButtonWidget->ShowBuildButton(true);
                         }
                     }
                 }
@@ -428,7 +428,10 @@ namespace O3DE::ProjectManager
     {
         if (projectInfo.m_needsBuild)
         {
-            m_requiresBuild.append(projectInfo);
+            if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end())
+            {
+                m_requiresBuild.append(projectInfo);
+            }
             ResetProjectsContent();
         }
         else

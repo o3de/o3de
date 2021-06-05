@@ -210,12 +210,10 @@ namespace AZ
 
                 if (m_meshInfoBuffer == nullptr)
                 {
-                    AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-
                     // allocate the MeshInfo structured buffer
                     RPI::CommonBufferDescriptor desc;
                     desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = AZStd::string::format("RayTracingMeshInfo_%s", uuidString.c_str());
+                    desc.m_bufferName = "RayTracingMeshInfo";
                     desc.m_byteCount = newMeshByteCount;
                     desc.m_elementSize = sizeof(MeshInfo);
                     m_meshInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
@@ -283,12 +281,10 @@ namespace AZ
 
                 if (m_materialInfoBuffer == nullptr)
                 {
-                    AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-
                     // allocate the MaterialInfo structured buffer
                     RPI::CommonBufferDescriptor desc;
                     desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = AZStd::string::format("RayTracingMaterialInfo_%s", uuidString.c_str());
+                    desc.m_bufferName = "RayTracingMaterialInfo";
                     desc.m_byteCount = newMaterialByteCount;
                     desc.m_elementSize = sizeof(MaterialInfo);
                     m_materialInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);

@@ -12,7 +12,6 @@
 
 #include <GemCatalog/GemCatalogScreen.h>
 #include <PythonBindingsInterface.h>
-#include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <QVBoxLayout>
@@ -35,8 +34,8 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
-        GemCatalogHeaderWidget* headerWidget = new GemCatalogHeaderWidget(m_proxModel);
-        vLayout->addWidget(headerWidget);
+        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel);
+        vLayout->addWidget(m_headerWidget);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -77,10 +76,11 @@ namespace O3DE::ProjectManager
             m_filterWidget->deleteLater();
         }
 
+        m_proxModel->ResetFilters();
         m_filterWidget = new GemFilterWidget(m_proxModel);
         m_filterWidgetLayout->addWidget(m_filterWidget);
 
-        m_proxModel->InvalidateFilter();
+        m_headerWidget->ReinitForProject();
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{

@@ -13,12 +13,17 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ProjectSettingsScreen.h>
+#include <ProjectTemplateInfo.h>
+#include <QVector>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QButtonGroup)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QFrame)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(TagContainerWidget)
     class NewProjectSettingsScreen
         : public ProjectSettingsScreen
     {
@@ -33,8 +38,17 @@ namespace O3DE::ProjectManager
 
     private:
         QString GetDefaultProjectPath();
+        QFrame* CreateTemplateDetails(int margin);
+        void UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo);
 
         QButtonGroup* m_projectTemplateButtonGroup;
+        QLabel* m_templateDisplayName;
+        QLabel* m_templateSummary;
+        TagContainerWidget* m_templateIncludedGems;
+        QVector<ProjectTemplateInfo> m_templates;
+
+        inline constexpr static int s_spacerSize = 20;
+        inline constexpr static int s_templateDetailsContentMargin = 20;
     };
 
 } // namespace O3DE::ProjectManager

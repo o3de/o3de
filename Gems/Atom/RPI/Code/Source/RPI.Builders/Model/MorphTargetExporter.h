@@ -39,12 +39,9 @@ namespace AZ
             struct SourceBlendShapeInfo
             {
                 AZStd::vector<AZ::SceneAPI::Containers::SceneGraph::NodeIndex> m_sceneNodeIndices;
-
-                static AZStd::string GetMeshNodeName(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph,
-                    const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& sceneNodeIndex);
             };
             //! Retrieve all scene graph nodes per blend shape for all available blend shapes.
-            AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> GetBlendShapeInfos(const AZ::SceneAPI::Containers::Scene& scene, const AZStd::optional<AZStd::string>& filterMeshName = AZStd::nullopt) const;
+            AZStd::unordered_map<AZStd::string, SourceBlendShapeInfo> GetBlendShapeInfos(const AZ::SceneAPI::Containers::Scene& scene, const MeshData* meshData) const;
 
             //! Calculate position delta tolerance that is used to indicate whether a given vertex is part of the sparse set of morphed vertices
             //! or if it will be skipped and optimized out due to a hardly visible or no movement at all.
