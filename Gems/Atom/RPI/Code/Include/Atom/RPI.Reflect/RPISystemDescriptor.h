@@ -39,7 +39,7 @@ namespace AZ
 
             //! The path of the only common shader asset for the RPI system that is used
             //! as means to load the layout for scene srg and view srg. This is used to create any RPI::Scene.
-            AZStd::string m_commonSrgsShaderAssetPath = "shaderlib/scene_and_view_srgs.azshader";
+            AZStd::string m_commonSrgsShaderAssetPath = "shaders/scene_and_view_srgs.azshader";
 
             //! Name of the scene srg as it can be found inside @m_commonSrgsShaderAssetPath
             AZStd::string m_sceneSrgName = "SceneSrg";
