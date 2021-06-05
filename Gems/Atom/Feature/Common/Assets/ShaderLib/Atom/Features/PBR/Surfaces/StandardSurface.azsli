@@ -20,7 +20,7 @@
 class Surface
 {
     ClearCoatSurfaceData clearCoat;
-    TransmissionSurfaceData transmission;
+    TransmissionSurfaceData transmission; // This is not actually used for Standard PBR, but must be present for common lighting code to compile
 
     // ------- BasePbrSurfaceData -------
     

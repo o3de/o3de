@@ -42,12 +42,6 @@ namespace AzToolsFramework
     {
     }
 
-    GridSnapAction::GridSnapAction(const GridSnapParameters& gridSnapParameters, const bool localSnapping)
-        : m_gridSnapParams(gridSnapParameters)
-        , m_localSnapping(localSnapping)
-    {
-    }
-
     ManipulatorInteraction BuildManipulatorInteraction(
         const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
         const AZ::Vector3& worldRayOrigin, const AZ::Vector3& worldRayDirection)
@@ -57,19 +51,39 @@ namespace AzToolsFramework
 
         return {localFromWorldUniform.TransformPoint(worldRayOrigin),
                 TransformDirectionNoScaling(localFromWorldUniform, worldRayDirection),
-                ScaleReciprocal(worldFromLocalUniform),
-                NonUniformScaleReciprocal(nonUniformScale)};
+                NonUniformScaleReciprocal(nonUniformScale),
+                ScaleReciprocal(worldFromLocalUniform)};
     }
 
-    AZ::Vector3 CalculateSnappedOffset(
-        const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, const float size)
+    struct SnapAdjustment
+    {
+        float m_existingSnapDistance; //!< How far to snap up or down to align to the grid.
+        float m_nextSnapDistance; //!< The snap increment (will return full signed value (grid size) when distance
+                                  //!< moved is greater than half of the grid size in either direction).
+    };
+
+    static SnapAdjustment CalculateSnapDistance(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, const float size)
     {
         // calculate total distance along axis
         const float axisDistance = axis.Dot(unsnappedPosition);
         // round to nearest step size
         const float snappedAxisDistance = floorf((axisDistance / size) + 0.5f) * size;
+
+        return { axisDistance, snappedAxisDistance };
+    }
+
+    AZ::Vector3 CalculateSnappedOffset(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, const float size)
+    {
+        const auto snapAdjustment = CalculateSnapDistance(unsnappedPosition, axis, size);
         // return offset along axis to snap to step size
-        return axis * (snappedAxisDistance - axisDistance);
+        return axis * (snapAdjustment.m_nextSnapDistance - snapAdjustment.m_existingSnapDistance);
+    }
+
+    AZ::Vector3 CalculateSnappedAmount(const AZ::Vector3& unsnappedPosition, const AZ::Vector3& axis, const float size)
+    {
+        const auto snapAdjustment = CalculateSnapDistance(unsnappedPosition, axis, size);
+        // return offset along axis to snap to step size
+        return axis * snapAdjustment.m_nextSnapDistance;
     }
 
     AZ::Vector3 CalculateSnappedTerrainPosition(

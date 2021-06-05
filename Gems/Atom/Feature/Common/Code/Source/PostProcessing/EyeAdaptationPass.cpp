@@ -34,7 +34,7 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* const EyeAdaptationBufferBaseName = "EyeAdaptationBuffer";
+        static const char* const EyeAdaptationBufferName = "EyeAdaptationBuffer";
 
         RPI::Ptr<EyeAdaptationPass> EyeAdaptationPass::Create(const RPI::PassDescriptor& descriptor)
         {
@@ -49,12 +49,10 @@ namespace AZ
         
         void EyeAdaptationPass::InitBuffer()
         {
-            AZStd::string bufferName = AZStd::string::format("%s_%p", EyeAdaptationBufferBaseName, this);
-
             ExposureCalculationData defaultData;
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
-            desc.m_bufferName = bufferName;
+            desc.m_bufferName = EyeAdaptationBufferName;
             desc.m_byteCount = sizeof(ExposureCalculationData);
             desc.m_elementSize = aznumeric_cast<uint32_t>(desc.m_byteCount);
             desc.m_bufferData = &defaultData;

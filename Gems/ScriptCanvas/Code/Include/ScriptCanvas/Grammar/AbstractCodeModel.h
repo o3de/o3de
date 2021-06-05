@@ -387,6 +387,8 @@ namespace ScriptCanvas
 
             void ParseMultiExecutionPre(ExecutionTreePtr execution);
 
+            void ParseMultipleFunctionCallPost(ExecutionTreePtr execution);
+
             void ParseNodelingVariables(const Node& node, NodelingType nodelingType);
 
             void ParseOperatorArithmetic(ExecutionTreePtr execution);

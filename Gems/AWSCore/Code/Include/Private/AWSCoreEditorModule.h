@@ -11,15 +11,15 @@
 
 #pragma once
 
-#include <AWSCoreModule.h>
+#include <AzCore/Module/Module.h>
 
 namespace AWSCore
 {
     class AWSCoreEditorModule
-        : public AWSCoreModule
+        :public AZ::Module
     {
     public:
-        AZ_RTTI(AWSCoreEditorModule, "{C1C9B898-848B-4C2F-A7AA-69642D12BCB5}", AWSCoreModule);
+        AZ_RTTI(AWSCoreEditorModule, "{C1C9B898-848B-4C2F-A7AA-69642D12BCB5}", AZ::Module);
         AZ_CLASS_ALLOCATOR(AWSCoreEditorModule, AZ::SystemAllocator, 0);
 
         AWSCoreEditorModule();

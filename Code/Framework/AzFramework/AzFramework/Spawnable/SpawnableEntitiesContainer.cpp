@@ -44,7 +44,8 @@ namespace AzFramework
     void SpawnableEntitiesContainer::SpawnEntities(AZStd::vector<size_t> entityIndices)
     {
         AZ_Assert(m_threadData, "Calling SpawnEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->SpawnEntities(m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
+        SpawnableEntitiesInterface::Get()->SpawnEntities(
+            m_threadData->m_spawnedEntitiesTicket, AZStd::move(entityIndices));
     }
 
     void SpawnableEntitiesContainer::DespawnAllEntities()
@@ -66,8 +67,9 @@ namespace AzFramework
             m_monitor.Disconnect();
             m_monitor.m_threadData.reset();
 
-            SpawnableEntitiesInterface::Get()->Barrier(m_threadData->m_spawnedEntitiesTicket,
-                [threadData = m_threadData](EntitySpawnTicket&) mutable
+            SpawnableEntitiesInterface::Get()->Barrier(
+                m_threadData->m_spawnedEntitiesTicket,
+                [threadData = m_threadData](EntitySpawnTicket::Id) mutable
                 {
                     threadData.reset();
                 });
@@ -83,8 +85,9 @@ namespace AzFramework
     void SpawnableEntitiesContainer::Alert(AlertCallback callback)
     {
         AZ_Assert(m_threadData, "Calling DespawnEntities on a Spawnable container that's not set.");
-        SpawnableEntitiesInterface::Get()->Barrier(m_threadData->m_spawnedEntitiesTicket,
-            [generation = m_threadData->m_generation, callback = AZStd::move(callback)](EntitySpawnTicket&)
+        SpawnableEntitiesInterface::Get()->Barrier(
+            m_threadData->m_spawnedEntitiesTicket,
+            [generation = m_threadData->m_generation, callback = AZStd::move(callback)](EntitySpawnTicket::Id)
             {
                 callback(generation);
             });

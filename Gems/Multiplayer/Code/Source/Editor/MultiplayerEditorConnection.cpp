@@ -140,7 +140,7 @@ namespace Multiplayer
                 AZ::CVarFixedString remoteAddress;
                 uint16_t remotePort;
                 if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
-                    console->GetCvarValue("editorsv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
+                    console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
                     {
                         // Connect the Editor to the editor server for Multiplayer simulation
                         AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
@@ -149,6 +149,8 @@ namespace Multiplayer
 
                         const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
                         networkInterface->Connect(ipAddress);
+
+                        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
                     }
             }
         }

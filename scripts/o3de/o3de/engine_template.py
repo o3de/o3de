@@ -1279,6 +1279,7 @@ def create_from_template(destination_path: str,
 
 
 def create_project(project_path: str,
+                   project_name: str = None,
                    template_path: str = None,
                    template_name: str = None,
                    project_restricted_path: str = None,
@@ -1297,6 +1298,7 @@ def create_project(project_path: str,
     Template instantiation specialization that makes all default assumptions for a Project template instantiation,
      reducing the effort needed in instancing a project
     :param project_path: the project path, can be absolute or relative to default projects path
+    :param project_name: the project name, defaults to project_path basename if not provided 
     :param template_path: the path to the template you want to instance, can be absolute or relative to default templates path
     :param template_name: the name the registered template you want to instance, defaults to DefaultProject, resolves template_path
     :param project_restricted_path: path to the projects restricted folder, can be absolute or relative to the restricted='projects'
@@ -1489,12 +1491,17 @@ def create_project(project_path: str,
     elif not os.path.isdir(project_path):
         os.makedirs(project_path)
 
-    # project name is now the last component of the project_path
-    project_name = os.path.basename(project_path)
+    if not project_name:
+        # project name is now the last component of the project_path
+        project_name = os.path.basename(project_path)
+
+    if not utils.validate_identifier(project_name):
+        logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {project_name}')
+        return 1
 
     # project name cannot be the same as a restricted platform name
     if project_name in restricted_platforms:
-        logger.error(f'Project path cannot be a restricted name. {project_name}')
+        logger.error(f'Project name cannot be a restricted name. {project_name}')
         return 1
 
     # project restricted name
@@ -2079,6 +2086,7 @@ def _run_create_from_template(args: argparse) -> int:
 
 def _run_create_project(args: argparse) -> int:
     return create_project(args.project_path,
+                          args.project_name,
                           args.template_path,
                           args.template_name,
                           args.project_restricted_path,
@@ -2262,10 +2270,15 @@ def add_args(subparsers) -> None:
     # creation of a project from a template (like create from template but makes project assumptions)
     create_project_subparser = subparsers.add_parser('create-project')
     create_project_subparser.add_argument('-pp', '--project-path', type=str, required=True,
-                                          help='The name of the project you wish to create from the template,'
+                                          help='The location of the project you wish to create from the template,'
                                                ' can be an absolute path or dev root relative.'
                                                ' Ex. C:/o3de/TestProject'
-                                               ' TestProject = <project_name>')
+                                               ' TestProject = <project_name> if --project-name not provided')
+    create_project_subparser.add_argument('-pn', '--project-name', type=str, required=False,
+                                          help='The name of the project you wish to use, must be alphanumeric, '
+                                               ' and can contain _ and - characters.'
+                                               ' If no name is provided, will use last component of project path.'
+                                               ' Ex. New_Project-123')
 
     group = create_project_subparser.add_mutually_exclusive_group(required=False)
     group.add_argument('-tp', '--template-path', type=str, required=False,

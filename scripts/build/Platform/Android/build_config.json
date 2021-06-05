@@ -136,6 +136,7 @@
   },
   "gradle": {
     "TAGS":[
+        "default",
         "weekly-build-metrics"
     ],
     "COMMAND":"gradle_windows.cmd",

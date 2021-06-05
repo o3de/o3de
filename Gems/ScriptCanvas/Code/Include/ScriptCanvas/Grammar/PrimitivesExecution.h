@@ -190,6 +190,8 @@ namespace ScriptCanvas
 
             bool HasReturnValues() const;
 
+            bool InputHasThisPointer() const;
+
             bool IsInfiniteLoopDetectionPoint() const;
 
             void InsertChild(size_t index, const ExecutionChild& child);
@@ -207,6 +209,8 @@ namespace ScriptCanvas
             void MarkDebugEmptyStatement();
 
             void MarkInfiniteLoopDetectionPoint();
+
+            void MarkInputHasThisPointer();
 
             void MarkInputOutputPreprocessed();
 
@@ -262,6 +266,8 @@ namespace ScriptCanvas
 
             void SetSymbol(Symbol val);
 
+            void SwapChildren(ExecutionTreePtr execution);
+
         private:
             // the (possible) slot(s) through which execution exited, along with associated output
             AZStd::vector<ExecutionChild> m_children;
@@ -274,6 +280,8 @@ namespace ScriptCanvas
             ConversionByIndex m_inputConversion;
 
             bool m_isInfiniteLoopDetectionPoint = false;
+
+            bool m_inputHasThisPointer = false;
 
             bool m_isInputOutputPreprocessed = false;
 

@@ -13,6 +13,9 @@
 
 #include <fcntl.h>
 #include <corecrt_io.h>
+#include <sys/stat.h>
+
+#include <AzCore/std/typetraits/underlying_type.h>
 
 namespace AZ
 {
@@ -21,6 +24,7 @@ namespace AZ
         namespace Internal
         {
             using SizeType = AZ::u64;
+            using SeekSizeType = AZ::s64;
             using FileHandleType = void*;
         }
 
@@ -31,7 +35,7 @@ namespace AZ
                 Append       = _O_APPEND,     // Moves the file pointer to the end of the file before every write operation.
                 Create       = _O_CREAT,      // Creates a file and opens it for writing. Has no effect if the file specified by filename exists. PermissionMode is required.
                 Temporary    = _O_TEMPORARY,  // Applies only when used with CREAT. Creates a file as temporary; the file is deleted when the last file descriptor is closed. PermissionMode equired when CREAT is specified.
-                Exclusive    = _O_EXCL,       // Applies only when used with CREAT. Returns an error value if a file specified by filename exists. 
+                Exclusive    = _O_EXCL,       // Applies only when used with CREAT. Returns an error value if a file specified by filename exists.
                 Truncate     = _O_TRUNC,      // Opens a file and truncates it to zero length; the file must have write permission. Cannot be specified with RDONLY.
                                               // Note: The TRUNC flag destroys the contents of the specified file.
 

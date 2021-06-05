@@ -192,5 +192,16 @@ namespace O3DE::ProjectManager
             return true;
         }
 
+        ProjectManagerScreen GetProjectManagerScreen(const QString& screen)
+        {
+            auto iter = s_ProjectManagerStringNames.find(screen);
+            if (iter != s_ProjectManagerStringNames.end())
+            {
+                return iter.value();
+            }
+
+            return ProjectManagerScreen::Invalid;
+        }
+
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
