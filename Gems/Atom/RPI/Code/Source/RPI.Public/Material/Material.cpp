@@ -64,12 +64,11 @@ namespace AZ
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
 
-            const auto& shaderCollection = materialAsset.GetShaderCollection();
             // Cache off pointers to some key data structures from the material type...
-            auto& srgLayout = m_materialAsset->GetMaterialSrgLayout();
+            auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
             if (srgLayout)
             {
-                auto shaderAsset = shaderCollection[0].GetShaderAsset();
+                auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
                 m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, DefaultSupervariantIndex, srgLayout->GetName());
 
                 if (m_shaderResourceGroup)
@@ -91,7 +90,7 @@ namespace AZ
             }
 
             // Copy the shader collection because the material will make changes, like updating the ShaderVariantId.
-            m_shaderCollection = shaderCollection;
+            m_shaderCollection = materialAsset.GetShaderCollection();
 
             // Register for update events related to Shader instances that own the ShaderAssets inside
             // the shader collection.

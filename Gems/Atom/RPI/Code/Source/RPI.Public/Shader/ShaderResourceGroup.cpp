@@ -87,7 +87,8 @@ namespace AZ
         {
             AZ_TRACE_METHOD();
 
-            m_layout = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex).get();
+            const auto& lay = shaderAsset.FindShaderResourceGroupLayout(srgName, supervariantIndex);
+            m_layout = lay.get();
             
             if (!m_layout)
             {
@@ -97,6 +98,7 @@ namespace AZ
 
             m_pool = ShaderResourceGroupPool::FindOrCreate(
                 AZ::Data::Asset<ShaderAsset>(&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad), supervariantIndex, srgName);
+            if (!m_pool)
             {
                 return RHI::ResultCode::Fail;
             }
@@ -159,10 +161,10 @@ namespace AZ
             return m_layout->FindShaderInputImageUnboundedArrayIndex(name);
         }
 
-        const Data::Asset<ShaderAsset>& ShaderResourceGroup::GetAsset() const
-        {
-            return m_asset;
-        }
+        //const Data::Asset<ShaderAsset>& ShaderResourceGroup::GetAsset() const
+        //{
+        //    return m_asset;
+        //}
 
         const RHI::ShaderResourceGroupLayout* ShaderResourceGroup::GetLayout() const
         {

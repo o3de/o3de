@@ -64,7 +64,7 @@ namespace AZ
             
             m_pool->SetName(srgName);
             const RHI::ResultCode resultCode = m_pool->Init(*device, poolDescriptor);
-            m_isInitialized = resultCode == RHI::ResultCode::Success;
+            m_isInitialized = (resultCode == RHI::ResultCode::Success);
             AZ_Error("ShaderResourceGroupPool", m_isInitialized, "Failed to initialize RHI::ShaderResourceGroupPool");
 
             return resultCode;

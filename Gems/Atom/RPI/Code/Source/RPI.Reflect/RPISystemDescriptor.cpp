@@ -28,10 +28,11 @@ namespace AZ
                     ;
 
                 serializeContext->Class<RPISystemDescriptor>()
-                    ->Version(5)
+                    ->Version(6) // ATOM-15472
                     ->Field("RHISystemDescriptor", &RPISystemDescriptor::m_rhiSystemDescriptor)
-                    ->Field("SceneSRGAssetPath", &RPISystemDescriptor::m_sceneSrgAssetPath)
-                    ->Field("ViewSRGAssetPath", &RPISystemDescriptor::m_viewSrgAssetPath)
+                    ->Field("CommonSrgsShaderAssetPath", &RPISystemDescriptor::m_commonSrgsShaderAssetPath)
+                    ->Field("SceneSrgName", &RPISystemDescriptor::m_sceneSrgName)
+                    ->Field("ViewSrgName", &RPISystemDescriptor::m_viewSrgName)
                     ->Field("ImageSystemDescriptor", &RPISystemDescriptor::m_imageSystemDescriptor)
                     ->Field("GpuQuerySystemDescriptor", &RPISystemDescriptor::m_gpuQuerySystemDescriptor)
                     ->Field("DynamicDrawSystemDescriptor", &RPISystemDescriptor::m_dynamicDrawSystemDescriptor)
@@ -50,8 +51,10 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_sceneSrgAssetPath, "Scene SRG Asset Path", "Shader Resource Group asset path for all RPI scenes")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_viewSrgAssetPath, "View SRG Asset Path", "Shader Resource Group asset path for all RPI views")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_commonSrgsShaderAssetPath, "Common Shader Asset Path For Scene & View SRGs",
+                            "Shader asset path used to get the Scene and View SRGs for all RPI scenes and views respectively")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_sceneSrgName, "Scene SRG Name", "Shader Resource Group name for the all RPI scenes")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_viewSrgName, "View SRG Name", "Shader Resource Group name for the all RPI views")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_rhiSystemDescriptor, "RHI System Config", "Configuration of Render Hardware Interface")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_imageSystemDescriptor, "Image System Config", "Configuration of Image System")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemDescriptor::m_gpuQuerySystemDescriptor, "Gpu Query System Config", "Configuration of Gpu Query System")

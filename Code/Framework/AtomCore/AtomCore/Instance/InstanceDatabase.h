@@ -144,7 +144,7 @@ namespace AZ
          *
          * @endcode
          */
-        template <typename Type>
+        template <typename Type, bool useAssetTypeAsKeyForHandlers = true>
         class InstanceDatabase final : public InstanceDatabaseInterface
         {
             static_assert(AZStd::is_base_of<InstanceData, Type>::value, "Type must inherit from Data::Instance to be used in Data::InstanceDatabase.");
@@ -217,6 +217,9 @@ namespace AZ
             InstanceDatabase(const AssetType& assetType);
             ~InstanceDatabase();
 
+            // [GFX TODO] This should be "static constexpr" but unfortunately at runtime
+            // it appears as if m_useAssetTypeAsKeyForHandlers is always true.
+            const bool m_useAssetTypeAsKeyForHandlers = useAssetTypeAsKeyForHandlers;
             static const char* GetEnvironmentName();
 
             // Utility function called by InstanceData to remove the instance from the database.
@@ -241,11 +244,12 @@ namespace AZ
             static EnvironmentVariable<InstanceDatabase*> ms_instance;
         };
 
-        template <typename Type>
-        EnvironmentVariable<InstanceDatabase<Type>*> InstanceDatabase<Type>::ms_instance = nullptr;
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        EnvironmentVariable<InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>*>
+            InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::ms_instance = nullptr;
 
-        template <typename Type>
-        InstanceDatabase<Type>::~InstanceDatabase()
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::~InstanceDatabase()
         {
 #ifdef AZ_DEBUG_BUILD
             for (const auto& keyValue : m_database)
@@ -261,8 +265,9 @@ namespace AZ
                 "AZ::Data::%s still has active references.", Type::GetDatabaseName());
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::AddHandler(const AssetType& assetType, const InstanceHandler<Type>& handler)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::AddHandler(
+            const AssetType& assetType, const InstanceHandler<Type>& handler)
         {
             AZ_Assert(handler.m_createFunction, "You are required to provide a create function to InstanceDatabase.");
 
@@ -271,8 +276,9 @@ namespace AZ
             AZ_Assert(result.second, "An InstanceHandler already exists for this AssetType");
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::AddHandler(const AssetType& assetType, typename InstanceHandler<Type>::CreateFunction createFunction)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::AddHandler(
+            const AssetType& assetType, typename InstanceHandler<Type>::CreateFunction createFunction)
         {
             InstanceHandler<Type> instanceHandler;
             instanceHandler.m_createFunction = createFunction;
@@ -280,15 +286,16 @@ namespace AZ
             AddHandler(assetType, instanceHandler);
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::RemoveHandler(const AssetType& assetType)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::RemoveHandler(const AssetType& assetType)
         {
             AZStd::unique_lock<AZStd::shared_mutex> lock(m_handlersMutex);
             m_handlers.erase(assetType);
         }
 
-        template <typename Type>
-        bool InstanceDatabase<Type>::FindHandler(const AssetType& assetType, InstanceHandler<Type>& handlerOut)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        bool InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::FindHandler(
+            const AssetType& assetType, InstanceHandler<Type>& handlerOut)
         {
             AZStd::shared_lock<AZStd::shared_mutex> lock(m_handlersMutex);
 
@@ -306,8 +313,8 @@ namespace AZ
             }
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::Find(const InstanceId& id) const
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        Data::Instance<Type> InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::Find(const InstanceId& id) const
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
             auto iter = m_database.find(id);
@@ -318,8 +325,9 @@ namespace AZ
             return nullptr;
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const InstanceId& id, const Asset<AssetData>& asset)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        Data::Instance<Type> InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::FindOrCreate(
+            const InstanceId& id, const Asset<AssetData>& asset)
         {
             if (!id.IsValid())
             {
@@ -358,21 +366,23 @@ namespace AZ
                 }
             }
 
-            if (!azrtti_istypeof(m_baseAssetType, assetLocal.Get()))
+            if (m_useAssetTypeAsKeyForHandlers)
             {
-                InstanceHandler<Type> instanceHandler;
-
-                // If a handler was incorrectly registered for an unrelated asset type, this is the 
-                // first chance we have to discover that fact, because up until now all we had was two
-                // TypeIds.
-                if (FindHandler(assetLocal.GetType(), instanceHandler))
+                if (!azrtti_istypeof(m_baseAssetType, assetLocal.Get()))
                 {
-                    AZ_Assert(false, "An InstanceHandler was added for asset type %s which is not a subclass of the base asset type %s.",
-                        assetLocal.GetType().ToString<AZStd::string>().data(),
-                        m_baseAssetType.ToString<AZStd::string>().data()
-                    );
+                    InstanceHandler<Type> instanceHandler;
 
-                    return nullptr;
+                    // If a handler was incorrectly registered for an unrelated asset type, this is the
+                    // first chance we have to discover that fact, because up until now all we had was two
+                    // TypeIds.
+                    if (FindHandler(assetLocal.GetType(), instanceHandler))
+                    {
+                        AZ_Assert(
+                            false, "An InstanceHandler was added for asset type %s which is not a subclass of the base asset type %s.",
+                            assetLocal.GetType().ToString<AZStd::string>().data(), m_baseAssetType.ToString<AZStd::string>().data());
+
+                        return nullptr;
+                    }
                 }
             }
 
@@ -391,7 +401,16 @@ namespace AZ
 
             // Emplace a new instance and return it.
             InstanceHandler<Type> instanceHandler;
-            if (FindHandler(assetLocal.GetType(), instanceHandler))
+            bool foundHandler = false;
+            if (m_useAssetTypeAsKeyForHandlers)
+            {
+                foundHandler = FindHandler(assetLocal.GetType(), instanceHandler);
+            }
+            else
+            {
+                foundHandler = FindHandler(AZ::AzTypeInfo<Type>::Uuid(), instanceHandler);
+            }
+            if (foundHandler)
             {
                 // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
                 // the contents of m_database may change within this call.
@@ -419,20 +438,20 @@ namespace AZ
             }
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        Data::Instance<Type> InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::FindOrCreate(const Asset<AssetData>& asset)
         {
             return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset);
         }
 
-        template <typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        Data::Instance<Type> InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::Create(const Asset<AssetData>& asset)
         {
             return FindOrCreate(Data::InstanceId::CreateRandom(), asset);
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::ReleaseInstance(InstanceData* instance, const InstanceId& instanceId)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::ReleaseInstance(InstanceData* instance, const InstanceId& instanceId)
         {
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
             
@@ -449,7 +468,16 @@ namespace AZ
                 m_database.erase(instance->GetId());
 
                 InstanceHandler<Type> instanceHandler;
-                if (FindHandler(instance->GetAssetType(), instanceHandler))
+                bool foundHandler = false;
+                if (m_useAssetTypeAsKeyForHandlers)
+                {
+                    foundHandler = FindHandler(instance->GetAssetType(), instanceHandler);
+                }
+                else
+                {
+                    foundHandler = FindHandler(AZ::AzTypeInfo<Type>::Uuid(), instanceHandler);
+                }
+                if (foundHandler)
                 {
                     instanceHandler.m_deleteFunction(static_cast<Type*>(instance));
                 }
@@ -461,8 +489,9 @@ namespace AZ
             }
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::ValidateSameAsset(InstanceData* instance, const Data::Asset<AssetData>& asset) const
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::ValidateSameAsset(
+            InstanceData* instance, const Data::Asset<AssetData>& asset) const
         {
             /**
              * The following validation layer is disabled in release, but is designed to catch a couple related edge cases
@@ -486,45 +515,45 @@ namespace AZ
         #endif
         }
 
-        template <typename Type>
-        InstanceDatabase<Type>::InstanceDatabase(const AssetType& assetType) 
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::InstanceDatabase(const AssetType& assetType) 
             : m_baseAssetType(assetType)
         {
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::Create(const AssetType& assetType)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::Create(const AssetType& assetType)
         {
             AZ_Assert(!ms_instance || !ms_instance.Get(), "InstanceDatabase already created!");
 
             if (!ms_instance)
             {
-                ms_instance = Environment::CreateVariable<InstanceDatabase*>(GetEnvironmentName());
+                ms_instance = Environment::CreateVariable<InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>*>(GetEnvironmentName());
             }
 
             if (!ms_instance.Get())
             {
-                ms_instance.Set(aznew InstanceDatabase<Type>(assetType));
+                ms_instance.Set(aznew InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>(assetType));
             }
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::Create(const AssetType& assetType, const InstanceHandler<Type>& handler)
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::Create(const AssetType& assetType, const InstanceHandler<Type>& handler)
         {
             Create(assetType);
             Instance().AddHandler(assetType, handler);
         }
 
-        template <typename Type>
-        void InstanceDatabase<Type>::Destroy()
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        void InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::Destroy()
         {
             AZ_Assert(ms_instance, "InstanceDatabase not created!");
             delete (*ms_instance);
             *ms_instance = nullptr;
         }
 
-        template <typename Type>
-        bool InstanceDatabase<Type>::IsReady()
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        bool InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::IsReady()
         {
             if (!ms_instance)
             {
@@ -534,8 +563,8 @@ namespace AZ
             return ms_instance && *ms_instance;
         }
 
-        template <typename Type>
-        InstanceDatabase<Type>& InstanceDatabase<Type>::Instance()
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>& InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::Instance()
         {
             if (!ms_instance)
             {
@@ -546,10 +575,12 @@ namespace AZ
             return *(*ms_instance);
         }
 
-        template <typename Type>
-        const char* InstanceDatabase<Type>::GetEnvironmentName()
+        template<typename Type, bool useAssetTypeAsKeyForHandlers>
+        const char* InstanceDatabase<Type, useAssetTypeAsKeyForHandlers>::GetEnvironmentName()
         {
-            static_assert(HasInstanceDatabaseName<Type>::value, "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
+            static_assert(
+                HasInstanceDatabaseName<Type>::value,
+                "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
             return Type::GetDatabaseName();
         }
     }

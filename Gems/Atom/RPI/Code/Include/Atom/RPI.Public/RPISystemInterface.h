@@ -13,6 +13,7 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RPI.Reflect/RPISystemDescriptor.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
 #include <Atom/RPI.Public/Base.h>
 
