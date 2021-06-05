@@ -47,9 +47,8 @@ namespace AZ
             m_getDepthPass = static_cast<DepthOfFieldWriteFocusDepthFromGpuPass*>(pass.get());
 
             // Create buffer for read back focus depth. We append static counter to avoid name conflicts.
-            AZStd::string bufferName = AZStd::string::format("DepthOfFieldReadBackAutoFocusDepthBuffer_%d", s_bufferInstance++);
             RPI::CommonBufferDescriptor desc;
-            desc.m_bufferName = bufferName;
+            desc.m_bufferName = "DepthOfFieldReadBackAutoFocusDepthBuffer";
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
             desc.m_byteCount = sizeof(float);
             desc.m_elementSize = aznumeric_cast<uint32_t>(desc.m_byteCount);
