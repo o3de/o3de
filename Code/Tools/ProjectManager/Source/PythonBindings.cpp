@@ -667,7 +667,7 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_path = Py_To_String(path);
-        projectInfo.m_isNew = false;
+        projectInfo.m_needsBuild = false;
 
         auto projectData = m_manifest.attr("get_project_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(projectData))

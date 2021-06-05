@@ -206,6 +206,8 @@ namespace O3DE::ProjectManager
                 m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
+                projectInfo.m_needsBuild = true;
+                emit NotifyBuildProject(projectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
