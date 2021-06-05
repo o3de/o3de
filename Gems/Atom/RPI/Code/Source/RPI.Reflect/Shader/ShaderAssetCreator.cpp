@@ -154,13 +154,6 @@ namespace AZ
                 ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
                 return;
             }
-            if (m_currentSupervariant->m_srgLayoutList.empty())
-            {
-                ReportError(
-                    "Before setting the pipeline layout, the supervariant [%s] needs the SRG layouts",
-                    m_currentSupervariant->m_name.GetCStr());
-                return;
-            }
             m_currentSupervariant->m_pipelineLayoutDescriptor = pipelineLayoutDescriptor;
         }
 
