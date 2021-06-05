@@ -134,10 +134,10 @@ namespace O3DE::ProjectManager
                 // Update project if settings changed
                 if (m_projectInfo != newProjectSettings)
                 {
-                    bool result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
-                    if (!result)
+                    auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
+                    if (!result.IsSuccess())
                     {
-                        QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+                        QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
                         return;
                     }
                 }

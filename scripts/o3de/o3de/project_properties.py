@@ -45,15 +45,17 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
     if new_icon:
         proj_json['icon_path'] = new_icon
     if new_tag:
-        proj_json.setdefault('user_tags', []).append(new_tag)
+        for tag in new_tag:
+            proj_json.setdefault('user_tags', []).append(tag)
     if remove_tag:
         if 'user_tags' in proj_json:
-            if remove_tag in proj_json['user_tags']:
-                proj_json['user_tags'].remove(remove_tag)
-            else:
-                logger.warn(f'{remove_tag} not found in user_tags for removal.')
+            for del_tag in remove_tag:
+                if del_tag in proj_json['user_tags']:
+                    proj_json['user_tags'].remove(del_tag)
+                else:
+                    logger.warn(f'{del_tag} not found in user_tags for removal.')
         else:
-            logger.warn(f'user_tags property not found for removal of tag {remove_tag}.')
+            logger.warn(f'user_tags property not found for removal of {remove_tag}.')
 
     manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json')
     return 0
@@ -83,10 +85,10 @@ def add_parser_args(parser):
                        help='Sets the summary description of the project.')
     group.add_argument('-pi', '--project-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
-    group.add_argument('-pt', '--project-tag', type=str, required=False,
-                       help='Adds a tag to user_tags property. These tags are intended for documentation and filtering.')
-    group.add_argument('-rt', '--remove-tag', type=str, required=False,
-                       help='Removes a tag from the user_tags property.')
+    group.add_argument('-pt', '--project-tag', type=default, required=False,
+                       help='Adds tag(s) to user_tags property. These tags are intended for documentation and filtering.')
+    group.add_argument('-rt', '--remove-tag', type=default, required=False,
+                       help='Removes tag(s) from the user_tags property.')
     parser.set_defaults(func=_edit_project_props)
 
 def add_args(subparsers) -> None:

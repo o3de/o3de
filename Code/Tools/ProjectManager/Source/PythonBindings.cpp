@@ -19,6 +19,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <pybind11/stl.h>
 #pragma pop_macro("slots")
 
 #include <AzCore/IO/FileIO.h>
@@ -687,23 +688,6 @@ namespace O3DE::ProjectManager
         return projectInfo;
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::ModifyProjectProperties(const QString& path, const QString& origin, const QString& displayName,
-                                                const QString& summary, const QString& icon, const QString& addTag, const QString& removeTag)
-    {
-        return ExecuteWithLockErrorHandling([&]
-        {
-            m_editProjectProperties.attr("edit_project_props")(
-                pybind11::str(path.toStdString()), //proj_path
-                pybind11::none(), //proj_name not used
-                origin.isNull() ? pybind11::none() : pybind11::str(origin.toStdString()), //new_origin
-                displayName.isNull() ? pybind11::none() : pybind11::str(displayName.toStdString()), //new_display
-                summary.isNull() ? pybind11::none() : pybind11::str(summary.toStdString()), //new_summary
-                icon.isNull() ? pybind11::none() : pybind11::str(icon.toStdString()), //new_icon
-                addTag.isNull() ? pybind11::none() : pybind11::str(addTag.toStdString()), //new_tag
-                removeTag.isNull() ? pybind11::none() : pybind11::str(removeTag.toStdString())); //remove_tag
-        });
-    }
-
     AZ::Outcome<QVector<ProjectInfo>> PythonBindings::GetProjects()
     {
         QVector<ProjectInfo> projects;
@@ -764,9 +748,32 @@ namespace O3DE::ProjectManager
         });
     }
 
-    bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)
+    AZ::Outcome<void, AZStd::string> PythonBindings::UpdateProject(const ProjectInfo& projectInfo)
     {
-        return false;
+        return ExecuteWithLockErrorHandling([&]
+            {
+                std::list<std::string> newTags;
+                for (auto& i : projectInfo.m_userTags)
+                {
+                    newTags.push_back(i.toStdString());
+                }
+
+                std::list<std::string> removedTags;
+                for (auto& i : projectInfo.m_userTagsForRemoval)
+                {
+                    removedTags.push_back(i.toStdString());
+                }
+
+                m_editProjectProperties.attr("edit_project_props")(
+                    pybind11::str(projectInfo.m_path.toStdString()), // proj_path
+                    pybind11::none(), // proj_name not used
+                    pybind11::str(projectInfo.m_origin.toStdString()), // new_origin
+                    pybind11::str(projectInfo.m_displayName.toStdString()), // new_display
+                    pybind11::str(projectInfo.m_summary.toStdString()), // new_summary
+                    pybind11::str(projectInfo.m_imagePath.toStdString()), // new_icon
+                    pybind11::list(pybind11::cast(newTags)), // new_tag
+                    pybind11::list(pybind11::cast(removedTags))); // remove_tag
+            });
     }
 
     ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)

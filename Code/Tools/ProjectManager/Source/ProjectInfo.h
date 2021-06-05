@@ -15,6 +15,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Math/Uuid.h>
 #include <QString>
+#include <QStringList>
 #endif
 
 namespace O3DE::ProjectManager
@@ -23,8 +24,8 @@ namespace O3DE::ProjectManager
     {
     public:
         ProjectInfo() = default;
-        ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
-            const QString& imagePath, const QString& backgroundImagePath, bool isNew);
+        ProjectInfo(const QString& path, const QString& projectName, const QString& displayName, const QString& origin,
+            const QString& summary, const QString& imagePath, const QString& backgroundImagePath, bool isNew);
         bool operator==(const ProjectInfo& rhs);
         bool operator!=(const ProjectInfo& rhs);
 
@@ -36,12 +37,18 @@ namespace O3DE::ProjectManager
         // From project.json
         QString m_projectName;
         QString m_displayName;
+        QString m_origin;
+        QString m_summary;
+        QStringList m_userTags;
 
         // Used on projects home screen
         QString m_imagePath;
-        QString m_backgroundImagePath;
+        QStringList m_backgroundImagePath;
 
         // Used in project creation
         bool m_isNew = false; //! Is this a new project or existing
+
+        // Used to flag tags for removal
+        QStringList m_userTagsForRemoval;
     };
 } // namespace O3DE::ProjectManager

@@ -50,14 +50,9 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
         bool AddProject(const QString& path) override;
         bool RemoveProject(const QString& path) override;
-        bool UpdateProject(const ProjectInfo& projectInfo) override;
+        AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
         AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) override;
         AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
-        AZ::Outcome<void, AZStd::string> ModifyProjectProperties(
-            const QString& path,
-            const QString& origin = 0,
-            const QString& displayName = 0,
-            const QString& summary = 0, const QString& icon = 0, const QString& addTag = 0, const QString& removeTag = 0) override;
 
         // ProjectTemplate
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
