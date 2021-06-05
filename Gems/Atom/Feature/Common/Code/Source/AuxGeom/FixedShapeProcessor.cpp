@@ -1369,15 +1369,12 @@ namespace AZ
         void FixedShapeProcessor::FillShaderData(Data::Instance<RPI::Shader>& shader, ShaderData& shaderData)
         {
             // Get the per-object SRG and store the indices of the data we need to set per object
-            shaderData.m_perObjectSrgAsset = shader->FindShaderResourceGroupAsset(Name{ "ObjectSrg" });
-            if (!shaderData.m_perObjectSrgAsset.GetId().IsValid())
+            shaderData.m_shaderAsset = shader->GetAsset();
+            shaderData.m_supervariantIndex = shader->GetSupervariantIndex();
+            shaderData.m_perObjectSrgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+            if (!shaderData.m_perObjectSrgLayout)
             {
-                AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group asset");
-                return;
-            }
-            else if (!shaderData.m_perObjectSrgAsset.IsReady())
-            {
-                AZ_Error("FixedShapeProcessor", false, "Shader resource group asset is not loaded");
+                AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group layout");
                 return;
             }
 
@@ -1568,7 +1565,7 @@ namespace AZ
 
             // Create a SRG for the shape to specify its transform and color
             // [GFX TODO] [ATOM-2333] Try to avoid doing SRG create/compile per draw. Possibly using instancing.
-            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_perObjectSrgAsset);
+            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_shaderAsset, shaderData.m_supervariantIndex, shaderData.m_perObjectSrgLayout->GetName());
             if (!srg)
             {
                 AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");
@@ -1667,7 +1664,7 @@ namespace AZ
         {
             ShaderData& shaderData = m_perObjectShaderData[drawStyle==DrawStyle_Shaded?1:0];
             // Create a SRG for the box to specify its transform and color
-            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_perObjectSrgAsset);
+            auto srg = RPI::ShaderResourceGroup::Create(shaderData.m_shaderAsset, shaderData.m_supervariantIndex, shaderData.m_perObjectSrgLayout->GetName());
             if (!srg)
             {
                 AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");
