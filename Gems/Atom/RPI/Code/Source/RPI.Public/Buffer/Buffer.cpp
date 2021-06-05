@@ -32,10 +32,6 @@ namespace AZ
             auto buffer = Data::InstanceDatabase<Buffer>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(bufferAsset.GetId()),
                 bufferAsset);
-            if (buffer && buffer->m_rhiBuffer)
-            {
-                buffer->m_rhiBuffer->SetName(Name(bufferAsset.GetHint()));
-            }
             return buffer;
         }
         
@@ -169,6 +165,16 @@ namespace AZ
                         AZ_Error("Buffer", false, "Buffer::Init() failed to stream buffer contents to GPU.");
                         return resultCode;
                     }
+                }
+                
+                m_rhiBuffer->SetName(Name(bufferAsset.GetName()));
+
+                // Only generate buffer's attachment id if the buffer is writable 
+                if (RHI::CheckBitsAny(m_rhiBuffer->GetDescriptor().m_bindFlags,
+                        RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::CopyWrite | RHI::BufferBindFlags::DynamicInputAssembly))
+                {
+                    // attachment id = bufferName_bufferInstanceId
+                    m_attachmentId = Name(bufferAsset.GetName() + "_" + bufferAsset.GetId().m_guid.ToString<AZStd::string>(false, false));
                 }
 
                 return RHI::ResultCode::Success;
@@ -312,7 +318,8 @@ namespace AZ
 
         const RHI::AttachmentId& Buffer::GetAttachmentId() const
         {
-            return m_rhiBuffer->GetName();
+            AZ_Assert(!m_attachmentId.GetStringView().empty(), "Read-only buffer doesn't need attachment id");
+            return m_attachmentId;
         }
         
         const RHI::BufferViewDescriptor& Buffer::GetBufferViewDescriptor() const

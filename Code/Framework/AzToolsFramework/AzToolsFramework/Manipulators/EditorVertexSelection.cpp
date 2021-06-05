@@ -192,8 +192,7 @@ namespace AzToolsFramework
     /// for each vertex associated with the translation manipulator to use with offset calculations when updating.
     template<typename Vertex>
     void InitializeVertexLookup(
-        IndexedTranslationManipulator<Vertex>& translationManipulator,
-        const AZ::EntityId entityId, const AZ::Vector3& snapOffset)
+        IndexedTranslationManipulator<Vertex>& translationManipulator, const AZ::EntityId entityId)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -202,7 +201,7 @@ namespace AzToolsFramework
         AZ::FixedVerticesRequestBus<Vertex>::Bind(fixedVertices, entityId);
 
         translationManipulator.Process(
-            [snapOffset, fixedVertices]
+            [fixedVertices]
             (typename IndexedTranslationManipulator<Vertex>::VertexLookup& vertexLookup)
         {
             Vertex vertex;
@@ -213,7 +212,7 @@ namespace AzToolsFramework
 
             if (found)
             {
-                vertexLookup.m_start = vertex + AZ::AdaptVertexIn<Vertex>(snapOffset);
+                vertexLookup.m_start = vertex;
                 vertexLookup.m_offset = Vertex::CreateZero();
             }
         });
@@ -250,10 +249,10 @@ namespace AzToolsFramework
 
         // linear manipulator callbacks
         m_translationManipulator->m_manipulator.InstallLinearManipulatorMouseDownCallback(
-            [this](const LinearManipulator::Action& action)
+            [this]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             BeginBatchMovement();
-            InitializeVertexLookup(*m_translationManipulator, GetEntityId(), action.m_start.m_positionSnapOffset);
+            InitializeVertexLookup(*m_translationManipulator, GetEntityId());
         });
 
         m_translationManipulator->m_manipulator.InstallLinearManipulatorMouseMoveCallback(
@@ -264,17 +263,17 @@ namespace AzToolsFramework
         });
 
         m_translationManipulator->m_manipulator.InstallLinearManipulatorMouseUpCallback(
-            [this](const LinearManipulator::Action& /*action*/)
+            [this]([[maybe_unused]] const LinearManipulator::Action& action)
         {
             EndBatchMovement();
         });
 
         // planar manipulator callbacks
         m_translationManipulator->m_manipulator.InstallPlanarManipulatorMouseDownCallback(
-            [this](const PlanarManipulator::Action& action)
+            [this]([[maybe_unused]] const PlanarManipulator::Action& action)
         {
             BeginBatchMovement();
-            InitializeVertexLookup(*m_translationManipulator, GetEntityId(), action.m_start.m_snapOffset);
+            InitializeVertexLookup(*m_translationManipulator, GetEntityId());
         });
 
         m_translationManipulator->m_manipulator.InstallPlanarManipulatorMouseMoveCallback(
@@ -285,17 +284,17 @@ namespace AzToolsFramework
         });
 
         m_translationManipulator->m_manipulator.InstallPlanarManipulatorMouseUpCallback(
-            [this](const PlanarManipulator::Action& /*action*/)
+            [this]([[maybe_unused]] const PlanarManipulator::Action& action)
         {
             EndBatchMovement();
         });
 
         // surface manipulator callbacks
         m_translationManipulator->m_manipulator.InstallSurfaceManipulatorMouseDownCallback(
-            [this](const SurfaceManipulator::Action& action)
+            [this]([[maybe_unused]] const SurfaceManipulator::Action& action)
         {
             BeginBatchMovement();
-            InitializeVertexLookup(*m_translationManipulator, GetEntityId(), action.m_start.m_snapOffset);
+            InitializeVertexLookup(*m_translationManipulator, GetEntityId());
         });
 
         m_translationManipulator->m_manipulator.InstallSurfaceManipulatorMouseMoveCallback(
@@ -306,7 +305,7 @@ namespace AzToolsFramework
         });
 
         m_translationManipulator->m_manipulator.InstallSurfaceManipulatorMouseUpCallback(
-            [this](const SurfaceManipulator::Action& /*action*/)
+            [this]([[maybe_unused]] const SurfaceManipulator::Action& action)
         {
             EndBatchMovement();
         });
@@ -893,7 +892,7 @@ namespace AzToolsFramework
         {
             BeginBatchMovement();
 
-            InitializeVertexLookup(*m_translationManipulator, GetEntityId(), AZ::Vector3::CreateZero());
+            InitializeVertexLookup(*m_translationManipulator, GetEntityId());
             // note: AdaptVertexIn/Out is to ensure we clamp the vertex local Z position to 0 if
             // dealing with Vector2s when setting the position of the manipulator.
             const AZ::Vector3 localOffset =

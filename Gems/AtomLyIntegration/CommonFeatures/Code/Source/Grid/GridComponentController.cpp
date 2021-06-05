@@ -115,7 +115,7 @@ namespace AZ
 
         void GridComponentController::SetSize(float gridSize)
         {
-            m_configuration.m_gridSize = gridSize;
+            m_configuration.m_gridSize = AZStd::clamp(gridSize, MinGridSize, MaxGridSize);
             m_dirty = true;
         }
 
@@ -126,7 +126,7 @@ namespace AZ
 
         void GridComponentController::SetPrimarySpacing(float gridPrimarySpacing)
         {
-            m_configuration.m_primarySpacing = gridPrimarySpacing;
+            m_configuration.m_primarySpacing = AZStd::max(gridPrimarySpacing, MinSpacing);
             m_dirty = true;
         }
 
@@ -137,7 +137,7 @@ namespace AZ
 
         void GridComponentController::SetSecondarySpacing(float gridSecondarySpacing)
         {
-            m_configuration.m_secondarySpacing = gridSecondarySpacing;
+            m_configuration.m_secondarySpacing = AZStd::max(gridSecondarySpacing, MinSpacing);
             m_dirty = true;
         }
 

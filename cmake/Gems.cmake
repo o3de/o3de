@@ -29,9 +29,6 @@ function(ly_create_alias)
         message(FATAL_ERROR "Provide the namespace of the alias to create using the NAMESPACE keyword")
     endif()
 
-    if (NOT ly_create_alias_TARGETS)
-        message(FATAL_ERROR "Provide the name of the targets the alias be associated with, using the TARGETS keyword")
-    endif()
 
     if(TARGET ${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME})
         message(FATAL_ERROR "Target already exists, cannot create an alias for it: ${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME}\n"
@@ -78,8 +75,11 @@ function(ly_create_alias)
         list(APPEND final_targets ${de_aliased_target_name})
     endforeach()
     
-    ly_parse_third_party_dependencies("${final_targets}")
-    ly_add_dependencies(${ly_create_alias_NAME} ${final_targets})
+    # add_dependencies must be called with at least one dependent target
+    if(final_targets)
+        ly_parse_third_party_dependencies("${final_targets}")
+        ly_add_dependencies(${ly_create_alias_NAME} ${final_targets})
+    endif()
 
     # now add the final alias:
     add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${ly_create_alias_NAME})

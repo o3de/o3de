@@ -2887,9 +2887,12 @@ void EditorViewportWidget::UpdateCameraFromViewportContext()
     AZ::Matrix3x4 matrix;
     matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
     auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
+
+    m_updatingCameraPosition = true;
     SetViewTM(m);
     SetFOV(cameraState.m_fovOrZoom);
     m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+    m_updatingCameraPosition = false;
 }
 
 void EditorViewportWidget::SetAsActiveViewport()
