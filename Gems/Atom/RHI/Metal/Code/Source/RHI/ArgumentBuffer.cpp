@@ -422,12 +422,12 @@ namespace AZ
                 {
                     if(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Compute))
                     {
-                        ApplyUseResourceToCompute(commandEncoder, it.second, resourcesToMakeResidentCompute);
+                        CollectResourcesForCompute(commandEncoder, it.second, resourcesToMakeResidentCompute);
                     }
                     else
                     {
                         AZ_Assert(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment), "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
-                        ApplyUseResourceToGraphic(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
+                        CollectResourcesForGraphics(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }
                 }
             }
@@ -450,7 +450,7 @@ namespace AZ
             }
         }
 
-        void ArgumentBuffer::ApplyUseResourceToCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingDataSet, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
+        void ArgumentBuffer::CollectResourcesForCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingDataSet, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
         {
             for (const auto& resourceBindingData : resourceBindingDataSet)
             {
@@ -477,7 +477,7 @@ namespace AZ
             }
         }
 
-        void ArgumentBuffer::ApplyUseResourceToGraphic(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
+        void ArgumentBuffer::CollectResourcesForGraphics(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const
         {
    
             MTLRenderStages mtlRenderStages = GetRenderStages(visShaderMask);

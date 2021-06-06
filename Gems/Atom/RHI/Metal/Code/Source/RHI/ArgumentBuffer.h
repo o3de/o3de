@@ -128,8 +128,8 @@ namespace AZ
             using ComputeResourcesToMakeResidentMap =  AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;
             using GraphicsResourcesToMakeResidentMap =  AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, MetalResourceArray>;
             
-            void ApplyUseResourceToCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingData, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
-            void ApplyUseResourceToGraphic(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
+            void CollectResourcesForCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingData, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
+            void CollectResourcesForGraphics(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
             //! Use visibility information to call UseResource on all resources for this Argument Buffer
             void ApplyUseResource(id<MTLCommandEncoder> encoder,
                                   const ResourceBindingsMap& resourceMap,
