@@ -36,21 +36,21 @@ namespace TestImpact
             MaxConcurrency,
             TestTargetTimeout,
             GlobalTimeout,
-            SuitesFilter,
+            SuiteFilter,
             SafeMode,
             // Values
             None,
             Seed,
             Regular,
             ImpactAnalysis,
+            ImpactAnalysisNoWrite,
             ImpactAnalysisOrSeed,
             Locality,
             Abort,
             Continue,
             Ignore,
             StdOut,
-            File,
-            AllSuites
+            File
         };
 
         constexpr const char* OptionKeys[] =
@@ -70,21 +70,21 @@ namespace TestImpact
             "maxconcurrency",
             "ttimeout",
             "gtimeout",
-            "suites",
+            "suite",
             "safemode",
             // Values
             "none",
             "seed",
             "regular",
             "tia",
+            "tianowrite",
             "tiaorseed",
             "locality",
             "abort",
             "continue",
             "ignore",
             "stdout",
-            "file",
-            "*"
+            "file"
         };
 
         RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
@@ -110,6 +110,7 @@ namespace TestImpact
                 {OptionKeys[Seed], TestSequenceType::Seed},
                 {OptionKeys[Regular], TestSequenceType::Regular},
                 {OptionKeys[ImpactAnalysis], TestSequenceType::ImpactAnalysis},
+                {OptionKeys[ImpactAnalysisNoWrite], TestSequenceType::ImpactAnalysisNoWrite},
                 {OptionKeys[ImpactAnalysisOrSeed], TestSequenceType::ImpactAnalysisOrSeed}
             };
 
@@ -250,32 +251,16 @@ namespace TestImpact
             return ParseOnOffOption(OptionKeys[SafeMode], states, cmd).value_or(false);
         }
 
-        AZStd::unordered_set<AZStd::string> ParseSuitesFilter(const AZ::CommandLine& cmd)
+        SuiteType ParseSuiteFilter(const AZ::CommandLine& cmd)
         {
-            AZStd::unordered_set<AZStd::string> suitesFilter;
-            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[SuitesFilter]);
-                numSwitchValues)
+            const AZStd::vector<AZStd::pair<AZStd::string, SuiteType>> states =
             {
-                for (auto i = 0; i < numSwitchValues; i++)
-                {
-                    const auto value = cmd.GetSwitchValue(OptionKeys[SuitesFilter], i);
-                    AZ_TestImpact_Eval(!value.empty(), CommandLineOptionsException, "Suites option value is empty");
-                    if (value == OptionKeys[AllSuites])
-                    {
-                        AZ_TestImpact_Eval(
-                            suitesFilter.empty(), CommandLineOptionsException, "The * suite cannot be used with other suites");
-                    }
+                {GetSuiteTypeName(SuiteType::Main), SuiteType::Main},
+                {GetSuiteTypeName(SuiteType::Periodic), SuiteType::Periodic},
+                {GetSuiteTypeName(SuiteType::Sandbox), SuiteType::Sandbox}
+            };
 
-                    suitesFilter.insert(value);
-                }
-            }
-
-            if (suitesFilter.find(OptionKeys[AllSuites]) != suitesFilter.end())
-            {
-                return {};
-            }
-
-            return suitesFilter;
+            return ParseMultiStateOption(OptionKeys[SuiteFilter], states, cmd).value_or(SuiteType::Main);
         }
     }
 
@@ -299,7 +284,7 @@ namespace TestImpact
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_safeMode = ParseSafeMode(cmd);
-        m_suitesFilter = ParseSuitesFilter(cmd);
+        m_suiteFilter = ParseSuiteFilter(cmd);
     }
  
     bool CommandLineOptions::HasChangeListFile() const
@@ -382,9 +367,9 @@ namespace TestImpact
         return m_globalTimeout;
     }
 
-    const AZStd::unordered_set<AZStd::string>& CommandLineOptions::GetSuitesFilter() const
+    SuiteType CommandLineOptions::GetSuiteFilter() const
     {
-        return m_suitesFilter;
+        return m_suiteFilter;
     }
 
     AZStd::string CommandLineOptions::GetCommandLineUsageString()
@@ -452,11 +437,7 @@ namespace TestImpact
             "    -maxconcurrency=<number>                        The maximum number of concurrent test targets/shards to be in flight at \n"
             "                                                    any given moment.\n"
             "    -ochangelist=<on,off>                           Outputs the change list used for test selection.\n"
-            "    -suites=<names>                                 The test suites to select from for this test sequence (multiple values are \n"
-            "                                                    allowed). The suite all has special significance and will allow tests from \n"
-            "                                                    any suite to be selected, however this particular suite is mutually exclusive\n"
-            "                                                    with other suite. Note: this option is only applicable to the regular sequence\n"
-            "                                                    and, if safe mode is enables, the tia and tiaorseed sequences.";
+            "    -suite=<main, periodic, sandbox>                The test suite to select from for this test sequence.";
 
         return help;
     }

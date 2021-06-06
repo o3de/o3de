@@ -371,11 +371,11 @@ namespace TestImpact
                 {
                     if (sourceDependency->GetNumCoveringTestTargets())
                     {
-                        AZ_Warning(
-                            "File Update", false, AZStd::string::format("Source file %s is potentially an orphan (used by build targets "
+                        AZ_Printf(
+                            "File Update", AZStd::string::format("Source file '%s' is potentially an orphan (used by build targets "
                             "without explicitly being added to the build system, e.g. an include directive pulling in a header from the "
                             "repository). Running the covering tests for this file with instrumentation will confirm whether or nor this "
-                            "is the case", updatedFile.c_str()).c_str());
+                            "is the case.\n", updatedFile.c_str()).c_str());
 
                         updateDependencies.emplace_back(AZStd::move(*sourceDependency));
                         coverageToDelete.push_back(updatedFile);

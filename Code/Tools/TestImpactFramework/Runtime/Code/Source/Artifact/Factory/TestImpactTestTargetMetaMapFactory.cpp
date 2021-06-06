@@ -19,7 +19,7 @@
 
 namespace TestImpact
 {
-    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData)
+    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -27,6 +27,7 @@ namespace TestImpact
             "google",
             "test",
             "tests",
+            "suites",
             "suite",
             "launch_method",
             "test_runner",
@@ -41,6 +42,7 @@ namespace TestImpact
             GoogleKey,
             TestKey,
             TestsKey,
+            TestSuitesKey,
             SuiteKey,
             LaunchMethodKey,
             TestRunnerKey,
@@ -64,26 +66,35 @@ namespace TestImpact
         for (const auto& test : tests)
         {
             TestTargetMeta testMeta;
-            testMeta.m_suite = test[Keys[SuiteKey]].GetString();
-            testMeta.m_customArgs = test[Keys[CommandKey]].GetString();
-            testMeta.m_timeout = AZStd::chrono::seconds{ test[Keys[TimeoutKey]].GetUint() };
+            const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
+            for (const auto& suite : testSuites)
+            {
+                // Check to see if this test target has the suite we're looking for
+                if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
+                    strcmp(GetSuiteTypeName(suiteType).c_str(), suiteName) == 0)
+                {
+                    testMeta.m_suite = suiteName;
+                    testMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
+                    testMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
+                    if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString(); strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
+                    {
+                        testMeta.m_launchMethod = LaunchMethod::TestRunner;
+                    }
+                    else if (strcmp(buildTypeString, Keys[StandAloneKey]) == 0)
+                    {
+                        testMeta.m_launchMethod = LaunchMethod::StandAlone;
+                    }
+                    else
+                    {
+                        throw(ArtifactException("Unexpected test build type"));
+                    }
 
-            if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString(); strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
-            {
-                testMeta.m_launchMethod = LaunchMethod::TestRunner;
+                    AZStd::string name = test[Keys[NameKey]].GetString();
+                    AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
+                    testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
+                    break;
+                }
             }
-            else if (strcmp(buildTypeString, Keys[StandAloneKey]) == 0)
-            {
-                testMeta.m_launchMethod = LaunchMethod::StandAlone;
-            }
-            else
-            {
-                throw(ArtifactException("Unexpected test build type"));
-            }
-
-            AZStd::string name = test[Keys[NameKey]].GetString();
-            AZ_TestImpact_Eval(!name.empty(), ArtifactException, "Test name field cannot be empty");
-            testMetas.emplace(AZStd::move(name), AZStd::move(testMeta));
         }
 
         // If there's no tests in the repo then something is seriously wrong

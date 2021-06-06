@@ -16,6 +16,7 @@
 #include <TestImpactFramework/TestImpactRepoPath.h>
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
@@ -46,8 +47,8 @@ namespace TestImpact
         struct Active
         {
             RepoPath m_root; //!< Path to the persistent workspace tracked by the repository.
-            RepoPath m_sparTIAFile; //!< Path to the test impact analysis data.
             RepoPath m_enumerationCacheDirectory; //!< Path to the test enumerations cache.
+            AZStd::array<RepoPath, 3> m_sparTIAFiles; //!< Paths to the test impact analysis data files for each test suite.
         };
 
         Temp m_temp;

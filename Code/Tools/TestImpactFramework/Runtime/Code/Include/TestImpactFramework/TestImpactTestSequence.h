@@ -12,6 +12,10 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRuntimeException.h>
+
+#include <AzCore/std/containers/array.h>
+
 namespace TestImpact
 {
     namespace Policy
@@ -55,6 +59,13 @@ namespace TestImpact
             Continue //!< Continue the test sequence and report the test failures after the run.
         };
 
+        //! Policy for updating the dynamic dependency map with the coverage data of produced by test sequences.
+        enum class DynamicDependencyMap
+        {
+            Discard, //!< Discard the coverage data produced by test sequences.
+            Update //!< Update the dynamic dependency map with the coverage data produced by test sequences.
+        };
+
         //! Policy for sharding test targets that have been marked for test sharding.
         enum class TestSharding
         {
@@ -81,6 +92,30 @@ namespace TestImpact
         FixtureInterleaved, //!< Fixtures of tests are interleaved across shards.
         TestInterleaved //!< Tests are interlaced across shards agnostic of fixtures (fastest but prone to inter-test dependency problems).
     };
+
+    //! Test suite types to select from.
+    enum class SuiteType : AZ::u8
+    {
+        Main = 0,
+        Periodic,
+        Sandbox
+    };
+
+    //! User-friendly names for the test suite types.
+    inline AZStd::string GetSuiteTypeName(SuiteType suiteType)
+    {
+        switch (suiteType)
+        {
+        case SuiteType::Main:
+            return "main";
+        case SuiteType::Periodic:
+            return "periodic";
+        case SuiteType::Sandbox:
+            return "sandbox";
+        default:
+            throw(RuntimeException("Unexpected suite type"));
+        }
+    }
 
     //! Result of a test sequence that was run.
     enum class TestSequenceResult

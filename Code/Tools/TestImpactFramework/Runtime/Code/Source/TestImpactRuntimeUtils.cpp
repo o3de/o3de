@@ -22,10 +22,10 @@
 
 namespace TestImpact
 {
-    TestTargetMetaMap ReadTestTargetMetaMapFile(const RepoPath& testTargetMetaConfigFile)
+    TestTargetMetaMap ReadTestTargetMetaMapFile(SuiteType suiteFilter, const RepoPath& testTargetMetaConfigFile)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
-        return TestTargetMetaMapFactory(masterTestListData);
+        return TestTargetMetaMapFactory(masterTestListData, suiteFilter);
     }
 
     AZStd::vector<TestImpact::BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
@@ -46,10 +46,11 @@ namespace TestImpact
     }
 
     AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
+        SuiteType suiteFilter,
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
     {
-        auto testTargetmetaMap = ReadTestTargetMetaMapFile(testTargetMetaConfig.m_metaFile);
+        auto testTargetmetaMap = ReadTestTargetMetaMapFile(suiteFilter, testTargetMetaConfig.m_metaFile);
         auto buildTargetDescriptors = ReadBuildTargetDescriptorFiles(buildTargetDescriptorConfig);
         auto buildTargets = CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTargetmetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
