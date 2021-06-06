@@ -121,7 +121,7 @@ namespace TestImpact
                     }
                     else
                     {
-                        // One sequence timed out whilst the other sequence succeeded or both sequences timed out
+                        // One or both sequences timed out or failed
                         result = TestSequenceResult::Timeout;
                     }
                 }
