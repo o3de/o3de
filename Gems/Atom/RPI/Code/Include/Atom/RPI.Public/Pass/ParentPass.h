@@ -110,7 +110,7 @@ namespace AZ
 
             void ResetInternal() override;
             void BuildInternal() override;
-            void OnBuildFinishedInternal() override;
+            void OnInitializationFinishedInternal() override;
             void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;

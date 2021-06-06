@@ -320,12 +320,12 @@ namespace AZ
 
             // Builds and sets up any attachments and input/output connections the pass needs.
             // Called from PassSystem when pass is QueueForBuild.
-            void Build();
+            void Build(bool calledFromPassSystem = false);
             virtual void BuildInternal() { }
 
             // Called after the pass build phase has finished. Allows passes to reset build flags.
-            void OnBuildFinished();
-            virtual void OnBuildFinishedInternal() { };
+            void OnInitializationFinished();
+            virtual void OnInitializationFinishedInternal() { };
 
             // Allows for additional pass initialization between building and rendering
             // Can be queued independently of Build so as to only invoke Initialize without Build
@@ -394,6 +394,12 @@ namespace AZ
 
                         uint64_t m_initialized : 1;
                         uint64_t m_alreadyCreated : 1;
+
+                        // OLD SCHOOL
+                        uint64_t m_alreadyReset : 1;
+                        uint64_t m_alreadyPrepared : 1;
+                        uint64_t m_queuedForBuildAttachment : 1;
+
 
                         uint64_t m_partOfHierarchy : 1;
                         uint64_t m_hasDrawListTag : 1;

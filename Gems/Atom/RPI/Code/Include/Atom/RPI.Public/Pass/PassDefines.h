@@ -20,7 +20,7 @@
 // Enables debugging of the pass system
 // Set this to 1 locally on your machine to facilitate pass debugging and get extra information
 // about passes in the output window. DO NOT SUBMIT with value set to 1
-#define AZ_RPI_ENABLE_PASS_DEBUGGING 0
+#define AZ_RPI_ENABLE_PASS_DEBUGGING 1
 
 namespace AZ
 {
@@ -31,9 +31,12 @@ namespace AZ
             Uninitialized,
             Queued,
             Resetting,
+            Reset,
             Building,
+            Built,
             Initializing,
             Initialized,
+            Idle,
             Rendering
         };
 

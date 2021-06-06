@@ -50,6 +50,8 @@ namespace AZ
 {
     namespace RPI
     {
+#pragma optimize("", off)
+
         PassSystemInterface* PassSystemInterface::Get()
         {
             return Interface<PassSystemInterface>::Get();
@@ -100,6 +102,8 @@ namespace AZ
             m_passFactory.Init(&m_passLibrary);
             m_rootPass = CreatePass<ParentPass>(Name{"Root"});
             m_rootPass->m_flags.m_partOfHierarchy = true;
+
+            //m_targetedPassDebugName = "RPISamplePipeline";
 
             m_state = PassSystemState::Idle;
         }
@@ -189,7 +193,8 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
-            m_passHierarchyChanged = !m_buildPassList.empty();
+            m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
+            u32 loopCounter = 0;
 
             // While loop is for the event in which passes being built add more pass to m_buildPassList
             while(!m_buildPassList.empty())
@@ -211,19 +216,13 @@ namespace AZ
 
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    pass->Reset();
+                    pass->Build(true);
                 }
-                for (const Ptr<Pass>& pass : buildListCopy)
-                {
-                    pass->Build();
-                }
+                loopCounter++;
             }
 
             if (m_passHierarchyChanged)
             {
-                // Signal all passes that we have finished building
-                m_rootPass->OnBuildFinished();
-
 #if AZ_RPI_ENABLE_PASS_DEBUGGING
                 if (!m_isHotReloading)
                 {
@@ -241,6 +240,9 @@ namespace AZ
             m_state = PassSystemState::Initializing;
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
+
+            m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
+            u32 loopCounter = 0;
 
             while (!m_initializePassList.empty())
             {
@@ -261,6 +263,13 @@ namespace AZ
                 {
                     pass->Initialize();
                 }
+                loopCounter++;
+            }
+
+            if (m_passHierarchyChanged)
+            {
+                // Signal all passes that we have finished initialization
+                m_rootPass->OnInitializationFinished();
             }
 
             m_state = PassSystemState::Idle;
@@ -474,5 +483,6 @@ namespace AZ
             return nullptr;
         }
 
+#pragma optimize("", on)
     }   // namespace RPI
 }   // namespace AZ

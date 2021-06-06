@@ -270,10 +270,10 @@ namespace AZ
 
         void ParentPass::ResetInternal()
         {
-            for (const Ptr<Pass>& child : m_children)
-            {
-                child->Reset();
-            }
+            //for (const Ptr<Pass>& child : m_children)
+            //{
+            //    child->Reset();
+            //}
         }
 
         void ParentPass::BuildInternal()
@@ -284,11 +284,11 @@ namespace AZ
             }
         }
 
-        void ParentPass::OnBuildFinishedInternal()
+        void ParentPass::OnInitializationFinishedInternal()
         {
             for (const Ptr<Pass>& child : m_children)
             {
-                child->OnBuildFinished();
+                child->OnInitializationFinished();
             }
         }
 

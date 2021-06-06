@@ -36,7 +36,7 @@ namespace AZ
 
         protected:
             // Behavior functions override...
-            void OnBuildFinishedInternal() override;
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:

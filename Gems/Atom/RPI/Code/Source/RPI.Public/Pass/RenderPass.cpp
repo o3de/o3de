@@ -128,7 +128,7 @@ namespace AZ
         }
 
 
-        void RenderPass::OnBuildFinishedInternal()
+        void RenderPass::InitializeInternal()
         {
             if (m_shaderResourceGroup != nullptr)
             {

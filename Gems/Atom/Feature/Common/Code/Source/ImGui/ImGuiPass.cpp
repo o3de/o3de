@@ -519,13 +519,13 @@ namespace AZ
             io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
         }
 
-        void ImGuiPass::OnBuildFinishedInternal()
+        void ImGuiPass::InitializeInternal()
         {
             // Set output format and finalize pipeline state
             m_pipelineState->SetOutputFromPass(this);
             m_pipelineState->Finalize();
 
-            Base::OnBuildFinishedInternal();
+            Base::InitializeInternal();
         }
 
         void ImGuiPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
