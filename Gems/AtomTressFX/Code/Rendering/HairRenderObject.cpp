@@ -61,25 +61,25 @@ namespace AZ
                 descriptorArray[uint8_t(HairDynamicBuffersSemantics::Position)] =
                     SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite,
-                    RHI::Format::Unknown, sizeof(AZ::Vector4), vertexCount,
+                    RHI::Format::R32G32B32A32_FLOAT, sizeof(AZ::Vector4), vertexCount,
                     Name{"HairVertexPositions"}, Name{"m_hairVertexPositions"}, 0, 0
                 );
                 descriptorArray[uint8_t(HairDynamicBuffersSemantics::PositionsPrev)] =
                     SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite,
-                    RHI::Format::Unknown, sizeof(AZ::Vector4), vertexCount,
+                    RHI::Format::R32G32B32A32_FLOAT, sizeof(AZ::Vector4), vertexCount,
                     Name{"HairVertexPositionsPrev"}, Name{"m_hairVertexPositionsPrev"}, 1, 0
                 );
                 descriptorArray[uint8_t(HairDynamicBuffersSemantics::PositionsPrevPrev)] =
                     SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite,
-                    RHI::Format::Unknown, sizeof(AZ::Vector4), vertexCount,
+                    RHI::Format::R32G32B32A32_FLOAT, sizeof(AZ::Vector4), vertexCount,
                     Name{"HairVertexPositionsPrevPrev"}, Name{"m_hairVertexPositionsPrevPrev"}, 2, 0
                 );
                 descriptorArray[uint8_t(HairDynamicBuffersSemantics::Tangent)] =
                     SrgBufferDescriptor(
                     RPI::CommonBufferPoolType::ReadWrite,
-                    RHI::Format::Unknown, sizeof(AZ::Vector4), vertexCount,
+                    RHI::Format::R32G32B32A32_FLOAT, sizeof(AZ::Vector4), vertexCount,
                     Name{"HairVertexTangents"}, Name{"m_hairVertexTangents"}, 3, 0
                 );
                 // Notice the following format - set to Format::Unknown that indicates StructuredBuffer
