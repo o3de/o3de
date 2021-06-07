@@ -109,8 +109,8 @@ struct TressFXStrandParameters
 ShaderResourceGroup HairRenderingMaterialSrg : SRG_PerMaterial
 {
     // Generated 
-    StructuredBuffer<float>     m_hairThicknessCoeffs;  // Does not seem to be used!
-    StructuredBuffer<float2>    m_hairStrandTexCd;
+    Buffer<float>               m_hairThicknessCoeffs;  // Does not seem to be used!
+    Buffer<float2>              m_hairStrandTexCd;
 
     //! The hair textures defining the color of the hair at its base
     Texture2D<float4>           m_baseAlbedoTexture;
