@@ -64,7 +64,7 @@
      <widget class="QToolButton" name="m_cameraMenu">
        <property name="icon">
          <iconset>
-           <normaloff>:/stylesheet/img/UI20/Camera.svg</normaloff>:/stylesheet/img/UI20/Camera.svg
+           <normaloff>:/Menu/camera.svg</normaloff>:/Menu/camera.svg
          </iconset>
        </property>
      </widget>
@@ -73,7 +73,7 @@
      <widget class="QToolButton" name="m_debugInformationMenu">
        <property name="icon">
          <iconset>
-           <normaloff>:/stylesheet/img/UI20/debug.svg</normaloff>:/stylesheet/img/UI20/debug.svg
+           <normaloff>:/Menu/debug.svg</normaloff>:/Menu/debug.svg
          </iconset>
        </property>
        <property name="checkable">
@@ -85,7 +85,7 @@
      <widget class="QToolButton" name="m_resolutionMenu">
        <property name="icon">
          <iconset>
-           <normaloff>:/stylesheet/img/UI20/resolution.svg</normaloff>:/stylesheet/img/UI20/resolution.svg
+           <normaloff>:/Menu/resolution.svg</normaloff>:/Menu/resolution.svg
          </iconset>
        </property>
      </widget>
@@ -109,6 +109,8 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+  <resources>
+    <include location="../../Framework/AzQtComponents/AzQtComponents/Images/resources.qrc"/>
+  </resources>
+  <connections/>
 </ui>
