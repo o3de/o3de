@@ -32,16 +32,18 @@ namespace PhysX
     }
 
     RagdollNode::RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig)
+        : m_joint(nullptr)
     {
         CreatePhysicsBody(sceneHandle, nodeConfig);
     }
 
     RagdollNode::~RagdollNode()
     {
+        DestroyJoint();
         DestroyPhysicsBody();
     }
 
-    void RagdollNode::SetJoint(const AZStd::shared_ptr<Physics::Joint>& joint)
+    void RagdollNode::SetJoint(AzPhysics::ApiJoint* joint)
     {
         m_joint = joint;
     }
@@ -52,7 +54,7 @@ namespace PhysX
         return *m_rigidBody;
     }
 
-    const AZStd::shared_ptr<Physics::Joint>& RagdollNode::GetJoint() const
+    AzPhysics::ApiJoint* RagdollNode::GetJoint()
     {
         return m_joint;
     }
@@ -164,6 +166,18 @@ namespace PhysX
             }
             m_rigidBody = nullptr;
             m_sceneOwner = AzPhysics::InvalidSceneHandle;
+        }
+    }
+
+    void RagdollNode::DestroyJoint()
+    {
+        if (m_joint != nullptr && m_sceneOwner != AzPhysics::InvalidSceneHandle)
+        {
+            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+            {
+                sceneInterface->RemoveJoint(m_sceneOwner, m_joint->m_jointHandle);
+            }
+            m_joint = nullptr;
         }
     }
 

@@ -157,6 +157,16 @@ namespace PhysX
         return AzPhysics::InvalidApiJointHandle;
     }
 
+    AzPhysics::ApiJoint* PhysXSceneInterface::GetApiJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) 
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->GetApiJointFromHandle(jointHandle);
+        }
+
+        return nullptr;
+    }
+
     void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) 
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
