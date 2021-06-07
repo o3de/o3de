@@ -14,6 +14,7 @@ from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
 from AWS.Windows.cdk.cdk import cdk
 from AWS.common.aws_utils import aws_utils
+from AWS.common.aws_utils import AwsUtils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
@@ -37,37 +38,6 @@ def kill_asset_processor(targets):
     for target in targets:
         process_utils.kill_processes_named(target, ignore_extensions=True)  # Kill AssetProcessor
 
-
-def write_test_table_data(region: str):
-    """
-    Write a list of items to a DynamoDB table using the batch_writer.
-
-    Each item must contain at least the keys required by the schema, which for the example
-    is just 'id'
-    """
-    session = boto3.Session(region_name=region)
-
-    aws_resource_directory = os.path.join("../../../../../Config", AWS_RESOURCE_MAPPING_FILE_NAME)
-    with open(aws_resource_directory, "r") as aws_resource:
-        aws_resource_data = json.load(aws_resource)
-
-    table_name = aws_resource_data["AWSResourceMappings"]["AWSCore.ExampleDynamoTableOutput"]["Name/ID"]
-
-    dynamodb = session.resource('dynamodb')
-    table = dynamodb.Table(table_name)
-
-    try:
-        with table.batch_writer() as writer:
-            item = {
-                'id': 'Item1',
-                'value': 123,
-                'timestamp': int(time.time())
-            }
-            writer.put_item(Item=item)
-        logger.info(f'Loaded data into table {table.name}')
-    except ClientError:
-        logger.exception(f'Failed to load data into table {table.name}')
-        raise
 
 
 @pytest.mark.SUITE_periodic
@@ -185,13 +155,37 @@ class TestAWSCoreDownloadFromS3(object):
                                 cdk: pytest.fixture,
                                 resource_mappings: pytest.fixture,
                                 workspace,
-                                asset_processor
+                                asset_processor,
+                                aws_utils: AwsUtils
                                 ):
         """
         Setup: Deploys  the CDK application
         Test: Runs a launcher with a level that loads a scriptcanvas that pulls a DynamoDB table value.
         Verification: The value is output in the logs and verified by the test.
         """
+
+        def write_test_table_data(region: str):
+            session = aws_utils._assume_session.resource('dynamodb', region_name=region)
+
+            aws_resource_directory = os.path.join("../../../../../Config", AWS_RESOURCE_MAPPING_FILE_NAME)
+            with open(aws_resource_directory, "r") as aws_resource:
+                aws_resource_data = json.load(aws_resource)
+
+            table_name = aws_resource_data["AWSResourceMappings"]["AWSCore.ExampleDynamoTableOutput"]["Name/ID"].split('/')[1]
+            table = session.Table(table_name)
+
+            try:
+                item = {
+                    'id': 'Item1',
+                    'value': 123,
+                    'timestamp': int(time.time())
+                }
+                table.put_item(Item=item)
+                logger.info(f'Loaded data into table {table.name}')
+            except ClientError:
+                logger.exception(f'Failed to load data into table {table.name}')
+                raise
+
         kill_asset_processor(AP_PROCESSES)
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
