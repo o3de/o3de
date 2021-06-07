@@ -516,7 +516,10 @@ namespace AZ
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
                 m_indexBuffer = RHI::Factory::Get().CreateBuffer();
                 request.m_buffer = m_indexBuffer.get();
-                request.m_descriptor = RHI::BufferDescriptor{ RHI::BufferBindFlags::InputAssembly, indexBufferSize };
+                request.m_descriptor = RHI::BufferDescriptor{
+                    RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::InputAssembly,
+                    indexBufferSize
+                };
                 request.m_initialData = (void*)asset.m_triangleIndices.data();
                 
                 RHI::Ptr<RHI::BufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
