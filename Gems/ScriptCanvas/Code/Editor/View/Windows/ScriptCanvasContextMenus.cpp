@@ -563,13 +563,13 @@ namespace ScriptCanvasEditor
         else if (slotType == GraphCanvas::SlotTypes::DataSlot)
         {
             const AZ::EntityId& slotId2 = GetTargetId();
-            const GraphCanvas::GraphId& graphId = GetGraphId();
+            const GraphCanvas::GraphId& graphId2 = GetGraphId();
 
             GraphCanvas::Endpoint endpoint;
             GraphCanvas::SlotRequestBus::EventResult(endpoint, slotId2, &GraphCanvas::SlotRequests::GetEndpoint);
 
             bool promotedElement = false;
-            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint);
+            GraphCanvas::GraphModelRequestBus::EventResult(promotedElement, graphId2, &GraphCanvas::GraphModelRequests::PromoteToVariableAction, endpoint);
 
             if (promotedElement)
             {

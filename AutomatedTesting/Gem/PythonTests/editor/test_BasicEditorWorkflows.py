@@ -15,6 +15,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools._internal.pytest_plugin as internal_plugin
 import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), "EditorScripts")
@@ -39,6 +40,10 @@ class TestBasicEditorWorkflows(object):
     @pytest.mark.test_case_id("C6351273", "C6384955", "C16929880", "C15167490", "C15167491")
     @pytest.mark.SUITE_main
     def test_BasicEditorWorkflows_LevelEntityComponentCRUD(self, request, editor, level, launcher_platform):
+
+        # Skip test if running against Debug build
+        if "debug" in internal_plugin.build_directory:
+            pytest.skip("Does not execute against debug builds.")
 
         expected_lines = [
             "Create and load new level: True",

@@ -167,9 +167,6 @@ endfunction()
 # Add the projects here so the above function is found
 foreach(project ${LY_PROJECTS})
     file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
-    if(NOT LY_FIRST_PROJECT)
-        ly_set(LY_FIRST_PROJECT_PATH ${full_directory_path})
-    endif()
     string(SHA256 full_directory_hash ${full_directory_path})
 
     # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
@@ -182,4 +179,13 @@ foreach(project ${LY_PROJECTS})
     ly_generate_project_build_path_setreg(${full_directory_path})
     add_project_json_external_subdirectories(${full_directory_path})
 endforeach()
+
+# If just one project is defined we pass it as a parameter to the applications
+list(LENGTH LY_PROJECTS projects_length)
+if(projects_length EQUAL "1")
+    list(GET LY_PROJECTS 0 project)
+    file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    ly_set(LY_DEFAULT_PROJECT_PATH ${full_directory_path})
+endif()
+
 ly_set(LY_PROJECTS_FOLDER_NAME ${LY_PROJECTS_FOLDER_NAME})

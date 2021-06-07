@@ -114,9 +114,9 @@ namespace AZ
             return RHI::TransientBufferDescriptor(GetAttachmentId(), m_descriptor.m_buffer);
         }
 
-        void PassAttachment::Update()
+        void PassAttachment::Update(bool updateImportedAttachments)
         {
-            if (m_descriptor.m_type == RHI::AttachmentType::Image && m_lifetime == RHI::AttachmentLifetimeType::Transient)
+            if (m_descriptor.m_type == RHI::AttachmentType::Image && (m_lifetime == RHI::AttachmentLifetimeType::Transient || updateImportedAttachments == true))
             {
                 if (m_settingFlags.m_getFormatFromPipeline && m_renderPipelineSource)
                 {
