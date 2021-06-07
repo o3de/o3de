@@ -182,8 +182,20 @@ set_property(TARGET ${TARGET_NAME}
         endif()
     endif()
 
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
+    if(IS_ABSOLUTE ${target_source_dir})
+        # This normally applies the target_source_dir is outside of the engine root
+        # such as when invoking ly_setup_subdirectory from the project
+        # Therefore the final directory component of the target source directory is used first 8 characters
+        # of a SHA256 hash
+        string(SHA256 target_source_hash ${target_source_dir})
+        string(SUBSTRING ${target_source_hash} 0 8 target_source_hash)
+        get_filename_component(target_source_folder_name ${target_source_dir} NAME)
+        set(target_source_dir "${target_source_folder_name}-${target_source_hash}")
+    endif()
+
+    set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir})
+    file(GENERATE OUTPUT "${target_install_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
+    install(FILES "${target_install_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
         DESTINATION ${target_source_dir}
         COMPONENT ${install_component}
     )
@@ -235,18 +247,32 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     endforeach()
 
     file(READ ${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
-    # Write out all the agreegated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeList.txt
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/CMakeLists.txt
+
+    if(IS_ABSOLUTE ${target_source_dir})
+        # This normally applies the target_source_dir is outside of the engine root
+        # such as when invoking ly_setup_subdirectory from the project
+        # Therefore the final directory component of the target source directory is used first 8 characters
+        # of a SHA256 hash
+        string(SHA256 target_source_hash ${target_source_dir})
+        string(SUBSTRING ${target_source_hash} 0 8 target_source_hash)
+        get_filename_component(target_source_folder_name ${target_source_dir} NAME)
+        set(target_source_dir "${target_source_folder_name}-${target_source_hash}")
+    endif()
+
+    # Initialize the target install source directory to path underneath the current binary directory
+    set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir})
+    # Write out all the aggregated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeLists.txt
+    file(WRITE ${target_install_source_dir}/CMakeLists.txt
         "${cmake_copyright_comment}"
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
     )
 
-    # get the component ID.  if the property isn't set for the directory, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
+    # get the component ID. if the property isn't set for the directory, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
     get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
 
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir}/CMakeLists.txt"
+    install(FILES "${target_install_source_dir}/CMakeLists.txt"
         DESTINATION ${target_source_dir}
         COMPONENT ${install_component}
     )
