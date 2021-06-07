@@ -71,6 +71,7 @@ namespace AZ
                 desc.m_bufferName = bufferName;
                 desc.m_byteCount = sizeof(ShaderParameters);
                 desc.m_elementSize = sizeof(ShaderParameters);
+                desc.m_isUniqueName = true;
 
                 m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             }

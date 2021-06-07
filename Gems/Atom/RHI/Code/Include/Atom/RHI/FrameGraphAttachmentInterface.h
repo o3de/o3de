@@ -89,6 +89,12 @@ namespace AZ
                 return m_attachmentDatabase.IsAttachmentValid(attachmentId);
             }
 
+            //! Returns the FrameAttachment for a given AttachmentId, or nullptr if not found.
+            const FrameAttachment* FindAttachment(const AttachmentId& attachmentId) const
+            {
+                return m_attachmentDatabase.FindAttachment(attachmentId);
+            }
+
             //! Resolves an attachment id to a buffer descriptor. This is useful when accessing buffer information for
             //! an attachment that was declared in a different scope.
             //! \param attachmentId The attachment id used to lookup the descriptors.

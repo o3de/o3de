@@ -66,7 +66,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     if (pSystem && !pSystem->IsQuitting())
     {
-        LRESULT result;
+        LRESULT result = 0;
         bool bAny = false;
         for (std::vector<IWindowMessageHandler*>::const_iterator it = pSystem->m_windowMessageHandlers.begin(); it != pSystem->m_windowMessageHandlers.end(); ++it)
         {

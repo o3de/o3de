@@ -21,7 +21,7 @@
 namespace AzToolsFramework
 {
     class ManipulatorView;
-    struct GridSnapAction;
+    struct GridSnapParameters;
 
     /// PlanarManipulator serves as a visual tool for users to modify values
     /// in two dimension in a plane defined two non-collinear axes in 3D space.
@@ -58,7 +58,6 @@ namespace AzToolsFramework
         {
             AZ::Vector3 m_localPosition; ///< The current position of the manipulator in local space.
             AZ::Vector3 m_localHitPosition; ///< The intersection point in local space between the ray and the manipulator when the mouse down event happens.
-            AZ::Vector3 m_snapOffset; ///< The snap offset amount to ensure manipulator is aligned to the grid.
         };
 
         /// The state of the manipulator during an interaction.
@@ -120,7 +119,6 @@ namespace AzToolsFramework
         {
             AZ::Vector3 m_localPosition; ///< The starting position of the manipulator in local space.
             AZ::Vector3 m_localHitPosition; ///< The intersection point in world space between the ray and the manipulator when the mouse down event happens.
-            AZ::Vector3 m_snapOffset; ///< The snap offset amount to ensure manipulator is aligned to the grid.
         };
 
         Fixed m_fixed;
@@ -134,12 +132,11 @@ namespace AzToolsFramework
 
         static StartInternal CalculateManipulationDataStart(
             const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
-            const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction,
-            const ViewportInteraction::MouseInteraction& interaction, float intersectionDistance);
+            const AZ::Transform& localTransform, const ViewportInteraction::MouseInteraction& interaction, float intersectionDistance);
 
         static Action CalculateManipulationDataAction(
-            const Fixed& fixed, const StartInternal& startInternal, const AZ::Transform& worldFromLocal,
-            const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform,
-            const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction);
+            const Fixed& fixed, const StartInternal& startInternal, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
+            const AZ::Transform& localTransform, const GridSnapParameters& gridSnapParams,
+            const ViewportInteraction::MouseInteraction& interaction);
     };
 } // namespace AzToolsFramework

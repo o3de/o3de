@@ -53,6 +53,7 @@ namespace O3DE::ProjectManager
 
         QFont standardFont(options.font);
         standardFont.setPixelSize(s_fontSize);
+        QFontMetrics standardFontMetrics(standardFont);
 
         painter->save();
         painter->setClipping(true);
@@ -78,8 +79,10 @@ namespace O3DE::ProjectManager
         }
 
         // Gem name
-        const QString gemName = GemModel::GetName(modelIndex);
+        QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
+        const int firstColumnMaxTextWidth = s_summaryStartX - 30;
+        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         gemNameFont.setPixelSize(s_gemNameFontSize);
         gemNameFont.setBold(true);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
@@ -90,7 +93,8 @@ namespace O3DE::ProjectManager
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem creator
-        const QString gemCreator = GemModel::GetCreator(modelIndex);
+        QString gemCreator = GemModel::GetCreator(modelIndex);
+        gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
         gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
 
@@ -129,6 +133,22 @@ namespace O3DE::ProjectManager
         if (!modelIndex.isValid())
         {
             return false;
+        }
+
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+            const QRect buttonRect = CalcButtonRect(contentRect);
+
+            if (buttonRect.contains(mouseEvent->pos()))
+            {
+                const bool isAdded = GemModel::IsAdded(modelIndex);
+                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                return true;
+            }
         }
 
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);

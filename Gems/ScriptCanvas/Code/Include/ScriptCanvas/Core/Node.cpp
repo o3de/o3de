@@ -3577,12 +3577,12 @@ namespace ScriptCanvas
         }
 
         if (targetSlotType == CombinedSlotType::DataOut
-            && executionSlot.GetType() == CombinedSlotType::ExecutionIn
-            && executionInCount > 1)
+        && executionSlot.GetType() == CombinedSlotType::ExecutionIn
+        && executionInCount > 1)
         {
             if (!executionChildSlot || executionChildSlot->GetType() != CombinedSlotType::ExecutionOut)
             {
-                return AZ::Failure(AZStd::string("Data out by ExcutionIn must have child out slot"));
+                return AZ::Failure(AZStd::string("Data out by ExecutionIn must have child out slot"));
             }
         }
 
@@ -3622,6 +3622,11 @@ namespace ScriptCanvas
     }
 
     PropertyFields Node::GetPropertyFields() const
+    {
+        return {};
+    }
+
+    Grammar::MultipleFunctionCallFromSingleSlotInfo Node::GetMultipleFunctionCallFromSingleSlotInfo([[maybe_unused]] const Slot& slot) const
     {
         return {};
     }

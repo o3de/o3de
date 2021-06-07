@@ -101,7 +101,7 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
         createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
     }
 
-    bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName);
+    bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName.c_str());
 
     if (createPath)
     {
@@ -111,19 +111,19 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
             return false;
         }
 
-        CreatePath(m_fileName);
+        CreatePath(m_fileName.c_str());
     }
 
     int errorCode = 0;
     if (isApkFile)
     {
         AZ::u64 size = 0;
-        m_handle = AZ::Android::APKFileHandler::Open(m_fileName, openMode, size);
+        m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
         errorCode = EACCES; // general error when a file can't be opened from inside the APK
     }
     else
     {
-        m_handle = fopen(m_fileName, openMode);
+        m_handle = fopen(m_fileName.c_str(), openMode);
         errorCode = errno;
     }
 
@@ -233,7 +233,7 @@ namespace Platform
         }
     }
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SizeType offset, SystemFile::SeekMode mode)
+    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
