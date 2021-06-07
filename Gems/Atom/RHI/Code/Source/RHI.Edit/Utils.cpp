@@ -112,7 +112,7 @@ namespace AZ
         AZStd::string PrependFile(PrependArguments& arguments)
         {
             static const char* executableFolder = nullptr;
-            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string> 
+            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string>
             {
                 if (!AzFramework::StringFunc::Path::IsRelative(localFile.c_str()))
                 {
@@ -159,7 +159,7 @@ namespace AZ
                 AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
                 return arguments.m_sourceFile;
             }
-            
+
             auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
             if (!sourceFileAbsolutePath)
             {
@@ -258,7 +258,8 @@ namespace AZ
             }
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
+            processLaunchInfo.m_processExecutableString = executableAbsolutePath;
+            processLaunchInfo.m_commandlineParameters = parameters;
             processLaunchInfo.m_showWindow = true;
             processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
@@ -268,9 +269,9 @@ namespace AZ
             }
             {
                 AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
-                AZ_TraceContext(contextKey, processLaunchInfo.m_commandlineParameters);
+                AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString().c_str());
             }
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.m_commandlineParameters.c_str());
+            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s %s' ...", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
             AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
             if (!watcher)
@@ -285,8 +286,8 @@ namespace AZ
             auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
             {
                 auto communicator = watcherPtr->GetCommunicator();
-                
-                // Instead of collecting all the output in a giant string, it would be better to report 
+
+                // Instead of collecting all the output in a giant string, it would be better to report
                 // the chunks of messages as they arrive, but this should be good enough for now.
                 if (auto byteCount = communicator->PeekError())
                 {
@@ -378,7 +379,7 @@ namespace AZ
             AzFramework::StringFunc::Tokenize(errorMessages.data(), lines, "\n\r");
 
             bool foundErrors = false;
-            
+
             for (auto& line : lines)
             {
                 if (AZStd::string::npos != AzFramework::StringFunc::Find(line, "error"))
@@ -390,7 +391,7 @@ namespace AZ
                 {
                     AZ_Warning(window.data(), false, "%s", line.data());
                 }
-                else 
+                else
                 {
                     AZ_TracePrintf(window.data(), "%s", line.data());
                 }
@@ -438,7 +439,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(text));
         }
 
@@ -458,7 +459,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(bytes));
         }
 
@@ -483,10 +484,10 @@ namespace AZ
             } while (searchFrom != text.end());
             return count;
         }
-    
+
         AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
-                                                                   const AZStd::string& tempFolder,
-                                                                   const char* outputExtension)
+                                                 const AZStd::string& tempFolder,
+                                                 const char* outputExtension)
         {
             AZStd::string outputFile;
             AzFramework::StringFunc::Path::GetFileName(shaderSourceFile.c_str(), outputFile);

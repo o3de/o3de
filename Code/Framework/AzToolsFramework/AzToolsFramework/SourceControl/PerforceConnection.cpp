@@ -371,7 +371,8 @@ namespace AzToolsFramework
     {
         m_rawOutput.Clear();
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_commandlineParameters = "p4 -ztag " + m_commandArgs;
+        processLaunchInfo.m_processExecutableString = "p4";
+        processLaunchInfo.m_commandlineParameters = "-ztag " + m_commandArgs;
         processLaunchInfo.m_showWindow = false;
         AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
         m_applicationFound = processLaunchInfo.m_launchResult == AzFramework::ProcessLauncher::PLR_MissingFile ? false : true;
@@ -380,7 +381,8 @@ namespace AzToolsFramework
     AzFramework::ProcessWatcher* PerforceCommand::ExecuteIOCommand()
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_commandlineParameters = "p4 " + m_commandArgs;
+        processLaunchInfo.m_processExecutableString = "p4";
+        processLaunchInfo.m_commandlineParameters = m_commandArgs;
         processLaunchInfo.m_showWindow = false;
         AzFramework::ProcessWatcher* processWatcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
         m_applicationFound = processLaunchInfo.m_launchResult == AzFramework::ProcessLauncher::PLR_MissingFile ? false : true;
@@ -391,7 +393,8 @@ namespace AzToolsFramework
     {
         m_rawOutput.Clear();
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_commandlineParameters = "p4 " + m_commandArgs;
+        processLaunchInfo.m_processExecutableString = "p4";
+        processLaunchInfo.m_commandlineParameters = m_commandArgs;
         processLaunchInfo.m_showWindow = false;
         AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
         m_applicationFound = processLaunchInfo.m_launchResult == AzFramework::ProcessLauncher::PLR_MissingFile ? false : true;

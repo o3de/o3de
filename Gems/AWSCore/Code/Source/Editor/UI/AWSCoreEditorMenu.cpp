@@ -102,7 +102,7 @@ namespace AWSCore
                 }
 
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-                processLaunchInfo.m_commandlineParameters = launchCommand;
+                processLaunchInfo.m_processExecutableString = launchCommand;
                 processLaunchInfo.m_showWindow = false;
                 m_resourceMappingToolWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(
                     AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE));

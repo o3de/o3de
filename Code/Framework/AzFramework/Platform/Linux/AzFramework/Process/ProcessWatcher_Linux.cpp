@@ -59,7 +59,7 @@ namespace AzFramework
                         *outExitCode = exitStatus;
                     }
                     return true;
-                } 
+                }
                 else if(WIFSIGNALED(childState)) // signaled
                 {
                     const int signalStatus = WTERMSIG(childState);
@@ -74,15 +74,15 @@ namespace AzFramework
                 {
                     return false; // still running
                 }
-            } 
-            else if (rc_pid < 0) 
+            }
+            else if (rc_pid < 0)
             {
-                if (errno == ECHILD) 
+                if (errno == ECHILD)
                 {
                     AZ_TracePrintf("ProcessWatcher", "Child process id %d does not exist\n", childProcessId);
                     return true;
-                } 
-                else 
+                }
+                else
                 {
                     AZ_Assert(false, "Bad argument passed to waitpid\n");
                 }
@@ -125,16 +125,16 @@ namespace AzFramework
 
             switch (processLaunchInfo.m_processPriority)
             {
-                case PROCESSPRIORITY_BELOWNORMAL:
-                    nice(1);
-                    // also reduce disk impact:
-                    // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_UTILITY);
-                    break;
-                case PROCESSPRIORITY_IDLE:
-                    nice(20);
-                    // also reduce disk impact:
-                    // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
-                    break;
+            case PROCESSPRIORITY_BELOWNORMAL:
+                nice(1);
+                // also reduce disk impact:
+                // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_UTILITY);
+                break;
+            case PROCESSPRIORITY_IDLE:
+                nice(20);
+                // also reduce disk impact:
+                // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
+                break;
             }
 
             startupInfo.SetupHandlesForChildProcess();
@@ -213,37 +213,52 @@ namespace AzFramework
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
         // all over their code.
         // We'll convert this to UNIX style command line parameters by counting and eliminating quotes:
-        
+
+        // Struct uses overloaded operator() to quote command line arguments based
+        // on whether a string or a vector<string> was supplied
+        struct EscapeCommandArguments
+        {
+            void operator()(const AZStd::string& commandParameterString)
+            {
+                AZStd::string outputString;
+                bool inQuotes = false;
+                for (size_t pos = 0; pos < commandParameterString.size(); ++pos)
+                {
+                    char currentChar = commandParameterString[pos];
+                    if (currentChar == '"')
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                    else if ((currentChar == ' ') && (!inQuotes))
+                    {
+                        // its a space outside of quotes, so it ends the current parameter
+                        commandArray.push_back(outputString);
+                        outputString.clear();
+                    }
+                    else
+                    {
+                        // Its a normal character, or its a space inside quotes
+                        outputString.push_back(currentChar);
+                    }
+                }
+
+                if (!outputString.empty())
+                {
+                    commandArray.push_back(outputString);
+                    outputString.clear();
+                }
+            }
+
+            void operator()(const AZStd::vector<AZStd::string>& commandParameterArray)
+            {
+                commandArray = commandParameterArray;
+            }
+            AZStd::vector<AZStd::string>& commandArray;
+        };
+
         AZStd::vector<AZStd::string> commandTokens;
-        
-        AZStd::string outputString;
-        bool inQuotes = false;
-        for (size_t pos = 0; pos < processLaunchInfo.m_commandlineParameters.size(); ++pos)
-        {
-            char currentChar = processLaunchInfo.m_commandlineParameters[pos];
-            if (currentChar == '"')
-            {
-                inQuotes = !inQuotes;
-            }
-            else if ((currentChar == ' ') && (!inQuotes))
-            {
-                // its a space outside of quotes, so it ends the current parameter
-                commandTokens.push_back(outputString);
-                outputString.clear();
-            }
-            else
-            {
-                // Its a normal character, or its a space inside quotes
-                outputString.push_back(currentChar);
-            }
-        }
-        
-        if (!outputString.empty())
-        {
-            commandTokens.push_back(outputString);
-            outputString.clear();
-        }
-        
+        AZStd::visit(EscapeCommandArguments{ commandTokens }, processLaunchInfo.m_commandlineParameters);
+
         if (!processLaunchInfo.m_processExecutableString.empty())
         {
             commandTokens.insert(commandTokens.begin(), processLaunchInfo.m_processExecutableString);

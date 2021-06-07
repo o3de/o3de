@@ -125,14 +125,14 @@ namespace TranslationBuilder
             else
             {
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-                AZStd::string command( AZStd::string::format("\"%s\" \"%s\" -qm \"%s\"", lRelease.c_str(), request.m_fullPath.c_str(), destPath.c_str()) );
-
-                AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Issuing command:%s", command.c_str());
-
+                processLaunchInfo.m_processExecutableString = lRelease;
+                AZStd::string command( AZStd::string::format("\"%s\" -qm \"%s\"", request.m_fullPath.c_str(), destPath.c_str()) );
                 processLaunchInfo.m_commandlineParameters = command;
                 processLaunchInfo.m_showWindow = false;
                 processLaunchInfo.m_workingDirectory = request.m_tempDirPath;
                 processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
+
+                AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Issuing command:%s %s", lRelease.c_str(), command.c_str());
 
                 AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 

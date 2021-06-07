@@ -248,10 +248,9 @@ namespace O3DE::ProjectManager
             AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
             AZStd::string executableFilename = "Editor";
             AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s -regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(), projectPath.toStdString().c_str());
-
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = cmdPath;
+            processLaunchInfo.m_processExecutableString = editorExecutablePath.String();
+            processLaunchInfo.m_commandlineParameters = AZStd::string::format("-regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", projectPath.toStdString().c_str());
             bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
             if (!launchSucceeded)
             {

@@ -373,7 +373,8 @@ namespace AzToolsFramework
             }
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo info;
-            info.m_commandlineParameters = exePath + " " + commandLineArgs;
+            info.m_processExecutableString = exePath;
+            info.m_commandlineParameters = commandLineArgs;
             
             info.m_showWindow = false;
             if (!workingDir.empty())

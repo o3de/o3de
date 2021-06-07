@@ -58,7 +58,7 @@ namespace UnitTest
             {
                 continue;
             }
-            
+
             if(inSwitches)
             {
                 if (thisLine[0] != ' ')
@@ -78,8 +78,7 @@ namespace UnitTest
     {
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-        processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest";
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
         bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
@@ -87,14 +86,16 @@ namespace UnitTest
         EXPECT_EQ(launchReturn, true);
         EXPECT_EQ(processOutput.outputResult.empty(), false);
     }
-   
+
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_BasicParameter_Success)
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
-        processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest -param1 param1val -param2=param2val";
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{"-param1", "param1val","-param2", "param2val"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
         bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
@@ -121,14 +122,15 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     TEST_F(ProcessLaunchParseTests, DISABLED_ProcessLauncher_StringsWithCommas_Success)
 #else
-    TEST_F(ProcessLaunchParseTests, ProcessLauncher_StringsWithCommas_Success)
+    TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithCommas_Success)
 #endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-        processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER R"(ProcessLaunchTest -param1 "\"param,1val\"" -param2="\"param2v,al\"")";
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{"-param1", "param,1val","-param2", "param2v,al"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
         bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
@@ -141,28 +143,31 @@ namespace UnitTest
         EXPECT_NE(param1itr, argMap.end());
         AZStd::vector<AZStd::string> param1{ param1itr->second };
 
-        EXPECT_EQ(param1.size(), 1);
-        EXPECT_EQ(param1[0], "param,1val");
+        EXPECT_EQ(param1.size(), 2);
+        EXPECT_EQ(param1[0], "param");
+        EXPECT_EQ(param1[1], "1val");
 
         auto param2itr = argMap.find("param2");
         EXPECT_NE(param2itr, argMap.end());
         AZStd::vector<AZStd::string> param2{ param2itr->second };
 
-        EXPECT_EQ(param2.size(), 1);
-        EXPECT_EQ(param2[0], "param2v,al");
+        EXPECT_EQ(param2.size(), 2);
+        EXPECT_EQ(param2[0], "param2v");
+        EXPECT_EQ(param2[1], "al");
     }
-    
+
 #if AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     TEST_F(ProcessLaunchParseTests, DISABLED_ProcessLauncher_StringsWithSpaces_Success)
 #else
-    TEST_F(ProcessLaunchParseTests, ProcessLauncher_StringsWithSpaces_Success)
+    TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithSpaces_Success)
 #endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-        processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER R"(ProcessLaunchTest -param1 "\"param 1val\"" -param2="\"param2v al\"")";
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{"-param1", R"("param 1val")", "-param2", R"("param2v al")"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
         bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
@@ -189,14 +194,15 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     TEST_F(ProcessLaunchParseTests, DISABLED_ProcessLauncher_StringsWithSpacesAndComma_Success)
 #else
-    TEST_F(ProcessLaunchParseTests, ProcessLauncher_StringsWithSpacesAndComma_Success)
+    TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithSpacesAndComma_Success)
 #endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-        processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER R"(ProcessLaunchTest -param1 "\"par,am 1val\"" -param2="\"param,2v al\"")";
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
+            AZStd::vector<AZStd::string>{"-param1", R"("param, 1val")", "-param2", R"("param,2v al")"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
         bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
@@ -210,7 +216,7 @@ namespace UnitTest
         AZStd::vector<AZStd::string> param1{ param1itr->second };
 
         EXPECT_EQ(param1.size(), 1);
-        EXPECT_EQ(param1[0], "par,am 1val");
+        EXPECT_EQ(param1[0], "param, 1val");
 
         auto param2itr = argMap.find("param2");
         EXPECT_NE(param2itr, argMap.end());
@@ -220,35 +226,4 @@ namespace UnitTest
         EXPECT_EQ(param2[0], "param,2v al");
     }
 
-    TEST_F(ProcessLaunchParseTests, ProcessLauncher_CommaStringNoQuotes_Success)
-    {
-        ProcessLaunchParseTests::ParsedArgMap argMap;
-        AzFramework::ProcessOutput processOutput;
-        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-
-        processLaunchInfo.m_commandlineParameters = AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest -param1 param,1val -param2=param2v,al";
-        processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
-        processLaunchInfo.m_showWindow = false;
-        bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
-
-        EXPECT_EQ(launchReturn, true);
-
-        argMap = ProcessLaunchParseTests::ParseParameters(processOutput.outputResult);
-
-        auto param1itr = argMap.find("param1");
-        EXPECT_NE(param1itr, argMap.end());
-        AZStd::vector<AZStd::string> param1{ param1itr->second };
-
-        EXPECT_EQ(param1.size(), 2);
-        EXPECT_EQ(param1[0], "param");
-        EXPECT_EQ(param1[1], "1val");
-
-        auto param2itr = argMap.find("param2");
-        EXPECT_NE(param2itr, argMap.end());
-        AZStd::vector<AZStd::string> param2{ param2itr->second };
-
-        EXPECT_EQ(param2.size(), 2);
-        EXPECT_EQ(param2[0], "param2v");
-        EXPECT_EQ(param2[1], "al");
-    }
 }   // namespace UnitTest
