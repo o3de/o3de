@@ -17,6 +17,7 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiWidgetCallbacks.h>
 #include <QToolBar>
+#include <QPainter>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
@@ -38,6 +39,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void RemoveButton(ButtonId buttonId);
         //! Updates all registered actions.
         void Update();
+        //! Adds a locked overlay to the button's icon.
+        void SetButtonLocked(ButtonId buttonId, bool isLocked);
         //! Returns the widget manager.
         ViewportUiWidgetCallbacks GetWidgetCallbacks();
 
@@ -52,5 +55,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZStd::shared_ptr<ButtonGroup> m_buttonGroup; //!< Data structure which the cluster will be displaying to the Viewport UI.
         AZStd::unordered_map<ButtonId, QPointer<QAction>> m_buttonActionMap; //!< Map for buttons to their corresponding actions.
         ViewportUiWidgetCallbacks m_widgetCallbacks; //!< Registers actions and manages updates.
+        AZStd::optional<ButtonId> m_lockedButtonId = AZStd::nullopt; //!< Used to track the last button locked.
     };
 } // namespace AzToolsFramework::ViewportUi::Internal

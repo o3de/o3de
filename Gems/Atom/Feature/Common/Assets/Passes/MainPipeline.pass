@@ -342,6 +342,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "MotionVectorOutput"
+                            }
+                        },
+                        {
                             "LocalSlot": "SwapChainOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",

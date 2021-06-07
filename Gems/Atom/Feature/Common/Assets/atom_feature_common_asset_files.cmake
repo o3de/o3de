@@ -89,6 +89,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
+    Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
     Passes/DeferredFog.pass
@@ -207,6 +208,7 @@ set(FILES
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
+    Passes/Taa.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass

@@ -14,7 +14,6 @@ set -o errexit # exit on the first failure encountered
 
 BASEDIR=$(dirname "$0")
 source $BASEDIR/env_linux.sh
-source $BASEDIR/clean_linux.sh
 
 mkdir -p ${OUTPUT_DIRECTORY}
 SOURCE_DIRECTORY=${PWD}
