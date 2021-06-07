@@ -51,7 +51,7 @@ namespace TestImpact
             Ignore,
             StdOut,
             File,
-            Remove,
+            Discard,
             Keep
         };
 
@@ -87,7 +87,7 @@ namespace TestImpact
             "ignore",
             "stdout",
             "file",
-            "remove",
+            "discard",
             "keep"
         };
 
@@ -147,7 +147,7 @@ namespace TestImpact
         {
             const AZStd::vector<AZStd::pair<AZStd::string, Policy::FailedTestCoverage>> states =
             {
-                {OptionKeys[Remove], Policy::FailedTestCoverage::Remove},
+                {OptionKeys[Discard], Policy::FailedTestCoverage::Discard},
                 {OptionKeys[Keep], Policy::FailedTestCoverage::Keep}
             };
 
@@ -405,11 +405,11 @@ namespace TestImpact
             "                                                    tests are run regardless).\n"
             "    -shard=<on,off>                                 Break any test targets with a sharding policy into the number of \n"
             "                                                    shards according to the maximum concurrency value.\n"
-            "    -cpolicy=<remove, keep>                         Policy for handling the coverage data of failed tests (both tests that \n"
-            "                                                    failed to execute and tests that ran but failed), where remove will \n"
-            "                                                    remove the failed tests from the all coverage data (causing them to be \n"
-            "                                                    drafted into future test runs) and keep will keep any existing coverage \n"
-            "                                                    data and update the coverage data for failed tests that produce coverage.\n"
+            "    -cpolicy=<remove, keep>                         Policy for handling the coverage data of failing tests, where discard \n"
+            "                                                    will discard the coverage data produced by the failing tests, causing \n"
+            "                                                    them to be drafted into future test runs and keep will keep any existing \n"
+            "                                                    coverage data and update the coverage data for failed tests that produce \n"
+            "                                                    coverage.\n"
             "    -targetout=<sdtout, file>                       Capture of individual test run stdout, where stdout will capture \n"
             "                                                    each individual test target's stdout and output each one to stdout \n"
             "                                                    and file will capture each individual test target's stdout and output \n"

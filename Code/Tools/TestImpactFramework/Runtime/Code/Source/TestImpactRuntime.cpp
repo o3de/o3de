@@ -256,32 +256,77 @@ namespace TestImpact
 
     void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
-        DeleteFile(m_sparTIAFile);
         m_dynamicDependencyMap->ClearAllSourceCoverage();
+        DeleteFile(m_sparTIAFile);
+    }
+
+    SourceCoveringTestsList Runtime::CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+    {
+        AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> coverage;
+        for (const auto& job : jobs)
+        {
+            // First we must remove any existing coverage for the test target so as to not end up with source remnants from previous
+            // coverage that is no longer covered by this revision of the test target
+            m_dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
+
+            // Next we will update the coverage of test targets that completed (with or without failures), unless the failed test coverage
+            // policy dictates we should instead discard the coverage of test targets with failing tests
+            if (const auto testResult = job.GetTestResult();
+                testResult == Client::TestRunResult::AllTestsPass ||
+                (m_failedTestCoveragePolicy == Policy::FailedTestCoverage::Keep && testResult == Client::TestRunResult::TestFailures))
+            {
+                if (testResult == Client::TestRunResult::AllTestsPass)
+                {
+                    // Passing tests should have coverage data, otherwise something is very wrong
+                    AZ_TestImpact_Eval(
+                        job.GetTestCoverge().has_value(),
+                        RuntimeException,
+                        AZStd::string::format(
+                            "Test target '%s' completed its test run successfully but produced no coverage data",
+                            job.GetTestTarget()->GetName().c_str()));
+                }
+                else if (!job.GetTestCoverge().has_value())
+                {
+                    // When a test run completes with failing tests but produces no coverage artifact that's typically a sign of the
+                    // test aborting due to an unhandled exception, in which case ignore it and let it be picked up in the failure report
+                    continue;
+                }
+
+                for (const auto& source : job.GetTestCoverge().value().GetSourcesCovered())
+                {
+                    coverage[source.String()].insert(job.GetTestTarget()->GetName());
+                }
+            }
+        }
+
+        AZStd::vector<SourceCoveringTests> sourceCoveringTests;
+        sourceCoveringTests.reserve(coverage.size());
+        for (auto&& [source, testTargets] : coverage)
+        {
+            if (const auto sourcePath = RepoPath(source);
+                sourcePath.IsRelativeTo(m_config.m_repo.m_root))
+            {
+                sourceCoveringTests.push_back(
+                    SourceCoveringTests(RepoPath(sourcePath.LexicallyRelative(m_config.m_repo.m_root)), AZStd::move(testTargets)));
+            }
+            else
+            {
+                AZ_Warning("TestImpact", false, "Ignoring source, source it outside of repo: '%s'", sourcePath.c_str());
+            }
+        }
+
+        return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
     }
 
     void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
     {
-        const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs, m_config.m_repo.m_root);
+        const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
         if (!sourceCoverageTestsList.GetNumSources())
         {
             return;
         }
 
         m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-
-        if (m_failedTestCoveragePolicy == Policy::FailedTestCoverage::Remove)
-        {
-            for (const auto& job : jobs)
-            {
-                if (job.GetTestResult() != Client::TestRunResult::AllTestsPass ||
-                    !job.GetTestCoverge().has_value()) 
-                {
-                    m_dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
-                }
-            }
-        }
-
         const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
         const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
         WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
@@ -422,7 +467,7 @@ namespace TestImpact
         AZStd::optional<SafeTestSequenceCompleteCallback> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        Timer timer;       
+        Timer timer;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
         AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
@@ -459,6 +504,8 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             TestRunCompleteCallbackHandler(testCompleteCallback));
+        
+        const auto selectedDuraton = timer.Elapsed();
 
         // Carry the remaining global sequence time over to the discarded test run
         if (globalTimeout.has_value())
@@ -478,16 +525,18 @@ namespace TestImpact
             globalTimeout,
             TestRunCompleteCallbackHandler(testCompleteCallback));
 
-        UpdateAndSerializeDynamicDependencyMap(selectedTestJobs);
+        const auto discardedDuraton = timer.Elapsed();
 
         if (testSequenceEndCallback.has_value())
         {
             (*testSequenceEndCallback)(
                 GenerateSequenceFailureReport(selectedTestJobs),
                 GenerateSequenceFailureReport(discardedTestJobs),
-                timer.Elapsed());
+                selectedDuraton,
+                discardedDuraton);
         }
 
+        UpdateAndSerializeDynamicDependencyMap(selectedTestJobs);
         return { selectedResult, discardedResult };
     }
 
@@ -530,13 +579,13 @@ namespace TestImpact
             globalTimeout,
             TestRunCompleteCallbackHandler(testCompleteCallback));
 
-        ClearDynamicDependencyMapAndRemoveExistingFile();
-        UpdateAndSerializeDynamicDependencyMap(testJobs);
-
         if (testSequenceEndCallback.has_value())
         {
             (*testSequenceEndCallback)(GenerateSequenceFailureReport(testJobs), timer.Elapsed());
         }
+
+        ClearDynamicDependencyMapAndRemoveExistingFile();
+        UpdateAndSerializeDynamicDependencyMap(testJobs);
 
         return result;
     }

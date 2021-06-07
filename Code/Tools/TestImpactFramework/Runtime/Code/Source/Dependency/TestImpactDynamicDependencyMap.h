@@ -81,7 +81,6 @@ namespace TestImpact
         SourceDependency GetSourceDependencyOrThrow(const RepoPath& path) const;
 
         //! Replaces the source coverage of the specified sources with the specified source coverage.
-        //! @note The covering targets for the parent test target(s) will not be pruned if those covering targets are removed.
         //! @param sourceCoverageDelta The source coverage delta to replace in the dependency map.
         void ReplaceSourceCoverage(const SourceCoveringTestsList& sourceCoverageDelta);
 
@@ -110,6 +109,13 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> GetNotCoveringTests() const;
 
     private:
+        //! Internal handler for ReplaceSourceCoverage where the pruning of parentless and coverageless source depenencies after the
+        //! source coverage has been replaced must be explicitly stated.
+        //! @note The covered targets for the source dependency's parent test target(s) will not be pruned if those covering targets are removed.
+        //! @param sourceCoverageDelta The source coverage delta to replace in the dependency map.
+        //! @param pruneIfNoParentsOrCoverage Flag to specify whether or not newly parentless and coverageless dependencies will be removed.
+        void ReplaceSourceCoverageInternal(const SourceCoveringTestsList& sourceCoverageDelta, bool pruneIfNoParentsOrCoverage);
+
         //! Clears the source coverage of the specified sources.
         //! @note The covering targets for the parent test target(s) will not be pruned if those covering targets are removed.
         void ClearSourceCoverage(const AZStd::vector<RepoPath>& paths);
@@ -127,6 +133,7 @@ namespace TestImpact
         AZStd::unordered_map<const TestTarget*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
 
         //! The map of build targets and their covering test targets.
+        //! @note As per the note for ReplaceSourceCoverageInternal, this map is currently not pruned when source coverage is replaced.
         AZStd::unordered_map<const BuildTarget*, AZStd::unordered_set<const TestTarget*>> m_buildTargetCoverage;
 
         //! Mapping of autogen input sources to their generated output sources.
