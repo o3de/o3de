@@ -181,60 +181,51 @@ namespace AzToolsFramework
                         PrefabDom& rootPrefabTemplateDom =
                             m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
 
-                        PrefabDomValueReference instanceDomFromRoot = *(rootPrefabDomPath.Get(rootPrefabTemplateDom));
-
-                        if (instanceDomFromRoot.has_value())
+                        auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
+                        if (!instanceDomFromRootValue)
                         {
-                            // If a link was created for a nested instance before the changes were propagated,
-                            // then we associate it correctly here
-                            instanceDomFromRootDoc.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDoc.GetAllocator());
-                            if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDoc))
-                            {
-                                Template& currentTemplate = currentTemplateReference->get();
-                                instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
-                                {
-                                    if (nestedInstance->GetLinkId() != InvalidLinkId)
-                                    {
-                                        return;
-                                    }
-
-                                    for (auto linkId : currentTemplate.GetLinks())
-                                    {
-                                        LinkReference nestedLink = m_prefabSystemComponentInterface->FindLink(linkId);
-                                        if (!nestedLink.has_value())
-                                        {
-                                            continue;
-                                        }
-
-                                        if (nestedLink->get().GetInstanceName() == nestedInstance->GetInstanceAlias())
-                                        {
-                                            nestedInstance->SetLinkId(linkId);
-                                            break;
-                                        }
-                                    }
-                                });
-
-                                AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-                                    &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
-                            }
-                            else
-                            {
-                                AZ_Error(
-                                    "Prefab", false,
-                                    "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                    "Could not load Instance from Prefab DOM retrieved from the Level DOM.");
-
-                                isUpdateSuccessful = false;
-                            }
+                            // We may not find the instance in the top level ancestor in some cases (undoing a Create Prefab for example).
+                            // In this case, we just skip restoring the instance as it will be taken care of by the rest of the propagation.
+                            continue;
                         }
-                        else
-                        {
-                            AZ_Error(
-                                "Prefab", false,
-                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                "Could not retrieve Instance DOM from Level Prefab DOM.");
 
-                            isUpdateSuccessful = false;
+                        PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
+                        if (!instanceDomFromRoot.has_value())
+                        {
+                            continue;
+                        }
+
+                        // If a link was created for a nested instance before the changes were propagated,
+                        // then we associate it correctly here
+                        instanceDomFromRootDoc.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDoc.GetAllocator());
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDoc))
+                        {
+                            Template& currentTemplate = currentTemplateReference->get();
+                            instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
+                            {
+                                if (nestedInstance->GetLinkId() != InvalidLinkId)
+                                {
+                                    return;
+                                }
+
+                                for (auto linkId : currentTemplate.GetLinks())
+                                {
+                                    LinkReference nestedLink = m_prefabSystemComponentInterface->FindLink(linkId);
+                                    if (!nestedLink.has_value())
+                                    {
+                                        continue;
+                                    }
+
+                                    if (nestedLink->get().GetInstanceName() == nestedInstance->GetInstanceAlias())
+                                    {
+                                        nestedInstance->SetLinkId(linkId);
+                                        break;
+                                    }
+                                }
+                            });
+
+                            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                                &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
                         }
                     }
                     for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
