@@ -255,8 +255,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME AZ::AssetProcessor.Tests
-        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest
+        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest --gtest_filter=-*.SUITE_sandbox*
     )
 
+    ly_add_googletest(
+        NAME AZ::AssetProcessor.Tests.Sandbox
+        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest --gtest_filter=*.SUITE_sandbox*
+        TARGET AZ::AssetProcessor.Tests
+        TEST_SUITE sandbox
+    )
 
 endif()

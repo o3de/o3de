@@ -203,6 +203,7 @@ namespace AssetProcessorMessagesTests
 
             thread.join();
         }
+        
     protected:
 
         MockAssetRequestHandler* m_assetRequestHandler{}; // Not owned, AP will delete this pointer
@@ -269,7 +270,6 @@ namespace AssetProcessorMessagesTests
         addPairFunc(new AssetInfoRequest(), new AssetInfoResponse());
         addPairFunc(new AssetDependencyInfoRequest(), new AssetDependencyInfoResponse());
         addRequestFunc(new RequestEscalateAsset());
-        addPairFunc(new RequestAssetStatus(), new ResponseAssetStatus());
 
         RunNetworkRequest([&testMessages, &nameMap, this]()
             {
@@ -296,6 +296,58 @@ namespace AssetProcessorMessagesTests
                         {
                             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                         }
+                    }
+
+                    EXPECT_TRUE(m_assetRequestHandler->m_invoked) << "Message " << messageName.c_str() << " was not received";
+                }
+            });
+    }
+
+    TEST_F(AssetProcessorMessages, SUITE_sandbox_AssetStatus)
+    {
+        // Test that we can successfully send network messages and have them arrive for processing
+        // For messages that have a response, it also verifies the response comes back
+        // Note that several harmless warnings will be triggered due to the messages not having any data set 
+        using namespace AzFramework::AssetSystem;
+        using namespace AzToolsFramework::AssetSystem;
+
+        AZStd::vector<MessagePair> testMessages;
+        AZStd::unordered_map<int, AZStd::string> nameMap; // This is just for debugging, so we can output the name of failed messages
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        auto addPairFunc = [&testMessages, &nameMap, serializeContext](auto* request, auto* response)
+        {
+            testMessages.emplace_back(MessagePair{
+                AZStd::unique_ptr<AZStd::remove_pointer_t<decltype(request)>>(request),
+                AZStd::unique_ptr<AZStd::remove_pointer_t<decltype(response)>>(response)
+            });
+
+            auto data = serializeContext->FindClassData(request->RTTI_GetType());
+            nameMap[request->GetMessageType()] = data->m_name;
+        };
+
+        addPairFunc(new RequestAssetStatus(), new ResponseAssetStatus());
+
+        RunNetworkRequest([&testMessages, &nameMap, this]()
+            {
+                for(auto&& pair : testMessages)
+                {
+                    AZStd::string messageName = nameMap[pair.m_request->GetMessageType()];
+
+                    m_assetRequestHandler->m_invoked = false;
+
+                    EXPECT_TRUE(SendRequest(*pair.m_request.get())) << "Message " << messageName.c_str() << " failed to send";
+                    // Since there's no response, the above line will finish immediately, so we need to wait a little bit so the message can actually be sent
+                    // before we check if it was received
+                    // We'll wait a maximum of 5 seconds, checking periodically if the message was received, to avoid failing due to slow running test servers
+                    constexpr int MaxWaitTimeSeconds = 5;
+                    auto start = AZStd::chrono::monotonic_clock::now();
+
+                    while (!m_assetRequestHandler->m_invoked && AZStd::chrono::monotonic_clock::now() - start < AZStd::chrono::seconds(MaxWaitTimeSeconds))
+                    {
+                        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
                     }
 
                     EXPECT_TRUE(m_assetRequestHandler->m_invoked) << "Message " << messageName.c_str() << " was not received";
