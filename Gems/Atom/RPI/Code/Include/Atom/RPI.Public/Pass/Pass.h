@@ -396,8 +396,8 @@ namespace AZ
                         uint64_t m_alreadyCreated : 1;
 
                         // OLD SCHOOL
-                        uint64_t m_alreadyReset : 1;
                         uint64_t m_alreadyPrepared : 1;
+                        uint64_t m_alreadyReset : 1;
                         uint64_t m_queuedForBuildAttachment : 1;
 
 

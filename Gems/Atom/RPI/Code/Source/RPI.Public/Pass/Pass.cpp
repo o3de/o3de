@@ -75,6 +75,10 @@ namespace AZ
 
             PassSystemInterface::Get()->RegisterPass(this);
             QueueForBuild();
+
+            // Skip reset since the pass just got created
+            m_state = PassState::Reset;
+            m_flags.m_alreadyReset = true;
         }
 
         Pass::~Pass()
@@ -1034,6 +1038,7 @@ namespace AZ
 
                     // Set these two flags to false since when queue build attachments request, they should all be already be false except one use
                     // case that the pass system processed all queued requests when active a scene. 
+                    // m_flags.m_alreadyReset = false;
                     // m_flags.m_alreadyPrepared = false;
 
                     m_queueState = PassQueueState::QueuedForBuild;
@@ -1097,6 +1102,24 @@ namespace AZ
 
         void Pass::Reset()
         {
+            bool execute = (m_state == PassState::Idle);
+            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
+            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
+
+#if OLD_SCHOOL
+            AZ_Assert(!execute == m_flags.m_alreadyReset, "ANTON - EARLY OUT FLAGS do not match for pass BUILD!!");
+            if (m_flags.m_alreadyReset)
+            {
+                return;
+            }
+            m_flags.m_alreadyReset = true;
+#else
+            if (!execute)
+            {
+                return;
+            }
+#endif
+
             m_state = PassState::Resetting;
 
             // Store references to imported attachments to underlying images and buffers aren't deleted during attachment building
@@ -1120,7 +1143,7 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            bool execute = (m_state == PassState::Idle);
+            bool execute = (m_state == PassState::Idle || m_state == PassState::Reset);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
 
@@ -1138,7 +1161,7 @@ namespace AZ
             }
 #endif
 
-            Reset();
+            //Reset();
 
             m_state = PassState::Building;
             m_queueState = PassQueueState::NoQueue;
@@ -1189,6 +1212,11 @@ namespace AZ
             m_state = PassState::Initializing;
             m_queueState = PassQueueState::NoQueue;
 
+            // Update
+//            UpdateConnectedBindings();
+//            UpdateOwnedAttachments();
+//            UpdateAttachmentUsageIndices();
+
             InitializeInternal();
 
             m_state = PassState::Initialized;
@@ -1198,6 +1226,7 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
+            m_flags.m_alreadyReset = false;
             m_flags.m_alreadyPrepared = false;
             m_flags.m_queuedForBuildAttachment = false;
 

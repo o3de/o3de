@@ -216,6 +216,10 @@ namespace AZ
 
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
+                    pass->Reset();
+                }
+                for (const Ptr<Pass>& pass : buildListCopy)
+                {
                     pass->Build(true);
                 }
                 loopCounter++;
