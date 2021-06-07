@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/ScriptCanvasPhysics_precompiled.cpp
     Source/ScriptCanvasPhysics_precompiled.h
     Source/ScriptCanvasPhysicsModule.cpp
 )

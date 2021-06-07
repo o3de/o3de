@@ -33,5 +33,4 @@ set(FILES
     Include/AtomLyIntegration/AtomFont/AtomNullFont.h
     Include/AtomLyIntegration/AtomFont/resource.h
     Include/AtomLyIntegration/AtomFont/AtomFont_precompiled.h
-    Source/AtomFont_precompiled.cpp
 )
