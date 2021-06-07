@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/HttpRequestor_precompiled.cpp
     Source/HttpRequestor_precompiled.h
     Source/HttpRequestManager.cpp
     Source/HttpRequestManager.h
