@@ -15,27 +15,54 @@
 
 namespace UnitTest
 {
-    class EventTests
-        : public ScopedAllocatorSetupFixture
+    struct EventInt32Info
     {
+        using EventType = AZ::Event<int32_t>;
+        using EventTypeRef = AZ::Event<int32_t&>;
+        using EventTypeConstRef = AZ::Event<const int32_t&>;
+        using EventTypePtr = AZ::Event<int32_t*>;
+        using EventTypeConstPtr = AZ::Event<const int32_t*>;
     };
 
-    TEST_F(EventTests, TestHasCallback)
+    struct ThreadSafeEventInt32Info
     {
-        AZ::Event<int32_t> testEvent;
-        AZ::Event<int32_t>::Handler testHandler([]([[maybe_unused]] int32_t value) {});
+        using EventType = AZ::ThreadSafeEvent<int32_t>;
+        using EventTypeRef = AZ::ThreadSafeEvent<int32_t&>;
+        using EventTypeConstRef = AZ::ThreadSafeEvent<const int32_t&>;
+        using EventTypePtr = AZ::ThreadSafeEvent<int32_t*>;
+        using EventTypeConstPtr = AZ::ThreadSafeEvent<const int32_t*>;
+    };
+
+    template<typename TestStruct>
+    struct EventTests
+        : public ScopedAllocatorSetupFixture
+    {
+        using EventType = typename TestStruct::EventType;
+        using EventTypeRef = typename TestStruct::EventTypeRef;
+        using EventTypeConstRef = typename TestStruct::EventTypeConstRef;
+        using EventTypePtr = typename TestStruct::EventTypePtr;
+        using EventTypeConstPtr = typename TestStruct::EventTypeConstPtr;
+    };
+
+    using EventTestTypes = ::testing::Types<EventInt32Info, ThreadSafeEventInt32Info>;
+    TYPED_TEST_CASE(EventTests, EventTestTypes);
+
+    TYPED_TEST(EventTests, TestHasCallback)
+    {
+        EventType testEvent;
+        EventType::Handler testHandler([]([[maybe_unused]] int32_t value) {});
 
         EXPECT_TRUE(!testEvent.HasHandlerConnected());
         testHandler.Connect(testEvent);
         EXPECT_TRUE(testEvent.HasHandlerConnected());
     }
 
-    TEST_F(EventTests, TestScopedConnect)
+    TYPED_TEST(EventTests, TestScopedConnect)
     {
-        AZ::Event<int32_t> testEvent;
+        EventType testEvent;
 
         {
-            AZ::Event<int32_t>::Handler testHandler([]([[maybe_unused]] int32_t value) {});
+            EventType::Handler testHandler([]([[maybe_unused]] int32_t value) {});
             testHandler.Connect(testEvent);
             EXPECT_TRUE(testEvent.HasHandlerConnected());
         }
@@ -43,12 +70,12 @@ namespace UnitTest
         EXPECT_TRUE(!testEvent.HasHandlerConnected());
     }
 
-    TEST_F(EventTests, TestEvent)
+    TYPED_TEST(EventTests, TestEvent)
     {
         int32_t invokedValue = 0;
 
-        AZ::Event<int32_t> testEvent;
-        AZ::Event<int32_t>::Handler testHandler([&invokedValue](int32_t value) { invokedValue = value; });
+        EventType testEvent;
+        EventType::Handler testHandler([&invokedValue](int32_t value) { invokedValue = value; });
 
         testHandler.Connect(testEvent);
 
@@ -59,12 +86,12 @@ namespace UnitTest
         EXPECT_TRUE(invokedValue == -1);
     }
 
-    TEST_F(EventTests, TestEventRValueParam)
+    TYPED_TEST(EventTests, TestEventRValueParam)
     {
         int32_t invokedValue = 0;
 
-        AZ::Event<int32_t> testEvent;
-        AZ::Event<int32_t>::Handler testHandler([&invokedValue](int32_t value) { invokedValue = value; });
+        EventType testEvent;
+        EventType::Handler testHandler([&invokedValue](int32_t value) { invokedValue = value; });
 
         testHandler.Connect(testEvent);
 
@@ -75,12 +102,12 @@ namespace UnitTest
         EXPECT_TRUE(invokedValue == 1);
     }
 
-    TEST_F(EventTests, TestEventRefParam)
+    TYPED_TEST(EventTests, TestEventRefParam)
     {
         int32_t invokedValue = 0;
 
-        AZ::Event<int32_t&> testEvent;
-        AZ::Event<int32_t&>::Handler testHandler([&invokedValue](int32_t& value) { invokedValue = value++; });
+        EventTypeRef testEvent;
+        EventTypeRef::Handler testHandler([&invokedValue](int32_t& value) { invokedValue = value++; });
 
         testHandler.Connect(testEvent);
 
@@ -95,12 +122,12 @@ namespace UnitTest
         EXPECT_TRUE(value == 3);
     }
 
-    TEST_F(EventTests, TestEventConstRefParam)
+    TYPED_TEST(EventTests, TestEventConstRefParam)
     {
         int32_t invokedValue = 0;
 
-        AZ::Event<const int32_t&> testEvent;
-        AZ::Event<const int32_t&>::Handler testHandler([&invokedValue](const int32_t& value) { invokedValue = value; });
+        EventTypeConstRef testEvent;
+        EventTypeConstRef::Handler testHandler([&invokedValue](const int32_t& value) { invokedValue = value; });
 
         testHandler.Connect(testEvent);
 
@@ -111,12 +138,12 @@ namespace UnitTest
         EXPECT_TRUE(invokedValue == 1);
     }
 
-    TEST_F(EventTests, TestEventPointerParam)
+    TYPED_TEST(EventTests, TestEventPointerParam)
     {
         int32_t invokedValue = 0;
 
-        AZ::Event<int32_t*> testEvent;
-        AZ::Event<int32_t*>::Handler testHandler([&invokedValue](int32_t* value) { invokedValue = (*value)++; });
+        EventTypePtr testEvent;
+        EventTypePtr::Handler testHandler([&invokedValue](int32_t* value) { invokedValue = (*value)++; });
 
         testHandler.Connect(testEvent);
 
@@ -131,12 +158,12 @@ namespace UnitTest
         EXPECT_TRUE(value == 3);
     }
 
-    TEST_F(EventTests, TestEventConstPointerParam)
+    TYPED_TEST(EventTests, TestEventConstPointerParam)
     {
         int32_t invokedValue = 0;
 
-        AZ::Event<const int32_t*> testEvent;
-        AZ::Event<const int32_t*>::Handler testHandler([&invokedValue](const int32_t* value) { invokedValue = *value; });
+        EventTypeConstPtr testEvent;
+        EventTypeConstPtr::Handler testHandler([&invokedValue](const int32_t* value) { invokedValue = *value; });
 
         testHandler.Connect(testEvent);
 
@@ -147,35 +174,15 @@ namespace UnitTest
         EXPECT_TRUE(invokedValue == 1);
     }
 
-    TEST_F(EventTests, TestEventMultiParam)
+    TYPED_TEST(EventTests, TestConnectDuringEvent)
     {
-        int32_t invokedValue1 = 0;
-        bool invokedValue2 = false;
-
-        AZ::Event<int32_t, bool> testEvent;
-        AZ::Event<int32_t, bool>::Handler testHandler([&invokedValue1, &invokedValue2](int32_t value1, bool value2) { invokedValue1 = value1; invokedValue2 = value2; });
-
-        testHandler.Connect(testEvent);
-
-        EXPECT_TRUE(invokedValue1 == 0);
-        EXPECT_TRUE(invokedValue2 == false);
-        testEvent.Signal(1, true);
-        EXPECT_TRUE(invokedValue1 == 1);
-        EXPECT_TRUE(invokedValue2 == true);
-        testEvent.Signal(-1, false);
-        EXPECT_TRUE(invokedValue1 == -1);
-        EXPECT_TRUE(invokedValue2 == false);
-    }
-
-    TEST_F(EventTests, TestConnectDuringEvent)
-    {
-        AZ::Event<int32_t> testEvent;
+        EventType testEvent;
 
         {
             int32_t testHandler2Data = 0;
-            AZ::Event<int32_t>::Handler testHandler2([&testHandler2Data](int32_t value) { testHandler2Data = value; });
+            EventType::Handler testHandler2([&testHandler2Data](int32_t value) { testHandler2Data = value; });
 
-            AZ::Event<int32_t>::Handler testHandler([&testHandler2, &testEvent]([[maybe_unused]] int32_t value) { testHandler2.Connect(testEvent); });
+            EventType::Handler testHandler([&testHandler2, &testEvent]([[maybe_unused]] int32_t value) { testHandler2.Connect(testEvent); });
             testHandler.Connect(testEvent);
 
             testEvent.Signal(1);
@@ -191,14 +198,14 @@ namespace UnitTest
         EXPECT_TRUE(!testEvent.HasHandlerConnected());
     }
 
-    TEST_F(EventTests, TestDisconnectDuringEvent)
+    TYPED_TEST(EventTests, TestDisconnectDuringEvent)
     {
-        AZ::Event<int32_t> testEvent;
+        EventType testEvent;
 
         {
             int32_t testHandler2Data = 0;
-            AZ::Event<int32_t>::Handler testHandler2([&testHandler2Data](int32_t value) { testHandler2Data = value; });
-            AZ::Event<int32_t>::Handler testHandler([&testHandler2]([[maybe_unused]] int32_t value) { testHandler2.Disconnect(); });
+            EventType::Handler testHandler2([&testHandler2Data](int32_t value) { testHandler2Data = value; });
+            EventType::Handler testHandler([&testHandler2]([[maybe_unused]] int32_t value) { testHandler2.Disconnect(); });
 
             testHandler2.Connect(testEvent);
             testHandler.Connect(testEvent);
@@ -214,15 +221,15 @@ namespace UnitTest
         EXPECT_TRUE(!testEvent.HasHandlerConnected());
     }
 
-    TEST_F(EventTests, TestDisconnectDuringEventReversed)
+    TYPED_TEST(EventTests, TestDisconnectDuringEventReversed)
     {
-        AZ::Event<int32_t> testEvent;
+        EventType testEvent;
 
         // Same test as above, but connected using reversed ordering
         {
             int32_t testHandler2Data = 0;
-            AZ::Event<int32_t>::Handler testHandler2([&testHandler2Data](int32_t value) { testHandler2Data = value; });
-            AZ::Event<int32_t>::Handler testHandler([&testHandler2]([[maybe_unused]] int32_t value) { testHandler2.Disconnect(); });
+            EventType::Handler testHandler2([&testHandler2Data](int32_t value) { testHandler2Data = value; });
+            EventType::Handler testHandler([&testHandler2]([[maybe_unused]] int32_t value) { testHandler2.Disconnect(); });
 
             testHandler.Connect(testEvent);
             testHandler2.Connect(testEvent);
@@ -238,13 +245,42 @@ namespace UnitTest
         EXPECT_TRUE(!testEvent.HasHandlerConnected());
     }
 
-    TEST_F(EventTests, CopyConstructorAndCopyAssignmentOperator_AreNotCallable)
+    TYPED_TEST(EventTests, CopyConstructorAndCopyAssignmentOperator_AreNotCallable)
     {
-        static_assert(!AZStd::is_copy_constructible_v<AZ::Event<int32_t>>, "AZ Events should not be copy constructible");
-        static_assert(!AZStd::is_copy_assignable_v<AZ::Event<int32_t>>, "AZ Events should not be copy assignable");
+        static_assert(!AZStd::is_copy_constructible_v<EventType>, "AZ Events should not be copy constructible");
+        static_assert(!AZStd::is_copy_assignable_v<EventType>, "AZ Events should not be copy assignable");
     }
 
-    TEST_F(EventTests, HandlerMoveAssignment_ProperlyDisconnectsFromOldEvent)
+    class AdditionalEventTests : public ScopedAllocatorSetupFixture
+    {
+    };
+
+    TEST_F(AdditionalEventTests, TestEventMultiParam)
+    {
+        int32_t invokedValue1 = 0;
+        bool invokedValue2 = false;
+
+        AZ::Event<int32_t, bool> testEvent;
+        AZ::Event<int32_t, bool>::Handler testHandler(
+            [&invokedValue1, &invokedValue2](int32_t value1, bool value2)
+            {
+                invokedValue1 = value1;
+                invokedValue2 = value2;
+            });
+
+        testHandler.Connect(testEvent);
+
+        EXPECT_TRUE(invokedValue1 == 0);
+        EXPECT_TRUE(invokedValue2 == false);
+        testEvent.Signal(1, true);
+        EXPECT_TRUE(invokedValue1 == 1);
+        EXPECT_TRUE(invokedValue2 == true);
+        testEvent.Signal(-1, false);
+        EXPECT_TRUE(invokedValue1 == -1);
+        EXPECT_TRUE(invokedValue2 == false);
+    }
+
+    TEST_F(AdditionalEventTests, HandlerMoveAssignment_ProperlyDisconnectsFromOldEvent)
     {
         AZ::Event<> testEvent1;
         AZ::Event<> testEvent2;

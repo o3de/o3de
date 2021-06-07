@@ -18,6 +18,9 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/stack.h>
 #include <AzCore/std/function/function_fwd.h>
+#include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/std/typetraits/conditional.h>
 
 namespace AZ
 {
@@ -35,109 +38,155 @@ namespace AZ
     //!          event.Signal(1); // Our handlers lambda will now get invoked with the value 1
     //!      };
     //! @endcode
+    //! A thread-safe version is also available. This behaves in the same way as the regular Event but allows safe (dis)connecting from
+    //! multiple threads. Keep in mind that this also means that calls to Signal can come from different threads and that there's no
+    //! guarantee that a signal will come from the same thread as was used to connect to the Event.
+    //! @code{.cpp}
+    //!      {
+    //!          ThreadSafeEvent<int32_t> event;
+    //!          ThreadSafeEvent<int32_t>::Handler handler([](int32_t value) { DO_SOMETHING_WITH_VALUE(value); });
+    //!          handler.Connect(event); // Called from thread X
+    //!          event.Signal(1); // Can be called from thread X or another thread.
+    //!      };
+    //! @endcode
 
-    template <typename... Params>
-    class Event;
-
-    template <typename... Params>
-    class EventHandler;
-
-    template <typename... Params>
-    class Event final
+    namespace Internal
     {
-        friend class EventHandler<Params...>; // This is required in order to allow for relocating the handle pointers on a move
+        //! A fake mutex that can be used in case thread safety isn't an issue.
+        class PlaceholderMutex
+        {
+            AZ_TYPE_INFO(PlaceholderMutex, "{F7B4432F-567D-4A33-80E4-E47C5F2AFC34}");
 
-    public:
+            void lock() {}
+            bool try_lock() { return true; }
+            void unlock() {}
+        };
 
-        using Callback = AZStd::function<void(Params...)>;
-        using Handler = EventHandler<Params...>;       
+        //! A fake scoped lock for a fake mutex.
+        struct PlaceholderScopedLock
+        {
+            PlaceholderScopedLock(PlaceholderMutex&){}
+        };
 
-        AZ_CLASS_ALLOCATOR(Event<Params...>, AZ::SystemAllocator, 0);
+        template<bool ThreadSafe, typename... Params>
+        class Event;
 
-        Event() = default;
-        Event(Event&& rhs);
-        
-        ~Event();
+        template<bool ThreadSafe, typename... Params>
+        class EventHandler;
 
-        Event& operator=(Event&& rhs);
+        template<bool ThreadSafe, typename... Params>
+        class Event final
+        {
+            friend class EventHandler<ThreadSafe, Params...>; // This is required in order to allow for relocating the handle pointers on a move
 
-        //! Returns true if at least one handler is connected to this event.
-        bool HasHandlerConnected() const;
+        public:
+            using Callback = AZStd::function<void(Params...)>;
+            using Handler = EventHandler<ThreadSafe, Params...>;
+            using Mutex = AZStd::conditional_t<ThreadSafe, AZStd::recursive_mutex, PlaceholderMutex>;
+            using ScopedLock = AZStd::conditional_t<ThreadSafe, AZStd::scoped_lock<Mutex>, PlaceholderScopedLock>;
+            
+            AZ_CLASS_ALLOCATOR(Event, AZ::SystemAllocator, 0);
 
-        //! Disconnects all connected handlers.
-        void DisconnectAllHandlers();
+            Event() = default;
+            Event(Event&& rhs);
 
-        //! Signal an event.
-        //! @param params variadic set of event parameters
-        void Signal(const Params&... params) const;
+            ~Event();
 
-    private:
+            Event& operator=(Event&& rhs);
 
-        //! Used internally to rebind all handlers from an old event to the current event instance
-        void BindHandlerEventPointers();
+            //! Returns true if at least one handler is connected to this event.
+            bool HasHandlerConnected() const;
 
-        void Connect(Handler& handler) const;
-        void Disconnect(Handler& handler) const;
+            //! Disconnects all connected handlers.
+            void DisconnectAllHandlers();
 
-    private:
+            //! Signal an event.
+            //! @param params variadic set of event parameters
+            void Signal(const Params&... params) const;
 
-        // Note that these are mutable because we want Signal() to be const, but we do a bunch of book-keeping during Signal()
-        mutable AZStd::vector<Handler*> m_handlers; //< Active handlers
-        mutable AZStd::vector<Handler*> m_addList; //< Handlers added during a Signal, pending being added to the active handlers
-        mutable AZStd::stack<size_t> m_freeList; //< Set of unused handler indices
+        private:
+            //! Used internally to rebind all handlers from an old event to the current event instance. This call is not thread-safe.
+            void BindHandlerEventPointers();
 
-        mutable bool m_updating = false; //< Raised during a Signal, false otherwise, used to guard m_handlers during handler iteration
-    };
+            void Connect(Handler& handler) const;
+            void Disconnect(Handler& handler) const;
 
-    //! A handler class that can connect to an Event
-    template <typename... Params>
-    class EventHandler final
-    {
-        friend class Event<Params...>;
+            //! Main implementation of DisconnectAllHandlers that is not thread-safe.
+            void DisconnectAllHandlers_impl();
 
-    public:
-        using Callback = AZStd::function<void(Params...)>;
+        private:
+            // Note that these are mutable because we want Signal() to be const, but we do a bunch of book-keeping during Signal()
+            mutable AZStd::vector<Handler*> m_handlers; //< Active handlers
+            mutable AZStd::vector<Handler*> m_addList; //< Handlers added during a Signal, pending being added to the active handlers
+            mutable AZStd::stack<size_t> m_freeList; //< Set of unused handler indices
 
-        AZ_CLASS_ALLOCATOR(EventHandler<Params...>, AZ::SystemAllocator, 0);
+            mutable Mutex m_handlersMutex; //< Synchronization primitive for thread safe use of handlers.
+            mutable bool m_updating = false; //< Raised during a Signal, false otherwise, used to guard m_handlers during handler iteration
+        };
 
-        // We support default constructing of event handles (with no callback function being bound) to allow for better usage with container types
-        // An unbound event handle cannot be added to an event and we do not support dynamically binding the callback post construction
-        // (except for on assignment since that will also add the handle to the event; i.e. there is no way to unbind the callback after being added to an event)
-        EventHandler() = default;
-        explicit EventHandler(std::nullptr_t);
-        explicit EventHandler(Callback callback);
-        EventHandler(const EventHandler& rhs);
-        EventHandler(EventHandler&& rhs);
+        //! A handler class that can connect to an Event
+        template<bool ThreadSafe, typename... Params>
+        class EventHandler final
+        {
+            friend class Event<ThreadSafe, Params...>;
 
-        ~EventHandler();
+        public:
+            using Callback = AZStd::function<void(Params...)>;
+            using EventType = Event<ThreadSafe, Params...>;
 
-        EventHandler& operator=(const EventHandler& rhs);
-        EventHandler& operator=(EventHandler&& rhs);
+            AZ_CLASS_ALLOCATOR(EventHandler, AZ::SystemAllocator, 0);
 
-        //! Connects the handler to the provided event.
-        //! @param event the Event to connect to
-        void Connect(Event<Params...>& event);
+            // We support default constructing of event handles (with no callback function being bound) to allow for better usage with
+            // container types An unbound event handle cannot be added to an event and we do not support dynamically binding the callback
+            // post construction (except for on assignment since that will also add the handle to the event; i.e. there is no way to unbind
+            // the callback after being added to an event)
+            EventHandler() = default;
+            explicit EventHandler(std::nullptr_t);
+            explicit EventHandler(Callback callback);
+            EventHandler(const EventHandler& rhs);
+            EventHandler(EventHandler&& rhs);
 
-        //! Disconnects the handler from its connected event, does nothing if the event is not connected.
-        void Disconnect();
+            ~EventHandler();
 
-        //! Returns true if this handler is connected to an event.
-        //! @return boolean true if this handler is connected to an event
-        bool IsConnected() const;
+            EventHandler& operator=(const EventHandler& rhs);
+            EventHandler& operator=(EventHandler&& rhs);
 
-    private:
+            //! Connects the handler to the provided event.
+            //! @param event the Event to connect to
+            void Connect(EventType& event);
 
-        //! Swaps the event handler pointers from the from instance to this instance
-        //! @param from the handler instance we are replacing on the attached event
-        void SwapEventHandlerPointers(const EventHandler& from);
+            //! Disconnects the handler from its connected event, does nothing if the event is not connected.
+            void Disconnect();
 
-        const Event<Params...>* m_event = nullptr; //< The connected event
-        int32_t m_index = 0; //< Index into the add or handler vectors (negative means pending add)
-        Callback m_callback; //< The lambda to invoke during events
-    };
+            //! Returns true if this handler is connected to an event.
+            //! @return boolean true if this handler is connected to an event
+            bool IsConnected() const;
 
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZ::Event, "Event", "{B7388760-18BF-486A-BE96-D5765791C53C}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZ::EventHandler, "EventHandler", "{F85EFDA5-FBD0-4557-A3EF-9E077B41EA59}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+        private:
+            //! Swaps the event handler pointers from the from instance to this instance
+            //! @param from the handler instance we are replacing on the attached event
+            void SwapEventHandlerPointers(const EventHandler& from);
+
+            Callback m_callback; //< The lambda to invoke during events
+            const EventType* m_event = nullptr; //< The connected event
+            int32_t m_index = 0; //< Index into the add or handler vectors (negative means pending add)
+        };
+    } // namespace Internal
+
+    template<typename... Params>
+    using Event = Internal::Event<false, Params...>;
+    template<typename... Params>
+    using EventHandler = Internal::EventHandler<false, Params...>;
+
+    template<typename... Params>
+    using ThreadSafeEvent = Internal::Event<true, Params...>;
+    template<typename... Params>
+    using ThreadSafeEventHandler = Internal::EventHandler<true, Params...>;
+
+    AZ_TYPE_INFO_TEMPLATE(Event, "{B7388760-18BF-486A-BE96-D5765791C53C}", AZ_TYPE_INFO_TYPENAME_VARARGS);
+    AZ_TYPE_INFO_TEMPLATE(EventHandler, "{F85EFDA5-FBD0-4557-A3EF-9E077B41EA59}", AZ_TYPE_INFO_TYPENAME_VARARGS);
+    AZ_TYPE_INFO_TEMPLATE(ThreadSafeEvent, "{11C12655-B0EC-4E09-967E-98100B17EA4F}", AZ_TYPE_INFO_TYPENAME_VARARGS);
+    AZ_TYPE_INFO_TEMPLATE(ThreadSafeEventHandler, "{BBC2FFE7-460C-43C2-810C-C7DEB6ACFBFB}", AZ_TYPE_INFO_TYPENAME_VARARGS);
 }
 
 #include <AzCore/EBus/Event.inl>

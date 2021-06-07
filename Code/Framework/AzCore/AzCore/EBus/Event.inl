@@ -12,25 +12,25 @@
 
 #pragma once
 
-namespace AZ
+namespace AZ::Internal
 {
-    template <typename... Params>
-    EventHandler<Params...>::EventHandler(std::nullptr_t)
+    template<bool ThreadSafe, typename... Params>
+    EventHandler<ThreadSafe, Params...>::EventHandler(std::nullptr_t)
     {
         ;
     }
 
 
-    template <typename... Params>
-    EventHandler<Params...>::EventHandler(Callback callback)
+    template<bool ThreadSafe, typename... Params>
+    EventHandler<ThreadSafe, Params...>::EventHandler(Callback callback)
         : m_callback(AZStd::move(callback))
     {
         ;
     }
 
 
-    template <typename... Params>
-    EventHandler<Params...>::EventHandler(const EventHandler& rhs)
+    template<bool ThreadSafe, typename... Params>
+    EventHandler<ThreadSafe, Params...>::EventHandler(const EventHandler& rhs)
         : m_callback(rhs.m_callback)
     {
         // Copy the callback function, then perform a Connect with the new event
@@ -41,8 +41,8 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    EventHandler<Params...>::EventHandler(EventHandler&& rhs)
+    template<bool ThreadSafe, typename... Params>
+    EventHandler<ThreadSafe, Params...>::EventHandler(EventHandler&& rhs)
         : m_event(rhs.m_event)
         , m_index(rhs.m_index)
         , m_callback(AZStd::move(rhs.m_callback))
@@ -55,15 +55,15 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    EventHandler<Params...>::~EventHandler()
+    template<bool ThreadSafe, typename... Params>
+    EventHandler<ThreadSafe, Params...>::~EventHandler()
     {
         Disconnect();
     }
 
 
-    template <typename... Params>
-    EventHandler<Params...>& EventHandler<Params...>::operator=(const EventHandler& rhs)
+    template<bool ThreadSafe, typename... Params>
+    auto EventHandler<ThreadSafe, Params...>::operator=(const EventHandler& rhs) -> EventHandler&
     {
         // Copy the callback function, then perform a Connect with the new event
         if (this != &rhs)
@@ -80,8 +80,8 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    EventHandler<Params...>& EventHandler<Params...>::operator=(EventHandler&& rhs)
+    template<bool ThreadSafe, typename... Params>
+    auto EventHandler<ThreadSafe, Params...>::operator=(EventHandler&& rhs) -> EventHandler& 
     {
         if (this != &rhs)
         {
@@ -101,8 +101,8 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    void EventHandler<Params...>::Connect(Event<Params...>& event)
+    template<bool ThreadSafe, typename... Params>
+    void EventHandler<ThreadSafe, Params...>::Connect(EventType& event)
     {
         // Cannot add an unbound event handle (no function callback) to an event, this is a programmer error
         // We explicitly do not support binding the callback after the handler has been constructed so we can just reject the event handle here
@@ -119,8 +119,8 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    void EventHandler<Params...>::Disconnect()
+    template<bool ThreadSafe, typename... Params>
+    void EventHandler<ThreadSafe, Params...>::Disconnect()
     {
         if (m_event)
         {
@@ -128,20 +128,21 @@ namespace AZ
         }
     }
 
-    template <typename... Params>
-    bool EventHandler<Params...>::IsConnected() const
+    template<bool ThreadSafe, typename... Params>
+    bool EventHandler<ThreadSafe, Params...>::IsConnected() const
     {
         return m_event != nullptr;
     }
 
-    template <typename... Params>
-    void EventHandler<Params...>::SwapEventHandlerPointers([[maybe_unused]]const EventHandler& from)
+    template<bool ThreadSafe, typename... Params>
+    void EventHandler<ThreadSafe, Params...>::SwapEventHandlerPointers([[maybe_unused]] const EventHandler& from)
     {
         // Find the pointer to the 'from' handler and point it to this handler
         if (m_event)
         {
             // The index is negative if the handle is in the pending add list
             // The index can then be converted to the add list index in which it lives
+            EventType::ScopedLock handlersLock(m_event->m_handlersMutex);
             if (m_index < 0)
             {
                 AZ_Assert(m_event->m_addList[-(m_index + 1)] == &from, "From handle does not match");
@@ -156,13 +157,15 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    Event<Params...>::Event(Event&& rhs)
+    template<bool ThreadSafe, typename... Params>
+    Event<ThreadSafe, Params...>::Event(Event&& rhs)
         : m_handlers(AZStd::move(rhs.m_handlers))
         , m_addList(AZStd::move(rhs.m_addList))
         , m_freeList(AZStd::move(rhs.m_freeList))
         , m_updating(rhs.m_updating)
     {
+        ScopedLock handlersLock(m_handlersMutex);
+
         // Move all sub-objects into this event and fixup each handle to point to this event
         // Revert the r-value event to it's default state (the moves should do it but PODs need to be set)
         BindHandlerEventPointers();
@@ -170,20 +173,22 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    Event<Params...>::~Event()
+    template<bool ThreadSafe, typename... Params>
+    Event<ThreadSafe, Params...>::~Event()
     {
         DisconnectAllHandlers();
     }
 
 
-    template <typename... Params>
-    Event<Params...>& Event<Params...>::operator=(Event&& rhs)
+    template<bool ThreadSafe, typename... Params>
+    auto Event<ThreadSafe, Params...>::operator=(Event&& rhs) -> Event&
     {
+        ScopedLock handlersLock(m_handlersMutex);
+
         // Remove all previous handles which will update them as needed
         // Move all sub-objects into this event and fixup each handle to point to this event
         // Revert the r-value event to it's default state (the moves should do it but PODs need to be set)
-        DisconnectAllHandlers();
+        DisconnectAllHandlers_impl();
 
         m_handlers = AZStd::move(rhs.m_handlers);
         m_addList = AZStd::move(rhs.m_addList);
@@ -198,9 +203,11 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    bool Event<Params...>::HasHandlerConnected() const
+    template<bool ThreadSafe, typename... Params>
+    bool Event<ThreadSafe, Params...>::HasHandlerConnected() const
     {
+        ScopedLock handlersLock(m_handlersMutex);
+
         for (Handler* handler : m_handlers)
         {
             if (handler)
@@ -213,9 +220,18 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    void Event<Params...>::DisconnectAllHandlers()
+    template<bool ThreadSafe, typename... Params>
+    void Event<ThreadSafe, Params...>::DisconnectAllHandlers()
     {
+        ScopedLock handlersLock(m_handlersMutex);
+        DisconnectAllHandlers_impl();
+    }
+
+    template<bool ThreadSafe, typename... Params>
+    void Event<ThreadSafe, Params...>::DisconnectAllHandlers_impl()
+    {
+        // Callers of this function are responsible for thread safety.
+
         // Clear all our added handlers
         for (Handler* handler : m_handlers)
         {
@@ -244,11 +260,13 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    void Event<Params...>::Signal(const Params&... params) const
+    template<bool ThreadSafe, typename... Params>
+    void Event<ThreadSafe, Params...>::Signal(const Params&... params) const
     {
-        m_updating = true;
+        ScopedLock handlersLock(m_handlersMutex);
 
+        m_updating = true;
+        
         // Trigger all added handler callbacks
         for (Handler* handler : m_handlers)
         {
@@ -285,9 +303,11 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    inline void Event<Params...>::BindHandlerEventPointers()
+    template<bool ThreadSafe, typename... Params>
+    inline void Event<ThreadSafe, Params...>::BindHandlerEventPointers()
     {
+        // Callers of this function are responsible for thread-safety.
+
         for (Handler* handler : m_handlers)
         {
             if (handler)
@@ -308,9 +328,11 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    inline void Event<Params...>::Connect(Handler& handler) const
+    template<bool ThreadSafe, typename... Params>
+    inline void Event<ThreadSafe, Params...>::Connect(Handler& handler) const
     {
+        ScopedLock handlersLock(m_handlersMutex);
+
         if (m_updating)
         {
             handler.m_index = -aznumeric_cast<int32_t>(m_addList.size() + 1);
@@ -334,10 +356,12 @@ namespace AZ
     }
 
 
-    template <typename... Params>
-    inline void Event<Params...>::Disconnect(Handler& eventHandle) const
+    template<bool ThreadSafe, typename... Params>
+    inline void Event<ThreadSafe, Params...>::Disconnect(Handler& eventHandle) const
     {
         AZ_Assert(eventHandle.m_event == this, "Trying to remove a handler bound to a different event");
+
+        ScopedLock handlersLock(m_handlersMutex);
 
         int32_t index = eventHandle.m_index;
         if (index < 0)

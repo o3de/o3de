@@ -33,8 +33,13 @@ namespace AZStd
 
 namespace AZ
 {
-    template <class... Params>
-    class Event;
+    namespace Internal
+    {
+        template<bool ThreadSafe, class... Params>
+        class Event;
+    }
+    template<typename... Params>
+    using Event = Internal::Event<false, Params...>;
 
     // Provides compile time constants and type aliases for accessing AZ Console
     // Without the requirement to have a complete console type
