@@ -15,6 +15,8 @@
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectUtils.h>
+#include <ProjectBuilder.h>
+#include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -42,6 +44,8 @@
 #include <QSettings>
 #include <QMessageBox>
 #include <QTimer>
+#include <QQueue>
+#include <QDir>
 
 //#define DISPLAY_PROJECT_DEV_DATA true 
 
@@ -66,6 +70,14 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_projectsContent);
 
         vLayout->addWidget(m_stack);
+
+        connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
+    }
+
+    ProjectsScreen::~ProjectsScreen()
+
+    {
+        delete m_currentBuilder;
     }
 
     QFrame* ProjectsScreen::CreateFirstTimeContent()
@@ -110,7 +122,7 @@ namespace O3DE::ProjectManager
         return frame;
     }
 
-    QFrame* ProjectsScreen::CreateProjectsContent()
+    QFrame* ProjectsScreen::CreateProjectsContent(QString buildProjectPath, ProjectButton** projectButton)
     {
         QFrame* frame = new QFrame(this);
         frame->setObjectName("projectsContent");
@@ -158,30 +170,43 @@ namespace O3DE::ProjectManager
                 projectsScrollArea->setWidgetResizable(true);
 
 #ifndef DISPLAY_PROJECT_DEV_DATA
+                // Iterate once to insert building project first
+                if (!buildProjectPath.isEmpty())
+                {
+                    buildProjectPath = QDir::fromNativeSeparators(buildProjectPath);
+                    for (auto project : projectsResult.GetValue())
+                    {
+                        if (QDir::fromNativeSeparators(project.m_path) == buildProjectPath)
+                        {
+                            ProjectButton* buildingProjectButton = CreateProjectButton(project, flowLayout, true);
+
+                            if (projectButton)
+                            {
+                                *projectButton = buildingProjectButton;
+                            }
+
+                            break;
+                        }
+                    }
+                }
+
                 for (auto project : projectsResult.GetValue())
 #else
                 ProjectInfo project = projectsResult.GetValue().at(0);
                 for (int i = 0; i < 15; i++)
 #endif
                 {
-                    ProjectButton* projectButton;
-
-                    QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
-                    QFileInfo doesPreviewExist(projectPreviewPath);
-                    if (doesPreviewExist.exists() && doesPreviewExist.isFile())
+                    // Add all other projects skipping building project
+                    // Safe if no building project because it is just an empty string
+                    if (project.m_path != buildProjectPath)
                     {
-                        project.m_imagePath = projectPreviewPath;
+                        ProjectButton* projectButtonWidget = CreateProjectButton(project, flowLayout);
+
+                        if (RequiresBuildProjectIterator(project.m_path) != m_requiresBuild.end())
+                        {
+                            projectButtonWidget->ShowBuildButton(true);
+                        }
                     }
-
-                    projectButton = new ProjectButton(project, this);
-
-                    flowLayout->addWidget(projectButton);
-
-                    connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
-                    connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
-                    connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
-                    connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
-                    connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
                 }
 
                 layout->addWidget(projectsScrollArea);
@@ -189,6 +214,60 @@ namespace O3DE::ProjectManager
         }
 
         return frame;
+    }
+
+    ProjectButton* ProjectsScreen::CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing)
+    {
+        ProjectButton* projectButton;
+
+        QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
+        QFileInfo doesPreviewExist(projectPreviewPath);
+        if (doesPreviewExist.exists() && doesPreviewExist.isFile())
+        {
+            project.m_imagePath = projectPreviewPath;
+        }
+
+        projectButton = new ProjectButton(project, this, processing);
+
+        flowLayout->addWidget(projectButton);
+
+        if (!processing)
+        {
+            connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
+            connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
+            connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
+            connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
+            connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
+        }
+        connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
+
+        return projectButton;
+    }
+
+    void ProjectsScreen::ResetProjectsContent()
+    {
+        // refresh the projects content by re-creating it for now
+        if (m_projectsContent)
+        {
+            m_stack->removeWidget(m_projectsContent);
+            m_projectsContent->deleteLater();
+        }
+
+        // Make sure to update builder with latest Project Button
+        if (m_currentBuilder)
+        {
+            ProjectButton* projectButtonPtr;
+
+            m_projectsContent = CreateProjectsContent(m_currentBuilder->GetProjectPath(), &projectButtonPtr);
+            m_currentBuilder->SetProjectButton(projectButtonPtr);
+        }
+        else
+        {
+            m_projectsContent = CreateProjectsContent();
+        }
+
+        m_stack->addWidget(m_projectsContent);
+        m_stack->setCurrentWidget(m_projectsContent);
     }
 
     ProjectManagerScreen ProjectsScreen::GetScreenEnum()
@@ -237,7 +316,7 @@ namespace O3DE::ProjectManager
     {
         if (ProjectUtils::AddProjectDialog(this))
         {
-            emit ResetScreenRequest(ProjectManagerScreen::Projects);
+            ResetProjectsContent();
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
     }
@@ -245,38 +324,47 @@ namespace O3DE::ProjectManager
     {
         if (!projectPath.isEmpty())
         {
-            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
-            AZStd::string executableFilename = "Editor";
-            AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
-            auto cmdPath = AZ::IO::FixedMaxPathString::format("%s -regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(), projectPath.toStdString().c_str());
+            if (!WarnIfInBuildQueue(projectPath))
+            {
+                AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+                AZStd::string executableFilename = "Editor";
+                AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+                auto cmdPath = AZ::IO::FixedMaxPathString::format(
+                    "%s -regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
+                    projectPath.toStdString().c_str());
 
-            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = cmdPath;
-            bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
-            if (!launchSucceeded)
-            {
-                AZ_Error("ProjectManager", false, "Failed to launch editor");
-                QMessageBox::critical( this, tr("Error"), tr("Failed to launch the Editor, please verify the project settings are valid."));
-            }
-            else
-            {
-                // prevent the user from accidentally pressing the button while the editor is launching
-                // and let them know what's happening
-                ProjectButton* button = qobject_cast<ProjectButton*>(sender());
-                if (button)
+                AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+                processLaunchInfo.m_commandlineParameters = cmdPath;
+                bool launchSucceeded = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
+                if (!launchSucceeded)
                 {
-                    button->SetButtonEnabled(false);
-                    button->SetButtonOverlayText(tr("Opening Editor..."));
+                    AZ_Error("ProjectManager", false, "Failed to launch editor");
+                    QMessageBox::critical(
+                        this, tr("Error"), tr("Failed to launch the Editor, please verify the project settings are valid."));
                 }
+                else
+                {
+                    // prevent the user from accidentally pressing the button while the editor is launching
+                    // and let them know what's happening
+                    ProjectButton* button = qobject_cast<ProjectButton*>(sender());
+                    if (button)
+                    {
+                        button->SetLaunchButtonEnabled(false);
+                        button->SetButtonOverlayText(tr("Opening Editor..."));
+                    }
 
-                // enable the button after 3 seconds 
-                constexpr int waitTimeInMs = 3000;
-                QTimer::singleShot(waitTimeInMs, this, [this, button] {
-                        if (button)
+                    // enable the button after 3 seconds
+                    constexpr int waitTimeInMs = 3000;
+                    QTimer::singleShot(
+                        waitTimeInMs, this,
+                        [this, button]
                         {
-                            button->SetButtonEnabled(true);
-                        }
-                    });
+                            if (button)
+                            {
+                                button->SetLaunchButtonEnabled(true);
+                            }
+                        });
+                }
             }
         }
         else
@@ -288,38 +376,90 @@ namespace O3DE::ProjectManager
     }
     void ProjectsScreen::HandleEditProject(const QString& projectPath)
     {
-        emit NotifyCurrentProject(projectPath);
-        emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
+        if (!WarnIfInBuildQueue(projectPath))
+        {
+            emit NotifyCurrentProject(projectPath);
+            emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
+        }
     }
     void ProjectsScreen::HandleCopyProject(const QString& projectPath)
     {
-        // Open file dialog and choose location for copied project then register copy with O3DE
-        if (ProjectUtils::CopyProjectDialog(projectPath, this))
+        if (!WarnIfInBuildQueue(projectPath))
         {
-            emit ResetScreenRequest(ProjectManagerScreen::Projects);
-            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+            // Open file dialog and choose location for copied project then register copy with O3DE
+            if (ProjectUtils::CopyProjectDialog(projectPath, this))
+            {
+                ResetProjectsContent();
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+            }
         }
     }
     void ProjectsScreen::HandleRemoveProject(const QString& projectPath)
     {
-        // Unregister Project from O3DE and reload projects
-        if (ProjectUtils::UnregisterProject(projectPath))
+        if (!WarnIfInBuildQueue(projectPath))
         {
-            emit ResetScreenRequest(ProjectManagerScreen::Projects);
-            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+            // Unregister Project from O3DE and reload projects
+            if (ProjectUtils::UnregisterProject(projectPath))
+            {
+                ResetProjectsContent();
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+            }
         }
     }
     void ProjectsScreen::HandleDeleteProject(const QString& projectPath)
     {
-        QMessageBox::StandardButton warningResult = QMessageBox::warning(
-            this, tr("Delete Project"), tr("Are you sure?\nProject will be removed from O3DE and directory will be deleted!"),
-            QMessageBox::No | QMessageBox::Yes);
-
-        if (warningResult == QMessageBox::Yes)
+        if (!WarnIfInBuildQueue(projectPath))
         {
-            // Remove project from O3DE and delete from disk
-            HandleRemoveProject(projectPath);
-            ProjectUtils::DeleteProjectFiles(projectPath);
+            QMessageBox::StandardButton warningResult = QMessageBox::warning(this,
+                tr("Delete Project"),
+                tr("Are you sure?\nProject will be unregistered from O3DE and project directory will be deleted from your disk."),
+                QMessageBox::No | QMessageBox::Yes);
+
+            if (warningResult == QMessageBox::Yes)
+            {
+                // Remove project from O3DE and delete from disk
+                HandleRemoveProject(projectPath);
+                ProjectUtils::DeleteProjectFiles(projectPath);
+            }
+        }
+    }
+
+    void ProjectsScreen::SuggestBuildProject(const ProjectInfo& projectInfo)
+    {
+        if (projectInfo.m_needsBuild)
+        {
+            if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end())
+            {
+                m_requiresBuild.append(projectInfo);
+            }
+            ResetProjectsContent();
+        }
+        else
+        {
+            QMessageBox::information(this,
+                tr("Project Should be rebuilt."),
+                projectInfo.m_projectName + tr(" project likely needs to be rebuilt."));
+        }
+    }
+
+    void ProjectsScreen::QueueBuildProject(const ProjectInfo& projectInfo)
+    {
+        auto requiredIter = RequiresBuildProjectIterator(projectInfo.m_path);
+        if (requiredIter != m_requiresBuild.end())
+        {
+            m_requiresBuild.erase(requiredIter);
+        }
+
+        if (!BuildQueueContainsProject(projectInfo.m_path))
+        {
+            if (m_buildQueue.empty() && !m_currentBuilder)
+            {
+                StartProjectBuild(projectInfo);
+            }
+            else
+            {
+                m_buildQueue.append(projectInfo);
+            }
         }
     }
 
@@ -331,17 +471,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            // refresh the projects content by re-creating it for now
-            if (m_projectsContent)
-            {
-                m_stack->removeWidget(m_projectsContent);
-                m_projectsContent->deleteLater();
-            }
-
-            m_projectsContent = CreateProjectsContent();
-
-            m_stack->addWidget(m_projectsContent);
-            m_stack->setCurrentWidget(m_projectsContent);
+            ResetProjectsContent();
         }
     }
 
@@ -361,6 +491,91 @@ namespace O3DE::ProjectManager
         }
 
         return displayFirstTimeContent;
+    }
+
+    void ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
+    {
+        if (ProjectUtils::IsVS2019Installed())
+        {
+            QMessageBox::StandardButton buildProject = QMessageBox::information(
+                this,
+                tr("Building \"%1\"").arg(projectInfo.m_projectName),
+                tr("Ready to build \"%1\"?").arg(projectInfo.m_projectName),
+                QMessageBox::No | QMessageBox::Yes);
+
+            if (buildProject == QMessageBox::Yes)
+            {
+                m_currentBuilder = new ProjectBuilderController(projectInfo, nullptr, this);
+                ResetProjectsContent();
+                connect(m_currentBuilder, &ProjectBuilderController::Done, this, &ProjectsScreen::ProjectBuildDone);
+
+                m_currentBuilder->Start();
+            }
+            else
+            {
+                ProjectBuildDone();
+            }
+        }
+    }
+
+    void ProjectsScreen::ProjectBuildDone()
+    {
+        delete m_currentBuilder;
+        m_currentBuilder = nullptr;
+
+        if (!m_buildQueue.empty())
+        {
+            StartProjectBuild(m_buildQueue.front());
+            m_buildQueue.pop_front();
+        }
+        else
+        {
+            ResetProjectsContent();
+        }
+    }
+
+    QList<ProjectInfo>::iterator ProjectsScreen::RequiresBuildProjectIterator(const QString& projectPath)
+    {
+        QString nativeProjPath(QDir::toNativeSeparators(projectPath));
+        auto projectIter = m_requiresBuild.begin();
+        for (; projectIter != m_requiresBuild.end(); ++projectIter)
+        {
+            if (QDir::toNativeSeparators(projectIter->m_path) == nativeProjPath)
+            {
+                break;
+            }
+        }
+
+        return projectIter;
+    }
+
+    bool ProjectsScreen::BuildQueueContainsProject(const QString& projectPath)
+    {
+        QString nativeProjPath(QDir::toNativeSeparators(projectPath));
+        for (const ProjectInfo& project : m_buildQueue)
+        {
+            if (QDir::toNativeSeparators(project.m_path) == nativeProjPath)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool ProjectsScreen::WarnIfInBuildQueue(const QString& projectPath)
+    {
+        if (BuildQueueContainsProject(projectPath))
+        {
+            QMessageBox::warning(
+                this,
+                tr("Action Temporarily Disabled!"),
+                tr("Action not allowed on projects in build queue."));
+
+            return true;
+        }
+
+        return false;
     }
 
 } // namespace O3DE::ProjectManager

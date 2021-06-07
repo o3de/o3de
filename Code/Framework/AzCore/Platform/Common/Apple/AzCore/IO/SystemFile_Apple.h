@@ -14,6 +14,9 @@
 #include <sys/syslimits.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
+#include <AzCore/std/typetraits/underlying_type.h>
 
 namespace AZ
 {

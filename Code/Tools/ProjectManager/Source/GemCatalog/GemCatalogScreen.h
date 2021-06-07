@@ -14,6 +14,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
 #include <GemCatalog/GemListView.h>
 #include <GemCatalog/GemInspector.h>
@@ -40,6 +41,7 @@ namespace O3DE::ProjectManager
         GemListView* m_gemListView = nullptr;
         GemInspector* m_gemInspector = nullptr;
         GemModel* m_gemModel = nullptr;
+        GemCatalogHeaderWidget* m_headerWidget = nullptr;
         GemSortFilterProxyModel* m_proxModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;

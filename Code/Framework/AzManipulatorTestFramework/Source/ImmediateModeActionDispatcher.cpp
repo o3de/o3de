@@ -10,8 +10,8 @@
  *
  */
 
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
@@ -33,8 +33,7 @@ namespace AzManipulatorTestFramework
     using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
     using MouseInteractionEvent = AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
-    ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(
-        ManipulatorViewportInteraction& viewportManipulatorInteraction)
+    ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(ManipulatorViewportInteraction& viewportManipulatorInteraction)
         : m_viewportManipulatorInteraction(viewportManipulatorInteraction)
     {
     }
@@ -126,8 +125,7 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::EnterComponentModeImpl(const AZ::Uuid& uuid)
     {
         using AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus;
-        ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType, uuid);
+        ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType, uuid);
     }
 
     const AzToolsFramework::ViewportInteraction::MouseInteractionEvent* ImmediateModeActionDispatcher::GetMouseInteractionEvent() const
@@ -144,8 +142,7 @@ namespace AzManipulatorTestFramework
 
     AzToolsFramework::ViewportInteraction::MouseInteractionEvent* ImmediateModeActionDispatcher::GetMouseInteractionEvent()
     {
-        return const_cast<MouseInteractionEvent*>(
-            static_cast<const ImmediateModeActionDispatcher*>(this)->GetMouseInteractionEvent());
+        return const_cast<MouseInteractionEvent*>(static_cast<const ImmediateModeActionDispatcher*>(this)->GetMouseInteractionEvent());
     }
 
     ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::ExpectTrue(bool result)
@@ -162,8 +159,7 @@ namespace AzManipulatorTestFramework
         return this;
     }
 
-    ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetEntityWorldTransform(
-        AZ::EntityId entityId, AZ::Transform& transform)
+    ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetEntityWorldTransform(AZ::EntityId entityId, AZ::Transform& transform)
     {
         Log("Getting entity world transform");
         transform = AzToolsFramework::GetWorldTransform(entityId);
