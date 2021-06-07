@@ -62,11 +62,11 @@ namespace AZ
             //! [GFX TODO][ATOM-4343 Bake mesh spatial during AP processing]
             //!
             //! @param rayStart  position where the ray starts
-            //! @param dir  direction where the ray ends (does not have to be unit length)
-            //! @param distanceFactor  if an intersection is detected, this will be set such that distanceFactor * dir.length == distance to intersection
+            //! @param rayDir  direction where the ray ends (does not have to be unit length)
+            //! @param distanceNormalized  if an intersection is detected, this will be set such that distanceNormalized * dir.length == distance to intersection
             //! @param normal  if an intersection is detected, this will be set to the normal at the point of intersection
             //! @return  true if the ray intersects the mesh
-            bool LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distanceFactor, AZ::Vector3& normal) const;
+            bool LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
 
             //! Checks a ray for intersection against this model, where the ray is in a different coordinate space.
             //! Important: only to be used in the Editor, it may kick off a job to calculate spatial information.
@@ -75,12 +75,17 @@ namespace AZ
             //! @param modelTransform  a transform that puts the model into the ray's coordinate space
             //! @param nonUniformScale  Non-uniform scale applied in the model's local frame.
             //! @param rayStart  position where the ray starts
-            //! @param dir  direction where the ray ends (does not have to be unit length)
-            //! @param distanceFactor  if an intersection is detected, this will be set such that distanceFactor * dir.length == distance to intersection
+            //! @param rayDir  direction where the ray ends (does not have to be unit length)
+            //! @param distanceNormalized  if an intersection is detected, this will be set such that distanceNormalized * dir.length == distance to intersection
             //! @param normal  if an intersection is detected, this will be set to the normal at the point of intersection
             //! @return  true if the ray intersects the mesh
-            bool RayIntersection(const AZ::Transform& modelTransform, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayStart,
-                const AZ::Vector3& dir, float& distanceFactor, AZ::Vector3& normal) const;
+            bool RayIntersection(
+                const AZ::Transform& modelTransform,
+                const AZ::Vector3& nonUniformScale,
+                const AZ::Vector3& rayStart,
+                const AZ::Vector3& rayDir,
+                float& distanceNormalized,
+                AZ::Vector3& normal) const;
 
             //! Get available UV names from the model and its lods.
             const AZStd::unordered_set<AZ::Name>& GetUvNames() const;
