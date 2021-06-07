@@ -384,7 +384,9 @@ namespace O3DE::ProjectManager
                 engineInfo.m_defaultProjectsFolder = Py_To_String(o3deData["default_projects_folder"]);
                 engineInfo.m_defaultRestrictedFolder = Py_To_String(o3deData["default_restricted_folder"]);
                 engineInfo.m_defaultTemplatesFolder = Py_To_String(o3deData["default_templates_folder"]);
-                engineInfo.m_thirdPartyPath = Py_To_String(o3deData["default_third_party_folder"]);
+
+                pybind11::str defaultThirdPartyFolder = m_manifest.attr("get_o3de_third_party_folder")();
+                engineInfo.m_thirdPartyPath = Py_To_String_Optional(o3deData,"default_third_party_folder", Py_To_String(defaultThirdPartyFolder));
             }
 
             auto engineData = m_manifest.attr("get_engine_json_data")(pybind11::none(), enginePath);
@@ -667,7 +669,7 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_path = Py_To_String(path);
-        projectInfo.m_isNew = false;
+        projectInfo.m_needsBuild = false;
 
         auto projectData = m_manifest.attr("get_project_json_data")(pybind11::none(), path);
         if (pybind11::isinstance<pybind11::dict>(projectData))

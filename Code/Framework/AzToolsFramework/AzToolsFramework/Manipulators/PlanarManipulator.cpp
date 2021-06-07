@@ -1,14 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #include "PlanarManipulator.h"
 
@@ -22,12 +22,15 @@
 namespace AzToolsFramework
 {
     PlanarManipulator::StartInternal PlanarManipulator::CalculateManipulationDataStart(
-        const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform,
-        const ViewportInteraction::MouseInteraction& interaction, const float intersectionDistance)
+        const Fixed& fixed,
+        const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Transform& localTransform,
+        const ViewportInteraction::MouseInteraction& interaction,
+        const float intersectionDistance)
     {
-        const ManipulatorInteraction manipulatorInteraction =
-            BuildManipulatorInteraction(
-                worldFromLocal, nonUniformScale, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
+        const ManipulatorInteraction manipulatorInteraction = BuildManipulatorInteraction(
+            worldFromLocal, nonUniformScale, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
 
         const AZ::Vector3 normal = TransformDirectionNoScaling(localTransform, fixed.m_normal);
 
@@ -37,8 +40,8 @@ namespace AzToolsFramework
 
         StartInternal startInternal;
         Internal::CalculateRayPlaneIntersectingPoint(
-            manipulatorInteraction.m_localRayOrigin, manipulatorInteraction.m_localRayDirection,
-            localIntersectionPoint, normal, startInternal.m_localHitPosition);
+            manipulatorInteraction.m_localRayOrigin, manipulatorInteraction.m_localRayDirection, localIntersectionPoint, normal,
+            startInternal.m_localHitPosition);
 
         startInternal.m_localPosition = localTransform.GetTranslation();
 
@@ -46,13 +49,16 @@ namespace AzToolsFramework
     }
 
     PlanarManipulator::Action PlanarManipulator::CalculateManipulationDataAction(
-        const Fixed& fixed, const StartInternal& startInternal, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
-        const AZ::Transform& localTransform, const GridSnapParameters& gridSnapParams,
+        const Fixed& fixed,
+        const StartInternal& startInternal,
+        const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& nonUniformScale,
+        const AZ::Transform& localTransform,
+        const GridSnapParameters& gridSnapParams,
         const ViewportInteraction::MouseInteraction& interaction)
     {
-        const ManipulatorInteraction manipulatorInteraction =
-            BuildManipulatorInteraction(
-                worldFromLocal, nonUniformScale, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
+        const ManipulatorInteraction manipulatorInteraction = BuildManipulatorInteraction(
+            worldFromLocal, nonUniformScale, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection);
 
         const AZ::Vector3 normal = TransformDirectionNoScaling(localTransform, fixed.m_normal);
 
@@ -61,8 +67,8 @@ namespace AzToolsFramework
         // if an invalid ray intersection is attempted
         AZ::Vector3 localHitPosition = startInternal.m_localHitPosition;
         Internal::CalculateRayPlaneIntersectingPoint(
-            manipulatorInteraction.m_localRayOrigin, manipulatorInteraction.m_localRayDirection,
-            startInternal.m_localHitPosition, normal, localHitPosition);
+            manipulatorInteraction.m_localRayOrigin, manipulatorInteraction.m_localRayDirection, startInternal.m_localHitPosition, normal,
+            localHitPosition);
 
         localHitPosition = Internal::TryConstrainHitPositionToView(
             localHitPosition, startInternal.m_localHitPosition, worldFromLocal.GetInverse(),
@@ -126,8 +132,8 @@ namespace AzToolsFramework
         const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
 
         m_startInternal = CalculateManipulationDataStart(
-            m_fixed, worldFromLocalUniformScale, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()),
-            interaction, rayIntersectionDistance);
+            m_fixed, worldFromLocalUniformScale, GetNonUniformScale(), TransformNormalizedScale(GetLocalTransform()), interaction,
+            rayIntersectionDistance);
 
         if (m_onLeftMouseDownCallback)
         {
@@ -180,9 +186,10 @@ namespace AzToolsFramework
 
                 // display the exact hit (ray intersection) of the mouse pick on the manipulator
                 DrawTransformAxes(
-                    debugDisplay, TransformUniformScale(GetSpace()) *
-                    AZ::Transform::CreateTranslation(
-                        action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localOffset));
+                    debugDisplay,
+                    TransformUniformScale(GetSpace()) *
+                        AZ::Transform::CreateTranslation(
+                            action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localOffset));
             }
 
             AZ::Transform combined = GetLocalTransform();
@@ -191,23 +198,16 @@ namespace AzToolsFramework
 
             DrawTransformAxes(debugDisplay, combined);
 
-            DrawAxis(
-                debugDisplay, combined.GetTranslation(),
-                TransformDirectionNoScaling(GetLocalTransform(), m_fixed.m_axis1));
-            DrawAxis(
-                debugDisplay, combined.GetTranslation(),
-                TransformDirectionNoScaling(GetLocalTransform(), m_fixed.m_axis2));
+            DrawAxis(debugDisplay, combined.GetTranslation(), TransformDirectionNoScaling(GetLocalTransform(), m_fixed.m_axis1));
+            DrawAxis(debugDisplay, combined.GetTranslation(), TransformDirectionNoScaling(GetLocalTransform(), m_fixed.m_axis2));
         }
 
         for (auto& view : m_manipulatorViews)
         {
             view->Draw(
-                GetManipulatorManagerId(), managerState,
-                GetManipulatorId(), {
-                    ApplySpace(GetLocalTransform()), GetNonUniformScale(),
-                    AZ::Vector3::CreateZero(), MouseOver()
-                },
-                debugDisplay, cameraState, mouseInteraction);
+                GetManipulatorManagerId(), managerState, GetManipulatorId(),
+                { ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 
