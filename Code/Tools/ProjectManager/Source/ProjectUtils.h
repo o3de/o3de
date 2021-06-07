@@ -25,6 +25,9 @@ namespace O3DE::ProjectManager
         bool CopyProject(const QString& origPath, const QString& newPath);
         bool DeleteProjectFiles(const QString& path, bool force = false);
         bool MoveProject(const QString& origPath, const QString& newPath, QWidget* parent = nullptr);
+
+        bool IsVS2019Installed();
+
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

@@ -20,7 +20,7 @@
 
 namespace AzToolsFramework
 {
-    struct GridSnapAction;
+    struct GridSnapParameters;
 
     /// LinearManipulator serves as a visual tool for users to modify values
     /// in one dimension on an axis defined in 3D space.
@@ -68,8 +68,6 @@ namespace AzToolsFramework
             AZ::Vector3 m_localScale; ///< The current scale of the manipulator in local space.
             AZ::Vector3 m_localHitPosition; ///< The intersection point in local space between the ray and the manipulator when the mouse down event happens.
             AZ::Vector3 m_localAxis; ///< The axis in the local space of the manipulator itself.
-            AZ::Vector3 m_positionSnapOffset; ///< The snap offset amount to ensure manipulator is aligned to the grid.
-            AZ::Vector3 m_scaleSnapOffset; ///< The snap offset amount to ensure manipulator is aligned to round scale increments.
             float m_sign; ///< Used to determine which side of the axis we clicked on in case it's flipped to face the camera.
             AzFramework::ScreenPoint m_screenPosition; ///< The initial position in screen space of the manipulator.
         };
@@ -91,7 +89,7 @@ namespace AzToolsFramework
             ViewportInteraction::KeyboardModifiers m_modifiers;
             int m_viewportId; ///< The id of the viewport this manipulator is being used in.
             AZ::Vector3 LocalScale() const { return m_start.m_localScale + m_current.m_localScaleOffset; }
-            AZ::Vector3 LocalScaleOffset() const { return m_start.m_scaleSnapOffset + m_current.m_localScaleOffset; }
+            AZ::Vector3 LocalScaleOffset() const { return m_current.m_localScaleOffset; }
             AZ::Vector3 LocalPosition() const { return m_start.m_localPosition + m_current.m_localPositionOffset; }
             AZ::Vector3 LocalPositionOffset() const { return m_current.m_localPositionOffset; }
             AZ::Vector2 ScreenOffset() const
@@ -162,11 +160,11 @@ namespace AzToolsFramework
 
     LinearManipulator::Starter CalculateLinearManipulationDataStart(
         const LinearManipulator::Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale,
-        const AZ::Transform& localTransform, const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction,
-        float intersectionDistance, const AzFramework::CameraState& cameraState);
+        const AZ::Transform& localTransform, const ViewportInteraction::MouseInteraction& interaction, float intersectionDistance,
+        const AzFramework::CameraState& cameraState);
 
     LinearManipulator::Action CalculateLinearManipulationDataAction(
         const LinearManipulator::Fixed& fixed, const LinearManipulator::Starter& starter,
         const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale, const AZ::Transform& localTransform,
-        const GridSnapAction& gridSnapAction, const ViewportInteraction::MouseInteraction& interaction);
+        const GridSnapParameters& gridSnapParams, const ViewportInteraction::MouseInteraction& interaction);
 } // namespace AzToolsFramework

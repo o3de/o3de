@@ -263,9 +263,9 @@ namespace Multiplayer
         // Validate that we aren't already planning to remove this entity
         if (safeToExit)
         {
-            for (auto entityId : m_removeList)
+            for (auto remoteEntityId : m_removeList)
             {
-                if (entityId == entityId)
+                if (remoteEntityId == remoteEntityId)
                 {
                     safeToExit = false;
                 }

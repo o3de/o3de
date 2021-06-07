@@ -914,22 +914,39 @@ namespace AZ
                 {
                     // make sure to only import the resource one time
                     RHI::AttachmentId attachmentId = attachment->GetAttachmentId();
-                    if (!attachmentDatabase.IsAttachmentValid(attachmentId))
+                    const RHI::FrameAttachment* currentAttachment = attachmentDatabase.FindAttachment(attachmentId);
+
+                    if (azrtti_istypeof<Image>(attachment->m_importedResource.get()))
                     {
-                        if (azrtti_istypeof<Image>(attachment->m_importedResource.get()))
+                        Image* image = static_cast<Image*>(attachment->m_importedResource.get());
+                        if (currentAttachment == nullptr)
                         {
-                            Image* image = static_cast<Image*>(attachment->m_importedResource.get());
                             attachmentDatabase.ImportImage(attachmentId, image->GetRHIImage());
                         }
-                        else if (azrtti_istypeof<Buffer>(attachment->m_importedResource.get()))
+                        else
                         {
-                            Buffer* buffer = static_cast<Buffer*>(attachment->m_importedResource.get());
+                            AZ_Assert(currentAttachment->GetResource() == image->GetRHIImage(),
+                                "Importing image attachment named \"%s\" but a different attachment with the "
+                                "same name already exists in the database.\n", attachmentId.GetCStr());
+                        }
+                    }
+                    else if (azrtti_istypeof<Buffer>(attachment->m_importedResource.get()))
+                    {
+                        Buffer* buffer = static_cast<Buffer*>(attachment->m_importedResource.get());
+                        if (currentAttachment == nullptr)
+                        {
                             attachmentDatabase.ImportBuffer(attachmentId, buffer->GetRHIBuffer());
                         }
                         else
                         {
-                            AZ_RPI_PASS_ERROR(false, "Can't import unknown resource type");
+                            AZ_Assert(currentAttachment->GetResource() == buffer->GetRHIBuffer(),
+                                "Importing buffer attachment named \"%s\" but a different attachment with the "
+                                "same name already exists in the database.\n", attachmentId.GetCStr());
                         }
+                    }
+                    else
+                    {
+                        AZ_RPI_PASS_ERROR(false, "Can't import unknown resource type");
                     }
                 }
             }
