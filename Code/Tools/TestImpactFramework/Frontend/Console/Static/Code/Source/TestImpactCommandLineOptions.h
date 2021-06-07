@@ -64,8 +64,8 @@ namespace TestImpact
         //! Returns the test execution failure policy to use.
         Policy::ExecutionFailure GetExecutionFailurePolicy() const;
 
-        //! Returns the test historic test execution failure drafting policy to use.
-        Policy::ExecutionFailureDrafting GetExecutionFailureDraftingPolicy() const;
+        //! Returns failed test coverage drafting policy to use.
+        Policy::FailedTestCoverage GetFailedTestCoveragePolicy() const;
 
         //! Returns the test failure policy to use.
         Policy::TestFailure GetTestFailurePolicy() const;
@@ -98,7 +98,7 @@ namespace TestImpact
         TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
-        Policy::ExecutionFailureDrafting m_executionFailureDraftingPolicy = Policy::ExecutionFailureDrafting::Always;
+        Policy::FailedTestCoverage m_failedTestCoveragePolicy = Policy::FailedTestCoverage::Keep;
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
         Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;

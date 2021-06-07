@@ -205,7 +205,7 @@ namespace TestImpact
                     RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
                     options.GetSuiteFilter(),
                     options.GetExecutionFailurePolicy(),
-                    options.GetExecutionFailureDraftingPolicy(),
+                    options.GetFailedTestCoveragePolicy(),
                     options.GetTestFailurePolicy(),
                     options.GetIntegrityFailurePolicy(),
                     options.GetTestShardingPolicy(),

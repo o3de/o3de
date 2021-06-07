@@ -31,11 +31,11 @@ namespace TestImpact
             Ignore //!< Continue the test sequence and ignore the execution failures.
         };
 
-        //! Policy for reattempting the execution of test targets that failed to execute in previous runs.
-        enum class ExecutionFailureDrafting
+        //! Policy for handling the coverage data of failed tests targets (both test that failed to execute and tests that ran but failed).
+        enum class FailedTestCoverage
         {
-            Never, //!< Do not attempt to execute historic execution failures.
-            Always //!< Reattempt the exectution of historic execution failures.
+            Remove, //!< Remove the failed test targets from the all coverage data (causing them to be drafted into future test runs).
+            Keep //!< Keep any existing coverage data and update the coverage data for failed test targetss that produce coverage.
         };
 
         //! Policy for prioritizing selected tests.

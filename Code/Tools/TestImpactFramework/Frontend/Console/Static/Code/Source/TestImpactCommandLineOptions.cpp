@@ -28,7 +28,7 @@ namespace TestImpact
             Sequence,
             TestPrioritizationPolicy,
             ExecutionFailurePolicy,
-            ExecutionFailureDraftingPolicy,
+            FailedTestCoveragePolicy,
             TestFailurePolicy,
             IntegrityFailurePolicy,
             TestShardingPolicy,
@@ -50,7 +50,9 @@ namespace TestImpact
             Continue,
             Ignore,
             StdOut,
-            File
+            File,
+            Remove,
+            Keep
         };
 
         constexpr const char* OptionKeys[] =
@@ -62,7 +64,7 @@ namespace TestImpact
             "sequence",
             "ppolicy",
             "epolicy",
-            "rexecfailures",
+            "cpolicy",
             "fpolicy",
             "ipolicy",
             "shard",
@@ -84,7 +86,9 @@ namespace TestImpact
             "continue",
             "ignore",
             "stdout",
-            "file"
+            "file",
+            "remove",
+            "keep"
         };
 
         RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
@@ -139,15 +143,15 @@ namespace TestImpact
             return ParseMultiStateOption(OptionKeys[ExecutionFailurePolicy], states, cmd).value_or(Policy::ExecutionFailure::Continue);
         }
 
-        Policy::ExecutionFailureDrafting ParseExecutionFailureDraftingPolicy(const AZ::CommandLine& cmd)
+        Policy::FailedTestCoverage ParseFailedTestCoveragePolicy(const AZ::CommandLine& cmd)
         {
-            const BinaryStateValue<Policy::ExecutionFailureDrafting> states =
+            const AZStd::vector<AZStd::pair<AZStd::string, Policy::FailedTestCoverage>> states =
             {
-                Policy::ExecutionFailureDrafting::Never,
-                Policy::ExecutionFailureDrafting::Always
+                {OptionKeys[Remove], Policy::FailedTestCoverage::Remove},
+                {OptionKeys[Keep], Policy::FailedTestCoverage::Keep}
             };
 
-            return ParseOnOffOption(OptionKeys[ExecutionFailureDraftingPolicy], states, cmd).value_or(Policy::ExecutionFailureDrafting::Always);
+            return ParseMultiStateOption(OptionKeys[FailedTestCoveragePolicy], states, cmd).value_or(Policy::FailedTestCoverage::Keep);
         }
 
         Policy::TestFailure ParseTestFailurePolicy(const AZ::CommandLine& cmd)
@@ -275,7 +279,7 @@ namespace TestImpact
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
-        m_executionFailureDraftingPolicy = ParseExecutionFailureDraftingPolicy(cmd);
+        m_failedTestCoveragePolicy = ParseFailedTestCoveragePolicy(cmd);
         m_testFailurePolicy = ParseTestFailurePolicy(cmd);
         m_integrityFailurePolicy = ParseIntegrityFailurePolicy(cmd);
         m_testShardingPolicy = ParseTestShardingPolicy(cmd);
@@ -327,9 +331,9 @@ namespace TestImpact
         return m_executionFailurePolicy;
     }
     
-    Policy::ExecutionFailureDrafting CommandLineOptions::GetExecutionFailureDraftingPolicy() const
+    Policy::FailedTestCoverage CommandLineOptions::GetFailedTestCoveragePolicy() const
     {
-        return m_executionFailureDraftingPolicy;
+        return m_failedTestCoveragePolicy;
     }
     
     Policy::TestFailure CommandLineOptions::GetTestFailurePolicy() const
@@ -401,7 +405,11 @@ namespace TestImpact
             "                                                    tests are run regardless).\n"
             "    -shard=<on,off>                                 Break any test targets with a sharding policy into the number of \n"
             "                                                    shards according to the maximum concurrency value.\n"
-            "    -rexecfailures=<on,off>                         Attempt to execute test targets that previously failed to execute.\n"
+            "    -cpolicy=<remove, keep>                         Policy for handling the coverage data of failed tests (both tests that \n"
+            "                                                    failed to execute and tests that ran but failed), where remove will \n"
+            "                                                    remove the failed tests from the all coverage data (causing them to be \n"
+            "                                                    drafted into future test runs) and keep will keep any existing coverage \n"
+            "                                                    data and update the coverage data for failed tests that produce coverage.\n"
             "    -targetout=<sdtout, file>                       Capture of individual test run stdout, where stdout will capture \n"
             "                                                    each individual test target's stdout and output each one to stdout \n"
             "                                                    and file will capture each individual test target's stdout and output \n"
@@ -409,25 +417,25 @@ namespace TestImpact
             "    -epolicy=<abort, continue, ignore>              Policy for handling test execution failure (test targets could not be \n"
             "                                                    launched due to the binary not being built, incorrect paths, etc.), \n"
             "                                                    where abort will abort the entire test sequence upon the first test\n"
-            "                                                    target execution failureand report a failure(along with the return \n"
+            "                                                    target execution failure and report a failure(along with the return \n"
             "                                                    code of the test target that failed to launch), continue will continue \n"
             "                                                    with the test sequence in the event of test target execution failures\n"
             "                                                    and treat the test targets that failed to launch as as test failures\n"
             "                                                    (along with the return codes of the test targets that failed to \n"
             "                                                    launch), ignore will continue with the test sequence in the event of \n"
-            "                                                    test target execution failuresand treat the test targets that failed\n"
-            "                                                    to launch as as test passes(along with the return codes of the test \n"
+            "                                                    test target execution failures and treat the test targets that failed\n"
+            "                                                    to launch as test passes(along with the return codes of the test \n"
             "                                                    targets that failed to launch).\n"
             "    -fpolicy <abort, continue>                      Policy for handling test failures (test targets report failing tests), \n"
-            "                                                    where abort will abort the entire test sequenceupon the first test \n"
-            "                                                    failureand report a failure and continue will continue with the test\n"
-            "                                                    sequence in the event of test failuresand report the test failures.\n"
+            "                                                    where abort will abort the entire test sequence upon the first test \n"
+            "                                                    failure and report a failure and continue will continue with the test\n"
+            "                                                    sequence in the event of test failures and report the test failures.\n"
             "    -ipolicy=<abort, seed, rerun>                   Policy for handling coverage data integrity failures, where abort will \n"
             "                                                    abort the test sequenceand report a failure, seed will attempt another \n"
             "                                                    sequence using the seed sequence type, otherwise will abort and report \n"
-            "                                                    a failure (this option has no effect for regularand seed sequence \n"
+            "                                                    a failure (this option has no effect for regular and seed sequence \n"
             "                                                    types) and rerun will attempt another sequence using the regular \n"
-            "                                                    sequence type, otherwise will abortand report a failure(this option has \n"
+            "                                                    sequence type, otherwise will abort and report a failure(this option has \n"
             "                                                    no effect for regular sequence type).\n"
             "    -ppolicy=<none, locality>                       Policy for prioritizing selected test targets, where none will not \n"
             "                                                    attempt any test target prioritization and locality will attempt to \n"
