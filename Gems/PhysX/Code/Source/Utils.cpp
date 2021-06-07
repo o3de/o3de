@@ -43,6 +43,7 @@
 #include <Source/Joint.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace PhysX
 {
@@ -1438,6 +1439,13 @@ namespace PhysX
 
             GenericJointConfiguration::Reflect(context);
             GenericJointLimitsConfiguration::Reflect(context);
+
+            D6ApiJointLimitConfiguration::Reflect(context);
+            ApiJointGenericProperties::Reflect(context);
+            ApiJointLimitProperties::Reflect(context);
+            FixedApiJointConfiguration::Reflect(context);
+            BallApiJointConfiguration::Reflect(context);
+            HingeApiJointConfiguration::Reflect(context);
         }
 
         void ForceRegionBusBehaviorHandler::Reflect(AZ::ReflectContext* context)
