@@ -90,12 +90,13 @@ def add_parser_args(parser):
                        help='Sets the summary description of the project.')
     group.add_argument('-pi', '--project-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
+    group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Space delimited list (ex. -at A B C)')
     group.add_argument('-dt', '--delete-tags', type=str, nargs ='*', required=False,
                        help='Removes tag(s) from the user_tags property. Space delimited list (ex. -dt A B C')
     group.add_argument('-rt', '--replace-tags', type=str, nargs ='*', required=False,
-                       help='Replace entirety of user_tags proeprty with space delimited list of values')
+                       help='Replace entirety of user_tags property with space delimited list of values')
     parser.set_defaults(func=_edit_project_props)
 
 def add_args(subparsers) -> None:
