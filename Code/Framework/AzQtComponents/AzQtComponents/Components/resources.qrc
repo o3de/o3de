@@ -548,7 +548,7 @@
     <file>img/UI20/spinbox-up-arrow.png</file>
     <file>img/UI20/resolution.svg</file>
     <file>img/UI20/debug.svg</file>
-    <file>img/UI20/Camera.svg</file>
+    <file>img/UI20/Camera-Menu.svg</file>
 </qresource>
 <qresource prefix="/Breadcrumb">
     <file>img/UI20/Breadcrumb/Next_level_arrow.svg</file>
