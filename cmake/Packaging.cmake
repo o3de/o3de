@@ -16,8 +16,9 @@ endif()
 # public facing options will be used for conversion into cpack specific ones below.
 set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embedded into the installer to download additional artifacts")
 set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
-set(LY_INSTALLER_UPLOAD_URL "" CACHE STRING "URL used to automatically upload the artifacts.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>")
-set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING "AWS CLI profile for uploading artifacts.  You can also use LY_INSTALLER_AWS_PROFILE environment variable.")
+set(LY_INSTALLER_UPLOAD_URL "" CACHE STRING
+    "URL used to automatically upload the artifacts.  Can also be set via LY_INSTALLER_UPLOAD_URL environment variable.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>")
+set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING "AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable.")
 
 set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 
@@ -119,6 +120,10 @@ function(strip_trailing_slash in_url out_url)
 endfunction()
 
 set(_versioned_target_url_tag ${LY_VERSION_STRING}/${PAL_HOST_PLATFORM_NAME})
+
+if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
+    set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
+endif()
 
 if(LY_INSTALLER_UPLOAD_URL)
     ly_is_s3_url(${LY_INSTALLER_UPLOAD_URL} _is_s3_bucket)
