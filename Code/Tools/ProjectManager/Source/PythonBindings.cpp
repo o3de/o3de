@@ -53,7 +53,6 @@ namespace Platform
 
 #define Py_To_String(obj) obj.cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
-#define Py_To_List(obj) obj.cast<std::list()<std::string>>
 
 namespace RedirectOutput
 {
