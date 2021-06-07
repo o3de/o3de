@@ -56,7 +56,7 @@ namespace TestImpact
         for (const auto& target : m_testTargets.GetTargets())
         {
             mapBuildTargetSources(&target);
-            m_testTargetSourceCoverageCount[&target] = 0;
+            m_testTargetSourceCoverage[&target] = {};
         }
     }
 
@@ -144,18 +144,15 @@ namespace TestImpact
                     sourceCoverage.GetPath().c_str()).c_str());
 
             auto [sourceDependencyIt, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
-            auto& [key, sourceDependency] = *sourceDependencyIt;
+            auto& [source, sourceDependency] = *sourceDependencyIt;
 
-            // Knock down the source coverage count for the test targets and clear any existing coverage for the delta
+            // Remove the source from the test target covering sources map and clear any existing coverage for the delta
             for (const auto& testTarget : sourceDependency.m_coveringTestTargets)
             {
-                if (auto coveringTestTargetIt = m_testTargetSourceCoverageCount.find(testTarget);
-                    coveringTestTargetIt != m_testTargetSourceCoverageCount.end())
+                if (auto coveringTestTargetIt = m_testTargetSourceCoverage.find(testTarget);
+                    coveringTestTargetIt != m_testTargetSourceCoverage.end())
                 {
-                    if (coveringTestTargetIt->second > 0)
-                    {
-                        coveringTestTargetIt->second--;
-                    }
+                    coveringTestTargetIt->second.erase(source);
                 }
             }
             sourceDependency.m_coveringTestTargets.clear();
@@ -169,8 +166,8 @@ namespace TestImpact
                     // Source to covering test target mapping
                     sourceDependency.m_coveringTestTargets.insert(testTarget);
 
-                    // Test target covering sources count
-                    m_testTargetSourceCoverageCount[testTarget]++;
+                    // Add the source to the test target covering sources map
+                    m_testTargetSourceCoverage[testTarget].insert(source);
 
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
@@ -429,12 +426,33 @@ namespace TestImpact
         return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
 
+    void DynamicDependencyMap::RemoveTestTargetFromSourceCoverage(const TestTarget* testTarget)
+    {
+        if (const auto& it = m_testTargetSourceCoverage.find(testTarget);
+            it != m_testTargetSourceCoverage.end())
+        {
+            for (const auto& source : it->second)
+            {
+                const auto sourceDependency = m_sourceDependencyMap.find(source);
+                AZ_TestImpact_Eval(
+                    sourceDependency != m_sourceDependencyMap.end(),
+                    DependencyException,
+                    AZStd::string::format("Test target '%s' has covering source '%s' yet cannot be found in the dependency map",
+                        testTarget->GetName().c_str(), source.c_str()));
+
+                sourceDependency->second.m_coveringTestTargets.erase(testTarget);
+            }
+
+            m_testTargetSourceCoverage.erase(testTarget);
+        }
+    }
+
     AZStd::vector<const TestTarget*> DynamicDependencyMap::GetCoveringTests() const
     {
         AZStd::vector<const TestTarget*> covering;
-        for (const auto& [testTarget, coveringSources] : m_testTargetSourceCoverageCount)
+        for (const auto& [testTarget, coveringSources] : m_testTargetSourceCoverage)
         {
-            if (coveringSources > 0)
+            if (!coveringSources.empty())
             {
                 covering.push_back(testTarget);
             }
@@ -446,9 +464,9 @@ namespace TestImpact
     AZStd::vector<const TestTarget*> DynamicDependencyMap::GetNotCoveringTests() const
     {
         AZStd::vector<const TestTarget*> notCovering;
-        for(const auto& [testTarget, coveringSources] : m_testTargetSourceCoverageCount)
+        for(const auto& [testTarget, coveringSources] : m_testTargetSourceCoverage)
         {
-            if(coveringSources == 0)
+            if (coveringSources.empty())
             {
                 notCovering.push_back(testTarget);
             }

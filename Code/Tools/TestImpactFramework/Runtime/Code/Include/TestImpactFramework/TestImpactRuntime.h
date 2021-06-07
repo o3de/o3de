@@ -35,6 +35,7 @@ namespace TestImpact
     class TestEngine;
     class TestTarget;
     class SourceCoveringTestsList;
+    class TestEngineInstrumentedRun;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @param tests The tests that will be run for this sequence.
@@ -102,7 +103,7 @@ namespace TestImpact
             RuntimeConfig&& config,
             SuiteType suiteFilter,
             Policy::ExecutionFailure executionFailurePolicy,
-            Policy::ExecutionFailureDrafting executionFailureDraftingPolicy,
+            Policy::FailedTestCoverage failedTestCoveragePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::IntegrityFailure integrationFailurePolicy,
             Policy::TestSharding testShardingPolicy,
@@ -204,13 +205,13 @@ namespace TestImpact
         void ClearDynamicDependencyMapAndRemoveExistingFile();
 
         //! Updates the dynamic dependency map and serializes the entire map to disk.
-        void UpdateAndSerializeDynamicDependencyMap(const SourceCoveringTestsList& sourceCoverageTestsList);
+        void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
 
         RuntimeConfig m_config;
         SuiteType m_suiteFilter;
         RepoPath m_sparTIAFile;
         Policy::ExecutionFailure m_executionFailurePolicy;
-        Policy::ExecutionFailureDrafting m_executionFailureDraftingPolicy;
+        Policy::FailedTestCoverage m_failedTestCoveragePolicy;
         Policy::TestFailure m_testFailurePolicy;
         Policy::IntegrityFailure m_integrationFailurePolicy;
         Policy::TestSharding m_testShardingPolicy;
