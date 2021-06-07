@@ -123,8 +123,29 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     m_oMuteAudioRequest.pData = &m_oMuteAudioRequestData;
     m_oUnmuteAudioRequest.pData = &m_oUnmuteAudioRequestData;
 
-    auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
+    SetupCameraDropdownMenu();
+    SetupResolutionDropdownMenu();
+    SetupViewportInformationMenu();
+    SetupOverflowMenu();
 
+    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+
+    connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
+
+    AZ::VR::VREventBus::Handler::BusConnect();
+
+    OnInitDialog();
+}
+
+CViewportTitleDlg::~CViewportTitleDlg()
+{
+    AZ::VR::VREventBus::Handler::BusDisconnect();
+    GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
+    GetIEditor()->UnregisterNotifyListener(this);
+}
+
+void CViewportTitleDlg::SetupCameraDropdownMenu()
+{
     // Setup the camera dropdown menu
     QMenu* cameraMenu = new QMenu(this);
     cameraMenu->addMenu(GetFovMenu());
@@ -162,25 +183,37 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
         m_cameraSpeed->addItem(QString().setNum(presetValue, 'f', m_numDecimals), presetValue);
     }
 
+    auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
+
     SetSpeedComboBox(cameraMoveSpeed);
     m_cameraSpeed->setInsertPolicy(QComboBox::NoInsert);
     connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
     connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 
     cameraMenu->addAction(cameraSpeedActionWidget);
+}
 
+void CViewportTitleDlg::SetupResolutionDropdownMenu()
+{
     // Setup the resolution dropdown menu
     QMenu* resolutionMenu = new QMenu(this);
     resolutionMenu->addMenu(GetAspectMenu());
     resolutionMenu->addMenu(GetResolutionMenu());
     m_ui->m_resolutionMenu->setMenu(resolutionMenu);
     m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
+}
 
-    //Setup the debug information button
+void CViewportTitleDlg::SetupViewportInformationMenu()
+{
+    // Setup the debug information button
     m_ui->m_debugInformationMenu->setMenu(GetViewportInformationMenu());
     connect(m_ui->m_debugInformationMenu, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
     m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
 
+}
+
+void CViewportTitleDlg::SetupOverflowMenu()
+{
     // Setup the overflow menu
     QMenu* overFlowMenu = new QMenu(this);
     m_debugHelpersAction = new QAction("Debug Helpers", overFlowMenu);
@@ -212,7 +245,8 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
     m_gridSpinBox->setMinimum(1e-2f);
 
-    QObject::connect(m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
+    QObject::connect(
+        m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
 
     QHBoxLayout* gridSizeLayout = new QHBoxLayout;
     gridSizeLayout->addWidget(gridSizeLabel);
@@ -237,7 +271,8 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     m_angleSpinBox->setMinimum(1e-2f);
 
     QObject::connect(
-        m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnAngleSpinBoxChanged);
+        m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
+        &CViewportTitleDlg::OnAngleSpinBoxChanged);
 
     QHBoxLayout* angleSizeLayout = new QHBoxLayout;
     angleSizeLayout->addWidget(angleSizeLabel);
@@ -246,28 +281,13 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     m_angleSizeActionWidget->setDefaultWidget(angleSizeContainer);
     overFlowMenu->addAction(m_angleSizeActionWidget);
 
-
     m_ui->m_overflowBtn->setMenu(overFlowMenu);
     m_ui->m_overflowBtn->setPopupMode(QToolButton::InstantPopup);
     connect(overFlowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
 
     UpdateMuteActionText();
-
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
-
-    connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
-
-    AZ::VR::VREventBus::Handler::BusConnect();
-
-    OnInitDialog();
 }
 
-CViewportTitleDlg::~CViewportTitleDlg()
-{
-    AZ::VR::VREventBus::Handler::BusDisconnect();
-    GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
-    GetIEditor()->UnregisterNotifyListener(this);
-}
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)

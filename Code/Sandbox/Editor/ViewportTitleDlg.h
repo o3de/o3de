@@ -98,6 +98,10 @@ protected:
     void OnHMDShutdown() override;
     //////////////////////////////////////////////////////////////////////////
 
+    void SetupCameraDropdownMenu();
+    void SetupResolutionDropdownMenu();
+    void SetupViewportInformationMenu();
+    void SetupOverflowMenu();
 
     QString m_title;
 
