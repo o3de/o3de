@@ -50,7 +50,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
         bool AddProject(const QString& path) override;
         bool RemoveProject(const QString& path) override;
-        bool UpdateProject(const ProjectInfo& projectInfo) override;
+        AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
         AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) override;
         AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
 
@@ -78,5 +78,6 @@ namespace O3DE::ProjectManager
         pybind11::handle m_manifest;
         pybind11::handle m_enableGemProject;
         pybind11::handle m_disableGemProject;
+        pybind11::handle m_editProjectProperties;
     };
 }

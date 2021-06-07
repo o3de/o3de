@@ -19,6 +19,7 @@
 #include <pybind11/functional.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
+#include <pybind11/stl.h>
 #pragma pop_macro("slots")
 
 #include <AzCore/IO/FileIO.h>
@@ -289,6 +290,7 @@ namespace O3DE::ProjectManager
             m_engineTemplate = pybind11::module::import("o3de.engine_template");
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
+            m_editProjectProperties = pybind11::module::import("o3de.project_properties");
 
             // make sure the engine is registered
             RegisterThisEngine();
@@ -678,6 +680,12 @@ namespace O3DE::ProjectManager
             {
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
+                projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
+                projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
+                for (auto tag : projectData["user_tags"])
+                {
+                    projectInfo.m_userTags.append(Py_To_String(tag));
+                }
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
@@ -748,9 +756,27 @@ namespace O3DE::ProjectManager
         });
     }
 
-    bool PythonBindings::UpdateProject([[maybe_unused]] const ProjectInfo& projectInfo)
+    AZ::Outcome<void, AZStd::string> PythonBindings::UpdateProject(const ProjectInfo& projectInfo)
     {
-        return false;
+        return ExecuteWithLockErrorHandling([&]
+            {
+                std::list<std::string> newTags;
+                for (const auto& i : projectInfo.m_userTags)
+                {
+                    newTags.push_back(i.toStdString());
+                }
+
+                m_editProjectProperties.attr("edit_project_props")(
+                    pybind11::str(projectInfo.m_path.toStdString()), // proj_path
+                    pybind11::none(), // proj_name not used
+                    pybind11::str(projectInfo.m_origin.toStdString()), // new_origin
+                    pybind11::str(projectInfo.m_displayName.toStdString()), // new_display
+                    pybind11::str(projectInfo.m_summary.toStdString()), // new_summary
+                    pybind11::str(projectInfo.m_imagePath.toStdString()), // new_icon
+                    pybind11::none(), // add_tags not used
+                    pybind11::none(), // remove_tags not used
+                    pybind11::list(pybind11::cast(newTags))); // replace_tags
+            });
     }
 
     ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
