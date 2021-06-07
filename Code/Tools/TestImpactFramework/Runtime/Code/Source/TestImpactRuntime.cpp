@@ -291,7 +291,8 @@ namespace TestImpact
                             "Test target '%s' completed its test run successfully but produced no coverage data",
                             job.GetTestTarget()->GetName().c_str()));
                 }
-                else if (!job.GetTestCoverge().has_value())
+
+                if (!job.GetTestCoverge().has_value())
                 {
                     // When a test run completes with failing tests but produces no coverage artifact that's typically a sign of the
                     // test aborting due to an unhandled exception, in which case ignore it and let it be picked up in the failure report
