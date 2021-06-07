@@ -20,8 +20,6 @@
 
 namespace AzToolsFramework
 {
-    struct GridSnapAction;
-
     //! MultiLinearManipulator serves as a visual tool for users to modify values
     //! in one or more dimensions on axes defined in 3D space.
     class MultiLinearManipulator

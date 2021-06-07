@@ -46,7 +46,7 @@ namespace AzNetworking
                 }
                 else if (m_updateRate < updateTimeMs)
                 {
-                    AZLOG_INFO("TimedThread bled %d ms", aznumeric_cast<int32_t>(updateTimeMs - m_updateRate));
+                    AZLOG(NET_TimedThread, "TimedThread bled %d ms", aznumeric_cast<int32_t>(updateTimeMs - m_updateRate));
                 }
             }
             OnStop();

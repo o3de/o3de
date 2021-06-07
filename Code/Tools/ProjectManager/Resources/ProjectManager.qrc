@@ -7,6 +7,7 @@
         <file>AddOffset.svg</file>
         <file>AddOffset_Hover.svg</file>
         <file>ArrowBack.svg</file>
+        <file>ArrowBack_Hover.svg</file>
         <file>build.svg</file>
         <file>FolderOffset.svg</file>
         <file>FolderOffset_Hover.svg</file>
@@ -18,6 +19,7 @@
         <file>Linux.svg</file>
         <file>macOS.svg</file>
         <file>DefaultProjectImage.png</file>
+        <file>DefaultTemplate.png</file>
         <file>ArrowDownLine.svg</file>
         <file>ArrowUpLine.svg</file>
         <file>o3de.svg</file>
@@ -26,5 +28,8 @@
         <file>Backgrounds/FirstTimeBackgroundImage.jpg</file>
         <file>ArrowDownLine.svg</file>
         <file>ArrowUpLine.svg</file>
+        <file>CarrotArrowDown.svg</file>
+        <file>Summary.svg</file>
+        <file>WindowClose.svg</file>
     </qresource>
 </RCC>

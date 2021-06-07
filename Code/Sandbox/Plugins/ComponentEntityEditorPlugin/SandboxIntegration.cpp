@@ -1732,13 +1732,14 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 // compute new camera transform
                 const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
                 const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
-                const float distanceToTarget = selectionSize * fovScale * centerScale;
+                const float distanceToLookAt = selectionSize * fovScale * centerScale;
                 const AZ::Transform nextCameraTransform =
-                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
+                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
                 AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                     viewportContext->GetId(),
-                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
+                    distanceToLookAt);
             }
         }
     }

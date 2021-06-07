@@ -107,7 +107,8 @@ void UiLayoutGridComponent::ApplyLayoutHeight()
         AZStd::vector<AZ::EntityId> childEntityIds;
         EBUS_EVENT_ID_RESULT(childEntityIds, GetEntityId(), UiElementBus, GetChildEntityIds);
         int childIndex = 0;
-        int columnIndex, rowIndex;
+        int columnIndex = 0;
+        int rowIndex = 0;
         for (auto child : childEntityIds)
         {
             // Set the anchors
@@ -627,7 +628,8 @@ AZ::Vector2 UiLayoutGridComponent::GetChildrenBoundingRectSize(const AZ::Vector2
         UiLayoutHelpers::GetSizeInsidePadding(GetEntityId(), m_padding, layoutRectSize);
 
         // Calculate number of rows and columns
-        int numColumns, numRows;
+        int numColumns = 0;
+        int numRows = 0;
         switch (m_startingDirection)
         {
         case StartingDirection::HorizontalOrder:

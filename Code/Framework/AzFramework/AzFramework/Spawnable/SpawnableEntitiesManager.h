@@ -37,7 +37,7 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(SpawnableEntitiesManager, AZ::SystemAllocator, 0);
 
         using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
-
+        
         enum class CommandQueueStatus : bool
         {
             HasCommandsLeft,
@@ -57,26 +57,21 @@ namespace AzFramework
         // The following functions are thread safe
         //
 
-        void SpawnAllEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, EntityPreInsertionCallback preInsertionCallback = {},
-            EntitySpawnCallback completionCallback = {}) override;
+        void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void SpawnEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, AZStd::vector<size_t> entityIndices,
-            EntityPreInsertionCallback preInsertionCallback = {},
-            EntitySpawnCallback completionCallback = {}) override;
-        void DespawnAllEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, EntityDespawnCallback completionCallback = {}) override;
-
+            EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
+        void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void ReloadSpawnable(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, AZ::Data::Asset<Spawnable> spawnable,
-            ReloadSpawnableCallback completionCallback = {}) override;
+            EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs = {}) override;
 
-        void ListEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ListEntitiesCallback listCallback) override;
+        void ListEntities(
+            EntitySpawnTicket& ticket, ListEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
         void ListIndicesAndEntities(
-            EntitySpawnTicket& ticket, SpawnablePriority priority, ListIndicesEntitiesCallback listCallback) override;
-        void ClaimEntities(EntitySpawnTicket& ticket, SpawnablePriority priority, ClaimEntitiesCallback listCallback) override;
+            EntitySpawnTicket& ticket, ListIndicesEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
+        void ClaimEntities(
+            EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs = {}) override;
 
-        void Barrier(EntitySpawnTicket& spawnInfo, SpawnablePriority priority, BarrierCallback completionCallback) override;
+        void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
 
         void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
         void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
@@ -105,6 +100,7 @@ namespace AzFramework
         {
             EntitySpawnCallback m_completionCallback;
             EntityPreInsertionCallback m_preInsertionCallback;
+            AZ::SerializeContext* m_serializeContext;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
@@ -114,9 +110,11 @@ namespace AzFramework
             AZStd::vector<size_t> m_entityIndices;
             EntitySpawnCallback m_completionCallback;
             EntityPreInsertionCallback m_preInsertionCallback;
+            AZ::SerializeContext* m_serializeContext;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
+            bool m_referencePreviouslySpawnedEntities;
         };
         struct DespawnAllEntitiesCommand
         {
@@ -129,6 +127,7 @@ namespace AzFramework
         {
             AZ::Data::Asset<Spawnable> m_spawnable;
             ReloadSpawnableCallback m_completionCallback;
+            AZ::SerializeContext* m_serializeContext;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
@@ -185,21 +184,18 @@ namespace AzFramework
 
         CommandQueueStatus ProcessQueue(Queue& queue);
 
-        AZ::Entity* SpawnSingleEntity(const AZ::Entity& entityTemplate,
-            AZ::SerializeContext& serializeContext);
-
-        AZ::Entity* CloneSingleEntity(const AZ::Entity& entityTemplate,
-            EntityIdMap& templateToCloneEntityIdMap, AZ::SerializeContext& serializeContext);
-
-        bool ProcessRequest(SpawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(SpawnEntitiesCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(DespawnAllEntitiesCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(ReloadSpawnableCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(ListEntitiesCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(ListIndicesEntitiesCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(ClaimEntitiesCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(BarrierCommand& request, AZ::SerializeContext& serializeContext);
-        bool ProcessRequest(DestroyTicketCommand& request, AZ::SerializeContext& serializeContext);
+        AZ::Entity* CloneSingleEntity(
+            const AZ::Entity& entityTemplate, EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext);
+        
+        bool ProcessRequest(SpawnAllEntitiesCommand& request);
+        bool ProcessRequest(SpawnEntitiesCommand& request);
+        bool ProcessRequest(DespawnAllEntitiesCommand& request);
+        bool ProcessRequest(ReloadSpawnableCommand& request);
+        bool ProcessRequest(ListEntitiesCommand& request);
+        bool ProcessRequest(ListIndicesEntitiesCommand& request);
+        bool ProcessRequest(ClaimEntitiesCommand& request);
+        bool ProcessRequest(BarrierCommand& request);
+        bool ProcessRequest(DestroyTicketCommand& request);
 
         Queue m_highPriorityQueue;
         Queue m_regularPriorityQueue;
@@ -207,6 +203,7 @@ namespace AzFramework
         AZ::Event<AZ::Data::Asset<Spawnable>> m_onSpawnedEvent;
         AZ::Event<AZ::Data::Asset<Spawnable>> m_onDespawnedEvent;
 
+        AZ::SerializeContext* m_defaultSerializeContext { nullptr };
         //! The threshold used to determine if a request goes in the regular (if bigger than the value) or high priority queue (if smaller
         //! or equal to this value). The starting value of 64 is chosen as it's between default values SpawnablePriority_High and
         //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured

@@ -423,15 +423,14 @@ namespace AzToolsFramework
         }
     }
 
-    static void InitializeTranslationLookup(
-        EntityIdManipulators& entityIdManipulators, const AZ::Vector3& snapOffset)
+    static void InitializeTranslationLookup(EntityIdManipulators& entityIdManipulators)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         for (auto& entityIdLookup : entityIdManipulators.m_lookups)
         {
             entityIdLookup.second.m_initial =
-                AZ::Transform::CreateTranslation(GetWorldTranslation(entityIdLookup.first) + snapOffset);
+                AZ::Transform::CreateTranslation(GetWorldTranslation(entityIdLookup.first));
         }
     }
 
@@ -820,7 +819,7 @@ namespace AzToolsFramework
             // moving with ctrl - setting override
             pivotOverrideFrame.m_translationOverride =
                 entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
-            InitializeTranslationLookup(entityIdManipulators, -action.LocalPositionOffset());
+            InitializeTranslationLookup(entityIdManipulators);
         }
         else
         {
@@ -1277,12 +1276,12 @@ namespace AzToolsFramework
 
         // linear
         translationManipulators->InstallLinearManipulatorMouseDownCallback(
-            [this, manipulatorEntityIds](const LinearManipulator::Action& action) mutable
+            [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action) mutable
         {
             // important to sort entityIds based on hierarchy order when updating transforms
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
 
-            InitializeTranslationLookup(m_entityIdManipulators, action.m_start.m_positionSnapOffset);
+            InitializeTranslationLookup(m_entityIdManipulators);
 
             m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
             m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(
@@ -1302,19 +1301,19 @@ namespace AzToolsFramework
         });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
-            [this](const LinearManipulator::Action& /*action*/) mutable
+            [this]([[maybe_unused]] const LinearManipulator::Action& action) mutable
         {
             EndRecordManipulatorCommand();
         });
 
         // planar
         translationManipulators->InstallPlanarManipulatorMouseDownCallback(
-            [this, manipulatorEntityIds](const PlanarManipulator::Action& action)
+            [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
         {
             // important to sort entityIds based on hierarchy order when updating transforms
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
 
-            InitializeTranslationLookup(m_entityIdManipulators, action.m_start.m_snapOffset);
+            InitializeTranslationLookup(m_entityIdManipulators);
 
             m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
             m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(
@@ -1340,11 +1339,11 @@ namespace AzToolsFramework
 
         // surface
         translationManipulators->InstallSurfaceManipulatorMouseDownCallback(
-            [this, manipulatorEntityIds](const SurfaceManipulator::Action& action)
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
         {
             BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
 
-            InitializeTranslationLookup(m_entityIdManipulators, action.m_start.m_snapOffset);
+            InitializeTranslationLookup(m_entityIdManipulators);
 
             m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
             m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(
@@ -2647,6 +2646,9 @@ namespace AzToolsFramework
                     m_spaceCluster.m_spaceLock = ReferenceFrame::World;
                 }
             }
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonLocked,
+                m_spaceCluster.m_spaceClusterId, buttonId, m_spaceCluster.m_spaceLock.has_value());
         };
 
         m_spaceCluster.m_spaceSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
@@ -3326,26 +3328,16 @@ namespace AzToolsFramework
     }
 
     static void DrawManipulatorGrid(
-        AzFramework::DebugDisplayRequests& debugDisplay, const EntityIdManipulators& entityIdManipulators,
-        const float gridSize, const float localSnapping)
+        AzFramework::DebugDisplayRequests& debugDisplay, const EntityIdManipulators& entityIdManipulators, const float gridSize)
     {
         const AZ::Matrix3x3 orientation =
             AZ::Matrix3x3::CreateFromTransform(entityIdManipulators.m_manipulators->GetLocalTransform());
 
-        const AZ::Vector3 unsnappedTranslation =
+        const AZ::Vector3 translation =
             entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
 
-        // calculate the offset to snap by to align the manipulator to the grid
-        // note: only perform this if we are not snapping in local space
-        const AZ::Vector3 snappedOffset = !localSnapping
-            ? CalculateSnappedOffset(unsnappedTranslation, orientation.GetBasisX(), gridSize) +
-              CalculateSnappedOffset(unsnappedTranslation, orientation.GetBasisY(), gridSize)
-            : AZ::Vector3::CreateZero();
-
-        const AZ::Vector3 snappedTranslation = unsnappedTranslation + snappedOffset;
-
         DrawSnappingGrid(
-            debugDisplay, AZ::Transform::CreateFromMatrix3x3AndTranslation(orientation, snappedTranslation),
+            debugDisplay, AZ::Transform::CreateFromMatrix3x3AndTranslation(orientation, translation),
             gridSize);
     }
 
@@ -3484,7 +3476,7 @@ namespace AzToolsFramework
                 const GridSnapParameters gridSnapParams = GridSnapSettings(viewportInfo.m_viewportId);
                 if (gridSnapParams.m_gridSnap && m_entityIdManipulators.m_manipulators)
                 {
-                    DrawManipulatorGrid(debugDisplay, m_entityIdManipulators, gridSnapParams.m_gridSize, modifiers.Alt());
+                    DrawManipulatorGrid(debugDisplay, m_entityIdManipulators, gridSnapParams.m_gridSize);
                 }
             }
         }
@@ -3573,9 +3565,10 @@ namespace AzToolsFramework
         debugDisplay.SetLineWidth(1.0f);
 
         const float labelOffset = cl_viewportGizmoAxisLabelOffset;
-        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize;
-        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize;
+        const float screenScale = GetScreenDisplayScaling(viewportId);
+        const auto labelXScreenPosition = (gizmoStart + (gizmoAxisX * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
+        const auto labelYScreenPosition = (gizmoStart + (gizmoAxisY * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
+        const auto labelZScreenPosition = (gizmoStart + (gizmoAxisZ * labelOffset)) * editorCameraState.m_viewportSize * screenScale;
 
         // draw the label of of each axis for the gizmo
         const float labelSize = cl_viewportGizmoAxisLabelSize;

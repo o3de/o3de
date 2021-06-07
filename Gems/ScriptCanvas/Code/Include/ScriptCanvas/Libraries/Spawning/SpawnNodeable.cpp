@@ -134,7 +134,9 @@ namespace ScriptCanvas::Nodeables::Spawning
             m_spawnBatchSizes.push_back(view.size());
         };
 
-        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(
-            m_spawnTicket, AzFramework::SpawnablePriority_Default, preSpawnCB, spawnCompleteCB);
+        AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+        optionalArgs.m_preInsertionCallback = AZStd::move(preSpawnCB);
+        optionalArgs.m_completionCallback = AZStd::move(spawnCompleteCB);
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(m_spawnTicket, AZStd::move(optionalArgs));
     }
 }

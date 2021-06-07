@@ -12,10 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import boto3
 from botocore.paginate import (PageIterator, Paginator)
 from botocore.client import BaseClient
-from botocore.exceptions import ClientError
+from botocore.exceptions import (ClientError, ConfigNotFound, NoCredentialsError, ProfileNotFound)
 from typing import Dict, List
 
-from model import (constants, error_messages)
+from model import error_messages
 from model.basic_resource_attributes import (BasicResourceAttributes, BasicResourceAttributesBuilder)
 
 """
@@ -65,8 +65,11 @@ def _initialize_boto3_aws_client(service: str, region: str = "") -> BaseClient:
 
 
 def setup_default_session(profile: str) -> None:
-    global default_session
-    default_session = boto3.session.Session(profile_name=profile)
+    try:
+        global default_session
+        default_session = boto3.session.Session(profile_name=profile)
+    except (ConfigNotFound, ProfileNotFound) as error:
+        raise RuntimeError(error)
 
 
 def get_default_account_id() -> str:
@@ -76,6 +79,8 @@ def get_default_account_id() -> str:
     except ClientError as error:
         raise RuntimeError(error_messages.AWS_SERVICE_REQUEST_CLIENT_ERROR_MESSAGE.format(
             "get_caller_identity", error.response['Error']['Code'], error.response['Error']['Message']))
+    except NoCredentialsError as error:
+        raise RuntimeError(error)
 
 
 def get_default_region() -> str:

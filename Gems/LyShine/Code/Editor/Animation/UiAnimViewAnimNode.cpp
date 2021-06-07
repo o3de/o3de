@@ -110,10 +110,10 @@ CUiAnimViewAnimNode::CUiAnimViewAnimNode(IUiAnimSequence* pSequence, IUiAnimNode
         for (int i = 0; i < nodeCount; ++i)
         {
             IUiAnimNode* pNode = pSequence->GetNode(i);
-            IUiAnimNode* pParentNode = pNode->GetParent();
+            IUiAnimNode* pNodeParentNode = pNode->GetParent();
 
             // If our node is the parent, then the current node is a child of it
-            if (pAnimNode == pParentNode)
+            if (pAnimNode == pNodeParentNode)
             {
                 CUiAnimViewAnimNodeFactory animNodeFactory;
                 CUiAnimViewAnimNode* pNewUiAVAnimNode = animNodeFactory.BuildAnimNode(pSequence, pNode, this);
@@ -510,20 +510,20 @@ bool CUiAnimViewAnimNode::BaseClassPropertyPotentiallyChanged(
     {
         for (const AZ::SerializeContext::ClassElement& baseElement : baseClassData->m_elements)
         {
-            size_t offset = baseClassOffset + baseElement.m_offset;
+            size_t baseOffset = baseClassOffset + baseElement.m_offset;
             if (baseElement.m_flags & AZ::SerializeContext::ClassElement::FLG_BASE_CLASS)
             {
-                if (BaseClassPropertyPotentiallyChanged(context, dstComponent, srcComponent, baseElement, offset))
+                if (BaseClassPropertyPotentiallyChanged(context, dstComponent, srcComponent, baseElement, baseOffset))
                 {
                     valueChanged = true;
                 }
             }
             else
             {
-                if (HasComponentParamValueAzChanged(dstComponent, srcComponent, baseElement, offset))
+                if (HasComponentParamValueAzChanged(dstComponent, srcComponent, baseElement, baseOffset))
                 {
                     valueChanged = true;
-                    AzEntityPropertyChanged(srcComponent, dstComponent, baseElement, offset);
+                    AzEntityPropertyChanged(srcComponent, dstComponent, baseElement, baseOffset);
                 }
             }
         }
