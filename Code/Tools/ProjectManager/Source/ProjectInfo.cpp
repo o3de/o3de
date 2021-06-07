@@ -26,8 +26,6 @@ namespace O3DE::ProjectManager
         , m_backgroundImagePath(backgroundImagePath)
         , m_needsBuild(needsBuild)
     {
-        m_userTags = QStringList();
-        m_userTagsForRemoval = QStringList();
     }
 
     bool ProjectInfo::operator==(const ProjectInfo& rhs)

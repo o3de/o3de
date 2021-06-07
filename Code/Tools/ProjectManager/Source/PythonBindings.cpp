@@ -53,6 +53,7 @@ namespace Platform
 
 #define Py_To_String(obj) obj.cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
+#define Py_To_List(obj) obj.cast<std::list()<std::string>>
 
 namespace RedirectOutput
 {
@@ -678,6 +679,12 @@ namespace O3DE::ProjectManager
             {
                 projectInfo.m_projectName = Py_To_String(projectData["project_name"]);
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
+                projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
+                projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
+                for (const auto& tag : projectData["user_tags"])
+                {
+                    projectInfo.m_userTags.append(Py_To_String(tag));
+                }
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
@@ -753,15 +760,9 @@ namespace O3DE::ProjectManager
         return ExecuteWithLockErrorHandling([&]
             {
                 std::list<std::string> newTags;
-                for (auto& i : projectInfo.m_userTags)
+                for (const auto& i : projectInfo.m_userTags)
                 {
                     newTags.push_back(i.toStdString());
-                }
-
-                std::list<std::string> removedTags;
-                for (auto& i : projectInfo.m_userTagsForRemoval)
-                {
-                    removedTags.push_back(i.toStdString());
                 }
 
                 m_editProjectProperties.attr("edit_project_props")(
@@ -771,8 +772,9 @@ namespace O3DE::ProjectManager
                     pybind11::str(projectInfo.m_displayName.toStdString()), // new_display
                     pybind11::str(projectInfo.m_summary.toStdString()), // new_summary
                     pybind11::str(projectInfo.m_imagePath.toStdString()), // new_icon
-                    pybind11::list(pybind11::cast(newTags)), // new_tag
-                    pybind11::list(pybind11::cast(removedTags))); // remove_tag
+                    pybind11::none(), // add_tags not used
+                    pybind11::none(), // remove_tags not used
+                    pybind11::list(pybind11::cast(newTags))); // replace_tags
             });
     }
 
