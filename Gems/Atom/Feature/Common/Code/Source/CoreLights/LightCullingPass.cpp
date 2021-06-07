@@ -311,14 +311,9 @@ namespace AZ
         {
             auto tileBufferResolution = GetTileDataBufferResolution();
 
-            // generate a UUID for the buffer name to keep it unique when there are multiple render pipelines
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
-            desc.m_bufferName = AZStd::string::format("LightList_%s", uuidString.c_str());
+            desc.m_bufferName = "LightList";
             desc.m_elementSize = sizeof(uint32_t);
             desc.m_byteCount = tileBufferResolution.m_width * tileBufferResolution.m_height * 256 * sizeof(uint32_t);
             m_lightList = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);

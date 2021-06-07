@@ -29,7 +29,8 @@ ly_add_target(
             Legacy::CryCommon
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public
-            Gem::Atom_Bootstrap.Headers
+        PUBLIC
+            Gem::Atom_AtomBridge.Static
 )
 
 ################################################################################

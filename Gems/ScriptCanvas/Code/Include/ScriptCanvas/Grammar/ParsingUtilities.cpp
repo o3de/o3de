@@ -1132,13 +1132,13 @@ namespace ScriptCanvas
             }
             else if (variable->m_isExposedToConstruction)
             {
-                if (variable->m_sourceVariableId.IsValid())
-                {
-                    return VariableConstructionRequirement::InputVariable;
-                }
-                else if (variable->m_nodeableNodeId.IsValid())
+                if (variable->m_nodeableNodeId.IsValid())
                 {
                     return VariableConstructionRequirement::InputNodeable;
+                }
+                else if (variable->m_sourceVariableId.IsValid())
+                {
+                    return VariableConstructionRequirement::InputVariable;
                 }
                 else
                 {

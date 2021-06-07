@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/PlatformIncl.h>
 #include <QOpenGLFunctions>
 
 QT_FORWARD_DECLARE_CLASS(QOpenGLContext);

@@ -127,11 +127,38 @@ public:
     void TearDown() override
     {
         AZ::IO::FileIOBase::SetInstance(nullptr);
-        delete m_localFileIO;
-        AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
+        
+        if (m_otherFileIO)
+        {
+            delete m_localFileIO;
+            AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
+        }
 
         AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+    }
+
+    bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)
+    {
+        AZ::IO::HandleType fileHandle;
+        if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
+        {
+            return false;
+        }
+
+        m_localFileIO->Write(fileHandle, content.c_str(), content.size());
+        m_localFileIO->Close(fileHandle);
+        return true;
+    }
+
+    bool RemoveFile(const AZStd::string& filePath)
+    {
+        if (m_localFileIO->Exists(filePath.c_str()))
+        {
+            return m_localFileIO->Remove(filePath.c_str());
+        }
+
+        return true;
     }
 
     AZ::IO::FileIOBase* m_localFileIO = nullptr;

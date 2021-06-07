@@ -17,6 +17,7 @@ set(FILES
     Dumper.h
     Dumper.cpp
     main.cpp
+    SliceConverterEditorEntityContextComponent.h
     SliceConverter.h
     SliceConverter.cpp
     Utilities.h

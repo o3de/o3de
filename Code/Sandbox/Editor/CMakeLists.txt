@@ -177,6 +177,11 @@ ly_add_target(
         Legacy::EditorLib
         ProjectManager
 )
+set_property(SOURCE
+    CryEdit.cpp
+    APPEND PROPERTY
+        COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
+)
 ly_add_translations(
     TARGETS Editor
     PREFIX Translations
@@ -186,15 +191,8 @@ ly_add_translations(
 )
 ly_add_dependencies(Editor AssetProcessor)
 
-if(TARGET Editor)
-    set_property(SOURCE
-        CryEdit.cpp
-        APPEND PROPERTY
-            COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
-    )
-else()
-    message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to Editor as the target doesn't exist anymore."
-        " Perhaps it has been renamed")
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET Editor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
 endif()
 
 ################################################################################

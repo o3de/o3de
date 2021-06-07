@@ -46,13 +46,22 @@ namespace O3DE::ProjectManager
         static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
         static GemInfo::Types GetTypes(const QModelIndex& modelIndex);
         static QString GetSummary(const QModelIndex& modelIndex);
-        static bool IsAdded(const QModelIndex& modelIndex);
         static QString GetDirectoryLink(const QModelIndex& modelIndex);
         static QString GetDocLink(const QModelIndex& modelIndex);
         static QString GetVersion(const QModelIndex& modelIndex);
         static QString GetLastUpdated(const QModelIndex& modelIndex);
         static int GetBinarySizeInKB(const QModelIndex& modelIndex);
         static QStringList GetFeatures(const QModelIndex& modelIndex);
+        static QString GetPath(const QModelIndex& modelIndex);
+
+        static bool IsAdded(const QModelIndex& modelIndex);
+        static void SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
+        static void SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
+        static bool NeedsToBeAdded(const QModelIndex& modelIndex);
+        static bool NeedsToBeRemoved(const QModelIndex& modelIndex);
+
+        QVector<QModelIndex> GatherGemsToBeAdded() const;
+        QVector<QModelIndex> GatherGemsToBeRemoved() const;
 
     private:
         enum UserRole
@@ -62,6 +71,7 @@ namespace O3DE::ProjectManager
             RoleGemOrigin,
             RolePlatforms,
             RoleSummary,
+            RoleWasPreviouslyAdded,
             RoleIsAdded,
             RoleDirectoryLink,
             RoleDocLink,
@@ -71,7 +81,8 @@ namespace O3DE::ProjectManager
             RoleLastUpdated,
             RoleBinarySize,
             RoleFeatures,
-            RoleTypes
+            RoleTypes,
+            RolePath
         };
 
         QHash<QString, QModelIndex> m_nameToIndexMap;

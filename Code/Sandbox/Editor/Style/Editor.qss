@@ -144,20 +144,6 @@ EditorWindow QToolBar
     border-bottom: 2px solid #111111;
 }
 
-/* InfoBar (Toolbar below the main viewport) */
-
-QToolBar#InfoBar
-{
-    qproperty-iconSize: 22px 18px;
-}
-
-QToolBar#InfoBar AzQtComponents--VectorElement[Coordinate="X"] QLabel,
-QToolBar#InfoBar AzQtComponents--VectorElement[Coordinate="Y"] QLabel,
-QToolBar#InfoBar AzQtComponents--VectorElement[Coordinate="Z"] QLabel
-{
-    background-color: #333333;
-}
-
 DockWidgetTitleBar #DockWidgetContextMenu
 {
     qproperty-icon: url(:/Cards/img/UI20/Cards/menu_ico.svg);
