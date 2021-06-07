@@ -580,65 +580,65 @@ def register(engine_path: str or pathlib.Path = None,
         if not project_path:
             logger.error(f'Project path cannot be empty.')
             return 1
-        result = register_project_path(json_data, project_path, remove, engine_path)
+        result = result or register_project_path(json_data, project_path, remove, engine_path)
 
-    elif isinstance(gem_path, str) or isinstance(gem_path, pathlib.PurePath):
+    if isinstance(gem_path, str) or isinstance(gem_path, pathlib.PurePath):
         if not gem_path:
             logger.error(f'Gem path cannot be empty.')
             return 1
-        result = register_gem_path(json_data, gem_path, remove,
+        result = result or register_gem_path(json_data, gem_path, remove,
                                    external_subdir_engine_path, external_subdir_project_path)
-    elif isinstance(external_subdir_path, str) or isinstance(external_subdir_path, pathlib.PurePath):
+    if isinstance(external_subdir_path, str) or isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')
             return 1
-        result = register_external_subdirectory(json_data, external_subdir_path, remove,
+        result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
                                                 external_subdir_engine_path, external_subdir_project_path)
 
-    elif isinstance(template_path, str) or isinstance(template_path, pathlib.PurePath):
+    if isinstance(template_path, str) or isinstance(template_path, pathlib.PurePath):
         if not template_path:
             logger.error(f'Template path cannot be empty.')
             return 1
-        result = register_template_path(json_data, template_path, remove, engine_path)
+        result = result or register_template_path(json_data, template_path, remove, engine_path)
 
-    elif isinstance(restricted_path, str) or isinstance(restricted_path, pathlib.PurePath):
+    if isinstance(restricted_path, str) or isinstance(restricted_path, pathlib.PurePath):
         if not restricted_path:
             logger.error(f'Restricted path cannot be empty.')
             return 1
-        result = register_restricted_path(json_data, restricted_path, remove, engine_path)
+        result = result or register_restricted_path(json_data, restricted_path, remove, engine_path)
 
-    elif isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
+    if isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
         if not repo_uri:
             logger.error(f'Repo URI cannot be empty.')
             return 1
-        result = register_repo(json_data, repo_uri, remove)
+        result = result or register_repo(json_data, repo_uri, remove)
 
-    elif isinstance(default_engines_folder, str) or isinstance(default_engines_folder, pathlib.PurePath):
-        result = register_default_engines_folder(json_data, default_engines_folder, remove)
+    if isinstance(default_engines_folder, str) or isinstance(default_engines_folder, pathlib.PurePath):
+        result = result or register_default_engines_folder(json_data, default_engines_folder, remove)
 
-    elif isinstance(default_projects_folder, str) or isinstance(default_projects_folder, pathlib.PurePath):
-        result = register_default_projects_folder(json_data, default_projects_folder, remove)
+    if isinstance(default_projects_folder, str) or isinstance(default_projects_folder, pathlib.PurePath):
+        result = result or register_default_projects_folder(json_data, default_projects_folder, remove)
 
-    elif isinstance(default_gems_folder, str) or isinstance(default_gems_folder, pathlib.PurePath):
-        result = register_default_gems_folder(json_data, default_gems_folder, remove)
+    if isinstance(default_gems_folder, str) or isinstance(default_gems_folder, pathlib.PurePath):
+        result = result or register_default_gems_folder(json_data, default_gems_folder, remove)
 
-    elif isinstance(default_templates_folder, str) or isinstance(default_templates_folder, pathlib.PurePath):
-        result = register_default_templates_folder(json_data, default_templates_folder, remove)
+    if isinstance(default_templates_folder, str) or isinstance(default_templates_folder, pathlib.PurePath):
+        result = result or register_default_templates_folder(json_data, default_templates_folder, remove)
 
-    elif isinstance(default_restricted_folder, str) or isinstance(default_restricted_folder, pathlib.PurePath):
-        result = register_default_restricted_folder(json_data, default_restricted_folder, remove)
+    if isinstance(default_restricted_folder, str) or isinstance(default_restricted_folder, pathlib.PurePath):
+        result = result or register_default_restricted_folder(json_data, default_restricted_folder, remove)
 
-    elif default_third_party_folder:
-        result = register_default_third_party_folder(json_data, default_third_party_folder, remove)
+    if isinstance(default_third_party_folder, str) or isinstance(default_third_party_folder, pathlib.PurePath):
+        result = result or register_default_third_party_folder(json_data, default_third_party_folder, remove)
 
     # engine is done LAST
     # Now that everything that could have an engine context is done, if the engine is supplied that means this is
     # registering the engine itself
-    elif isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
+    if isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
         if not engine_path:
             logger.error(f'Engine path cannot be empty.')
             return 1
-        result = register_engine_path(json_data, engine_path, remove, force)
+        result = result or register_engine_path(json_data, engine_path, remove, force)
 
     if not result:
         manifest.save_o3de_manifest(json_data)

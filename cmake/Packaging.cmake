@@ -51,6 +51,12 @@ if(NOT CPACK_GENERATOR)
     return()
 endif()
 
+if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
+    message(FATAL_ERROR
+        "The desired version of CMake to be included in the package is "
+        "below the minimum required version of CMake to run")
+endif()
+
 # pull down the desired copy of CMake so it can be included in the package
 if(NOT (CPACK_CMAKE_PACKAGE_FILE AND CPACK_CMAKE_PACKAGE_HASH))
     message(FATAL_ERROR
@@ -67,7 +73,7 @@ list(GET _version_componets 1 _minor_version)
 set(_url_version_tag "v${_major_version}.${_minor_version}")
 set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
 
-message(STATUS "Ensuring CMake ${CPACK_DESIRED_CMAKE_VERSION} is available for packaging...")
+message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
 download_file(
     URL ${_package_url}
     TARGET_FILE ${_cmake_package_dest}
@@ -77,7 +83,7 @@ download_file(
 list(GET _results 0 _status_code)
 
 if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
-    message(STATUS "-> Package found and verified!")
+    message(STATUS "Package found and verified!")
 else()
     file(REMOVE ${_cmake_package_dest})
     list(REMOVE_AT _results 0)
@@ -95,7 +101,6 @@ endif()
 
 install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
-    COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
 )
 
 # IMPORTANT: required to be included AFTER setting all property overrides
@@ -135,7 +140,7 @@ endfunction()
 
 # configure ALL components here
 ly_configure_cpack_component(
-    ${LY_DEFAULT_INSTALL_COMPONENT} REQUIRED
+    ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} REQUIRED
     DISPLAY_NAME "${PROJECT_NAME} Core"
     DESCRIPTION "${PROJECT_NAME} Headers, Libraries and Tools"
 )

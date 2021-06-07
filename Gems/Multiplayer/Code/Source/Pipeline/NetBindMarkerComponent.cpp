@@ -81,8 +81,10 @@ namespace Multiplayer
             };
 
             m_netSpawnTicket = AzFramework::EntitySpawnTicket(m_networkSpawnableAsset);
+            AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
+            optionalArgs.m_preInsertionCallback = AZStd::move(preInsertionCallback);
             AzFramework::SpawnableEntitiesInterface::Get()->SpawnEntities(
-                m_netSpawnTicket, AzFramework::SpawnablePriority_Default, { m_netEntityIndex }, preInsertionCallback);
+                m_netSpawnTicket, { m_netEntityIndex }, AZStd::move(optionalArgs));
         }
     }
 
@@ -90,7 +92,7 @@ namespace Multiplayer
     {
         if(m_netSpawnTicket.IsValid())
         {
-            AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(m_netSpawnTicket, AzFramework::SpawnablePriority_Default);
+            AzFramework::SpawnableEntitiesInterface::Get()->DespawnAllEntities(m_netSpawnTicket);
         }
     }
 

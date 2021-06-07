@@ -35,6 +35,7 @@
 #include "EditorPreferencesPageViewportMovement.h"
 #include "EditorPreferencesPageViewportDebug.h"
 #include "EditorPreferencesPageExperimentalLighting.h"
+#include "EditorPreferencesPageAWS.h"
 #include "LyViewPaneNames.h"
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -72,6 +73,7 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
             CEditorPreferencesPage_ViewportMovement::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportDebug::Reflect(*serializeContext);
             CEditorPreferencesPage_ExperimentalLighting::Reflect(*serializeContext);
+            CEditorPreferencesPage_AWS::Reflect(*serializeContext);
         }
     }
 
