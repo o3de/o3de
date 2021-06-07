@@ -70,6 +70,7 @@ namespace TestImpact
         };
     }
 
+    //! Utility for concatenating two vectors.
     template<typename T>
     AZStd::vector<T> ConcatenateVectors(const AZStd::vector<T>& v1, const AZStd::vector<T>& v2)
     {
@@ -79,6 +80,7 @@ namespace TestImpact
         result.insert(result.end(), v2.begin(), v2.end());
         return result;
     }
+
     Runtime::Runtime(
         RuntimeConfig&& config,
         SuiteType suiteFilter,
@@ -346,12 +348,20 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         Timer timer;
+
+        // Draft in the test targets that have no coverage entries in the dynamic dependency map
         AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
 
+        // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
         auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndUpdateEnumerationCache(changeList, testPrioritizationPolicy);
+
+        // The subset of selected test targets that are not on the configuration's exclude list and those that are
         auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
 
+        // We present to the client the included selected test targets and the drafted test targets as distinct sets but internally
+        // we consider the concatenated set of the two the actual set of tests to run
         AZStd::vector<const TestTarget*> testTargetsToRun = ConcatenateVectors(includedSelectedTestTargets, draftedTestTargets);
+
         if (testSequenceStartCallback.has_value())
         {
             (*testSequenceStartCallback)(
@@ -359,7 +369,6 @@ namespace TestImpact
                 ExtractTestTargetNames(discardedTestTargets),
                 ExtractTestTargetNames(draftedTestTargets));
         }
-
 
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
@@ -413,14 +422,24 @@ namespace TestImpact
         AZStd::optional<SafeTestSequenceCompleteCallback> testSequenceEndCallback,
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
-        Timer timer;
+        Timer timer;       
+
+        // Draft in the test targets that have no coverage entries in the dynamic dependency map
         AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
 
+        // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
         auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndUpdateEnumerationCache(changeList, testPrioritizationPolicy);
+
+        // The subset of selected test targets that are not on the configuration's exclude list and those that are
         auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+
+        // The subset of discarded test targets that are not on the configuration's exclude list and those that are
         auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] = SelectTestTargetsByExcludeList(discardedTestTargets);
 
+        // We present to the client the included selected test targets and the drafted test targets as distinct sets but internally
+        // we consider the concatenated set of the two the actual set of tests to run
         AZStd::vector<const TestTarget*> testTargetsToRun = ConcatenateVectors(includedSelectedTestTargets, draftedTestTargets);
+
         if (testSequenceStartCallback.has_value())
         {
             (*testSequenceStartCallback)(
@@ -428,7 +447,6 @@ namespace TestImpact
                 Client::TestRunSelection(ExtractTestTargetNames(includedDiscardedTestTargets), ExtractTestTargetNames(excludedDiscardedTestTargets)),
                 ExtractTestTargetNames(draftedTestTargets));
         }
-
 
         // Impact analysis run of the selected test targets
         const auto [selectedResult, selectedTestJobs] = m_testEngine->InstrumentedRun(
