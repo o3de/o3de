@@ -1924,10 +1924,6 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
     case ID_TOOLBAR_WIDGET_REDO:
         w = CreateUndoRedoButton(ID_REDO);
         break;
-    case ID_TOOLBAR_WIDGET_SNAP_GRID:
-        break;
-    case ID_TOOLBAR_WIDGET_SNAP_ANGLE:
-        break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();
         break; 
