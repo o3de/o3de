@@ -132,8 +132,7 @@ bool PatchedAction::event(QEvent* ev)
                     continue;
                 }
 
-                QWidget* child = associatedWindow->findChild<QWidget*>(focusWindowName);
-                if (child)
+                if (QWidget* child = associatedWindow->findChild<QWidget*>(focusWindowName))
                 {
                     // Also accept if the focus window is a child of the associated window
                     return QAction::event(ev);
@@ -235,7 +234,8 @@ ActionManager::ActionWrapper DynamicMenu::AddAction(int id, const QString& name)
 ActionManager::ActionWrapper DynamicMenu::AddAction(AZ::Crc32 id, const QString& name)
 {
     QAction* action = new PatchedAction(name, this);
-    AddAction(static_cast<int>(id), action);
+    
+    AddAction(aznumeric_cast<int>(id), action);
     return ActionManager::ActionWrapper(action, m_actionManager);
 }
 
@@ -417,9 +417,7 @@ void ActionManager::AddAction(QAction* action)
     action->installEventFilter(this);
 
     // Add the action if the parent is a widget
-    auto widget = qobject_cast<QWidget*>(parent());
-
-    if (widget)
+    if (auto widget = qobject_cast<QWidget*>(parent()))
     {
         widget->addAction(action);
     }
@@ -453,8 +451,8 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
     connect(action, &QAction::triggered, m_actionMapper, mapped);
     m_actionMapper->setMapping(action, id);
 
-    QWidget* widget = qobject_cast<QWidget*>(parent());
-    if (widget)
+
+    if (auto* widget = qobject_cast<QWidget*>(parent()))
     {
         widget->addAction(action);
     }
@@ -478,7 +476,7 @@ ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id, const QStrin
     connect(action, &QAction::triggered, m_actionMapper, mapped);
     m_actionMapper->setMapping(action, new_id);
 
-    if (QWidget* widget = qobject_cast<QWidget*>(parent()))
+    if (auto* widget = qobject_cast<QWidget*>(parent()))
     {
         widget->addAction(action);
     }
@@ -700,7 +698,7 @@ WidgetAction::WidgetAction(int actionId, MainWindow* mainWindow, const QString& 
 QWidget* WidgetAction::createWidget(QWidget* parent)
 {
     QWidget* w = m_mainWindow->CreateToolbarWidget(m_actionId);
-    if (w)
+    if (auto* w = m_mainWindow->CreateToolbarWidget(m_actionId))
     {
         w->setParent(parent);
     }
