@@ -161,10 +161,10 @@ struct StrandLevelData
 ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance / object
 {
     // [To Do] Adi: switch the first four to RWBuffer
-    RWStructuredBuffer<float4>          m_hairVertexPositions;
-    RWStructuredBuffer<float4>          m_hairVertexPositionsPrev;
-    RWStructuredBuffer<float4>          m_hairVertexPositionsPrevPrev;
-    RWStructuredBuffer<float4>          m_hairVertexTangents;
+    RWBuffer<float4>          m_hairVertexPositions;
+    RWBuffer<float4>          m_hairVertexPositionsPrev;
+    RWBuffer<float4>          m_hairVertexPositionsPrevPrev;
+    RWBuffer<float4>          m_hairVertexTangents;
     RWStructuredBuffer<StrandLevelData> m_strandLevelData;
 
     //! Per hair object offset to the start location of each buffer within 
