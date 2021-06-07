@@ -97,8 +97,8 @@ namespace AZ
         void ShaderSystem::Shutdown()
         {
             Data::InstanceDatabase<Shader>::Destroy();
-            Data::InstanceDatabase<ShaderResourceGroup>::Destroy();
-            Data::InstanceDatabase<ShaderResourceGroupPool>::Destroy();
+            Data::InstanceDatabase<ShaderResourceGroup, false>::Destroy();
+            Data::InstanceDatabase<ShaderResourceGroupPool, false>::Destroy();
             Interface<ShaderSystemInterface>::Unregister(this);
             m_shaderVariantAsyncLoader.Shutdown();
         }

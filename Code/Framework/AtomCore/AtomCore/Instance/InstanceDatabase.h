@@ -505,10 +505,14 @@ namespace AZ
              */
 
         #if defined (AZ_DEBUG_BUILD)
-            AZ_Error("InstanceDatabase", instance->m_assetId == asset.GetId(),
-                "InstanceDatabase::FindOrCreate found the requested instance, but a different asset was used to create it. "
-                "Instances of a specific id should be acquired using the same asset. Either make sure the instance id "
-                "is actually unique, or that you are using the same asset each time for that particular id.");
+            if (m_useAssetTypeAsKeyForHandlers)
+            {
+                AZ_Error(
+                    "InstanceDatabase", (instance->m_assetId == asset.GetId()),
+                    "InstanceDatabase::FindOrCreate found the requested instance, but a different asset was used to create it. "
+                    "Instances of a specific id should be acquired using the same asset. Either make sure the instance id "
+                    "is actually unique, or that you are using the same asset each time for that particular id.");
+            }
         #else
             AZ_UNUSED(instance);
             AZ_UNUSED(asset);

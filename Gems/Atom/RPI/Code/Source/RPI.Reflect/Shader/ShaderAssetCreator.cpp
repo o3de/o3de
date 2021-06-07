@@ -229,6 +229,11 @@ namespace AZ
                 ReportError("BeginSupervariant() should be called first before calling %s", __FUNCTION__);
                 return;
             }
+            if (!shaderVariantAsset)
+            {
+                ReportError("Invalid root variant");
+                return;
+            }
             m_currentSupervariant->m_rootShaderVariantAsset = shaderVariantAsset;
         }
 

@@ -80,7 +80,11 @@ namespace AZ
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetSrgLayout(
             uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex, uint32_t shaderIndex) const
         {
-            AZ_Assert(m_shaderCollection.size() > shaderIndex, "shaderIndex %u is invalid for binding slot %u", shaderIndex, srgBindingSlot);
+            const bool validShaderIndex = (m_shaderCollection.size() > shaderIndex);
+            if (!validShaderIndex)
+            {
+                return RHI::NullSrgLayout;
+            }
             const auto& shaderAsset = m_shaderCollection[shaderIndex].GetShaderAsset();
             return shaderAsset->FindShaderResourceGroupLayout(srgBindingSlot, supervariantIndex);
         }
@@ -88,7 +92,11 @@ namespace AZ
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetSrgLayout(
             uint32_t srgBindingSlot, const AZ::Name& supervariantName, uint32_t shaderIndex) const
         {
-            AZ_Assert(m_shaderCollection.size() > shaderIndex, "shaderIndex %u is invalid for binding slot %u", shaderIndex, srgBindingSlot);
+            const bool validShaderIndex = (m_shaderCollection.size() > shaderIndex);
+            if (!validShaderIndex)
+            {
+                return RHI::NullSrgLayout;
+            }
             const auto& shaderAsset = m_shaderCollection[shaderIndex].GetShaderAsset();
             auto supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
             return shaderAsset->FindShaderResourceGroupLayout(srgBindingSlot, supervariantIndex);

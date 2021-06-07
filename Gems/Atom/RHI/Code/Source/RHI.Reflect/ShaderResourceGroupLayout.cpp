@@ -250,14 +250,13 @@ namespace AZ
 
         bool ShaderResourceGroupLayout::Finalize()
         {
-            if (!ValidateFinalizeState(ValidateFinalizeStateExpect::NotFinalized))
+            if (IsFinalized())
             {
-                return false;
+                return true;
             }
 
-            if (m_azslFileOfOrigin.empty())
+            if (!ValidateFinalizeState(ValidateFinalizeStateExpect::NotFinalized))
             {
-                AZ_Assert(false, "ShaderResourceGroupLayout source file of origin is empty.");
                 return false;
             }
 
