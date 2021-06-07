@@ -112,7 +112,7 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    PrefabDom instanceDomFromRootDoc;
+                    PrefabDom instanceDomFromRootDocument;
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -197,8 +197,8 @@ namespace AzToolsFramework
 
                         // If a link was created for a nested instance before the changes were propagated,
                         // then we associate it correctly here
-                        instanceDomFromRootDoc.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDoc.GetAllocator());
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDoc))
+                        instanceDomFromRootDocument.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDocument.GetAllocator());
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument))
                         {
                             Template& currentTemplate = currentTemplateReference->get();
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
