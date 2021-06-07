@@ -680,7 +680,7 @@ namespace O3DE::ProjectManager
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
-                for (const auto& tag : projectData["user_tags"])
+                for (auto tag : projectData["user_tags"])
                 {
                     projectInfo.m_userTags.append(Py_To_String(tag));
                 }
