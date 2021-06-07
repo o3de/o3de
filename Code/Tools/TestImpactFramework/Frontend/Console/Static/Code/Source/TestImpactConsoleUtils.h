@@ -45,10 +45,10 @@ namespace TestImpact
         };
 
         //! Returns a string to be used to set the specified foreground and background color.
-        AZStd::string SetColor(Foreground fgd, Background bgd);
+        AZStd::string SetColor(Foreground foreground, Background background);
 
         //! Returns a string with the specified string set to the specified foreground and background color followed by a color reset.
-        AZStd::string SetColorForString(Foreground fgd, Background bgd, const AZStd::string& str);
+        AZStd::string SetColorForString(Foreground foreground, Background background, const AZStd::string& str);
 
         //! Returns a string to be used to reset the color back to white foreground on black background. 
         AZStd::string ResetColor();

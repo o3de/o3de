@@ -40,10 +40,10 @@ namespace TestImpact
             {
                 std::cout << "Sequence completed in " << (duration.count() / 1000.f) << "s with";
 
-                if (failureReport.GetExecutionFailures().size() ||
-                    failureReport.GetTestRunFailures().size() ||
-                    failureReport.GetTimedOutTests().size() ||
-                    failureReport.GetUnexecutedTests().size())
+                if (!failureReport.GetExecutionFailures().empty() ||
+                    !failureReport.GetTestRunFailures().empty() ||
+                    !failureReport.GetTimedOutTests().empty() ||
+                    !failureReport.GetUnexecutedTests().empty())
                 {
                     std::cout << ":\n";
                     std::cout << SetColor(Foreground::White, Background::Red).c_str()

@@ -29,7 +29,7 @@ namespace TestImpact
         class TestSequenceEventHandler
         {
         public:
-            TestSequenceEventHandler(SuiteType suiteFilter);
+            explicit TestSequenceEventHandler(SuiteType suiteFilter);
 
             //! TestSequenceStartCallback.
             void operator()(Client::TestRunSelection&& selectedTests);

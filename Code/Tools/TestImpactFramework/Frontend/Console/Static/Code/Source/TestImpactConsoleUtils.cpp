@@ -16,14 +16,14 @@ namespace TestImpact
 {
     namespace Console
     {
-        AZStd::string SetColor(Foreground fgd, Background bgd)
+        AZStd::string SetColor(Foreground foreground, Background background)
         {
-            return AZStd::string::format("\033[%u;%um", static_cast<unsigned>(fgd), static_cast<unsigned>(bgd));
+            return AZStd::string::format("\033[%u;%um", aznumeric_cast<uint32_t>(foreground), aznumeric_cast<uint32_t>(background));
         }
 
-        AZStd::string SetColorForString(Foreground fgd, Background bgd, const AZStd::string& str)
+        AZStd::string SetColorForString(Foreground foreground, Background background, const AZStd::string& str)
         {
-            return AZStd::string::format("%s%s%s", SetColor(fgd, bgd).c_str(), str.c_str(), ResetColor().c_str());
+            return AZStd::string::format("%s%s%s", SetColor(foreground, background).c_str(), str.c_str(), ResetColor().c_str());
         }
 
         AZStd::string ResetColor()
