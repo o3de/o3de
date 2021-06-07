@@ -1027,7 +1027,7 @@ namespace AZ
 
         void Pass::QueueForBuild()
         {
-#if OLD_SCHOOL
+#if 0//OLD_SCHOOL
             // Don't queue if we're in building phase
             //if (PassSystemInterface::Get()->GetState() != RPI::PassSystemState::Building)
             {
@@ -1107,7 +1107,7 @@ namespace AZ
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
 
 #if OLD_SCHOOL
-            AZ_Assert(!execute == m_flags.m_alreadyReset, "ANTON - EARLY OUT FLAGS do not match for pass BUILD!!");
+            AZ_Assert(!execute == m_flags.m_alreadyReset, "ANTON - EARLY OUT FLAGS do not match for pass RESET!!");
             if (m_flags.m_alreadyReset)
             {
                 return;
@@ -1143,6 +1143,8 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
+            AZ_Assert(m_state == PassState::Reset, "ANTON - BUILDING PASS BUT STATE IS NOT RESET!!");
+
             bool execute = (m_state == PassState::Idle || m_state == PassState::Reset);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
@@ -1161,10 +1163,7 @@ namespace AZ
             }
 #endif
 
-            //Reset();
-
             m_state = PassState::Building;
-            m_queueState = PassQueueState::NoQueue;
 
             // Bindings, inputs and attachments
             CreateBindingsFromTemplate();
@@ -1187,6 +1186,7 @@ namespace AZ
             UpdateAttachmentUsageIndices();
 
             m_state = PassState::Built;
+            m_queueState = PassQueueState::NoQueue;
 
             // If this pass's Build() wasn't called from the Pass System, then it was called by it's parent pass
             // In which case we don't need to queue for initialization because the parent will already be queued

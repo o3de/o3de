@@ -214,13 +214,23 @@ namespace AZ
 
                 SortPassListAscending(buildListCopy);
 
+                Pass* previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    pass->Reset();
+                    if (pass.get() != previousPassInList);
+                    {
+                        pass->Reset();
+                        previousPassInList = pass.get();
+                    }
                 }
+                previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    pass->Build(true);
+                    if (pass.get() != previousPassInList);
+                    {
+                        pass->Build(true);
+                        previousPassInList = pass.get();
+                    }
                 }
                 loopCounter++;
             }
@@ -263,9 +273,14 @@ namespace AZ
 
                 SortPassListAscending(initListCopy);
 
+                Pass* previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : initListCopy)
                 {
-                    pass->Initialize();
+                    if (pass.get() != previousPassInList);
+                    {
+                        pass->Initialize();
+                        previousPassInList = pass.get();
+                    }
                 }
                 loopCounter++;
             }
