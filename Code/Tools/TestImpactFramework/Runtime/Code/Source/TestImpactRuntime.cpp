@@ -271,9 +271,15 @@ namespace TestImpact
 
             // Next we will update the coverage of test targets that completed (with or without failures), unless the failed test coverage
             // policy dictates we should instead discard the coverage of test targets with failing tests
-            if (const auto testResult = job.GetTestResult();
-                testResult == Client::TestRunResult::AllTestsPass ||
-                (m_failedTestCoveragePolicy == Policy::FailedTestCoverage::Keep && testResult == Client::TestRunResult::TestFailures))
+            const auto testResult = job.GetTestResult();
+
+            if (m_failedTestCoveragePolicy == Policy::FailedTestCoverage::Discard && testResult == Client::TestRunResult::TestFailures)
+            {
+                // Discard the coverage for this job
+                continue;
+            }
+
+            if (testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures)
             {
                 if (testResult == Client::TestRunResult::AllTestsPass)
                 {
