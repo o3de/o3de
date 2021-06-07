@@ -16,7 +16,9 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
-#include <QProgressDialog>
+#include <QFileInfo>
+#include <QProcess>
+#include <QProcessEnvironment>
 
 namespace O3DE::ProjectManager
 {
@@ -192,6 +194,49 @@ namespace O3DE::ProjectManager
             return true;
         }
 
+        static bool IsVS2019Installed_internal()
+        {
+            QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
+            QString programFilesPath = environment.value("ProgramFiles(x86)");
+            QString vsWherePath = programFilesPath + "\\Microsoft Visual Studio\\Installer\\vswhere.exe";
+
+            QFileInfo vsWhereFile(vsWherePath);
+            if (vsWhereFile.exists() && vsWhereFile.isFile())
+            {
+                QProcess vsWhereProcess;
+                vsWhereProcess.setProcessChannelMode(QProcess::MergedChannels);
+
+                vsWhereProcess.start(
+                    vsWherePath,
+                    QStringList{ "-version", "16.0", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                                 "-property", "isComplete" });
+
+                if (!vsWhereProcess.waitForStarted())
+                {
+                    return false;
+                }
+
+                while (vsWhereProcess.waitForReadyRead())
+                {
+                }
+
+                QString vsWhereOutput(vsWhereProcess.readAllStandardOutput());
+                if (vsWhereOutput.startsWith("1"))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        bool IsVS2019Installed()
+        {
+            static bool vs2019Installed = IsVS2019Installed_internal();
+
+            return vs2019Installed;
+        }
+
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen)
         {
             auto iter = s_ProjectManagerStringNames.find(screen);
@@ -202,6 +247,5 @@ namespace O3DE::ProjectManager
 
             return ProjectManagerScreen::Invalid;
         }
-
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

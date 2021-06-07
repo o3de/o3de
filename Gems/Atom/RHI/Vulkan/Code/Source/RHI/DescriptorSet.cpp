@@ -261,8 +261,8 @@ namespace AZ
             if (vulkanDescriptor.m_constantDataPool && constantDataSize)
             {
                 m_constantDataBuffer = Buffer::Create();
-                const RHI::BufferDescriptor descriptor(RHI::BufferBindFlags::Constant, constantDataSize);
-                RHI::BufferInitRequest request(*m_constantDataBuffer, descriptor);
+                const RHI::BufferDescriptor bufferDescriptor(RHI::BufferBindFlags::Constant, constantDataSize);
+                RHI::BufferInitRequest request(*m_constantDataBuffer, bufferDescriptor);
                 RHI::ResultCode rhiResult = vulkanDescriptor.m_constantDataPool->InitBuffer(request);
                 if (rhiResult != RHI::ResultCode::Success)
                 {

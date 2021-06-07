@@ -291,7 +291,6 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
     # Install the Find file to our <install_location>/cmake directory
     install(FILES ${CMAKE_CURRENT_LIST_FILE}
         DESTINATION cmake
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # We only want to install external targets that are part of our source tree
@@ -302,7 +301,6 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
         get_filename_component(rel_path ${rel_path} DIRECTORY)
         install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY}
             DESTINATION ${rel_path}
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endif()
 

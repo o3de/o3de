@@ -67,6 +67,16 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::SetClusterButtonLocked(const ClusterId clusterId, const ButtonId buttonId, const bool isLocked)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto cluster = clusterIt->second;
+            m_viewportUi->SetClusterButtonLocked(cluster->GetViewportUiElementId(), buttonId, isLocked);
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
     void ViewportUiManager::RegisterClusterEventHandler(const ClusterId clusterId, AZ::Event<ButtonId>::Handler& handler)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
