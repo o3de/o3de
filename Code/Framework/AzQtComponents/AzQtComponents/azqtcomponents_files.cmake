@@ -234,6 +234,7 @@ set(FILES
     Components/Widgets/VectorInput.cpp
     Components/Widgets/VectorInput.h
     Components/Widgets/VectorInput.qss
+    Components/Widgets/WelcomeScreenDialog.qss
     Components/Widgets/WindowDecorationWrapper.qss
     Components/Widgets/ColorPicker/ColorController.cpp
     Components/Widgets/ColorPicker/ColorController.h

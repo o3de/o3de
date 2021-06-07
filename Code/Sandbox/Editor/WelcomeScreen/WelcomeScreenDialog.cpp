@@ -85,14 +85,19 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->recentLevelTable->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->recentLevelTable->horizontalHeader()->hide();
     ui->recentLevelTable->verticalHeader()->hide();
+    ui->recentLevelTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->recentLevelTable->setSelectionMode(QAbstractItemView::SingleSelection);
     installEventFilter(this);
 
     auto projectName = AZ::Utils::GetProjectName();
     ui->currentProjectName->setText(projectName.c_str());
 
     ui->newLevelButton->setDefault(true);
+
+    // Hide these buttons until the new functionality is added
     ui->gridButton->hide();
     ui->objectListButton->hide();
+    ui->switchProjectButton->hide();
 
     connect(ui->recentLevelTable, &QWidget::customContextMenuRequested, this, &WelcomeScreenDialog::OnShowContextMenu);
 
@@ -103,7 +108,7 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     connect(ui->levelFileLabel, &QLabel::linkActivated, this, &WelcomeScreenDialog::OnNewLevelLabelClicked);
     connect(ui->openLevelButton, &QPushButton::clicked, this, &WelcomeScreenDialog::OnOpenLevelBtnClicked);
 
-// Adjust the height, if need be
+    // Adjust the height, if need be
     // Do it in the constructor so that the WindowDecoratorWrapper handles it correctly
     int smallestHeight = GetSmallestScreenHeight();
     if (smallestHeight < geometry().height())
@@ -193,7 +198,8 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
                         ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(name));
                         QFileInfo file(recentFile);
                         QDateTime dateTime = file.lastModified();
-                        QString date = QLocale::system().toString(dateTime, QLocale::ShortFormat);
+                        QString date = QLocale::system().toString(dateTime.date(), QLocale::ShortFormat) + " " +
+                            QLocale::system().toString(dateTime.time(), QLocale::LongFormat);
                         ui->recentLevelTable->setItem(currentRow, 1, new QTableWidgetItem(date));
                         ui->recentLevelTable->setItem(currentRow++, 2, new QTableWidgetItem(tr("Level")));
                         m_levels.push_back(std::make_pair(name, recentFile));
@@ -203,11 +209,11 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
         }
     }
     ui->recentLevelTable->setRowCount(currentRow);
+    ui->recentLevelTable->setMinimumHeight(currentRow * ui->recentLevelTable->verticalHeader()->defaultSectionSize());
+    ui->recentLevelTable->setMaximumHeight(currentRow * ui->recentLevelTable->verticalHeader()->defaultSectionSize());
+    ui->levelFileLabel->setVisible(currentRow ? false : true);
 
     ui->recentLevelTable->setCurrentIndex(QModelIndex());
-//    int rowSize = ui->recentLevelTable->sizeHintForRow(0) + ui->recentLevelTable->spacing() * 2;
-//    ui->recentLevelTable->setMinimumHeight(m_pRecentListModel->rowCount() * rowSize);
-//    ui->recentLevelTable->setMaximumHeight(m_pRecentListModel->rowCount() * rowSize);
 }
 
 
