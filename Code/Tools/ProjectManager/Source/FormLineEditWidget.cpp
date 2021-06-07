@@ -78,6 +78,14 @@ namespace O3DE::ProjectManager
         m_errorLabel->setText(labelText);
     }
 
+    void FormLineEditWidget::setErrorLabelVisible(bool visible)
+    {
+        m_errorLabel->setVisible(visible);
+        m_frame->setProperty("Valid", !visible);
+
+        refreshStyle();
+    }
+
     QLineEdit* FormLineEditWidget::lineEdit() const
     {
         return m_lineEdit;

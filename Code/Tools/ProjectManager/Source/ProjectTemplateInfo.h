@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
         QString m_name;
         QString m_path;
         QString m_summary;
+        QStringList m_includedGems;
         QStringList m_canonicalTags;
         QStringList m_userTags;
     };

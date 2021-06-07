@@ -162,7 +162,7 @@ namespace AZ::Render
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
         m_drawParams.m_depthTest = false;
-        m_drawParams.m_virtual800x600ScreenSize = true;
+        m_drawParams.m_virtual800x600ScreenSize = false;
         m_drawParams.m_scaleWithWindow = false;
         m_drawParams.m_multiline = true;
         m_drawParams.m_lineSpacing = 0.5f;
@@ -303,7 +303,10 @@ namespace AZ::Render
             lastTime = time;
         }
 
-        const double averageFPS = aznumeric_cast<double>(m_fpsHistory.size()) / actualInterval.count();
+        const double averageFPS = (actualInterval.count() != 0.0)
+            ? aznumeric_cast<double>(m_fpsHistory.size()) / actualInterval.count()
+            : 0.0;
+
         const double frameIntervalSeconds = m_fpsInterval.count();
 
         DrawLine(

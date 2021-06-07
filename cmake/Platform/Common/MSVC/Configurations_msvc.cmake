@@ -69,13 +69,7 @@ ly_append_configurations_options(
         /wd4267 # conversion, possible loss of data
         /wd4310 # cast truncates constant value
         /wd4324 # structure was padded due to alignment specifier
-        /wd4366 # the result of unary operator may be unaligned
         /wd4389 # comparison, signed/unsigned mismatch
-        /wd4436 # the result of unary operator may be unaligned
-        /wd4450 # declaration hides global declaration
-        /wd4457 # declaration hides function parameter
-        /wd4459 # declaration hides global declaration
-        /wd4701 # potentially unintialized local variable
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
@@ -130,7 +124,7 @@ ly_append_configurations_options(
         /INCREMENTAL:NO
 )
 
-set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG TRUE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = TRUE)")
+set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = FALSE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)
     ly_append_configurations_options(
         COMPILATION_DEBUG

@@ -20,9 +20,10 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::LmbrCentral
         PUBLIC
             Legacy::CryCommon
-            Gem::LmbrCentral
             Gem::LyShine.Static
 )
 
@@ -39,4 +40,13 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::LyShineExamples.Static
+            Gem::LmbrCentral
 )
+
+# if enabled, LyShineExamples is used by all kinds of applications, however, the dependency to LmbrCentral is different
+# per application type
+ly_create_alias(NAME LyShineExamples.Builders NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral.Editor)
+ly_create_alias(NAME LyShineExamples.Tools    NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral.Editor)
+ly_create_alias(NAME LyShineExamples.Clients  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
+ly_create_alias(NAME LyShineExamples.Servers  NAMESPACE Gem TARGETS Gem::LyShineExamples Gem::LmbrCentral)
+

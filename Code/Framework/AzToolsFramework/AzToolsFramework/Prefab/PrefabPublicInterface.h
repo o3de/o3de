@@ -46,10 +46,10 @@ namespace AzToolsFramework
              * Create a prefab out of the entities provided, at the path provided.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
              * @param entityIds The entities that should form the new prefab (along with their descendants).
-             * @param filePath The path for the new prefab file.
+             * @param filePath The absolute path for the new prefab file.
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
-            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
+            virtual PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
@@ -150,6 +150,17 @@ namespace AzToolsFramework
               * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
               */
             virtual PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
+
+            /**
+              * If the entity id is a container entity id, detaches the prefab instance corresponding to it. This includes converting
+              * the container entity into a regular entity and putting it under the parent prefab, removing the link between this
+              * instance and the parent, removing links between this instance and it's nested instances, adding entities directly 
+              * owned by this instance under the parent instance.
+              * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * @param containerEntityId The container entity id of the instance to detach.
+              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
         };
 
     } // namespace Prefab

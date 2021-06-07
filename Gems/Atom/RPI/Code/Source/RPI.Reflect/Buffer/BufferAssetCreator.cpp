@@ -152,7 +152,10 @@ namespace AZ
 
         void BufferAssetCreator::SetBufferName(AZStd::string_view name)
         {
-            m_asset.SetHint(name);
+            if (ValidateIsReady())
+            {
+                m_asset->m_name = name;
+            }
         }
 
         bool BufferAssetCreator::Clone(const Data::Asset<BufferAsset>& sourceAsset, Data::Asset<BufferAsset>& clonedResult, Data::AssetId& inOutLastCreatedAssetId)

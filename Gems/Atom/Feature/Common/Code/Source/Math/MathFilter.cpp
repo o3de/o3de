@@ -74,6 +74,7 @@ namespace AZ
             desc.m_elementFormat = filters.front()->GetElementFormat();
             desc.m_byteCount = totalElementCount * elementSize;
             desc.m_bufferData = data.data();
+            desc.m_isUniqueName = true;
 
             auto buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 

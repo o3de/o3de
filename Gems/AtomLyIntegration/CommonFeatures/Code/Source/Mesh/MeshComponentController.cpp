@@ -485,16 +485,12 @@ namespace AZ
                         m_transformInterface->GetWorldTM(), m_cachedNonUniformScale, ray.m_startWorldPosition,
                         ray.m_endWorldPosition - ray.m_startWorldPosition, t, normal))
                 {
-                    // note: this is a temporary workaround to handle cases where model->RayIntersection
-                    // returns negative distances, follow-up ATOM-15673
-                    const auto absT = AZStd::abs(t);
-
                     // fill in ray result structure after successful intersection
                     const auto intersectionLine = (ray.m_endWorldPosition - ray.m_startWorldPosition);
                     result.m_uv = AZ::Vector2::CreateZero();
-                    result.m_worldPosition = ray.m_startWorldPosition + intersectionLine * absT;
+                    result.m_worldPosition = ray.m_startWorldPosition + intersectionLine * t;
                     result.m_worldNormal = normal;
-                    result.m_distance = intersectionLine.GetLength() * absT;
+                    result.m_distance = intersectionLine.GetLength() * t;
                     result.m_entityAndComponent = m_entityComponentIdPair;
                 }
             }
