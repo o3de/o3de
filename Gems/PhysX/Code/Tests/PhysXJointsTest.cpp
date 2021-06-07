@@ -40,8 +40,9 @@ namespace PhysX
     AZStd::unique_ptr<AZ::Entity> AddBodyColliderEntity( AzPhysics::SceneHandle sceneHandle,
         const AZ::Vector3& position, 
         const AZ::Vector3& initialLinearVelocity,
-        AZStd::shared_ptr<GenericJointConfiguration> jointConfig = nullptr,
-        AZStd::shared_ptr<GenericJointLimitsConfiguration> jointLimitsConfig = nullptr)
+        AZStd::shared_ptr<JointComponentConfiguration> jointConfig = nullptr,
+        AZStd::shared_ptr<ApiJointGenericProperties> jointGenericProperties = nullptr,
+        AZStd::shared_ptr<ApiJointLimitProperties> jointLimitProperties = nullptr)
     {
         const char* entityName = "testEntity";
         auto entity = AZStd::make_unique<AZ::Entity>(entityName);
@@ -70,10 +71,12 @@ namespace PhysX
         {
             jointConfig->m_followerEntity = entity->GetId();
 
-            GenericJointLimitsConfiguration defaultJointLimitsConfig;
+            ApiJointGenericProperties defaultJointGenericProperties;
+            ApiJointLimitProperties defaultJointLimitProperties;
             entity->CreateComponent<JointComponentType>(
                     *jointConfig,
-                    (jointLimitsConfig)? *jointLimitsConfig : defaultJointLimitsConfig);
+                    (jointGenericProperties)? *jointGenericProperties : defaultJointGenericProperties,
+                    (jointLimitProperties)? *jointLimitProperties : defaultJointLimitProperties);
         }
 
         entity->Init();
@@ -116,7 +119,7 @@ namespace PhysX
             leadPosition,
             leadInitialLinearVelocity);
 
-        auto jointConfig = AZStd::make_shared<GenericJointConfiguration>();
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
         jointConfig->m_leadEntity = leadEntity->GetId();
         jointConfig->m_localTransformFromFollower = jointLocalTransform;
 
@@ -152,17 +155,18 @@ namespace PhysX
             leadPosition, 
             leadInitialLinearVelocity);
 
-        auto jointConfig = AZStd::make_shared<GenericJointConfiguration>();
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
         jointConfig->m_leadEntity = leadEntity->GetId();
         jointConfig->m_localTransformFromFollower = jointLocalTransform;
 
-        auto jointLimits = AZStd::make_shared <GenericJointLimitsConfiguration>();
+        auto jointLimits = AZStd::make_shared <ApiJointLimitProperties>();
         jointLimits->m_isLimited = false;
 
         auto followerEntity = AddBodyColliderEntity<HingeJointComponent>(m_testSceneHandle,
             followerPosition,
             followerInitialLinearVelocity,
             jointConfig,
+            nullptr,
             jointLimits);
 
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());
@@ -193,17 +197,18 @@ namespace PhysX
             leadPosition,
             leadInitialLinearVelocity);
 
-        auto jointConfig = AZStd::make_shared<GenericJointConfiguration>();
+        auto jointConfig = AZStd::make_shared<JointComponentConfiguration>();
         jointConfig->m_leadEntity = leadEntity->GetId();
         jointConfig->m_localTransformFromFollower = jointLocalTransform;
 
-        auto jointLimits = AZStd::make_shared <GenericJointLimitsConfiguration>();
+        auto jointLimits = AZStd::make_shared <ApiJointLimitProperties>();
         jointLimits->m_isLimited = false;
 
         auto followerEntity = AddBodyColliderEntity<BallJointComponent>(m_testSceneHandle,
             followerPosition,
             followerInitialLinearVelocity,
             jointConfig,
+            nullptr,
             jointLimits);
 
         const AZ::Vector3 followerEndPosition = RunJointTest(m_defaultScene, followerEntity->GetId());

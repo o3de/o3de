@@ -144,9 +144,10 @@ namespace PhysX
     {
         return m_standardLimitConfig.m_isLimited;
     }
-    GenericJointLimitsConfiguration EditorJointLimitPairConfig::ToGameTimeConfig() const
+
+    ApiJointLimitProperties EditorJointLimitPairConfig::ToGameTimeConfig() const
     {
-        return GenericJointLimitsConfiguration(m_standardLimitConfig.m_damping
+        return ApiJointLimitProperties(m_standardLimitConfig.m_damping
             , m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
             , m_limitPositive, m_limitNegative
@@ -193,9 +194,9 @@ namespace PhysX
         return m_standardLimitConfig.m_isLimited;
     }
 
-    GenericJointLimitsConfiguration EditorJointLimitConeConfig::ToGameTimeConfig() const
+    ApiJointLimitProperties EditorJointLimitConeConfig::ToGameTimeConfig() const
     {
-        return GenericJointLimitsConfiguration(m_standardLimitConfig.m_damping
+        return ApiJointLimitProperties(m_standardLimitConfig.m_damping
             , m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
             , m_limitY
@@ -275,27 +276,31 @@ namespace PhysX
             , AzToolsFramework::Refresh_AttributesAndValues);
     }
 
-    GenericJointConfiguration EditorJointConfig::ToGameTimeConfig() const
+    ApiJointGenericProperties EditorJointConfig::ToGenericProperties() const
     {
-        GenericJointConfiguration::GenericJointFlag flags = GenericJointConfiguration::GenericJointFlag::None;
+        ApiJointGenericProperties::GenericApiJointFlag flags = ApiJointGenericProperties::GenericApiJointFlag::None;
         if (m_breakable)
         {
-            flags |= GenericJointConfiguration::GenericJointFlag::Breakable;
+            flags |= ApiJointGenericProperties::GenericApiJointFlag::Breakable;
         }
         if (m_selfCollide)
         {
-            flags |= GenericJointConfiguration::GenericJointFlag::SelfCollide;
+            flags |= ApiJointGenericProperties::GenericApiJointFlag::SelfCollide;
         }
 
+        return ApiJointGenericProperties(flags, m_forceMax, m_torqueMax);
+    }
+
+    JointComponentConfiguration EditorJointConfig::ToGameTimeConfig() const
+    {
         AZ::Vector3 localRotation(m_localRotation);
 
-        return GenericJointConfiguration(m_forceMax
-            , m_torqueMax
-            , AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateFromEulerAnglesDegrees(localRotation),
-                m_localPosition)
-            , m_leadEntity
-            , m_followerEntity
-            , flags);
+        return JointComponentConfiguration(
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(localRotation),
+                m_localPosition),
+            m_leadEntity,
+            m_followerEntity);
     }
 
     bool EditorJointConfig::IsInComponentMode() const

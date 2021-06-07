@@ -29,7 +29,7 @@ namespace AzPhysics
     struct ApiJointConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(AzPhysics::ApiJointConfiguration, "{52844E3D-79C8-4F34-AF63-5C45ADE77F85}");
+        AZ_RTTI(AzPhysics::ApiJointConfiguration, "{DF91D39A-4901-48C4-9159-93FD2ACA5252}");
         static void Reflect(AZ::ReflectContext* context);
 
         ApiJointConfiguration() = default;

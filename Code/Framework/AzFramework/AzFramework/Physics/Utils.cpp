@@ -34,6 +34,7 @@
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
+#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
 
 namespace Physics
 {
@@ -124,6 +125,7 @@ namespace Physics
             JointLimitConfiguration::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
+            AzPhysics::ApiJointConfiguration::Reflect(context);
             RagdollNodeConfiguration::Reflect(context);
             RagdollConfiguration::Reflect(context);
             CharacterColliderNodeConfiguration::Reflect(context);
@@ -131,6 +133,7 @@ namespace Physics
             AnimationConfiguration::Reflect(context);
             CharacterConfiguration::Reflect(context);
             AzPhysics::SimulatedBody::Reflect(context);
+            AzPhysics::ApiJoint::Reflect(context);
             ReflectSimulatedBodyComponentRequestsBus(context);
             CollisionFilteringRequests::Reflect(context);
             AzPhysics::SceneQuery::ReflectSceneQueryObjects(context);
