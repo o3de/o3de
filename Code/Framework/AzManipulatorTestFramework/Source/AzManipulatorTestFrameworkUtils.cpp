@@ -30,8 +30,10 @@ namespace AzManipulatorTestFramework
     // create a default sphere view for a manipulator for simple intersection
     template<typename Manipulator>
     void SetupManipulatorView(
-        AZStd::shared_ptr<Manipulator> manipulator, const AzToolsFramework::ManipulatorManagerId manipulatorManagerId,
-        const AZ::Vector3& position, const float radius)
+        AZStd::shared_ptr<Manipulator> manipulator,
+        const AzToolsFramework::ManipulatorManagerId manipulatorManagerId,
+        const AZ::Vector3& position,
+        const float radius)
     {
         // unit sphere view
         auto sphereView = AzToolsFramework::CreateManipulatorViewSphere(
