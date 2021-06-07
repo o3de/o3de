@@ -482,15 +482,22 @@ namespace AZ
                     auto parentId = transformComponent->GetParentId();
                     if (parentId.IsValid())
                     {
+                        // Look to see if the parent ID exists in the top-level instance (i.e. an entity in the nested slice is a child
+                        // of an entity in the containing slice).  If this case exists, we need to adjust the parents so that the child
+                        // entity connects to the prefab container, and the *container* is the child of the entity in the containing
+                        // slice.  (i.e. go from A->B to A->container->B)
                         auto parentAlias = m_aliasIdMapper.find(TemplateEntityIdPair(topLevelInstance->GetTemplateId(), parentId));
                         if (parentAlias != m_aliasIdMapper.end())
                         {
                             // Set the container's parent to this entity's parent, and set this entity's parent to the container
-                            // (i.e. go from A->B to A->container->B)
                             auto newParentId = topLevelInstance->GetEntityId(parentAlias->second);
                             SetParentEntity(containerEntity->get(), newParentId, false);
                             onlySetIfInvalid = false;
                         }
+
+                        // If the parent ID is valid, but NOT in the top-level instance, then it's just a nested hierarchy inside the
+                        // slice and we don't need to adjust anything.  "onlySetIfInvalid" will still be true, which means we won't change
+                        // the parent ID below.
                     }
 
                     SetParentEntity(*entity, containerEntityId, onlySetIfInvalid);                    
