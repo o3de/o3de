@@ -24,6 +24,7 @@
 #include <functional>
 #include <QSharedPointer>
 #include <QWidgetAction>
+#include <QComboBox>
 
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
