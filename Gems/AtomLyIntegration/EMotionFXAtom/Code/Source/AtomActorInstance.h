@@ -21,6 +21,9 @@
 
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
@@ -89,7 +92,7 @@ namespace AZ
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override { AZ_UNUSED(debugOptions) };
+            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
             SkinningMethod GetAtomSkinningMethod() const;
@@ -176,6 +179,13 @@ namespace AZ
             // and if there are blend shapes with wrinkle masks that should be applied to it
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
+
+            // Helper and debug geometry rendering
+            void RenderSkeleton(RPI::AuxGeomDrawPtr& auxGeom);
+            void RenderEMFXDebugDraw(RPI::AuxGeomDrawPtr& auxGeom);
+            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
+            AZStd::vector<AZ::Vector3> m_auxVertices;
+            AZStd::vector<AZ::Color> m_auxColors;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;

@@ -555,6 +555,7 @@ namespace EMotionFX
                 RenderActorInstance::DebugOptions debugOptions;
                 debugOptions.m_drawAABB = m_renderBounds;
                 debugOptions.m_drawSkeleton = m_renderSkeleton;
+                debugOptions.m_emfxDebugDraw = true;
                 m_renderActorInstance->DebugDraw(debugOptions);
             }
         }
