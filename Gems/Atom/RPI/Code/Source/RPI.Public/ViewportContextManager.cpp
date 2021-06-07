@@ -138,6 +138,12 @@ namespace AZ
                 nameToUse = Name(AZStd::string::format("ViewportContext%i", id));
             }
 
+            if (GetViewportContextByName(nameToUse) != nullptr)
+            {
+                AZ_Assert(false, "Attempted to register multiple ViewportContexts to name %s", contextName.GetCStr());
+                return nullptr;
+            }
+
             AZ_Assert(params.device, "Invalid device provided to CreateViewportContext");
             ViewportContextPtr viewportContext = AZStd::make_shared<ViewportContext>(
                 this,
