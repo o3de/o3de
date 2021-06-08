@@ -11,7 +11,6 @@
 
 set(FILES
     main.cpp
-    ProjectSettingsTool_precompiled.cpp
     ProjectSettingsTool_precompiled.h
     DefaultImageValidator.cpp
     DefaultImageValidator.h

@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Editor/precompiled.cpp
     Editor/precompiled.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
