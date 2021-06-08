@@ -40,6 +40,7 @@
     friend class PassSystem;                                                        \
     friend class PassFactory;                                                       \
     friend class ParentPass;                                                        \
+    friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \
 
 namespace UnitTest
@@ -394,6 +395,7 @@ namespace AZ
 
                         uint64_t m_initialized : 1;
                         uint64_t m_alreadyCreated : 1;
+                        uint64_t m_createChildren : 1;
 
                         // OLD SCHOOL
                         uint64_t m_alreadyPrepared : 1;

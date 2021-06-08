@@ -26,8 +26,6 @@ namespace AZ
             , m_windowContext(windowContext)
             , m_childTemplateName(childTemplateName)
         {
-            m_flags.m_alreadyCreated = false;
-
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             // Create child pass
@@ -44,8 +42,6 @@ namespace AZ
 
             m_childPass = passSystem->CreatePassFromRequest(&childRequest);
             AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (project_path)");
-            
-            CreateChildPasses();
 
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
         }

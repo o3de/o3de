@@ -40,7 +40,7 @@ namespace AZ
         private:
             explicit ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor);
 
-            void CreateChildPasses(uint32_t numBlurMips);
+            void CreateChildPassesInternal() override;
 
             // Pass Overrides...
             void ResetInternal() override;
@@ -50,6 +50,7 @@ namespace AZ
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_horizontalBlurChildPasses;
 
             Data::Instance<RPI::AttachmentImage> m_frameBufferImageAttachment;
+            uint32_t m_numBlurMips = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

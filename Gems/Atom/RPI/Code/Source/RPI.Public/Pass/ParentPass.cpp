@@ -40,7 +40,7 @@ namespace AZ
         ParentPass::ParentPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            CreateChildPasses();
+            m_flags.m_createChildren = true;
         }
 
         ParentPass::~ParentPass()
@@ -248,7 +248,7 @@ namespace AZ
 
         void ParentPass::CreateChildPasses()
         {
-            if (m_flags.m_alreadyCreated)
+            if (!m_flags.m_createChildren || m_flags.m_alreadyCreated)
             {
                 return;
             }
@@ -258,14 +258,7 @@ namespace AZ
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
 
-            for (Ptr<Pass>& child : m_children)
-            {
-                ParentPass* asParent = child->AsParent();
-                if (asParent != nullptr)
-                {
-                    asParent->CreateChildPasses();
-                }
-            }
+            m_flags.m_createChildren = false;
         }
 
         void ParentPass::ResetInternal()
@@ -278,6 +271,8 @@ namespace AZ
 
         void ParentPass::BuildInternal()
         {
+            CreateChildPasses();
+
             for (const Ptr<Pass>& child : m_children)
             {
                 child->Build();

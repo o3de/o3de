@@ -118,7 +118,7 @@ namespace AZ
             // Finds the pass in m_children and removes it
             void RemoveChild(Ptr<Pass> pass);
 
-            // Orphans all children from clearing m_children.
+            // Orphans all children by clearing m_children.
             void RemoveChildren();
 
         private:

@@ -107,6 +107,8 @@ namespace AZ
             pipeline->m_originalRenderSettings = desc.m_renderSettings;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
+            pipeline->m_rootPass->Build();
+            pipeline->m_rootPass->Initialize();
             pipeline->BuildPipelineViews();
         }
 

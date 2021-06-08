@@ -37,8 +37,6 @@ namespace AZ
         EnvironmentCubeMapPass::EnvironmentCubeMapPass(const PassDescriptor& passDescriptor)
             : ParentPass(passDescriptor)
         {
-            m_flags.m_alreadyCreated = false;
-
             // load pass data
             const EnvironmentCubeMapPassData* passData = PassUtils::GetPassData<EnvironmentCubeMapPassData>(passDescriptor);
             if (passData == nullptr)
@@ -88,8 +86,6 @@ namespace AZ
             AZ::Matrix4x4 viewToClipMatrix;
             MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1.0f, 0.1f, 100.0f, true);
             m_view->SetViewToClipMatrix(viewToClipMatrix);
-
-            CreateChildPasses();
         }
 
         EnvironmentCubeMapPass::~EnvironmentCubeMapPass()

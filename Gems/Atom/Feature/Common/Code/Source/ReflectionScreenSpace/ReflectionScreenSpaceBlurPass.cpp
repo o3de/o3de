@@ -47,7 +47,7 @@ namespace AZ
             RemoveChildren();
         }
 
-        void ReflectionScreenSpaceBlurPass::CreateChildPasses(uint32_t numBlurMips)
+        void ReflectionScreenSpaceBlurPass::CreateChildPassesInternal()
         {
             RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
 
@@ -83,7 +83,7 @@ namespace AZ
             horizontalBlurChildDesc.m_passTemplate = blurHorizontalPassTemplate;
 
             // add child passes to perform the vertical and horizontal Gaussian blur for each roughness mip level
-            for (uint32_t mip = 0; mip < numBlurMips; ++mip)
+            for (uint32_t mip = 0; mip < m_numBlurMips; ++mip)
             {
                 // create Vertical blur child passes
                 {
@@ -116,6 +116,7 @@ namespace AZ
         void ReflectionScreenSpaceBlurPass::BuildInternal()
         {
             RemoveChildren();
+            m_flags.m_createChildren = true;
 
             Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
             
@@ -163,8 +164,7 @@ namespace AZ
                 m_ownedAttachments.push_back(transientPassAttachment);
             }
 
-            // create child passes, one vertical and one horizontal blur per mip level
-            CreateChildPasses(mipLevels - 1);
+            m_numBlurMips = mipLevels - 1;
 
             // call ParentPass::BuildInternal() first to configure the slots and auto-add the empty bindings,
             // then we will assign attachments to the bindings
