@@ -102,10 +102,6 @@
   },
   "device_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
-      "daily-pipeline-metrics",
-      "weekly-build-metrics"
     ],
     "PIPELINE_ENV":{
       "NODE_LABEL":"Catalina_DeviceFarm_1",
