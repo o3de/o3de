@@ -146,6 +146,8 @@ class TestImpact:
     # Runs the specified test sequence
     def run(self, suite, safe_mode, test_timeout, global_timeout):
         args = []
+        pipeline_of_truth_test_failure_policy = "continue"
+        non_pipeline_of_truth_test_failure_policy = "continue"
         # Suite
         args.append(f"--suite={suite}")
         print(f"Test suite is set to '{suite}'.")
@@ -170,8 +172,8 @@ class TestImpact:
                 args.append("--sequence=seed")
                 print("Sequence type is set to 'seed'.")
                 # Test failure policy
-                args.append("--fpolicy=continue")
-                print("Test failure policy is set to 'continue'.")
+                args.append(f"--fpolicy={pipeline_of_truth_test_failure_policy}")
+                print(f"Test failure policy is set to '{pipeline_of_truth_test_failure_policy}'.")
             # Non pipeline of truth sequence
             else:
                 if self.__has_change_list:
@@ -192,8 +194,8 @@ class TestImpact:
                     args.append("--sequence=regular")
                     print("Sequence type is set to 'regular'.")
                 # Test failure policy
-                args.append("--fpolicy=abort")
-                print("Test failure policy is set to 'abort'.")
+                args.append(f"--fpolicy={non_pipeline_of_truth_test_failure_policy}")
+                print(f"Test failure policy is set to '{non_pipeline_of_truth_test_failure_policy}'.")
         else:
             print("Test impact analysis ie disabled.")
              # Sequence type
@@ -202,13 +204,13 @@ class TestImpact:
             # Pipeline of truth sequence
             if self.__is_pipeline_of_truth:
                 # Test failure policy
-                args.append("--fpolicy=continue")
-                print("Test failure policy is set to 'continue'.")
+                args.append(f"--fpolicy={pipeline_of_truth_test_failure_policy}")
+                print(f"Test failure policy is set to '{pipeline_of_truth_test_failure_policy}'.")
             # Non pipeline of truth sequence
             else:
                 # Test failure policy
-                args.append("--fpolicy=abort")
-                print("Test failure policy is set to 'abort'.")
+                args.append(f"--fpolicy={non_pipeline_of_truth_test_failure_policy}")
+                print(f"Test failure policy is set to '{non_pipeline_of_truth_test_failure_policy}'.")
         
         print("Args: ", end='')
         print(*args)
