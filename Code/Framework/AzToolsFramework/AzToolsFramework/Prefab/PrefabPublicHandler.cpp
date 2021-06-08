@@ -1021,7 +1021,7 @@ namespace AzToolsFramework
                 if (!commonOwningInstance.has_value())
                 {
                     // In this case if there isn't a parent instance (likely it is the top level instance), simply return.
-                    return AZ::Success();
+                    return AZ::Failure(AZStd::string("Cannot delete the loaded level instance."));
                 }
             }
 
