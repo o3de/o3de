@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
     {
         setObjectName("labelButton");
 
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(5);
 
