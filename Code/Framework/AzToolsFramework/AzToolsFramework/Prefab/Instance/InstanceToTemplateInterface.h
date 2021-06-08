@@ -51,7 +51,7 @@ namespace AzToolsFramework
             //! @param providedPatch The patch to apply to the template.
             //! @param templateId The id of the template to update.
             //! @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshes as part of propagation.
-            //!     Defaults to nullopt, which means that all instances will be refreshed. This 
+            //!     Defaults to nullopt, which means that all instances will be refreshed.
             //! @return True if the template was patched correctly, false if the operation failed.
             virtual bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) = 0;
 
