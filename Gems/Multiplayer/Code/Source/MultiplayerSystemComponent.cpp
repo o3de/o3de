@@ -157,6 +157,7 @@ namespace Multiplayer
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MPNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
         m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         AZ::Interface<IMultiplayer>::Register(this);
+        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Register(this);
 
         //! Register our gems multiplayer components to assign NetComponentIds
         RegisterMultiplayerComponents();
@@ -164,6 +165,7 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Deactivate()
     {
+        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
         AZ::Interface<IMultiplayer>::Unregister(this);
         AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
@@ -195,14 +197,14 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->GetExternalSessionCertificate());
+        AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetExternalSessionCertificate());
         if (!externalCertPath.empty())
         {
             AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
         }
 
-        AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->GetInternalSessionCertificate());
+        AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate());
         if (!internalCertPath.empty())
         {
             AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
@@ -533,7 +535,7 @@ namespace Multiplayer
             AzFramework::PlayerConnectionConfig config;
             config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
             config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
-            AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->ValidatePlayerJoinSession(config);
+            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
         }
 
         // Hosts will spawn a new default player prefab for the user that just connected
@@ -610,7 +612,7 @@ namespace Multiplayer
                 AzFramework::PlayerConnectionConfig config;
                 config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
                 config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
-                AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->HandlePlayerLeaveSession(config);
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
             }
         }
 
@@ -620,7 +622,7 @@ namespace Multiplayer
         {   
             if (m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
             {
-                AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->HandleDestroySession();
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandleDestroySession();
             }
         }
     }

@@ -46,7 +46,7 @@ namespace Multiplayer
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public AzFramework::SessionNotificationBus::Handler
-        , public AzFramework::ISessionLocalUserRequests
+        , public AzFramework::ISessionHandlingClientRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
     {
@@ -98,7 +98,7 @@ namespace Multiplayer
         void OnDisconnect(AzNetworking::IConnection* connection, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint) override;
         //! @}
 
-        //! ISessionLocalUserRequests interface
+        //! ISessionHandlingClientRequests interface
         //! @{
         bool RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& sessionConnectionConfig) override;
         void RequestPlayerLeaveSession() override;

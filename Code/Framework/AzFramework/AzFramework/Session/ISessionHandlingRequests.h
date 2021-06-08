@@ -45,14 +45,14 @@ namespace AzFramework
         AZStd::string m_playerSessionId;
     };
 
-    //! ISessionLocalUserRequests
-    //! Requests made to the local user to manage their connection to a session
-    class ISessionLocalUserRequests
+    //! ISessionHandlingClientRequests
+    //! Requests made to the client to manage their connection to a session
+    class ISessionHandlingClientRequests
     {
     public:
-        AZ_RTTI(ISessionLocalUserRequests, "{41DE6BD3-72BC-4443-BFF9-5B1B9396657A}");
-        ISessionLocalUserRequests() = default;
-        virtual ~ISessionLocalUserRequests() = default;
+        AZ_RTTI(ISessionHandlingClientRequests, "{41DE6BD3-72BC-4443-BFF9-5B1B9396657A}");
+        ISessionHandlingClientRequests() = default;
+        virtual ~ISessionHandlingClientRequests() = default;
 
         // Request the player join session
         // @param  sessionConnectionConfig The required properties to handle the player join session process
@@ -65,12 +65,12 @@ namespace AzFramework
 
     //! ISessionProviderRequests
     //! Requests made to the service providing server/fleet management by the server
-    class ISessionProviderRequests
+    class ISessionHandlingProviderRequests
     {
     public:
-        AZ_RTTI(ISessionProviderRequests, "{4F0C17BA-F470-4242-A8CB-EC7EA805257C}");
-        ISessionProviderRequests() = default;
-        virtual ~ISessionProviderRequests() = default;
+        AZ_RTTI(ISessionHandlingProviderRequests, "{4F0C17BA-F470-4242-A8CB-EC7EA805257C}");
+        ISessionHandlingProviderRequests() = default;
+        virtual ~ISessionHandlingProviderRequests() = default;
 
         // Handle the destroy session process
         virtual void HandleDestroySession() = 0;
