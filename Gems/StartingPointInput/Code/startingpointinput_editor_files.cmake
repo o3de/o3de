@@ -24,6 +24,4 @@ set(FILES
     Source/InputNode.cpp
     Source/StartingPointInputGem.cpp
     Source/StartingPointInput_precompiled.h
-    Source/StartingPointInput_precompiled.cpp
-
 )

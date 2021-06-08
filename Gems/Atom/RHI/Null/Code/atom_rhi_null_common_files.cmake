@@ -10,6 +10,5 @@
 #
 
 set(FILES
-    Source/Atom_RHI_Null_precompiled.cpp
     Source/Atom_RHI_Null_precompiled.h
 )
