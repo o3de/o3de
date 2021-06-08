@@ -459,6 +459,17 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
+            // Validate our session with the provider if any
+            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+            {
+                AzFramework::PlayerConnectionConfig config;
+                config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+                config.m_playerSessionId = packet.GetTicket();
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
+
+                reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+            }
+
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
             AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
@@ -626,10 +637,6 @@ namespace Multiplayer
         {
             AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
             m_connAcquiredEvent.Signal(datum);
-            AzFramework::PlayerConnectionConfig config;
-            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-            config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
-            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
         }
 
         // Hosts will spawn a new default player prefab for the user that just connected
