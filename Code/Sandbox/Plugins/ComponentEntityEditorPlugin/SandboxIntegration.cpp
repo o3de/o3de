@@ -670,18 +670,11 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, menu);
     }
 
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!prefabSystemEnabled || (prefabSystemEnabled && prefabWipFeaturesEnabled))
+    action = menu->addAction(QObject::tr("Duplicate"));
+    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+    if (selected.size() == 0)
     {
-        action = menu->addAction(QObject::tr("Duplicate"));
-        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-        if (selected.size() == 0)
-        {
-            action->setDisabled(true);
-        }
+        action->setDisabled(true);
     }
 
     if (!prefabSystemEnabled)
