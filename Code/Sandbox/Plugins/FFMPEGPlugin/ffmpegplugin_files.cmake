@@ -12,7 +12,6 @@
 set(FILES
     FFMPEGPlugin.rc
     main.cpp
-    FFMPEGPlugin_precompiled.cpp
     FFMPEGPlugin_precompiled.h
     FFMPEGPlugin.cpp
     FFMPEGPlugin.h

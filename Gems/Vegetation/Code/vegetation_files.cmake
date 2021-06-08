@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/Vegetation_precompiled.cpp
     Source/Vegetation_precompiled.h
     Include/Vegetation/DescriptorListAsset.h
     Include/Vegetation/Descriptor.h

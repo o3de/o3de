@@ -58,7 +58,7 @@ namespace O3DE::ProjectManager
         tabWidget->tabBar()->setObjectName("projectSettingsTabBar");
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
-        QPushButton* gemsButton = new QPushButton(tr("Add More Gems"), this);
+        QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);
         topBarHLayout->addWidget(gemsButton);
         tabWidget->setCornerWidget(gemsButton);
 
@@ -136,10 +136,10 @@ namespace O3DE::ProjectManager
                 // Update project if settings changed
                 if (m_projectInfo != newProjectSettings)
                 {
-                    bool result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
-                    if (!result)
+                    auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
+                    if (!result.IsSuccess())
                     {
-                        QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+                        QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
                         return;
                     }
                 }
@@ -189,7 +189,7 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
-            m_header->setSubTitle(QString(tr("Add More Gems to \"%1\"")).arg(m_projectInfo.m_projectName));
+            m_header->setSubTitle(QString(tr("Configure Gems for \"%1\"")).arg(m_projectInfo.m_projectName));
             m_nextButton->setText(tr("Confirm"));
         }
         else
