@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/MathConversion.h>
@@ -183,9 +184,7 @@ namespace PhysXDebug
     void SystemComponent::OnCrySystemInitialized([[maybe_unused]] ISystem& system, const SSystemInitParams&)
     {
         InitPhysXColorMappings();
-        RegisterCommands();
         ConfigurePhysXVisualizationParameters();
-
     }
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
@@ -537,12 +536,13 @@ namespace PhysXDebug
         }
     }
 
-    static void CmdEnableWireFrame([[maybe_unused]] IConsoleCmdArgs* args)
+    static void physx_CullingBox([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         PhysXDebug::PhysXDebugRequestBus::Broadcast(&PhysXDebug::PhysXDebugRequestBus::Events::ToggleCullingWireFrame);
     }
+    AZ_CONSOLEFREEFUNC(physx_CullingBox, AZ::ConsoleFunctorFlags::DontReplicate, "Enables physx wireframe view");
 
-    static void CmdConnectToPvd([[maybe_unused]] IConsoleCmdArgs* args)
+    static void physx_PvdConnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
         if (debug)
@@ -550,8 +550,9 @@ namespace PhysXDebug
             debug->ConnectToPvd();
         }
     }
+    AZ_CONSOLEFREEFUNC(physx_PvdConnect, AZ::ConsoleFunctorFlags::DontReplicate, "Connects to the physx visual debugger");
 
-    static void CmdDisconnectFromPvd([[maybe_unused]] IConsoleCmdArgs* args)
+    static void physx_PvdDisconnect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
         if (debug)
@@ -559,13 +560,14 @@ namespace PhysXDebug
             debug->DisconnectFromPvd();
         }
     }
+    AZ_CONSOLEFREEFUNC(physx_PvdDisconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects from the physx visual debugger");
 
-    static void CmdSetPhysXDebugCullingBoxSize(IConsoleCmdArgs* args)
+    static void physx_CullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        const int argumentCount = args->GetArgCount();
+        const int argumentCount = arguments.size();
         if (argumentCount == 2)
         {
-            float newCullingBoxSize = (float)strtol(args->GetArg(1), nullptr, 10);
+            float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[1]).c_str(), nullptr, 10);
             PhysXDebug::PhysXDebugRequestBus::Broadcast(&PhysXDebug::PhysXDebugRequestBus::Events::SetCullingBoxSize, newCullingBoxSize);
         }
         else
@@ -574,16 +576,17 @@ namespace PhysXDebug
                 "Please use physx_SetDebugCullingBoxSize <boxSize> e.g. physx_SetDebugCullingBoxSize 100.");
         }
     }
+    AZ_CONSOLEFREEFUNC(physx_CullingBoxSize, AZ::ConsoleFunctorFlags::DontReplicate, "Sets physx debug culling box size");
 
-    static void CmdTogglePhysXDebugVisualization(IConsoleCmdArgs* args)
+    static void physx_Debug([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         using namespace CryStringUtils;
 
-        const int argumentCount = args->GetArgCount();
+        const int argumentCount = arguments.size();
 
         if (argumentCount == 2)
         {
-            const auto userPreference = static_cast<DebugCVarValues>(strtol(args->GetArg(1), nullptr, 10));
+            const auto userPreference = static_cast<DebugCVarValues>(strtol(AZ::CVarFixedString(arguments[1]).c_str(), nullptr, 10));
 
             switch (userPreference)
             {
@@ -609,29 +612,7 @@ namespace PhysXDebug
             AZ_Warning("PhysXDebug", false, "Invalid physx_Debug Arguments. Please use physx_Debug 1 to enable, physx_Debug 0 to disable or physx_Debug 2 to enable all configuration settings.");
         }
     }
-
-    void SystemComponent::RegisterCommands()
-    {
-        if (m_registered)
-        {
-            return;
-        }
-
-        if (gEnv)
-        {
-            IConsole* console = gEnv->pSystem->GetIConsole();
-            if (console)
-            {
-                console->AddCommand("physx_Debug", CmdTogglePhysXDebugVisualization);
-                console->AddCommand("physx_CullingBox", CmdEnableWireFrame);
-                console->AddCommand("physx_CullingBoxSize", CmdSetPhysXDebugCullingBoxSize);
-                console->AddCommand("physx_PvdConnect", CmdConnectToPvd);
-                console->AddCommand("physx_PvdDisconnect", CmdDisconnectFromPvd);
-            }
-
-            m_registered = true;
-        }
-    }
+    AZ_CONSOLEFREEFUNC(physx_Debug, AZ::ConsoleFunctorFlags::DontReplicate, "Toggles physx debug visualization");
 
     void SystemComponent::ConfigurePhysXVisualizationParameters()
     {

@@ -19,6 +19,8 @@ namespace PhysX
 {
     namespace Editor
     {
+        static const char* const DefaultPhysicsMaterialLabel = "<Default Physics Material>";
+
         AZ::u32 MaterialIdWidget::GetHandlerName() const
         {
             return Physics::Edit::MaterialIdSelector;
@@ -72,8 +74,7 @@ namespace PhysX
 
             auto lockToDefault = [gui]()
             {
-                static const char* defaultLabel = "Default";
-                gui->addItem(defaultLabel);
+                gui->addItem(DefaultPhysicsMaterialLabel);
                 gui->setCurrentIndex(0);
                 return false;
             };
@@ -83,30 +84,31 @@ namespace PhysX
                 return lockToDefault();
             }
 
-            auto materialAsset = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(m_materialLibraryId, AZ::Data::AssetLoadBehavior::Default);
-            materialAsset.BlockUntilLoadComplete();
+            auto materialLibraryAsset = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(m_materialLibraryId, AZ::Data::AssetLoadBehavior::Default);
+            materialLibraryAsset.BlockUntilLoadComplete();
 
-            if (materialAsset.Get() == nullptr)
+            if (materialLibraryAsset.Get() == nullptr)
             {
                 return lockToDefault();
             }
 
-            const auto& materialsData = materialAsset.Get()->GetMaterialsData();
+            const auto& materials = materialLibraryAsset.Get()->GetMaterialsData();
 
-            if (materialsData.size() == 0)
+            if (materials.empty())
             {
                 return lockToDefault();
             }
 
-            m_libraryIds.reserve(materialsData.size());
+            m_libraryIds.reserve(materials.size() + 1); // Plus one to reserve the first element for default physics material
 
+            // Add default physics material first
             m_libraryIds.push_back(Physics::MaterialId());
-            gui->addItem("Default");
+            gui->addItem(DefaultPhysicsMaterialLabel);
 
-            for (const auto& materialData : materialAsset.Get()->GetMaterialsData())
+            for (const auto& material : materials)
             {
-                gui->addItem(materialData.m_configuration.m_surfaceType.c_str());
-                m_libraryIds.push_back(materialData.m_id);
+                gui->addItem(material.m_configuration.m_surfaceType.c_str());
+                m_libraryIds.push_back(material.m_id);
             }
 
             gui->setCurrentIndex(GetIndexForId(instance));
@@ -116,7 +118,7 @@ namespace PhysX
 
         Physics::MaterialId MaterialIdWidget::GetIdForIndex(size_t index)
         {
-            if (m_libraryIds.size() <= index)
+            if (index >= m_libraryIds.size())
             {
                 return Physics::MaterialId();
             }

@@ -58,6 +58,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         void AddCluster(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment align);
         void AddClusterButton(ViewportUiElementId clusterId, Button* button);
+        void SetClusterButtonLocked(ViewportUiElementId clusterId, ButtonId buttonId, bool isLocked);
         void RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId);
         void UpdateCluster(const ViewportUiElementId clusterId);
 

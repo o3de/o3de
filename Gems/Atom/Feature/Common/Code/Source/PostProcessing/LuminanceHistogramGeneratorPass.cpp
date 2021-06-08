@@ -62,14 +62,9 @@ namespace AZ
 
         void LuminanceHistogramGeneratorPass::CreateHistogramBuffer()
         {
-            // generate a UUID for the buffer name to keep it unique when there are multiple render pipelines
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
-            desc.m_bufferName = AZStd::string::format("LuminanceHistogramBuffer_%s", uuidString.c_str());
+            desc.m_bufferName = "LuminanceHistogramBuffer";
             desc.m_elementSize = sizeof(uint32_t);
             desc.m_byteCount = NumHistogramBins * sizeof(uint32_t);
             desc.m_elementFormat = RHI::Format::R32_UINT;

@@ -112,6 +112,8 @@ namespace AZ
             AZStd::mutex m_pendingUploadMutex;
 
             RHI::BufferViewDescriptor m_bufferViewDescriptor;
+
+            RHI::AttachmentId m_attachmentId;
         };
 
         template <class structureType>

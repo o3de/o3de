@@ -20,11 +20,6 @@
         },
         "roughness": {
             "factor": 0.20202019810676576
-        },
-        "subsurfaceScattering": {
-            "quality": 0.329292893409729,
-            "scatterDistance": 6.666666507720947,
-            "subsurfaceScatterFactor": 0.9595959782600403
         }
     }
 }
