@@ -184,7 +184,7 @@ namespace TestImpact
                 Policy::TestSharding::Always
             };
 
-            return ParseOnOffOption("shard", states, cmd).value_or(Policy::TestSharding::Never);
+            return ParseOnOffOption(OptionKeys[TestShardingPolicyKey], states, cmd).value_or(Policy::TestSharding::Never);
         }
 
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
@@ -198,7 +198,7 @@ namespace TestImpact
                 Policy::TargetOutputCapture targetOutputCapture = Policy::TargetOutputCapture::None;
                 for (auto i = 0; i < numSwitchValues; i++)
                 {
-                    const auto option = cmd.GetSwitchValue(OptionKeys[TargetOutputCapture], i);
+                    const auto option = cmd.GetSwitchValue(OptionKeys[TargetOutputCaptureKey], i);
                     if (option == OptionKeys[StdOut])
                     {
                         if (targetOutputCapture == Policy::TargetOutputCapture::File)
