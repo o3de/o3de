@@ -41,9 +41,8 @@ namespace CustomMocks
             AZ::IO::FileDesc fileDesc;
             fileDesc.nSize = sizeof(AZ::IO::FileDesc);
             // Add a filename and file description reference to the TestFindData map to make sure the file iterator is valid
-            AZStd::intrusive_ptr<TestFindData> findData = new TestFindData{};
-            findData->m_mapFiles.emplace(m_levelName, fileDesc);
-            return findData->Fetch();
+            m_findData.m_fileStack.emplace_back(AZ::IO::ArchiveFileIterator{ static_cast<AZ::IO::FindData*>(&m_findData), m_levelName, fileDesc });
+            return m_findData.Fetch();
         }
 
         AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator iter) override
@@ -54,13 +53,14 @@ namespace CustomMocks
         // public: for easy resetting...
         AZStd::string m_levelName;
 
-
         // Add an inherited FindData class to control the adding of a mapfile which indicates that a FileIterator is valid
         struct TestFindData
             : AZ::IO::FindData
         {
-            using AZ::IO::FindData::m_mapFiles;
+            using AZ::IO::FindData::m_fileStack;
         };
+
+        TestFindData m_findData;
     };
 
 } // namespace CustomMocks
