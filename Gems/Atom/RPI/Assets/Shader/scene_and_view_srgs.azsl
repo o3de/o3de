@@ -16,4 +16,4 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/DummyEntryFunctions.azsli>
+#include <Atom/RPI/DummyEntryFunctions.azsli>

@@ -255,11 +255,6 @@ namespace AZ
                 return true;
             }
 
-            if (!ValidateFinalizeState(ValidateFinalizeStateExpect::NotFinalized))
-            {
-                return false;
-            }
-
             if (m_bindingSlot.IsNull())
             {
                 AZ_Error("ShaderResourceGroupLayout", false, "You must supply a valid binding slot to ShaderResourceGroupLayoutDescriptor.");

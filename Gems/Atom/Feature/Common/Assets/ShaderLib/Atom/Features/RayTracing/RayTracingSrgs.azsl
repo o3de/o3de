@@ -16,4 +16,4 @@
 
 #include <Atom/Features/RayTracing/RayTracingSceneSrg.azsli>
 #include <Atom/Features/RayTracing/RayTracingMaterialSrg.azsli>
-#include <Atom/Features/DummyEntryFunctions.azsli>
+#include <Atom/RPI/DummyEntryFunctions.azsli>

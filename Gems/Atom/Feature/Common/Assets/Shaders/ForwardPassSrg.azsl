@@ -15,4 +15,4 @@
 // at runtime to find the PassSrg used by the TransparentPass.
 
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
-#include <Atom/Features/DummyEntryFunctions.azsli>
+#include <Atom/RPI/DummyEntryFunctions.azsli>
