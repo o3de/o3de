@@ -20,6 +20,9 @@
 #include <AzFramework/Application/Application.h>
 
 #include <QDir>
+#include <QMessageBox>
+#include <QApplication>
+#include <QTimer>
 
 namespace O3DE::ProjectManager
 {
@@ -27,6 +30,15 @@ namespace O3DE::ProjectManager
         : QMainWindow(parent)
     {
         m_pythonBindings = AZStd::make_unique<PythonBindings>(engineRootPath);
+        if (!m_pythonBindings || !m_pythonBindings->PythonStarted())
+        {
+            QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
+                QObject::tr("This tool requires an O3DE engine with Python to run, "
+                    "but it couldn't find or use O3DE Python files.  Please use the "
+                    "scripts/o3de CLI tool to verify the engine is registered."));
+            QTimer::singleShot( 0, []() { QApplication::quit(); });
+            return;
+        }
 
         setWindowTitle(tr("O3DE Project Manager"));
 

@@ -34,6 +34,8 @@ namespace O3DE::ProjectManager
         ~PythonBindings() override;
 
         // PythonBindings overrides
+        bool PythonStarted() override;
+
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
         bool SetEngineInfo(const EngineInfo& engineInfo) override;
@@ -69,6 +71,8 @@ namespace O3DE::ProjectManager
         bool StartPython();
         bool StopPython();
 
+
+        bool m_pythonStarted = false;
 
         AZ::IO::FixedMaxPath m_enginePath;
         pybind11::handle m_engineTemplate;
