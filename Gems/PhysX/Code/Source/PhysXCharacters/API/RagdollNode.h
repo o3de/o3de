@@ -63,7 +63,7 @@ namespace PhysX
         void DestroyJoint();
 
         AzPhysics::ApiJoint* m_joint = nullptr;
-        AzPhysics::RigidBody* m_rigidBody;
+        AzPhysics::RigidBody* m_rigidBody = nullptr;
         AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_sceneOwner = AzPhysics::InvalidSceneHandle;
         PhysX::ActorData m_actorUserData;
