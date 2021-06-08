@@ -98,6 +98,53 @@ namespace AzFramework
 
     bool ProcessLauncher::LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData)
     {
+        /*
+        https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+        The lpApplicationName string can specify the full path and file name of the module to execute or it can specify a partial name.
+        In the case of a partial name, the function uses the current drive and current directory to complete the specification. The
+        function will not use the search path. This parameter must include the file name extension; no default extension is assumed.
+        The lpApplicationName parameter can be NULL. In that case, the module name must be the first white space–delimited token in the
+        lpCommandLine string. If you are using a long file name that contains a space, use quoted strings to indicate where the file name
+        ends and the arguments begin; otherwise, the file name is ambiguous. For example, consider the string
+        "c:\program files\sub dir\program name". This string can be interpreted in a number of ways. The system tries to interpret the
+        possibilities in the following order:
+
+        c:\program.exe
+        c:\program files\sub.exe
+        c:\program files\sub dir\program.exe
+        c:\program files\sub dir\program name.exe
+
+        The lpCommandLine command line string to be executed. The maximum length of this string is 32,767 characters, including the Unicode
+        terminating null character. If lpApplicationName is NULL, the module name portion of lpCommandLine is limited to MAX_PATH
+        characters. The Unicode version of this function, CreateProcessW, can modify the contents of this string. Therefore, this parameter
+        cannot be a pointer to read-only memory (such as a const variable or a literal string). If this parameter is a constant string, the
+        function may cause an access violation. The lpCommandLine parameter can be NULL. In that case, the function uses the string pointed
+        to by lpApplicationName as the command line.
+
+        If both lpApplicationName and lpCommandLine are non-NULL, the null-terminated string pointed to by lpApplicationName specifies the
+        module to execute, and the null-terminated string pointed to by lpCommandLine specifies the command line. The new process can use
+        GetCommandLine to retrieve the entire command line. Console processes written in C can use the argc and argv arguments to parse the
+        command line. Because argv[0] is the module name, C programmers generally repeat the module name as the first token in the command
+        line. If lpApplicationName is NULL, the first white space–delimited token of the command line specifies the module name. If you are
+        using a long file name that contains a space, use quoted strings to indicate where the file name ends and the arguments begin (see
+        the explanation for the lpApplicationName parameter). If the file name does not contain an extension, .exe is appended. Therefore,
+        if the file name extension is .com, this parameter must include the .com extension. If the file name ends in a period (.) with no
+        extension, or if the file name contains a path, .exe is not appended. If the file name does not contain a directory path, the system
+        searches for the executable file in the following sequence:
+
+        The directory from which the application loaded.
+        The current directory for the parent process.
+        The 32-bit Windows system directory. Use the GetSystemDirectory function to get the path of this directory.
+        The 16-bit Windows system directory. There is no function that obtains the path of this directory, but it is searched. The name of
+        this directory is System.
+        The Windows directory. Use the GetWindowsDirectory function to get the path of this directory.
+        The directories that are listed in the PATH environment variable. Note that this function does not search the per-application path
+        specified by the App Paths registry key. To include this per-application path in the search sequence, use the ShellExecute function.
+
+        The system adds a terminating null character to the command-line string to separate the file name from the arguments. This divides
+        the original string into two strings for internal processing.
+        */
+
         BOOL result = FALSE;
 
         // Windows API requires non-const char* command line string
@@ -112,138 +159,13 @@ namespace AzFramework
         commandLine = AZ::StringFunc::TrimWhiteSpace(commandLine, true, true);
         size_t pos;
 
-        //create the executableString and commandLine from the supplied executableString, commandline, both, or fail
-        if(executableString.length() && commandLine.length())
+        // if they didnt supply either, fail
+        if (executableString.empty() && commandLine.empty())
         {
-            //user supplied both an executableString and a commandLine
-
-            //see if the user supplied additional command line options in the executableString
-            //if so remove them from the executableString and prepend them to the commandLine
-            pos = AZ::StringFunc::Find(executableString, ".exe\"", 0, true);
-            if(pos != AZStd::string::npos)
-            {
-                AZStd::string additionalCommandLine = executableString;
-                AZ::StringFunc::RKeep(additionalCommandLine, pos + strlen(".exe\""));
-                AZ::StringFunc::LKeep(executableString, pos + strlen(".exe\""));
-                AZ::StringFunc::Prepend(commandLine, " ");
-                AZ::StringFunc::Prepend(commandLine, additionalCommandLine.c_str());
-            }
-            else
-            {
-                pos = AZ::StringFunc::Find(executableString, ".exe", 0, true);
-                if (pos != AZStd::string::npos)
-                {
-                    AZStd::string additionalCommandLine = executableString;
-                    AZ::StringFunc::RKeep(additionalCommandLine, pos + strlen(".exe"));
-                    AZ::StringFunc::LKeep(executableString, pos + strlen(".exe"));
-                    AZ::StringFunc::Prepend(commandLine, " ");
-                    AZ::StringFunc::Prepend(commandLine, additionalCommandLine.c_str());
-                }
-                else
-                {
-                    // the executable didnt specify ".exe" therefore we must assume the first space
-                    pos = AZ::StringFunc::Find(executableString, " ");
-                    if (pos != AZStd::string::npos)
-                    {
-                        // the executable string is everything to the left of the first space, anything to the right is commandLine
-                        AZStd::string additionalCommandLine = executableString;
-                        AZ::StringFunc::RKeep(additionalCommandLine, pos);
-                        AZ::StringFunc::LKeep(executableString, pos);
-                        AZ::StringFunc::Prepend(commandLine, " ");
-                        AZ::StringFunc::Prepend(commandLine, additionalCommandLine.c_str());
-                        AZ::StringFunc::Append(executableString, ".exe");
-                    }
-                    else
-                    {
-                        AZ::StringFunc::Append(executableString, ".exe");
-                    }
-                }
-            }
-        }
-        else if(executableString.length())
-        {
-            //user supplied only an executableString
-            pos = AZ::StringFunc::Find(executableString, ".exe\"", 0, true);
-            if(pos != AZStd::string::npos)
-            {
-                //the executable string has .exe, so everything to the left is the process, anything to the right is commandLine
-                commandLine = executableString;
-                AZ::StringFunc::RKeep(commandLine, pos + strlen(".exe\""));
-                AZ::StringFunc::LKeep(executableString, pos);
-            }
-            else
-            {
-                pos = AZ::StringFunc::Find(executableString, ".exe", 0, true);
-                if(pos != AZStd::string::npos)
-                {
-                    //the executable string has .exe, so everything to the left is the process, anything to the right is commandLine
-                    commandLine = executableString;
-                    AZ::StringFunc::RKeep(commandLine, pos + strlen(".exe"));
-                    AZ::StringFunc::LKeep(executableString, pos);
-                }
-                else
-                {
-                    // the executable didnt specify ".exe" therefore we must assume the first space
-                    pos = AZ::StringFunc::Find(executableString, " ");
-                    if (pos != AZStd::string::npos)
-                    {
-                        // the executable string is everything to the left of the first space, anything to the right is commandLine
-                        commandLine = executableString;
-                        AZ::StringFunc::RKeep(commandLine, pos);
-                        AZ::StringFunc::LKeep(executableString, pos);
-                        AZ::StringFunc::Append(executableString, ".exe");
-                    }
-                    else
-                    {
-                        AZ::StringFunc::Append(executableString, ".exe");
-                    }
-                }
-            }
-        }
-        else if(commandLine.length())
-        {
-            //user supplied only a commandLine
-            pos = AZ::StringFunc::Find(commandLine, ".exe\"");
-            if(pos != AZStd::string::npos)
-            {
-                //the executable string has .exe, so everything to the left is the process, anything to the right is commandLine
-                executableString = AZ::StringFunc::LKeep(commandLine, pos);
-                commandLine = AZ::StringFunc::RKeep(commandLine, pos + strlen(".exe\""));
-            }
-            else
-            {
-                pos = AZ::StringFunc::Find(commandLine, ".exe");
-                if(pos != AZStd::string::npos)
-                {
-                    //the executable string has .exe, so everything to the left is the process, anything to the right is commandLine
-                    executableString = AZ::StringFunc::LKeep(commandLine, pos);
-                    commandLine = AZ::StringFunc::RKeep(commandLine, pos + strlen(".exe"));
-                }
-                else
-                {
-                    // the executable didnt specify ".exe" therefore we must assume the first space
-                    pos = AZ::StringFunc::Find(executableString, " ");
-                    if (pos != AZStd::string::npos)
-                    {
-                        // the executable string is everything to the left of the first space, anything to the right is commandLine
-                        commandLine = AZ::StringFunc::RKeep(executableString, pos);
-                        executableString = AZ::StringFunc::LKeep(executableString, pos);
-                        AZ::StringFunc::Append(executableString, ".exe");
-                    }
-                    else
-                    {
-                        AZ::StringFunc::Append(executableString, ".exe");
-                    }
-                }
-            }
-        }
-        else
-        {
-            //use didnt supply either, fail
             return false;
         }
 
-        //double quote any commandline args
+        // double quote any commandline args
         pos = 0;
         while(pos != AZStd::string::npos)
         {
@@ -255,22 +177,12 @@ namespace AzFramework
             }
         }
 
-        //make sure the first commandline entry is the executableString
-        pos = AZ::StringFunc::Find(commandLine, executableString.c_str());
-        if(pos == AZStd::string::npos)
+        // prepend the executableString to the commandLine quoted
+        if (!executableString.empty())
         {
-            if (executableString.ends_with('\"'))
-            {
-                AZ::StringFunc::Prepend(commandLine, " ");
-                AZ::StringFunc::Prepend(commandLine, executableString.c_str());
-            }
-            else
-            {
-                AZ::StringFunc::Prepend(commandLine, "\" ");
-                AZ::StringFunc::Prepend(commandLine, executableString.c_str());
-                AZ::StringFunc::Prepend(commandLine, "\"");
-            }
-            AZ::StringFunc::TrimWhiteSpace(commandLine, true, true);
+            AZ::StringFunc::Prepend(commandLine, "\" ");
+            AZ::StringFunc::Prepend(commandLine, executableString.c_str());
+            AZ::StringFunc::Prepend(commandLine, "\"");
         }
 
         AZStd::to_wstring(processExecutableString, executableString);

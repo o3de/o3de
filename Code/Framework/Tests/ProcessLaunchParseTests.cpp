@@ -78,7 +78,7 @@ namespace UnitTest
     {
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest" AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
         processLaunchInfo.m_showWindow = false;
         bool launchReturn = AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, processOutput);
@@ -93,7 +93,7 @@ namespace UnitTest
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
-        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest" AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
             AZStd::vector<AZStd::string>{"-param1", "param1val","-param2", "param2val"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
@@ -128,7 +128,7 @@ namespace UnitTest
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest" AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
             AZStd::vector<AZStd::string>{"-param1", "param,1val","-param2", "param2v,al"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
@@ -165,7 +165,7 @@ namespace UnitTest
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest" AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
             AZStd::vector<AZStd::string>{"-param1", R"("param 1val")", "-param2", R"("param2v al")"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();
@@ -200,7 +200,7 @@ namespace UnitTest
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest");
+        processLaunchInfo.m_processExecutableString = AZStd::string(AZ_TRAIT_TEST_ROOT_FOLDER "ProcessLaunchTest" AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
         processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(
             AZStd::vector<AZStd::string>{"-param1", R"("param, 1val")", "-param2", R"("param,2v al")"});
         processLaunchInfo.m_workingDirectory = AZ::Test::GetCurrentExecutablePath();

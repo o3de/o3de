@@ -221,8 +221,7 @@ namespace AssetProcessor
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
-        auto& commandLineArray = AZStd::get<AZStd::vector<AZStd::string>>(processLaunchInfo.m_commandlineParameters);
-        commandLineArray.insert(commandLineArray.end(), params.begin(), params.end());
+        processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>(params);
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
