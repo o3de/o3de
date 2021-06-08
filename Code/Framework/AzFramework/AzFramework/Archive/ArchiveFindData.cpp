@@ -115,6 +115,7 @@ namespace AZ::IO
             AZStd::string filenameEntry;
             AZ::StringFunc::Path::GetFullFileName(filePath, filenameEntry);
             fileIterator.m_filename = AZStd::move(filenameEntry);
+            fileIterator.m_fileDesc.nAttrib = {};
 
             if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath))
             {
@@ -274,6 +275,7 @@ namespace AZ::IO
         // Remove Fetched item from the FindData map so that the iteration continues
         AZ::IO::ArchiveFileIterator fileIterator{ m_fileStack.back() };
         fileIterator.m_lastFetchValid = true;
+        fileIterator.m_findData = this;
         m_fileStack.pop_back();
         return fileIterator;
     }
