@@ -163,6 +163,17 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
+    void ViewportUiCluster::SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        // get the action corresponding to the buttonId
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+        {
+            // update the tooltip
+            auto action = actionEntry->second;
+            action->setToolTip(QString((tooltip).c_str()));
+        }
+    }
+
     ViewportUiWidgetCallbacks ViewportUiCluster::GetWidgetCallbacks()
     {
         return m_widgetCallbacks;

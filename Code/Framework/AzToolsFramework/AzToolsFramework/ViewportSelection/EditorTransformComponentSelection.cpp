@@ -136,6 +136,13 @@ namespace AzToolsFramework
     static const char* const s_duplicateUndoRedoDesc = s_duplicateTitle;
     static const char* const s_deleteUndoRedoDesc = s_deleteTitle;
 
+    static const char* const s_transformModeClusterTranslateTT = "Switch to translate mode";
+    static const char* const s_transformModeClusterRotateTT = "Switch to rotate mode";
+    static const char* const s_transformModeClusterScaleTT = "Switch to scale mode";
+    static const char* const s_spaceSClusterWorldTT = "Toggle world space lock";
+    static const char* const s_spaceSClusterParentTT = "Toggle parent space lock";
+    static const char* const s_spaceSClusterLocalTT = "Toggle local space lock";
+
     static const AZ::Color s_fadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
     static const AZ::Color s_fadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
     static const AZ::Color s_fadedZAxisColor = AZ::Color(AZ::u8(120), AZ::u8(120), AZ::u8(180), AZ::u8(255));
@@ -2471,6 +2478,17 @@ namespace AzToolsFramework
         m_rotateButtonId = RegisterClusterButton(m_transformModeClusterId, "Translate");
         m_scaleButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale");
 
+        // set button tooltips
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            m_translateButtonId, s_transformModeClusterTranslateTT);
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            m_rotateButtonId, s_transformModeClusterRotateTT);
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
+            m_scaleButtonId, s_transformModeClusterScaleTT);
+
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
             if (buttonId == m_translateButtonId)
@@ -2508,6 +2526,17 @@ namespace AzToolsFramework
         m_spaceCluster.m_worldButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "World");
         m_spaceCluster.m_parentButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "Parent");
         m_spaceCluster.m_localButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "Local");
+
+        // set button tooltips
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_worldButtonId, s_spaceSClusterWorldTT);
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_parentButtonId, s_spaceSClusterParentTT);
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_localButtonId, s_spaceSClusterLocalTT);
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
