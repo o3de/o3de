@@ -459,17 +459,21 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
-            // Validate our session with the provider if any
-            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+            AzFramework::PlayerConnectionConfig config;
+            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+            config.m_playerSessionId = packet.GetTicket();
+            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
             {
-                AzFramework::PlayerConnectionConfig config;
-                config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-                config.m_playerSessionId = packet.GetTicket();
-                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
-
-                reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                return true;
             }
 
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+        }
+
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
+        {
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
             AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
