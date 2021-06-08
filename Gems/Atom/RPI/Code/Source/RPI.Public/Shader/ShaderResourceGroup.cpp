@@ -44,7 +44,7 @@ namespace AZ
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             auto instanceId = MakeInstanceId(shaderAsset, supervariantIndex, srgName);
-            auto srg = Data::InstanceDatabase<ShaderResourceGroup, false>::Instance().FindOrCreate(instanceId, shaderAsset);
+            auto srg = Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(instanceId, shaderAsset);
             if (!srg->IsInitialized())
             {
                 const RHI::ResultCode resultCode = srg->Init(*shaderAsset.Get(), supervariantIndex, srgName);
@@ -63,7 +63,7 @@ namespace AZ
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            auto srg = Data::InstanceDatabase<ShaderResourceGroup, false>::Instance().FindOrCreate(
+            auto srg = Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
                 Data::InstanceId::CreateRandom(),
                 shaderAsset);
             // Because the InstanceId is random, this is always a brand new SRG.

@@ -647,7 +647,7 @@ namespace AZ
                     continue;
                 }
 
-                if (m_shaderResourceGroup && m_shaderResourceGroup->GetLayout() != objectSrgLayout)
+                if (m_shaderResourceGroup && m_shaderResourceGroup->GetLayout()->GetHash() != objectSrgLayout->GetHash())
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "All materials on a model must use the same per-object ShaderResourceGroup. Skipping.");
                     continue;
@@ -657,7 +657,7 @@ namespace AZ
                 // in shaderResourceGroupInOut. All of the Model's draw packets will use this same instance.
                 if (!m_shaderResourceGroup)
                 {
-                    auto& shaderAsset = material->GetShaderCollection()[0].GetShaderAsset();
+                    auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
                     m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, RPI::DefaultSupervariantIndex, objectSrgLayout->GetName());
                     if (!m_shaderResourceGroup)
                     {

@@ -26,7 +26,7 @@ namespace AZ
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             auto instanceId = ShaderResourceGroup::MakeInstanceId(shaderAsset, supervariantIndex, srgName);
-            auto srgPool = Data::InstanceDatabase<ShaderResourceGroupPool, false>::Instance().FindOrCreate(instanceId,
+            auto srgPool = Data::InstanceDatabase<ShaderResourceGroupPool>::Instance().FindOrCreate(instanceId,
                 shaderAsset);
             if (!srgPool->IsInitialized())
             {

@@ -81,7 +81,7 @@ namespace AZ
                 {
                     return ShaderResourceGroup::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
                 };
-                Data::InstanceDatabase<ShaderResourceGroup, false /*useAssetTypeAsKeyForHandlers*/>::Create(azrtti_typeid<ShaderResourceGroup>(), handler);
+                Data::InstanceDatabase<ShaderResourceGroup>::Create(azrtti_typeid<ShaderResourceGroup>(), handler, false);
             }
 
             {
@@ -90,15 +90,15 @@ namespace AZ
                 {
                     return ShaderResourceGroupPool::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
                 };
-                Data::InstanceDatabase<ShaderResourceGroupPool, false /*useAssetTypeAsKeyForHandlers*/>::Create(azrtti_typeid<ShaderResourceGroupPool>(), handler);
+                Data::InstanceDatabase<ShaderResourceGroupPool>::Create(azrtti_typeid<ShaderResourceGroupPool>(), handler, false);
             }
         }
 
         void ShaderSystem::Shutdown()
         {
             Data::InstanceDatabase<Shader>::Destroy();
-            Data::InstanceDatabase<ShaderResourceGroup, false>::Destroy();
-            Data::InstanceDatabase<ShaderResourceGroupPool, false>::Destroy();
+            Data::InstanceDatabase<ShaderResourceGroup>::Destroy();
+            Data::InstanceDatabase<ShaderResourceGroupPool>::Destroy();
             Interface<ShaderSystemInterface>::Unregister(this);
             m_shaderVariantAsyncLoader.Shutdown();
         }
