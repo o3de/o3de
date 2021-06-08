@@ -196,6 +196,7 @@ set(FILES
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
+    Passes/ThumbnailPipeline.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass

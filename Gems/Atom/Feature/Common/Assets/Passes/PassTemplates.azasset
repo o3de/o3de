@@ -511,6 +511,14 @@
                 "Path": "Passes/OpaqueParent.pass"
             },
             {
+                "Name": "ThumbnailPipeline",
+                "Path": "Passes/ThumbnailPipeline.pass"
+            },
+            {
+                "Name": "ThumbnailPipelineRenderToTexture",
+                "Path": "Passes/ThumbnailPipelineRenderToTexture.pass"
+            },
+            {
                 "Name": "TransparentParentTemplate",
                 "Path": "Passes/TransparentParent.pass"
             },
