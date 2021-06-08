@@ -147,5 +147,4 @@ QPlainTextEdit:focus
 @import "ToolBar.qss";
 @import "ToolTip.qss";
 @import "VectorInput.qss";
-@import "WelcomeScreenDialog.qss";
 @import "WindowDecorationWrapper.qss";

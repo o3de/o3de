@@ -477,7 +477,6 @@
     <file>Widgets/ToolBar.qss</file>
     <file>Widgets/ToolBarConfig.ini</file>
     <file>Widgets/ToolTip.qss</file>
-    <file>Widgets/WelcomeScreenDialog.qss</file>
     <file>Widgets/WindowDecorationWrapper.qss</file>
     <file>Widgets/AssetFolderListView.qss</file>
     <file>Widgets/AssetFolderThumbnailViewConfig.ini</file>
