@@ -37,7 +37,6 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<TriggerEvent>()
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Method("Get Trigger EntityId", &TriggerEvent::GetTriggerEntityId)
@@ -106,7 +105,6 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<CollisionEvent>()
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
                 ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Property("Contacts", BehaviorValueGetter(&CollisionEvent::m_contacts), nullptr)
