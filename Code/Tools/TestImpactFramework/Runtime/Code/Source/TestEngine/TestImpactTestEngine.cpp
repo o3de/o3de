@@ -255,7 +255,7 @@ namespace TestImpact
 
     TestEngine::~TestEngine() = default;
 
-    void TestEngine::CleanArtifactDir() const
+    void TestEngine::DeleteArtifactXmls() const
     {
         DeleteFiles(m_artifactDir, "*.xml");
     }
@@ -291,7 +291,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
-        CleanArtifactDir();
+        DeleteArtifactXmls();
 
         TestEngineJobMap<TestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
@@ -318,7 +318,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
-        CleanArtifactDir();
+        DeleteArtifactXmls();
 
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
