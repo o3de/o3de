@@ -178,7 +178,10 @@ namespace Camera
         if ((!m_viewSystem)||(!m_system))
         {
             // perform first-time init
-            m_system = gEnv->pSystem;
+            if (gEnv)
+            {
+                m_system = gEnv->pSystem;
+            }
             if (m_system)
             {
                 // Initialize local view.
@@ -384,6 +387,11 @@ namespace Camera
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
+        if (m_updatingTransformFromEntity)
+        {
+            return;
+        }
+
         if (m_view)
         {
             CCamera& camera = m_view->GetCamera();

@@ -11,17 +11,18 @@
  */
 
 #include "AzManipulatorTestFrameworkTestFixtures.h"
-#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
+#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 
 namespace UnitTest
 {
-    class AzManipulatorTestFrameworkBusCallTestFixture
-        : public LinearManipulatorTestFixture
+    class AzManipulatorTestFrameworkBusCallTestFixture : public LinearManipulatorTestFixture
     {
     protected:
         AzManipulatorTestFrameworkBusCallTestFixture()
-            : LinearManipulatorTestFixture(AzToolsFramework::g_mainManipulatorManagerId) {}
+            : LinearManipulatorTestFixture(AzToolsFramework::g_mainManipulatorManagerId)
+        {
+        }
 
         bool IsManipulatorInteractingBusCall() const
         {
@@ -37,8 +38,8 @@ namespace UnitTest
     TEST_F(AzManipulatorTestFrameworkBusCallTestFixture, ConsumeViewportLeftMouseClick)
     {
         // given a left mouse down ray in world space
-        auto event = AzManipulatorTestFramework::CreateMouseInteractionEvent(
-            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
+        auto event =
+            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
 
         // consume the mouse down and up events
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -56,8 +57,8 @@ namespace UnitTest
     TEST_F(AzManipulatorTestFrameworkBusCallTestFixture, ConsumeViewportMouseMoveHover)
     {
         // given a left mouse down ray in world space
-        const auto event = AzManipulatorTestFramework::CreateMouseInteractionEvent(
-            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Move);
+        const auto event =
+            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Move);
 
         // consume the mouse move event
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -75,8 +76,8 @@ namespace UnitTest
     TEST_F(AzManipulatorTestFrameworkBusCallTestFixture, ConsumeViewportMouseMoveActive)
     {
         // given a left mouse down ray in world space
-        auto event = AzManipulatorTestFramework::CreateMouseInteractionEvent(
-            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
+        auto event =
+            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
 
         // consume the mouse down event
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -110,14 +111,14 @@ namespace UnitTest
         const AZ::Vector3 initialManipulatorPosition = m_linearManipulator->GetLocalPosition();
         m_linearManipulator->InstallMouseMoveCallback(
             [&movementAlongAxis, this](const AzToolsFramework::LinearManipulator::Action& action)
-        {
-            movementAlongAxis = action.LocalPositionOffset();
-            m_linearManipulator->SetLocalPosition(action.LocalPosition());
-        });
+            {
+                movementAlongAxis = action.LocalPositionOffset();
+                m_linearManipulator->SetLocalPosition(action.LocalPosition());
+            });
 
         // given a left mouse down ray in world space
-        auto event = AzManipulatorTestFramework::CreateMouseInteractionEvent(
-            m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
+        auto event =
+            AzManipulatorTestFramework::CreateMouseInteractionEvent(m_interaction, AzToolsFramework::ViewportInteraction::MouseEvent::Down);
 
         // consume the mouse down event
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
@@ -134,7 +135,7 @@ namespace UnitTest
         // consume the mouse up event
         event.m_mouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent::Up;
         AzManipulatorTestFramework::DispatchMouseInteractionEvent(event);
- 
+
         // expect the left mouse down/up sanity flags to be set
         EXPECT_TRUE(m_receivedLeftMouseDown);
         EXPECT_TRUE(m_receivedLeftMouseUp);

@@ -115,7 +115,7 @@ QTabBar::tab:pressed
 /************** General (Modal windows) **************/
 
 #header {
-	background-color:#111111;
+    background-color:#111111;
     min-height:80px;
     max-height:80px;
 }
@@ -136,11 +136,9 @@ QTabBar::tab:pressed
 #header QPushButton:focus {
     border:none;
 }
-#header QPushButton:hover {
-    background:#333333 url(:/ArrowBack.svg) no-repeat center;
-}
+#header QPushButton:hover,
 #header QPushButton:pressed {
-    background:#222222 url(:/ArrowBack.svg) no-repeat center;
+    background:transparent url(:/ArrowBack_Hover.svg) no-repeat center;
 }
 
 #headerTitle {
@@ -172,8 +170,8 @@ QTabBar::tab:pressed
 
 #footer > QPushButton {
     qproperty-flat: true;
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #0095f2, stop: 1.0 #1e70eb);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
     border-radius: 3px;
     min-height: 28px;
     max-height: 28px;
@@ -181,26 +179,26 @@ QTabBar::tab:pressed
     margin-right:30px;
 }
 #footer > QPushButton:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
 }
 #footer > QPushButton:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #0085e2, stop: 1.0 #0e60db);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0085e2, stop: 1.0 #0e60db);
 }
 
 #footer > QPushButton[secondary="true"] {
     margin-right: 10px;
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #888888, stop: 1.0 #555555);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
 }
 #footer > QPushButton[secondary="true"]:hover {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #999999, stop: 1.0 #666666);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
 }
 #footer > QPushButton[secondary="true"]:pressed {
-	background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-							stop: 0 #555555, stop: 1.0 #777777);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
 }
 
 /************** Project Settings **************/
@@ -210,9 +208,6 @@ QTabBar::tab:pressed
 
 #projectTemplate {
     margin: 55px 0 0 50px;
-    max-width: 780px;
-    min-height:200px;
-    max-height:200px;
 }
 #projectTemplateLabel {
     font-size:16px;
@@ -227,10 +222,66 @@ QTabBar::tab:pressed
 
 #projectTemplateDetails {
     background-color:#444444;
-    max-width:240px;
+    max-width:20%;
     min-width:240px;
     margin-left:30px;
 }
+
+#projectTemplateDetails #displayName,
+#projectTemplateDetails #includedGemsTitle {
+    font-size:18px;
+}
+
+#projectTemplateDetails #moreGems {
+    font-size:14px;
+    margin-top:20px;
+}
+
+#projectTemplateDetails #includedGemsTitle {
+    margin-top:5px;
+    margin-bottom:5px;
+}
+
+#projectTemplateDetails #summary {
+    padding-bottom:0px;
+    border-bottom:2px solid #555555;
+	min-height:80px;
+    qproperty-alignment: AlignTop;
+}
+
+#projectTemplateDetails #browseCatalog {
+    margin:5px 0px 15px 0px;
+}
+
+#projectTemplate QPushButton {
+    qproperty-flat: true;
+    min-width: 96px;
+    max-width: 96px;
+    min-height: 160px;
+    max-height: 160px;
+}
+#projectTemplate #templateLabel {
+    qproperty-alignment: AlignCenter;
+}
+#projectTemplate QPushButton #templateImage {
+    border:3px solid transparent;
+    border-radius: 4px;
+}
+#projectTemplate QPushButton[Checked="true"] #templateImage {
+    border:3px solid #1e70eb;
+}
+#projectTemplate QPushButton[Checked="true"] #templateLabel {
+    font-weight:bold;
+}
+#projectTemplate QPushButton:hover {
+    background-color: #444444;
+}
+#projectTemplate QPushButton:focus {
+    outline: none;
+    border:none;
+}
+
+
 
 #projectSettingsTab::tab-bar {
     left: 60px;
@@ -238,6 +289,30 @@ QTabBar::tab:pressed
 
 #projectSettingsTabBar::tab {
     height:50px;
+}
+
+#projectSettingsTab::tab-bar > QPushButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+    qproperty-flat: true;
+    margin-right:30px;
+    margin-bottom:12px;
+    margin-top:0px;
+    min-width:170px;
+    max-width:170px;
+    min-height:26px;
+    max-height:26px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:13px;
+}
+#projectSettingsTab::tab-bar > QPushButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#projectSettingsTab::tab-bar > QPushButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
 }
 
 #projectSettingsTopFrame {
@@ -311,6 +386,7 @@ QTabBar::tab:pressed
 #projectButton > #labelButton  {
     border:1px solid white;
 }
+
 #projectButton > #labelButton:hover,
 #projectButton > #labelButton:pressed  {
     border:1px solid #1e70eb;
@@ -350,10 +426,36 @@ QTabBar::tab:pressed
     max-height:278px;
 }
 
+QProgressBar {
+    border: none;
+    background-color: transparent;
+    padding: 0px;
+    min-height: 14px;
+    font-size: 2px;
+}
+
+QProgressBar::chunk {
+    background-color: #1E70EB;
+}
+
 /************** Gem Catalog **************/
 
 #GemCatalogTitle {
     font-size: 18px;
+}
+
+#GemCatalogCart {
+    background-color: #555555;
+}
+
+#GemCatalogCartCountLabel {
+    font-size: 12px;
+    background-color: #4285F4;
+    border-radius: 3px;
+}
+
+#GemCatalogCartOverlaySectionLabel {
+    font-weight: 600;
 }
 
 /************** Gem Catalog (Inspector) **************/

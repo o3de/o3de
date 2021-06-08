@@ -65,6 +65,8 @@ namespace AzToolsFramework::ViewportUi
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.
         virtual void SetSwitcherActiveButton(SwitcherId clusterId, ButtonId buttonId) = 0;
+        //! Adds a locked overlay to the cluster button's icon.
+        virtual void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) = 0;
         //! Registers a new button onto a cluster.
         virtual const ButtonId CreateClusterButton(const ClusterId clusterId, const AZStd::string& icon) = 0;
         //! Registers a new button onto a switcher.

@@ -46,6 +46,8 @@ namespace ScriptCanvas
 
         const AZStd::unordered_map<AZStd::string, AZStd::pair<SlotId, SlotId>>& GetPropertyNameSlotMap() const;
 
+        AZ_INLINE AZ::Outcome<DependencyReport, void> GetDependencies() const override { return AZ::Success(DependencyReport{}); }
+
         ~PureData() override;
 
     protected:

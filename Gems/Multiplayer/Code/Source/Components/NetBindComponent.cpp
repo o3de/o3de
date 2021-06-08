@@ -390,6 +390,11 @@ namespace Multiplayer
         m_entityServerMigrationEvent.Signal(m_netEntityHandle, hostId, connectionId);
     }
 
+    void NetBindComponent::NotifyPreRender(float deltaTime, float blendFactor)
+    {
+        m_entityPreRenderEvent.Signal(deltaTime, blendFactor);
+    }
+
     void NetBindComponent::AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_entityStopEvent);
@@ -418,6 +423,11 @@ namespace Multiplayer
     void NetBindComponent::AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_entityServerMigrationEvent);
+    }
+
+    void NetBindComponent::AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler)
+    {
+        eventHandler.Connect(m_entityPreRenderEvent);
     }
 
     bool NetBindComponent::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)

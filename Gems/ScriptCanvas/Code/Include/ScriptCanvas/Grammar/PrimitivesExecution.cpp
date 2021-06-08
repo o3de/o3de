@@ -313,6 +313,11 @@ namespace ScriptCanvas
             return !m_returnValues.empty();
         }
 
+        bool ExecutionTree::InputHasThisPointer() const
+        {
+            return m_inputHasThisPointer;
+        }
+
         bool ExecutionTree::IsInfiniteLoopDetectionPoint() const
         {
             return m_isInfiniteLoopDetectionPoint;
@@ -375,6 +380,11 @@ namespace ScriptCanvas
         void ExecutionTree::MarkInfiniteLoopDetectionPoint()
         {
             m_isInfiniteLoopDetectionPoint = true;
+        }
+
+        void ExecutionTree::MarkInputHasThisPointer()
+        {
+            m_inputHasThisPointer = true;
         }
 
         void ExecutionTree::MarkInputOutputPreprocessed()
@@ -587,6 +597,32 @@ namespace ScriptCanvas
             m_symbol = val;
         }
 
-    } 
+        void ExecutionTree::SwapChildren(ExecutionTreePtr execution)
+        {
+            if (execution)
+            {
+                m_children.swap(execution->m_children);
 
+                for (auto& child : m_children)
+                {
+                    if (child.m_execution)
+                    {
+                        child.m_execution->SetParent(shared_from_this());
+                    }
+                }
+
+                for (auto& orphan : execution->m_children)
+                {
+                    if (orphan.m_execution)
+                    {
+                        orphan.m_execution->SetParent(execution);
+                    }
+                }
+            }
+            else
+            {
+                ClearChildren();
+            }
+        }
+    }
 } 

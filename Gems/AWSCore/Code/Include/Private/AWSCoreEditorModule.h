@@ -16,7 +16,7 @@
 namespace AWSCore
 {
     class AWSCoreEditorModule
-        :public AZ::Module
+        : public AZ::Module
     {
     public:
         AZ_RTTI(AWSCoreEditorModule, "{C1C9B898-848B-4C2F-A7AA-69642D12BCB5}", AZ::Module);
