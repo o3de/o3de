@@ -1231,6 +1231,9 @@ namespace UnitTest
         IntersectParams{ 5.0f, 0.0f, 5.0f, 0.0f, 0.0f, -1.0f, AZStd::numeric_limits<float>::max(), false },
         IntersectParams{ 0.0f, 0.0f, 1.5f, 0.0f, 0.0f, -1.0f, 0.5f, true },
         IntersectParams{ 5.0f, 0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.4f, true },
+        IntersectParams{ -5.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.0f, 0.2f, true },
+        IntersectParams{ 0.0f, -10.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.45f, true },
+        IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -40.0f, 0.0f, 0.225f, true },
     };
 
     INSTANTIATE_TEST_CASE_P(

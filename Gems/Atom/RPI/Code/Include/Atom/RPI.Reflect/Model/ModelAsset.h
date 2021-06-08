@@ -63,11 +63,12 @@ namespace AZ
             //! Important: only to be used in the Editor, it may kick off a job to calculate spatial information.
             //! [GFX TODO][ATOM-4343 Bake mesh spatial information during AP processing]
             //!
-            //! @param rayStart  position where the ray starts
-            //! @param rayDir  direction where the ray ends (does not have to be unit length)
-            //! @param distance  if an intersection is detected, this will be set such that distanceFactor * dir.length == distance to intersection
-            //! @param normal if an intersection is detected, this will be set to the normal at the point of collision
-            //! @return  true if the ray intersects the mesh
+            //! @param rayStart  The starting point of the ray.
+            //! @param rayDir  The direction and length of the ray (magnitude is encoded in the direction).
+            //! @param[out] distance  If an intersection is found, the normalized distance of the intersection
+            //! (in the range 0.0-1.0) - to calculate the actual distance, multiply distanceNormalized by the magnitude of rayDir.
+            //! @param[out] normal If an intersection is found, this will be set to the normal at the point of collision.
+            //! @return  True if the ray intersects the mesh.
             virtual bool LocalRayIntersectionAgainstModel(
                 const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
 
