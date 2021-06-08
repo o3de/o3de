@@ -16,6 +16,7 @@
 #include <MysticQt/Source/DialogStack.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include "MorphTargetGroupWidget.h"
 #include <QVBoxLayout>
 #include <QLabel>
@@ -26,6 +27,7 @@ namespace EMStudio
 {
     class MorphTargetsWindowPlugin
         : public EMStudio::DockWidgetPlugin
+        , private EMotionFX::ActorInstanceNotificationBus::Handler
     {
         Q_OBJECT
         MCORE_MEMORYOBJECTCATEGORY(MorphTargetsWindowPlugin, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
@@ -70,6 +72,9 @@ namespace EMStudio
         void WindowReInit(bool visible);
 
     private:
+        // ActorInstanceNotificationBus overrides
+        void OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance) override;
+
         // declare the callbacks
         MCORE_DEFINECOMMANDCALLBACK(CommandSelectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);

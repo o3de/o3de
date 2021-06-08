@@ -17,25 +17,26 @@
 #include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/MorphSetup.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 
-
 namespace EMStudio
 {
-    // constructor
     MorphTargetsWindowPlugin::MorphTargetsWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack                    = nullptr;
-        mCurrentActorInstance           = nullptr;
+        mDialogStack = nullptr;
+        mCurrentActorInstance = nullptr;
         mStaticTextWidget = nullptr;
+
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusConnect();
     }
 
-
-    // destructor
     MorphTargetsWindowPlugin::~MorphTargetsWindowPlugin()
     {
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusDisconnect();
+
         // unregister the command callbacks and get rid of the memory
         for (auto callback : m_callbacks)
         {
@@ -278,6 +279,13 @@ namespace EMStudio
         }
     }
 
+    void MorphTargetsWindowPlugin::OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance)
+    {
+        if (mCurrentActorInstance == actorInstance)
+        {
+            ReInit(true);
+        }
+    }
 
     //-----------------------------------------------------------------------------------------
     // Command callbacks
