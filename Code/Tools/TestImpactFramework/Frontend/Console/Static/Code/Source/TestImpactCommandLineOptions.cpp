@@ -22,22 +22,22 @@ namespace TestImpact
         enum 
         {
             // Options
-            Config,
-            ChangeList,
-            OutputChangeList,
-            Sequence,
-            TestPrioritizationPolicy,
-            ExecutionFailurePolicy,
-            FailedTestCoveragePolicy,
-            TestFailurePolicy,
-            IntegrityFailurePolicy,
-            TestShardingPolicy,
-            TargetOutputCapture,
-            MaxConcurrency,
-            TestTargetTimeout,
-            GlobalTimeout,
-            SuiteFilter,
-            SafeMode,
+            ConfigKey,
+            ChangeListKey,
+            OutputChangeListKey,
+            SequenceKey,
+            TestPrioritizationPolicyKey,
+            ExecutionFailurePolicyKey,
+            FailedTestCoveragePolicyKey,
+            TestFailurePolicyKey,
+            IntegrityFailurePolicyKey,
+            TestShardingPolicyKey,
+            TargetOutputCaptureKey,
+            MaxConcurrencyKey,
+            TestTargetTimeoutKey,
+            GlobalTimeoutKey,
+            SuiteFilterKey,
+            SafeModeKey,
             // Values
             None,
             Seed,
@@ -93,17 +93,17 @@ namespace TestImpact
 
         RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
         {
-            return ParsePathOption(OptionKeys[Config], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
+            return ParsePathOption(OptionKeys[ConfigKey], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
         }
 
         AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
         {
-            return ParsePathOption(OptionKeys[ChangeList], cmd);
+            return ParsePathOption(OptionKeys[ChangeListKey], cmd);
         }
 
         bool ParseOutputChangeList(const AZ::CommandLine& cmd)
         {
-            return ParseOnOffOption(OptionKeys[OutputChangeList], BinaryStateValue<bool>{ false, true }, cmd).value_or(false);
+            return ParseOnOffOption(OptionKeys[OutputChangeListKey], BinaryStateValue<bool>{ false, true }, cmd).value_or(false);
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -118,7 +118,7 @@ namespace TestImpact
                 {OptionKeys[ImpactAnalysisOrSeed], TestSequenceType::ImpactAnalysisOrSeed}
             };
 
-            return ParseMultiStateOption(OptionKeys[Sequence], states, cmd).value_or(TestSequenceType::None);
+            return ParseMultiStateOption(OptionKeys[SequenceKey], states, cmd).value_or(TestSequenceType::None);
         }
 
         Policy::TestPrioritization ParseTestPrioritizationPolicy(const AZ::CommandLine& cmd)
@@ -129,7 +129,7 @@ namespace TestImpact
                 {OptionKeys[Locality], Policy::TestPrioritization::DependencyLocality}
             };
 
-            return ParseBinaryStateOption(OptionKeys[TestPrioritizationPolicy], states, cmd).value_or(Policy::TestPrioritization::None);
+            return ParseBinaryStateOption(OptionKeys[TestPrioritizationPolicyKey], states, cmd).value_or(Policy::TestPrioritization::None);
         }
 
         Policy::ExecutionFailure ParseExecutionFailurePolicy(const AZ::CommandLine& cmd)
@@ -140,7 +140,7 @@ namespace TestImpact
                 {OptionKeys[Continue], Policy::ExecutionFailure::Continue},
                 {OptionKeys[Ignore], Policy::ExecutionFailure::Ignore}
             };
-            return ParseMultiStateOption(OptionKeys[ExecutionFailurePolicy], states, cmd).value_or(Policy::ExecutionFailure::Continue);
+            return ParseMultiStateOption(OptionKeys[ExecutionFailurePolicyKey], states, cmd).value_or(Policy::ExecutionFailure::Continue);
         }
 
         Policy::FailedTestCoverage ParseFailedTestCoveragePolicy(const AZ::CommandLine& cmd)
@@ -151,7 +151,7 @@ namespace TestImpact
                 {OptionKeys[Keep], Policy::FailedTestCoverage::Keep}
             };
 
-            return ParseMultiStateOption(OptionKeys[FailedTestCoveragePolicy], states, cmd).value_or(Policy::FailedTestCoverage::Keep);
+            return ParseMultiStateOption(OptionKeys[FailedTestCoveragePolicyKey], states, cmd).value_or(Policy::FailedTestCoverage::Keep);
         }
 
         Policy::TestFailure ParseTestFailurePolicy(const AZ::CommandLine& cmd)
@@ -162,7 +162,7 @@ namespace TestImpact
                 Policy::TestFailure::Continue
             };
 
-            return ParseAbortContinueOption(OptionKeys[TestFailurePolicy], states, cmd).value_or(Policy::TestFailure::Abort);
+            return ParseAbortContinueOption(OptionKeys[TestFailurePolicyKey], states, cmd).value_or(Policy::TestFailure::Abort);
         }
 
         Policy::IntegrityFailure ParseIntegrityFailurePolicy(const AZ::CommandLine& cmd)
@@ -173,7 +173,7 @@ namespace TestImpact
                 Policy::IntegrityFailure::Continue
             };
 
-            return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicy], states, cmd).value_or(Policy::IntegrityFailure::Abort);
+            return ParseAbortContinueOption(OptionKeys[IntegrityFailurePolicyKey], states, cmd).value_or(Policy::IntegrityFailure::Abort);
         }
 
         Policy::TestSharding ParseTestShardingPolicy(const AZ::CommandLine& cmd)
@@ -184,12 +184,12 @@ namespace TestImpact
                 Policy::TestSharding::Always
             };
 
-            return ParseOnOffOption("shard", states, cmd).value_or(Policy::TestSharding::Never);
+            return ParseOnOffOption(OptionKeys[TestShardingPolicyKey], states, cmd).value_or(Policy::TestSharding::Never);
         }
 
         Policy::TargetOutputCapture ParseTargetOutputCapture(const AZ::CommandLine& cmd)
         {
-            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCapture]);
+            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[TargetOutputCaptureKey]);
                 numSwitchValues)
             {
                 AZ_TestImpact_Eval(
@@ -198,7 +198,7 @@ namespace TestImpact
                 Policy::TargetOutputCapture targetOutputCapture = Policy::TargetOutputCapture::None;
                 for (auto i = 0; i < numSwitchValues; i++)
                 {
-                    const auto option = cmd.GetSwitchValue(OptionKeys[TargetOutputCapture], i);
+                    const auto option = cmd.GetSwitchValue(OptionKeys[TargetOutputCaptureKey], i);
                     if (option == OptionKeys[StdOut])
                     {
                         if (targetOutputCapture == Policy::TargetOutputCapture::File)
@@ -236,23 +236,23 @@ namespace TestImpact
 
         AZStd::optional<size_t> ParseMaxConcurrency(const AZ::CommandLine& cmd)
         {
-            return ParseUnsignedIntegerOption(OptionKeys[MaxConcurrency], cmd);
+            return ParseUnsignedIntegerOption(OptionKeys[MaxConcurrencyKey], cmd);
         }
 
         AZStd::optional<AZStd::chrono::milliseconds> ParseTestTargetTimeout(const AZ::CommandLine& cmd)
         {
-            return ParseSecondsOption(OptionKeys[TestTargetTimeout], cmd);
+            return ParseSecondsOption(OptionKeys[TestTargetTimeoutKey], cmd);
         }
 
         AZStd::optional<AZStd::chrono::milliseconds> ParseGlobalTimeout(const AZ::CommandLine& cmd)
         {
-            return ParseSecondsOption(OptionKeys[GlobalTimeout], cmd);
+            return ParseSecondsOption(OptionKeys[GlobalTimeoutKey], cmd);
         }
 
         bool ParseSafeMode(const AZ::CommandLine& cmd)
         {
             const BinaryStateValue<bool> states = { false, true };
-            return ParseOnOffOption(OptionKeys[SafeMode], states, cmd).value_or(false);
+            return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
         }
 
         SuiteType ParseSuiteFilter(const AZ::CommandLine& cmd)
@@ -264,7 +264,7 @@ namespace TestImpact
                 {GetSuiteTypeName(SuiteType::Sandbox), SuiteType::Sandbox}
             };
 
-            return ParseMultiStateOption(OptionKeys[SuiteFilter], states, cmd).value_or(SuiteType::Main);
+            return ParseMultiStateOption(OptionKeys[SuiteFilterKey], states, cmd).value_or(SuiteType::Main);
         }
     }
 
