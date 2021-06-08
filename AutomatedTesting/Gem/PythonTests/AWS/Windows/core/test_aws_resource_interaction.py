@@ -14,6 +14,7 @@ import pytest
 import ly_test_tools
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
+import ly_test_tools.o3de.asset_processor_utils as asset_processor_utils
 import os
 import logging
 import json
@@ -34,22 +35,11 @@ AWS_CORE_FEATURE_NAME = 'AWSCore'
 AWS_CORE_DEFAULT_PROFILE_NAME = 'default'
 AWS_RESOURCE_MAPPING_FILE_NAME = 'aws_resource_mappings.json'
 
-AP_PROCESSES = [
-            'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder', 'CrySCompileServer',
-            'rc'  # Resource Compiler
-        ]
-
 process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill ProjectManager windows
 
 GAME_LOG_NAME = 'Game.log'
 
 logger = logging.getLogger(__name__)
-
-
-def kill_asset_processor(targets):
-    for target in targets:
-        process_utils.kill_processes_named(target, ignore_extensions=True)  # Kill AssetProcessor
-
 
 
 @pytest.mark.SUITE_periodic
@@ -66,11 +56,10 @@ def kill_asset_processor(targets):
 @pytest.mark.parametrize('level', ['AWS/Core'])
 @pytest.mark.usefixtures('resource_mappings')
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
-class TestAWSCoreDownloadFromS3(object):
+class TestAWSCoreAWSResourceInteraction(object):
     """
     Test class to verify AWSCore can downloading a file from S3.
-    """
-
+    """b
     def test_download_from_s3(self,
                               level: str,
                               launcher: pytest.fixture,
@@ -85,7 +74,7 @@ class TestAWSCoreDownloadFromS3(object):
         Verification: Log monitor looks for success download. The existence and contents of the file are also verified.
         """
 
-        kill_asset_processor(AP_PROCESSES)
+        asset_processor_utils.kill_asset_processor()
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
         resource_mappings.populate_output_keys(stacks)
@@ -137,7 +126,7 @@ class TestAWSCoreDownloadFromS3(object):
         Tests: Runs the test level.
         Verification: Searches the logs for the expected output from the example lambda.
         """
-        kill_asset_processor(AP_PROCESSES)
+        asset_processor_utils.kill_asset_processor()
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
         resource_mappings.populate_output_keys(stacks)
@@ -198,7 +187,7 @@ class TestAWSCoreDownloadFromS3(object):
                 logger.exception(f'Failed to load data into table {table.name}')
                 raise
 
-        kill_asset_processor(AP_PROCESSES)
+        asset_processor_utils.kill_asset_processor()
         logger.info(f'Cdk stack names:\n{cdk.list()}')
         stacks = cdk.deploy(additonal_params=['--all'])
         resource_mappings.populate_output_keys(stacks)
