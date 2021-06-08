@@ -474,6 +474,7 @@ namespace UnitTest
         desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
         desc.m_bufferName = "Buffer1";
         desc.m_byteCount = bufferInfo.m_bufferDescriptor.m_byteCount;
+        desc.m_isUniqueName = true;
 
         Data::Instance<RPI::Buffer> bufferInst = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         // buffer created
@@ -488,8 +489,33 @@ namespace UnitTest
         EXPECT_EQ(bufferFound2.get(), nullptr);
     }
 
-    // Failed if creates a buffer with duplicated name with existing buffer
-    TEST_F(BufferTests, BufferSystem_CreateDuplicatedNamedBuffer_Fail)
+    // Failed if creates a buffe which has a same name with existing buffer
+    // and has m_isUniqueName is enabled
+    TEST_F(BufferTests, BufferSystem_CreateDuplicatedNamedBufferEnableUniqueName_Fail)
+    {
+        using namespace AZ;
+
+        ExpectedBuffer bufferInfo = CreateValidBuffer();
+
+        RPI::CommonBufferDescriptor desc;
+        desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+        desc.m_bufferName = "Buffer1";
+        desc.m_byteCount = bufferInfo.m_bufferDescriptor.m_byteCount;
+        desc.m_isUniqueName = true;
+
+        Data::Instance<RPI::Buffer> bufferInst = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        // buffer created
+        EXPECT_NE(bufferInst.get(), nullptr);
+
+        AZ_TEST_START_ASSERTTEST;
+        Data::Instance<RPI::Buffer> bufferInst2 = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        AZ_TEST_STOP_ASSERTTEST(1);
+        // buffer NOT created
+        EXPECT_EQ(bufferInst2.get(), nullptr);
+    }
+
+    // create a buffer which has a same name with existing buffer 
+    TEST_F(BufferTests, BufferSystem_CreateDuplicatedNamedBuffers_Success)
     {
         using namespace AZ;
 
@@ -503,12 +529,10 @@ namespace UnitTest
         Data::Instance<RPI::Buffer> bufferInst = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         // buffer created
         EXPECT_NE(bufferInst.get(), nullptr);
-
-        AZ_TEST_START_ASSERTTEST;
+                
         Data::Instance<RPI::Buffer> bufferInst2 = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-        AZ_TEST_STOP_ASSERTTEST(1);
-        // buffer NOT created
-        EXPECT_EQ(bufferInst2.get(), nullptr);
+        // buffer created
+        EXPECT_NE(bufferInst2.get(), nullptr);
     }
 
     // Buffer instance creation unit tests

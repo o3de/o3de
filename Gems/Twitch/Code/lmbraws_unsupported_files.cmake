@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/Twitch_precompiled.cpp
     Source/Twitch_precompiled.h
     Source/ComponentStub.cpp
 )

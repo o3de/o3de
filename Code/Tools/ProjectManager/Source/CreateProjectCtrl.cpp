@@ -15,6 +15,7 @@
 #include <PythonBindingsInterface.h>
 #include <NewProjectSettingsScreen.h>
 #include <ScreenHeaderWidget.h>
+#include <GemCatalog/GemCatalogScreen.h>
 
 #include <QDialogButtonBox>
 #include <QHBoxLayout>
@@ -41,24 +42,33 @@ namespace O3DE::ProjectManager
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
-        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
-        m_stack->addWidget(new NewProjectSettingsScreen());
-        m_gemCatalog = new GemCatalogScreen();
-        m_stack->addWidget(m_gemCatalog);
+        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred,QSizePolicy::Expanding));
+
+        m_newProjectSettingsScreen = new NewProjectSettingsScreen(this);
+        m_stack->addWidget(m_newProjectSettingsScreen);
+
+        m_gemCatalogScreen = new GemCatalogScreen(this);
+        m_stack->addWidget(m_gemCatalogScreen);
         vLayout->addWidget(m_stack);
 
-        QDialogButtonBox* backNextButtons = new QDialogButtonBox();
-        backNextButtons->setObjectName("footer");
-        vLayout->addWidget(backNextButtons);
+        QDialogButtonBox* buttons = new QDialogButtonBox();
+        buttons->setObjectName("footer");
+        vLayout->addWidget(buttons);
 
-        m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
-        m_backButton->setProperty("secondary", true);
-        m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+        connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
 
-        connect(m_backButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleBackButton);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleNextButton);
+        m_secondaryButton = buttons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_secondaryButton->setProperty("secondary", true);
+        m_secondaryButton->setVisible(false);
+        connect(m_secondaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleSecondaryButton);
 
         Update();
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
+        m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
+        connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
+
         setLayout(vLayout);
     }
 
@@ -80,8 +90,10 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() > 0)
         {
-            m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
-            Update();
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+            PreviousScreen();
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
         }
         else
         {
@@ -89,70 +101,123 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void CreateProjectCtrl::HandleNextButton()
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+    void CreateProjectCtrl::HandleSecondaryButton()
     {
-        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
-        ProjectManagerScreen screenEnum = currentScreen->GetScreenEnum();
-
-        if (screenEnum == ProjectManagerScreen::NewProjectSettings)
+        if (m_stack->currentIndex() > 0)
         {
-            auto newProjectScreen = reinterpret_cast<NewProjectSettingsScreen*>(currentScreen);
-            if (newProjectScreen)
-            {
-                if (!newProjectScreen->Validate())
-                {
-                    QMessageBox::critical(this, tr("Invalid project settings"), tr("Invalid project settings"));
-                    return;
-                }
-
-                m_projectInfo         = newProjectScreen->GetProjectInfo();
-                m_projectTemplatePath = newProjectScreen->GetProjectTemplatePath();
-
-                // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
-                m_gemCatalog->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/true);
-            }
-        }
-
-        if (m_stack->currentIndex() != m_stack->count() - 1)
-        {
-            m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
-            Update();
+            // return to Project Settings page
+            PreviousScreen();
         }
         else
         {
-            auto result = PythonBindingsInterface::Get()->CreateProject(m_projectTemplatePath, m_projectInfo);
+            // Configure Gems
+            NextScreen();
+        }
+    }
+
+    void CreateProjectCtrl::Update()
+    {
+        if (m_stack->currentWidget() == m_gemCatalogScreen)
+        {
+            m_header->setSubTitle(tr("Configure project with Gems"));
+            m_secondaryButton->setVisible(false);
+        }
+        else
+        {
+            m_header->setSubTitle(tr("Enter Project Details"));
+            m_secondaryButton->setVisible(true);
+            m_secondaryButton->setText(tr("Configure Gems"));
+        }
+    }
+
+    void CreateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
+    {
+        if (screen == ProjectManagerScreen::GemCatalog)
+        {
+            HandleSecondaryButton();
+        }
+        else
+        {
+            emit ChangeScreenRequest(screen);
+        }
+    }
+
+    void CreateProjectCtrl::NextScreen()
+    {
+        if (m_stack->currentIndex() < m_stack->count())
+        {
+            if(CurrentScreenIsValid())
+            {
+                m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
+
+                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+                m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
+
+                Update();
+            }
+            else
+            {
+                QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            }
+        }
+    }
+
+    void CreateProjectCtrl::PreviousScreen()
+    {
+        // we don't require the current screen to be valid when moving back
+        if (m_stack->currentIndex() > 0)
+        {
+            m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            Update();
+        }
+    }
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
+    void CreateProjectCtrl::HandlePrimaryButton()
+    {
+        CreateProject();
+    }
+
+    bool CreateProjectCtrl::CurrentScreenIsValid()
+    {
+        if (m_stack->currentWidget() == m_newProjectSettingsScreen)
+        {
+            return m_newProjectSettingsScreen->Validate();
+        }
+
+        return true;
+    }
+
+    void CreateProjectCtrl::CreateProject()
+    {
+        if (m_newProjectSettingsScreen->Validate())
+        {
+            ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
+            QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+
+            auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
             if (result.IsSuccess())
             {
                 // automatically register the project
-                PythonBindingsInterface::Get()->AddProject(m_projectInfo.m_path);
+                PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
-                // adding gems is not implemented yet because we don't know what targets to add or how to add them
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+                m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
+
+                projectInfo.m_needsBuild = true;
+                emit NotifyBuildProject(projectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
             else
             {
                 QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
             }
-
-            // Enable/disable gems for the newly created project.
-            m_gemCatalog->EnableDisableGemsForProject(m_projectInfo.m_path);
-        }
-    }
-
-    void CreateProjectCtrl::Update()
-    {
-        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
-        if (currentScreen && currentScreen->GetScreenEnum() == ProjectManagerScreen::GemCatalog)
-        {
-            m_header->setTitle(tr("Create Project"));
-            m_header->setSubTitle(tr("Configure project with Gems"));
-            m_nextButton->setText(tr("Create Project"));
         }
         else
         {
-            m_header->setTitle(tr("Create Project"));
-            m_header->setSubTitle(tr("Enter Project Details"));
-            m_nextButton->setText(tr("Next"));
+            QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
         }
     }
 

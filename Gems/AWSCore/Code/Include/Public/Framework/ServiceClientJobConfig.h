@@ -113,7 +113,13 @@ namespace AWSCore
         /// needed. See it's use in ServiceRequestJobConfig.
         const AZStd::string GetServiceUrl() override
         {
+            if (endpointOverride.has_value())
+            {
+                return endpointOverride.value().c_str();
+            }
+
             AZStd::string serviceUrl;
+            
             if (!ServiceTraitsType::RESTApiIdKeyName && !ServiceTraitsType::RESTApiStageKeyName)
             {
                 AWSResourceMappingRequestBus::BroadcastResult(

@@ -31,6 +31,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
+
+    // scale multiplier of the downsampled size to the fullscreen size (e.g., 4)
+    uint m_outputImageScale;
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
@@ -56,16 +59,13 @@ struct PSOutput
 // Pixel Shader
 PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
 {  
-    // the downsample is 1/4 resolution
-    // [GFX TODO][ATOM-6172] Add image scale PassSrg constant to the DiffuseProbeGrid downsample/upsample
-    const uint ImageScale = 4;
-    uint2 screenCoords = IN.m_position.xy * ImageScale;
+    uint2 screenCoords = IN.m_position.xy * PassSrg::m_outputImageScale;
 
     float downsampledDepth = 0;
     float4 downsampledEncodedNormal;
-    for (uint y = 0; y < ImageScale; ++y)
+    for (uint y = 0; y < PassSrg::m_outputImageScale; ++y)
     {
-        for (uint x = 0; x < ImageScale; ++x)
+        for (uint x = 0; x < PassSrg::m_outputImageScale; ++x)
         {
             float depth = PassSrg::m_depth.Load(screenCoords + int2(x, y), sampleIndex).r;
             float4 encodedNormal = PassSrg::m_normal.Load(screenCoords + int2(x, y), sampleIndex);

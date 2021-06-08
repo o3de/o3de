@@ -118,14 +118,9 @@ namespace AZ
 
         void LightCullingRemap::CreateRemappedLightListBuffer()
         {
-            // generate a UUID for the buffer name to keep it unique when there are multiple render pipelines
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
-            desc.m_bufferName = AZStd::string::format("LightListRemapped_%s", uuidString.c_str());
+            desc.m_bufferName = "LightListRemapped";
             desc.m_elementSize = RHI::GetFormatSize(LightListRemappedFormat);
             desc.m_byteCount = m_tileDim.m_width * m_tileDim.m_height * NumBins * MaxLightsPerTile * desc.m_elementSize;
             m_lightListRemapped = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);

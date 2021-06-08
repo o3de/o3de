@@ -24,9 +24,9 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0);
 
-            DynamicModuleHandleWindows(const char* fullFileName)
+        DynamicModuleHandleWindows(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
         {
@@ -52,6 +52,7 @@ namespace AZ
                     if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
                     {
                         m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                        return;
                     }
                 }
             }
@@ -65,7 +66,7 @@ namespace AZ
                 // Therefore an existence check is needed
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
-                    if(AZ::IO::FixedMaxPath projectModulePath;
+                    if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
                         projectModulePath /= AZStd::string_view(m_fileName);
@@ -74,6 +75,15 @@ namespace AZ
                             m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
                         }
                     }
+                }
+            }
+            else
+            {
+                // The module does exist (in 'cwd'), but still needs to be an absolute path for the module to be loaded.
+                AZStd::optional<AZ::IO::FixedMaxPathString> absPathOptional = AZ::Utils::ConvertToAbsolutePath(m_fileName);
+                if (absPathOptional.has_value())
+                {
+                    m_fileName.assign(absPathOptional->c_str(), absPathOptional->size());
                 }
             }
         }

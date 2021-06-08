@@ -64,11 +64,13 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include/Public
         BUILD_DEPENDENCIES
             PRIVATE
+                AZ::AzQtComponents
                 3rdParty::Qt::Core
                 3rdParty::Qt::Widgets
-                AZ::AzQtComponents
+                Gem::AWSCore.Static
             PUBLIC
                 AZ::AzToolsFramework
+                3rdParty::AWSNativeSDK::AWSCore
     )
 
     ly_add_target(
