@@ -84,17 +84,6 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_undoPatch, entityId);
         }
 
-        void PrefabUndoEntityUpdate::Do(InstanceOptionalReference instanceToExclude)
-        {
-            [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instanceToExclude);
-
-            AZ_Error(
-                "Prefab", isPatchApplicationSuccessful,
-                "Applying the patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
-                m_templateId);
-        }
-
         void PrefabUndoEntityUpdate::Undo()
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
@@ -114,6 +103,17 @@ namespace AzToolsFramework
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
                 "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
+                m_templateId);
+        }
+
+        void PrefabUndoEntityUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        {
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instanceToExclude);
+
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
                 m_templateId);
         }
 
@@ -291,11 +291,6 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabUndoLinkUpdate::Do(InstanceOptionalReference instanceToExclude)
-        {
-            UpdateLink(m_linkDomNext, instanceToExclude);
-        }
-
         void PrefabUndoLinkUpdate::Undo()
         {
             UpdateLink(m_linkDomPrevious);
@@ -304,6 +299,11 @@ namespace AzToolsFramework
         void PrefabUndoLinkUpdate::Redo()
         {
             UpdateLink(m_linkDomNext);
+        }
+
+        void PrefabUndoLinkUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        {
+            UpdateLink(m_linkDomNext, instanceToExclude);
         }
 
         void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude)

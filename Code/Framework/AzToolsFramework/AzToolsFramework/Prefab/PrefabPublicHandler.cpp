@@ -242,11 +242,13 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->GenerateDomForEntity(containerAfterReset, *containerEntity);
 
                     // Update the state of the entity
-                    PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(containerEntityId)));
-                    state->SetParent(undoBatch.GetUndoBatch());
-                    state->Capture(containerBeforeReset, containerAfterReset, containerEntityId);
+                    auto templateId = instanceToCreate->get().GetTemplateId();
 
-                    state->Redo();
+                    PrefabDom transformPatch;
+                    m_instanceToTemplateInterface->GeneratePatch(transformPatch, containerBeforeReset, containerAfterReset);
+                    m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(transformPatch, containerEntityId);
+
+                    m_instanceToTemplateInterface->PatchTemplate(transformPatch, templateId);
                 }
 
                 // This clears any entities marked as dirty due to reparenting of entities during the process of creating a prefab.
@@ -687,7 +689,7 @@ namespace AzToolsFramework
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
 
-            linkUpdate->Do(parentInstance);
+            linkUpdate->Redo(parentInstance);
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
@@ -699,7 +701,7 @@ namespace AzToolsFramework
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
 
-            state->Do(instance);
+            state->Redo(instance);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(

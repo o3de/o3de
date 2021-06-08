@@ -184,14 +184,24 @@ namespace AzToolsFramework
                         auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
                         if (!instanceDomFromRootValue)
                         {
-                            // We may not find the instance in the top level ancestor in some cases (undoing a Create Prefab for example).
-                            // In this case, we just skip restoring the instance as it will be taken care of by the rest of the propagation.
+                            AZ_Assert(
+                                false,
+                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                "Could not load Instance DOM from the top level ancestor's DOM.");
+
+                            isUpdateSuccessful = false;
                             continue;
                         }
 
                         PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
                         if (!instanceDomFromRoot.has_value())
                         {
+                            AZ_Assert(
+                                false,
+                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                "Could not load Instance DOM from the top level ancestor's DOM.");
+
+                            isUpdateSuccessful = false;
                             continue;
                         }
 

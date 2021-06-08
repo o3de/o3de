@@ -71,12 +71,12 @@ namespace AzToolsFramework
 
             void Capture(
                 PrefabDom& initialState,
-                PrefabDom& endState,
-                const AZ::EntityId& entity);
+                PrefabDom& endState, const AZ::EntityId& entity);
 
-            void Do(InstanceOptionalReference instanceToExclude = AZStd::nullopt);
             void Undo() override;
             void Redo() override;
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalReference instanceToExclude);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -138,9 +138,10 @@ namespace AzToolsFramework
                 const PrefabDom& patch,
                 const LinkId linkId = InvalidLinkId);
 
-            void Do(InstanceOptionalReference instanceToExclude = AZStd::nullopt);
             void Undo() override;
             void Redo() override;
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalReference instanceToExclude);
 
         private:
             void UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
