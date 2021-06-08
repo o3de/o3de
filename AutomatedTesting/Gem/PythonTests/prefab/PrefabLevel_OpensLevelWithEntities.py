@@ -41,7 +41,7 @@ def PrefabLevel_OpensLevelWithEntities():
     EXPECTED_EMPTY_ENTITY_POS = Vector3(10.00, 20.0, 30.0)
 
     helper.init_idle()
-    helper.open_level("prefab", "PrefabLevel_OpensLevelWithEntities")
+    helper.open_level("Prefab", "PrefabLevel_OpensLevelWithEntities")
 
     def find_entity(entity_name):
         searchFilter = entity.SearchFilter()

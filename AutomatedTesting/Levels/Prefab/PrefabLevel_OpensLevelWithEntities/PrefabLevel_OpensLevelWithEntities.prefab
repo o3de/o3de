@@ -1,5 +1,5 @@
 {
-    "Source": "Levels/PrefabLevel_OpensLevelWithEntities/PrefabLevel_OpensLevelWithEntities.prefab",
+    "Source": "Levels/Prefab/PrefabLevel_OpensLevelWithEntities/PrefabLevel_OpensLevelWithEntities.prefab",
     "ContainerEntity": {
         "Id": "Entity_[403811863694]",
         "Name": "Level",
