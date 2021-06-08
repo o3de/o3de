@@ -22,7 +22,6 @@
     ],
     "steps": [
       "debug_vs2019",
-      "test_impact_seed",
       "test_debug_vs2019"
     ]
   },
