@@ -629,7 +629,7 @@ namespace Multiplayer
             AzFramework::PlayerConnectionConfig config;
             config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
             config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
-            AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->ValidatePlayerJoinSession(config);
+            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
         }
 
         // Hosts will spawn a new default player prefab for the user that just connected

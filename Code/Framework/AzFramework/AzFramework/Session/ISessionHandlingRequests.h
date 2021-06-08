@@ -46,9 +46,9 @@ namespace AzFramework
     class ISessionHandlingClientRequests
     {
     public:
-        AZ_RTTI(ISessionLocalUserRequests, "{41DE6BD3-72BC-4443-BFF9-5B1B9396657A}");
-        ISessionLocalUserRequests() = default;
-        virtual ~ISessionLocalUserRequests() = default;
+        AZ_RTTI(ISessionHandlingClientRequests, "{41DE6BD3-72BC-4443-BFF9-5B1B9396657A}");
+        ISessionHandlingClientRequests() = default;
+        virtual ~ISessionHandlingClientRequests() = default;
 
         // Request the player join session
         // @param  sessionConnectionConfig The required properties to handle the player join session process
