@@ -279,8 +279,8 @@ namespace GraphModel
             m_connections.erase(iter);
 
 #if defined(AZ_ENABLE_TRACING)
-            auto iter = AZStd::find(m_connections.begin(), m_connections.end(), connection);
-            AZ_Assert(iter == m_connections.end(), "Graph is broken. The same connection object was found multiple times.");
+            auto iterConnection = AZStd::find(m_connections.begin(), m_connections.end(), connection);
+            AZ_Assert(iterConnection == m_connections.end(), "Graph is broken. The same connection object was found multiple times.");
 #endif
 
             return true;

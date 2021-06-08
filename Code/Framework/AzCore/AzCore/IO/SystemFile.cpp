@@ -30,7 +30,7 @@ namespace Platform
 
     using FileHandleType = SystemFile::FileHandleType;
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SizeType offset, SystemFile::SeekMode mode);
+    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode);
     SystemFile::SizeType Tell(FileHandleType handle, const SystemFile* systemFile);
     bool Eof(FileHandleType handle, const SystemFile* systemFile);
     AZ::u64 ModificationTime(FileHandleType handle, const SystemFile* systemFile);
@@ -68,9 +68,8 @@ void SystemFile::CreatePath(const char* fileName)
 }
 
 SystemFile::SystemFile()
+    : m_handle{ AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE }
 {
-    m_fileName[0] = '\0';
-    m_handle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
 }
 
 SystemFile::~SystemFile()
@@ -81,6 +80,25 @@ SystemFile::~SystemFile()
     }
 }
 
+SystemFile::SystemFile(SystemFile&& other)
+    : SystemFile{}
+{
+    AZStd::swap(m_fileName, other.m_fileName);
+    AZStd::swap(m_handle, other.m_handle);
+}
+
+SystemFile& SystemFile::operator=(SystemFile&& other)
+{
+    // Close the current file and take over the SystemFile handle and filename
+    Close();
+    m_fileName = AZStd::move(other.m_fileName);
+    m_handle = AZStd::move(other.m_handle);
+    other.m_fileName = {};
+    other.m_handle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+
+    return *this;
+}
+
 bool SystemFile::Open(const char* fileName, int mode, int platformFlags)
 {
     AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Open - %s", fileName);
@@ -88,42 +106,42 @@ bool SystemFile::Open(const char* fileName, int mode, int platformFlags)
 
     if (fileName)       // If we reopen the file we are allowed to have NULL file name
     {
-        if (strlen(fileName) > AZ_ARRAY_SIZE(m_fileName) - 1)
+        if (strlen(fileName) > m_fileName.max_size())
         {
             EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, 0);
             return false;
         }
 
         // store the filename
-        azsnprintf(m_fileName, AZ_ARRAY_SIZE(m_fileName), "%s", fileName);
+        m_fileName = fileName;
     }
 
     if (FileIOBus::HasHandlers())
     {
         bool isOpen = false;
         bool isHandled = false;
-        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnOpen, *this, m_fileName, mode, platformFlags, isOpen);
+        EBUS_EVENT_RESULT(isHandled, FileIOBus, OnOpen, *this, m_fileName.c_str(), mode, platformFlags, isOpen);
         if (isHandled)
         {
             return isOpen;
         }
     }
 
-    AZ_Assert(!IsOpen(), "This file (%s) is already open!", m_fileName);
+    AZ_Assert(!IsOpen(), "This file (%s) is already open!", m_fileName.c_str());
 
     return PlatformOpen(mode, platformFlags);
 }
 
 bool SystemFile::ReOpen(int mode, int platformFlags)
 {
-    AZ_Assert(strlen(m_fileName) > 0, "Missing filename. You must call open first!");
+    AZ_Assert(!m_fileName.empty(), "Missing filename. You must call open first!");
     return Open(0, mode, platformFlags);
 }
 
 void SystemFile::Close()
 {
-    AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Close - %s", m_fileName);
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Close - %s", m_fileName);
+    AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Close - %s", m_fileName.c_str());
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Close - %s", m_fileName.c_str());
 
     if (FileIOBus::HasHandlers())
     {
@@ -138,9 +156,9 @@ void SystemFile::Close()
     PlatformClose();
 }
 
-void SystemFile::Seek(SizeType offset, SeekMode mode)
+void SystemFile::Seek(SeekSizeType offset, SeekMode mode)
 {
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Seek - %s:%i", m_fileName, offset);
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Seek - %s:%i", m_fileName.c_str(), offset);
 
     if (FileIOBus::HasHandlers())
     {
@@ -167,15 +185,15 @@ bool SystemFile::Eof()
 
 AZ::u64 SystemFile::ModificationTime()
 {
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::ModTime - %s", m_fileName);
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::ModTime - %s", m_fileName.c_str());
 
     return Platform::ModificationTime(m_handle, this);
 }
 
 SystemFile::SizeType SystemFile::Read(SizeType byteSize, void* buffer)
 {
-    AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Read - %s:%i", m_fileName, byteSize);
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Read - %s:%i", m_fileName, byteSize);
+    AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Read - %s:%i", m_fileName.c_str(), byteSize);
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Read - %s:%i", m_fileName.c_str(), byteSize);
 
     if (FileIOBus::HasHandlers())
     {
@@ -193,8 +211,8 @@ SystemFile::SizeType SystemFile::Read(SizeType byteSize, void* buffer)
 
 SystemFile::SizeType SystemFile::Write(const void* buffer, SizeType byteSize)
 {
-    AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Write - %s:%i", m_fileName, byteSize);
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Write - %s:%i", m_fileName, byteSize);
+    AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory::AzCore, this, "SystemFile::Write - %s:%i", m_fileName.c_str(), byteSize);
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Write - %s:%i", m_fileName.c_str(), byteSize);
 
     if (FileIOBus::HasHandlers())
     {
@@ -212,14 +230,14 @@ SystemFile::SizeType SystemFile::Write(const void* buffer, SizeType byteSize)
 
 void SystemFile::Flush()
 {
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Flush - %s", m_fileName);
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Flush - %s", m_fileName.c_str());
 
     Platform::Flush(m_handle, this);
 }
 
 SystemFile::SizeType SystemFile::Length() const
 {
-    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Length - %s", m_fileName);
+    AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::Length - %s", m_fileName.c_str());
 
     return Platform::Length(m_handle, this);
 }
@@ -379,9 +397,9 @@ namespace
     HasPosixEnumOption(PermissionModeFlags::Write);
 
 #undef HasPosixEnumOption
-}                      
+}
 
-                       
+
 FileDescriptorRedirector::FileDescriptorRedirector(int sourceFileDescriptor)
     : m_sourceFileDescriptor(sourceFileDescriptor)
 {

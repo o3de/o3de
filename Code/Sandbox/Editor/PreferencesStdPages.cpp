@@ -15,6 +15,8 @@
 
 #include "PreferencesStdPages.h"
 
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+
 // Editor
 #include "EditorPreferencesPageGeneral.h"
 #include "EditorPreferencesPageFiles.h"
@@ -23,6 +25,7 @@
 #include "EditorPreferencesPageViewportMovement.h"
 #include "EditorPreferencesPageViewportDebug.h"
 #include "EditorPreferencesPageExperimentalLighting.h"
+#include "EditorPreferencesPageAWS.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -42,6 +45,11 @@ CStdPreferencesClassDesc::CStdPreferencesClassDesc()
     };
 
     m_pageCreators.push_back([]() { return new CEditorPreferencesPage_ExperimentalLighting(); });
+
+    if (AzToolsFramework::IsComponentWithServiceRegistered(AZ_CRC_CE("AWSCoreEditorService")))
+    {
+        m_pageCreators.push_back([]() { return new CEditorPreferencesPage_AWS(); });
+    }
 }
 
 HRESULT CStdPreferencesClassDesc::QueryInterface(const IID& riid, void** ppvObj)

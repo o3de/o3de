@@ -28,24 +28,6 @@
             "doubleSided": true,
             "factor": 0.28999999165534975,
             "mode": "Cutout"
-        },
-        "subsurfaceScattering": {
-            "enableSubsurfaceScattering": true,
-            "quality": 1.0,
-            "scatterColor": [
-                0.07421988248825073,
-                0.10223544389009476,
-                0.0,
-                1.0
-            ],
-            "subsurfaceScatterFactor": 0.0,
-            "transmissionMode": "ThinObject",
-            "transmissionTint": [
-                0.33716335892677309,
-                0.4620737135410309,
-                0.0,
-                1.0
-            ]
         }
     }
 }

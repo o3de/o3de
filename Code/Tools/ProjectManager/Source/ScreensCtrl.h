@@ -13,6 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
+#include <ProjectInfo.h>
 
 #include <QStackedWidget>
 #include <QStack>
@@ -39,6 +40,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void NotifyCurrentProject(const QString& projectPath);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
 
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);

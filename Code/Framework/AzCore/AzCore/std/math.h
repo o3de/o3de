@@ -21,11 +21,14 @@ namespace AZStd
     using std::asin;
     using std::atan;
     using std::atan2;
+    using std::ceil;
     using std::cos;
     using std::exp2;
+    using std::floor;
     using std::fmod;
     using std::round;
     using std::sin;
     using std::sqrt;
     using std::tan;
+    using std::trunc;
 } // namespace AZStd

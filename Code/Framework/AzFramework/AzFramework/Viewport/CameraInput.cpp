@@ -22,7 +22,11 @@
 namespace AzFramework
 {
     AZ_CVAR(
-        float, ed_cameraSystemDefaultPlaneHeight, 34.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        float,
+        ed_cameraSystemDefaultPlaneHeight,
+        34.0f,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "The default height of the ground plane to do intersection tests against when orbiting");
     AZ_CVAR(float, ed_cameraSystemBoostMultiplier, 3.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(float, ed_cameraSystemTranslateSpeed, 10.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -41,7 +45,11 @@ namespace AzFramework
     AZ_CVAR(
         AZ::CVarFixedString, ed_cameraSystemTranslateForwardKey, "keyboard_key_alphanumeric_W", nullptr, AZ::ConsoleFunctorFlags::Null, "");
     AZ_CVAR(
-        AZ::CVarFixedString, ed_cameraSystemTranslateBackwardKey, "keyboard_key_alphanumeric_S", nullptr, AZ::ConsoleFunctorFlags::Null,
+        AZ::CVarFixedString,
+        ed_cameraSystemTranslateBackwardKey,
+        "keyboard_key_alphanumeric_S",
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "");
     AZ_CVAR(
         AZ::CVarFixedString, ed_cameraSystemTranslateLeftKey, "keyboard_key_alphanumeric_A", nullptr, AZ::ConsoleFunctorFlags::Null, "");
@@ -326,7 +334,9 @@ namespace AzFramework
     }
 
     Camera RotateCameraInput::StepCamera(
-        const Camera& targetCamera, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta,
+        const Camera& targetCamera,
+        const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;
@@ -374,7 +384,9 @@ namespace AzFramework
     }
 
     Camera PanCameraInput::StepCamera(
-        const Camera& targetCamera, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta,
+        const Camera& targetCamera,
+        const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;
@@ -473,7 +485,9 @@ namespace AzFramework
     }
 
     Camera TranslateCameraInput::StepCamera(
-        const Camera& targetCamera, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta,
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
         const float deltaTime)
     {
         Camera nextCamera = targetCamera;
@@ -630,7 +644,9 @@ namespace AzFramework
     }
 
     Camera OrbitDollyScrollCameraInput::StepCamera(
-        const Camera& targetCamera, [[maybe_unused]] const ScreenVector& cursorDelta, const float scrollDelta,
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;
@@ -666,7 +682,9 @@ namespace AzFramework
     }
 
     Camera OrbitDollyCursorMoveCameraInput::StepCamera(
-        const Camera& targetCamera, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta,
+        const Camera& targetCamera,
+        const ScreenVector& cursorDelta,
+        [[maybe_unused]] const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;
@@ -686,7 +704,9 @@ namespace AzFramework
     }
 
     Camera ScrollTranslationCameraInput::StepCamera(
-        const Camera& targetCamera, [[maybe_unused]] const ScreenVector& cursorDelta, const float scrollDelta,
+        const Camera& targetCamera,
+        [[maybe_unused]] const ScreenVector& cursorDelta,
+        const float scrollDelta,
         [[maybe_unused]] const float deltaTime)
     {
         Camera nextCamera = targetCamera;

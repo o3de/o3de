@@ -137,5 +137,6 @@ enum class AnimParamType
     Invalid                     = static_cast<int>(0xFFFFFFFF)
 };
 
+static const int OLD_APARAM_USER = 100;
 
 #endif // CRYINCLUDE_CRYCOMMON_MAESTRO_TYPES_ANIMPARAMTYPE_H

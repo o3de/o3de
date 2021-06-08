@@ -35,7 +35,7 @@ namespace AZ
             // BufferSystemInterface overrides...
             RHI::Ptr<RHI::BufferPool> GetCommonBufferPool(CommonBufferPoolType poolType) override;
             Data::Instance<Buffer> CreateBufferFromCommonPool(const CommonBufferDescriptor& descriptor) override;
-            Data::Instance<Buffer> FindCommonBuffer(AZStd::string_view bufferName) override;
+            Data::Instance<Buffer> FindCommonBuffer(AZStd::string_view uniqueBufferName) override;
 
             void Init();
             void Shutdown();
