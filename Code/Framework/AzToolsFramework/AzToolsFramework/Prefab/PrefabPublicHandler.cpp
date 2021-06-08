@@ -1020,7 +1020,7 @@ namespace AzToolsFramework
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
                 if (!commonOwningInstance.has_value())
                 {
-                    // In this case if there isn't a parent instance (likely it is the top level instances), simply return.
+                    // In this case if there isn't a parent instance (likely it is the top level instance), simply return.
                     return AZ::Success();
                 }
             }
