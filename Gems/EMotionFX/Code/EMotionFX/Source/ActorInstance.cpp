@@ -34,6 +34,7 @@
 #include "NodeGroup.h"
 #include "Recorder.h"
 #include "TransformData.h"
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 
@@ -157,11 +158,14 @@ namespace EMotionFX
         GetEventManager().OnCreateActorInstance(this);
 
         GetActorManager().GetScheduler()->RecursiveInsertActorInstance(this);
+
+        ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceCreated, this);
     }
 
-    // the destructor
     ActorInstance::~ActorInstance()
     {
+        ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceDestroyed, this);
+
         // trigger the OnDeleteActorInstance event
         GetEventManager().OnDeleteActorInstance(this);
 
