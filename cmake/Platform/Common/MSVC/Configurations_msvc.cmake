@@ -68,7 +68,6 @@ ly_append_configurations_options(
         /wd4245 # conversion, signed/unsigned mismatch
         /wd4267 # conversion, possible loss of data
         /wd4310 # cast truncates constant value
-        /wd4324 # structure was padded due to alignment specifier
         /wd4389 # comparison, signed/unsigned mismatch
 
         # Enabling warnings that are disabled by default from /W4
