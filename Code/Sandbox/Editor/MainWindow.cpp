@@ -470,9 +470,11 @@ void MainWindow::Initialize()
 
     InitToolActionHandlers();
 
+    // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
+    InitToolBars();
+
     m_levelEditorMenuHandler->Initialize();
 
-    InitToolBars();
     InitStatusBar();
 
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
