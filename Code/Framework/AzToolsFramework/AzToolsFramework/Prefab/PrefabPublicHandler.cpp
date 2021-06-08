@@ -1018,6 +1018,11 @@ namespace AzToolsFramework
             if (commonOwningInstance->get().GetContainerEntityId() == firstEntityIdToDelete)
             {
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
+                if (!commonOwningInstance.has_value())
+                {
+                    // In this case if there isn't a parent instance (likely it is the top level instances), simply return.
+                    return AZ::Success();
+                }
             }
 
             // Retrieve entityList from entityIds
