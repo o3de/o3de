@@ -206,6 +206,7 @@ set(FILES
     Passes/SubsurfaceScattering.pass
     Passes/Taa.pass
     Passes/ThumbnailPipeline.pass
+    Passes/ThumbnailPipelineRenderToTexture.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass
