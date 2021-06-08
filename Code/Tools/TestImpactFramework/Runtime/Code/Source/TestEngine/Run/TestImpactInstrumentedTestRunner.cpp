@@ -72,7 +72,7 @@ namespace TestImpact
                     }
                     catch (const Exception& e)
                     {
-                        AZ_Printf("RunInstrumentedTests", e.what());
+                        AZ_Printf("RunInstrumentedTests", AZStd::string::format("%s\n", e.what()).c_str());
                         runs[jobId] = AZStd::nullopt;
                     }
                 }

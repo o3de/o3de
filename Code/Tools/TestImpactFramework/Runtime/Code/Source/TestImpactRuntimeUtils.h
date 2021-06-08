@@ -40,12 +40,7 @@ namespace TestImpact
         const AZStd::vector<AZStd::string>& excludedTestTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
-
-    //! Creates the consolidates source covering tests list from the test engine instrumented run jobs.
-    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
-        const AZStd::vector<TestEngineInstrumentedRun>& jobs,
-        const RepoPath& root);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);    
 
     //! Generates a test run failure report from the specified test engine job information.
     //! @tparam TestJob The test engine job type.

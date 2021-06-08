@@ -81,7 +81,8 @@ namespace TestImpact
     using SafeTestSequenceCompleteCallback = AZStd::function<void(
         Client::SequenceFailure&& selectedFailureReport,
         Client::SequenceFailure&& discardedFailureReport,
-        AZStd::chrono::milliseconds duration)>;
+        AZStd::chrono::milliseconds selectedDuration,
+        AZStd::chrono::milliseconds discardedDuration)>;
 
     //! Callback for test runs that have completed for any reason.
     //! @param selectedTests The test that has completed.
@@ -200,6 +201,10 @@ namespace TestImpact
         //! @returns The subset of test targets in the specified list that are not on the target exclude list.
         AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
             AZStd::vector<const TestTarget*> testTargets) const;
+
+        //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
+        //! test engine instrumented run jobs.
+        SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
 
         //! Prepares the dynamic dependency map for a seed update by clearing all existing data and deleting the file that will be serialized.
         void ClearDynamicDependencyMapAndRemoveExistingFile();

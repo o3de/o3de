@@ -46,7 +46,7 @@ namespace TestImpact
                     }
                     catch (const Exception& e)
                     {
-                        AZ_Printf("RunTests", e.what());
+                        AZ_Printf("RunTests", AZStd::string::format("%s\n", e.what()).c_str());
                         runs[jobId] = AZStd::nullopt;
                     }
                 }

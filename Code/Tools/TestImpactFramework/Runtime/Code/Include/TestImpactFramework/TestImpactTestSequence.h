@@ -34,7 +34,7 @@ namespace TestImpact
         //! Policy for handling the coverage data of failed tests targets (both test that failed to execute and tests that ran but failed).
         enum class FailedTestCoverage
         {
-            Remove, //!< Remove the failed test targets from the all coverage data (causing them to be drafted into future test runs).
+            Discard, //!< Discard the coverage data produced by the failing tests, causing them to be drafted into future test runs.
             Keep //!< Keep any existing coverage data and update the coverage data for failed test targetss that produce coverage.
         };
 

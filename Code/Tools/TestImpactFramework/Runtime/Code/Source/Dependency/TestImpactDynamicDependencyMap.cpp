@@ -133,8 +133,9 @@ namespace TestImpact
         return buildTarget;
     }
 
-    void DynamicDependencyMap::ReplaceSourceCoverage(const SourceCoveringTestsList& sourceCoverageDelta)
+    void DynamicDependencyMap::ReplaceSourceCoverageInternal(const SourceCoveringTestsList& sourceCoverageDelta, bool pruneIfNoParentsOrCoverage)
     {
+        AZStd::vector<AZStd::string> killList;
         for (const auto& sourceCoverage : sourceCoverageDelta.GetCoverage())
         {
             // Autogen input files are not compiled sources and thus supplying coverage data for them makes no sense
@@ -146,7 +147,12 @@ namespace TestImpact
             auto [sourceDependencyIt, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
             auto& [source, sourceDependency] = *sourceDependencyIt;
 
-            // Remove the source from the test target covering sources map and clear any existing coverage for the delta
+            // Before we can replace the coverage for this source dependency, we must:
+            // 1. Remove the source from the test target covering sources map
+            // 2. Prune the covered targets for the parent test target(s) of this source dependency
+            // 3. Clear any existing coverage for the delta
+
+            // 1.
             for (const auto& testTarget : sourceDependency.m_coveringTestTargets)
             {
                 if (auto coveringTestTargetIt = m_testTargetSourceCoverage.find(testTarget);
@@ -154,7 +160,20 @@ namespace TestImpact
                 {
                     coveringTestTargetIt->second.erase(source);
                 }
+
+                
             }
+
+            // 2.
+            // This step is prohibitively expensive as it requires iterating over all of the sources of the build targets covered by
+            // the parent test targets of this source dependency to ensure that this is in fact the last source being cleared and thus
+            // it can be determined that the parent test target is no longer covering the given build target
+            //
+            // The implications of this are that multiple calls to the test selector and priritizor's SelectTestTargets method will end
+            // up pulling in more test targets than needed for newly-created production sources until the next time the dynamic dependency
+            // map reconstructed, however until this use case materializes the implications described will not be addressed
+
+            // 3.
             sourceDependency.m_coveringTestTargets.clear();
 
             // Update the dependency with any new coverage data
@@ -183,11 +202,16 @@ namespace TestImpact
             }
 
             // If the new coverage data results in a parentless and coverageless entry, consider it a dead entry and remove accordingly
-            if (sourceDependency.m_coveringTestTargets.empty() && sourceDependency.m_parentTargets.empty())
+            if (sourceDependency.m_coveringTestTargets.empty() && sourceDependency.m_parentTargets.empty() && pruneIfNoParentsOrCoverage)
             {
                 m_sourceDependencyMap.erase(sourceDependencyIt);
             }
         }
+    }
+
+    void DynamicDependencyMap::ReplaceSourceCoverage(const SourceCoveringTestsList& sourceCoverageDelta)
+    {
+        ReplaceSourceCoverageInternal(sourceCoverageDelta, true);
     }
 
     void DynamicDependencyMap::ClearSourceCoverage(const AZStd::vector<RepoPath>& paths)
@@ -212,9 +236,14 @@ namespace TestImpact
 
     void DynamicDependencyMap::ClearAllSourceCoverage()
     {
-        for (const auto& [path, coverage] : m_sourceDependencyMap)
+        for (auto it = m_sourceDependencyMap.begin(); it != m_sourceDependencyMap.end(); ++it)
         {
-            ReplaceSourceCoverage(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(path)) }));
+            const auto& [path, coverage] = *it;
+            ReplaceSourceCoverageInternal(SourceCoveringTestsList(AZStd::vector<SourceCoveringTests>{ SourceCoveringTests(RepoPath(path)) }), false);
+            if (coverage.m_coveringTestTargets.empty() && coverage.m_parentTargets.empty())
+            {
+                it = m_sourceDependencyMap.erase(it);
+            }
         }
     }
 
