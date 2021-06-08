@@ -32,8 +32,7 @@
       "nightly-clean"
     ],
     "steps": [
-      "profile_vs2019", 
-      "test_impact_analysis",
+      "profile_vs2019",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]
@@ -84,9 +83,6 @@
   },
   "test_impact_analysis": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
-      "default"
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
