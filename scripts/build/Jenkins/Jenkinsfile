@@ -366,6 +366,9 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
             palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
         }
     }
 }

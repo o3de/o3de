@@ -15,4 +15,9 @@
         <file alias="download.svg">Notifications/download.svg</file>
         <file alias="link.svg">Notifications/link.svg</file>
     </qresource>
+    <qresource prefix="/Menu">
+        <file alias="resolution.svg">Menu/resolution.svg</file>
+        <file alias="debug.svg">Menu/debug.svg</file>
+        <file alias="camera.svg">Menu/camera.svg</file>
+    </qresource>
 </RCC>

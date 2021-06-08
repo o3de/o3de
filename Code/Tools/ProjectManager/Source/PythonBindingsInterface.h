@@ -122,7 +122,7 @@ namespace O3DE::ProjectManager
          * @param projectInfo the info to use to update the project 
          * @return true on success, false on failure
          */
-        virtual bool UpdateProject(const ProjectInfo& projectInfo) = 0;
+        virtual AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) = 0;
 
         /**
          * Add a gem to a project
