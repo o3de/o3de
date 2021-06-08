@@ -95,133 +95,11 @@ void CLayoutSplitter::CreateLayoutView(int row, int col, int id)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// InfoBarExpanderWatcher
-//////////////////////////////////////////////////////////////////////////
-
-class InfoBarExpanderWatcher
-    : public QObject
-{
-public:
-    InfoBarExpanderWatcher(QObject* parent = nullptr)
-        : QObject(parent)
-    {
-    }
-
-    bool eventFilter(QObject* obj, QEvent* event) override
-    {
-        switch (event->type())
-        {
-            case QEvent::MouseButtonPress:
-            case QEvent::MouseButtonRelease:
-            case QEvent::MouseButtonDblClick:
-            {
-                if (qobject_cast<QToolButton*>(obj))
-                {
-                    auto mouseEvent = static_cast<QMouseEvent*>(event);
-                    auto expansion = qobject_cast<QToolButton*>(obj);
-
-                    expansion->setPopupMode(QToolButton::InstantPopup);
-                    auto menu = new QMenu(expansion);
-
-                    auto toolbar = qobject_cast<QToolBar*>(expansion->parentWidget());
-
-                    auto toolWidgets = toolbar->findChildren<QWidget*>();
-
-                    if (toolWidgets.count() > 0)
-                    {
-                        for (auto toolWidget : toolWidgets)
-                        {
-                            if (AzQtComponents::Style::hasClass(toolWidget, "expanderMenu_hide"))
-                            {
-                                continue;
-                            }
-
-                            if (auto toolButton = qobject_cast<QToolButton*>(toolWidget))
-                            {
-                                if (!toolButton->isVisible())
-                                {
-                                    // Skip some empty buttons
-                                    if (toolButton->text().isEmpty())
-                                    {
-                                        continue;
-                                    }
-
-                                    QString plainText = QTextDocumentFragment::fromHtml(toolButton->text()).toPlainText();
-                                    QAction* action = new QAction(plainText, menu);
-
-                                    if (!toolButton->isEnabled())
-                                    {
-                                        action->setEnabled(false);
-                                    }
-
-                                    connect(action, &QAction::triggered, toolButton, &QToolButton::clicked);
-
-                                    if (toolButton->isCheckable())
-                                    {
-                                        action->setCheckable(true);
-                                    }
-
-                                    action->setChecked(toolButton->isChecked());
-
-                                    menu->addAction(action);
-                                }
-                            }
-                            else if (auto toolCombo = qobject_cast<QComboBox*>(toolWidget))
-                            {
-                                // Add custom menu for Speed
-                                if (toolCombo->objectName() == "m_moveSpeed")
-                                {
-                                    double currentValue = toolCombo->lineEdit()->text().toDouble();
-
-                                    QMenu* newMenu = menu->addMenu(QString("Speed: %1").arg(currentValue));
-
-                                    double presets[] = { 0.1, 1.0, 10.0 };
-                                    for (double preset : presets)
-                                    {
-                                        QAction* presetAction = new QAction(newMenu);
-                                        presetAction->setText(QString::number(preset));
-
-                                        connect(presetAction, &QAction::triggered, this, [preset, this]() {
-                                            if (m_infoBar)
-                                            {
-                                                m_infoBar->SetSpeedComboBox(preset);
-                                            }
-                                        });
-
-                                        newMenu->addAction(presetAction);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    menu->exec(mouseEvent->globalPos());
-                    return true;
-                }
-
-                break;
-            }
-        }
-
-        return QObject::eventFilter(obj, event);
-    }
-
-    void SetInfoBar(CInfoBar* infoBar)
-    {
-        m_infoBar = infoBar;
-    }
-
-private:
-    CInfoBar* m_infoBar = nullptr;
-};
-
-//////////////////////////////////////////////////////////////////////////
 // CLayoutWnd
 //////////////////////////////////////////////////////////////////////////
 CLayoutWnd::CLayoutWnd(QSettings* settings, QWidget* parent)
     : AzQtComponents::ToolBarArea(parent)
     , m_settings(settings)
-    , m_expanderWatcher(new InfoBarExpanderWatcher(this))
 {
     m_bMaximized = false;
     m_maximizedView = 0;
@@ -230,22 +108,7 @@ CLayoutWnd::CLayoutWnd(QSettings* settings, QWidget* parent)
     m_maximizedViewId = 0;
     m_infoBarSize = QSize(0, 0);
 
-    m_infoBar = new CInfoBar(this);
     connect(qApp, &QApplication::focusChanged, this, &CLayoutWnd::OnFocusChanged);
-
-    m_expanderWatcher->SetInfoBar(m_infoBar);
-
-    m_infoToolBar = CreateToolBarFromWidget(m_infoBar,
-                                            Qt::BottomToolBarArea,
-                                            QStringLiteral("Info Panel"));
-    m_infoToolBar->setMovable(false);
-    m_infoToolBar->setObjectName("InfoBar");
-    AzQtComponents::Style::addClass(m_infoToolBar, "DefaultSpacing");
-
-    if (QToolButton* expansion = AzQtComponents::ToolBar::getToolBarExpansionButton(m_infoToolBar))
-    {
-        expansion->installEventFilter(m_expanderWatcher);
-    }
 
     setContextMenuPolicy(Qt::NoContextMenu);
 }
@@ -415,7 +278,6 @@ void CLayoutWnd::CreateLayout(EViewLayout layout, bool bBindViewports, EViewport
     }
 
     QRect rcView = rect();
-    rcView.setBottom(rcView.bottom() - m_infoBar->height());
 
     // Ensure we delete our old view immediately so it can relinquish its backing ViewportContext
     if (m_maximizedView)

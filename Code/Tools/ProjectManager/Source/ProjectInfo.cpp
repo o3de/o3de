@@ -15,10 +15,13 @@
 namespace O3DE::ProjectManager
 {
     ProjectInfo::ProjectInfo(const QString& path, const QString& projectName, const QString& displayName,
-        const QString& imagePath, const QString& backgroundImagePath, bool needsBuild)
+        const QString& origin, const QString& summary, const QString& imagePath, const QString& backgroundImagePath,
+        bool needsBuild)
         : m_path(path)
         , m_projectName(projectName)
         , m_displayName(displayName)
+        , m_origin(origin)
+        , m_summary(summary)
         , m_imagePath(imagePath)
         , m_backgroundImagePath(backgroundImagePath)
         , m_needsBuild(needsBuild)

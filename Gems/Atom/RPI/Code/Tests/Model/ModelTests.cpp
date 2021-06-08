@@ -22,6 +22,7 @@
 #include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>
 
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzTest/AzTest.h>
 
 #include <Common/RPITestFixture.h>
@@ -568,7 +569,7 @@ namespace UnitTest
         ValidateModelAsset(serializedModelAsset.Get(), expectedModel);
     }
 
-    // Tests that if we try to set the name on a Model 
+    // Tests that if we try to set the name on a Model
     // before calling Begin that it will fail.
     TEST_F(ModelTests, SetNameNoBegin)
     {
@@ -581,7 +582,7 @@ namespace UnitTest
         creator.SetName("TestName");
     }
 
-    // Tests that if we try to add a ModelLod to a Model 
+    // Tests that if we try to add a ModelLod to a Model
     // before calling Begin that it will fail.
     TEST_F(ModelTests, AddLodNoBegin)
     {
@@ -598,7 +599,7 @@ namespace UnitTest
         creator.AddLodAsset(AZStd::move(lod));
     }
 
-    // Tests that if we create a ModelAsset without adding 
+    // Tests that if we create a ModelAsset without adding
     // any ModelLodAssets that the creator will properly fail to produce an asset.
     TEST_F(ModelTests, CreateModelNoLods)
     {
@@ -618,8 +619,8 @@ namespace UnitTest
         ASSERT_EQ(asset.Get(), nullptr);
     }
 
-    // Tests that if we call SetLodIndexBuffer without calling 
-    // Begin first on the ModelLodAssetCreator that it 
+    // Tests that if we call SetLodIndexBuffer without calling
+    // Begin first on the ModelLodAssetCreator that it
     // fails as expected.
     TEST_F(ModelTests, SetLodIndexBufferNoBegin)
     {
@@ -633,8 +634,8 @@ namespace UnitTest
         creator.SetLodIndexBuffer(validIndexBuffer);
     }
 
-    // Tests that if we call AddLodStreamBuffer without calling 
-    // Begin first on the ModelLodAssetCreator that it 
+    // Tests that if we call AddLodStreamBuffer without calling
+    // Begin first on the ModelLodAssetCreator that it
     // fails as expected.
     TEST_F(ModelTests, AddLodStreamBufferNoBegin)
     {
@@ -648,8 +649,8 @@ namespace UnitTest
         creator.AddLodStreamBuffer(validStreamBuffer);
     }
 
-    // Tests that if we call BeginMesh without calling 
-    // Begin first on the ModelLodAssetCreator that it 
+    // Tests that if we call BeginMesh without calling
+    // Begin first on the ModelLodAssetCreator that it
     // fails as expected.
     TEST_F(ModelTests, BeginMeshNoBegin)
     {
@@ -662,13 +663,13 @@ namespace UnitTest
     }
 
     // Tests that if we try to set an AABB on a mesh
-    // without calling Begin or BeginMesh that it fails 
+    // without calling Begin or BeginMesh that it fails
     // as expected. Also tests the case that Begin *is*
     // called but BeginMesh is not.
     TEST_F(ModelTests, SetAabbNoBeginNoBeginMesh)
     {
         using namespace AZ;
-        
+
         RPI::ModelLodAssetCreator creator;
 
         AZ::Aabb aabb = AZ::Aabb::CreateCenterRadius(AZ::Vector3::CreateZero(), 1.0f);
@@ -691,13 +692,13 @@ namespace UnitTest
     }
 
     // Tests that if we try to set the material id on a mesh
-    // without calling Begin or BeginMesh that it fails 
+    // without calling Begin or BeginMesh that it fails
     // as expected. Also tests the case that Begin *is*
     // called but BeginMesh is not.
     TEST_F(ModelTests, SetMaterialIdNoBeginNoBeginMesh)
     {
         using namespace AZ;
-        
+
         RPI::ModelLodAssetCreator creator;
 
         {
@@ -715,7 +716,7 @@ namespace UnitTest
     }
 
     // Tests that if we try to set the index buffer on a mesh
-    // without calling Begin or BeginMesh that it fails 
+    // without calling Begin or BeginMesh that it fails
     // as expected. Also tests the case that Begin *is*
     // called but BeginMesh is not.
     TEST_F(ModelTests, SetIndexBufferNoBeginNoBeginMesh)
@@ -751,7 +752,7 @@ namespace UnitTest
     }
 
     // Tests that if we try to add a stream buffer on a mesh
-    // without calling Begin or BeginMesh that it fails 
+    // without calling Begin or BeginMesh that it fails
     // as expected. Also tests the case that Begin *is*
     // called but BeginMesh is not.
     TEST_F(ModelTests, AddStreamBufferNoBeginNoBeginMesh)
@@ -785,7 +786,7 @@ namespace UnitTest
         }
     }
 
-    // Tests that if we try to end the creation of a 
+    // Tests that if we try to end the creation of a
     // ModelLodAsset that has no meshes that it fails
     // as expected.
     TEST_F(ModelTests, CreateLodNoMeshes)
@@ -804,7 +805,7 @@ namespace UnitTest
         ASSERT_EQ(asset.Get(), nullptr);
     }
 
-    // Tests that validation still fails when expected 
+    // Tests that validation still fails when expected
     // even after producing a valid mesh due to a missing
     // BeginMesh call
     TEST_F(ModelTests, SecondMeshFailureNoBeginMesh)
@@ -862,8 +863,8 @@ namespace UnitTest
         ASSERT_EQ(asset->GetMeshes().size(), 1);
     }
 
-    // Tests that validation still fails when expected 
-    // even after producing a valid mesh due to SetMeshX 
+    // Tests that validation still fails when expected
+    // even after producing a valid mesh due to SetMeshX
     // calls coming after End
     TEST_F(ModelTests, SecondMeshAfterEnd)
     {
@@ -907,7 +908,7 @@ namespace UnitTest
             AZ::Aabb aabb = AZ::Aabb::CreateCenterRadius(Vector3::CreateZero(), 1.0f);
 
             ErrorMessageFinder messageFinder("Begin() was not called", 6);
-            
+
             creator.BeginMesh();
             creator.SetMeshAabb(AZStd::move(aabb));
             creator.SetMeshMaterialAsset(m_materialAsset);
@@ -955,6 +956,20 @@ namespace UnitTest
         EXPECT_EQ(uvStreamTangentBitmask.GetFullTangentBitmask(), 0x70000F51);
     }
 
+    //
+    //   +----+
+    //  /    /|
+    // +----+ |
+    // |    | +
+    // |    |/
+    // +----+
+    //
+    static constexpr AZStd::array CubePositions = { -1.0f, 1.0f, 1.0f,  1.0f, 1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f, -1.0f, 1.0f,
+                                                    -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f };
+    static constexpr AZStd::array CubeIndices = {
+        uint32_t{ 0 }, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 4, 2, 4, 6, 2, 1, 3, 5, 5, 3, 7, 0, 1, 4, 4, 1, 5, 2, 6, 3, 6, 7, 3,
+    };
+
     // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
     // plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
     // a position and index buffer.
@@ -972,52 +987,75 @@ namespace UnitTest
     //          *---*---*---*
     //           \ / \ / \ / \
     //            *---*---*---*
+    static constexpr AZStd::array TwoSeparatedPlanesPositions{
+        -1.0f,   -0.333f, -0.5f, -0.333f, -1.0f,   -0.5f, -0.333f, -0.333f, -0.5f, 0.333f, -0.333f, -0.5f, 1.0f,    -1.0f,   -0.5f,
+        1.0f,    -0.333f, -0.5f, 0.333f,  -1.0f,   -0.5f, 0.333f,  1.0f,    -0.5f, 1.0f,   0.333f,  -0.5f, 1.0f,    1.0f,    -0.5f,
+        0.333f,  0.333f,  -0.5f, -0.333f, 1.0f,    -0.5f, -0.333f, 0.333f,  -0.5f, -1.0f,  1.0f,    -0.5f, -1.0f,   0.333f,  -0.5f,
+        -1.0f,   -0.333f, 0.5f,  -0.333f, -1.0f,   0.5f,  -0.333f, -0.333f, 0.5f,  0.333f, -0.333f, 0.5f,  1.0f,    -1.0f,   0.5f,
+        1.0f,    -0.333f, 0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -1.0f,   0.5f,  0.333f, -0.333f, 0.5f,  0.333f,  1.0f,    0.5f,
+        1.0f,    0.333f,  0.5f,  1.0f,    1.0f,    0.5f,  0.333f,  0.333f,  0.5f,  1.0f,   -0.333f, 0.5f,  -0.333f, 1.0f,    0.5f,
+        -0.333f, 0.333f,  0.5f,  0.333f,  -0.333f, 0.5f,  0.333f,  0.333f,  0.5f,  -1.0f,  1.0f,    0.5f,  -0.333f, 0.333f,  0.5f,
+        -1.0f,   0.333f,  0.5f,  -1.0f,   -1.0f,   -0.5f, -1.0f,   -1.0f,   0.5f,  0.333f, -0.333f, 0.5f,  0.333f,  -1.0f,   0.5f,
+        1.0f,    -1.0f,   0.5f,  0.333f,  -1.0f,   0.5f,  0.333f,  0.333f,  0.5f,  0.333f, -0.333f, 0.5f,  1.0f,    -0.333f, 0.5f,
+        -0.333f, 0.333f,  0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -0.333f, 0.5f,
+    };
+    // clang-format off
+    static constexpr AZStd::array TwoSeparatedPlanesIndices{
+        uint32_t{ 0 }, 1,  2,  3,  4,  5,  2,  6,  3,  7,  8,  9,  10, 5,  8,  11, 10, 7,  12, 3,  10, 13, 12, 11, 14, 2,  12,
+        15,            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 25, 29, 27, 24, 30, 31, 32, 33, 34, 29, 35, 17, 34,
+        0,             36, 1,  3,  6,  4,  2,  1,  6,  7,  10, 8,  10, 3,  5,  11, 12, 10, 12, 2,  3,  13, 14, 12, 14, 0,  2,
+        15,            37, 16, 38, 39, 40, 17, 16, 41, 24, 27, 25, 42, 43, 44, 29, 34, 27, 45, 46, 47, 33, 35, 34, 35, 15, 17,
+    };
+    // clang-format on
+
+    // Ensure that the index buffer references all the positions in the position buffer
+    static constexpr inline auto minmaxElement = AZStd::minmax_element(begin(TwoSeparatedPlanesIndices), end(TwoSeparatedPlanesIndices));
+    static_assert(*minmaxElement.second == (TwoSeparatedPlanesPositions.size() / 3) - 1);
+
     template<class x> class TD;
-    class TwoSeparatedPlanesMesh
+    class TestMesh
     {
     public:
-        TwoSeparatedPlanesMesh()
+        TestMesh(const float* positions, size_t positionCount, const uint32_t* indices, size_t indicesCount)
         {
-            using namespace AZ;
-
-            RPI::ModelLodAssetCreator lodCreator;
-            lodCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
+            AZ::RPI::ModelLodAssetCreator lodCreator;
+            lodCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
 
             lodCreator.BeginMesh();
-            lodCreator.SetMeshAabb(Aabb::CreateFromMinMax({-1.0f, -1.0f, -0.5f}, {1.0f, 1.0f, 0.5f}));
+            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({-1.0f, -1.0f, -0.5f}, {1.0f, 1.0f, 0.5f}));
             lodCreator.SetMeshMaterialAsset(
                 AZ::Data::Asset<AZ::RPI::MaterialAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom(), 0),
                     AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid(), "")
             );
 
             {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(s_indexes.size(), sizeof(uint32_t));
-                AZStd::copy(s_indexes.begin(), s_indexes.end(), reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
+                AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(indicesCount, sizeof(uint32_t));
+                AZStd::copy(indices, indices + indicesCount, reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
                 lodCreator.SetMeshIndexBuffer({
                     indexBuffer,
-                    RHI::BufferViewDescriptor::CreateStructured(0, s_indexes.size(), sizeof(uint32_t))
+                    AZ::RHI::BufferViewDescriptor::CreateStructured(0, indicesCount, sizeof(uint32_t))
                 });
             }
 
             {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(s_positions.size() / 3, sizeof(float) * 3);
-                AZStd::copy(s_positions.begin(), s_positions.end(), reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
+                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(positionCount / 3, sizeof(float) * 3);
+                AZStd::copy(positions, positions + positionCount, reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
                 lodCreator.AddMeshStreamBuffer(
                     AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
                     AZ::Name(),
                     {
                         positionBuffer,
-                        RHI::BufferViewDescriptor::CreateStructured(0, s_positions.size() / 3, sizeof(float) * 3)
+                        AZ::RHI::BufferViewDescriptor::CreateStructured(0, positionCount / 3, sizeof(float) * 3)
                     }
                 );
             }
             lodCreator.EndMesh();
 
-            Data::Asset<RPI::ModelLodAsset> lodAsset;
+            AZ::Data::Asset<AZ::RPI::ModelLodAsset> lodAsset;
             lodCreator.End(lodAsset);
 
-            RPI::ModelAssetCreator modelCreator;
-            modelCreator.Begin(Data::AssetId(AZ::Uuid::CreateRandom()));
+            AZ::RPI::ModelAssetCreator modelCreator;
+            modelCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
             modelCreator.SetName("TestModel");
             modelCreator.AddLodAsset(AZStd::move(lodAsset));
             modelCreator.End(m_modelAsset);
@@ -1030,40 +1068,20 @@ namespace UnitTest
 
     private:
         AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
-
-        static constexpr AZStd::array s_positions{
-            -1.0f,   -0.333f, -0.5f, -0.333f, -1.0f,   -0.5f, -0.333f, -0.333f, -0.5f, 0.333f, -0.333f, -0.5f, 1.0f,    -1.0f,   -0.5f,
-            1.0f,    -0.333f, -0.5f, 0.333f,  -1.0f,   -0.5f, 0.333f,  1.0f,    -0.5f, 1.0f,   0.333f,  -0.5f, 1.0f,    1.0f,    -0.5f,
-            0.333f,  0.333f,  -0.5f, -0.333f, 1.0f,    -0.5f, -0.333f, 0.333f,  -0.5f, -1.0f,  1.0f,    -0.5f, -1.0f,   0.333f,  -0.5f,
-            -1.0f,   -0.333f, 0.5f,  -0.333f, -1.0f,   0.5f,  -0.333f, -0.333f, 0.5f,  0.333f, -0.333f, 0.5f,  1.0f,    -1.0f,   0.5f,
-            1.0f,    -0.333f, 0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -1.0f,   0.5f,  0.333f, -0.333f, 0.5f,  0.333f,  1.0f,    0.5f,
-            1.0f,    0.333f,  0.5f,  1.0f,    1.0f,    0.5f,  0.333f,  0.333f,  0.5f,  1.0f,   -0.333f, 0.5f,  -0.333f, 1.0f,    0.5f,
-            -0.333f, 0.333f,  0.5f,  0.333f,  -0.333f, 0.5f,  0.333f,  0.333f,  0.5f,  -1.0f,  1.0f,    0.5f,  -0.333f, 0.333f,  0.5f,
-            -1.0f,   0.333f,  0.5f,  -1.0f,   -1.0f,   -0.5f, -1.0f,   -1.0f,   0.5f,  0.333f, -0.333f, 0.5f,  0.333f,  -1.0f,   0.5f,
-            1.0f,    -1.0f,   0.5f,  0.333f,  -1.0f,   0.5f,  0.333f,  0.333f,  0.5f,  0.333f, -0.333f, 0.5f,  1.0f,    -0.333f, 0.5f,
-            -0.333f, 0.333f,  0.5f,  -0.333f, -0.333f, 0.5f,  0.333f,  -0.333f, 0.5f,
-        };
-        static constexpr AZStd::array s_indexes{
-            uint32_t{0}, 1,  2,  3,  4,  5,  2,  6,  3,  7,  8,  9,  10, 5,  8,  11, 10, 7,  12, 3,  10, 13, 12, 11, 14, 2,  12,
-            15,          16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 25, 29, 27, 24, 30, 31, 32, 33, 34, 29, 35, 17, 34,
-            0,           36, 1,  3,  6,  4,  2,  1,  6,  7,  10, 8,  10, 3,  5,  11, 12, 10, 12, 2,  3,  13, 14, 12, 14, 0,  2,
-            15,          37, 16, 38, 39, 40, 17, 16, 41, 24, 27, 25, 42, 43, 44, 29, 34, 27, 45, 46, 47, 33, 35, 34, 35, 15, 17,
-        };
-
-        // Ensure that the index buffer references all the positions in the position buffer
-        static constexpr inline auto minmaxElement = AZStd::minmax_element(begin(s_indexes), end(s_indexes));
-        static_assert(*minmaxElement.second == (s_positions.size() / 3) - 1);
     };
 
-    struct KdTreeIntersectParams
+    struct IntersectParams
     {
         float xpos;
         float ypos;
         float zpos;
+        float xdir;
+        float ydir;
+        float zdir;
         float expectedDistance;
         bool expectedShouldIntersect;
 
-        friend std::ostream& operator<<(std::ostream& os, const KdTreeIntersectParams& param)
+        friend std::ostream& operator<<(std::ostream& os, const IntersectParams& param)
         {
             return os
                 << "xpos:" << param.xpos
@@ -1076,13 +1094,15 @@ namespace UnitTest
 
     class KdTreeIntersectsParameterizedFixture
         : public ModelTests
-        , public ::testing::WithParamInterface<KdTreeIntersectParams>
+        , public ::testing::WithParamInterface<IntersectParams>
     {
     };
 
     TEST_P(KdTreeIntersectsParameterizedFixture, KdTreeIntersects)
     {
-        TwoSeparatedPlanesMesh mesh;
+        TestMesh mesh(
+            TwoSeparatedPlanesPositions.data(), TwoSeparatedPlanesPositions.size(), TwoSeparatedPlanesIndices.data(),
+            TwoSeparatedPlanesIndices.size());
 
         AZ::RPI::ModelKdTree kdTree;
         ASSERT_TRUE(kdTree.Build(mesh.GetModel().Get()));
@@ -1092,38 +1112,40 @@ namespace UnitTest
 
         EXPECT_THAT(
             kdTree.RayIntersection(
-                AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos), AZ::Vector3::CreateAxisZ(-1.0f), distance, normal),
+                AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos),
+                AZ::Vector3(GetParam().xdir, GetParam().ydir, GetParam().zdir), distance, normal),
             testing::Eq(GetParam().expectedShouldIntersect));
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
 
-    static constexpr inline AZStd::array<KdTreeIntersectParams, 21> intersectTestData{
-        KdTreeIntersectParams{ -0.1f, 0.0f, 1.0f, 0.5f, true },
-        KdTreeIntersectParams{  0.0f, 0.0f, 1.0f, 0.5f, true },
-        KdTreeIntersectParams{  0.1f, 0.0f, 1.0f, 0.5f, true },
+    static constexpr AZStd::array KdTreeIntersectTestData{
+        IntersectParams{ -0.1f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
 
         // Test the center of each triangle
-        KdTreeIntersectParams{-0.111f, -0.111f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.111f, -0.778f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.111f, 0.555f, 1.0f, 0.5f, true}, // Should intersect triangle with indices {29, 34, 27} and {11, 12, 10}
-        KdTreeIntersectParams{-0.555f, -0.555f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.555f, 0.111f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.555f, 0.778f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.778f, -0.111f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.778f, -0.778f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{-0.778f, 0.555f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.111f, -0.555f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.111f, 0.111f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.111f, 0.778f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.555f, -0.111f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.555f, -0.778f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.555f, 0.555f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.778f, -0.555f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.778f, 0.111f, 1.0f, 0.5f, true},
-        KdTreeIntersectParams{0.778f, 0.778f, 1.0f, 0.5f, true},
+        IntersectParams{ -0.111f, -0.111f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.111f, -0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.111f, 0.555f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f,
+                         true }, // Should intersect triangle with indices {29, 34, 27} and {11, 12, 10}
+        IntersectParams{ -0.555f, -0.555f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.555f, 0.111f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.555f, 0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.778f, -0.111f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.778f, -0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ -0.778f, 0.555f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.111f, -0.555f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.111f, 0.111f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.111f, 0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.555f, -0.111f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.555f, -0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.555f, 0.555f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.778f, -0.555f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.778f, 0.111f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 0.778f, 0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
     };
 
-    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(intersectTestData));
+    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(KdTreeIntersectTestData));
 
     class KdTreeIntersectsFixture
         : public ModelTests
@@ -1133,7 +1155,10 @@ namespace UnitTest
         {
             ModelTests::SetUp();
 
-            m_mesh = AZStd::make_unique<TwoSeparatedPlanesMesh>();
+            m_mesh = AZStd::make_unique<TestMesh>(
+                TwoSeparatedPlanesPositions.data(), TwoSeparatedPlanesPositions.size(), TwoSeparatedPlanesIndices.data(),
+                TwoSeparatedPlanesIndices.size());
+
             m_kdTree = AZStd::make_unique<AZ::RPI::ModelKdTree>();
             ASSERT_TRUE(m_kdTree->Build(m_mesh->GetModel().Get()));
         }
@@ -1146,7 +1171,7 @@ namespace UnitTest
             ModelTests::TearDown();
         }
 
-        AZStd::unique_ptr<TwoSeparatedPlanesMesh> m_mesh;
+        AZStd::unique_ptr<TestMesh> m_mesh;
         AZStd::unique_ptr<AZ::RPI::ModelKdTree> m_kdTree;
     };
 
@@ -1154,7 +1179,7 @@ namespace UnitTest
     {
         float t = AZStd::numeric_limits<float>::max();
         AZ::Vector3 normal;
-         
+
         constexpr float rayLength = 100.0f;
         EXPECT_THAT(
             m_kdTree->RayIntersection(
@@ -1180,5 +1205,86 @@ namespace UnitTest
 
         EXPECT_THAT(
             m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(), t, normal), testing::Eq(false));
+    }
+
+    class BruteForceIntersectsParameterizedFixture
+        : public ModelTests
+        , public ::testing::WithParamInterface<IntersectParams>
+    {
+    };
+
+    TEST_P(BruteForceIntersectsParameterizedFixture, BruteForceIntersectsCube)
+    {
+        TestMesh mesh(CubePositions.data(), CubePositions.size(), CubeIndices.data(), CubeIndices.size());
+
+        float distance = AZStd::numeric_limits<float>::max();
+        AZ::Vector3 normal;
+
+        EXPECT_THAT(
+            mesh.GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3(GetParam().xpos, GetParam().ypos, GetParam().zpos),
+                AZ::Vector3(GetParam().xdir, GetParam().ydir, GetParam().zdir), distance, normal),
+            testing::Eq(GetParam().expectedShouldIntersect));
+        EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
+    }
+
+    static constexpr AZStd::array BruteForceIntersectTestData{
+        IntersectParams{ 5.0f, 0.0f, 5.0f, 0.0f, 0.0f, -1.0f, AZStd::numeric_limits<float>::max(), false },
+        IntersectParams{ 0.0f, 0.0f, 1.5f, 0.0f, 0.0f, -1.0f, 0.5f, true },
+        IntersectParams{ 5.0f, 0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.4f, true },
+        IntersectParams{ -5.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.0f, 0.2f, true },
+        IntersectParams{ 0.0f, -10.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.45f, true },
+        IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -40.0f, 0.0f, 0.475f, true },
+        IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -19.0f, 0.0f, 1.0f, true },
+    };
+
+    INSTANTIATE_TEST_CASE_P(
+        BruteForceIntersects, BruteForceIntersectsParameterizedFixture, ::testing::ValuesIn(BruteForceIntersectTestData));
+
+    class BruteForceModelIntersectsFixture
+        : public ModelTests
+    {
+    public:
+        void SetUp() override
+        {
+            ModelTests::SetUp();
+            m_mesh = AZStd::make_unique<TestMesh>(CubePositions.data(), CubePositions.size(), CubeIndices.data(), CubeIndices.size());
+        }
+
+        void TearDown() override
+        {
+            m_mesh.reset();
+            ModelTests::TearDown();
+        }
+
+        AZStd::unique_ptr<TestMesh> m_mesh;
+    };
+
+    TEST_F(BruteForceModelIntersectsFixture, BruteForceIntersectionDetectedWithCube)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal;
+
+        // firing down the negative z axis, positioned 5 units from cube (cube is 2x2x2 so intersection
+        // happens at 1 in z)
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(10.0f), t, normal),
+            testing::Eq(true));
+        EXPECT_THAT(t, testing::FloatEq(0.4f));
+    }
+
+    TEST_F(BruteForceModelIntersectsFixture, BruteForceIntersectionDetectedAndNormalSetAtEndOfRay)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
+
+        // ensure the intersection happens right at the end of the ray
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3::CreateAxisY(10.0f), -AZ::Vector3::CreateAxisY(9.0f), t, normal),
+            testing::Eq(true));
+        EXPECT_THAT(t, testing::FloatEq(1.0f));
+        EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisY()));
     }
 } // namespace UnitTest
