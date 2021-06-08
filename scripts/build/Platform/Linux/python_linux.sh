@@ -12,5 +12,5 @@
 
 set -o errexit # exit on the first failure encountered
 
-echo [ci_build] python/python.sh -u ${SCRIPT_PATH} $(eval echo $(eval echo ${SCRIPT_PARAMETERS}))
-python/python.sh -u ${SCRIPT_PATH} $(eval echo $(eval echo ${SCRIPT_PARAMETERS}))
+echo [ci_build] python/python.sh -u ${SCRIPT_PATH} $(eval echo ${SCRIPT_PARAMETERS})
+python/python.sh -u ${SCRIPT_PATH} $(eval echo ${SCRIPT_PARAMETERS})
