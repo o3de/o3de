@@ -84,6 +84,9 @@
   },
   "test_impact_analysis": {
     "TAGS": [
+      "nightly-incremental",
+      "nightly-clean",
+      "default"
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
