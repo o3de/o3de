@@ -12,7 +12,6 @@
 
 #include <PhysX_precompiled.h>
 #include <Editor/MaterialIdWidget.h>
-#include <AzCore/std/string/string_view.h>
 
 #include <AzFramework/Physics/PropertyTypes.h>
 
