@@ -257,7 +257,7 @@ namespace TestImpact
 
     void TestEngine::CleanArtifactDir() const
     {
-        DeleteFiles(m_artifactDir, "*xml*");
+        DeleteFiles(m_artifactDir, "*.xml");
     }
 
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> TestEngine::UpdateEnumerationCache(
