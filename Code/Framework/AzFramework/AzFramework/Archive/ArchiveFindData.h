@@ -15,7 +15,6 @@
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/string/fixed_string.h>
 
-
 namespace AZ::IO
 {
     struct IArchive;
@@ -80,7 +79,7 @@ namespace AZ::IO
         void ScanFS(IArchive* archive, AZStd::string_view path);
         void ScanZips(IArchive* archive, AZStd::string_view path);
 
-        using FileMap = AZStd::map<AZStd::string, AZ::IO::FileDesc, AZStdStringLessCaseInsensitive>;
-        FileMap m_mapFiles;
+        using FileStack = AZStd::vector<ArchiveFileIterator>;
+        FileStack m_fileStack;
     };
 }
