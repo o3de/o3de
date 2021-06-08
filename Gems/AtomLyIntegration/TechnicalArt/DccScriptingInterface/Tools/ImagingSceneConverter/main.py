@@ -22,6 +22,16 @@
 # look development
 # -------------------------------------------------------------------------
 
+# Usage: Maya Shelf Button code- Must use Maya O3DE Launcher
+#
+# tools_path = os.path.join(os.environ['LY_PROJECT_PATH'], 'Tools')
+# if tools_path not in sys.path:
+#     sys.path.append(tools_path)
+#
+# from ImagingSceneConverter import main
+# reload(main)
+# main.show_ui()
+
 # -- Standard Python modules --
 import os
 import socket

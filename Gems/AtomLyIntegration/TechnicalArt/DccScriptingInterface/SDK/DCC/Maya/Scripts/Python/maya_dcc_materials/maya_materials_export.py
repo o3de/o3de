@@ -63,16 +63,16 @@ mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)
 
 
-class MayaToLumberyard(QtWidgets.QWidget):
+class MayaToO3DE(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(MayaToLumberyard, self).__init__(parent)
+        super(MayaToO3DE, self).__init__(parent)
 
         self.app = QtWidgets.QApplication.instance()
         self.setParent(mayaMainWindow)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 600, 500)
-        self.setObjectName('MaterialsToLumberyard')
-        self.setWindowTitle('Maya To Lumberyard')
+        self.setObjectName('MaterialsToO3DE')
+        self.setWindowTitle('Maya To O3DE')
         self.isTopLevel()
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
 
@@ -248,7 +248,7 @@ class MayaToLumberyard(QtWidgets.QWidget):
         # Create Model with extracted values from file list
         self.set_material_model()
 
-        # Setup Lumberyard Material File Values
+        # Setup O3DE Material File Values
         self.map_materials()
         print ('MaterialDefinitions:'.format(self.material_definitions))
         print json.dumps(self.material_definitions, sort_keys=True, indent=4)
@@ -619,14 +619,14 @@ class TreeNode(object):
 
 def delete_instances():
     for obj in mayaMainWindow.children():
-        if str(type(obj)) == "<class 'DCC_Materials.maya_materials_export.MayaToLumberyard'>":
-            if obj.__class__.__name__ == "MayaToLumberyard":
+        if str(type(obj)) == "<class 'DCC_Materials.maya_materials_export.MayaToO3DE'>":
+            if obj.__class__.__name__ == "MayaToO3DE":
                 obj.setParent(None)
                 obj.deleteLater()
 
 
 def show_ui():
     delete_instances()
-    ui = MayaToLumberyard(mayaMainWindow)
+    ui = MayaToO3DE(mayaMainWindow)
     ui.show()
 

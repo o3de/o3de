@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # File Description:
-# This file contains Lumberyard specific file and helper functions for handling material conversion
+# This file contains O3DE specific file and helper functions for handling material conversion
 # -------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ import sys
 import os
 
 
-module_name = 'legacy_asset_converter.main.lumberyard_data'
+module_name = 'legacy_asset_converter.main.o3de_data'
 _LOGGER = _logging.getLogger(module_name)
 
 
@@ -87,7 +87,7 @@ def scan_directory(directory_path):
     for filename in directory_path.iterdir():
         filename = Path(filename)
         extension = filename.suffix
-        if extension in (constants.IMAGE_TYPES + constants.LUMBERYARD_DATA_FILES + ['.fbx', '.FBX']):
+        if extension in (constants.IMAGE_TYPES + constants.O3DE_DATA_FILES + ['.fbx', '.FBX']):
             files_dictionary[extension.lower()] = [directory_path / filename] if filename.suffix not in list(files_dictionary) else \
                 files_dictionary[extension] + [directory_path / filename]
     return files_dictionary
@@ -193,7 +193,7 @@ def get_asset_info(target_directory, filename, target_material):
     return assignment_list
 
 
-def export_lumberyard_material(output, material_description):
+def export_o3de_material(output, material_description):
     """
     Takes one final dictionary with information gathered in the process and saves with JSON formatting into a
     .material file

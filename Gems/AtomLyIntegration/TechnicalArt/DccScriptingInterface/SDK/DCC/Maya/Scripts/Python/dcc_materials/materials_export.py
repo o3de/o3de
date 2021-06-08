@@ -60,20 +60,20 @@ import os
 import re
 
 
-class MaterialsToLumberyard(QtWidgets.QWidget):
+class MaterialsToO3DE(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(MaterialsToLumberyard, self).__init__(parent)
+        super(MaterialsToO3DE, self).__init__(parent)
 
         self.app = QtWidgets.QApplication.instance()
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 800, 520)
-        self.setObjectName('MaterialsToLumberyard')
-        self.setWindowTitle('Materials To Lumberyard')
+        self.setObjectName('MaterialsToO3DE')
+        self.setWindowTitle('Materials To O3DE')
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
         self.isTopLevel()
 
         self.desktop_location = os.path.join(os.path.expanduser('~'), 'Desktop')
-        self.lumberyard_materials_directory = os.path.join(self.desktop_location, 'LumberyardMaterials')
+        self.o3de_materials_directory = os.path.join(self.desktop_location, 'O3DEMaterials')
         self.mayapy_path = os.path.abspath('C:/"Program Files"/Autodesk/Maya2020/bin/mayapy.exe')
         self.bold_font_large = QtGui.QFont('Helvetica', 7, QtGui.QFont.Bold)
         self.medium_font = QtGui.QFont('Helvetica', 7, QtGui.QFont.Normal)
@@ -266,7 +266,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
     def populate_export_materials_list(self):
         """
         Once all materials have been analyzed inside of DCC applications, the 'Export Materials' view lists all
-        materials presented as their Lumberyard counterparts. Each listing displays a representation of the material
+        materials presented as their O3DE counterparts. Each listing displays a representation of the material
         file based on its corresponding DCC material values and file connections.
         :return:
         """
@@ -318,7 +318,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         if self.materials_dictionary:
             # Create Model with extracted values from file list
             self.set_material_model()
-            # Setup Lumberyard Material File Values
+            # Setup O3DE Material File Values
             self.set_export_materials_description()
             # Update UI Layout
             self.populate_export_materials_list()
@@ -377,12 +377,12 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         but for now material definitions will be saved to the desktop.
         :return:
         """
-        if not os.path.exists(self.lumberyard_materials_directory):
-            os.makedirs(self.lumberyard_materials_directory)
+        if not os.path.exists(self.o3de_materials_directory):
+            os.makedirs(self.o3de_materials_directory)
 
         for node in self.material_definitions_nodes:
             if node.material_name_checkbox.isChecked():
-                output = os.path.join(self.lumberyard_materials_directory, '{}.material'.format(node.material_name))
+                output = os.path.join(self.o3de_materials_directory, '{}.material'.format(node.material_name))
                 with open(output, 'w', encoding='utf-8') as material_file:
                     json.dump(node.material_info, material_file, ensure_ascii=False, indent=4)
 
@@ -404,14 +404,14 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         return None
 
     @staticmethod
-    def get_lumberyard_material_template(shader_type):
+    def get_o3de_material_template(shader_type):
         """
-        Loads material descriptions from the Lumberyard installation, providing a template to compare and convert DCC
-        shaders to Lumberyard material definitions. This is the first step in the comparison. The second step is to
+        Loads material descriptions from the O3DE installation, providing a template to compare and convert DCC
+        shaders to O3DE material definitions. This is the first step in the comparison. The second step is to
         compare these values with specific mapping instructions for DCC Application and DCC material type to arrive at
         a converted material.
-        :param shader_type: The type of Lumberyard shader to pair material attributes to (i.e. PBR Shader)
-        :return: File dictionary of the available boilerplate Lumberyard shader settings.
+        :param shader_type: The type of O3DE shader to pair material attributes to (i.e. PBR Shader)
+        :return: File dictionary of the available boilerplate O3DE shader settings.
         """
         definitions = os.path.join(os.path.dirname(os.path.abspath(__file__)), '{}.material'.format(shader_type))
         if os.path.exists(definitions):
@@ -419,7 +419,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
                 return json.load(f)
 
     @staticmethod
-    def get_lumberyard_material_properties(name, material_type, file_connections):
+    def get_o3de_material_properties(name, material_type, file_connections):
         """ This system will probably need rethinking if DCCs and compatible materials grow """
         material_properties = {}
         if material_type == 'StingrayPBS':
@@ -460,7 +460,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         :return:
         """
         # TODO- Include some way to get error information if analysis fails, and potentially offer the means to
-        #  effectively repair values as they map to intended Lumberyard shader type
+        #  effectively repair values as they map to intended O3DE shader type
 
         for row in range(self.target_files_table.rowCount()):
             if self.target_files_table.item(row, 0).text().strip() == transfer_info['file_location']:
@@ -544,13 +544,13 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
 
     def set_pbr_material_description(self, source_file, name, material_type, file_connections):
         # Build dictionary for material description based on extracted values
-        default_settings = self.get_lumberyard_material_template('pbr')
+        default_settings = self.get_o3de_material_template('pbr')
         material = {'sourceFile': source_file,
                     'description': name,
                     'materialType': default_settings.get('materialType'),
                     'parentMaterial': default_settings.get('parentMaterial'),
                     'propertyLayoutVersion': default_settings.get('propertyLayoutVersion'),
-                    'properties': self.get_lumberyard_material_properties(name, material_type, file_connections)}
+                    'properties': self.get_o3de_material_properties(name, material_type, file_connections)}
         self.material_definitions[name if name not in self.material_definitions.keys() else
                                   self.get_filename_increment(name)] = material
 
@@ -846,7 +846,7 @@ class MaterialNode(QtWidgets.QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    materials_to_lumberyard = MaterialsToLumberyard()
-    materials_to_lumberyard.show()
+    materials_to_o3de = MaterialsToO3DE()
+    materials_to_o3de.show()
     sys.exit(app.exec_())
 

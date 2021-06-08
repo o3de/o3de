@@ -20,7 +20,7 @@ IMAGE_TYPES = ['.tif', '.tiff', '.png', '.jpg', '.jpeg', '.tga']
 
 DIRECTORY_EXCLUSION_LIST = ['.mayaSwatches']
 
-LUMBERYARD_DATA_FILES = ['.mtl', '.assetinfo', '.material']
+O3DE_DATA_FILES = ['.mtl', '.assetinfo', '.material']
 
 EXPORT_MATERIAL_TYPES = ['Illum']
 

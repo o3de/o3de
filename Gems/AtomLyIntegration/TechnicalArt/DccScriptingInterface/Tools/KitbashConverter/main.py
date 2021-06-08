@@ -12,7 +12,7 @@
 #
 
 # File Description:
-# This tool helps to convert KitBash3D FBX models to Lumberyard materials.
+# This tool helps to convert KitBash3D FBX models to O3DE materials.
 # -------------------------------------------------------------------------
 
 # Built-ins
@@ -32,7 +32,7 @@ _config = azpy.config_utils.get_dccsi_config()
 print(_config)
 # ^ this is effectively an import and retrieve of <dccsi>\config.py
 # and init's access to Qt/Pyside2
-# init lumberyard Qy/PySide2 access
+# init O3DE Qy/PySide2 access
 # now default settings are extended with PySide2
 # this is an alternative to "from dynaconf import settings" with Qt
 settings = _config.get_config_settings(setup_ly_pyside=True)
@@ -42,7 +42,7 @@ settings = _config.get_config_settings(setup_ly_pyside=True)
 # 3rd Party (we may or do provide)
 from box import Box
 
-# lumberyard Qt/PySide2
+# O3DE Qt/PySide2
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtWidgets import QApplication, QMessageBox
 from PySide2.QtCore import Signal, Slot, QThread, QProcess, QProcessEnvironment
@@ -101,7 +101,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.setGeometry(50, 50, 600, 400)
         # self.setFixedWidth(600)
         self.setObjectName('FBXConverter')
-        self.setWindowTitle('FBX to Lumberyard')
+        self.setWindowTitle('FBX to O3DE')
         self.isTopLevel()
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
 
@@ -467,7 +467,7 @@ class FBXConverter(QtWidgets.QDialog):
                 msg.setWindowTitle("Maya Not Found")
                 msg.setStandardButtons(QMessageBox.Ok)
 
-    def export_lumberyard_material(self, output, material_description):
+    def export_o3de_material(self, output, material_description):
         """
         Takes one final dictionary with information gathered in the process and saves with JSON formatting into a
         .material file
@@ -799,7 +799,7 @@ class FBXConverter(QtWidgets.QDialog):
                 material_definition[key] = temp_dict
         _LOGGER.info('Updated Material Definition: {}'.format(json.dumps(material_definition, indent=4, sort_keys=False)))
         _LOGGER.info(f'Destination: {destination_file[0]}')
-        self.export_lumberyard_material(destination_file[0], material_definition)
+        self.export_o3de_material(destination_file[0], material_definition)
 
 
     @Slot(str)

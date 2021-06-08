@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# !/usr/bin/python
+#
 # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 # its licensors.
 #
@@ -7,6 +10,43 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+
+# File Description:
+# This tool reads/analyzes Maya files and generates .material files for use in the engine.
+# -------------------------------------------------------------------------
+
+# Built-ins
+import logging as _logging
+import subprocess
+import socket
+import json
+import sys
+import os
+import re
+
+
+# azpy bootstrapping and extensions
+import azpy.config_utils
+
+_config = azpy.config_utils.get_dccsi_config()
+settings = _config.get_config_settings(setup_ly_pyside=True)
+
+# 3rd Party (we may or do provide)
+from PySide2 import QtWidgets, QtCore, QtGui
+from PySide2.QtCore import Slot
+from PySide2.QtWidgets import QApplication
+from model import MaterialsModel
+from drag_and_drop import DragAndDrop
+import dcc_material_mapping as mat_map
+
+
+# --------------------------------------------------------------------------
+# -- Global Definitions --
+_MODULENAME = 'Tools.DCCMaterialConverter.main'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOCAL_HOST = socket.gethostbyname(socket.gethostname())
+# -------------------------------------------------------------------------
+
 
 """
 Usage
@@ -42,37 +82,23 @@ Reading FBX file information (might come in handy later)
 -- I couldn't get pyfbx_i42 to work, but purportedly it can extract information from binary files. You may just have
 to use the specified python versions
 """
-import logging
-import subprocess
-import json
-import sys
-import os
-import re
-
-from PySide2 import QtWidgets, QtCore, QtGui
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import QApplication
-
-from model import MaterialsModel
-from drag_and_drop import DragAndDrop
-import dcc_material_mapping as mat_map
 
 
-class MaterialsToLumberyard(QtWidgets.QWidget):
+class MaterialsToO3DE(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(MaterialsToLumberyard, self).__init__(parent)
+        super(MaterialsToO3DE, self).__init__(parent)
 
         self.app = QtWidgets.QApplication.instance()
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 800, 520)
-        self.setObjectName('MaterialsToLumberyard')
+        self.setObjectName('MaterialsToO3DE')
         self.setWindowTitle(' ')
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
         self.isTopLevel()
 
         self.desktop_location = os.path.join(os.path.expanduser('~'), 'Desktop')
         self.directory_path = os.path.dirname(os.path.abspath(__file__))
-        self.lumberyard_materials_directory = os.path.join(self.desktop_location, 'LumberyardMaterials')
+        self.o3de_materials_directory = os.path.join(self.desktop_location, 'o3deMaterials')
         self.mayapy_path = os.path.abspath("C:/Program Files/Autodesk/Maya2020/bin/mayapy.exe")
         self.blender_path = self.get_blender_path()
         self.bold_font_large = QtGui.QFont('Helvetica', 7, QtGui.QFont.Bold)
@@ -80,8 +106,8 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         self.blessed_file_extensions = 'ma mb fbx max blend'.split(' ')
 
         self.dcc_materials_dictionary = {}
-        self.lumberyard_materials_dictionary = {}
-        self.lumberyard_material_nodes = []
+        self.o3de_materials_dictionary = {}
+        self.o3de_material_nodes = []
         self.target_file_list = []
         self.current_scene = None
         self.model = None
@@ -101,14 +127,14 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         self.header_bar_layout = QtWidgets.QHBoxLayout()
-        self.lumberyard_logo_layout = QtWidgets.QHBoxLayout()
-        self.lumberyard_logo_layout.setAlignment(QtCore.Qt.AlignLeft)
-        logo_path = os.path.join(self.directory_path, 'img/lumberyard_logo.png')
+        self.o3de_logo_layout = QtWidgets.QHBoxLayout()
+        self.o3de_logo_layout.setAlignment(QtCore.Qt.AlignLeft)
+        logo_path = os.path.join(self.directory_path, 'img/o3de_logo.png')
         logo_pixmap = QtGui.QPixmap(logo_path)
-        self.lumberyard_logo = QtWidgets.QLabel()
-        self.lumberyard_logo.setPixmap(logo_pixmap)
-        self.lumberyard_logo_layout.addWidget(self.lumberyard_logo)
-        self.header_bar_layout.addLayout(self.lumberyard_logo_layout)
+        self.o3de_logo = QtWidgets.QLabel()
+        self.o3de_logo.setPixmap(logo_pixmap)
+        self.o3de_logo_layout.addWidget(self.o3de_logo)
+        self.header_bar_layout.addLayout(self.o3de_logo_layout)
 
         self.switch_combobox_layout = QtWidgets.QHBoxLayout()
         self.switch_combobox_layout.setAlignment(QtCore.Qt.AlignRight)
@@ -198,23 +224,23 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         # ---->> LY Material Definitions
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-        self.lumberyard_material_definitions_widget = QtWidgets.QWidget()
-        self.lumberyard_material_definitions_layout = QtWidgets.QHBoxLayout(self.lumberyard_material_definitions_widget)
-        self.lumberyard_material_definitions_layout.setSpacing(0)
-        self.lumberyard_material_definitions_layout.setContentsMargins(0, 0, 0, 0)
-        self.lumberyard_material_definitions_frame = QtWidgets.QFrame(self.lumberyard_material_definitions_widget)
-        self.lumberyard_material_definitions_frame.setGeometry(0, 0, 5000, 5000)
-        self.lumberyard_material_definitions_frame.setStyleSheet('background-color:rgb(75,75,75);')
-        self.lumberyard_material_definitions_scroller = QtWidgets.QScrollArea()
+        self.o3de_material_definitions_widget = QtWidgets.QWidget()
+        self.o3de_material_definitions_layout = QtWidgets.QHBoxLayout(self.o3de_material_definitions_widget)
+        self.o3de_material_definitions_layout.setSpacing(0)
+        self.o3de_material_definitions_layout.setContentsMargins(0, 0, 0, 0)
+        self.o3de_material_definitions_frame = QtWidgets.QFrame(self.o3de_material_definitions_widget)
+        self.o3de_material_definitions_frame.setGeometry(0, 0, 5000, 5000)
+        self.o3de_material_definitions_frame.setStyleSheet('background-color:rgb(75,75,75);')
+        self.o3de_material_definitions_scroller = QtWidgets.QScrollArea()
         self.scroller_widget = QtWidgets.QWidget()
         self.scroller_layout = QtWidgets.QVBoxLayout()
         self.scroller_widget.setLayout(self.scroller_layout)
-        self.lumberyard_material_definitions_scroller.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.lumberyard_material_definitions_scroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.lumberyard_material_definitions_scroller.setWidgetResizable(True)
-        self.lumberyard_material_definitions_scroller.setWidget(self.scroller_widget)
-        self.lumberyard_material_definitions_layout.addWidget(self.lumberyard_material_definitions_scroller)
-        self.content_stacked_layout.addWidget(self.lumberyard_material_definitions_widget)
+        self.o3de_material_definitions_scroller.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.o3de_material_definitions_scroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.o3de_material_definitions_scroller.setWidgetResizable(True)
+        self.o3de_material_definitions_scroller.setWidget(self.scroller_widget)
+        self.o3de_material_definitions_layout.addWidget(self.o3de_material_definitions_scroller)
+        self.content_stacked_layout.addWidget(self.o3de_material_definitions_widget)
 
         # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         # ---->> File processing buttons
@@ -269,7 +295,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         for index, entry in enumerate(self.target_file_list):
             entry = entry[1] if type(entry) == list else entry
             self.target_files_table.insertRow(index)
-            item = QtWidgets.QTableWidgetItem('  {}'.format(entry))
+            item = QtWidgets.QTableWidgetItem(f'  {entry}')
             self.target_files_table.setRowHeight(index, 45)
             remove_button = QtWidgets.QPushButton('Remove')
             remove_button.setFixedWidth(60)
@@ -292,14 +318,14 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
     def populate_export_materials_list(self):
         """
         Once all materials have been analyzed inside of DCC applications, the 'Export Materials' view lists all
-        materials presented as their Lumberyard counterparts. Each listing displays a representation of the material
+        materials presented as their o3de counterparts. Each listing displays a representation of the material
         file based on its corresponding DCC material values and file connections.
         :return:
         """
         self.reset_export_materials_description()
-        for count, value in enumerate(self.lumberyard_materials_dictionary):
-            material_definition_node = MaterialNode([value, self.lumberyard_materials_dictionary[value]], count)
-            self.lumberyard_material_nodes.append(material_definition_node)
+        for count, value in enumerate(self.o3de_materials_dictionary):
+            material_definition_node = MaterialNode([value, self.o3de_materials_dictionary[value]], count)
+            self.o3de_material_nodes.append(material_definition_node)
             self.scroller_layout.addWidget(material_definition_node)
             self.scroller_layout.addLayout(self.create_separator_line())
 
@@ -336,19 +362,21 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
                     pass
             except Exception as e:
                 # TODO- Allow corrective actions or some display of errors if this fails?
-                logging.warning('Could not process files. Error: {}'.format(e))
+                _LOGGER.warning(f'Could not process files. Error: {e}')
 
-        if self.dcc_materials_dictionary:
-            self.set_transfer_status(self.dcc_materials_dictionary)
-            # Create Model with extracted values from file list
-            self.set_material_model()
-            # Setup Lumberyard Material File Values
-            self.set_export_materials_description()
-            # Update UI Layout
-            self.populate_export_materials_list()
-            self.switch_layout_combobox.setCurrentIndex(3)
-            self.set_ui_buttons()
-            self.message_readout_label.setText('Ready.')
+        _LOGGER.info(f'FileList: {self.dcc_materials_dictionary}')
+        #
+        # if self.dcc_materials_dictionary:
+        #     self.set_transfer_status(self.dcc_materials_dictionary)
+        #     # Create Model with extracted values from file list
+        #     self.set_material_model()
+        #     # Setup o3de Material File Values
+        #     self.set_export_materials_description()
+        #     # Update UI Layout
+        #     self.populate_export_materials_list()
+        #     self.switch_layout_combobox.setCurrentIndex(3)
+        #     self.set_ui_buttons()
+        #     self.message_readout_label.setText('Ready.')
 
     def reset_export_materials_description(self):
         pass
@@ -373,12 +401,12 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         but for now material definitions will be saved to the desktop.
         :return:
         """
-        if not os.path.exists(self.lumberyard_materials_directory):
-            os.makedirs(self.lumberyard_materials_directory)
+        if not os.path.exists(self.o3de_materials_directory):
+            os.makedirs(self.o3de_materials_directory)
 
-        for node in self.lumberyard_material_nodes:
+        for node in self.o3de_material_nodes:
             if node.material_name_checkbox.isChecked():
-                output = os.path.join(self.lumberyard_materials_directory, '{}.material'.format(node.material_name))
+                output = os.path.join(self.o3de_materials_directory, f'{node.material_name}.material')
                 with open(output, 'w', encoding='utf-8') as material_file:
                     json.dump(node.material_info, material_file, ensure_ascii=False, indent=4)
 
@@ -400,22 +428,22 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         return None
 
     @staticmethod
-    def get_lumberyard_material_template(shader_type):
+    def get_o3de_material_template(shader_type):
         """
-        Loads material descriptions from the Lumberyard installation, providing a template to compare and convert DCC
-        shaders to Lumberyard material definitions. This is the first step in the comparison. The second step is to
+        Loads material descriptions from the o3de installation, providing a template to compare and convert DCC
+        shaders to o3de material definitions. This is the first step in the comparison. The second step is to
         compare these values with specific mapping instructions for DCC Application and DCC material type to arrive at
         a converted material.
-        :param shader_type: The type of Lumberyard shader to pair material attributes to (i.e. PBR Shader)
-        :return: File dictionary of the available boilerplate Lumberyard shader settings.
+        :param shader_type: The type of o3de shader to pair material attributes to (i.e. PBR Shader)
+        :return: File dictionary of the available boilerplate o3de shader settings.
         """
-        definitions = os.path.join(os.path.dirname(os.path.abspath(__file__)), '{}.material'.format(shader_type))
+        definitions = os.path.join(os.path.dirname(os.path.abspath(__file__)), f'{shader_type}.material')
         if os.path.exists(definitions):
             with open(definitions) as f:
                 return json.load(f)
 
     @staticmethod
-    def get_lumberyard_material_properties(name, dcc_app, material_type, file_connections):
+    def get_o3de_material_properties(name, dcc_app, material_type, file_connections):
         """
         This system will probably need rethinking if DCCs and compatible materials grow. I've tried to keep this
         flexible so that it can be expanded with more apps and materials.
@@ -477,15 +505,24 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
                 command += f' "{file}"'
             p = subprocess.Popen(command, shell=False, env=runtime_env, stdout=subprocess.PIPE)
             output = p.communicate()[0]
-            self.set_material_dictionary(json.loads(output))
+            _LOGGER.info(f'Output received: {output}')
+            material_values = self.filter_output_data(output)
+            self.set_material_dictionary(material_values)
         except Exception as e:
-            logging.warning('maya error: {}'.format(e))
+            _LOGGER.warning(f'maya error: {e}')
+
+    def filter_output_data(self, output_string):
+        start_index = output_string.index('{')
+        if start_index != -1:
+            output_string = output_string[start_index:]
+            return json.loads(output_string)
+        return None
 
     def get_max_material_values(self, target_files):
-        logging.debug('Max Target file: {}'.format(target_files))
+        _LOGGER.info(f'Max Target file: {target_files}')
 
     def get_blender_material_values(self, target_files):
-        logging.debug('Blender Target file: {}'.format(target_files))
+        _LOGGER.info(f'Blender Target file: {target_files}')
 
         script_path = str(os.path.join(self.directory_path, 'blender_materials.py'))
         # command = f'{self.blender_path} "{script_path}" "{target_files}" "{self.total_materials}"'
@@ -527,7 +564,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         :return:
         """
         # TODO- Include some way to get error information if analysis fails, and potentially offer the means to
-        #  effectively repair values as they mat_map to intended Lumberyard shader type
+        #  effectively repair values as they mat_map to intended o3de shader type
 
         for row in range(self.target_files_table.rowCount()):
             for key, values in transfer_info.items():
@@ -567,7 +604,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         return analyzed values
         :return:
         """
-        logging.debug('DCC Dictionary: {}'.format(json.dumps(dcc_dictionary, indent=4)))
+        _LOGGER.info(f'DCC Dictionary: \n{json.dumps(dcc_dictionary, indent=4)}')
         self.total_materials += len(dcc_dictionary)
         self.dcc_materials_dictionary.update(dcc_dictionary)
 
@@ -611,7 +648,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         # Export Materials Layout ------------------------------->>
         else:
             self.process_files_button.setText('Export Selected Materials')
-            if self.lumberyard_materials_dictionary:
+            if self.o3de_materials_dictionary:
                 self.process_files_button.setEnabled(True)
 
     def set_material_description(self, source_file, name, dcc_app, material_type, file_connections):
@@ -626,14 +663,14 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         :return:
         """
 
-        default_settings = self.get_lumberyard_material_template('pbr')
+        default_settings = self.get_o3de_material_template('pbr')
         material = {'sourceFile': source_file,
                     'description': name,
                     'materialType': default_settings.get('materialType'),
                     'parentMaterial': default_settings.get('parentMaterial'),
                     'propertyLayoutVersion': default_settings.get('propertyLayoutVersion'),
-                    'properties': self.get_lumberyard_material_properties(name, dcc_app, material_type, file_connections)}
-        self.lumberyard_materials_dictionary[name if name not in self.lumberyard_materials_dictionary.keys() else
+                    'properties': self.get_o3de_material_properties(name, dcc_app, material_type, file_connections)}
+        self.o3de_materials_dictionary[name if name not in self.o3de_materials_dictionary.keys() else
                                              self.get_filename_increment(name)] = material
 
     ############################
@@ -658,9 +695,6 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
         button (for now) will export material files corresponding to each analyzed material.
         :return:
         """
-
-        # TODO- Need to decide how the materials are going to be routed. At this stage they will just be saved to the
-        #   desktop, but I assume that we want these files to be saved to an associated project folder
 
         if self.sender().text() == 'Process Added Files':
             self.message_readout_label.setText('Gathering Material Information...')
@@ -723,7 +757,7 @@ class MaterialsToLumberyard(QtWidgets.QWidget):
                 self.target_file_list.append(file)
         self.drag_and_drop_widget.urls.clear()
         self.populate_source_files_table()
-        self.message_readout_label.setText('Source files added: {}'.format(len(self.target_file_list)))
+        self.message_readout_label.setText(f'Source files added: {len(self.target_file_list)}')
         self.drag_and_drop_label.setStyleSheet('color: white;')
 
     @Slot(bool)
@@ -939,7 +973,7 @@ class MaterialNode(QtWidgets.QWidget):
         table where values can be added, removed or changed within the final material definition.
         :return:
         """
-        logging.debug('Edit button clicked')
+        _LOGGER.info('Edit button clicked')
 
     def property_selection_changed(self):
         """
@@ -951,7 +985,7 @@ class MaterialNode(QtWidgets.QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    materials_to_lumberyard = MaterialsToLumberyard()
-    materials_to_lumberyard.show()
+    materials_to_o3de = MaterialsToO3DE()
+    materials_to_o3de.show()
     sys.exit(app.exec_())
 

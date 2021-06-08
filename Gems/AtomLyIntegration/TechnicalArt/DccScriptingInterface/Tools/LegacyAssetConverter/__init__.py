@@ -17,7 +17,7 @@ __all__ = [
     'constants'
     'image_conversion',
     'isolate_and_assign',
-    'lumberyard_data',
+    'o3de_data.py',
     'cli_control',
     'utilities',
     'main'

@@ -11,40 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 # -------------------------------------------------------------------------
-"""
-Usage
-=====
-Put usage instructions here.
 
-Output
-======
-Put output information here.
-
-Relevant Links:
-https://pythonhosted.org/an_example_pypi_project/sphinx.html
-https://github.com/ideasman42/pyfbx_i42
-https://pypi.org/project/py-fbx/
-https://www.quora.com/How-do-I-execute-Maya-script-without-lauching-Maya
-https://stackoverflow.com/questions/27437733/use-external-python-script-to-open-maya-and-run-another-script-inside-maya
- 
-Notes:
--- Materials information can be extracted from ASCII fbx pretty easily
--- binary is possible but more difficult
--- FBX files could be exported as ASCII files
--- I could use regex there to extract material information 
--- I couldn't get pyfbx_i42 to work,
--- ^ purportedly it can extract information from binary files.
--- You may just have to use the specified python versions
-
--- Jonny wants me to use pathlib wherever possible for OO pathing, as well as python-box (aka Box) for dict access
-
-# Things to do:
-    --> Create the cube demo for Jonny with 4 attached materials
-    --> Create mapping widget for stacked layout
-    --> Allow export of JSON file for demo
-    --> Allow custom field entries for description, etc.
-    --> Need to figure out how to clear pointers for stored data properly
-"""
 
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import Signal, Slot, QThread, QAbstractItemModel, QModelIndex, QObject
@@ -52,7 +19,6 @@ from maya import OpenMayaUI as omui
 from maya.standalone import initialize
 from shiboken2 import wrapInstance
 import pymel.core as pm
-# import sphinx
 # import azpy
 import json
 import os
@@ -63,16 +29,16 @@ mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 mayaMainWindow = wrapInstance(long(mayaMainWindowPtr), QtWidgets.QWidget)
 
 
-class MayaToLumberyard(QtWidgets.QWidget):
+class MayaToO3DE(QtWidgets.QWidget):
     def __init__(self, parent=None):
-        super(MayaToLumberyard, self).__init__(parent)
+        super(MayaToO3DE, self).__init__(parent)
 
         self.app = QtWidgets.QApplication.instance()
         self.setParent(mayaMainWindow)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 600, 500)
-        self.setObjectName('MaterialsToLumberyard')
-        self.setWindowTitle('Maya To Lumberyard')
+        self.setObjectName('MaterialsToO3DE')
+        self.setWindowTitle('Maya To O3DE')
         self.isTopLevel()
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
 
@@ -248,10 +214,10 @@ class MayaToLumberyard(QtWidgets.QWidget):
         # Create Model with extracted values from file list
         self.set_material_model()
 
-        # Setup Lumberyard Material File Values
+        # Setup O3DE Material File Values
         self.map_materials()
-        print ('MaterialDefinitions:'.format(self.material_definitions))
-        print json.dumps(self.material_definitions, sort_keys=True, indent=4)
+        print('MaterialDefinitions:'.format(self.material_definitions))
+        print(json.dumps(self.material_definitions, sort_keys=True, indent=4))
 
         # Update UI Layout
         self.set_material_view()
@@ -472,10 +438,10 @@ class MayaToLumberyard(QtWidgets.QWidget):
         self.reset_all_values()
 
     def previous_button_clicked(self):
-        print ('Previous button clicked')
+        print('Previous button clicked')
 
     def next_button_clicked(self):
-        print ('Next button clicked')
+        print('Next button clicked')
 
 
 class MaterialsModel(QAbstractItemModel):
@@ -619,14 +585,14 @@ class TreeNode(object):
 
 def delete_instances():
     for obj in mayaMainWindow.children():
-        if str(type(obj)) == "<class 'DCC_Materials.maya_materials_export.MayaToLumberyard'>":
-            if obj.__class__.__name__ == "MayaToLumberyard":
+        if str(type(obj)) == "<class 'DCC_Materials.maya_materials_export.MayaToO3DE'>":
+            if obj.__class__.__name__ == "MayaToO3DE":
                 obj.setParent(None)
                 obj.deleteLater()
 
 
 def show_ui():
     delete_instances()
-    ui = MayaToLumberyard(mayaMainWindow)
+    ui = MayaToO3DE(mayaMainWindow)
     ui.show()
 

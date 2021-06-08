@@ -55,7 +55,7 @@ _config = azpy.config_utils.get_dccsi_config()
 print(_config)
 # ^ this is effectively an import and retrieve of <dccsi>\config.py
 # and init's access to Qt/Pyside2
-# init lumberyard Qy/PySide2 access
+# init O3DE Qy/PySide2 access
 # now default settings are extended with PySide2
 # this is an alternative to "from dynaconf import settings" with Qt
 settings = _config.get_config_settings(setup_ly_pyside=True)
@@ -66,12 +66,12 @@ from box import Box
 import OpenImageIO as oiio
 from OpenImageIO import ImageInput, ImageOutput
 from OpenImageIO import ImageBuf, ImageSpec, ImageBufAlgo
-# lumberyard Qt/PySide2
+# O3DE Qt/PySide2
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtWidgets import QApplication
 from PySide2.QtCore import Signal, Slot, QThread, QProcess, QProcessEnvironment
 # local tool imports
-import lumberyard_data
+import o3de_data
 import image_conversion
 import constants
 import utilities
@@ -149,7 +149,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         self.image_output_type = '.tif'
         self.directory_audit = Box({})
         self.section_data = {}
-        self.template_lumberyard_material = {}
+        self.template_o3de_material = {}
         self.default_material_definition = 'standardPBR.template.material'
         self.log_file_location = os.path.join(Path.cwd(), 'output.log')
         self.directory_dictionary = {}
@@ -582,7 +582,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
 
         # Get Material Definition Template
         with open(self.default_material_definition) as json_file:
-            self.template_lumberyard_material = json.load(json_file)
+            self.template_o3de_material = json.load(json_file)
 
         if os.path.exists(os.path.join(Path.cwd(), 'materialsdb.dat')):
             if self.materials_db:
@@ -598,7 +598,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         """
         _LOGGER.info('Process directory')
         target_path = Path(directory_path)
-        directory_audit = lumberyard_data.walk_directories(target_path)
+        directory_audit = o3de_data.walk_directories(target_path)
         self.start_load_sequence(directory_audit)
 
         for key, values in directory_audit.items():
@@ -609,7 +609,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
             fbx_files = values['files']['.fbx']
             for fbx_file in fbx_files:
                 self.progress_event_fired('fbx_{}'.format(fbx_file.name))
-                mtl_info = lumberyard_data.get_material_info(base_directory_path, f'{fbx_file.stem}.mtl')
+                mtl_info = o3de_data.get_material_info(base_directory_path, f'{fbx_file.stem}.mtl')
                 asset_information = self.filter_asset_information(fbx_file, directory_audit, mtl_info)
                 self.set_material_information(asset_information, mtl_info, fbx_file, destination_directory)
             self.create_maya_files(base_directory_path, destination_directory, fbx_files)
@@ -625,11 +625,11 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         _LOGGER.info('Process single asset')
         fbx_file = Path(fbx_path)
         base_directory_path = fbx_file.parent
-        directory_audit = lumberyard_data.walk_directories(fbx_file)
+        directory_audit = o3de_data.walk_directories(fbx_file)
         self.start_load_sequence(directory_audit)
         destination_directory = self.set_destination_directory(directory_audit[0].directoryname)
         self.progress_event_fired('fbx_{}'.format(fbx_file.name))
-        mtl_info = lumberyard_data.get_material_info(fbx_file.parent, f'{fbx_file.stem}.mtl')
+        mtl_info = o3de_data.get_material_info(fbx_file.parent, f'{fbx_file.stem}.mtl')
         asset_information = self.filter_asset_information(fbx_file, directory_audit[0], mtl_info)
         self.transfer_existing_files(fbx_file.parent, destination_directory, fbx_file.name)
         self.set_material_information(asset_information, mtl_info, fbx_file, destination_directory)
@@ -655,7 +655,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
 
     def compare_boilerplate_settings(self, property_values, material_template):
         """
-        Lumberyard material definitions only include settings that deviate from default settings. When converting .mtl
+        O3DE material definitions only include settings that deviate from default settings. When converting .mtl
         files to .material files, the script attempts to find all settings that each material previously held and carry
         them over. When creating .material files, the script compares information found with the default settings of a
         standard pbr material description, and only includes this information to the definition when it finds a need to
@@ -739,7 +739,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
         export_file_path = Path(destination_directory / file_name)
         if not export_file_path.is_file():
             material_description = {}
-            material_template = self.template_lumberyard_material.copy()
+            material_template = self.template_o3de_material.copy()
             material_textures = material_values.textures
             try:
                 for key, values in material_template.items():
@@ -824,7 +824,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                     if len(material_description) > 4:
                         _LOGGER.info('\n++++++++++++++\n+++++++++++++++\nFinal Material: {}\n++++++++++++++\n'
                                      '+++++++++++++++\n_\n'.format(json.dumps(material_description, indent=4, sort_keys=False)))
-                        lumberyard_data.export_lumberyard_material(os.path.abspath(export_file_path), material_description)
+                        o3de_data.export_o3de_material(os.path.abspath(export_file_path), material_description)
                         return os.path.abspath(export_file_path)
             except Exception as e:
                 _LOGGER.info(f'###################### Error processing material file [{file_name}]: {e}')
@@ -1142,7 +1142,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
                 fbx_material_dictionary[key][constants.FBX_TEXTURE_MODIFICATIONS] = values.modifications if values.modifications else ''
                 fbx_material_dictionary[key][constants.FBX_NUMERICAL_SETTINGS] = self.get_numerical_settings(mtl_info, key)
                 fbx_material_dictionary[key][constants.FBX_MATERIAL_FILE] = ''
-                fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = lumberyard_data.get_asset_info(search_path, assetinfo, key)
+                fbx_material_dictionary[key][constants.FBX_ASSIGNED_GEO] = o3de_data.get_asset_info(search_path, assetinfo, key)
             elif values.attributes.Shader == 'Nodraw':
                 _LOGGER.info('Found No-draw shader... skipping')
             else:
@@ -1216,7 +1216,7 @@ class LegacyFilesConverter(QtWidgets.QDialog):
     def get_relative_path(self, full_path):
         """
         Material definitions use relative paths for file textures- this function takes the full paths of assets and
-        converts to the abbreviated relative path format needed for Lumberyard to source the files
+        converts to the abbreviated relative path format needed for O3DE to source the files
         :param full_path: Full path to the asset
         :return:
         """

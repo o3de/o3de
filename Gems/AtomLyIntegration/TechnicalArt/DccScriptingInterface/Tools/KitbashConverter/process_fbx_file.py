@@ -79,7 +79,7 @@ class ProcessFbxFile(QtCore.QObject):
     def process_groups(self):
         """
         This is the main function of the module and orchestrates the complete set of steps for extracting
-        each subobject from the asset FBX file and generating the .material files for use in Lumberyard.
+        each subobject from the asset FBX file and generating the .material files for use in O3DE.
         :return:
         """
         asset_dictionary = {}
@@ -163,7 +163,7 @@ class ProcessFbxFile(QtCore.QObject):
                 if len(material_definition) > 4:
                     _LOGGER.info('\n++++++++++++++\n+++++++++++++++\nFinal Material: {}\n++++++++++++++\n'
                                  '+++++++++++++++\n_\n'.format(json.dumps(material_definition, indent=4, sort_keys=False)))
-                    self.export_lumberyard_material(output_path, material_definition)
+                    self.export_o3de_material(output_path, material_definition)
             except Exception as e:
                 _LOGGER.info('Problem creating Material Definition: {}'.format(e))
 
@@ -177,7 +177,7 @@ class ProcessFbxFile(QtCore.QObject):
     def get_asset_materials(self, target_group):
         """
         Pulls information about assigned materials from materials in order to coordinate file textures present
-        for each material being set up for Lumberyard.
+        for each material being set up for O3DE.
         :param target_group: Kitbash 3d assets contain several subobjects grouped under locators. "Target group"
         signifies a group from the total set of groups present.
         :return:
@@ -264,7 +264,7 @@ class ProcessFbxFile(QtCore.QObject):
         """
         Reads Maya material to construct material opacity attributes
 
-        :param material_name: The Maya Material name being translated for Lumberyard
+        :param material_name: The Maya Material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
@@ -275,7 +275,7 @@ class ProcessFbxFile(QtCore.QObject):
         """
         Reads Maya material to construct material subsurface scattering attributes
 
-        :param material_name: The Maya material name being translated for Lumberyard
+        :param material_name: The Maya material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
@@ -286,7 +286,7 @@ class ProcessFbxFile(QtCore.QObject):
         """
         Reads Maya material to construct material emissive attributes
 
-        :param material_name: The Maya material name being translated for Lumberyard
+        :param material_name: The Maya material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
@@ -297,7 +297,7 @@ class ProcessFbxFile(QtCore.QObject):
         """
         Reads Maya material to construct material BaseColor settings
 
-        :param material_name: The Maya material name being translated for Lumberyard
+        :param material_name: The Maya material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
@@ -320,7 +320,7 @@ class ProcessFbxFile(QtCore.QObject):
     def get_relative_path(self, full_path):
         """
         Material definitions use relative paths for file textures- this function takes the full paths of assets and
-        converts to the abbreviated relative path format needed for Lumberyard to source the files
+        converts to the abbreviated relative path format needed for O3DE to source the files
 
         :param full_path: Full path to the asset
         :return:
@@ -349,7 +349,7 @@ class ProcessFbxFile(QtCore.QObject):
             mc.FBXExport('-file', output_path, '-s')
             mc.select(clear=True)
 
-    def export_lumberyard_material(self, output_path, material_description):
+    def export_o3de_material(self, output_path, material_description):
         """
         Takes one final dictionary with information gathered in the process and saves with JSON formatting into a
         .material file

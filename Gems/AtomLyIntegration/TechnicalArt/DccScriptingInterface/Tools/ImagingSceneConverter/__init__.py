@@ -15,4 +15,5 @@
 __all__ = [
     'main',
     'materials',
+    'convert_mdl',
 ]

@@ -13,10 +13,11 @@ maya.standalone.initialize(name='python')
 import pymel.core as pm
 import json
 import sys
-import logging
+import logging as _logging
 
 
-logging.basicConfig(level=logging.WARNING)
+module_name = 'Tools.DCCMaterialConverter.maya_materials'
+_LOGGER = _logging.getLogger(module_name)
 
 
 class MayaMaterials(QtCore.QObject):
@@ -41,6 +42,7 @@ class MayaMaterials(QtCore.QObject):
             self.current_scene = file.replace('\'', '')
             pm.openFile(self.current_scene, force=True)
             self.set_material_descriptions()
+        _LOGGER.info('Maya File Material Info: {}'.format(self.materials_dictionary))
         json.dump(self.materials_dictionary, sys.stdout)
 
     @staticmethod
@@ -97,7 +99,7 @@ class MayaMaterials(QtCore.QObject):
             try:
                 shader_attributes[str(shader_attribute)] = str(pm.getAttr('{}.{}'.format(shader, shader_attribute)))
             except pm.MayaAttributeError as e:
-                logging.error('MayaAttributeError: {}'.format(e))
+                _LOGGER.error('MayaAttributeError: {}'.format(e))
 
         return shader_file_connections, shader_attributes
 
@@ -105,7 +107,7 @@ class MayaMaterials(QtCore.QObject):
         """
         When a unique material has been found, this creates a dictionary entry with all relevant material values. This
         includes material attributes as well as attached file textures. Later in the process this information is
-        leveraged when creating the Lumberyard material definition.
+        leveraged when creating the O3DE material definition.
 
         :param material_name: The name attached to the material
         :param material_type: Specific type of material (Arnold, Stingray, etc.)
@@ -135,17 +137,23 @@ class MayaMaterials(QtCore.QObject):
             material_list = self.get_materials(target_mesh)
             for material_name in material_list:
                 material_type = pm.nodeType(material_name, api=True)
+                _LOGGER.info('MaterialName::: {}     MaterialType: {}'.format(material_name, material_type))
                 material_listed = [x for x in self.materials_dictionary
                                    if self.materials_dictionary[x]['MaterialName'] == material_name]
 
                 if not material_listed:
                     self.set_material_dictionary(str(material_name), str(material_type), str(target_mesh))
                 else:
-                    mesh_list = self.materials_dictionary[material_name].get('AppliedMesh')
-                    if not isinstance(mesh_list, list):
-                        self.materials_dictionary[material_name]['AppliedMesh'] = [mesh_list, target_mesh]
-                    else:
-                        mesh_list.append(target_mesh)
+                    try:
+                        target_material_index = material_listed[0]
+                        mesh_list = self.materials_dictionary[target_material_index].get('AppliedMesh')
+                        if not isinstance(mesh_list, list):
+                            self.materials_dictionary[target_material_index]['AppliedMesh'] = \
+                                [mesh_list, str(target_mesh)]
+                        else:
+                            mesh_list.append(target_mesh)
+                    except Exception as e:
+                        _LOGGER.info('Failed: {}'.format(e))
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++#
