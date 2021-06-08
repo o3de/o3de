@@ -75,6 +75,5 @@ set(FILES
     ViewSystem/View.h
     ViewSystem/ViewSystem.cpp
     ViewSystem/ViewSystem.h
-    CrySystem_precompiled.cpp
     WindowsErrorReporting.cpp
 )

@@ -81,7 +81,7 @@ namespace AZ
             //! Common arguments for free polygon (point, line, Triangle) draws.
             struct AuxGeomDynamicDrawArguments
             {
-                const AZ::Vector3* m_verts = nullptr; //!< An array of points, 1 for each vertice.
+                const AZ::Vector3* m_verts = nullptr; //!< An array of points, 1 for each vertex.
                 uint32_t m_vertCount = 0; //!< The number of vertices.
                 const AZ::Color* m_colors; //!< An array of colors, must have either vertCount entries or 1 entry.
                 uint32_t m_colorCount = 0; //!< The number of colors, must equal 1 or vertCount.

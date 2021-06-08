@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/Maestro_precompiled.cpp
     Source/Maestro_precompiled.h
     Source/Cinematics/ShadowsSetupNode.h
     Source/Cinematics/ShadowsSetupNode.cpp

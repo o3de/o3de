@@ -11,6 +11,5 @@
 
 set(FILES
     Source/ModuleUnsupported.cpp
-    Source/PhysXDebugUnsupported_precompiled.cpp
     Source/PhysXDebugUnsupported_precompiled.h
 )
