@@ -626,6 +626,10 @@ namespace Multiplayer
         {
             AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
             m_connAcquiredEvent.Signal(datum);
+            AzFramework::PlayerConnectionConfig config;
+            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+            config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
+            AZ::Interface<AzFramework::ISessionProviderRequests>::Get()->ValidatePlayerJoinSession(config);
         }
 
         // Hosts will spawn a new default player prefab for the user that just connected
@@ -956,6 +960,7 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->StartHosting(sv_port, sv_isDedicated);
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
+
 
     void connect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
