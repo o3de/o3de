@@ -97,7 +97,7 @@
                          }
                          else
                          {
-                             AZStd::string error = AZStd::string::format("Could not check out asset file: %s.", assetFullPath.c_str());
+                             AZStd::string error = AZStd::move(AZStd::string::format("Could not check out asset file: %s.", assetFullPath.c_str()));
                              assetCheckoutAndSaveCallback(false, error, assetFullPath);
                          }
                      }
@@ -105,7 +105,7 @@
              }
              else
              {
-                 AZStd::string error = AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str());
+                 AZStd::string error = AZStd::move(AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str()));
                  assetCheckoutAndSaveCallback(false, error, nullptr);
              }
          }
@@ -271,7 +271,7 @@
  
                          if (checkoutSuccess)
                          {
-                             saveError = AZStd::string::format("Could not write asset file: %s.", assetFullPath.c_str());
+                             saveError = AZStd::move(AZStd::string::format("Could not write asset file: %s.", assetFullPath.c_str()));
                              if (!m_saveData.empty())
                              {
                                  if (AZ::Utils::SaveStreamToFile(assetFullPath, m_saveData))
@@ -336,8 +336,8 @@
  
                  AZStd::vector<char> byteBuffer;
                  AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
- 
-                 auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(asset.GetType()));
+
+                 auto assetHandler = AZ::Data::AssetManager::Instance().GetHandler(asset.GetType());
                  if (assetHandler->SaveAssetData(asset, &byteStream))
                  {
                      AZ::IO::FileIOStream fileStream(targetFilePath.c_str(), AZ::IO::OpenMode::ModeWrite);
@@ -452,11 +452,6 @@
              OnAssetReady(asset);
          }
  
-         void AssetEditorTab::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
-         {
- 
-         }
- 
          void AssetEditorTab::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
          {
              m_propertyEditor->ClearInstances();
@@ -469,7 +464,11 @@
  
              m_propertyEditor->InvalidateAll();
              m_propertyEditor->setEnabled(true);
- 
+         }
+
+         bool AssetEditorTab::IsDirty() const
+         {
+             return m_dirty;
          }
  
          bool AssetEditorTab::WaitingToSave() const
@@ -525,38 +524,12 @@
              return SaveImpl(m_inMemoryAsset, assetPath.data());
          }
  
-         void AssetEditorTab::OpenAssetFromPath(const AZStd::string& assetPath)
-         {
-             bool hasResult = false;
-             AZ::Data::AssetInfo assetInfo;
-             AZStd::string watchFolder;
-             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, assetPath.c_str(), assetInfo, watchFolder);
- 
-             if (hasResult)
-             {
-                 AZStd::string fileName = assetPath;
- 
-                 if (AzFramework::StringFunc::Path::Normalize(fileName))
-                 {
-                     AzFramework::StringFunc::Path::StripPath(fileName);
-                 }
- 
-                 AZ::Data::AssetInfo typeInfo;
-                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetInfo.m_assetId);
- 
-                 LoadAsset(assetInfo.m_assetId, typeInfo.m_assetType, fileName.c_str());
- 
-                 m_sourceAssetId = assetInfo.m_assetId;
-             }
-         }
- 
          void AssetEditorTab::LoadAsset(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType, const QString& assetName)
          {
              m_sourceAssetId = assetId;
              m_currentAsset = assetName;
  
              auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
-             asset.BlockUntilLoadComplete();
  
              if (asset.IsReady())
              {

@@ -69,9 +69,8 @@
              const AZ::Data::AssetId& GetAssetId() const;
              void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
              void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-             void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
  
-             bool IsDirty() const { return m_dirty; }
+             bool IsDirty() const;
              bool WaitingToSave() const;
  
              const QString& GetAssetName();
@@ -80,7 +79,6 @@
              bool UserRefusedSave();
              void ClearUserRefusedSaveFlag();
          public Q_SLOTS:
-             void OpenAssetFromPath(const AZStd::string& fullPath);
  
              void SaveAsset();
              bool SaveAsDialog();
