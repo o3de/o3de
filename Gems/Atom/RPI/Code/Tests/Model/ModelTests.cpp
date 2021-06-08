@@ -22,6 +22,7 @@
 #include <AzCore/std/limits.h>
 #include <AzCore/Component/Entity.h>
 
+#include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzTest/AzTest.h>
 
 #include <Common/RPITestFixture.h>
@@ -1234,6 +1235,7 @@ namespace UnitTest
         IntersectParams{ -5.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.0f, 0.2f, true },
         IntersectParams{ 0.0f, -10.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.45f, true },
         IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -40.0f, 0.0f, 0.475f, true },
+        IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -19.0f, 0.0f, 1.0f, true },
     };
 
     INSTANTIATE_TEST_CASE_P(
@@ -1267,8 +1269,22 @@ namespace UnitTest
         // happens at 1 in z)
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
-                AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ() * 10.0f, t, normal),
+                AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(10.0f), t, normal),
             testing::Eq(true));
         EXPECT_THAT(t, testing::FloatEq(0.4f));
+    }
+
+    TEST_F(BruteForceModelIntersectsFixture, BruteForceIntersectionDetectedAndNormalSetAtEndOfRay)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
+
+        // ensure the intersection happens right at the end of the ray
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3::CreateAxisY(10.0f), -AZ::Vector3::CreateAxisY(9.0f), t, normal),
+            testing::Eq(true));
+        EXPECT_THAT(t, testing::FloatEq(1.0f));
+        EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisY()));
     }
 } // namespace UnitTest

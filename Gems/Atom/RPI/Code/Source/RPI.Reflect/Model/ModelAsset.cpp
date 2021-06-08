@@ -15,6 +15,7 @@
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Math/IntersectSegment.h>
+#include <AzCore/std/limits.h>
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -148,7 +149,7 @@ namespace AZ
                 {
                     bool anyHit = false;
                     AZ::Vector3 intersectionNormal;
-                    float shortestDistanceNormalized = 1.0f;
+                    float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
                         float currentDistanceNormalized;
@@ -230,7 +231,7 @@ namespace AZ
                 AZ::Vector3 a, b, c;
                 AZ::Vector3 intersectionNormal;
 
-                float shortestDistanceNormalized = 1.0f;
+                float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
                 const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(indexRawBuffer.data());
                 for (uint32_t indexIter = 0; indexIter <= indexRawDesc.m_elementCount - 3; indexIter += 3, indexPtr += 3)
                 {

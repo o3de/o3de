@@ -208,7 +208,7 @@ namespace AZ
         bool ModelKdTree::RayIntersection(
             const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
-            float shortestDistanceNormalized = 1.0f;
+            float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
             if (RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, shortestDistanceNormalized, normal))
             {
                 distanceNormalized = shortestDistanceNormalized;
