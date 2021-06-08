@@ -119,7 +119,9 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::HandleNextButton()
     {
-        if (m_stack->currentIndex() == ScreenOrder::Settings)
+        bool shouldRebuild = false;
+
+        if (m_stack->currentIndex() == ScreenOrder::Settings && m_updateSettingsScreen)
         {
             if (m_updateSettingsScreen)
             {
@@ -134,10 +136,10 @@ namespace O3DE::ProjectManager
                 // Update project if settings changed
                 if (m_projectInfo != newProjectSettings)
                 {
-                    bool result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
-                    if (!result)
+                    auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
+                    if (!result.IsSuccess())
                     {
-                        QMessageBox::critical(this, tr("Project update failed"), tr("Failed to update project."));
+                        QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
                         return;
                     }
                 }
@@ -155,11 +157,17 @@ namespace O3DE::ProjectManager
                 m_projectInfo = newProjectSettings;
             }
         }
-
-        if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
+        else if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
         {
             // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
             m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
+
+            shouldRebuild = true;
+        }
+
+        if (shouldRebuild)
+        {
+            emit NotifyBuildProject(m_projectInfo);
         }
 
         emit ChangeScreenRequest(ProjectManagerScreen::Projects);

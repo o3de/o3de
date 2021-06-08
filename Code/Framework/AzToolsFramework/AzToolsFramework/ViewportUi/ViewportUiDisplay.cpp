@@ -100,6 +100,14 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
+    void ViewportUiDisplay::SetClusterButtonLocked(const ViewportUiElementId clusterId, const ButtonId buttonId, const bool isLocked)
+    {
+        if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiCluster->SetButtonLocked(buttonId, isLocked);
+        }
+    }
+
     void ViewportUiDisplay::RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId)
     {
         if (auto cluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))

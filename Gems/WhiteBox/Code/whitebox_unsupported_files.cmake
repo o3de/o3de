@@ -11,6 +11,5 @@
 
 set(FILES
     Source/WhiteBoxModuleUnsupported.cpp
-    Source/WhiteBoxUnsupported_precompiled.cpp
     Source/WhiteBoxUnsupported_precompiled.h
 )
