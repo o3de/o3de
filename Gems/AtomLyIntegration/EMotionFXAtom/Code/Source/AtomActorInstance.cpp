@@ -28,6 +28,8 @@
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
 
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -106,18 +108,18 @@ namespace AZ
 
                     if (debugOptions.m_drawSkeleton)
                     {
-                        RenderSkeleton(auxGeom);
+                        RenderSkeleton(auxGeom.get());
                     }
 
                     if (debugOptions.m_emfxDebugDraw)
                     {
-                        RenderEMFXDebugDraw(auxGeom);
+                        RenderEMFXDebugDraw(auxGeom.get());
                     }
                 }
             }
         }
 
-        void AtomActorInstance::RenderSkeleton(RPI::AuxGeomDrawPtr& auxGeom)
+        void AtomActorInstance::RenderSkeleton(RPI::AuxGeomDraw* auxGeom)
         {
             AZ_Assert(m_actorInstance, "Valid actor instance required.");
             const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
@@ -134,13 +136,13 @@ namespace AZ
             for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
                 const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
-                const AZ::u32 parentIndex = joint->GetParentIndex();
-                if (parentIndex == InvalidIndex32)
+                if (!joint->GetSkeletalLODStatus(lodLevel))
                 {
                     continue;
                 }
 
-                if (!joint->GetSkeletalLODStatus(lodLevel))
+                const AZ::u32 parentIndex = joint->GetParentIndex();
+                if (parentIndex == InvalidIndex32)
                 {
                     continue;
                 }
@@ -162,7 +164,7 @@ namespace AZ
             auxGeom->DrawLines(lineArgs);
         }
 
-        void AtomActorInstance::RenderEMFXDebugDraw(RPI::AuxGeomDrawPtr& auxGeom)
+        void AtomActorInstance::RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom)
         {
             EMotionFX::DebugDraw& debugDraw = EMotionFX::GetDebugDraw();
             debugDraw.Lock();
