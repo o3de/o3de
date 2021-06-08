@@ -199,7 +199,8 @@ namespace Multiplayer
     {
         AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
 
-        const IpAddress ipAddress(config.m_ipAddress.c_str(), config.m_port, m_networkInterface->GetType());
+        AZStd::string hostname = config.m_dnsName.empty() ? config.m_ipAddress : config.m_dnsName;
+        const IpAddress ipAddress(hostname.c_str(), config.m_port, m_networkInterface->GetType());
         ConnectionId connectionId = m_networkInterface->Connect(ipAddress);
 
         AzNetworking::IConnection* connection = m_networkInterface->GetConnectionSet().GetConnection(connectionId);
