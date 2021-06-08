@@ -148,7 +148,7 @@ namespace AZ
                 {
                     bool anyHit = false;
                     AZ::Vector3 intersectionNormal;
-                    float shortestDistanceNormalized = std::numeric_limits<float>::max();
+                    float shortestDistanceNormalized = 1.0f;
                     for (const ModelLodAsset::Mesh& mesh : loadAssetPtr->GetMeshes())
                     {
                         float currentDistanceNormalized;

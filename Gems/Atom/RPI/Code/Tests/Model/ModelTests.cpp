@@ -1117,7 +1117,7 @@ namespace UnitTest
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
 
-    static constexpr AZStd::array kdTreeIntersectTestData{
+    static constexpr AZStd::array KdTreeIntersectTestData{
         IntersectParams{ -0.1f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
         IntersectParams{ 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
         IntersectParams{ 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
@@ -1144,7 +1144,7 @@ namespace UnitTest
         IntersectParams{ 0.778f, 0.778f, 1.0f, 0.0f, 0.0f, -1.0f, 0.5f, true },
     };
 
-    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(kdTreeIntersectTestData));
+    INSTANTIATE_TEST_CASE_P(KdTreeIntersectsPlane, KdTreeIntersectsParameterizedFixture, ::testing::ValuesIn(KdTreeIntersectTestData));
 
     class KdTreeIntersectsFixture
         : public ModelTests
@@ -1227,17 +1227,17 @@ namespace UnitTest
         EXPECT_THAT(distance, testing::FloatEq(GetParam().expectedDistance));
     }
 
-    static constexpr AZStd::array bruteForceIntersectTestData{
+    static constexpr AZStd::array BruteForceIntersectTestData{
         IntersectParams{ 5.0f, 0.0f, 5.0f, 0.0f, 0.0f, -1.0f, AZStd::numeric_limits<float>::max(), false },
         IntersectParams{ 0.0f, 0.0f, 1.5f, 0.0f, 0.0f, -1.0f, 0.5f, true },
         IntersectParams{ 5.0f, 0.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.4f, true },
         IntersectParams{ -5.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.0f, 0.2f, true },
         IntersectParams{ 0.0f, -10.0f, 0.0f, 0.0f, 20.0f, 0.0f, 0.45f, true },
-        IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -40.0f, 0.0f, 0.225f, true },
+        IntersectParams{ 0.0f,  20.0f, 0.0f, 0.0f, -40.0f, 0.0f, 0.475f, true },
     };
 
     INSTANTIATE_TEST_CASE_P(
-        BruteForceIntersects, BruteForceIntersectsParameterizedFixture, ::testing::ValuesIn(bruteForceIntersectTestData));
+        BruteForceIntersects, BruteForceIntersectsParameterizedFixture, ::testing::ValuesIn(BruteForceIntersectTestData));
 
     class BruteForceModelIntersectsFixture
         : public ModelTests
