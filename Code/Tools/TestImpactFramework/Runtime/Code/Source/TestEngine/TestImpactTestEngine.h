@@ -118,10 +118,14 @@ namespace TestImpact
             AZStd::optional<TestEngineJobCompleteCallback> callback);
 
     private:
+        //! Cleans up the artifacts directory of any artifacts from previous runs.
+        void DeleteArtifactXmls() const;
+
         size_t m_maxConcurrentRuns = 0;
         AZStd::unique_ptr<TestJobInfoGenerator> m_testJobInfoGenerator;
         AZStd::unique_ptr<TestEnumerator> m_testEnumerator;
         AZStd::unique_ptr<InstrumentedTestRunner> m_instrumentedTestRunner;
         AZStd::unique_ptr<TestRunner> m_testRunner;
+        RepoPath m_artifactDir;
     };
 } // namespace TestImpact
