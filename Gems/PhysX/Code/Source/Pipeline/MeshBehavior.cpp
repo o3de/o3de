@@ -80,6 +80,9 @@ namespace PhysX
 
             const AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
 
+            group->SetSceneGraph(&graph);
+            group->UpdateMaterialSlots();
+
             // Gather the nodes that should be selected by default
             AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& nodeSelectionList = group->GetSceneNodeSelectionList();
             AZ::SceneAPI::Utilities::SceneGraphSelector::UnselectAll(graph, nodeSelectionList);
@@ -129,6 +132,8 @@ namespace PhysX
             //      in the same way again. To guarantee the same uuid, generate a stable one instead.
             group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, MeshGroup::TYPEINFO_Uuid()));
 
+            group->SetSceneGraph(&scene.GetGraph());
+
             EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
             scene.GetManifest().AddEntry(AZStd::move(group));
 
@@ -148,11 +153,14 @@ namespace PhysX
                     group.SetName(AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<AZ::SceneAPI::DataTypes::IMeshGroup>(scene.GetName(), scene.GetManifest()));
                 }
 
+                group.SetSceneGraph(&scene.GetGraph());
+                group.UpdateMaterialSlots();
+
                 AZ::SceneAPI::Utilities::SceneGraphSelector::UpdateNodeSelection(scene.GetGraph(), group.GetSceneNodeSelectionList());
                 updated = true;
             }
 
             return updated ? AZ::SceneAPI::Events::ProcessingResult::Success : AZ::SceneAPI::Events::ProcessingResult::Ignored;
         }
-    } // namespace SceneAPI
-} // namespace AZ
+    } // namespace Pipeline
+} // namespace PhysX

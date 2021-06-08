@@ -698,10 +698,10 @@ namespace PhysX
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
 
-        ValidateMaterialSurfaces();
+        ValidateAssetMaterials();
     }
 
-    void EditorColliderComponent::ValidateMaterialSurfaces()
+    void EditorColliderComponent::ValidateAssetMaterials()
     {
         const AZ::Data::Asset<Pipeline::MeshAsset>& physicsAsset = m_shapeConfiguration.m_physicsAsset.m_pxAsset;
 
@@ -712,7 +712,7 @@ namespace PhysX
 
         // Here we check the material indices assigned to every shape and validate that every index is used at least once.
         // It's not an error if the validation fails here but something we want to let the designers know about.
-        [[maybe_unused]] size_t surfacesNum = physicsAsset->m_assetData.m_surfaceNames.size();
+        [[maybe_unused]] size_t materialsNum = physicsAsset->m_assetData.m_materialNames.size();
         const AZStd::vector<AZ::u16>& indexPerShape = physicsAsset->m_assetData.m_materialIndexPerShape;
 
         AZStd::unordered_set<AZ::u16> usedIndices;
@@ -728,10 +728,10 @@ namespace PhysX
             usedIndices.insert(index);
         }
 
-        AZ_Warning("PhysX", usedIndices.size() == surfacesNum,
-            "EditorColliderComponent::ValidateMaterialSurfaces. Entity: %s. Number of surfaces used by the shape (%d) does not match the "
-            "total number of surfaces in the asset (%d). Please check that there are no convex meshes with per-face materials. Asset: %s",
-            GetEntity()->GetName().c_str(), usedIndices.size(), surfacesNum, physicsAsset.GetHint().c_str())
+        AZ_Warning("PhysX", usedIndices.size() == materialsNum,
+            "EditorColliderComponent::ValidateMaterialSurfaces. Entity: %s. Number of materials used by the shape (%d) does not match the "
+            "total number of materials in the asset (%d). Please check that there are no convex meshes with per-face materials. Asset: %s",
+            GetEntity()->GetName().c_str(), usedIndices.size(), materialsNum, physicsAsset.GetHint().c_str())
     }
 
     void EditorColliderComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)

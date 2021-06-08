@@ -12,15 +12,16 @@
 
 #include <PhysX_precompiled.h>
 #include <Editor/MaterialIdWidget.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <AzFramework/Physics/PropertyTypes.h>
+
+#include <qstring.h>
 
 namespace PhysX
 {
     namespace Editor
     {
-        static const char* const DefaultPhysicsMaterialLabel = "<Default Physics Material>";
-
         AZ::u32 MaterialIdWidget::GetHandlerName() const
         {
             return Physics::Edit::MaterialIdSelector;
@@ -74,7 +75,7 @@ namespace PhysX
 
             auto lockToDefault = [gui]()
             {
-                gui->addItem(DefaultPhysicsMaterialLabel);
+                gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), Physics::DefaultPhysicsMaterialLabel.size()));
                 gui->setCurrentIndex(0);
                 return false;
             };
@@ -103,7 +104,7 @@ namespace PhysX
 
             // Add default physics material first
             m_libraryIds.push_back(Physics::MaterialId());
-            gui->addItem(DefaultPhysicsMaterialLabel);
+            gui->addItem(QLatin1String(Physics::DefaultPhysicsMaterialLabel.data(), Physics::DefaultPhysicsMaterialLabel.size()));
 
             for (const auto& material : materials)
             {
