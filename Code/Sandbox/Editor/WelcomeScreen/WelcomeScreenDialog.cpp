@@ -87,6 +87,7 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->recentLevelTable->verticalHeader()->hide();
     ui->recentLevelTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->recentLevelTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->recentLevelTable->setIconSize(QSize(20, 20));
     installEventFilter(this);
 
     auto projectName = AZ::Utils::GetProjectName();
@@ -176,7 +177,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     int recentListSize = pList->GetSize();
     int currentRow = 0;
     ui->recentLevelTable->setRowCount(recentListSize);
-    for (int i = 0; i < recentListSize; ++i)
+     for (int i = 0; i < recentListSize; ++i)
     {
         const QString& recentFile = pList->m_arrNames[i];
         if (recentFile.endsWith(m_levelExtension))
@@ -195,7 +196,16 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
 
                     if (fullPath.contains(gamePath))
                     {
-                        ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(name));
+                        if (gSettings.prefabSystem)
+                        {
+                            QIcon icon;
+                            icon.addFile(QString::fromUtf8(":/WelcomeScreenDialog/LevelPrefab.svg"), QSize(), QIcon::Normal, QIcon::Off);
+                            ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(icon, name));
+                        }
+                        else
+                        {
+                            ui->recentLevelTable->setItem(currentRow, 0, new QTableWidgetItem(name));
+                        }
                         QFileInfo file(recentFile);
                         QDateTime dateTime = file.lastModified();
                         QString date = QLocale::system().toString(dateTime.date(), QLocale::ShortFormat) + " " +
