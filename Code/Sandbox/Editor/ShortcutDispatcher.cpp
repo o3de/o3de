@@ -318,8 +318,8 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
     //since the Url are not common yet we take into account they could be null before adding them.
     const int newId = newAction->data().toInt();
 
-    size_t size = m_allActions.size();
-    for (size_t i = 0; i < size; i++)
+    size_t actionCount = m_allActions.size();
+    for (size_t i = 0; i < actionCount; i++)
     {
         if (m_allActions[i].second->data().toInt() == newId || (m_allActions[i].first == reverseUrl && m_allActions[i].first != AZ::Crc32(0)))
         {
@@ -338,8 +338,8 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction)
     //Here we are adding directly the Url with 0 since we have none, this is here to keep track of the old shortcuts.
     const int newId = newAction->data().toInt();
 
-    size_t size = m_allActions.size();
-    for (size_t i = 0; i < size; i++)
+    size_t actionCount = m_allActions.size();
+    for (size_t i = 0; i < actionCount; i++)
     {
         if (m_allActions[i].second->data().toInt() == newId)
         {
