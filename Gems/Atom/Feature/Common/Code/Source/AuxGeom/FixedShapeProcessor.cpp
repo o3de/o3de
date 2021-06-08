@@ -1371,7 +1371,7 @@ namespace AZ
             // Get the per-object SRG and store the indices of the data we need to set per object
             shaderData.m_shaderAsset = shader->GetAsset();
             shaderData.m_supervariantIndex = shader->GetSupervariantIndex();
-            shaderData.m_perObjectSrgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+            shaderData.m_perObjectSrgLayout = shader->FindShaderResourceGroupLayout(Name{ "ObjectSrg" });
             if (!shaderData.m_perObjectSrgLayout)
             {
                 AZ_Error("FixedShapeProcessor", false, "Failed to get shader resource group layout");

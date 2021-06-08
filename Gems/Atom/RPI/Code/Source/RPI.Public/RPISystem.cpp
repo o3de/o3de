@@ -365,18 +365,18 @@ namespace AZ
             {
                 return;
             }
-            m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(AZ::Name { m_descriptor.m_sceneSrgName });
+            m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
             if (!m_sceneSrgLayout)
             {
-                AZ_Error("RPISystem", false, "Failed to find SceneSrg by name=<%s> from shader asset at path <%s>",
-                    m_descriptor.m_sceneSrgName.c_str(), m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                AZ_Error("RPISystem", false, "Failed to find SceneSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::Scene,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
-            m_viewSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(AZ::Name { m_descriptor.m_viewSrgName });
+            m_viewSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::View);
             if (!m_viewSrgLayout)
             {
-                AZ_Error("RPISystem", false, "Failed to find ViewSrg by name=<%s> from shader asset at path <%s>",
-                    m_descriptor.m_viewSrgName.c_str(), m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                AZ_Error("RPISystem", false, "Failed to find ViewSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::View,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
 
