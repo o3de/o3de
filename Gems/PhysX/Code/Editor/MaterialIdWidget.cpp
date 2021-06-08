@@ -15,7 +15,7 @@
 
 #include <AzFramework/Physics/PropertyTypes.h>
 
-#include <qstring.h>
+#include <QString>
 
 namespace PhysX
 {

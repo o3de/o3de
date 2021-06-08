@@ -80,9 +80,6 @@ namespace PhysX
 
             const AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
 
-            group->SetSceneGraph(&graph);
-            group->UpdateMaterialSlots();
-
             // Gather the nodes that should be selected by default
             AZ::SceneAPI::DataTypes::ISceneNodeSelectionList& nodeSelectionList = group->GetSceneNodeSelectionList();
             AZ::SceneAPI::Utilities::SceneGraphSelector::UnselectAll(graph, nodeSelectionList);
@@ -100,6 +97,10 @@ namespace PhysX
                     nodeSelectionList.AddSelectedNode(graph.GetNodeName(nodeIndex).GetPath());
                 }
             }
+
+            // Update list of materials slots after the group's node selection list has been gathered
+            group->SetSceneGraph(&graph);
+            group->UpdateMaterialSlots();
         }
 
         AZ::SceneAPI::Events::ProcessingResult MeshBehavior::UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
@@ -153,10 +154,12 @@ namespace PhysX
                     group.SetName(AZ::SceneAPI::DataTypes::Utilities::CreateUniqueName<AZ::SceneAPI::DataTypes::IMeshGroup>(scene.GetName(), scene.GetManifest()));
                 }
 
+                AZ::SceneAPI::Utilities::SceneGraphSelector::UpdateNodeSelection(scene.GetGraph(), group.GetSceneNodeSelectionList());
+
+                // Update list of materials slots after the group's node selection list has been updated
                 group.SetSceneGraph(&scene.GetGraph());
                 group.UpdateMaterialSlots();
 
-                AZ::SceneAPI::Utilities::SceneGraphSelector::UpdateNodeSelection(scene.GetGraph(), group.GetSceneNodeSelectionList());
                 updated = true;
             }
 

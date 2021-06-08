@@ -272,6 +272,15 @@ namespace PhysX
                 for (size_t index = 0; index < selectedNodeCount; index++)
                 {
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = sceneGraph.Find(sceneNodeSelectionList.GetSelectedNode(index));
+                    if (!nodeIndex.IsValid())
+                    {
+                        AZ_TracePrintf(
+                            AZ::SceneAPI::Utilities::WarningWindow,
+                            "Node '%s' was not found in the scene graph.",
+                            sceneNodeSelectionList.GetSelectedNode(index).c_str()
+                        );
+                        continue;
+                    }
                     auto nodeMesh = azrtti_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(*sceneGraph.ConvertToStorageIterator(nodeIndex));
                     if (!nodeMesh)
                     {
