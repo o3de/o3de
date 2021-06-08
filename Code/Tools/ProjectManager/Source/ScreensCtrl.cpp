@@ -13,6 +13,7 @@
 #include <ScreensCtrl.h>
 #include <ScreenFactory.h>
 #include <ScreenWidget.h>
+#include <UpdateProjectCtrl.h>
 
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -176,6 +177,7 @@ namespace O3DE::ProjectManager
         connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
         connect(newScreen, &ScreenWidget::NotifyCurrentProject, this, &ScreensCtrl::NotifyCurrentProject);
+        connect(newScreen, &ScreenWidget::NotifyBuildProject, this, &ScreensCtrl::NotifyBuildProject);
     }
 
     void ScreensCtrl::ResetAllScreens()

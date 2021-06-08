@@ -281,6 +281,8 @@ BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
     [[maybe_unused]] DWORD lFlags, BOOL bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -2079,6 +2081,8 @@ void CCryEditApp::OnDocumentationAWSSupport()
 void CCryEditApp::OnDocumentationFeedback()
 {
     FeedbackDialog dialog;
+    dialog.show();
+    dialog.adjustSize();
     dialog.exec();
 }
 
@@ -2276,6 +2280,14 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     {
         return 0;
     }
+
+    // Ensure we don't get called re-entrantly
+    // This can occur when a nested Qt event loop fires (e.g. by way of a modal dialog calling exec)
+    if (m_idleProcessingRunning)
+    {
+        return 0;
+    }
+    QScopedValueRollback<bool> guard(m_idleProcessingRunning, true);
 
     ////////////////////////////////////////////////////////////////////////
     // Call the update function of the engine
@@ -3347,6 +3359,8 @@ void CCryEditApp::OnCreateSlice()
 void CCryEditApp::OnOpenLevel()
 {
     CLevelFileDialog levelFileDialog(true);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {

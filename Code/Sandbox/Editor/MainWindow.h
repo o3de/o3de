@@ -202,8 +202,6 @@ private:
     // AzToolsFramework::SourceControlNotificationBus::Handler:
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState state) override;
 
-    QWidget* CreateSnapToGridWidget();
-    QWidget* CreateSnapToAngleWidget();
     QWidget* CreateSpacerRightWidget();
 
     QToolButton* CreateUndoRedoButton(int command);

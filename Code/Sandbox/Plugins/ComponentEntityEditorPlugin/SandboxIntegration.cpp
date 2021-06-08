@@ -670,18 +670,11 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, menu);
     }
 
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!prefabSystemEnabled || (prefabSystemEnabled && prefabWipFeaturesEnabled))
+    action = menu->addAction(QObject::tr("Duplicate"));
+    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+    if (selected.size() == 0)
     {
-        action = menu->addAction(QObject::tr("Duplicate"));
-        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-        if (selected.size() == 0)
-        {
-            action->setDisabled(true);
-        }
+        action->setDisabled(true);
     }
 
     if (!prefabSystemEnabled)
@@ -1732,13 +1725,14 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 // compute new camera transform
                 const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
                 const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
-                const float distanceToTarget = selectionSize * fovScale * centerScale;
+                const float distanceToLookAt = selectionSize * fovScale * centerScale;
                 const AZ::Transform nextCameraTransform =
-                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToTarget), aabb.GetCenter());
+                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
                 AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                     viewportContext->GetId(),
-                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform);
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
+                    distanceToLookAt);
             }
         }
     }

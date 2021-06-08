@@ -73,6 +73,8 @@ namespace ScriptCanvas
             
             void ConfigureSlots() override;
 
+            virtual void OnConfigureVisualExtensions() {}
+
             AZ::Outcome<const AZ::BehaviorClass*, AZStd::string> GetBehaviorContextClass() const;
 
             ConstSlotsOutcome GetBehaviorContextOutName(const Slot& inSlot) const;

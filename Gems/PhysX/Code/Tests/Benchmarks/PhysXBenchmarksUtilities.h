@@ -112,9 +112,9 @@ namespace PhysX::Benchmarks
             for (double percentile : percentiles)
             {
                 //ensure the percentile is between 0.0 and 1.0
-                const double epsilon = 0.001;
-                AZ::ClampIfCloseMag(percentile, 0.0, epsilon);
-                AZ::ClampIfCloseMag(percentile, 1.0, epsilon);
+                const double testEpsilon = 0.001;
+                AZ::ClampIfCloseMag(percentile, 0.0, testEpsilon);
+                AZ::ClampIfCloseMag(percentile, 1.0, testEpsilon);
 
                 size_t idx = aznumeric_cast<size_t>(std::round(percentile * (values.size() - 1)));
                 std::nth_element(values.begin(), values.begin() + idx, values.end());

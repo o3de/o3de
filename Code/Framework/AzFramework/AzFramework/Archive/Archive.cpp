@@ -1681,13 +1681,11 @@ namespace AZ::IO
             AZStd::vector<AZStd::string> files;
             do
             {
-                if (AZStd::wildcard_match(pWildcardIn, fileIterator.m_filename))
-                {
-                    AZStd::string foundFilename{ fileIterator.m_filename };
-                    AZStd::to_lower(foundFilename.begin(), foundFilename.end());
-                    files.emplace_back(AZStd::move(foundFilename));
-                }
-            } while (fileIterator = FindNext(fileIterator));
+                AZStd::string foundFilename{ fileIterator.m_filename };
+                AZStd::to_lower(foundFilename.begin(), foundFilename.end());
+                files.emplace_back(AZStd::move(foundFilename));
+            }
+            while (fileIterator = FindNext(fileIterator));
 
             // Open files in alphabet order.
             AZStd::sort(files.begin(), files.end());

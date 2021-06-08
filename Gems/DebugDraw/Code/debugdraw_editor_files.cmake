@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/DebugDraw_precompiled.cpp
     Source/DebugDraw_precompiled.h
     Include/DebugDraw/DebugDrawBus.h
     Source/DebugDrawModule.cpp

@@ -42,6 +42,8 @@ namespace EMotionFX
 }
 namespace AZ::RPI
 {
+    class AuxGeomDraw;
+    class AuxGeomFeatureProcessorInterface;
     class Model;
     class Buffer;
     class StreamingImage;
@@ -89,7 +91,7 @@ namespace AZ
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override { AZ_UNUSED(debugOptions) };
+            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
             SkinningMethod GetAtomSkinningMethod() const;
@@ -176,6 +178,13 @@ namespace AZ
             // and if there are blend shapes with wrinkle masks that should be applied to it
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
+
+            // Helper and debug geometry rendering
+            void RenderSkeleton(RPI::AuxGeomDraw* auxGeom);
+            void RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom);
+            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
+            AZStd::vector<AZ::Vector3> m_auxVertices;
+            AZStd::vector<AZ::Color> m_auxColors;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;

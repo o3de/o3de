@@ -25,7 +25,6 @@ ly_add_target(
     OUTPUT_NAME o3de
     NAMESPACE AZ
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         project_manager_files.cmake

@@ -349,7 +349,4 @@ void {{qualifiedName}}::Call{{CleanName(outName)}}({{ExecutionOutReturnDefinitio
 {%-     for executionOut in Class.findall('Output') -%}
                 {{ ExecutionOutDefinition(Class, qualifiedName, executionOut, loop.index0 + branches|length) }}
 {%-     endfor %}
-
-size_t {{qualifiedName}}::GetRequiredOutCount() const { return {{Class.findall('Output')|length + branches|length}}; }
-
 {% endmacro %}

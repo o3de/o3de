@@ -9,6 +9,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+
+#for PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED and PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED
+include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+if(PAL_TRAIT_BUILD_ATOM_RPI_MASKED_OCCLUSION_CULLING_SUPPORTED)
+    set(MASKED_OCCLUSION_CULLING_FILES "atom_rpi_masked_occlusion_files.cmake")
+else()
+    set(MASKED_OCCLUSION_CULLING_FILES "")
+endif()
+
 ly_add_target(
     NAME Atom_RPI.Public STATIC
     NAMESPACE Gem
@@ -16,11 +27,15 @@ ly_add_target(
         atom_rpi_reflect_files.cmake
         atom_rpi_public_files.cmake
         ../Assets/atom_rpi_asset_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${MASKED_OCCLUSION_CULLING_FILES}
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_source_dir}
         PUBLIC
             Include
+            External
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AtomCore
@@ -135,6 +150,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AtomCore
                 AZ::AzTest
+                AZ::AzTestShared
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Legacy::CryCommon
@@ -158,8 +174,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
     ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
-
-    include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) #for PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED
 
     if(NOT PAL_TRAIT_BUILD_ATOM_RPI_ASSETS_SUPPORTED)
 

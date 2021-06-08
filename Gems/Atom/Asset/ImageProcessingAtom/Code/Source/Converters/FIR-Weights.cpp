@@ -88,7 +88,7 @@ namespace ImageProcessingAtom
         int dstPosition;
         signed short int n;
         bool trimZeros = true, stillzero;
-        int lastnonzero, hWeight, highest;
+        int lastnonzero = 0, hWeight, highest = 0;
         signed int sumiWeights, iWeight;
         signed short int* weightsPtr;
         signed short int* weightsMem;

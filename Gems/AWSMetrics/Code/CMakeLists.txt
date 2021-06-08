@@ -46,9 +46,13 @@ ly_add_target(
         Gem::AWSCore
 )
 
-# Servers and Clients use the above metrics module
+# Load the "Gem::AWSMetrics" module in all types of applications.
 ly_create_alias(NAME AWSMetrics.Servers NAMESPACE Gem TARGETS Gem::AWSMetrics)
 ly_create_alias(NAME AWSMetrics.Clients NAMESPACE Gem TARGETS Gem::AWSMetrics)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AWSMetrics.Tools NAMESPACE Gem TARGETS Gem::AWSMetrics)
+    ly_create_alias(NAME AWSMetrics.Builders NAMESPACE Gem TARGETS Gem::AWSMetrics)
+endif()
 
 ################################################################################
 # Tests

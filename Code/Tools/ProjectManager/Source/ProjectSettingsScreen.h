@@ -12,17 +12,18 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
 #include <ProjectInfo.h>
+#include <ScreenWidget.h>
 #endif
 
-namespace Ui
-{
-    class ProjectSettingsClass;
-}
+QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
+    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
+
     class ProjectSettingsScreen
         : public ScreenWidget
     {
@@ -32,15 +33,20 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
         ProjectInfo GetProjectInfo();
-        void SetProjectInfo();
 
         bool Validate();
 
     protected slots:
-        void HandleGemsButton();
+        virtual bool ValidateProjectName();
+        virtual bool ValidateProjectPath();
 
-    private:
-        QScopedPointer<Ui::ProjectSettingsClass> m_ui;
+    protected:
+        QString GetDefaultProjectPath();
+
+        QHBoxLayout* m_horizontalLayout;
+        QVBoxLayout* m_verticalLayout;
+        FormLineEditWidget* m_projectName;
+        FormBrowseEditWidget* m_projectPath;
     };
 
 } // namespace O3DE::ProjectManager

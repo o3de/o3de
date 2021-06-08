@@ -48,6 +48,7 @@ namespace AzToolsFramework
         using EntityAliasOptionalReference = AZStd::optional<AZStd::reference_wrapper<EntityAlias>>;
         using InstanceOptionalReference = AZStd::optional<AZStd::reference_wrapper<Instance>>;
         using InstanceOptionalConstReference = AZStd::optional<AZStd::reference_wrapper<const Instance>>;
+
         using InstanceSet = AZStd::unordered_set<Instance*>;
         using InstanceSetConstReference = AZStd::optional<AZStd::reference_wrapper<const InstanceSet>>;
         using EntityOptionalReference = AZStd::optional<AZStd::reference_wrapper<AZ::Entity>>;
@@ -85,12 +86,14 @@ namespace AzToolsFramework
             bool AddEntity(AZ::Entity& entity);
             bool AddEntity(AZ::Entity& entity, EntityAlias entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
+            void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
             void DetachNestedEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
             void RemoveNestedEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
             void Reset();
 
             Instance& AddInstance(AZStd::unique_ptr<Instance> instance);
+            Instance& AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias instanceAlias);
             AZStd::unique_ptr<Instance> DetachNestedInstance(const InstanceAlias& instanceAlias);
 
             /**
@@ -171,6 +174,8 @@ namespace AzToolsFramework
             static EntityAlias GenerateEntityAlias();
             AliasPath GetAbsoluteInstanceAliasPath() const;
 
+            static InstanceAlias GenerateInstanceAlias();
+
         protected:
             /**
             * Gets the entities owned by this instance
@@ -182,13 +187,10 @@ namespace AzToolsFramework
 
             void ClearEntities();
 
-            void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
             void RemoveEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
             bool RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const EntityAlias& entityAlias);
-
-            static InstanceAlias GenerateInstanceAlias();
 
             // Provide access to private data members in the serializer
             friend class JsonInstanceSerializer;

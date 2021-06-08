@@ -59,12 +59,12 @@ CUiAnimViewTrack::CUiAnimViewTrack(IUiAnimTrack* pTrack, CUiAnimViewAnimNode* pT
 {
     // Search for child tracks
     const unsigned int subTrackCount = m_pAnimTrack->GetSubTrackCount();
-    for (unsigned int subTrackIndex = 0; subTrackIndex < subTrackCount; ++subTrackIndex)
+    for (unsigned int subTrackI = 0; subTrackI < subTrackCount; ++subTrackI)
     {
-        IUiAnimTrack* pSubTrack = m_pAnimTrack->GetSubTrack(subTrackIndex);
+        IUiAnimTrack* pSubTrack = m_pAnimTrack->GetSubTrack(subTrackI);
 
         CUiAnimViewTrackFactory trackFactory;
-        CUiAnimViewTrack* pNewUiAVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackIndex);
+        CUiAnimViewTrack* pNewUiAVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackI);
         m_childNodes.push_back(std::unique_ptr<CUiAnimViewNode>(pNewUiAVTrack));
     }
 

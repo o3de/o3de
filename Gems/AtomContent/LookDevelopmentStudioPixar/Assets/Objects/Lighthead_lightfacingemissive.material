@@ -18,15 +18,6 @@
         },
         "opacity": {
             "factor": 1.0
-        },
-        "subsurfaceScattering": {
-            "enableSubsurfaceScattering": true,
-            "quality": 1.0,
-            "scatterDistance": 2.626262664794922,
-            "subsurfaceScatterFactor": 1.0,
-            "thickness": 0.1414141058921814,
-            "transmissionMode": "ThinObject",
-            "transmissionScale": 1.8181817531585694
         }
     }
 }

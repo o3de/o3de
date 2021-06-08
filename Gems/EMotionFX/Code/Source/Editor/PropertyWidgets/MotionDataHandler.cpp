@@ -91,10 +91,10 @@ namespace EMotionFX
         }
         else 
         {
-            AZ::Outcome<size_t> index = factory.FindRegisteredIndexByTypeId(instance);
-            if (index.IsSuccess())
+            AZ::Outcome<size_t> motionIndex = factory.FindRegisteredIndexByTypeId(instance);
+            if (motionIndex.IsSuccess())
             {
-                GUI->setCurrentIndex(static_cast<int>(index.GetValue() + 1)); // +1 because we inserted an 'Automatic' one as first entry.
+                GUI->setCurrentIndex(static_cast<int>(motionIndex.GetValue() + 1)); // +1 because we inserted an 'Automatic' one as first entry.
             }
             else
             {

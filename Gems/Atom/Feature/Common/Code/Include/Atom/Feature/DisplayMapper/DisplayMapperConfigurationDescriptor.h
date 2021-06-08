@@ -12,11 +12,13 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
+
 #include <ACES/Aces.h>
+
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <AzCore/Asset/AssetCommon.h>
 
 namespace AZ
 {
@@ -33,6 +35,7 @@ namespace AZ
             AZ_TYPE_INFO(AcesParameterOverrides, "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}");
             static void Reflect(ReflectContext* context);
 
+            // Load preconfigured preset for specific ODT mode defined by m_preset
             void LoadPreset();
 
             // When enabled allows parameter overrides for ACES configuration
@@ -98,6 +101,5 @@ namespace AZ
 
             DisplayMapperConfigurationDescriptor m_config;
         };
-
-    } // namespace RPI
+    } // namespace Render
 } // namespace AZ

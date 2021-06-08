@@ -10,21 +10,6 @@
 #
 
 ly_add_target(
-    NAME StartingPointMovement.Static STATIC
-    NAMESPACE Gem
-    FILES_CMAKE
-        startingpointmovement_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Source
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-)
-
-ly_add_target(
     NAME StartingPointMovement ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
@@ -36,7 +21,6 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::StartingPointMovement.Static
             AZ::AzCore
             AZ::AzFramework
 )
