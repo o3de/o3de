@@ -45,6 +45,7 @@ namespace Multiplayer
         AzNetworking::ByteBuffer<2048> m_userData;
     };
 
+    using ClientDisconnectedEvent = AZ::Event<>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
@@ -65,8 +66,12 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
+        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnectio occurs
+        //! @param handler The ClientDisconnectedEvent Handler to add
+        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
-        //! @param handler The SessionInitEvent Handler to add
+        //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
 
         //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.

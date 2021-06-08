@@ -22,7 +22,7 @@ namespace Multiplayer
     (
         AzNetworking::IConnection* connection,
         AzNetworking::IConnectionListener& connectionListener,
-        AZStd::string providerTicket
+        const AZStd::string& providerTicket
     )
         : m_connection(connection)
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer)

@@ -22,7 +22,7 @@ namespace Multiplayer
         m_canSendUpdates = canSendUpdates;
     }
 
-    inline AZStd::string ClientToServerConnectionData::GetProviderTicket() const
+    inline const AZStd::string& ClientToServerConnectionData::GetProviderTicket() const
     {
         return m_providerTicket;
     }

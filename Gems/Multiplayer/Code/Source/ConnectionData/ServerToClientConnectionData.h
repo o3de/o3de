@@ -41,7 +41,7 @@ namespace Multiplayer
 
         NetworkEntityHandle GetPrimaryPlayerEntity();
         const NetworkEntityHandle& GetPrimaryPlayerEntity() const;
-        AZStd::string GetProviderTicket() const;
+        const AZStd::string& GetProviderTicket() const;
         void SetProviderTicket(AZStd::string);
 
     private:

@@ -117,6 +117,31 @@ namespace Multiplayer
             behaviorContext->Class<RpcIndex>();
             behaviorContext->Class<ClientInputId>();
             behaviorContext->Class<HostFrameId>();
+
+            behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+                ->Method("GetOnClientDisconnectedEvent", [](AZ::EntityId id) -> AZ::Event<>*
+                {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning("Network Property", false, "NetworkTransformComponent GetOnScaleChangedEvent failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return nullptr;
+                    }
+
+                    MultiplayerSystemComponent* mpComponent = entity->FindComponent<MultiplayerSystemComponent>();
+                    if (!mpComponent)
+                    {
+                        AZ_Warning("Multiplayer Property", false, "NetworkTransformComponent GetScale failed. Entity '%s' (id: %s) is missing NetworkTransformComponent, be sure to add NetworkTransformComponent to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                        return nullptr;
+                    }
+
+                    return &mpComponent->m_clientDisconnectedEvent;
+                })
+                ->Attribute(
+                    AZ::Script::Attributes::AzEventDescription,
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
         }
 
         MultiplayerComponent::Reflect(context);
@@ -173,12 +198,11 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& config)
     {
         AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
 
-        const IpAddress ipAddress(config.m_ipAddress.c_str(), config.m_port, networkInterface->GetType());
-        ConnectionId connectionId = networkInterface->Connect(ipAddress);
+        const IpAddress ipAddress(config.m_ipAddress.c_str(), config.m_port, m_networkInterface->GetType());
+        ConnectionId connectionId = m_networkInterface->Connect(ipAddress);
 
-        AzNetworking::IConnection* connection = networkInterface->GetConnectionSet().GetConnection(connectionId);
+        AzNetworking::IConnection* connection = m_networkInterface->GetConnectionSet().GetConnection(connectionId);
         if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
         {
             connection->SetUserData(new ClientToServerConnectionData(connection, *this, config.m_playerSessionId));
@@ -188,10 +212,15 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::RequestPlayerLeaveSession()
     {
-        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
-        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-        auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
-        networkInterface->GetConnectionSet().VisitConnections(visitor);
+        if (GetAgentType() == MultiplayerAgentType::Client)
+        {
+            AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
+            auto visitor = [](IConnection& connection)
+            {
+                connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local);
+            };
+            m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+        }
     }
 
     bool MultiplayerSystemComponent::OnSessionHealthCheck()
@@ -379,19 +408,24 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Connect& packet
     )
     {
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
+        // Validate our session with the provider if any
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
         {
-            // Validate our session with the provider if any
-            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+            AzFramework::PlayerConnectionConfig config;
+            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+            config.m_playerSessionId = packet.GetTicket();
+            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
             {
-                AzFramework::PlayerConnectionConfig config;
-                config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-                config.m_playerSessionId = packet.GetTicket();
-                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
-
-                reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                return true;
             }
 
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+        }
+
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
+        {
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
             AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
@@ -606,10 +640,15 @@ namespace Multiplayer
         AZStd::string reasonString = ToString(reason);
         AZLOG_INFO("%s due to %s from remote address: %s", endpointString, reasonString.c_str(), connection->GetRemoteAddress().GetString().c_str());
 
-        // The authority is shutting down its connection
         if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {
+            // The authority is shutting down its connection
             m_shutdownEvent.Signal(m_networkInterface);
+        }
+        else if (GetAgentType() == MultiplayerAgentType::Client && connection->GetConnectionRole() == ConnectionRole::Connector)
+        {
+            // The client is disconnecting
+            m_clientDisconnectedEvent.Signal();
         }
 
         // Clean up any multiplayer connection data we've bound to this connection instance
@@ -677,6 +716,11 @@ namespace Multiplayer
         }
         
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
+    }
+
+    void MultiplayerSystemComponent::AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler)
+    {
+        handler.Connect(m_clientDisconnectedEvent);
     }
 
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)

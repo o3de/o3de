@@ -25,7 +25,7 @@ namespace Multiplayer
         (
             AzNetworking::IConnection* connection,
             AzNetworking::IConnectionListener& connectionListener,
-            AZStd::string providerTicket = ""
+            const AZStd::string& providerTicket = ""
         );
         ~ClientToServerConnectionData() override;
 
@@ -39,7 +39,7 @@ namespace Multiplayer
         void SetCanSendUpdates(bool canSendUpdates) override;
         //! @}
 
-        AZStd::string GetProviderTicket() const;
+        const AZStd::string& GetProviderTicket() const;
 
     private:
         EntityReplicationManager m_entityReplicationManager;
