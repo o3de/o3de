@@ -26,8 +26,10 @@ def is_child_path(parent_path, child_path):
 class TestImpact:
     def __init__(self, config_file, pipeline, dst_commit):
         self.__pipeline = pipeline
+        self.__dst_commit = dst_commit
+        self.__src_commit = None
+        self.__has_src_commit = False
         self.__parse_config_file(config_file)
-        self.__init_repo(dst_commit)
         if self.__use_test_impact_analysis and not self.__is_pipeline_of_truth:
             self.__generate_change_list()
 
@@ -60,15 +62,6 @@ class TestImpact:
             last_commit_hash_path_rel = config["workspace"]["historic"]["relative_paths"]["last_run_hash_file"]
             self.__last_commit_hash_path = os.path.join(self.__historic_workspace, last_commit_hash_path_rel)
             print("The configuration file was parsed successfully.")
-
-    # Initializes the internal representation of the repository being targeted for test impact analysis
-    def __init_repo(self, dst_commit):
-        self.__repo = Repo(self.__repo_dir)
-        self.__branch = self.__repo.current_branch
-        self.__dst_commit = dst_commit
-        self.__src_commit = None
-        self.__has_src_commit = False
-        print(f"The repository is located at '{self.__repo_dir}' and the current branch is '{self.__branch}'.")
 
     # Restricts change lists from checking in test impact analysis files
     def __check_for_restricted_files(self, file_path):
