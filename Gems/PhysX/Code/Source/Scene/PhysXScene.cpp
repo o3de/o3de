@@ -877,6 +877,22 @@ namespace PhysX
         return AzPhysics::InvalidApiJointHandle;
     }
 
+    AzPhysics::ApiJoint* PhysXScene::GetApiJointFromHandle(AzPhysics::ApiJointHandle jointHandle) 
+    {
+        if (jointHandle == AzPhysics::InvalidApiJointHandle)
+        {
+            return nullptr;
+        }
+
+        AzPhysics::ApiJointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
+        if (index < m_joints.size()
+            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
+        {
+            return m_joints[index].second;
+        }
+        return nullptr;
+    }
+
     void PhysXScene::RemoveJoint(AzPhysics::ApiJointHandle jointHandle) 
     {
         if (jointHandle == AzPhysics::InvalidApiJointHandle)

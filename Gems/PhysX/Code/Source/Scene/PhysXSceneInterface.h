@@ -46,6 +46,7 @@ namespace PhysX
         void DisableSimulationOfBody(AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle) override;
         AzPhysics::ApiJointHandle AddJoint(AzPhysics::SceneHandle sceneHandle, const AzPhysics::ApiJointConfiguration* jointConfig, 
             AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) override;
+        AzPhysics::ApiJoint* GetApiJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) override;
         void RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request) override;
         AzPhysics::SceneQueryHitsList QuerySceneBatch(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequests& requests) override;

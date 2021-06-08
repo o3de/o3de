@@ -16,6 +16,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
 #include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
@@ -112,6 +113,12 @@ namespace AzPhysics
         //! @return Returns a handle to the created joint. Will return AzPhyiscs::InvalidApiJointHandle if it fails.
         virtual ApiJointHandle AddJoint(SceneHandle sceneHandle, const ApiJointConfiguration* jointConfig, 
             SimulatedBodyHandle parentBody, SimulatedBodyHandle childBody) = 0;
+
+        //! Get the Raw pointer to the requested joint.
+        //! @param sceneHandle A handle to the scene to get the simulated bodies from.
+        //! @param jointHandle A handle to the joint to retrieve the raw pointer.
+        //! @return A raw pointer to the ApiJoint body. If the either handle is invalid this will return null.
+        virtual ApiJoint* GetApiJointFromHandle(SceneHandle sceneHandle, ApiJointHandle jointHandle) = 0;
 
         //! Remove a joint from the Scene.
         //! @param sceneHandle A handle to the scene to add / remove the joint.
@@ -321,6 +328,11 @@ namespace AzPhysics
         //! @return Returns a handle to the created joint. Will return AzPhyiscs::InvalidApiJointHandle if it fails.
         virtual ApiJointHandle AddJoint(const ApiJointConfiguration* jointConfig, 
             SimulatedBodyHandle parentBody, SimulatedBodyHandle childBody) = 0;
+
+        //! Get the Raw pointer to the requested joint.
+        //! @param jointHandle A handle to the joint to retrieve the raw pointer.
+        //! @return A raw pointer to the ApiJoint body. If the either handle is invalid this will return null.
+        virtual ApiJoint* GetApiJointFromHandle(ApiJointHandle jointHandle) = 0;
 
         //! Remove a joint from the Scene.
         //! @param jointHandle A handle to the joint being removed.
