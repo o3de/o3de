@@ -62,10 +62,8 @@ then
 fi
 
 ECHO Launching iOS Test
-echo [ci+build] ${SOURCE_DIRECTORY}/python/python.sh ${SOURCE_DIRECTORY}/cmake/Tools/Platform/iOS/launch_ios_test.py -b ${OUTPUT_DIRECTORY} --device-name ${TARGET_DEVICE_NAME} --timeout ${TEST_MODULE_TIMEOUT} --test-report-json $TMPDIR/ios_test_result.json
-${SOURCE_DIRECTORY}/python/python.sh ${SOURCE_DIRECTORY}/cmake/Tools/Platform/iOS/launch_ios_test.py -b ${OUTPUT_DIRECTORY} --device-name ${TARGET_DEVICE_NAME} --timeout ${TEST_MODULE_TIMEOUT} --test-report-json $TMPDIR/ios_test_result.json
-
-# TODO: Publish the $TMPDIR/ios_test_result.json to MARS
+echo [ci+build] ${SOURCE_DIRECTORY}/python/python.sh ${SOURCE_DIRECTORY}/cmake/Tools/Platform/iOS/launch_ios_test.py -b ${OUTPUT_DIRECTORY} --device-name ${TARGET_DEVICE_NAME} --timeout ${TEST_MODULE_TIMEOUT}
+${SOURCE_DIRECTORY}/python/python.sh ${SOURCE_DIRECTORY}/cmake/Tools/Platform/iOS/launch_ios_test.py -b ${OUTPUT_DIRECTORY} --device-name ${TARGET_DEVICE_NAME} --timeout ${TEST_MODULE_TIMEOUT}
 
 if [ $? -ne 0 ]
 then
