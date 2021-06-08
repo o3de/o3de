@@ -202,7 +202,7 @@ namespace TestImpact
         AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
             AZStd::vector<const TestTarget*> testTargets) const;
 
-        //! Prunes the existing coverage for the specified jobs and creates the consolidates source covering tests list from the
+        //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
         //! test engine instrumented run jobs.
         SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
 
