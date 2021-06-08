@@ -30,6 +30,7 @@ namespace TestImpact
 {
     //! Construct a dynamic dependency map from the build target descriptors and test target metas.
     AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
+        SuiteType suiteFilter,
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
 
@@ -39,12 +40,7 @@ namespace TestImpact
         const AZStd::vector<AZStd::string>& excludedTestTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);
-
-    //! Creates the consolidates source covering tests list from the test engine instrumented run jobs.
-    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
-        const AZStd::vector<TestEngineInstrumentedRun>& jobs,
-        const RepoPath& root);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);    
 
     //! Generates a test run failure report from the specified test engine job information.
     //! @tparam TestJob The test engine job type.

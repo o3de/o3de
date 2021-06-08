@@ -86,6 +86,8 @@ namespace TestImpact
             Runtime& runtime,
             const AZStd::optional<ChangeList>& changeList)
         {
+            // Even though it is possible for a regular run to be selected (see below) which does not actually require a change list,
+            // consider any impact analysis sequence type without a change list to be an error
             AZ_TestImpact_Eval(
                 changeList.has_value(),
                 CommandLineOptionsException,
@@ -94,39 +96,72 @@ namespace TestImpact
             TestSequenceResult result = TestSequenceResult::Failure;
             if (options.HasSafeMode())
             {
-                auto [selectedResult, discardedResult] = runtime.SafeImpactAnalysisTestSequence(
-                    changeList.value(),
-                    options.GetSuitesFilter(),
-                    options.GetTestPrioritizationPolicy(),
-                    options.GetTestTargetTimeout(),
-                    options.GetGlobalTimeout(),
-                    AZStd::ref(sequenceEventHandler),
-                    AZStd::ref(sequenceEventHandler),
-                    AZStd::ref(sequenceEventHandler));
+                if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysis)
+                {
+                    auto [selectedResult, discardedResult] = runtime.SafeImpactAnalysisTestSequence(
+                        changeList.value(),
+                        options.GetTestPrioritizationPolicy(),
+                        options.GetTestTargetTimeout(),
+                        options.GetGlobalTimeout(),
+                        AZStd::ref(sequenceEventHandler),
+                        AZStd::ref(sequenceEventHandler),
+                        AZStd::ref(sequenceEventHandler));
 
-                // Handling the possible timeout and failure permutations of the selected and discarded test results is splitting hairs
-                // so apply the following, admittedly arbitrary, rules to determine what the composite test sequence result should be
-                if (selectedResult == TestSequenceResult::Success && discardedResult == TestSequenceResult::Success)
-                {
-                    // Trivial case: both sequences succeeded
-                    result = TestSequenceResult::Success;
+                    // Handling the possible timeout and failure permutations of the selected and discarded test results is splitting hairs
+                    // so apply the following, admittedly arbitrary, rules to determine what the composite test sequence result should be
+                    if (selectedResult == TestSequenceResult::Success && discardedResult == TestSequenceResult::Success)
+                    {
+                        // Trivial case: both sequences succeeded
+                        result = TestSequenceResult::Success;
+                    }
+                    else if (selectedResult == TestSequenceResult::Failure || discardedResult == TestSequenceResult::Failure)
+                    {
+                        // One sequence failed whilst the other sequence either succeeded or timed out
+                        result = TestSequenceResult::Failure;
+                    }
+                    else
+                    {
+                        // One or both sequences timed out or failed
+                        result = TestSequenceResult::Timeout;
+                    }
                 }
-                else if (selectedResult == TestSequenceResult::Failure || discardedResult == TestSequenceResult::Failure)
+                else if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysisNoWrite)
                 {
-                    // One sequence failed whilst the other sequence either succeeded or timed out
-                    result = TestSequenceResult::Failure;
+                    // A no-write impact analysis sequence with safe mode enabled is functionally identical to a regular sequence type
+                    // due to a) the selected tests being run without instrumentation and b) the discarded tests also being run without
+                    // instrumentation
+                    result = runtime.RegularTestSequence(
+                        options.GetTestTargetTimeout(),
+                        options.GetGlobalTimeout(),
+                        AZStd::ref(sequenceEventHandler),
+                        AZStd::ref(sequenceEventHandler),
+                        AZStd::ref(sequenceEventHandler));
                 }
                 else
                 {
-                    // One sequence timed out whilst the other sequence succeeded or both sequences timed out
-                    result = TestSequenceResult::Timeout;
+                    throw(Exception("Unexpected sequence type"));
                 }
             }
             else
             {
+                Policy::DynamicDependencyMap dynamicDependencyMapPolicy;
+                if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysis)
+                {
+                    dynamicDependencyMapPolicy = Policy::DynamicDependencyMap::Update;
+                }
+                else if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysisNoWrite)
+                {
+                    dynamicDependencyMapPolicy = Policy::DynamicDependencyMap::Discard;
+                }
+                else
+                {
+                    throw(Exception("Unexpected sequence type"));
+                }
+
                 result = runtime.ImpactAnalysisTestSequence(
                     changeList.value(),
                     options.GetTestPrioritizationPolicy(),
+                    dynamicDependencyMapPolicy,
                     options.GetTestTargetTimeout(),
                     options.GetGlobalTimeout(),
                     AZStd::ref(sequenceEventHandler),
@@ -164,11 +199,13 @@ namespace TestImpact
                 // As of now, there are no other non-test operations other than printing a change list so getting this far is considered an error
                 AZ_TestImpact_Eval(options.GetTestSequenceType() != TestSequenceType::None, CommandLineOptionsException, "No action specified");
 
-                std::cout << "Constructing in-memory model of source tree and test coverage, this may take a moment...\n";
+                std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
+                std::cout << GetSuiteTypeName(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
                 Runtime runtime(
                     RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
+                    options.GetSuiteFilter(),
                     options.GetExecutionFailurePolicy(),
-                    options.GetExecutionFailureDraftingPolicy(),
+                    options.GetFailedTestCoveragePolicy(),
                     options.GetTestFailurePolicy(),
                     options.GetIntegrityFailurePolicy(),
                     options.GetTestShardingPolicy(),
@@ -184,14 +221,13 @@ namespace TestImpact
                     std::cout << "Test impact analysis data for this repository was not found, seed or regular sequence fallbacks will be used.\n";
                 }
 
-                TestSequenceEventHandler sequenceEventHandler(&options.GetSuitesFilter());
+                TestSequenceEventHandler sequenceEventHandler(options.GetSuiteFilter());
 
                 switch (const auto type = options.GetTestSequenceType())
                 {
                 case TestSequenceType::Regular:
                 {
                     const auto result = runtime.RegularTestSequence(
-                        options.GetSuitesFilter(),
                         options.GetTestTargetTimeout(),
                         options.GetGlobalTimeout(),
                         AZStd::ref(sequenceEventHandler),
@@ -211,6 +247,7 @@ namespace TestImpact
 
                     return GetReturnCodeForTestSequenceResult(result);
                 }
+                case TestSequenceType::ImpactAnalysisNoWrite:
                 case TestSequenceType::ImpactAnalysis:
                 {
                     return WrappedImpactAnalysisTestSequence(sequenceEventHandler, options, runtime, changeList);

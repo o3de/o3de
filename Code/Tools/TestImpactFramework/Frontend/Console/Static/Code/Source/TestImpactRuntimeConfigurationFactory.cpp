@@ -30,7 +30,7 @@ namespace TestImpact
             "relative_paths",
             "artifact_dir",
             "enumeration_cache_dir",
-            "test_impact_data_file",
+            "test_impact_data_files",
             "temp",
             "active",
             "target_sources",
@@ -75,7 +75,7 @@ namespace TestImpact
             RelativePaths,
             ArtifactDir,
             EnumerationCacheDir,
-            TestImpactDataFile,
+            TestImpactDataFiles,
             TempWorkspace,
             ActiveWorkspace,
             TargetSources,
@@ -144,6 +144,19 @@ namespace TestImpact
         return tempWorkspaceConfig;
     }
 
+    AZStd::array<RepoPath, 3> ParseTestImpactAnalysisDataFiles(const RepoPath& root, const rapidjson::Value& sparTIAFile)
+    {
+        AZStd::array<RepoPath, 3> sparTIAFiles;
+        sparTIAFiles[static_cast<size_t>(SuiteType::Main)] =
+            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Main).c_str()].GetString());
+        sparTIAFiles[static_cast<size_t>(SuiteType::Periodic)] =
+            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Periodic).c_str()].GetString());
+        sparTIAFiles[static_cast<size_t>(SuiteType::Sandbox)] =
+            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Sandbox).c_str()].GetString());
+
+        return sparTIAFiles;
+    }
+
     WorkspaceConfig::Active ParseActiveWorkspaceConfig(const rapidjson::Value& activeWorkspace)
     {
         WorkspaceConfig::Active activeWorkspaceConfig;
@@ -151,8 +164,8 @@ namespace TestImpact
         activeWorkspaceConfig.m_root = activeWorkspace[Config::Keys[Config::Root]].GetString();
         activeWorkspaceConfig.m_enumerationCacheDirectory
             = GetAbsPathFromRelPath(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::EnumerationCacheDir]].GetString());
-        activeWorkspaceConfig.m_sparTIAFile
-            = GetAbsPathFromRelPath(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::TestImpactDataFile]].GetString());
+        activeWorkspaceConfig.m_sparTIAFiles =
+            ParseTestImpactAnalysisDataFiles(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::TestImpactDataFiles]]);
         return activeWorkspaceConfig;
     }
 

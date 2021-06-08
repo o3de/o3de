@@ -28,7 +28,7 @@ namespace TestImpact
             Sequence,
             TestPrioritizationPolicy,
             ExecutionFailurePolicy,
-            ExecutionFailureDraftingPolicy,
+            FailedTestCoveragePolicy,
             TestFailurePolicy,
             IntegrityFailurePolicy,
             TestShardingPolicy,
@@ -36,13 +36,14 @@ namespace TestImpact
             MaxConcurrency,
             TestTargetTimeout,
             GlobalTimeout,
-            SuitesFilter,
+            SuiteFilter,
             SafeMode,
             // Values
             None,
             Seed,
             Regular,
             ImpactAnalysis,
+            ImpactAnalysisNoWrite,
             ImpactAnalysisOrSeed,
             Locality,
             Abort,
@@ -50,7 +51,8 @@ namespace TestImpact
             Ignore,
             StdOut,
             File,
-            AllSuites
+            Discard,
+            Keep
         };
 
         constexpr const char* OptionKeys[] =
@@ -62,7 +64,7 @@ namespace TestImpact
             "sequence",
             "ppolicy",
             "epolicy",
-            "rexecfailures",
+            "cpolicy",
             "fpolicy",
             "ipolicy",
             "shard",
@@ -70,13 +72,14 @@ namespace TestImpact
             "maxconcurrency",
             "ttimeout",
             "gtimeout",
-            "suites",
+            "suite",
             "safemode",
             // Values
             "none",
             "seed",
             "regular",
             "tia",
+            "tianowrite",
             "tiaorseed",
             "locality",
             "abort",
@@ -84,7 +87,8 @@ namespace TestImpact
             "ignore",
             "stdout",
             "file",
-            "*"
+            "discard",
+            "keep"
         };
 
         RepoPath ParseConfigurationFile(const AZ::CommandLine& cmd)
@@ -110,6 +114,7 @@ namespace TestImpact
                 {OptionKeys[Seed], TestSequenceType::Seed},
                 {OptionKeys[Regular], TestSequenceType::Regular},
                 {OptionKeys[ImpactAnalysis], TestSequenceType::ImpactAnalysis},
+                {OptionKeys[ImpactAnalysisNoWrite], TestSequenceType::ImpactAnalysisNoWrite},
                 {OptionKeys[ImpactAnalysisOrSeed], TestSequenceType::ImpactAnalysisOrSeed}
             };
 
@@ -138,15 +143,15 @@ namespace TestImpact
             return ParseMultiStateOption(OptionKeys[ExecutionFailurePolicy], states, cmd).value_or(Policy::ExecutionFailure::Continue);
         }
 
-        Policy::ExecutionFailureDrafting ParseExecutionFailureDraftingPolicy(const AZ::CommandLine& cmd)
+        Policy::FailedTestCoverage ParseFailedTestCoveragePolicy(const AZ::CommandLine& cmd)
         {
-            const BinaryStateValue<Policy::ExecutionFailureDrafting> states =
+            const AZStd::vector<AZStd::pair<AZStd::string, Policy::FailedTestCoverage>> states =
             {
-                Policy::ExecutionFailureDrafting::Never,
-                Policy::ExecutionFailureDrafting::Always
+                {OptionKeys[Discard], Policy::FailedTestCoverage::Discard},
+                {OptionKeys[Keep], Policy::FailedTestCoverage::Keep}
             };
 
-            return ParseOnOffOption(OptionKeys[ExecutionFailureDraftingPolicy], states, cmd).value_or(Policy::ExecutionFailureDrafting::Always);
+            return ParseMultiStateOption(OptionKeys[FailedTestCoveragePolicy], states, cmd).value_or(Policy::FailedTestCoverage::Keep);
         }
 
         Policy::TestFailure ParseTestFailurePolicy(const AZ::CommandLine& cmd)
@@ -250,32 +255,16 @@ namespace TestImpact
             return ParseOnOffOption(OptionKeys[SafeMode], states, cmd).value_or(false);
         }
 
-        AZStd::unordered_set<AZStd::string> ParseSuitesFilter(const AZ::CommandLine& cmd)
+        SuiteType ParseSuiteFilter(const AZ::CommandLine& cmd)
         {
-            AZStd::unordered_set<AZStd::string> suitesFilter;
-            if (const auto numSwitchValues = cmd.GetNumSwitchValues(OptionKeys[SuitesFilter]);
-                numSwitchValues)
+            const AZStd::vector<AZStd::pair<AZStd::string, SuiteType>> states =
             {
-                for (auto i = 0; i < numSwitchValues; i++)
-                {
-                    const auto value = cmd.GetSwitchValue(OptionKeys[SuitesFilter], i);
-                    AZ_TestImpact_Eval(!value.empty(), CommandLineOptionsException, "Suites option value is empty");
-                    if (value == OptionKeys[AllSuites])
-                    {
-                        AZ_TestImpact_Eval(
-                            suitesFilter.empty(), CommandLineOptionsException, "The * suite cannot be used with other suites");
-                    }
+                {GetSuiteTypeName(SuiteType::Main), SuiteType::Main},
+                {GetSuiteTypeName(SuiteType::Periodic), SuiteType::Periodic},
+                {GetSuiteTypeName(SuiteType::Sandbox), SuiteType::Sandbox}
+            };
 
-                    suitesFilter.insert(value);
-                }
-            }
-
-            if (suitesFilter.find(OptionKeys[AllSuites]) != suitesFilter.end())
-            {
-                return {};
-            }
-
-            return suitesFilter;
+            return ParseMultiStateOption(OptionKeys[SuiteFilter], states, cmd).value_or(SuiteType::Main);
         }
     }
 
@@ -290,7 +279,7 @@ namespace TestImpact
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
-        m_executionFailureDraftingPolicy = ParseExecutionFailureDraftingPolicy(cmd);
+        m_failedTestCoveragePolicy = ParseFailedTestCoveragePolicy(cmd);
         m_testFailurePolicy = ParseTestFailurePolicy(cmd);
         m_integrityFailurePolicy = ParseIntegrityFailurePolicy(cmd);
         m_testShardingPolicy = ParseTestShardingPolicy(cmd);
@@ -299,7 +288,7 @@ namespace TestImpact
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_safeMode = ParseSafeMode(cmd);
-        m_suitesFilter = ParseSuitesFilter(cmd);
+        m_suiteFilter = ParseSuiteFilter(cmd);
     }
  
     bool CommandLineOptions::HasChangeListFile() const
@@ -342,9 +331,9 @@ namespace TestImpact
         return m_executionFailurePolicy;
     }
     
-    Policy::ExecutionFailureDrafting CommandLineOptions::GetExecutionFailureDraftingPolicy() const
+    Policy::FailedTestCoverage CommandLineOptions::GetFailedTestCoveragePolicy() const
     {
-        return m_executionFailureDraftingPolicy;
+        return m_failedTestCoveragePolicy;
     }
     
     Policy::TestFailure CommandLineOptions::GetTestFailurePolicy() const
@@ -382,9 +371,9 @@ namespace TestImpact
         return m_globalTimeout;
     }
 
-    const AZStd::unordered_set<AZStd::string>& CommandLineOptions::GetSuitesFilter() const
+    SuiteType CommandLineOptions::GetSuiteFilter() const
     {
-        return m_suitesFilter;
+        return m_suiteFilter;
     }
 
     AZStd::string CommandLineOptions::GetCommandLineUsageString()
@@ -392,71 +381,74 @@ namespace TestImpact
         AZStd::string help =
             "usage: tiaf [options]\n"
             "  options:\n"
-            "    -config=<filename>                              Path to the configuration file for the TIAF runtime (default: \n"
-            "                                                    <tiaf binay build dir>.<tiaf binary build type>.json).\n"
-            "    -changelist=<filename>                          Path to the JSON of source file changes to perform test impact \n"
-            "                                                    analysis on.\n"
-            "    -gtimeout=<seconds>                             Global timeout value to terminate the entire test sequence should it \n"
-            "                                                    be exceeded.\n"
-            "    -ttimeout=<seconds>                             Timeout value to terminate individual test targets should it be \n"
-            "                                                    exceeded.\n"
-            "    -sequence=<none, seed, regular, tia, tiaorseed> The type of test sequence to perform, where none runs no tests and\n"
-            "                                                    will report a all tests successful, seed removes any prior coverage \n"
-            "                                                    data and runs all test targets with instrumentation to reseed the \n"
-            "                                                    data from scratch, regular runs all of the test targets without any \n"
-            "                                                    instrumentation to generate coverage data(any prior coverage data is \n"
-            "                                                    left intact), tia uses any prior coverage data to run the instrumented \n"
-            "                                                    subset of selected tests(if no prior coverage data a regular run is \n"
-            "                                                    performed instead) and tiaorseed uses any prior coverage data to run \n"
-            "                                                    the instrumented subset of selected tests(if no prior coverage data a \n"
-            "                                                    seed run is performed instead).\n"
-            "    -safemode=<on,off>                              Flag to specify a safe mode sequence where the set of unselected \n"
-            "                                                    tests is run without instrumentation after the set of selected \n"
-            "                                                    instrumented tests is run (this has the effect of ensuring all \n"
-            "                                                    tests are run regardless).\n"
-            "    -shard=<on,off>                                 Break any test targets with a sharding policy into the number of \n"
-            "                                                    shards according to the maximum concurrency value.\n"
-            "    -rexecfailures=<on,off>                         Attempt to execute test targets that previously failed to execute.\n"
-            "    -targetout=<sdtout, file>                       Capture of individual test run stdout, where stdout will capture \n"
-            "                                                    each individual test target's stdout and output each one to stdout \n"
-            "                                                    and file will capture each individual test target's stdout and output \n"
-            "                                                    each one individually to a file (multiple values are accepted).\n"
-            "    -epolicy=<abort, continue, ignore>              Policy for handling test execution failure (test targets could not be \n"
-            "                                                    launched due to the binary not being built, incorrect paths, etc.), \n"
-            "                                                    where abort will abort the entire test sequence upon the first test\n"
-            "                                                    target execution failureand report a failure(along with the return \n"
-            "                                                    code of the test target that failed to launch), continue will continue \n"
-            "                                                    with the test sequence in the event of test target execution failures\n"
-            "                                                    and treat the test targets that failed to launch as as test failures\n"
-            "                                                    (along with the return codes of the test targets that failed to \n"
-            "                                                    launch), ignore will continue with the test sequence in the event of \n"
-            "                                                    test target execution failuresand treat the test targets that failed\n"
-            "                                                    to launch as as test passes(along with the return codes of the test \n"
-            "                                                    targets that failed to launch).\n"
-            "    -fpolicy <abort, continue>                      Policy for handling test failures (test targets report failing tests), \n"
-            "                                                    where abort will abort the entire test sequenceupon the first test \n"
-            "                                                    failureand report a failure and continue will continue with the test\n"
-            "                                                    sequence in the event of test failuresand report the test failures.\n"
-            "    -ipolicy=<abort, seed, rerun>                   Policy for handling coverage data integrity failures, where abort will \n"
-            "                                                    abort the test sequenceand report a failure, seed will attempt another \n"
-            "                                                    sequence using the seed sequence type, otherwise will abort and report \n"
-            "                                                    a failure (this option has no effect for regularand seed sequence \n"
-            "                                                    types) and rerun will attempt another sequence using the regular \n"
-            "                                                    sequence type, otherwise will abortand report a failure(this option has \n"
-            "                                                    no effect for regular sequence type).\n"
-            "    -ppolicy=<none, locality>                       Policy for prioritizing selected test targets, where none will not \n"
-            "                                                    attempt any test target prioritization and locality will attempt to \n"
-            "                                                    prioritize test targets according to the locality of their covering \n"
-            "                                                    production targets in the dependency graph(if no dependency graph data \n"
-            "                                                    available, no prioritization will occur).\n"
-            "    -maxconcurrency=<number>                        The maximum number of concurrent test targets/shards to be in flight at \n"
-            "                                                    any given moment.\n"
-            "    -ochangelist=<on,off>                           Outputs the change list used for test selection.\n"
-            "    -suites=<names>                                 The test suites to select from for this test sequence (multiple values are \n"
-            "                                                    allowed). The suite all has special significance and will allow tests from \n"
-            "                                                    any suite to be selected, however this particular suite is mutually exclusive\n"
-            "                                                    with other suite. Note: this option is only applicable to the regular sequence\n"
-            "                                                    and, if safe mode is enables, the tia and tiaorseed sequences.";
+            "    -config=<filename>                                          Path to the configuration file for the TIAF runtime (default: \n"
+            "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
+            "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
+            "                                                                analysis on.\n"
+            "    -gtimeout=<seconds>                                         Global timeout value to terminate the entire test sequence should it \n"
+            "                                                                be exceeded.\n"
+            "    -ttimeout=<seconds>                                         Timeout value to terminate individual test targets should it be \n"
+            "                                                                exceeded.\n"
+            "    -sequence=<none, seed, regular, tia, tianowrite, tiaorseed> The type of test sequence to perform, where 'none' runs no tests and\n"
+            "                                                                will report a all tests successful, 'seed' removes any prior coverage \n"
+            "                                                                data and runs all test targets with instrumentation to reseed the \n"
+            "                                                                data from scratch, 'regular' runs all of the test targets without any \n"
+            "                                                                instrumentation to generate coverage data(any prior coverage data is \n"
+            "                                                                left intact), 'tia' uses any prior coverage data to run the instrumented \n"
+            "                                                                subset of selected tests(if no prior coverage data a regular run is \n"
+            "                                                                performed instead), 'tianowrite' uses any prior coverage data to run the \n"
+            "                                                                uninstrumented subset of selected tests (if no prior coverage data a \n"
+            "                                                                regular run is performed instead). The coverage data is not updated with \n"
+            "                                                                the subset of selected tests and 'tiaorseed' uses any prior coverage data \n"
+            "                                                                to run the instrumented subset of selected tests (if no prior coverage \n"
+            "                                                                data a seed run is performed instead).\n"
+            "    -safemode=<on,off>                                          Flag to specify a safe mode sequence where the set of unselected \n"
+            "                                                                tests is run without instrumentation after the set of selected \n"
+            "                                                                instrumented tests is run (this has the effect of ensuring all \n"
+            "                                                                tests are run regardless).\n"
+            "    -shard=<on,off>                                             Break any test targets with a sharding policy into the number of \n"
+            "                                                                shards according to the maximum concurrency value.\n"
+            "    -cpolicy=<remove, keep>                                     Policy for handling the coverage data of failing tests, where 'discard' \n"
+            "                                                                will discard the coverage data produced by the failing tests, causing \n"
+            "                                                                them to be drafted into future test runs and 'keep' will keep any existing \n"
+            "                                                                coverage data and update the coverage data for failed tests that produce \n"
+            "                                                                coverage.\n"
+            "    -targetout=<sdtout, file>                                   Capture of individual test run stdout, where 'stdout' will capture \n"
+            "                                                                each individual test target's stdout and output each one to stdout \n"
+            "                                                                and 'file' will capture each individual test target's stdout and output \n"
+            "                                                                each one individually to a file (multiple values are accepted).\n"
+            "    -epolicy=<abort, continue, ignore>                          Policy for handling test execution failure (test targets could not be \n"
+            "                                                                launched due to the binary not being built, incorrect paths, etc.), \n"
+            "                                                                where 'abort' will abort the entire test sequence upon the first test\n"
+            "                                                                target execution failure and report a failure(along with the return \n"
+            "                                                                code of the test target that failed to launch), 'continue' will continue \n"
+            "                                                                with the test sequence in the event of test target execution failures\n"
+            "                                                                and treat the test targets that failed to launch as test failures\n"
+            "                                                                (along with the return codes of the test targets that failed to \n"
+            "                                                                launch), 'ignore' will continue with the test sequence in the event of \n"
+            "                                                                test target execution failures and treat the test targets that failed\n"
+            "                                                                to launch as test passes(along with the return codes of the test \n"
+            "                                                                targets that failed to launch).\n"
+            "    -fpolicy <abort, continue>                                  Policy for handling test failures (test targets report failing tests), \n"
+            "                                                                where 'abort' will abort the entire test sequence upon the first test \n"
+            "                                                                failure and report a failure and 'continue' will continue with the test\n"
+            "                                                                sequence in the event of test failures and report the test failures.\n"
+            "    -ipolicy=<abort, seed, rerun>                               Policy for handling coverage data integrity failures, where 'abort' will \n"
+            "                                                                abort the test sequence and report a failure, 'seed' will attempt another \n"
+            "                                                                sequence using the seed sequence type, otherwise will abort and report \n"
+            "                                                                a failure (this option has no effect for regular and seed sequence \n"
+            "                                                                types) and 'rerun' will attempt another sequence using the regular \n"
+            "                                                                sequence type, otherwise will abort and report a failure(this option has \n"
+            "                                                                no effect for regular sequence type).\n"
+            "    -ppolicy=<none, locality>                                   Policy for prioritizing selected test targets, where 'none' will not \n"
+            "                                                                attempt any test target prioritization and 'locality' will attempt to \n"
+            "                                                                prioritize test targets according to the locality of their covering \n"
+            "                                                                production targets in the dependency graph(if no dependency graph data \n"
+            "                                                                available, no prioritization will occur).\n"
+            "    -maxconcurrency=<number>                                    The maximum number of concurrent test targets/shards to be in flight at \n"
+            "                                                                any given moment.\n"
+            "    -ochangelist=<on,off>                                       Outputs the change list used for test selection.\n"
+            "    -suite=<main, periodic, sandbox>                            The test suite to select from for this test sequence.";
 
         return help;
     }

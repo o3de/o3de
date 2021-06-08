@@ -12,6 +12,10 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactRuntimeException.h>
+
+#include <AzCore/std/containers/array.h>
+
 namespace TestImpact
 {
     namespace Policy
@@ -27,11 +31,11 @@ namespace TestImpact
             Ignore //!< Continue the test sequence and ignore the execution failures.
         };
 
-        //! Policy for reattempting the execution of test targets that failed to execute in previous runs.
-        enum class ExecutionFailureDrafting
+        //! Policy for handling the coverage data of failed tests targets (both test that failed to execute and tests that ran but failed).
+        enum class FailedTestCoverage
         {
-            Never, //!< Do not attempt to execute historic execution failures.
-            Always //!< Reattempt the exectution of historic execution failures.
+            Discard, //!< Discard the coverage data produced by the failing tests, causing them to be drafted into future test runs.
+            Keep //!< Keep any existing coverage data and update the coverage data for failed test targetss that produce coverage.
         };
 
         //! Policy for prioritizing selected tests.
@@ -53,6 +57,13 @@ namespace TestImpact
         {
             Abort, //!< Abort the test sequence and report the test failure.
             Continue //!< Continue the test sequence and report the test failures after the run.
+        };
+
+        //! Policy for updating the dynamic dependency map with the coverage data of produced by test sequences.
+        enum class DynamicDependencyMap
+        {
+            Discard, //!< Discard the coverage data produced by test sequences.
+            Update //!< Update the dynamic dependency map with the coverage data produced by test sequences.
         };
 
         //! Policy for sharding test targets that have been marked for test sharding.
@@ -81,6 +92,30 @@ namespace TestImpact
         FixtureInterleaved, //!< Fixtures of tests are interleaved across shards.
         TestInterleaved //!< Tests are interlaced across shards agnostic of fixtures (fastest but prone to inter-test dependency problems).
     };
+
+    //! Test suite types to select from.
+    enum class SuiteType : AZ::u8
+    {
+        Main = 0,
+        Periodic,
+        Sandbox
+    };
+
+    //! User-friendly names for the test suite types.
+    inline AZStd::string GetSuiteTypeName(SuiteType suiteType)
+    {
+        switch (suiteType)
+        {
+        case SuiteType::Main:
+            return "main";
+        case SuiteType::Periodic:
+            return "periodic";
+        case SuiteType::Sandbox:
+            return "sandbox";
+        default:
+            throw(RuntimeException("Unexpected suite type"));
+        }
+    }
 
     //! Result of a test sequence that was run.
     enum class TestSequenceResult

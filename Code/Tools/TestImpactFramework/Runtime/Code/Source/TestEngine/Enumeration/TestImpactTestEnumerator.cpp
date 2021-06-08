@@ -73,7 +73,7 @@ namespace TestImpact
                     }
                     catch (const TestEngineException& e)
                     {
-                        AZ_Printf("Enumerate", "Enumeration cache error: %s", e.what());
+                        AZ_Printf("Enumerate", AZStd::string::format("Enumeration cache error: %s\n", e.what()).c_str());
                         DeleteFile(jobInfo->GetCache()->m_file);
                     }
 
