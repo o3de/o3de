@@ -19,8 +19,8 @@
 #include <sys/inotify.h>
 
 
-static const int s_handleToFolderMapLockTimeout = 1000; // 1 sec timeout for obtaining the handle to folder map lock
-static const size_t s_iNotifyMaxEntries = 1024;         // Control the maximum number of entries (from inotify) that can be read at one time
+static const int s_handleToFolderMapLockTimeout = 1000;      // 1 sec timeout for obtaining the handle to folder map lock
+static const size_t s_iNotifyMaxEntries = 1024 * 16;         // Control the maximum number of entries (from inotify) that can be read at one time
 static const size_t s_iNotifyEventSize = sizeof(struct inotify_event);
 static const size_t s_iNotifyReadBufferSize = s_iNotifyMaxEntries * s_iNotifyEventSize;
 
@@ -74,9 +74,12 @@ struct FolderRootWatch::PlatformImplementation
     {
         if (m_iNotifyHandle>=0)
         {
+            // Clean up the path before accepting it as a watch folder
+            QString cleanPath = QDir::cleanPath(folder);
+
             // Add the folder to watch and track it
             int watchHandle = inotify_add_watch(m_iNotifyHandle, 
-                                                folder.toUtf8().constData(),
+                                                cleanPath.toUtf8().constData(),
                                                 IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY);
             
             if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
@@ -84,7 +87,7 @@ struct FolderRootWatch::PlatformImplementation
                 AZ_Error("FileWatcher", false, "Unable to obtain inotify handle lock on thread");
                 return;
             }
-            m_handleToFolderMap[watchHandle] = folder;
+            m_handleToFolderMap[watchHandle] = cleanPath;
             m_handleToFolderMapLock.unlock();
 
             // Add all the subfolders to watch and track them
@@ -186,7 +189,7 @@ void FolderRootWatch::WatchFolderLoop()
     char eventBuffer[s_iNotifyReadBufferSize];
     while (!m_shutdownThreadSignal)
     {
-        size_t bytesRead = ::read(m_platformImpl->m_iNotifyHandle, eventBuffer, s_iNotifyReadBufferSize);
+        ssize_t bytesRead = ::read(m_platformImpl->m_iNotifyHandle, eventBuffer, s_iNotifyReadBufferSize);
         if (bytesRead<0)
         {
             // Break out of the loop when the notify handle was closed (outside of this thread)
@@ -194,15 +197,16 @@ void FolderRootWatch::WatchFolderLoop()
         }
         else if (bytesRead > 0)
         {
-            for (size_t index=0; index<bytesRead; index++)
+            for (size_t index=0; index<bytesRead;)
             {
                 struct inotify_event *event = ( struct inotify_event * ) &eventBuffer[ index ];
+                const char* eventName = event->name;
 
                 if (event->mask & (IN_CREATE | IN_DELETE | IN_MODIFY | IN_MOVE ))
                 {
-                    QString pathStr = m_platformImpl->m_handleToFolderMap[event->wd] + QDir::separator() + QString(event->name);
+                    QString pathStr = QString("%1%2%3").arg(m_platformImpl->m_handleToFolderMap[event->wd], QDir::separator(), event->name);
 
-                    if ( event->mask & IN_CREATE ) {
+                    if ( event->mask & (IN_CREATE | IN_MOVED_TO) ) {
                         if ( event->mask & IN_ISDIR ) {
                             // New Directory, add it to the watch
                             m_platformImpl->AddWatchFolder(pathStr);
@@ -211,7 +215,7 @@ void FolderRootWatch::WatchFolderLoop()
                             ProcessNewFileEvent(pathStr);
                         }
                     }
-                    else if ( event->mask & IN_DELETE ) {
+                    else if ( event->mask & (IN_DELETE | IN_MOVED_FROM) ) {
                         if ( event->mask & IN_ISDIR ) {
                             m_platformImpl->RemoveWatchFolder(event->wd);
                         }
