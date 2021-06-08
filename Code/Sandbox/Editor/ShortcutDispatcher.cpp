@@ -316,14 +316,14 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
 {
     //In this function we are going through all of the actions and comparing the Url or the ids,
     //since the Url are not common yet we take into account they could be null before adding them.
-    const int new_id = newAction->data().toInt();
+    const int newId = newAction->data().toInt();
 
     size_t size = m_allActions.size();
     for (size_t i = 0; i < size; i++)
     {
-        if (m_allActions[i].second->data().toInt() == new_id || (m_allActions[i].first == reverseUrl && m_allActions[i].first != AZ::Crc32(0)))
+        if (m_allActions[i].second->data().toInt() == newId || (m_allActions[i].first == reverseUrl && m_allActions[i].first != AZ::Crc32(0)))
         {
-            qWarning() << "ActionManager already contains action with id" << new_id;
+            qWarning() << "ActionManager already contains action with id" << newId;
             Q_ASSERT(false);
         }
     }
@@ -335,15 +335,15 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
 
 void ShortcutDispatcher::AddNewAction(QAction* newAction)
 {
-    //Here we are adding directly the Url with 0 sicne we have none, this is here to keep track of the old shortcuts.
-    const int new_id = newAction->data().toInt();
+    //Here we are adding directly the Url with 0 since we have none, this is here to keep track of the old shortcuts.
+    const int newId = newAction->data().toInt();
 
     size_t size = m_allActions.size();
     for (size_t i = 0; i < size; i++)
     {
-        if (m_allActions[i].second->data().toInt() == new_id)
+        if (m_allActions[i].second->data().toInt() == newId)
         {
-            qWarning() << "ActionManager already contains action with id" << new_id;
+            qWarning() << "ActionManager already contains action with id" << newId;
             Q_ASSERT(false);
         }
     }

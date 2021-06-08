@@ -698,7 +698,7 @@ WidgetAction::WidgetAction(int actionId, MainWindow* mainWindow, const QString& 
 QWidget* WidgetAction::createWidget(QWidget* parent)
 {
     QWidget* w = m_mainWindow->CreateToolbarWidget(m_actionId);
-    if (auto* w = m_mainWindow->CreateToolbarWidget(m_actionId))
+    if (w)
     {
         w->setParent(parent);
     }
