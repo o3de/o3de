@@ -597,12 +597,6 @@ namespace Multiplayer
             connection->SetUserData(nullptr);
         }
 
-        // Signal to session management that a user triggered a disconnect
-        if (m_agentType == MultiplayerAgentType::Client && connection->GetConnectionRole() == ConnectionRole::Connector)
-        {
-            AZ::Interface<AzFramework::ISessionRequests>::Get()->LeaveSession();
-        }
-
         // Signal to session management that a user has left the server
         if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
@@ -853,7 +847,6 @@ namespace Multiplayer
         networkInterface->Listen(sv_port);
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
-
 
     void connect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
