@@ -459,7 +459,7 @@ namespace EMotionFX
         void EditorActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_actorAsset = asset;
-            Actor* actor = m_actorAsset->GetActor();
+            [[maybe_unused]] Actor* actor = m_actorAsset->GetActor();
             AZ_Assert(m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
 
             CheckActorCreation();
