@@ -813,8 +813,8 @@ namespace AZ
     {
         using ContainerType = AZStd::tuple<T...>;
 
-        template<typename t_Arg, size_t Index>
-        static void ReflectUnpackMethodFold(BehaviorContext::ClassBuilder<ContainerType>& builder, const AZStd::vector<AZStd::string>& typeNames, [[maybe_unused]] size_t inputIndex)
+        template<typename Targ, size_t Index>
+        static void ReflectUnpackMethodFold(BehaviorContext::ClassBuilder<ContainerType>& builder, const AZStd::vector<AZStd::string>& typeNames)
         {
             const AZStd::string methodName = AZStd::string::format("Get%zu", Index);
             builder->Method(methodName.data(), [](ContainerType& thisPointer) { return AZStd::get<Index>(thisPointer); })
@@ -825,15 +825,15 @@ namespace AZ
             builder->Property
                 ( AZStd::string::format("element_%zu_%s", Index, typeNames[Index].c_str()).c_str()
                 , [](ContainerType& thisPointer) { return AZStd::get<Index>(thisPointer); }
-                , [](ContainerType& thisPointer, const t_Arg& element) { AZStd::get<Index>(thisPointer) = element; });
+                , [](ContainerType& thisPointer, const Targ& element) { AZStd::get<Index>(thisPointer) = element; });
         }
 
-        template<typename... t_Args, size_t... Indices>
+        template<typename... Targ, size_t... Indices>
         static void ReflectUnpackMethods(BehaviorContext::ClassBuilder<ContainerType>& builder, AZStd::index_sequence<Indices...>)
         {
             AZStd::vector<AZStd::string> typeNames;
             ScriptCanvasOnDemandReflection::GetTypeNames<T...>(typeNames, *builder.m_context);
-            (ReflectUnpackMethodFold<t_Args, Indices>(builder, typeNames, Indices), ...);
+            (ReflectUnpackMethodFold<Targ, Indices>(builder, typeNames), ...);
         }
 
         static void Reflect(ReflectContext* context)
