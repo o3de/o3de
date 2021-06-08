@@ -15,6 +15,7 @@
 #include <QHash>
 #include <QMutex>
 
+#include <unistd.h>
 #include <sys/inotify.h>
 
 
@@ -64,7 +65,7 @@ struct FolderRootWatch::PlatformImplementation
             m_handleToFolderMap.clear();
             m_handleToFolderMapLock.unlock();
 
-            close(m_iNotifyHandle);
+            ::close(m_iNotifyHandle);
             m_iNotifyHandle = -1;
         }
     }
