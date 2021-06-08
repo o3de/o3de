@@ -371,7 +371,7 @@ namespace AzToolsFramework
     {
         m_rawOutput.Clear();
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = "p4";
+        processLaunchInfo.m_processExecutableString = "p4" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         processLaunchInfo.m_commandlineParameters = "-ztag " + m_commandArgs;
         processLaunchInfo.m_showWindow = false;
         AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
@@ -381,7 +381,7 @@ namespace AzToolsFramework
     AzFramework::ProcessWatcher* PerforceCommand::ExecuteIOCommand()
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = "p4";
+        processLaunchInfo.m_processExecutableString = "p4" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         processLaunchInfo.m_commandlineParameters = m_commandArgs;
         processLaunchInfo.m_showWindow = false;
         AzFramework::ProcessWatcher* processWatcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
@@ -393,7 +393,7 @@ namespace AzToolsFramework
     {
         m_rawOutput.Clear();
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-        processLaunchInfo.m_processExecutableString = "p4";
+        processLaunchInfo.m_processExecutableString = "p4" AZ_TRAIT_OS_EXECUTABLE_EXTENSION;
         processLaunchInfo.m_commandlineParameters = m_commandArgs;
         processLaunchInfo.m_showWindow = false;
         AzFramework::ProcessWatcher::LaunchProcessAndRetrieveOutput(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT, m_rawOutput);
