@@ -217,7 +217,7 @@ namespace AZ
                 Pass* previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    if (pass.get() != previousPassInList);
+                    if (pass.get() != previousPassInList)
                     {
                         pass->Reset();
                         previousPassInList = pass.get();
@@ -226,7 +226,7 @@ namespace AZ
                 previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    if (pass.get() != previousPassInList);
+                    if (pass.get() != previousPassInList)
                     {
                         pass->Build(true);
                         previousPassInList = pass.get();
@@ -276,7 +276,7 @@ namespace AZ
                 Pass* previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : initListCopy)
                 {
-                    if (pass.get() != previousPassInList);
+                    if (pass.get() != previousPassInList)
                     {
                         pass->Initialize();
                         previousPassInList = pass.get();

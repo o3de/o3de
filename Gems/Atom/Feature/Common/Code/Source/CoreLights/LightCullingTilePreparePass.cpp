@@ -176,7 +176,7 @@ namespace AZ
         {
             LoadShader();
             AZ_Assert(GetPassState() != RPI::PassState::Rendering, "LightCullingTilePreparePass: Trying to reload shader during rendering");
-            if (GetPassState() == RPI::PassState::Initialized)
+            if (GetPassState() == RPI::PassState::Idle)
             {
                 ChooseShaderVariant();
             }

@@ -1160,8 +1160,6 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            AZ_Assert(m_state == PassState::Reset, "ANTON - BUILDING PASS BUT STATE IS NOT RESET!!");
-
             bool execute = (m_state == PassState::Idle || m_state == PassState::Reset);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
@@ -1180,6 +1178,7 @@ namespace AZ
             }
 #endif
 
+            AZ_Assert(m_state == PassState::Reset, "ANTON - BUILDING PASS BUT STATE IS NOT RESET!!");
             m_state = PassState::Building;
 
             // Bindings, inputs and attachments
