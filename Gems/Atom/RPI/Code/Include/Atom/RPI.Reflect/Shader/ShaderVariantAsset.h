@@ -34,7 +34,7 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            static constexpr const char* Extension = "azshadervariant2";
+            static constexpr const char* Extension = "azshadervariant";
             static constexpr const char* DisplayName = "ShaderVariant";
             static constexpr const char* Group = "Shader";
 

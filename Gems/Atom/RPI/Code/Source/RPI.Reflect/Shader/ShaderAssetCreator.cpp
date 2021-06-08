@@ -395,31 +395,38 @@ namespace AZ
             m_asset->m_drawListName = sourceShaderAsset.m_drawListName;
             m_asset->m_shaderOptionGroupLayout = sourceShaderAsset.m_shaderOptionGroupLayout;
             m_asset->m_shaderAssetBuildTimestamp = sourceShaderAsset.m_shaderAssetBuildTimestamp;
-            m_asset->m_perAPIShaderData = sourceShaderAsset.m_perAPIShaderData;
 
-            AZ_Assert(false, "FIXME!!");
             // copy root variant assets
-            //for (auto& perAPIShaderData : sourceShaderAsset.m_perAPIShaderData)
-            //{
-            //    // find the matching ShaderVariantAsset
-            //    AZ::Data::Asset<ShaderVariantAsset> foundVariantAsset;
-            //    for (const auto& variantAsset : rootVariantAssets)
-            //    {
-            //        if (variantAsset.first == perAPIShaderData.m_APIType)
-            //        {
-            //            foundVariantAsset = variantAsset.second;
-            //            break;
-            //        }
-            //    }
-            //
-            //    if (!foundVariantAsset)
-            //    {
-            //        ReportWarning("Failed to find variant asset for API [%d]", perAPIShaderData.m_APIType);
-            //    }
-            //
-            //    m_asset->m_perAPIShaderData.push_back(perAPIShaderData);
-            //    m_asset->m_perAPIShaderData.back().m_rootShaderVariantAsset = foundVariantAsset;
-            //}
+            for (auto& perAPIShaderData : sourceShaderAsset.m_perAPIShaderData)
+            {
+                // find the matching ShaderVariantAsset
+                AZ::Data::Asset<ShaderVariantAsset> foundVariantAsset;
+                for (const auto& variantAsset : rootVariantAssets)
+                {
+                    if (variantAsset.first == perAPIShaderData.m_APIType)
+                    {
+                        foundVariantAsset = variantAsset.second;
+                        break;
+                    }
+                }
+            
+                if (!foundVariantAsset)
+                {
+                    ReportWarning("Failed to find variant asset for API [%d]", perAPIShaderData.m_APIType);
+                }
+            
+                m_asset->m_perAPIShaderData.push_back(perAPIShaderData);
+                if (m_asset->m_perAPIShaderData.back().m_supervariants.empty())
+                {
+                    ReportWarning("Attempting to clone a shader asset that has no supervariants for API [%d]", perAPIShaderData.m_APIType);
+                }
+                else
+                {
+                    // currently we only support one supervariant when cloning
+                    // [GFX TODO][ATOM-15740] Support multiple supervariants in ShaderAssetCreator::Clone
+                    m_asset->m_perAPIShaderData.back().m_supervariants[0].m_rootShaderVariantAsset = foundVariantAsset;
+                }
+            }
 
         }
     } // namespace RPI
