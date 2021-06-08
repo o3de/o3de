@@ -44,12 +44,19 @@ int main(int argc, char* argv[])
     {
         QApplication app(argc, argv);
 
-        // Need to use settings registry to get EngineRootFolder
         AZ::IO::FixedMaxPath engineRootPath;
         {
+            // ComponentApplication creates the SettingsRegistery we need to get the engine root folder
             AZ::ComponentApplication componentApplication;
+
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            if (engineRootPath.empty())
+            {
+                AZ_Warning("ProjectManager", false, "Failed to retrieve engine root folder from registry.");
+                AZ_Assert(settingsRegistry, "Failed to get a valid SettingsRegistry");
+                engineRootPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*settingsRegistry);
+            }
         }
 
         AzQtComponents::StyleManager styleManager(&app);
