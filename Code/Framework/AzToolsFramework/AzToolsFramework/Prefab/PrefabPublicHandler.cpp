@@ -242,11 +242,13 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->GenerateDomForEntity(containerAfterReset, *containerEntity);
 
                     // Update the state of the entity
-                    PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(containerEntityId)));
-                    state->SetParent(undoBatch.GetUndoBatch());
-                    state->Capture(containerBeforeReset, containerAfterReset, containerEntityId);
+                    auto templateId = instanceToCreate->get().GetTemplateId();
 
-                    state->Redo();
+                    PrefabDom transformPatch;
+                    m_instanceToTemplateInterface->GeneratePatch(transformPatch, containerBeforeReset, containerAfterReset);
+                    m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(transformPatch, containerEntityId);
+
+                    m_instanceToTemplateInterface->PatchTemplate(transformPatch, templateId);
                 }
 
                 // This clears any entities marked as dirty due to reparenting of entities during the process of creating a prefab.
@@ -661,12 +663,12 @@ namespace AzToolsFramework
                     else
                     {
                         Internal_HandleContainerOverride(
-                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId());
+                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId(), owningInstance->get().GetParentInstance());
                     }
                 }
                 else
                 {
-                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState);
+                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
 
                     if (isNewParentOwnedByDifferentInstance)
                     {
@@ -679,25 +681,27 @@ namespace AzToolsFramework
         }
 
         void PrefabPublicHandler::Internal_HandleContainerOverride(
-            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch, const LinkId linkId)
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
+            const LinkId linkId, InstanceOptionalReference parentInstance)
         {
             // Save these changes as patches to the link
             PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
 
-            linkUpdate->Redo();
+            linkUpdate->Redo(parentInstance);
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
-            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState, PrefabDom& afterState)
+            UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
+            PrefabDom& afterState, InstanceOptionalReference instance)
         {
             // Update the state of the entity
             PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
 
-            state->Redo();
+            state->Redo(instance);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
