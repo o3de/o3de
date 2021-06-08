@@ -32,7 +32,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Session/ISessionRequests.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Session/SessionConfig.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>

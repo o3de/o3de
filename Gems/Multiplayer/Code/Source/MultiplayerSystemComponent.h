@@ -25,7 +25,6 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
-#include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Session/SessionNotifications.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
