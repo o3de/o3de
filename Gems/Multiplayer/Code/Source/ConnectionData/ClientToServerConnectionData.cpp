@@ -21,10 +21,12 @@ namespace Multiplayer
     ClientToServerConnectionData::ClientToServerConnectionData
     (
         AzNetworking::IConnection* connection,
-        AzNetworking::IConnectionListener& connectionListener
+        AzNetworking::IConnectionListener& connectionListener,
+        AZStd::string providerTicket
     )
         : m_connection(connection)
         , m_entityReplicationManager(*connection, connectionListener, EntityReplicationManager::Mode::LocalClientToRemoteServer)
+        , m_providerTicket(providerTicket)
     {
         m_entityReplicationManager.SetMaxRemoteEntitiesPendingCreationCount(cl_ClientMaxRemoteEntitiesPendingCreationCount);
         m_entityReplicationManager.SetEntityPendingRemovalMs(cl_ClientEntityReplicatorPendingRemovalTimeMs);

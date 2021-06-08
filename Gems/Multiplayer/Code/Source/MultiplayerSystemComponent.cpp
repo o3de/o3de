@@ -176,7 +176,13 @@ namespace Multiplayer
         INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
 
         const IpAddress ipAddress(config.m_ipAddress.c_str(), config.m_port, networkInterface->GetType());
-        networkInterface->Connect(ipAddress);
+        ConnectionId connectionId = networkInterface->Connect(ipAddress);
+
+        AzNetworking::IConnection* connection = networkInterface->GetConnectionSet().GetConnection(connectionId);
+        if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
+        {
+            connection->SetUserData(new ClientToServerConnectionData(connection, *this, config.m_playerSessionId));
+        }
         return true;
     }
 
@@ -196,18 +202,23 @@ namespace Multiplayer
     bool MultiplayerSystemComponent::OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig)
     {
         // Check if session manager has a certificate for us and pass it along if so
-        AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetExternalSessionCertificate());
-        if (!externalCertPath.empty())
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
         {
-            AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
-        }
+            AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetExternalSessionCertificate().c_str());
+            if (!externalCertPath.empty())
+            {
+                AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            }
 
-        AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate());
-        if (!internalCertPath.empty())
-        {
-            AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate().c_str());
+            if (!internalCertPath.empty())
+            {
+                AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            }
         }
 
         Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
@@ -370,6 +381,17 @@ namespace Multiplayer
     {
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
+            // Validate our session with the provider if any
+            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+            {
+                AzFramework::PlayerConnectionConfig config;
+                config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+                config.m_playerSessionId = packet.GetTicket();
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
+
+                reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+            }
+
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
             AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
@@ -525,16 +547,17 @@ namespace Multiplayer
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
             AZLOG_INFO("New outgoing connection to remote address: %s", connection->GetRemoteAddress().GetString().c_str());
-            connection->SendReliablePacket(MultiplayerPackets::Connect(0));
+            AZ::CVarFixedString providerTicket;
+            if (connection->GetUserData() != nullptr)
+            {
+                providerTicket = reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetProviderTicket();
+            }
+            connection->SendReliablePacket(MultiplayerPackets::Connect(0, providerTicket));
         }
         else
         {
             AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
             m_connAcquiredEvent.Signal(datum);
-            AzFramework::PlayerConnectionConfig config;
-            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-            config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
-            AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config);
         }
 
         // Hosts will spawn a new default player prefab for the user that just connected
@@ -600,20 +623,22 @@ namespace Multiplayer
         // Signal to session management that a user has left the server
         if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
-            if (connection->GetConnectionRole() == ConnectionRole::Connector)
+            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
+                connection->GetConnectionRole() == ConnectionRole::Connector)
             {
                 AzFramework::PlayerConnectionConfig config;
                 config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-                config.m_playerSessionId = AZStd::to_string(config.m_playerConnectionId);
+                config.m_playerSessionId = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetProviderTicket();
                 AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
             }
         }
 
         // Signal to session management when there are no remaining players in a dedicated server for potential cleanup
         // We avoid this for client server as the host itself is a user
-        if (m_agentType == MultiplayerAgentType::DedicatedServer)
+        if (m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Connector)
         {   
-            if (m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
+            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr
+                && m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
             {
                 AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandleDestroySession();
             }

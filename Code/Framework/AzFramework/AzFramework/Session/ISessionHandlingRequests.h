@@ -46,7 +46,7 @@ namespace AzFramework
     };
 
     //! ISessionHandlingClientRequests
-    //! Requests made to the client to manage their connection to a session
+    //! Requests made to the client to manage their membership in a session
     class ISessionHandlingClientRequests
     {
     public:
@@ -87,11 +87,11 @@ namespace AzFramework
         // Retrieves the file location of a pem-encoded TLS certificate for Client to Server communication
         // @return If successful, returns the file location of TLS certificate file; if not successful, returns
         //         empty string.
-        virtual AZStd::string GetExternalSessionCertificate() = 0;
+        virtual AZ::IO::Path GetExternalSessionCertificate() = 0;
 
         // Retrieves the file location of a pem-encoded TLS certificate for Server to Server communication
         // @return If successful, returns the file location of TLS certificate file; if not successful, returns
         //         empty string.
-        virtual AZStd::string GetInternalSessionCertificate() = 0;
+        virtual AZ::IO::Path GetInternalSessionCertificate() = 0;
     };
 } // namespace AzFramework

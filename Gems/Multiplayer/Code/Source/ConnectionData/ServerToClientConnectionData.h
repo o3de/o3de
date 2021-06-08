@@ -41,6 +41,8 @@ namespace Multiplayer
 
         NetworkEntityHandle GetPrimaryPlayerEntity();
         const NetworkEntityHandle& GetPrimaryPlayerEntity() const;
+        AZStd::string GetProviderTicket() const;
+        void SetProviderTicket(AZStd::string);
 
     private:
         void OnControlledEntityRemove();
@@ -51,6 +53,7 @@ namespace Multiplayer
         NetworkEntityHandle m_controlledEntity;
         EntityStopEvent::Handler m_controlledEntityRemovedHandler;
         EntityServerMigrationEvent::Handler m_controlledEntityMigrationHandler;
+        AZStd::string m_ticket;
         AzNetworking::IConnection* m_connection = nullptr;
         bool m_canSendUpdates = false;
     };
