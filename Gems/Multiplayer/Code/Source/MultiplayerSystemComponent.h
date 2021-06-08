@@ -25,6 +25,8 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Session/ISessionRequests.h>
+#include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Session/SessionNotifications.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
@@ -45,6 +47,7 @@ namespace Multiplayer
         : public AZ::Component
         , public AZ::TickBus::Handler
         , public AzFramework::SessionNotificationBus::Handler
+        , public AzFramework::ISessionLocalUserRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
     {
@@ -94,6 +97,12 @@ namespace Multiplayer
         bool OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnPacketLost(AzNetworking::IConnection* connection, AzNetworking::PacketId packetId) override;
         void OnDisconnect(AzNetworking::IConnection* connection, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint) override;
+        //! @}
+
+        //! ISessionLocalUserRequests interface
+        //! @{
+        bool RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& sessionConnectionConfig) override;
+        void RequestPlayerLeaveSession() override;
         //! @}
 
         //! IMultiplayer interface
