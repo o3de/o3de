@@ -344,9 +344,14 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
 
     # Instrumentation binary
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
-        message(FATAL_ERROR "No test impact framework instrumentation binary was specified, please provide the path with option LY_TEST_IMPACT_INSTRUMENTATION_BIN")
+        # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled
+        message("No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
+        set(use_tiaf false)
+        set(instrumentation_bin "")
+    else()
+        set(use_tiaf true)
+        file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
     endif()
-    file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
 
     # Testrunner binary
     set(test_runner_bin $<TARGET_FILE:AzTestRunner>)

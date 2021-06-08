@@ -447,7 +447,7 @@ try {
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-
+                    env.PIPELINE_NAME = pipelineName
                     if(env.BRANCH_NAME) {
                         branchName = env.BRANCH_NAME
                     } else {
