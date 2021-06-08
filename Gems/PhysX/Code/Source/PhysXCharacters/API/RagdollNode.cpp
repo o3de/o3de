@@ -32,7 +32,6 @@ namespace PhysX
     }
 
     RagdollNode::RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig)
-        : m_joint(nullptr)
     {
         CreatePhysicsBody(sceneHandle, nodeConfig);
     }
@@ -45,6 +44,11 @@ namespace PhysX
 
     void RagdollNode::SetJoint(AzPhysics::ApiJoint* joint)
     {
+        if (m_joint)
+        {
+            return;
+        }
+        
         m_joint = joint;
     }
 

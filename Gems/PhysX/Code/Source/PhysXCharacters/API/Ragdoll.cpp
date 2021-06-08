@@ -362,9 +362,8 @@ namespace PhysX
         else
         {
             actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
-            AzPhysics::ApiJoint* joint = m_nodes[nodeIndex]->GetJoint();
 
-            if (joint)
+            if (AzPhysics::ApiJoint* joint = m_nodes[nodeIndex]->GetJoint())
             {
                 if (physx::PxD6Joint* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
                 {

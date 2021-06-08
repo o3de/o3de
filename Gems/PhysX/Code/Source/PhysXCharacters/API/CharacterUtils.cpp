@@ -264,6 +264,12 @@ namespace PhysX
 
                             AzPhysics::ApiJoint* joint = sceneInterface->GetApiJointFromHandle(sceneHandle, jointHandle);
 
+                            if (!joint)
+                            {
+                                AZ_Error("PhysX Ragdoll", false, "Failed to create joint for node index %i.", nodeIndex);
+                                return nullptr;
+                            }
+
                             // Moving from PhysX 3.4 to 4.1, the allowed range of the twist angle was expanded from -pi..pi
                             // to -2*pi..2*pi.
                             // In 3.4, twist angles which were outside the range were wrapped into it, which means that it
