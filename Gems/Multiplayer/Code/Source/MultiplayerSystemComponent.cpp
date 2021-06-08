@@ -36,7 +36,6 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 
 #include <AzNetworking/Framework/INetworking.h>
 
