@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/WhiteBox_precompiled.cpp
     Source/WhiteBox_precompiled.h
     Include/WhiteBox/WhiteBoxBus.h
     Source/WhiteBoxAllocator.cpp

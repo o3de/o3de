@@ -12,7 +12,6 @@
 set(FILES
     Editor/LyShineEditorSystemComponent.cpp
     Editor/LyShineEditorSystemComponent.h
-    Editor/UiCanvasEditor_precompiled.cpp
     Editor/UiCanvasEditor_precompiled.h
     Editor/UiCanvasEditor.qrc
     Editor/Animation/UiAnimViewDialog.cpp

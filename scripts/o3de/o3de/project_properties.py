@@ -30,7 +30,7 @@ def get_project_props(name: str = None, path: pathlib.Path = None) -> dict:
     return proj_json
 
 def edit_project_props(proj_path, proj_name, new_origin, new_display,
-                       new_summary, new_icon, new_tag, remove_tag) -> int:
+                       new_summary, new_icon, new_tags, delete_tags, replace_tags) -> int:
     proj_json = get_project_props(proj_name, proj_path)
     
     if not proj_json:
@@ -44,16 +44,22 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
         proj_json['summary'] = new_summary
     if new_icon:
         proj_json['icon_path'] = new_icon
-    if new_tag:
-        proj_json.setdefault('user_tags', []).append(new_tag)
-    if remove_tag:
+    if new_tags:
+        tag_list = [new_tags] if isinstance(new_tags, str) else new_tags
+        proj_json.setdefault('user_tags', []).extend(tag_list)
+    if delete_tags:
+        removal_list = [delete_tags] if isinstance(delete_tags, str) else delete_tags
         if 'user_tags' in proj_json:
-            if remove_tag in proj_json['user_tags']:
-                proj_json['user_tags'].remove(remove_tag)
-            else:
-                logger.warn(f'{remove_tag} not found in user_tags for removal.')
+            for tag in removal_list:
+                if tag in proj_json['user_tags']:
+                    proj_json['user_tags'].remove(tag)
+                else:
+                    logger.warn(f'{tag} not found in user_tags for removal.')
         else:
-            logger.warn(f'user_tags property not found for removal of tag {remove_tag}.')
+            logger.warn(f'user_tags property not found for removal of {remove_tags}.')
+    if replace_tags:
+        tag_list = [replace_tags] if isinstance(replace_tags, str) else replace_tags
+        proj_json['user_tags'] = tag_list
 
     manifest.save_o3de_manifest(proj_json, pathlib.Path(proj_path) / 'project.json')
     return 0
@@ -65,8 +71,9 @@ def _edit_project_props(args: argparse) -> int:
                                args.project_display,
                                args.project_summary,
                                args.project_icon,
-                               args.project_tag,
-                               args.remove_tag)
+                               args.add_tags,
+                               args.delete_tags,
+                               args.replace_tags)
 
 def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=True)
@@ -83,10 +90,13 @@ def add_parser_args(parser):
                        help='Sets the summary description of the project.')
     group.add_argument('-pi', '--project-icon', type=str, required=False,
                        help='Sets the path to the projects icon resource.')
-    group.add_argument('-pt', '--project-tag', type=str, required=False,
-                       help='Adds a tag to user_tags property. These tags are intended for documentation and filtering.')
-    group.add_argument('-rt', '--remove-tag', type=str, required=False,
-                       help='Removes a tag from the user_tags property.')
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-at', '--add-tags', type=str, nargs='*', required=False,
+                       help='Adds tag(s) to user_tags property. Space delimited list (ex. -at A B C)')
+    group.add_argument('-dt', '--delete-tags', type=str, nargs ='*', required=False,
+                       help='Removes tag(s) from the user_tags property. Space delimited list (ex. -dt A B C')
+    group.add_argument('-rt', '--replace-tags', type=str, nargs ='*', required=False,
+                       help='Replace entirety of user_tags property with space delimited list of values')
     parser.set_defaults(func=_edit_project_props)
 
 def add_args(subparsers) -> None:

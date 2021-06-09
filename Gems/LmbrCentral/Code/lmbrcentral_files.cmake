@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/LmbrCentral_precompiled.cpp
     Source/LmbrCentral_precompiled.h
     include/LmbrCentral/Ai/NavigationComponentBus.h
     include/LmbrCentral/Ai/NavigationAreaBus.h

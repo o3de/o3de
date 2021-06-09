@@ -65,6 +65,11 @@ def get_client(service_name, profile_name):
 def get_files_to_upload(base_dir, regex):
     # Get all file names in base directory
     files = [x for x in os.listdir(base_dir) if os.path.isfile(os.path.join(base_dir, x))]
+    # strip the surround quotes, if they exist
+    try:
+        regex = json.loads(regex)
+    except:
+        pass
     # Get all file names matching the regular expression, those file will be uploaded to S3
     files_to_upload = [x for x in files if re.match(regex, x)]
     return files_to_upload
