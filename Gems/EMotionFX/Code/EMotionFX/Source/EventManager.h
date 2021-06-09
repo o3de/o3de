@@ -334,7 +334,6 @@ namespace EMotionFX
         void OnCreateMotionInstance(MotionInstance* motionInstance);
         void OnCreateMotionSystem(MotionSystem* motionSystem);
         void OnCreateActor(Actor* actor);
-        void OnCreateActorInstance(ActorInstance* actorInstance);
         void OnPostCreateActor(Actor* actor);
 
         // delete callbacks

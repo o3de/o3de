@@ -63,7 +63,6 @@ namespace EMotionFX
         EVENT_TYPE_ON_CREATE_MOTION_INSTANCE,
         EVENT_TYPE_ON_CREATE_MOTION_SYSTEM,
         EVENT_TYPE_ON_CREATE_ACTOR,
-        EVENT_TYPE_ON_CREATE_ACTOR_INSTANCE,
         EVENT_TYPE_ON_POST_CREATE_ACTOR,
         EVENT_TYPE_ON_DELETE_ANIM_GRAPH,
         EVENT_TYPE_ON_DELETE_ANIM_GRAPH_INSTANCE,
@@ -311,7 +310,6 @@ namespace EMotionFX
         virtual void OnCreateMotionInstance(MotionInstance* motionInstance)                                                                 { MCORE_UNUSED(motionInstance); }
         virtual void OnCreateMotionSystem(MotionSystem* motionSystem)                                                                       { MCORE_UNUSED(motionSystem); }
         virtual void OnCreateActor(Actor* actor)                                                                                            { MCORE_UNUSED(actor); }
-        virtual void OnCreateActorInstance(ActorInstance* actorInstance)                                                                    { MCORE_UNUSED(actorInstance); }
         virtual void OnPostCreateActor(Actor* actor)                                                                                        { MCORE_UNUSED(actor); }
 
         // delete callbacks

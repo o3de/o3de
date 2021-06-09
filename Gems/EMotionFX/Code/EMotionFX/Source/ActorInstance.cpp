@@ -154,9 +154,6 @@ namespace EMotionFX
         // register it
         GetActorManager().RegisterActorInstance(this);
 
-        // automatically register the actor instance
-        GetEventManager().OnCreateActorInstance(this);
-
         GetActorManager().GetScheduler()->RecursiveInsertActorInstance(this);
 
         ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceCreated, this);

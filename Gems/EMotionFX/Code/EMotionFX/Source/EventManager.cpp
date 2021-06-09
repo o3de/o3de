@@ -660,17 +660,6 @@ namespace EMotionFX
     }
 
 
-    // create an actor instance
-    void EventManager::OnCreateActorInstance(ActorInstance* actorInstance)
-    {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ACTOR_INSTANCE];
-        for (EventHandler* eventHandler : eventHandlers)
-        {
-            eventHandler->OnCreateActorInstance(actorInstance);
-        }
-    }
-
-
     // on post create actor
     void EventManager::OnPostCreateActor(Actor* actor)
     {
