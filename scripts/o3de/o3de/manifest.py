@@ -596,28 +596,28 @@ def get_registered(engine_name: str = None,
                    restricted_name: str = None,
                    project_path: pathlib.Path = None) -> pathlib.Path or None:
     """
-       Looks up a registered entry in either the  to the ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
-       or the <project-path>/project.json(if the project_path parameter is supplied)
+       Looks up a registered entry in either the  ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
+       or the <project-path>/project.json (if the project_path parameter is supplied)
 
        :param engine_name: Name of a registered engine to lookup in the ~/.o3de/o3de_manifest.json file
        :param project_name: Name of a project to lookup in either the ~/.o3de/o3de_manifest.json or
               <this-engine-root>/engine.json file
        :param gem_name: Name of a gem to lookup in either the ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
-            or <project-path>/project.json. NOTE:The project_path parameter must be supplied to lookup the registration
+            or <project-path>/project.json. NOTE: The project_path parameter must be supplied to lookup the registration
             with the project.json
        :param template_name: Name of a template to lookup in either the ~/.o3de/o3de_manifest.json, <this-engine-root>/engine.json
-            or <project-path>/project.json. NOTE:The project_path parameter must be supplied to lookup the registration
+            or <project-path>/project.json. NOTE: The project_path parameter must be supplied to lookup the registration
             with the project.json
        :param repo_name: Name of a repo to lookup in the ~/.o3de/o3de_manifest.json
        :param default_folder: Type of "default" folder to lookup in the ~/.o3de/o3de_manifest.json
               Valid values are "engines", "projects", "gems", "templates,", "restricted"
        :param restricted_name: Name of a restricted directory object to lookup in either the ~/.o3de/o3de_manifest.json,
             <this-engine-root>/engine.json or <project-path>/project.json.
-            NOTE:The project_path parameter must be supplied to lookup the registration with the project.json
+            NOTE: The project_path parameter must be supplied to lookup the registration with the project.json
        :param project_path: Path to project root, which is used to examined the project.json file in order to
               query either gems, templates or restricted directories registered with the project
 
-       :return: path value associated with the registered object name if found. Otherwise None is returned
+       :return path value associated with the registered object name if found. Otherwise None is returned
     """
     json_data = load_o3de_manifest()
 
