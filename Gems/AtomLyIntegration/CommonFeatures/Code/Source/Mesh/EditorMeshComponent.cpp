@@ -25,12 +25,16 @@ namespace AZ
         void EditorMeshComponent::Reflect(AZ::ReflectContext* context)
         {
             BaseClass::Reflect(context);
+            EditorMeshStats::Reflect(context);
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
+                serializeContext->RegisterGenericType<EditorMeshStats>();
+
                 serializeContext->Class<EditorMeshComponent, BaseClass>()
                     ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
                     ->Field("addMaterialComponentFlag", &EditorMeshComponent::m_addMaterialComponentFlag)
+                    ->Field("meshStats", &EditorMeshComponent::m_stats)
                     ;
 
                 // This shouldn't be registered here, but is required to make a vector from EditorMeshComponentTypeId. This can be removed when one of the following happens:
@@ -55,6 +59,8 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Mesh Stats", "Mesh statistics.")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
 
                     editContext->Class<MeshComponentController>(
@@ -204,6 +210,25 @@ namespace AZ
 
         void EditorMeshComponent::OnModelReady(const Data::Asset<RPI::ModelAsset>& /*modelAsset*/, const Data::Instance<RPI::Model>& /*model*/)
         {
+            m_stats.m_meshStatsForLod.clear();
+            if (m_controller.GetConfiguration().IsAssetSet())
+            {
+                auto lods = m_controller.GetConfiguration().m_modelAsset->GetLodAssets();
+                for (auto& lod : lods)
+                {
+                    EditorMeshStatsForLod stats;
+                    auto meshes = lod->GetMeshes();
+                    stats.m_meshCount = lod->GetMeshes().size();
+                    for (auto& mesh : meshes)
+                    {
+                        stats.m_vertCount += mesh.GetVertexCount();
+                        stats.m_triCount += mesh.GetIndexCount() / 3;
+                    }
+                    m_stats.m_meshStatsForLod.push_back(stats);
+                }
+            }
+            m_stats.UpdateStringRepresentation();
+
             // Refresh the tree when the model loads to update UI based on the model.
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
@@ -216,6 +241,11 @@ namespace AZ
             // places it in a bad state, which happens in OnConfigurationChanged base function.
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
+
+            m_stats.m_meshStatsForLod.clear();
+            m_stats.UpdateStringRepresentation();
+            SetDirty();
+
             return BaseClass::OnConfigurationChanged();
         }
     } // namespace Render

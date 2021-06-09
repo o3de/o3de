@@ -49,7 +49,7 @@ namespace AZ
             }
         }
 
-        bool MeshComponentConfig::IsAssetSet()
+        bool MeshComponentConfig::IsAssetSet() const
         {
             return m_modelAsset.GetId().IsValid();
         }

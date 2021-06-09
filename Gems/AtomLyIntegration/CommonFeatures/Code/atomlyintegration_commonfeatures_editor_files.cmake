@@ -50,6 +50,8 @@ set(FILES
     Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
     Source/Mesh/EditorMeshComponent.cpp
+    Source/Mesh/EditorMeshStats.h
+    Source/Mesh/EditorMeshStats.cpp
     Source/Mesh/EditorMeshSystemComponent.cpp
     Source/Mesh/EditorMeshSystemComponent.h
     Source/Mesh/MeshThumbnail.h
