@@ -31,7 +31,7 @@
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
-#include <Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <Joint/PhysXApiJoint.h>
 
 namespace PhysX

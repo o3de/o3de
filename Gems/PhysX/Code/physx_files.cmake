@@ -105,6 +105,7 @@ set(FILES
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h
+    Include/PhysX/Joint/Configuration/PhysXJointConfiguration.h
     Source/Common/PhysXSceneQueryHelpers.h
     Source/Common/PhysXSceneQueryHelpers.cpp
     Source/Configuration/PhysXConfiguration.cpp
@@ -117,7 +118,6 @@ set(FILES
     Source/Joint/PhysXApiJoint.cpp
     Source/Joint/PhysXApiJointUtils.h
     Source/Joint/PhysXApiJointUtils.cpp
-    Source/Joint/Configuration/PhysXJointConfiguration.h
     Source/Joint/Configuration/PhysXJointConfiguration.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp

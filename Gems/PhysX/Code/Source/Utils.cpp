@@ -43,7 +43,7 @@
 #include <Source/Joint.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
-#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace PhysX
 {
