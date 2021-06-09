@@ -360,6 +360,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
 {
     if (recordingOption > 0)
     {
+#ifdef LYSHINE_ATOM_TODO // Convert debug to use Atom images
         // compute the total area of all the textures, also create a vector that we can sort by area
         AZStd::vector<ITexture*> textures;
         int totalArea = 0;
@@ -437,6 +438,7 @@ void UiRenderer::DebugDisplayTextureData(int recordingOption)
                 texture->GetWidth(), texture->GetHeight(), texture->GetDataSize(), texture->GetFormatName(), texture->GetName());
             WriteLine(buffer, white);
         }
+#endif
     }
 }
 
