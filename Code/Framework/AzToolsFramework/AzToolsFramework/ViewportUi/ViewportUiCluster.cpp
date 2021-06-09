@@ -163,7 +163,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiCluster::SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip)
+    void ViewportUiCluster::SetButtonTooltip(const ButtonId buttonId, const AZStd::string& tooltip)
     {
         // get the action corresponding to the buttonId
         if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())

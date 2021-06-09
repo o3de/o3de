@@ -108,7 +108,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
-    void ViewportUiDisplay::SetClusterButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip)
+    void ViewportUiDisplay::SetClusterButtonTooltip(const ViewportUiElementId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
     {
         if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
         {

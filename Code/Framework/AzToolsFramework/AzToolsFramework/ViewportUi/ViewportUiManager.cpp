@@ -77,7 +77,7 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip)
+    void ViewportUiManager::SetClusterButtonTooltip(const ClusterId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
     {
         if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
         {
