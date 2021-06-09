@@ -43,97 +43,15 @@
 //#define CM_TO_METERS  0.01
 //#define METERS_TO_CM  100.0
 
-//------------------------------------------------------------------------------
-//! If you change this, you MUST also change TressFXShadeParams in TressFXConstantBuffers.h 
-//!  and ShadeParams in TressFXShortcut.hlsl
-struct HairObjectShadeParams
-{
-    // General information
-    float       m_fiberRadius;
-    // For deep approximated shadow lookup
-    float       m_shadowAlpha;
-    float       m_fiberSpacing;
-    // For lighting/shading
-    float       m_hairEx2;
-    float4		m_matKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
-    float       m_hairKs2;
-    float		fPadding0;
-    float		fPadding1;
-    float		fPadding2;
-};
-
-//------------------------------------------------------------------------------
-struct PPLL_STRUCT
-{
-    uint	depth;
-    uint	data;
-    uint    color;
-    uint    uNext;
-};
-//------------------------------------------------------------------------------
-// 
 //!------------------------------ SRG Structure --------------------------------
-//! Per pass SRG the holds the dynamic shared read-write buffer shared 
-//!  across all dispatches and draw calls and used for all the dynamic buffers
-//!  that can change between passes due to the application of skinning, simulation 
-//!  and physics affect and is then read by the rendering shaders.  
+//! Per pass SRG the holds the dynamic read-write buffer shared across all 
+//!  dispatches and draw calls and used as the memory pool for all the dynamic 
+//!  buffer that can change between passes due to the application of skinning, 
+//!  simulation and physics affect and read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass 
-{   //! This shared buffer needs to match the SharedBuffer structure  
-    //! shared between all draw calls / dispatches for the hair skinning
-    RWStructuredBuffer<int>         m_skinnedHairSharedBuffer;
-
-    //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
-    //!  hair OIT data and shade it in the full screen resolve pass.
-    //! Originally used space3 for raster pass linked lists and space0 for the resolve pass.
-    RWTexture2D<uint>               m_fragmentListHead;
-    RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
-    RWStructuredBuffer<uint>        m_linkedListCounter;    // [To Do] Adi: change to RWBuffer
-
-    //! Per hair object material array used by the PPLL resolve pass
-    //! Originally in TressFXRendering.hlsl this is space 0 
-    HairObjectShadeParams           m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
-
-    Sampler HairScreenSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Linear;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
-
-    // The following texture is mainly for getting the screen to world transform
-    Texture2D<float>                m_linearDepth;
-
-    //------------------------------
-    //        Lighting Data
-    //------------------------------
-    Texture2DArray<float> m_directionalLightShadowmap;
-    Texture2DArray<float> m_directionalLightExponentialShadowmap;
-    Texture2DArray<float> m_spotLightShadowmaps;
-    Texture2DArray<float> m_spotLightExponentialShadowmap;
-    Texture2D m_brdfMap;   
-    Texture2D<uint4> m_tileLightData;
-    StructuredBuffer<uint> m_lightListRemapped;
+{   
+    RWStructuredBuffer<int>     m_skinnedHairSharedBuffer;
 }
-
-//------------------------------------------------------------------------------
-// Originally marked for the TressFX raster pass at space3
-#define RWFragmentListHead  PassSrg::m_fragmentListHead
-#define LinkedListUAV       PassSrg::m_linkedListNodes
-#define LinkedListCounter   PassSrg::m_linkedListCounter
-
-//------------------------------------------------------------------------------
-// Originally defined for the TressFX resolve pass at space0
-#define FragmentListHead    PassSrg::m_fragmentListHead
-#define LinkedListNodes     PassSrg::m_linkedListNodes
-
-//------------------------------------------------------------------------------
-//! The hair objects' material array buffer used by the rendering resolve pass
-#define HairParams          PassSrg::m_hairParams
-
-
 
 //!=============================================================================
 //! 
@@ -147,7 +65,6 @@ struct StrandLevelData
     float4 vspTranslation;
 };
 
-#ifndef _IGNORE_PER_OBJECT_SRG_
 //!------------------------------ SRG Structure --------------------------------
 //! Per instance/draw SRG representing dynamic read-write set of buffers
 //!  that are unique per instance and are shared and changed between passes due 
@@ -168,8 +85,7 @@ ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance
     RWStructuredBuffer<StrandLevelData> m_strandLevelData;
 
     //! Per hair object offset to the start location of each buffer within 
-    //! 'm_skinnedHairSharedBuffer'.
-    //! This location is currently in bytes!
+    //! 'm_skinnedHairSharedBuffer'. The offset is in bytes!
     uint m_positionBufferOffset;
     uint m_positionPrevBufferOffset;
     uint m_positionPrevPrevBufferOffset;
@@ -186,11 +102,6 @@ ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance
 #define g_HairVertexPositionsPrevPrev   HairDynamicDataSrg::m_hairVertexPositionsPrevPrev
 #define g_HairVertexTangents            HairDynamicDataSrg::m_hairVertexTangents
 #define g_StrandLevelData               HairDynamicDataSrg::m_strandLevelData
-
-//------------------------------------------------------------------------------
-// Allow for the code to run with minimal changes - render passes usage
-//#define g_GuideHairVertexPositions      HairDynamicDataSrg::m_hairVertexPositions
-#define g_GuideHairVertexTangents       HairDynamicDataSrg::m_hairVertexTangents
 
 //------------------------------------------------------------------------------
 float3 GetSharedVector3(int offset)
@@ -296,5 +207,3 @@ float3 GetSharedTangent(int tangentIndex)
         asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset + 2])
     );
 }
-
-#endif // _IGNORE_PER_OBJECT_SRG_

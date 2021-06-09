@@ -138,7 +138,7 @@ namespace AZ
                 bool InitPPLLResolvePass();
                 bool InitComputePass(const Name& passName, bool allowIterations = false);
 
-                void BuildDispatchItems(Data::Instance<HairRenderObject> renderObject);
+                void BuildDispatchAndDrawItems(Data::Instance<HairRenderObject> renderObject);
 
                 void EnablePasses(bool enable);
 
@@ -177,7 +177,7 @@ namespace AZ
                 float m_currentDeltaTime = 0.02f;    // per frame delta time for the physics simulation.
                 bool m_addDispatchEnabled = true; // flag to disable/enable feature processor adding dispatch calls to compute passes.
                 bool m_sharedResourcesCreated = false;
-                bool m_forceRebuildRenderData = true;     // reload / pipeline changes force build dispatches and render items
+                bool m_forceRebuildRenderData = false;      // reload / pipeline changes force build dispatches and render items
                 bool m_forceClearRenderData = false;
                 bool m_initialized = false;
                 bool m_isEnabled = true;

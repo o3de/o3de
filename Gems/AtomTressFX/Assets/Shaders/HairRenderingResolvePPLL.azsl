@@ -22,10 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+//==============================================================================
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairRenderingSrgs.azsli>
 
-// The following line is required in order to manually strip the per object Srg
-// that is not used and by doing that avoid the need to pointlessly bind it.
-#define _IGNORE_PER_OBJECT_SRG_
+#define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG the holds the dynamic shared read-write buffer shared 
+//!  across all dispatches and draw calls and used for all the dynamic buffers
+//!  that can change between passes due to the application of skinning, simulation 
+//!  and physics affect and is then read by the rendering shaders.  
+ShaderResourceGroup PassSrg : SRG_PerPass 
+{   
+    //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
+    //!  hair OIT data and shade it in the full screen resolve pass.
+    //! Originally used space3 for raster pass linked lists and space0 for the resolve pass.
+    Texture2D<uint>                 m_fragmentListHead;
+    StructuredBuffer<PPLL_STRUCT>   m_linkedListNodes;
+
+    //! Per hair object material array used by the PPLL resolve pass
+    //! Originally in TressFXRendering.hlsl this is space 0 
+    HairObjectShadeParams           m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
+
+
+    // Linera depth is used for getting the screen to world transform
+    Texture2D<float>                m_linearDepth;
+
+    //------------------------------
+    //        Lighting Data
+    //------------------------------
+    Texture2DArray<float> m_directionalLightShadowmap;
+    Texture2DArray<float> m_directionalLightExponentialShadowmap;
+    Texture2DArray<float> m_spotLightShadowmaps;
+    Texture2DArray<float> m_spotLightExponentialShadowmap;
+    Texture2D m_brdfMap;   
+    Texture2D<uint4> m_tileLightData;
+    StructuredBuffer<uint> m_lightListRemapped;
+}
+
+//------------------------------------------------------------------------------
+// Originally defined for the TressFX resolve pass at space0
+#define FragmentListHead    PassSrg::m_fragmentListHead
+#define LinkedListNodes     PassSrg::m_linkedListNodes
+//! The hair objects' material array buffer used by the rendering resolve pass
+#define HairParams          PassSrg::m_hairParams
+//==============================================================================
 
 #include <HairLighting.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>

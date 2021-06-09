@@ -30,7 +30,6 @@
 #pragma once
 
 #include <HairUtilities.azsli>
-#include <HairRenderingSrgs.azsli>
 
 //#include <Atom/Features/PBR/LightingModel.azsli>
 
@@ -375,19 +374,20 @@ float3 SimlifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDi
 
     float3 accumulatedHairColor = float3(0.0, 0.0, 0.0);
 
-    float3 lightPosWSVec[2] = {
-        float3(4, -1, 2),
-        g_vEye.xyz // + float3(0,0,0.2)    // camera light located a bit above the camera.
+    float4 lightPosWSVec[3] = {
+        float4(4, -1, 2, 0.35),
+        float4(-4, -.7, 1, 0.2),
+        float4(g_vEye.xyz, 0.5) // + float3(0,0,0.2)    // camera light located a bit above the camera.
     };
 
     // Right now we fake two lights - one is fixed and the other one 
     // is at to the camera and moving with it.
-    for (int l = 0; l < 2; l++)
+    for (int l = 0; l < 3; l++)
     {
-        float3 lightPosWS = lightPosWSVec[l];
+        float3 lightPosWS = lightPosWSVec[l].xyz;
         float3 LightVector = normalize( vPositionWS - lightPosWS );
         float3 lightColor = float3(1.0, 1.0, 1.0);
-        float lightIntensity = 0.5;
+        float lightIntensity = lightPosWSVec[l].w;
 
         float3 L = LightVector;
         float3 LightColor = lightColor; 
@@ -453,6 +453,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
 //    return vNDC;
 //    return vPositionWS;
 //    return float3( float2(0, 1) + pixelCoord * float2(0.00071, -0.00081), depth);
+//    return vTangent;
     return SimlifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }
