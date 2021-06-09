@@ -36,7 +36,7 @@ namespace CustomMocks
             : m_levelName(levelName)
         {}
 
-        AZ::IO::ArchiveFileIterator FindFirst([[maybe_unused]] AZStd::string_view dir, [[maybe_unused]] unsigned int flags, [[maybe_unused]] bool allowUseFileSystem) override
+        AZ::IO::ArchiveFileIterator FindFirst([[maybe_unused]] AZStd::string_view dir, AZ::IO::IArchive::EFileSearchType) override
         {
             AZ::IO::FileDesc fileDesc;
             fileDesc.nSize = sizeof(AZ::IO::FileDesc);

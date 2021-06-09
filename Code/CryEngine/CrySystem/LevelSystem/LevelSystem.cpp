@@ -308,7 +308,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     const bool allowFileSystem = true;
     const uint32_t skipPakFiles = 1;
-    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), skipPakFiles, allowFileSystem);
+    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_OnDiskOnly);
 
     if (handle)
     {
@@ -361,8 +361,7 @@ void CLevelSystem::PopulateLevels(
     {
         // allow this find first to actually touch the file system
         // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
-        const uint32_t skipPakFiles = 1;
-        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), skipPakFiles, fromFileSystemOnly);
+        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), AZ::IO::IArchive::eFileSearchType_OnDiskOnly);
 
         if (handle)
         {

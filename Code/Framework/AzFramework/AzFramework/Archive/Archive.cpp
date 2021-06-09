@@ -1290,7 +1290,7 @@ namespace AZ::IO
 
 
     //////////////////////////////////////////////////////////////////////////
-    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, uint32_t nFlags, bool bAllowUseFileSystem)
+    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, EFileSearchType searchType)
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pDir);
         if (!szFullPath)
@@ -1299,9 +1299,24 @@ namespace AZ::IO
             return {};
         }
 
-        const bool scanZips = (nFlags == 0);
+        bool bScanZips = true;
+        bool bAllowUseFileSystem = false;
+        switch (searchType)
+        {
+            case IArchive::eFileSearchType_OnDiskAndInZipsFavorDisk:
+            case IArchive::eFileSearchType_OnDiskAndInZipsFavorZips:
+                bAllowUseFileSystem = true;
+                break;
+            case IArchive::eFileSearchType_InZipsOnly:
+                bAllowUseFileSystem = false;
+                break;
+            case IArchive::eFileSearchType_OnDiskOnly:
+                bScanZips = false;
+                break;
+        }
+
         AZStd::intrusive_ptr<AZ::IO::FindData> pFindData = new AZ::IO::FindData();
-        pFindData->Scan(this, szFullPath->Native(), bAllowUseFileSystem, scanZips);
+        pFindData->Scan(this, szFullPath->Native(), bAllowUseFileSystem, bScanZips);
 
         return pFindData->Fetch();
     }
@@ -1677,7 +1692,7 @@ namespace AZ::IO
             return true;
         }
 
-        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, 0, true); fileIterator)
+        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, IArchive::eFileSearchType_OnDiskOnly); fileIterator)
         {
             AZStd::vector<AZStd::string> files;
             do
