@@ -58,6 +58,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/ProjectManager/ProjectManager.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -69,6 +70,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 // AzQtComponents
@@ -85,7 +87,6 @@ AZ_POP_DISABLE_WARNING
 // Editor
 #include "Settings.h"
 
-#include "Include/IBackgroundScheduleManager.h"
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
@@ -280,6 +281,8 @@ BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
     [[maybe_unused]] DWORD lFlags, BOOL bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -477,6 +480,11 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
+
+    // Project Manager 
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
 }
 
 CCryEditApp* CCryEditApp::s_currentInstance = nullptr;
@@ -2073,6 +2081,8 @@ void CCryEditApp::OnDocumentationAWSSupport()
 void CCryEditApp::OnDocumentationFeedback()
 {
     FeedbackDialog dialog;
+    dialog.show();
+    dialog.adjustSize();
     dialog.exec();
 }
 
@@ -2271,6 +2281,14 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         return 0;
     }
 
+    // Ensure we don't get called re-entrantly
+    // This can occur when a nested Qt event loop fires (e.g. by way of a modal dialog calling exec)
+    if (m_idleProcessingRunning)
+    {
+        return 0;
+    }
+    QScopedValueRollback<bool> guard(m_idleProcessingRunning, true);
+
     ////////////////////////////////////////////////////////////////////////
     // Call the update function of the engine
     ////////////////////////////////////////////////////////////////////////
@@ -2312,15 +2330,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             EBUS_EVENT(AzFramework::WindowsLifecycleEvents::Bus, OnKillFocus);
         }
     #endif
-    }
-
-    // process the work schedule - regardless if the app is active or not
-    GetIEditor()->GetBackgroundScheduleManager()->Update();
-
-    // if there are active schedules keep updating the application
-    if (GetIEditor()->GetBackgroundScheduleManager()->GetNumSchedules() > 0)
-    {
-        bActive = true;
     }
 
     m_bPrevActive = bActive;
@@ -2863,6 +2872,34 @@ void CCryEditApp::OnPreferences()
     */
 }
 
+void CCryEditApp::OnOpenProjectManagerSettings()
+{
+    OpenProjectManager("UpdateProject");
+}
+
+void CCryEditApp::OnOpenProjectManagerNew()
+{
+    OpenProjectManager("CreateProject");
+}
+
+void CCryEditApp::OnOpenProjectManager()
+{
+    OpenProjectManager("Projects");
+}
+
+void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
+{
+    // provide the current project path for in case we want to update the project
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project_path %s", screen.c_str(), projectPath.c_str());
+    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
+    if (!launchSuccess)
+    {
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QObject::tr("Failed to launch O3DE Project Manager"), QObject::tr("Failed to find or start the O3dE Project Manager"));
+    }
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUndo()
 {
@@ -3115,6 +3152,15 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     GetIEditor()->GetDocument()->SetPathName(fullyQualifiedLevelName);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
 
+    if (usePrefabSystemForLevels)
+    {
+        auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (service)
+        {
+            service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
+        }
+    }
+
     if (GetIEditor()->GetDocument()->Save())
     {
         if (!usePrefabSystemForLevels)
@@ -3313,6 +3359,8 @@ void CCryEditApp::OnCreateSlice()
 void CCryEditApp::OnOpenLevel()
 {
     CLevelFileDialog levelFileDialog(true);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {

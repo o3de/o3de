@@ -44,6 +44,11 @@ namespace WhiteBox
         required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
     }
 
+    void WhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     WhiteBoxColliderComponent::WhiteBoxColliderComponent(
         const Physics::CookedMeshShapeConfiguration& shapeConfiguration,
         const Physics::ColliderConfiguration& physicsColliderConfiguration,
@@ -127,7 +132,6 @@ namespace WhiteBox
                 sceneInterface->RemoveSimulatedBody(defaultScene, m_simulatedBodyHandle);
             }
         }
-        m_simulatedBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
     }
 
     void WhiteBoxColliderComponent::OnTransformChanged(
@@ -135,7 +139,7 @@ namespace WhiteBox
     {
         const AZ::Transform worldTransformWithoutScale = [worldTransform = world]() mutable
         {
-            worldTransform.SetScale(AZ::Vector3::CreateOne());
+            worldTransform.SetUniformScale(1.0f);
             return worldTransform;
         }();
 

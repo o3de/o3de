@@ -53,6 +53,7 @@ namespace AWSCore
 
         // AWSCoreInternalRequestBus interface implementation
         AZStd::string GetResourceMappingConfigFilePath() const override;
+        AZStd::string GetResourceMappingConfigFolderPath() const override;
         AZStd::string GetProfileName() const override;
         void ReloadConfiguration() override;
 

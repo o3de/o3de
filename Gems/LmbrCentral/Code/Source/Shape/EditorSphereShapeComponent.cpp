@@ -60,6 +60,12 @@ namespace LmbrCentral
         }
     }
 
+    void EditorSphereShapeComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        EditorBaseShapeComponent::GetIncompatibleServices(incompatible);
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     void EditorSphereShapeComponent::Init()
     {
         EditorBaseShapeComponent::Init();

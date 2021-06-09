@@ -14,7 +14,6 @@
 #include "SpawnableLevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include <IResourceManager.h>
 
 #include <LoadScreenBus.h>
 
@@ -37,8 +36,8 @@ namespace LegacyLevelSystem
     //------------------------------------------------------------------------
     static void LoadLevel(const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ_Error("SpawnableLevelSystem", arguments.empty(), "LoadLevel requires a level file name to be provided.");
-        AZ_Error("SpawnableLevelSystem", arguments.size() > 1, "LoadLevel requires a single level file name to be provided.");
+        AZ_Error("SpawnableLevelSystem", !arguments.empty(), "LoadLevel requires a level file name to be provided.");
+        AZ_Error("SpawnableLevelSystem", arguments.size() == 1, "LoadLevel requires a single level file name to be provided.");
 
         if (!arguments.empty() && gEnv->pSystem && gEnv->pSystem->GetILevelSystem() && !gEnv->IsEditor())
         {
@@ -247,8 +246,6 @@ namespace LegacyLevelSystem
 
             auto pPak = gEnv->pCryPak;
 
-            m_pSystem->SetThreadState(ESubsys_Physics, false);
-
             ICVar* pSpamDelay = gEnv->pConsole->GetCVar("log_SpamDelay");
             float spamDelay = 0.0f;
             if (pSpamDelay)
@@ -342,8 +339,6 @@ namespace LegacyLevelSystem
         }
 
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_PRECACHE_START, 0, 0);
-
-        m_pSystem->SetThreadState(ESubsys_Physics, true);
 
         return true;
     }
@@ -569,8 +564,6 @@ namespace LegacyLevelSystem
         AzFramework::RootSpawnableInterface::Get()->ReleaseRootSpawnable();
 
         m_lastLevelName.clear();
-
-        GetISystem()->GetIResourceManager()->UnloadLevel();
 
         // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
         // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).

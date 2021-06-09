@@ -40,9 +40,10 @@ namespace AZ
             {
                 m_projectionMatrixChangedEvent.Signal(matrix);
             });
+
             m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
-                m_projectionMatrixChangedEvent.Signal(matrix);
+                m_viewMatrixChangedEvent.Signal(matrix);
             });
 
             SetRenderScene(renderScene);
@@ -50,6 +51,8 @@ namespace AZ
 
         ViewportContext::~ViewportContext()
         {
+            m_aboutToBeDestroyedEvent.Signal(m_id);
+
             AzFramework::WindowNotificationBus::Handler::BusDisconnect();
             AzFramework::ViewportRequestBus::Handler::BusDisconnect();
 
@@ -170,6 +173,21 @@ namespace AZ
             handler.Connect(m_sceneChangedEvent);
         }
 
+        void ViewportContext::ConnectCurrentPipelineChangedHandler(PipelineChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_currentPipelineChangedEvent);
+        }
+
+        void ViewportContext::ConnectDefaultViewChangedHandler(ViewChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_defaultViewChangedEvent);
+        }
+
+        void ViewportContext::ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler)
+        {
+            handler.Connect(m_aboutToBeDestroyedEvent);
+        }
+
         const AZ::Matrix4x4& ViewportContext::GetCameraViewMatrix() const
         {
             return GetDefaultView()->GetWorldToViewMatrix();
@@ -193,12 +211,7 @@ namespace AZ
 
         AZ::Transform ViewportContext::GetCameraTransform() const
         {
-            const Matrix4x4& worldToViewMatrix = GetDefaultView()->GetViewToWorldMatrix();
-            const Quaternion zUpToYUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
-            return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(worldToViewMatrix) * zUpToYUp,
-                worldToViewMatrix.GetTranslation()
-            ).GetOrthogonalized();
+            return GetDefaultView()->GetCameraTransform();
         }
 
         void ViewportContext::SetCameraTransform(const AZ::Transform& transform)
@@ -218,6 +231,7 @@ namespace AZ
                 m_defaultView = view;
                 UpdatePipelineView();
 
+                m_defaultViewChangedEvent.Signal(view);
                 m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
                 m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
 
@@ -236,6 +250,7 @@ namespace AZ
             if (!m_currentPipeline)
             {
                 m_currentPipeline = m_rootScene ? m_rootScene->FindRenderPipelineForWindow(m_windowContext->GetWindowHandle()) : nullptr;
+                m_currentPipelineChangedEvent.Signal(m_currentPipeline);
             }
 
             if (auto pipeline = GetCurrentPipeline())

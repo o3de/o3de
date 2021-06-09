@@ -51,6 +51,7 @@ namespace PhysX
     void CharacterGameplayComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("PhysXCharacterGameplayService", 0xfacd7876));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void CharacterGameplayComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

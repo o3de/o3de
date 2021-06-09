@@ -18,6 +18,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
@@ -49,8 +50,7 @@ namespace AzToolsFramework
             m_alias = GenerateInstanceAlias();
             m_containerEntity = containerEntity ? AZStd::move(containerEntity)
                                                 : AZStd::make_unique<AZ::Entity>();
-            EntityAlias containerEntityAlias = GenerateEntityAlias();
-            RegisterEntity(m_containerEntity->GetId(), containerEntityAlias);
+            RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
         Instance::~Instance()
@@ -80,6 +80,12 @@ namespace AzToolsFramework
 
         void Instance::SetTemplateId(const TemplateId& templateId)
         {
+            // If we aren't changing the template Id, there's no need to unregister / re-register
+            if (templateId == m_templateId)
+            {
+                return;
+            }
+
             // If this instance's templateId is valid, we should be able to unregister this instance from 
             // Template to Instance mapping successfully.
             if (m_templateId != InvalidTemplateId &&
@@ -305,8 +311,15 @@ namespace AzToolsFramework
         Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance)
         {
             InstanceAlias newInstanceAlias = GenerateInstanceAlias();
+            return AddInstance(AZStd::move(instance), newInstanceAlias);
+        }
+
+        Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias newInstanceAlias)
+        {
             AZ_Assert(instance.get(), "instance argument is nullptr");
-            AZ_Assert(m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(), "InstanceAlias' unique id collision, this should never happen.");
+            AZ_Assert(
+                m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(),
+                "InstanceAlias' unique id collision, this should never happen.");
             instance->m_parent = this;
             instance->m_alias = newInstanceAlias;
             return *(m_nestedInstances[newInstanceAlias] = std::move(instance));
@@ -607,6 +620,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
+            m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
             return AZStd::move(m_containerEntity);
         }
     }

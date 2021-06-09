@@ -202,16 +202,9 @@ private:
     // AzToolsFramework::SourceControlNotificationBus::Handler:
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState state) override;
 
-    QWidget* CreateSnapToGridWidget();
-    QWidget* CreateSnapToAngleWidget();
     QWidget* CreateSpacerRightWidget();
 
     QToolButton* CreateUndoRedoButton(int command);
-
-    QToolButton* CreateEnvironmentModeButton();
-    QToolButton* CreateDebugModeButton();
-    void InitEnvironmentModeMenu(CVarMenu* environmentModeMenu);
-    void InitDebugModeMenu(CVarMenu* debugModeMenu);
 
 private Q_SLOTS:
     void ShowKeyboardCustomization();

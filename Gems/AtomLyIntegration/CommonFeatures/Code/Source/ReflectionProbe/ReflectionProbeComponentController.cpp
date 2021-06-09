@@ -46,6 +46,7 @@ namespace AZ
                     ->Field("InnerLength", &ReflectionProbeComponentConfig::m_innerLength)
                     ->Field("InnerWidth", &ReflectionProbeComponentConfig::m_innerWidth)
                     ->Field("UseBakedCubemap", &ReflectionProbeComponentConfig::m_useBakedCubemap)
+                    ->Field("BakedCubemapQualityLevel", &ReflectionProbeComponentConfig::m_bakedCubeMapQualityLevel)
                     ->Field("BakedCubeMapRelativePath", &ReflectionProbeComponentConfig::m_bakedCubeMapRelativePath)
                     ->Field("BakedCubeMapAsset", &ReflectionProbeComponentConfig::m_bakedCubeMapAsset)
                     ->Field("AuthoredCubeMapAsset", &ReflectionProbeComponentConfig::m_authoredCubeMapAsset)
@@ -80,6 +81,7 @@ namespace AZ
         void ReflectionProbeComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void ReflectionProbeComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

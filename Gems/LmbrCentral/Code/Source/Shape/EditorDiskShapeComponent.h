@@ -39,6 +39,7 @@ namespace LmbrCentral
 
     protected:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
         AZ_DISABLE_COPY_MOVE(EditorDiskShapeComponent)

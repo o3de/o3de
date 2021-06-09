@@ -37,7 +37,7 @@ namespace AZ
 
     namespace Render
     {
-        class MorphTargetComputePass;
+        class SkinnedMeshFeatureProcessor;
 
         //! Holds and manages an RHI DispatchItem for a specific morph target, and the resources that are needed to build and maintain it.
         class MorphTargetDispatchItem
@@ -51,7 +51,7 @@ namespace AZ
             explicit MorphTargetDispatchItem(
                 const AZStd::intrusive_ptr<MorphTargetInputBuffers> inputBuffers,
                 const MorphTargetMetaData& morphTargetMetaData,
-                RPI::Ptr<MorphTargetComputePass> morphTargetComputePass,
+                SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
                 MorphTargetInstanceMetaData morphInstanceMetaData,
                 float accumulatedDeltaRange
             );

@@ -10,9 +10,6 @@
 #
 
 set(WWISE_ANDROID_LIB_NAMES
-    AkMotionGeneratorSource
-    AkMotionSink
-    AkMotionSourceSource
     zip
 )
 

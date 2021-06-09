@@ -13,35 +13,39 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"parallax.enable", "parallax.textureMap"}
+    return {"parallax.textureMap", "parallax.useTexture"}
 end
 
 function GetShaderOptionDependencies()
-    return {"o_parallax_feature_enabled", "o_useDepthMap"}
+    return {"o_parallax_feature_enabled", "o_useHeightmap"}
 end
  
 function Process(context)
-    local enable = context:GetMaterialPropertyValue_bool("parallax.enable")
-    local textureMap = context:GetMaterialPropertyValue_image("parallax.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("parallax.useTexture")
+    local enable = textureMap ~= nil and useTexture 
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", enable)
-    context:SetShaderOptionValue_bool("o_useDepthMap", enable and textureMap ~= nil)
+    context:SetShaderOptionValue_bool("o_useHeightmap", enable)
 end
 
 function ProcessEditor(context)
-    local enable = context:GetMaterialPropertyValue_bool("parallax.enable")
+    local textureMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
     
-    if enable then
-        context:SetMaterialPropertyVisibility("parallax.textureMap", MaterialPropertyVisibility_Enabled)
+    if textureMap ~= nil then
+        context:SetMaterialPropertyVisibility("parallax.useTexture", MaterialPropertyVisibility_Enabled)
     else 
-        context:SetMaterialPropertyVisibility("parallax.textureMap", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("parallax.useTexture", MaterialPropertyVisibility_Hidden)
     end
     
-    local textureMap = context:GetMaterialPropertyValue_image("parallax.textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool("parallax.useTexture")
+
     local visibility = MaterialPropertyVisibility_Enabled
-    if(not enable or textureMap == nil) then
+    if(textureMap == nil) then
         visibility = MaterialPropertyVisibility_Hidden
+    elseif not useTexture then
+        visibility = MaterialPropertyVisibility_Disabled
     end
-    
+        
     context:SetMaterialPropertyVisibility("parallax.factor", visibility)
     context:SetMaterialPropertyVisibility("parallax.offset", visibility)
     context:SetMaterialPropertyVisibility("parallax.showClipping", visibility)

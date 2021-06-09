@@ -76,12 +76,12 @@ namespace AZ
 
         float QuadLightDelegate::GetWidth() const
         {
-            return m_shapeBus->GetQuadWidth() * GetTransform().GetScale().GetX();
+            return m_shapeBus->GetQuadWidth() * GetTransform().GetUniformScale();
         }
 
         float QuadLightDelegate::GetHeight() const
         {
-            return m_shapeBus->GetQuadHeight() * GetTransform().GetScale().GetY();
+            return m_shapeBus->GetQuadHeight() * GetTransform().GetUniformScale();
         }
 
     } // namespace Render

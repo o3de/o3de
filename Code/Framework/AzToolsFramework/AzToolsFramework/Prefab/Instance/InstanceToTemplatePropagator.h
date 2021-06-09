@@ -37,11 +37,11 @@ namespace AzToolsFramework
 
             InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId);
 
-            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId) override;
+            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
-            void AddPatchesToLink(PrefabDom& patches, Link& link);
+            void AddPatchesToLink(const PrefabDom& patches, Link& link);
 
         private:
 

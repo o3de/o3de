@@ -288,6 +288,7 @@ namespace AZ
             AZStd::size_t GetShaderCount() const;
             LuaMaterialFunctorShaderItem GetShader(AZStd::size_t index);
             LuaMaterialFunctorShaderItem GetShaderByTag(const char* shaderTag);
+            bool HasShaderWithTag(const char* shaderTag);
 
         private:
 
@@ -329,6 +330,8 @@ namespace AZ
             bool SetMaterialPropertySoftMaxValue(const char* name, Type value);
 
             bool SetMaterialPropertyDescription(const char* name, const char* description);
+            
+            bool SetMaterialPropertyGroupVisibility(const char* name, MaterialPropertyGroupVisibility visibility);
 
         private:
 

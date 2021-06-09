@@ -38,7 +38,7 @@ then
     ./aws/install
     rm -rf ./aws
 else
-    AWS_CLI_VERSION=`aws --version | awk '{print $1}' | awk -F/ '{print $2}'`
+    AWS_CLI_VERSION=$(aws --version | awk '{print $1}' | awk -F/ '{print $2}')
     echo AWS CLI \(version $AWS_CLI_VERSION\) already installed
 fi
 

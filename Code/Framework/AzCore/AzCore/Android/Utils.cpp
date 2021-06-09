@@ -148,7 +148,7 @@ namespace AZ
                     }
                 }
 
-                AZ_Assert(false, "Failed to locate the bootstrap.cfg path");
+                AZ_Assert(false, "Failed to locate the engine.json path");
                 return nullptr;
             }
 

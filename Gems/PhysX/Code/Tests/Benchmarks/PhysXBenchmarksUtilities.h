@@ -40,7 +40,7 @@ namespace PhysX::Benchmarks
     namespace Utils
     {
         //! Function pointer to allow Shape configuration customization rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
-        using GenerateColliderFuncPtr = AZStd::function<Physics::ShapeConfiguration*(int)>;
+        using GenerateColliderFuncPtr = AZStd::function<AZStd::shared_ptr<Physics::ShapeConfiguration>(int)>;
         //! Function pointer to allow spawn position customization rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
         using GenerateSpawnPositionFuncPtr = AZStd::function<const AZ::Vector3(int)>;
         //! Function pointer to allow spawn orientation customization rigid bodies created with Utils::CreateRigidBodies. int param is the id of the rigid body being created (values 0-N, where N=number requested to be created)
@@ -112,9 +112,9 @@ namespace PhysX::Benchmarks
             for (double percentile : percentiles)
             {
                 //ensure the percentile is between 0.0 and 1.0
-                const double epsilon = 0.001;
-                AZ::ClampIfCloseMag(percentile, 0.0, epsilon);
-                AZ::ClampIfCloseMag(percentile, 1.0, epsilon);
+                const double testEpsilon = 0.001;
+                AZ::ClampIfCloseMag(percentile, 0.0, testEpsilon);
+                AZ::ClampIfCloseMag(percentile, 1.0, testEpsilon);
 
                 size_t idx = aznumeric_cast<size_t>(std::round(percentile * (values.size() - 1)));
                 std::nth_element(values.begin(), values.begin() + idx, values.end());

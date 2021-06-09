@@ -18,6 +18,7 @@
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h>
 
 namespace AZ
 {
@@ -147,6 +148,8 @@ namespace AZ
             public:
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const Name& propertyName) const;
                 const MaterialPropertyDynamicMetadata* GetMaterialPropertyMetadata(const MaterialPropertyIndex& index) const;
+                
+                const MaterialPropertyGroupDynamicMetadata* GetMaterialPropertyGroupMetadata(const Name& propertyName) const;
 
                 //! Get the property value. The type must be one of those in MaterialPropertyValue.
                 //! Otherwise, a compile error will be reported.
@@ -178,6 +181,8 @@ namespace AZ
 
                 bool SetMaterialPropertySoftMaxValue(const Name& propertyName, const MaterialPropertyValue& max);
                 bool SetMaterialPropertySoftMaxValue(const MaterialPropertyIndex& index, const MaterialPropertyValue& max);
+                
+                bool SetMaterialPropertyGroupVisibility(const Name& propertyGroupName, MaterialPropertyGroupVisibility visibility);
 
                 // [GFX TODO][ATOM-4168] Replace the workaround for unlink-able RPI.Public classes in MaterialFunctor
                 // const AZStd::vector<AZStd::any>&, AZStd::unordered_map<MaterialPropertyIndex, Image*>&, RHI::ConstPtr<MaterialPropertiesLayout>
@@ -185,18 +190,23 @@ namespace AZ
                 EditorContext(
                     const AZStd::vector<MaterialPropertyValue>& propertyValues,
                     RHI::ConstPtr<MaterialPropertiesLayout> materialPropertiesLayout,
-                    AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& metadata,
-                    AZStd::unordered_set<Name>& outChangedProperties,
+                    AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& propertyMetadata,
+                    AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& propertyGroupMetadata,
+                    AZStd::unordered_set<Name>& updatedPropertiesOut,
+                    AZStd::unordered_set<Name>& updatedPropertyGroupsOut,
                     const MaterialPropertyFlags* materialPropertyDependencies
                 );
 
             private:
-                AZStd::list_iterator<AZStd::pair<AZ::Name, AZ::RPI::MaterialPropertyDynamicMetadata>> QueryMaterialMetadata(const Name& propertyName) const;
+                MaterialPropertyDynamicMetadata* QueryMaterialPropertyMetadata(const Name& propertyName) const;
+                MaterialPropertyGroupDynamicMetadata* QueryMaterialPropertyGroupMetadata(const Name& propertyGroupName) const;
 
                 const AZStd::vector<MaterialPropertyValue>& m_materialPropertyValues;
                 RHI::ConstPtr<MaterialPropertiesLayout> m_materialPropertiesLayout;
-                AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& m_metadata;
-                AZStd::unordered_set<Name>& m_outChangedProperties;
+                AZStd::unordered_map<Name, MaterialPropertyDynamicMetadata>& m_propertyMetadata;
+                AZStd::unordered_map<Name, MaterialPropertyGroupDynamicMetadata>& m_propertyGroupMetadata;
+                AZStd::unordered_set<Name>& m_updatedPropertiesOut;
+                AZStd::unordered_set<Name>& m_updatedPropertyGroupsOut;
                 const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
             };
 

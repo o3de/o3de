@@ -96,6 +96,8 @@ namespace AZ
                 return "Validation failed";
             case VK_ERROR_OUT_OF_POOL_MEMORY:
                 return "Pool is out of memory";
+            case VK_ERROR_FRAGMENTED_POOL:
+                return "Fragmented pool";
             default:
                 return "Unknown error";
             }

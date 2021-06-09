@@ -30,8 +30,6 @@
 #include <IRenderAuxGeom.h>
 #include <IConsole.h>
 
-#include <CryPhysicsDeprecation.h>
-
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;

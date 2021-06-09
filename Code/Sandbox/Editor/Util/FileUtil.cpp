@@ -2405,7 +2405,8 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
 bool CFileUtil::CompareFiles(const QString& strFilePath1, const QString& strFilePath2)
 {
     // Get the size of both files.  If either fails we say they are different (most likely one doesn't exist)
-    uint64 size1, size2;
+    uint64 size1 = 0;
+    uint64 size2 = 0;
     if (!GetDiskFileSize(strFilePath1.toUtf8().data(), size1) || !GetDiskFileSize(strFilePath2.toUtf8().data(), size2))
     {
         return false;

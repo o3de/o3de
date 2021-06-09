@@ -281,7 +281,6 @@ void CAnimPostFXNode::SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bL
                 paramType.Serialize(trackNode, true);
                 // Don't use APARAM_USER because it could change in newer versions
                 // CAnimNode::SerializeAnims will then take care of that
-                static const unsigned int OLD_APARAM_USER = 100;
                 paramType = static_cast<AnimParamType>(static_cast<int>(paramType.GetType()) + OLD_APARAM_USER);
                 paramType.Serialize(trackNode, false);
             }

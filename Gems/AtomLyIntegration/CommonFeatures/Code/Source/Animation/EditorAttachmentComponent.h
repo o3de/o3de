@@ -88,7 +88,7 @@ namespace AZ
             AZ::Vector3 m_rotationOffset = AZ::Vector3::CreateZero();
 
             //! Offset from target entity's scale.
-            AZ::Vector3 m_scaleOffset = AZ::Vector3::CreateOne();
+            float m_uniformScaleOffset = 1.0f;
 
             //! Observe scale information from the specified source.       
             AttachmentConfiguration::ScaleSource m_scaleSource = AttachmentConfiguration::ScaleSource::WorldScale;

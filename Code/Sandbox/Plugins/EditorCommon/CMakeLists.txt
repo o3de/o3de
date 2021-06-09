@@ -13,8 +13,6 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-
 # Header only target to prevent linkage against editor libraries when it is not needed. Eventually the targets that depend
 # on editor headers should cleanup dependencies and interact with the editor through buses or other mechanisms
 ly_add_target(
@@ -34,7 +32,6 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         editorcommon_files.cmake
-        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .

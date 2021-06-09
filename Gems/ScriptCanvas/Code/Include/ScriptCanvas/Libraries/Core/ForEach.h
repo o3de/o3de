@@ -56,44 +56,29 @@ namespace ScriptCanvas
 
                 bool IsBreakSlot(const SlotId&) const;
 
-                bool IsOutOfDate(const VersionData& graphVersion) const override;
-
-                
+                bool IsOutOfDate(const VersionData& graphVersion) const override;              
 
                 UpdateResult OnUpdateNode() override;
 
-            protected:
-                ExecutionNameMap GetExecutionNameMap() const override;
-
-                void OnInit() override;
-                void OnInputSignal(const SlotId&) override;
-
-                bool InitializeLoop();
-                void Iterate();
-                bool SetPropertySlotData(Datum& atResult, size_t propertyIndex);
-                void ResetLoop();
-
-                void OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type& dataType) override;
-
-                void ClearPropertySlots();
-                void AddPropertySlotsFromType(const Data::Type& dataType);
-
-                static AZ::Crc32 GetContainerGroupId() { return AZ_CRC("ContainerGroup", 0xb81ed451); }
-
-                SlotId m_sourceSlot;
-                AZ::TypeId m_previousTypeId;
-                AZStd::vector<Data::PropertyMetadata> m_propertySlots;
-
+            private:
                 static const size_t k_keySlotIndex;
                 static const size_t k_valueSlotIndex;
 
-                size_t m_index;
-                size_t m_size;
+                static AZ::Crc32 GetContainerGroupId() { return AZ_CRC("ContainerGroup", 0xb81ed451); }
 
-                bool m_breakCalled;
+                void AddPropertySlotsFromType(const Data::Type& dataType);
 
-                Datum m_sourceContainer;
-                Datum m_keysVector;
+                void ClearPropertySlots();
+
+                ExecutionNameMap GetExecutionNameMap() const override;
+
+                void OnInit() override;
+
+                void OnDynamicGroupDisplayTypeChanged(const AZ::Crc32& dynamicGroup, const Data::Type& dataType) override;
+                                                
+                SlotId m_sourceSlot;
+                AZ::TypeId m_previousTypeId;
+                AZStd::vector<Data::PropertyMetadata> m_propertySlots;
             };
         }
     }

@@ -164,7 +164,7 @@ namespace ImageProcessingAtom
         AZ::Color         m_colMinARGB;             // ARGB will be added the properties of the DDS file
         AZ::Color         m_colMaxARGB;             // ARGB will be added the properties of the DDS file
         float        m_averageBrightness;           // will be added to the properties of the DDS file
-        AZ::u32       m_imageFlags;                  // combined from CImageExtensionHelper::EIF_Cubemap,...
+        AZ::u32       m_imageFlags;                  //
         AZ::u32       m_numPersistentMips;           // number of mipmaps won't be splitted
 
     public:

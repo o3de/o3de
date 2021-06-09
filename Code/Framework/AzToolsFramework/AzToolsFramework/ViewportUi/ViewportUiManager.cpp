@@ -30,18 +30,18 @@ namespace AzToolsFramework::ViewportUi
         ViewportUiRequestBus::Handler::BusDisconnect();
     }
 
-    const ClusterId ViewportUiManager::CreateCluster()
+    const ClusterId ViewportUiManager::CreateCluster(const Alignment align)
     {
         auto buttonGroup = AZStd::make_shared<Internal::ButtonGroup>();
-        m_viewportUi->AddCluster(buttonGroup);
+        m_viewportUi->AddCluster(buttonGroup, align);
 
         return RegisterNewCluster(buttonGroup);
     }
 
-    const SwitcherId ViewportUiManager::CreateSwitcher()
+    const SwitcherId ViewportUiManager::CreateSwitcher(const Alignment align)
     {
         auto buttonGroup = AZStd::make_shared<Internal::ButtonGroup>();
-        m_viewportUi->AddSwitcher(buttonGroup);
+        m_viewportUi->AddSwitcher(buttonGroup, align);
 
         return RegisterNewSwitcher(buttonGroup);
     }
@@ -64,6 +64,16 @@ namespace AzToolsFramework::ViewportUi
             switcher->SetHighlightedButton(buttonId);
             m_viewportUi->SetSwitcherActiveButton(switcher->GetViewportUiElementId(), buttonId);
             UpdateButtonGroupUi(switcher.get());
+        }
+    }
+
+    void ViewportUiManager::SetClusterButtonLocked(const ClusterId clusterId, const ButtonId buttonId, const bool isLocked)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto cluster = clusterIt->second;
+            m_viewportUi->SetClusterButtonLocked(cluster->GetViewportUiElementId(), buttonId, isLocked);
+            UpdateButtonGroupUi(cluster.get());
         }
     }
 

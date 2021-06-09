@@ -239,7 +239,16 @@ namespace AZ
                 allocInfo.pSetLayouts = &nativeLayout;
 
                 VkResult result = vkAllocateDescriptorSets(descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
-                AssertSuccess(result);
+                if (result == VK_ERROR_FRAGMENTED_POOL)
+                {
+                    // fragmented pool will be re-created subsequently in DescriptorSetAllocator, so warning only 
+                    AZ_Warning("Vulkan RHI", false, "Fragmented pool, will be recreated in DescriptorSetAllocator afterward");
+                }
+                else 
+                {
+                    AssertSuccess(result);
+                }
+
                 if (result != VK_SUCCESS)
                 {
                     return result;
@@ -252,8 +261,8 @@ namespace AZ
             if (vulkanDescriptor.m_constantDataPool && constantDataSize)
             {
                 m_constantDataBuffer = Buffer::Create();
-                const RHI::BufferDescriptor descriptor(RHI::BufferBindFlags::Constant, constantDataSize);
-                RHI::BufferInitRequest request(*m_constantDataBuffer, descriptor);
+                const RHI::BufferDescriptor bufferDescriptor(RHI::BufferBindFlags::Constant, constantDataSize);
+                RHI::BufferInitRequest request(*m_constantDataBuffer, bufferDescriptor);
                 RHI::ResultCode rhiResult = vulkanDescriptor.m_constantDataPool->InitBuffer(request);
                 if (rhiResult != RHI::ResultCode::Success)
                 {

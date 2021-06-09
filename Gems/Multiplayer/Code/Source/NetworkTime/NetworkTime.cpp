@@ -11,9 +11,17 @@
  */
 
 #include <Source/NetworkTime/NetworkTime.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkTransformComponent.h>
+#include <AzCore/Math/ShapeIntersection.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 
 namespace Multiplayer
 {
+    AZ_CVAR(float, sv_RewindVolumeExtrudeDistance, 50.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount to increase rewind volume checks to account for fast moving entities");
+
     NetworkTime::NetworkTime()
     {
         AZ::Interface<INetworkTime>::Register(this);
@@ -51,11 +59,6 @@ namespace Multiplayer
         return m_hostTimeMs;
     }
 
-    void NetworkTime::SyncRewindableEntityState()
-    {
-
-    }
-
     AzNetworking::ConnectionId NetworkTime::GetRewindingConnectionId() const
     {
         return m_rewindingConnectionId;
@@ -71,5 +74,63 @@ namespace Multiplayer
         m_hostFrameId = frameId;
         m_hostTimeMs = timeMs;
         m_rewindingConnectionId = rewindConnectionId;
+    }
+
+    void NetworkTime::SyncEntitiesToRewindState(const AZ::Aabb& rewindVolume)
+    {
+        // Since the vis system doesn't support rewound queries, first query with an expanded volume to catch any fast moving entities
+        const AZ::Aabb expandedVolume = rewindVolume.GetExpanded(AZ::Vector3(sv_RewindVolumeExtrudeDistance));
+
+        AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+        AZStd::vector<NetBindComponent*> gatheredEntities;
+        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(expandedVolume,
+            [entityBoundsUnion, rewindVolume, &gatheredEntities](const AzFramework::IVisibilityScene::NodeData& nodeData)
+        {
+            gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
+            for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+            {
+                if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                {
+                    AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+                    const AZ::Aabb currentBounds = entityBoundsUnion->GetEntityLocalBoundsUnion(entity->GetId());
+                    const AZ::Vector3 currentCenter = currentBounds.GetCenter();
+
+                    NetworkTransformComponent* networkTransform = entity->template FindComponent<NetworkTransformComponent>();
+
+                    if (networkTransform != nullptr)
+                    {
+                        const AZ::Vector3 rewindCenter = networkTransform->GetTranslation(); // Get the rewound position
+                        const AZ::Vector3 rewindOffset = rewindCenter - currentCenter; // Compute offset between rewound and current positions
+                        const AZ::Aabb rewoundAabb = currentBounds.GetTranslated(rewindOffset); // Apply offset to the entity aabb
+
+                        if (AZ::ShapeIntersection::Overlaps(rewoundAabb, rewindVolume)) // Validate the rewound aabb intersects our rewind volume
+                        {
+                            // Due to component constraints, netBindComponent must exist if networkTransform exists
+                            NetBindComponent* netBindComponent = entity->template FindComponent<NetBindComponent>();
+                            gatheredEntities.push_back(netBindComponent);
+                        }
+                    }
+                }
+            }
+        });
+
+        NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();
+        for (NetBindComponent* netBindComponent : gatheredEntities)
+        {
+            netBindComponent->NotifySyncRewindState();
+            m_rewoundEntities.push_back(NetworkEntityHandle(netBindComponent, networkEntityTracker));
+        }
+    }
+
+    void NetworkTime::ClearRewoundEntities()
+    {
+        AZ_Assert(!IsTimeRewound(), "Cannot clear rewound entity state while still within scoped rewind");
+
+        for (NetworkEntityHandle entityHandle : m_rewoundEntities)
+        {
+            NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+            netBindComponent->NotifySyncRewindState();
+        }
+        m_rewoundEntities.clear();
     }
 }

@@ -46,6 +46,8 @@ namespace ScriptCanvas
 
         const AZStd::unordered_map<AZStd::string, AZStd::pair<SlotId, SlotId>>& GetPropertyNameSlotMap() const;
 
+        AZ_INLINE AZ::Outcome<DependencyReport, void> GetDependencies() const override { return AZ::Success(DependencyReport{}); }
+
         ~PureData() override;
 
     protected:
@@ -53,7 +55,9 @@ namespace ScriptCanvas
         template<typename DatumType>
         void AddDefaultInputAndOutputTypeSlot(DatumType&& defaultValue);
         void AddInputTypeAndOutputTypeSlot(const Data::Type& type);
-        
+
+        bool IsDeprecated() const override { return true; }
+
         void OnActivate() override;
         void OnInputChanged(const Datum& input, const SlotId& id) override;
         void MarkDefaultableInput() override {}

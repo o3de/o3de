@@ -101,6 +101,7 @@ namespace AZ
         template <typename FeatureProcessorType>
         void LightDelegateBase<FeatureProcessorType>::OnShapeChanged(ShapeChangeReasons changeReason)
         {
+            AZ_Assert(m_shapeBus, "OnShapeChanged called without a shape bus present.");
             if (changeReason == ShapeChangeReasons::TransformChanged)
             {
                 AZ::Aabb aabb; // unused, but required for GetTransformAndLocalBounds()
@@ -133,7 +134,11 @@ namespace AZ
             {
                 // now visible, acquire light handle and update values.
                 m_lightHandle = m_featureProcessor->AcquireLight();
-                OnShapeChanged(ShapeChangeReasons::TransformChanged);
+                if (m_shapeBus)
+                {
+                    // For lights that get their transform from the shape bus, force an OnShapeChanged to update the transform.
+                    OnShapeChanged(ShapeChangeReasons::TransformChanged);
+                }
             }
         }
 

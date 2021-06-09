@@ -56,6 +56,9 @@ namespace AZ
 
                 // The list of passes created from this template
                 AZStd::vector<Pass*> m_passes;
+
+                // The pass templates mapping asset id which this template is coming from.  
+                Data::AssetId m_mappingAssetId;
             };
 
             typedef AZStd::unordered_map<Name, TemplateEntry> TemplateEntriesByName;
@@ -105,7 +108,7 @@ namespace AZ
             bool LoadPassAsset(const Name& name, const Data::Asset<PassAsset>& passAsset, bool hotReloading = false);
 
             // Find asset with specified pass template asset id and load pass template from the asset.
-            void LoadPassAsset(const Name& name, const Data::AssetId& passAssetId);
+            bool LoadPassAsset(const Name& name, const Data::AssetId& passAssetId);
 
             // Data::AssetBus::Handler overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;

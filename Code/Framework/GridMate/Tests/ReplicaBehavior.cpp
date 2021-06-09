@@ -687,7 +687,7 @@ namespace ReplicaBehavior {
                 AZ_TEST_ASSERT(chunk->Data1.IsDefaultValue());
                 AZ_TEST_ASSERT(chunk->Data2.IsDefaultValue());
 
-                m_replicaIdDefault = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+                m_replicaIdDefault = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
             }
         }
 
@@ -725,7 +725,7 @@ namespace ReplicaBehavior {
                     AZ_TEST_ASSERT(!chunk->Data1.IsDefaultValue());
                     AZ_TEST_ASSERT(!chunk->Data2.IsDefaultValue());
 
-                    m_replicaIdModified = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+                    m_replicaIdModified = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
                 }
                 break;
             }
@@ -816,7 +816,7 @@ namespace ReplicaBehavior {
             LargeChunkWithDefaults* chunk = CreateAndAttachReplicaChunk<LargeChunkWithDefaults>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_ReplicaDefaultDataSetDriller()
@@ -923,13 +923,13 @@ namespace ReplicaBehavior {
             ChunkWithBools* chunk1 = CreateAndAttachReplicaChunk<ChunkWithBools>(replica1);
             AZ_TEST_ASSERT(chunk1);
 
-            m_replicaBoolsId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica1);
+            m_replicaBoolsId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica1);
 
             ReplicaPtr replica2 = Replica::CreateReplica(nullptr);
             ChunkWithShortInts* chunk2 = CreateAndAttachReplicaChunk<ChunkWithShortInts>(replica2);
             AZ_TEST_ASSERT(chunk2);
 
-            m_replicaU8Id = m_sessions[sHost].GetReplicaMgr().AddMaster(replica2);
+            m_replicaU8Id = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica2);
         }
 
         ~Integ_Replica_ComparePackingBoolsVsU8()
@@ -1058,7 +1058,7 @@ namespace ReplicaBehavior {
             auto chunk = CreateAndAttachReplicaChunk<CustomMarshalerTestChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary()
@@ -1155,7 +1155,7 @@ namespace ReplicaBehavior {
             auto chunk = CreateAndAttachReplicaChunk<CustomMarshalerTestChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty()
@@ -1249,7 +1249,7 @@ namespace ReplicaBehavior {
             ForcingDirtyTestChunk* chunk = CreateAndAttachReplicaChunk<ForcingDirtyTestChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckReplicaIsntSentWithNoChanges()
@@ -1360,7 +1360,7 @@ namespace ReplicaBehavior {
             auto chunk = CreateAndAttachReplicaChunk<EntityLikeScriptReplicaChunk>(replica);
             AZ_TEST_ASSERT(chunk);
 
-            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddMaster(replica);
+            m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
         ~Integ_CheckEntityScriptReplicaIsntSentWithNoChanges()

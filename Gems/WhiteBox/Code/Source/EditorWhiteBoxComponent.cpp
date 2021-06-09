@@ -265,6 +265,11 @@ namespace WhiteBox
         provided.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
     }
 
+    void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
 
     EditorWhiteBoxComponent::~EditorWhiteBoxComponent()

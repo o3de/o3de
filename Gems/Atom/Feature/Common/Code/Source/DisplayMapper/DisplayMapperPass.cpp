@@ -106,6 +106,7 @@ namespace AZ
             {
                 if (m_acesOutputTransformPass)
                 {
+                    m_acesOutputTransformPass->SetAcesParameterOverrides(m_displayMapperConfigurationDescriptor.m_acesParameterOverrides);
                     m_acesOutputTransformPass->SetDisplayBufferFormat(m_displayBufferFormat);
                 }
                 if (m_bakeAcesOutputTransformLutPass)
@@ -509,7 +510,8 @@ namespace AZ
 
                     if (desc.m_operationType != m_displayMapperConfigurationDescriptor.m_operationType ||
                         desc.m_ldrGradingLutEnabled != m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled ||
-                        desc.m_ldrColorGradingLut != m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut)
+                        desc.m_ldrColorGradingLut != m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut ||
+                        desc.m_acesParameterOverrides.m_overrideDefaults != m_displayMapperConfigurationDescriptor.m_acesParameterOverrides.m_overrideDefaults)
                     {
                         m_needToRebuildChildren = true;
                     }

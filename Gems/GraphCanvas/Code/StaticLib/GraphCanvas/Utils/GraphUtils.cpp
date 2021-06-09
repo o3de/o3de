@@ -1239,7 +1239,7 @@ namespace GraphCanvas
 
     bool GraphUtils::IsValidModelConnection(const GraphId& graphId, const Endpoint& sourceEndpoint, const Endpoint& targetEndpoint)
     {
-        bool validConnection;
+        bool validConnection = false;
 
         AZStd::unordered_set< Endpoint > finalSourceEndpoints = RemapEndpointForModel(sourceEndpoint);
         AZStd::unordered_set< Endpoint > finalTargetEndpoints = RemapEndpointForModel(targetEndpoint);
@@ -1325,12 +1325,12 @@ namespace GraphCanvas
                 AZStd::vector< Endpoint > endpoints;
                 SlotRequestBus::EventResult(endpoints, currentEndpoint.GetSlotId(), &SlotRequests::GetRemappedModelEndpoints);
 
-                for (const Endpoint& endpoint : endpoints)
+                for (const Endpoint& e : endpoints)
                 {
                     // If we haven't already processed the node, add it to our explore set so we can recurse.
-                    if (retVal.count(endpoint) == 0)
+                    if (retVal.count(e) == 0)
                     {
-                        exploreSet.insert(endpoint);
+                        exploreSet.insert(e);
                     }
                 }
             }

@@ -34,23 +34,55 @@ namespace O3DE::ProjectManager
             NumPlatforms = 5
         };
         Q_DECLARE_FLAGS(Platforms, Platform)
+        static QString GetPlatformString(Platform platform);
 
+        enum Type
+        {
+            Asset = 1 << 0,
+            Code = 1 << 1,
+            Tool = 1 << 2,
+            NumTypes = 3
+        };
+        Q_DECLARE_FLAGS(Types, Type)
+        static QString GetTypeString(Type type);
+
+        enum GemOrigin
+        {
+            O3DEFoundation = 1 << 0,
+            Local = 1 << 1,
+            NumGemOrigins = 2
+        };
+        Q_DECLARE_FLAGS(GemOrigins, GemOrigin)
+        static QString GetGemOriginString(GemOrigin origin);
+
+        GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
+        bool IsPlatformSupported(Platform platform) const;
 
-        QString m_name;
-        QString m_displayName;
-        AZ::Uuid m_uuid;
-        QString m_creator;
+        bool IsValid() const;
+
+        bool operator<(const GemInfo& gemInfo) const;
+
+        QString m_path;
+        QString m_name = "Unknown Gem Name";
+        QString m_displayName = "Unknown Gem Name";
+        QString m_creator = "Unknown Creator";
+        GemOrigin m_gemOrigin = Local;
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?
-        QString m_summary;
+        QString m_summary = "No summary provided.";
         Platforms m_platforms;
+        Types m_types; //! Asset and/or Code and/or Tool
         QStringList m_features;
-        QString m_version;
-        QString m_lastUpdatedDate;
-        QString m_documentationUrl;
-        QVector<AZ::Uuid> m_dependingGemUuids;
-        QVector<AZ::Uuid> m_conflictingGemUuids;
+        QString m_directoryLink;
+        QString m_documentationLink;
+        QString m_version = "Unknown Version";
+        QString m_lastUpdatedDate = "Unknown Date";
+        int m_binarySizeInKB = 0;
+        QStringList m_dependingGemUuids;
+        QStringList m_conflictingGemUuids;
     };
 } // namespace O3DE::ProjectManager
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Platforms)
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Types)
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::GemOrigins)

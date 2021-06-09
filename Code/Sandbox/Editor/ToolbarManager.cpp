@@ -582,23 +582,6 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
 {
     AmazonToolbar t = AmazonToolbar("EditMode", QObject::tr("Edit Mode Toolbar"));
     t.SetMainToolbar(true);
-    t.AddAction(ID_TOOLBAR_WIDGET_UNDO, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_REDO, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_EDITMODE_MOVE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_EDITMODE_ROTATE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_EDITMODE_SCALE, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_ENVIRONMENT_MODE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_DEBUG_MODE, ORIGINAL_TOOLBAR_VERSION);
-
     return t;
 }
 
@@ -613,13 +596,15 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
 
 AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
 {
-    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Console"));
+    AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Controls"));
     t.SetMainToolbar(true);
 
     t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION); 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
+    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
+    t.AddAction(ID_SWITCH_PHYSICS, TOOLBARS_WITH_PLAY_GAME);    
     return t;
 }
 
@@ -636,6 +621,20 @@ AmazonToolbar ToolbarManager::GetMiscToolbar() const
 {
     AmazonToolbar t = AmazonToolbar("Misc", QObject::tr("Misc Toolbar"));
     return t;
+}
+
+void ToolbarManager::AddButtonToEditToolbar(QAction* action)
+{
+    QString toolbarName = "EditMode";
+    const AmazonToolbar* toolbar = FindToolbar(toolbarName);
+
+    if (toolbar)
+    {
+        if (toolbar->Toolbar())
+        {
+            toolbar->Toolbar()->addAction(action);
+        }
+    }
 }
 
 const AmazonToolbar* ToolbarManager::FindDefaultToolbar(const QString& toolbarName) const

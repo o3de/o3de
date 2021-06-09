@@ -351,6 +351,7 @@ namespace UnitTest
                                                           public AZ::Data::AssetCatalog
     {
         static inline const AZ::Uuid TestAssetId{"{E970B177-5F45-44EB-A2C4-9F29D9A0B2A2}"};
+        static inline const AZ::Uuid MissingAssetId{"{11111111-1111-1111-1111-111111111111}"};
         static inline constexpr AZStd::string_view TestAssetPath = "test";
 
         void SetUp() override
@@ -431,24 +432,40 @@ namespace UnitTest
         // AssetCatalogRequestBus implementation
         
         // Minimalist mocks to provide our desired asset path or asset id
-        AZStd::string GetAssetPathById([[maybe_unused]] const AZ::Data::AssetId& id) override
+        AZStd::string GetAssetPathById(const AZ::Data::AssetId& id) override
         {
-            return TestAssetPath;
+            if (id == TestAssetId)
+            {
+                return TestAssetPath;
+            }
+
+            return "";
         }
+
         AZ::Data::AssetId GetAssetIdByPath(
-            [[maybe_unused]] const char* path, [[maybe_unused]] const AZ::Data::AssetType& typeToRegister,
+            const char* path, [[maybe_unused]] const AZ::Data::AssetType& typeToRegister,
             [[maybe_unused]] bool autoRegisterIfNotFound) override
         {
-            return TestAssetId;
+            if (path == TestAssetPath)
+            {
+                return TestAssetId;
+            }
+
+            return AZ::Data::AssetId();
         }
 
         // Return the mocked-out information for our test asset
-        AZ::Data::AssetInfo GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& id) override
+        AZ::Data::AssetInfo GetAssetInfoById(const AZ::Data::AssetId& id) override
         {
             AZ::Data::AssetInfo assetInfo;
-            assetInfo.m_assetId = TestAssetId;
-            assetInfo.m_assetType = AZ::AzTypeInfo<EmptyAsset>::Uuid();
-            assetInfo.m_relativePath = TestAssetPath;
+
+            if (id == TestAssetId)
+            {
+                assetInfo.m_assetId = TestAssetId;
+                assetInfo.m_assetType = AZ::AzTypeInfo<EmptyAsset>::Uuid();
+                assetInfo.m_relativePath = TestAssetPath;
+            }
+
             return assetInfo;
         }
 
@@ -456,14 +473,19 @@ namespace UnitTest
         
         // Set the mocked-out asset load to have a 0-byte length so that the load skips I/O and immediately returns success
         AZ::Data::AssetStreamInfo GetStreamInfoForLoad(
-            [[maybe_unused]] const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override
+            const AZ::Data::AssetId& id, const AZ::Data::AssetType& type) override
         {
             EXPECT_TRUE(type == AZ::AzTypeInfo<EmptyAsset>::Uuid());
             AZ::Data::AssetStreamInfo info;
+
             info.m_dataOffset = 0;
-            info.m_streamName = TestAssetPath;
             info.m_dataLen = 0;
             info.m_streamFlags = AZ::IO::OpenMode::ModeRead;
+
+            if (id == TestAssetId)
+            {
+                info.m_streamName = TestAssetPath;
+            }
 
             return info;
         }
@@ -487,6 +509,29 @@ namespace UnitTest
 
         AZ::Data::AssetManager::Instance().DispatchEvents();
         EXPECT_TRUE(testAsset.IsReady());
+    }
+
+    // This test verifies that even if the asset loading returns immediately with an error, all of the loading code works
+    // successfully.  The test itself loads a missing asset twice - the first time is a non-immediate error, where the error
+    // isn't reported until the DispatchEvents() call.  The second time is an immediate error, because now the asset is already
+    // registered in an Error state.  If the test fails, it will likely get caught in the shutdown of the test class, if any
+    // assets still exist at the point that the asset handler is unregistered.  If they're present, then handling of the immediate
+    // error didn't work, as it left around extra references to the asset that haven't been cleaned up.
+    TEST_F(AssetManagerStreamerImmediateCompletionTests, ImmediateAssetError_WorksSuccessfully)
+    {
+        AZ::Data::AssetLoadParameters loadParams;
+
+        // Attempt to load a missing asset the first time.  It will get an error, but not until the DispatchEvents() call happens.
+        auto testAsset1 = AssetManager::Instance().GetAsset<EmptyAsset>(MissingAssetId, AZ::Data::AssetLoadBehavior::Default, loadParams);
+        AZ::Data::AssetManager::Instance().DispatchEvents();
+        EXPECT_TRUE(testAsset1.IsError());
+
+        // While the reference to the missing asset still exists, try to get it again.  This will cause a more immediate error in
+        // the AssetContainer code, which should still get handled correctly.  In the failure condition, it will instead leave the
+        // AssetContainer in a state where it never sends the final OnAssetContainerReady/Canceled message.
+        auto testAsset2 = AssetManager::Instance().GetAsset<EmptyAsset>(MissingAssetId, AZ::Data::AssetLoadBehavior::Default, loadParams);
+        AZ::Data::AssetManager::Instance().DispatchEvents();
+        EXPECT_TRUE(testAsset2.IsError());
     }
 
 } // namespace UnitTest

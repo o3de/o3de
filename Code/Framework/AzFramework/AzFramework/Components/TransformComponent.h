@@ -17,7 +17,6 @@
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/EBus/Event.h>
-#include <AzFramework/Network/NetBindable.h>
 
 namespace AzToolsFramework
 {
@@ -41,10 +40,9 @@ namespace AzFramework
         , public AZ::TransformBus::Handler
         , public AZ::TransformNotificationBus::Handler
         , private AZ::TransformHierarchyInformationBus::Handler
-        , public NetBindable
     {
     public:
-        AZ_COMPONENT(TransformComponent, AZ::TransformComponentTypeId, NetBindable, AZ::TransformInterface);
+        AZ_COMPONENT(TransformComponent, AZ::TransformComponentTypeId, AZ::TransformInterface);
 
         friend class AzToolsFramework::Components::TransformComponent;
 
@@ -114,22 +112,7 @@ namespace AzFramework
         float GetLocalZ() override;
 
         // Rotation modifiers
-        void SetRotation(const AZ::Vector3& eulerAnglesRadian) override;
-        void SetRotationQuaternion(const AZ::Quaternion& quaternion) override;
-        void SetRotationX(float eulerAngleRadian) override;
-        void SetRotationY(float eulerAngleRadian) override;
-        void SetRotationZ(float eulerAngleRadian) override;
-
-        void RotateByX(float eulerAngleRadian) override;
-        void RotateByY(float eulerAngleRadian) override;
-        void RotateByZ(float eulerAngleRadian) override;
-
-        AZ::Vector3 GetRotationEulerRadians() override;
-        AZ::Quaternion GetRotationQuaternion() override;
-
-        float GetRotationX() override;
-        float GetRotationY() override;
-        float GetRotationZ() override;
+        void SetWorldRotationQuaternion(const AZ::Quaternion& quaternion) override;
 
         AZ::Vector3 GetWorldRotation() override;
         AZ::Quaternion GetWorldRotationQuaternion() override;
@@ -145,23 +128,11 @@ namespace AzFramework
         AZ::Quaternion GetLocalRotationQuaternion() override;
 
         // Scale Modifiers
-        void SetScale(const AZ::Vector3& scale) override;
-        void SetScaleX(float scaleX) override;
-        void SetScaleY(float scaleY) override;
-        void SetScaleZ(float scaleZ) override;
-
-        AZ::Vector3 GetScale() override;
-        float GetScaleX() override;
-        float GetScaleY() override;
-        float GetScaleZ() override;
-
-        void SetLocalScale(const AZ::Vector3& scale) override;
-        void SetLocalScaleX(float scaleX) override;
-        void SetLocalScaleY(float scaleY) override;
-        void SetLocalScaleZ(float scaleZ) override;
-
         AZ::Vector3 GetLocalScale() override;
-        AZ::Vector3 GetWorldScale() override;
+
+        void SetLocalUniformScale(float scale) override;
+        float GetLocalUniformScale() override;
+        float GetWorldUniformScale() override;
 
         // Transform hierarchy
         AZStd::vector<AZ::EntityId> GetChildren() override;
@@ -218,11 +189,5 @@ namespace AzFramework
         bool m_parentActive = false; ///< Keeps track of the state of the parent entity.
         bool m_onNewParentKeepWorldTM = true; ///< If set, recompute localTM instead of worldTM when parent becomes active.
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
-
-        //! @deprecated
-        //! @{
-        AZ::InterpolationMode m_interpolatePosition = AZ::InterpolationMode::NoInterpolation;
-        AZ::InterpolationMode m_interpolateRotation = AZ::InterpolationMode::NoInterpolation;
-        //! @}
     };
 }   // namespace AZ

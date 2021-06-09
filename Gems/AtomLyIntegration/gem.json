@@ -1,0 +1,5 @@
+{
+    "gem_name": "AtomLyIntegration",
+    "display_name": "Atom O3DE Integration",
+    "summary": "Collection of module targets for integrating Atom with the O3DE engine"
+}

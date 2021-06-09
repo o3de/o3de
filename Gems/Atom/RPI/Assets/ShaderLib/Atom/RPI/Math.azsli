@@ -225,3 +225,16 @@ float NextRandomFloatUniform(inout uint seed)
     seed = Xorshift(seed);
     return (float)seed /  4294967295.0f;
 }
+
+//! Returns the inverse of lerp, 't', such that value = lerp(a, b, t), or returns 0 when a == b.
+float LerpInverse(float a, float b, float value)
+{
+    if(abs(a - b) <= EPSILON)
+    {
+        return 0.0;
+    }
+    else
+    {
+        return (value - a) / (b - a);
+    }
+}

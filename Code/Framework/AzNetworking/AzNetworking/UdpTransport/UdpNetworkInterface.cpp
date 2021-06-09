@@ -162,7 +162,7 @@ namespace AzNetworking
         const UdpReaderThread::ReceivedPackets* packets = m_readerThread.GetReceivedPackets(m_socket.get());
         if (packets == nullptr)
         {
-            AZ_Assert(false, "nullptr was retrieved for the received packet buffer, check that the socket has been registered with the reader thread");
+            // Socket is not yet registered with the reader thread and is likely still pending, try again later
             return;
         }
 
