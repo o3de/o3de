@@ -59,8 +59,8 @@ class TestImpact:
             self.__historic_workspace = config["workspace"]["historic"]["root"]
             self.__temp_workspace = config["workspace"]["temp"]["root"]
             # Last commit hash
-            last_commit_hash_path_rel = config["workspace"]["historic"]["relative_paths"]["last_run_hash_file"]
-            self.__last_commit_hash_path = os.path.join(self.__historic_workspace, last_commit_hash_path_rel)
+            last_commit_hash_path_file = config["workspace"]["historic"]["relative_paths"]["last_run_hash_file"]
+            self.__last_commit_hash_path = os.path.join(self.__historic_workspace, last_commit_hash_path_file)
             print("The configuration file was parsed successfully.")
 
     # Restricts change lists from checking in test impact analysis files
@@ -77,6 +77,7 @@ class TestImpact:
                 self.__has_src_commit = True
 
     def __write_last_run_hash(self, last_run_hash):
+        os.mkdir(self.__historic_workspace)
         f = open(self.__last_commit_hash_path, "w")
         f.write(last_run_hash)
         f.close()
