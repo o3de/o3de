@@ -160,6 +160,7 @@ namespace ScriptCanvas
             void WriteOperatorArithmetic(Grammar::ExecutionTreeConstPtr execution);
             void WriteOutputAssignments(Grammar::ExecutionTreeConstPtr execution);
             void WriteOutputAssignments(Grammar::ExecutionTreeConstPtr execution, const AZStd::vector<AZStd::pair<const Slot*, Grammar::OutputAssignmentConstPtr>>& output);
+            void WriteResolvedScope(Grammar::ExecutionTreeConstPtr execution, const Grammar::LexicalScope& lexicalScope);
             void WriteReturnStatement(Grammar::ExecutionTreeConstPtr execution);
             void WriteReturnValueInitialization(Grammar::ExecutionTreeConstPtr execution);
             void WriteStaticInitializerInput(IsLeadingCommaRequired commaRequired);
@@ -170,7 +171,6 @@ namespace ScriptCanvas
             void WriteVariableWrite(Grammar::ExecutionTreeConstPtr execution, const AZStd::vector<AZStd::pair<const Slot*, Grammar::OutputAssignmentConstPtr>>& output);
             void WriteWrittenMathExpression(Grammar::ExecutionTreeConstPtr execution);
 
-        private:
         };
                
     } 
