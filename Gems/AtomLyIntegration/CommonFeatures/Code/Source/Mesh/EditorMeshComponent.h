@@ -34,7 +34,6 @@ namespace AZ
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzFramework::EntityDebugDisplayEventBus::Handler
             , private MeshComponentNotificationBus::Handler
-            , private Data::AssetBus::Handler
         {
         public:
             using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>;
@@ -74,6 +73,7 @@ namespace AZ
             // Flag used for button placement
             bool m_addMaterialComponentFlag = false;
 
+            // Stats for current mesh asset
             EditorMeshStats m_stats;
         };
     } // namespace Render

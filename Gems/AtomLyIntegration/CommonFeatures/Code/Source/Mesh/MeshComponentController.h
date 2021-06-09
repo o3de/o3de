@@ -44,7 +44,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             // Editor helper functions
-            bool IsAssetSet() const;
+            bool IsAssetSet();
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
 
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };

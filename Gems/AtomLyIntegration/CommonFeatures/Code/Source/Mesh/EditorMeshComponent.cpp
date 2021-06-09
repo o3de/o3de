@@ -211,21 +211,17 @@ namespace AZ
         void EditorMeshComponent::OnModelReady(const Data::Asset<RPI::ModelAsset>& /*modelAsset*/, const Data::Instance<RPI::Model>& /*model*/)
         {
             m_stats.m_meshStatsForLod.clear();
-            if (m_controller.GetConfiguration().IsAssetSet())
+            for (auto& lod : m_controller.GetConfiguration().m_modelAsset->GetLodAssets())
             {
-                auto lods = m_controller.GetConfiguration().m_modelAsset->GetLodAssets();
-                for (auto& lod : lods)
+                EditorMeshStatsForLod stats;
+                auto meshes = lod->GetMeshes();
+                stats.m_meshCount = lod->GetMeshes().size();
+                for (auto& mesh : meshes)
                 {
-                    EditorMeshStatsForLod stats;
-                    auto meshes = lod->GetMeshes();
-                    stats.m_meshCount = lod->GetMeshes().size();
-                    for (auto& mesh : meshes)
-                    {
-                        stats.m_vertCount += mesh.GetVertexCount();
-                        stats.m_triCount += mesh.GetIndexCount() / 3;
-                    }
-                    m_stats.m_meshStatsForLod.push_back(stats);
+                    stats.m_vertCount += mesh.GetVertexCount();
+                    stats.m_triCount += mesh.GetIndexCount() / 3;
                 }
+                m_stats.m_meshStatsForLod.push_back(stats);
             }
             m_stats.UpdateStringRepresentation();
 
