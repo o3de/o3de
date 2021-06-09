@@ -9,6 +9,7 @@
 
     <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
+        <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
 
     <Packet Name="Accept" Desc="Server accept packet">
