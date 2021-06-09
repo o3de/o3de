@@ -1711,11 +1711,8 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
 
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-
-        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
-        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
-        {
-            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
+        viewportContextManager->EnumerateViewportContexts(
+            [&center, selectionSize, &aabb](AZ::RPI::ViewportContextPtr viewportContext)
             {
                 const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
                 const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
@@ -1733,8 +1730,7 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                     viewportContext->GetId(),
                     &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
                     distanceToLookAt);
-            }
-        }
+            });
     }
     else
     {

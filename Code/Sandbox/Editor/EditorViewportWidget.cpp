@@ -1265,7 +1265,7 @@ void EditorViewportWidget::SetViewportId(int id)
                         AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
                         AzFramework::RenderGeometry::IntersectorBus::EventResult(
                             renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
-                            &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
+                            &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, ray);
 
                         // attempt a ray intersection with any visible mesh and return the intersection position if successful
                         if (renderGeometryIntersectionResult)
