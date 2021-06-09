@@ -1711,12 +1711,14 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
 
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-        viewportContextManager->EnumerateViewportContexts(
-            [&center, selectionSize, &aabb](AZ::RPI::ViewportContextPtr viewportContext)
+
+        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
+        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
+        {
+            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
             {
                 const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
                 const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
-
                 // move camera 25% further back than required
                 const float centerScale = 1.25f;
                 // compute new camera transform
@@ -1725,12 +1727,12 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
                 const float distanceToLookAt = selectionSize * fovScale * centerScale;
                 const AZ::Transform nextCameraTransform =
                     AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
-
                 AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                     viewportContext->GetId(),
                     &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
                     distanceToLookAt);
-            });
+            }
+        }
     }
     else
     {
