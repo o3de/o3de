@@ -1290,7 +1290,7 @@ namespace AZ::IO
 
 
     //////////////////////////////////////////////////////////////////////////
-    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, [[maybe_unused]] uint32_t nPathFlags, bool bAllowUseFileSystem)
+    AZ::IO::ArchiveFileIterator Archive::FindFirst(AZStd::string_view pDir, uint32_t nFlags, bool bAllowUseFileSystem)
     {
         auto szFullPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pDir);
         if (!szFullPath)
@@ -1299,8 +1299,9 @@ namespace AZ::IO
             return {};
         }
 
+        const bool scanZips = (nFlags == 0);
         AZStd::intrusive_ptr<AZ::IO::FindData> pFindData = new AZ::IO::FindData();
-        pFindData->Scan(this, szFullPath->Native(), bAllowUseFileSystem);
+        pFindData->Scan(this, szFullPath->Native(), bAllowUseFileSystem, scanZips);
 
         return pFindData->Fetch();
     }

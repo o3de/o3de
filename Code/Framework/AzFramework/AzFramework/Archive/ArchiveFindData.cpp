@@ -77,7 +77,7 @@ namespace AZ::IO
         return m_findData && m_lastFetchValid;
     }
 
-    void FindData::Scan(IArchive* archive, AZStd::string_view szDir, bool bAllowUseFS)
+    void FindData::Scan(IArchive* archive, AZStd::string_view szDir, bool bAllowUseFS, bool bScanZips)
     {
         // get the priority into local variable to avoid it changing in the course of
         // this function execution
@@ -87,12 +87,18 @@ namespace AZ::IO
         {
             // first, find the file system files
             ScanFS(archive, szDir);
-            ScanZips(archive, szDir);
+            if (bScanZips)
+            {
+                ScanZips(archive, szDir);
+            }
         }
         else
         {
             // first, find the zip files
-            ScanZips(archive, szDir);
+            if (bScanZips)
+            {
+                ScanZips(archive, szDir);
+            }
             if (bAllowUseFS || nVarPakPriority != ArchiveLocationPriority::ePakPriorityPakOnly)
             {
                 ScanFS(archive, szDir);
@@ -266,6 +272,7 @@ namespace AZ::IO
         if (m_fileStack.empty())
         {
             AZ::IO::ArchiveFileIterator emptyFileIterator;
+            emptyFileIterator.m_lastFetchValid = false;
             emptyFileIterator.m_findData = this;
             return emptyFileIterator;
         }
