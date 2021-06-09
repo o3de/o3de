@@ -34,7 +34,6 @@ namespace SandboxEditor
         if (auto viewportContext = viewportContextManager->GetDefaultViewportContext())
         {
             const auto rotation = AZ::Quaternion::CreateRotationZ(yaw) * AZ::Quaternion::CreateRotationX(pitch);
-
             const auto& currentCameraTransform = viewportContext->GetCameraTransform();
             viewportContext->SetCameraTransform(
                 AZ::Transform::CreateFromQuaternionAndTranslation(rotation, currentCameraTransform.GetTranslation()));
