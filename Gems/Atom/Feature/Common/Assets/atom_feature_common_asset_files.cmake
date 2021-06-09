@@ -89,6 +89,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
+    Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
     Passes/DeferredFog.pass
@@ -207,6 +208,7 @@ set(FILES
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
+    Passes/Taa.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass
@@ -246,7 +248,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli

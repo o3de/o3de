@@ -141,8 +141,10 @@ namespace AzToolsFramework
             return newInstance;
         }
 
-        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId)
+        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
+            UpdatePrefabInstances(templateId, instanceToExclude);
+
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
             {
@@ -152,10 +154,6 @@ namespace AzToolsFramework
                 linkIdsToUpdateQueue.push(LinkIds(templateIdToLinkIdsIterator->second.begin(),
                     templateIdToLinkIdsIterator->second.end()));
                 UpdateLinkedInstances(linkIdsToUpdateQueue);
-            }
-            else
-            {
-                UpdatePrefabInstances(templateId);
             }
         }
 
@@ -174,9 +172,9 @@ namespace AzToolsFramework
             }
         }
 
-        void PrefabSystemComponent::UpdatePrefabInstances(const TemplateId& templateId)
+        void PrefabSystemComponent::UpdatePrefabInstances(const TemplateId& templateId, InstanceOptionalReference instanceToExclude)
         {
-            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId);
+            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue)
@@ -250,8 +248,6 @@ namespace AzToolsFramework
             if (targetTemplateIdToLinkIdMap[targetTemplateId].first.empty() &&
                 targetTemplateIdToLinkIdMap[targetTemplateId].second)
             {
-                UpdatePrefabInstances(targetTemplateId);
-
                 auto templateToLinkIter = m_templateToLinkIdsMap.find(targetTemplateId);
                 if (templateToLinkIter != m_templateToLinkIdsMap.end())
                 {
@@ -706,14 +702,14 @@ namespace AzToolsFramework
                 "Prefab - PrefabSystemComponent::RemoveLink - "
                 "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
                 "from TemplateToLinkIdsMap.",
-                linkId, link.GetSourceTemplateId(), link.GetInstanceName().c_str());
+                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId());
 
             result = RemoveLinkFromTargetTemplate(linkId, link);
             AZ_Assert(result,
                 "Prefab - PrefabSystemComponent::RemoveLink - "
                 "Failed to remove Link with Id '%llu' for Instance '%s' of source Template with Id '%llu' "
                 "from target Template with Id '%llu'.",
-                linkId, link.GetSourceTemplateId(), link.GetInstanceName().c_str(), link.GetTargetTemplateId());
+                linkId, link.GetInstanceName().c_str(), link.GetSourceTemplateId(), link.GetTargetTemplateId());
 
             m_linkIdMap.erase(linkId);
 

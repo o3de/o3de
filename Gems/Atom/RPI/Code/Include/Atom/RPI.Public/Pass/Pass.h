@@ -184,8 +184,8 @@ namespace AZ
             //! Collect all different view tags from this pass 
             virtual void GetPipelineViewTags(SortedPipelineViewTags& outTags) const;
 
-           //! Adds this pass' DrawListTags to the outDrawListMask.
-           virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;
+            //! Adds this pass' DrawListTags to the outDrawListMask.
+            virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;
 
             //! Check if the pass has a DrawListTag. Pass' DrawListTag can be used to filter draw items.
             virtual RHI::DrawListTag GetDrawListTag() const;

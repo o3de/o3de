@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/Gestures_precompiled.cpp
     Source/Gestures_precompiled.h
     Include/Gestures/GestureRecognizerClickOrTap.h
     Include/Gestures/GestureRecognizerClickOrTap.inl

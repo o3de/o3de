@@ -70,6 +70,52 @@ namespace LUAEditor
             , m_bIsModified(false)
             , m_bIsBeingSaved(false)
             , m_PresetLineAtOpen(1){}
+
+        // Copy constructor does not copy over open file handle
+        DocumentInfo(const DocumentInfo& other)
+            : m_assetId(other.m_assetId)
+            , m_scriptAsset(other.m_scriptAsset)
+            , m_assetName(other.m_assetName)
+            , m_displayName(other.m_displayName)
+            , m_lastKnownModTime(other.m_lastKnownModTime)
+            , m_sourceControlInfo(other.m_sourceControlInfo)
+            , m_bSourceControl_Ready(other.m_bSourceControl_Ready)
+            , m_bSourceControl_BusyGettingStats(other.m_bSourceControl_BusyGettingStats)
+            , m_bSourceControl_BusyRequestingEdit(other.m_bSourceControl_BusyRequestingEdit)
+            , m_bSourceControl_CanWrite(other.m_bSourceControl_CanWrite)
+            , m_bSourceControl_CanCheckOut(other.m_bSourceControl_CanCheckOut)
+            , m_bDataIsLoaded(other.m_bDataIsLoaded)
+            , m_bDataIsWritten(other.m_bDataIsWritten)
+            , m_bCloseAfterSave(other.m_bCloseAfterSave)
+            , m_bUntitledDocument(other.m_bUntitledDocument)
+            , m_bIsModified(other.m_bIsModified)
+            , m_bIsBeingSaved(other.m_bIsBeingSaved)
+            , m_PresetLineAtOpen(other.m_PresetLineAtOpen)
+        {}
+
+        DocumentInfo& operator=(const DocumentInfo& other)
+        {
+            m_assetId = other.m_assetId;
+            m_scriptAsset = other.m_scriptAsset;
+            m_assetName = other.m_assetName;
+            m_displayName = other.m_displayName;
+            m_lastKnownModTime = other.m_lastKnownModTime;
+            m_sourceControlInfo = other.m_sourceControlInfo;
+            m_bSourceControl_Ready = other.m_bSourceControl_Ready;
+            m_bSourceControl_BusyGettingStats = other.m_bSourceControl_BusyGettingStats;
+            m_bSourceControl_BusyRequestingEdit = other.m_bSourceControl_BusyRequestingEdit;
+            m_bSourceControl_CanWrite = other.m_bSourceControl_CanWrite;
+            m_bSourceControl_CanCheckOut = other.m_bSourceControl_CanCheckOut;
+            m_bDataIsLoaded = other.m_bDataIsLoaded;
+            m_bDataIsWritten = other.m_bDataIsWritten;
+            m_bCloseAfterSave = other.m_bCloseAfterSave;
+            m_bUntitledDocument = other.m_bUntitledDocument;
+            m_bIsModified = other.m_bIsModified;
+            m_bIsBeingSaved = other.m_bIsBeingSaved;
+            m_PresetLineAtOpen = other.m_PresetLineAtOpen;
+
+            return *this;
+        }
     };
 
     class ContextInterface

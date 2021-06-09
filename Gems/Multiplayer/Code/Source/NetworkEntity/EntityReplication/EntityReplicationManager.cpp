@@ -132,7 +132,7 @@ namespace Multiplayer
         EntityReplicatorList replicatorUpdatedList;
         MultiplayerPackets::EntityUpdates entityUpdatePacket;
         entityUpdatePacket.SetHostTimeMs(hostTimeMs);
-        entityUpdatePacket.SetHostFrameId(InvalidHostFrameId);
+        entityUpdatePacket.SetHostFrameId(GetNetworkTime()->GetHostFrameId());
         // Serialize everything
         while (!toSendList.empty())
         {

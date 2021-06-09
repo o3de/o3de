@@ -114,7 +114,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(26);  // [ATOM-14992]
+                    ->Version(27);  // [ATOM-15658]
             }
         }
 

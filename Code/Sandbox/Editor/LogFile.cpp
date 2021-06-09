@@ -553,7 +553,7 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 
             // remember selection and the top row
             int len = m_hWndEditBox->document()->toPlainText().length();
-            int top;
+            int top = 0;
             int from = m_hWndEditBox->textCursor().selectionStart();
             int to = from + m_hWndEditBox->textCursor().selectionEnd();
             bool keepPos = false;
