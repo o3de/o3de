@@ -71,7 +71,7 @@ class TestImpact:
     def __read_last_run_hash(self):
         self.__has_src_commit = False
         if os.path.isfile(self.__last_commit_hash_path):
-            print(f"Previous commit hash found at '{self.__last_commit_hash_path}'.")            
+            print(f"Previous commit hash found at '{self.__last_commit_hash_path}'.")
             with open(self.__last_commit_hash_path) as file:
                 self.__src_commit = file.read()
                 self.__has_src_commit = True
@@ -145,10 +145,9 @@ class TestImpact:
             return
 
     # Runs the specified test sequence
-    def run(self, suite, safe_mode, test_timeout, global_timeout):
+    def run(self, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
         args = []
         pipeline_of_truth_test_failure_policy = "continue"
-        non_pipeline_of_truth_test_failure_policy = "continue"
         # Suite
         args.append(f"--suite={suite}")
         print(f"Test suite is set to '{suite}'.")
@@ -159,14 +158,8 @@ class TestImpact:
         if global_timeout != None:
             args.append(f"--gtimeout={global_timeout}")
             print(f"Global sequence timeout is set to {test_timeout} seconds.")
-        # If test impact analysis is enabled:
-        # -> Pipleine of truth will perform a seed that will continue until the sequence is complete regardless of test failues
-        # -> Non pipline of truth  will attempt to perform an impact analysis sequence and exit early upon the fist test failure
-        # If test impact analysis is disabled:
-        # -> Pipleine of truth will perform a regular sequence that will continue until the sequence is complete regardless of test failues
-        # -> Non pipline of truth  will perform a regular sequence and exit early upon the fist test failure
         if self.__use_test_impact_analysis:
-            print("Test impact analysis ie enabled.")
+            print("Test impact analysis is enabled.")
             # Pipeline of truth sequence
             if self.__is_pipeline_of_truth:
                 # Sequence type
@@ -195,8 +188,8 @@ class TestImpact:
                     args.append("--sequence=regular")
                     print("Sequence type is set to 'regular'.")
                 # Test failure policy
-                args.append(f"--fpolicy={non_pipeline_of_truth_test_failure_policy}")
-                print(f"Test failure policy is set to '{non_pipeline_of_truth_test_failure_policy}'.")
+                args.append(f"--fpolicy={test_failure_policy}")
+                print(f"Test failure policy is set to '{test_failure_policy}'.")
         else:
             print("Test impact analysis ie disabled.")
              # Sequence type
@@ -210,8 +203,8 @@ class TestImpact:
             # Non pipeline of truth sequence
             else:
                 # Test failure policy
-                args.append(f"--fpolicy={non_pipeline_of_truth_test_failure_policy}")
-                print(f"Test failure policy is set to '{non_pipeline_of_truth_test_failure_policy}'.")
+                args.append(f"--fpolicy={test_failure_policy}")
+                print(f"Test failure policy is set to '{test_failure_policy}'.")
         
         print("Args: ", end='')
         print(*args)
