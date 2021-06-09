@@ -26,8 +26,8 @@ class ErrorController(QObject):
         # Initialize view references
         self._error_page: ErrorPage = self._view_manager.get_error_page()
 
-    def _cancel(self) -> None:
+    def _ok(self) -> None:
         QCoreApplication.instance().quit()
 
     def setup(self) -> None:
-        self._error_page.cancel_button.clicked.connect(self._cancel)
+        self._error_page.ok_button.clicked.connect(self._ok)

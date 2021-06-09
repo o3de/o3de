@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 ERROR_PAGE_TOOL_SETUP_ERROR_MESSAGE: str = \
     "It appears you have not setup " \
     "<a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/\">"\
-    "<span style=\"color:#0095F2;\">AWS credential</span></a> " \
+    "<span style=\"color:#4A90E2;\">AWS credential</span></a> " \
     "or it is invalid.<br>Please check log file under Gems/AWSCore/Code/Tool/ResourceMappingTool for more details."
 
 VIEW_EDIT_PAGE_SAVING_FAILED_WITH_INVALID_ROW_ERROR_MESSAGE: str = \

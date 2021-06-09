@@ -47,8 +47,7 @@ class ErrorPage(QWidget):
         notification_area_layout.setContentsMargins(
             view_size_constants.ERROR_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
             view_size_constants.MAIN_PAGE_LAYOUT_MARGIN_TOPBOTTOM,
-            view_size_constants.ERROR_PAGE_LAYOUT_MARGIN_LEFTRIGHT,
-            view_size_constants.ERROR_PAGE_LAYOUT_MARGIN_TOPBOTTOM)
+            view_size_constants.ERROR_PAGE_LAYOUT_MARGIN_LEFTRIGHT, 0)
 
         notification_frame: NotificationFrame = \
             NotificationFrame(self, QPixmap(":/error_report_warning.svg"),
@@ -62,7 +61,7 @@ class ErrorPage(QWidget):
     def _setup_footer_area(self) -> None:
         self._footer_area: QWidget = QWidget(self)
         self._footer_area.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self._footer_area.setMinimumSize(view_size_constants.ERROR_PAGE_MAIN_WINDOW_WIDTH,
+        self._footer_area.setMaximumSize(view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,
                                          view_size_constants.ERROR_PAGE_FOOTER_AREA_HEIGHT)
 
         footer_area_layout: QHBoxLayout = QHBoxLayout(self._footer_area)
@@ -75,16 +74,16 @@ class ErrorPage(QWidget):
 
         footer_area_spacer: QSpacerItem = QSpacerItem(view_size_constants.ERROR_PAGE_MAIN_WINDOW_WIDTH,
                                                       view_size_constants.INTERACTION_COMPONENT_HEIGHT,
-                                                      QSizePolicy.Expanding, QSizePolicy.Minimum)
+                                                      QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
         footer_area_layout.addItem(footer_area_spacer)
 
-        self._cancel_button: QPushButton = QPushButton(self._footer_area)
-        self._cancel_button.setObjectName("Secondary")
-        self._cancel_button.setText(notification_label_text.VIEW_EDIT_PAGE_CANCEL_TEXT)
-        self._cancel_button.setMinimumSize(view_size_constants.CANCEL_BUTTON_WIDTH,
-                                           view_size_constants.INTERACTION_COMPONENT_HEIGHT)
-        footer_area_layout.addWidget(self._cancel_button)
+        self._ok_button: QPushButton = QPushButton(self._footer_area)
+        self._ok_button.setObjectName("Secondary")
+        self._ok_button.setText(notification_label_text.ERROR_PAGE_OK_TEXT)
+        self._ok_button.setMinimumSize(view_size_constants.OK_BUTTON_WIDTH,
+                                       view_size_constants.INTERACTION_COMPONENT_HEIGHT)
+        footer_area_layout.addWidget(self._ok_button)
 
     @property
-    def cancel_button(self) -> QPushButton:
-        return self._cancel_button
+    def ok_button(self) -> QPushButton:
+        return self._ok_button
