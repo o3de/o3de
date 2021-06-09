@@ -55,4 +55,5 @@ set(FILES
     Tests/System/RenderPipelineTests.cpp
     Tests/System/SceneTests.cpp
     Tests/System/ViewTests.cpp
+    Tests/System/ViewportContextTests.cpp
 )
