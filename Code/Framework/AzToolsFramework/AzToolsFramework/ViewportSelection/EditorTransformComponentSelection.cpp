@@ -1015,6 +1015,7 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusConnect();
         Camera::EditorCameraNotificationBus::Handler::BusConnect();
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(entityContextId);
+        EditorEntityContextNotificationBus::Handler::BusConnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
@@ -1042,6 +1043,7 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
         ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        EditorEvents::Bus::Handler::BusDisconnect();
         Camera::EditorCameraNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
@@ -3597,6 +3599,18 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::SetEntityLocalRotation(const AZ::EntityId entityId, const AZ::Vector3& localRotation)
     {
         ETCS::SetEntityLocalRotation(entityId, localRotation, m_transformChangedInternally);
+    }
+
+    void EditorTransformComponentSelection::OnStartPlayInEditor()
+    {
+        SetViewportUiClusterVisible(m_transformModeClusterId, false);
+        SetViewportUiClusterVisible(m_spaceCluster.m_spaceClusterId, false);
+    }
+
+    void EditorTransformComponentSelection::OnStopPlayInEditor()
+    {
+        SetViewportUiClusterVisible(m_transformModeClusterId, true);
+        SetViewportUiClusterVisible(m_spaceCluster.m_spaceClusterId, true);
     }
 
     namespace ETCS
