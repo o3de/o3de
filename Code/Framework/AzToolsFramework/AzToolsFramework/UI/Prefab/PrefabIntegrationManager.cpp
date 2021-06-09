@@ -119,7 +119,7 @@ namespace AzToolsFramework
             return "Prefabs";
         }
 
-        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu) const
+        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu)
         {
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(

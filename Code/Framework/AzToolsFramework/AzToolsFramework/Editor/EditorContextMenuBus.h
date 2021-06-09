@@ -79,7 +79,7 @@ namespace AzToolsFramework
          * This is the menu that appears when right clicking the main editor window,
          * including the Entity Outliner and the Viewport.
          */
-        virtual void PopulateEditorGlobalContextMenu(QMenu* menu) const = 0;
+        virtual void PopulateEditorGlobalContextMenu(QMenu* menu) = 0;
     };
 
     using EditorContextMenuBus = AZ::EBus<EditorContextMenuEvents>;
