@@ -274,14 +274,14 @@ namespace
         PyExit();
     }
 
-    void PyReportTest(bool success, const AZStd::string& output)
+    void PyReportTest(bool, const AZStd::string& output)
     {
         CCryEditApp::instance()->PrintAlways(output);
-        if (!success)
-        {
-            gEnv->retCode = 0xF; // Special error code indicating a failure in tests
-        }
-        PyExitNoPrompt();
+//        if (!success)
+//        {
+//            gEnv->retCode = 0xF; // Special error code indicating a failure in tests
+//        }
+//        PyExitNoPrompt();
     }
 }
 

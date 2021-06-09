@@ -10,6 +10,7 @@ import math
 import azlmbr
 import azlmbr.legacy.general as general
 import azlmbr.debug
+import json
 
 import traceback
 
@@ -30,7 +31,7 @@ class TestHelper:
 
     @staticmethod
     def open_level(directory, level):
-        # type: (str, ) -> None
+        # type: (str, str) -> None
         """
         :param level: the name of the level folder in AutomatedTesting\\Physics\\
 
@@ -153,6 +154,8 @@ class Report:
 
     @staticmethod
     def start_test(test_function):
+        Report._results = []
+        Report._exception = None
         try:
             test_function()
         except Exception as ex:
@@ -161,22 +164,31 @@ class Report:
 
     @staticmethod
     def report_results(test_function):
-        success = True 
+        success = True
+        report_dict = {'name' : test_function.__name__, 'success' : True, 'exception' : None}
         report = f"Report for {test_function.__name__}:\n"
         for result in Report._results:
             passed, info = result
             success = success and passed
+            test = ""
             if passed:
-                report += f"[SUCCESS] {info}\n"
+                test = f"[SUCCESS] {info}"
             else:
-                report += f"[FAILED ] {info}\n"
+                test = f"[FAILED ] {info}"
+            report += f"{test}\n"
         if Report._exception:
             report += "EXCEPTION raised:\n  %s\n" % Report._exception[:-1].replace("\n", "\n  ")
+            report_dict['exception'] = str(Report._exception[:-1].replace("\n", "\n  "))
             success = False
         report += "Test result:  "
         report += "SUCCESS" if success else "FAILURE"
+        report_dict['success'] = success
+        report_dict['output'] = report
+        report_dict_str = json.dumps(report_dict)
+        report += f"\nJSON_START({report_dict_str})JSON_END"
         print(report)
         general.report_test_result(success, report)
+        assert success, f"Test {test_function.__name__} failed"
 
     @staticmethod
     def info(msg):

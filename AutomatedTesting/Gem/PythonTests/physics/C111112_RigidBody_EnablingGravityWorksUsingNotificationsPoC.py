@@ -1,7 +1,12 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
 
-SPDX-License-Identifier: Apache-2.0 OR MIT
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
 # Test case ID : C111111
@@ -20,7 +25,7 @@ class Tests:
 # fmt:on
 
 
-def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
+def C111112_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
     # Setup path
     import os
     import sys
@@ -71,7 +76,7 @@ def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
         other_id = args[0]
         if other_id.Equal(terrain_id):
             Report.info("Touched ground")
-            TouchGround.value = False
+            TouchGround.value = True
 
     handler = azlmbr.physics.CollisionNotificationBusHandler()
     handler.connect(ball_id)
@@ -89,4 +94,4 @@ if __name__ == "__main__":
     imports.init()
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC)
+    Report.start_test(C111112_RigidBody_EnablingGravityWorksUsingNotificationsPoC)

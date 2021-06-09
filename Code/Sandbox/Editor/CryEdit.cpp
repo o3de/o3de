@@ -1492,7 +1492,6 @@ struct PythonTestOutputHandler final
     {
         PythonOutputHandler::OnExceptionMessage(message);
         printf("EXCEPTION: %.*s\n", static_cast<int>(message.size()), message.data());
-        AZ::Debug::Trace::Terminate(1);
     }
 };
 
@@ -1510,12 +1509,27 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
     using namespace AzToolsFramework;
     if (cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript)
     {
+        // cmdInfo data is only available on startup, copy it
+        QByteArray fileStr = cmdInfo.m_strFileName.toUtf8();
+        AZStd::vector<AZStd::string_view> fileList;
+        AzFramework::StringFunc::TokenizeVisitor(fileStr.constData(),
+            [&fileList](AZStd::string_view elem)
+            {
+                fileList.push_back(elem);
+            }, ';', false
+        );
+
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
-            AZStd::vector<AZStd::string> tokens;
-            AzFramework::StringFunc::Tokenize(cmdInfo.m_pythonArgs.toUtf8().constData(), tokens, ' ');
+            QByteArray pythonArgsStr = cmdInfo.m_pythonArgs.toUtf8();
             AZStd::vector<AZStd::string_view> pythonArgs;
-            std::transform(tokens.begin(), tokens.end(), std::back_inserter(pythonArgs), [](auto& tokenData) { return tokenData.c_str(); });
+            AzFramework::StringFunc::TokenizeVisitor(pythonArgsStr.constData(),
+                [&pythonArgs](AZStd::string_view elem)
+                {
+                    pythonArgs.push_back(elem);
+                }, ' '
+            );
+
             if (cmdInfo.m_bRunPythonTestScript)
             {
                 AZStd::string pythonTestCase;
@@ -1532,12 +1546,24 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
             }
             else
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                AZStd::for_each(fileList.begin(), fileList.end(),
+                    [&pythonArgs](AZStd::string_view filename)
+                    {
+                        EditorPythonRunnerRequestBus::Broadcast(
+                            &EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, filename, pythonArgs);
+                    }
+                );
             }
         }
         else
         {
-            EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename, cmdInfo.m_strFileName.toUtf8().constData());
+            AZStd::for_each(fileList.begin(), fileList.end(),
+                [](AZStd::string_view filename)
+                {
+                    EditorPythonRunnerRequestBus::Broadcast(
+                        &EditorPythonRunnerRequestBus::Events::ExecuteByFilename, filename);
+                }
+            );
         }
     }
 }
