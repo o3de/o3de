@@ -66,7 +66,7 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
-        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnectio occurs
+        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
         //! @param handler The ClientDisconnectedEvent Handler to add
         virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
 
