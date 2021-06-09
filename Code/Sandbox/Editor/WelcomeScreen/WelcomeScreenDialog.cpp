@@ -270,10 +270,7 @@ void WelcomeScreenDialog::OnShowToolTip(const QModelIndex& index)
 {
     const QString& fullPath = m_levels[index.row()].second;
 
-    //TEMPORARY:Begin This can be put back once the main window is in Qt
-    //QRect itemRect = ui->recentLevelTable->visualRect(index);
-    QToolTip::showText(QCursor::pos(), QString("Open level: %1").arg(fullPath) /*, ui->recentLevelTable, itemRect*/);
-    //TEMPORARY:END
+    QToolTip::showText(QCursor::pos(), QString("Open level: %1").arg(fullPath));
 }
 
 
