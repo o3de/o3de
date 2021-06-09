@@ -169,6 +169,37 @@ namespace AZ::Utils
     template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
     template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize);
 
+    template<typename Container>
+    AZ::Outcome<Container, AZStd::string> ReadFileWithNoSizeLimit(AZStd::string_view filePath)
+    {
+        IO::FileIOStream file;
+        if (!file.Open(filePath.data(), IO::OpenMode::ModeRead))
+        {
+            return AZ::Failure(AZStd::string::format("Failed to open '%.*s'.", AZ_STRING_ARG(filePath)));
+        }
+
+        AZ::IO::SizeType length = file.GetLength();
+
+        if (length == 0)
+        {
+            return AZ::Failure(AZStd::string::format("Failed to load '%.*s'. File is empty.", AZ_STRING_ARG(filePath)));
+        }
+
+        Container fileContent;
+        fileContent.resize(length);
+        AZ::IO::SizeType bytesRead = file.Read(length, fileContent.data());
+        file.Close();
+
+        // Resize again just in case bytesRead is less than length for some reason
+        fileContent.resize(bytesRead);
+
+        return AZ::Success(AZStd::move(fileContent));
+    }
+
+    template AZ::Outcome<AZStd::string, AZStd::string> ReadFileWithNoSizeLimit(AZStd::string_view filePath);
+    template AZ::Outcome<AZStd::vector<int8_t>, AZStd::string> ReadFileWithNoSizeLimit(AZStd::string_view filePath);
+    template AZ::Outcome<AZStd::vector<uint8_t>, AZStd::string> ReadFileWithNoSizeLimit(AZStd::string_view filePath);
+
     AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
     {
         AZ::IO::FixedMaxPath path = GetHomeDirectory();
