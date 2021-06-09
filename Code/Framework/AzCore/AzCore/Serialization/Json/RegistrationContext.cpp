@@ -47,19 +47,11 @@ namespace AZ
 
             if (!overwriteExisting)
             {
-                auto serializerIter = m_context->m_handledTypesMap.find(uuid);
-                if (serializerIter == m_context->m_handledTypesMap.end())
-                {
-                    m_context->m_handledTypesMap.emplace(uuid, serializer);
-                }
-                else
-                {
-                    AZ_Assert(
-                        false,
-                        "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
-                        serializer->RTTI_GetTypeName(), serializerIter->second->RTTI_GetTypeName(),
-                        serializerIter->first.ToString<OSString>().c_str());
-                }
+                auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
+                AZ_Assert(
+                    emplaceResult.second,
+                    "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
+                    serializer->RTTI_GetTypeName(), emplaceResult.first->second->RTTI_GetTypeName(), uuid);
             }
             else
             {
