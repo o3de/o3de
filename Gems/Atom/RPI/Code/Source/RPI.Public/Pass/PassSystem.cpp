@@ -95,7 +95,7 @@ namespace AZ
 
         void PassSystem::Init()
         {
-            m_state = PassSystemState::Initializing;
+            m_state = PassSystemState::InitializingPassSystem;
 
             Interface<PassSystemInterface>::Register(this);
             m_passLibrary.Init();
@@ -103,7 +103,10 @@ namespace AZ
             m_rootPass = CreatePass<ParentPass>(Name{"Root"});
             m_rootPass->m_flags.m_partOfHierarchy = true;
 
-            //m_targetedPassDebugName = "AcesOutputTransform";
+            // Here you can specify the name of a pass you would like to break into during execution
+            // If you enable AZ_RPI_ENABLE_PASS_DEBUGGING, then any pass matching the specified name will debug
+            // break on any instance of the AZ_RPI_BREAK_ON_TARGET_PASS macro. See Pass::Build for an example
+            // m_targetedPassDebugName = "MyPassName";
 
             m_state = PassSystemState::Idle;
         }
@@ -189,12 +192,11 @@ namespace AZ
 
         void PassSystem::BuildPasses()
         {
-            m_state = PassSystemState::Building;
+            m_state = PassSystemState::BuildingPasses;
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
-            u32 loopCounter = 0;
 
             // While loop is for the event in which passes being built add more pass to m_buildPassList
             while(!m_buildPassList.empty())
@@ -214,25 +216,14 @@ namespace AZ
 
                 SortPassListAscending(buildListCopy);
 
-                Pass* previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    if (pass.get() != previousPassInList)
-                    {
-                        pass->Reset();
-                        previousPassInList = pass.get();
-                    }
+                    pass->Reset();
                 }
-                previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : buildListCopy)
                 {
-                    if (pass.get() != previousPassInList)
-                    {
-                        pass->Build(true);
-                        previousPassInList = pass.get();
-                    }
+                    pass->Build(true);
                 }
-                loopCounter++;
             }
 
             if (m_passHierarchyChanged)
@@ -251,12 +242,11 @@ namespace AZ
 
         void PassSystem::InitializePasses()
         {
-            m_state = PassSystemState::Initializing;
+            m_state = PassSystemState::InitializingPasses;
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
-            u32 loopCounter = 0;
 
             while (!m_initializePassList.empty())
             {
@@ -273,16 +263,10 @@ namespace AZ
 
                 SortPassListAscending(initListCopy);
 
-                Pass* previousPassInList = nullptr;
                 for (const Ptr<Pass>& pass : initListCopy)
                 {
-                    if (pass.get() != previousPassInList)
-                    {
-                        pass->Initialize();
-                        previousPassInList = pass.get();
-                    }
+                    pass->Initialize();
                 }
-                loopCounter++;
             }
 
             if (m_passHierarchyChanged)
@@ -296,7 +280,7 @@ namespace AZ
 
         void PassSystem::Validate()
         {
-            m_state = PassSystemState::Validating;
+            m_state = PassSystemState::ValidatingPasses;
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: Validate");
 
             if (PassValidation::IsEnabled())

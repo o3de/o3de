@@ -188,8 +188,10 @@ namespace AZ
 
         void DisplayMapperPass::InitializeInternal()
         {
-            // Force update on bindings because children of display mapper pass have their outputs connect
-            // to their parent's output, which is a non-conventional and non-standard workflow
+            // Force update on bindings because children of display mapper pass have their outputs connect to
+            // their parent's output, which is a non-conventional and non-standard workflow. Parent outputs are
+            // updated after child outputs, so post-build the child outputs do not yet point to the attachments on
+            // the parent bindings they are connected to. Forcing this refresh sets the attachment on the child output.
             for (const RPI::Ptr<Pass>& child : m_children)
             {
                 child->UpdateConnectedBindings();

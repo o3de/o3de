@@ -78,7 +78,6 @@ namespace AZ
 
             // Skip reset since the pass just got created
             m_state = PassState::Reset;
-            m_flags.m_alreadyReset = true;
         }
 
         Pass::~Pass()
@@ -1040,42 +1039,13 @@ namespace AZ
 
         // --- Queuing functions with PassSystem ---
 
-#define OLD_SCHOOL 1
-
         void Pass::QueueForBuild()
         {
-#if 0//OLD_SCHOOL
-            // Don't queue if we're in building phase
-            //if (PassSystemInterface::Get()->GetState() != RPI::PassSystemState::Building)
-            {
-                if (!m_flags.m_queuedForBuildAttachment)
-                {
-                    PassSystemInterface::Get()->QueueForBuild(this);
-                    m_flags.m_queuedForBuildAttachment = true;
-
-                    // Set these two flags to false since when queue build attachments request, they should all be already be false except one use
-                    // case that the pass system processed all queued requests when active a scene. 
-                    // m_flags.m_alreadyReset = false;
-                    // m_flags.m_alreadyPrepared = false;
-
-                    m_queueState = PassQueueState::QueuedForBuild;
-
-                    if (m_state != PassState::Rendering)
-                    {
-                        m_state = PassState::Queued;
-                    }
-
-                }
-            }
-#else
-            // Don't queue if we're in building phase
+            // Queue if not already queued or if queued for initialization only. Don't queue if we're currently building.
             if (m_state != PassState::Building &&
                 (m_queueState == PassQueueState::NoQueue || m_queueState == PassQueueState::QueuedForInitialization))
             {
-                //if (PassSystemInterface::Get()->GetState() != RPI::PassSystemState::Building)
-                {
-                    PassSystemInterface::Get()->QueueForBuild(this);
-                }
+                PassSystemInterface::Get()->QueueForBuild(this);
                 m_queueState = PassQueueState::QueuedForBuild;
 
                 if (m_state != PassState::Rendering)
@@ -1083,19 +1053,12 @@ namespace AZ
                     m_state = PassState::Queued;
                 }
             }
-#endif
         }
 
         void Pass::QueueForInitialization()
         {
-            // Pass::FrameBegin - Pass [Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite] is attempting to render, but is not in the Idle state.
-            if (m_path == Name("Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite"))
-            {
-                __nop();
-            }
-
-            // Only queue if the pass is not in any other queue
-            if (m_queueState == PassQueueState::NoQueue)
+            // Only queue if the pass is not in any other queue. Don't queue if we're currently initializing.
+            if (m_queueState == PassQueueState::NoQueue && m_state != PassState::Initializing)
             {
                 PassSystemInterface::Get()->QueueForInitialization(this);
                 m_queueState = PassQueueState::QueuedForInitialization;
@@ -1109,6 +1072,8 @@ namespace AZ
 
         void Pass::QueueForRemoval()
         {
+            // Skip only if we're already queued for removal, otherwise proceed.
+            // QueuedForRemoval overrides QueuedForBuild and QueuedForInitialization.
             if (m_queueState != PassQueueState::QueuedForRemoval)
             {
                 PassSystemInterface::Get()->QueueForRemoval(this);
@@ -1125,28 +1090,15 @@ namespace AZ
 
         void Pass::Reset()
         {
-            if (m_path == Name("Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite"))
-            {
-                __nop();
-            }
-
+            // Ensure we're in a valid state to reset. This ensures the pass won't be reset multiple times in the same frame.
             bool execute = (m_state == PassState::Idle);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
 
-#if OLD_SCHOOL
-            AZ_Assert(!execute == m_flags.m_alreadyReset, "ANTON - EARLY OUT FLAGS do not match for pass RESET!!");
-            if (m_flags.m_alreadyReset)
-            {
-                return;
-            }
-            m_flags.m_alreadyReset = true;
-#else
             if (!execute)
             {
                 return;
             }
-#endif
 
             m_state = PassState::Resetting;
 
@@ -1169,32 +1121,16 @@ namespace AZ
 
         void Pass::Build(bool calledFromPassSystem)
         {
-            if (m_path == Name("Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite"))
-            {
-                __nop();
-            }
-
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            bool execute = (m_state == PassState::Idle || m_state == PassState::Reset);
-            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
-            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
+            // Ensure we're in a valid state to build. This ensures the pass won't be built multiple times in the same frame.
+            bool execute = (m_state == PassState::Reset);
 
-#if OLD_SCHOOL
-            AZ_Assert(!execute == m_flags.m_alreadyPrepared, "ANTON - EARLY OUT FLAGS do not match for pass BUILD!!");
-            if (m_flags.m_alreadyPrepared)
-            {
-                return;
-            }
-            m_flags.m_alreadyPrepared = true;
-#else
             if (!execute)
             {
                 return;
             }
-#endif
 
-            AZ_Assert(m_state == PassState::Reset, "ANTON - BUILDING PASS BUT STATE IS NOT RESET!!");
             m_state = PassState::Building;
 
             // Bindings, inputs and attachments
@@ -1233,6 +1169,7 @@ namespace AZ
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
+            // Ensure we're in a valid state to initialize. This ensures the pass won't be initialized multiple times in the same frame.
             bool execute = (m_state == PassState::Idle || m_state == PassState::Built);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
 
@@ -1244,11 +1181,6 @@ namespace AZ
             m_state = PassState::Initializing;
             m_queueState = PassQueueState::NoQueue;
 
-            // Update
-//            UpdateConnectedBindings();
-//            UpdateOwnedAttachments();
-//            UpdateAttachmentUsageIndices();
-
             InitializeInternal();
 
             m_state = PassState::Initialized;
@@ -1256,12 +1188,6 @@ namespace AZ
 
         void Pass::OnInitializationFinished()
         {
-            AZ_RPI_BREAK_ON_TARGET_PASS;
-
-            m_flags.m_alreadyReset = false;
-            m_flags.m_alreadyPrepared = false;
-            m_flags.m_queuedForBuildAttachment = false;
-
             m_flags.m_alreadyCreated = false;
             m_importedAttachmentStore.clear();
             OnInitializationFinishedInternal();

@@ -40,15 +40,34 @@ namespace AZ
 
         using PassCreator = AZStd::function<Ptr<Pass>(const PassDescriptor& descriptor)>;
 
+        // Enum to track the different execution phases of the Pass System
         enum class PassSystemState : u32
         {
+            // Default state, 
             Unitialized,
-            Idle,
+
+            // Initial Pass System setup. Transitions to Idle
+            InitializingPassSystem,
+
+            // Pass System is processing passes queued for Removal. Transitions to Idle
             RemovingPasses,
-            Building,
-            Initializing,
-            Validating,
+
+            // Pass System is processing passes queued for Build (and their child passes). Transitions to Idle
+            BuildingPasses,
+
+            // Pass System is processing passes queued for Initialization (and their child passes). Transitions to Idle
+            InitializingPasses,
+
+            // Pass System is validating that the Pass hierarchy is in a valid state after Build and Initialization. Transitions to Idle
+            ValidatingPasses,
+
+            // Pass System is idle and can transition to any other state (except FrameEnd)
+            Idle,
+
+            // Pass System is currently rendering a frame. Transitions to FrameEnd
             Rendering,
+
+            // Pass System is finishing rendering a frame. Transitions to Idle
             FrameEnd,
         };
 

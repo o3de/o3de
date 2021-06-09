@@ -108,7 +108,7 @@ namespace AZ
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
 
-            // Manually create the pipeline so we can gather the view tags from it's passes
+            // Manually build the pipeline so we can gather the view tags from it's passes
             pipeline->m_rootPass->Build();
             pipeline->m_rootPass->Initialize();
             pipeline->m_rootPass->OnInitializationFinished();
@@ -326,8 +326,10 @@ namespace AZ
                 Ptr<ParentPass> newRoot = m_rootPass->Recreate();
                 newRoot->SetRenderPipeline(this);
 
-                // Force processing of queued changes so we can validate the new pipeline
-                passSystem->ProcessQueuedChanges();
+                // Manually build the pipeline
+                newRoot->Build();
+                newRoot->Initialize();
+                newRoot->OnInitializationFinished();
 
                 // Validate the new root
                 PassValidationResults validation;

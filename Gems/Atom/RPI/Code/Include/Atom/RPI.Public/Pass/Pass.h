@@ -79,9 +79,9 @@ namespace AZ
         //! 
         //! When authoring a new pass class, inherit from Pass and override any of the virtual functions
         //! ending with 'Internal' to define the behavior of your passes. These virtual are recursively
-        //! called in Preorder order throughout the pass tree. Only FramePrepare and FrameEnd are
+        //! called in preorder traversal throughout the pass tree. Only FrameBegin and FrameEnd are
         //! guaranteed to be called per frame. The other override-able functions are called as needed 
-        //! when scheduled with the PassSystem. See QueueForBuild and QueueForRemoval.
+        //! when scheduled with the PassSystem. See QueueForBuild, QueueForRemoval and QueueForInitialization.
         //! 
         //! Passes are created by the PassFactory. They can be created using either Pass Name,
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
@@ -262,13 +262,8 @@ namespace AZ
 
             PassState GetPassState() const;
 
-
-
-
             // Update all bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedBindings();
-
-
 
 
         protected:
@@ -333,14 +328,14 @@ namespace AZ
             void Build(bool calledFromPassSystem = false);
             virtual void BuildInternal() { }
 
-            // Called after the pass build phase has finished. Allows passes to reset build flags.
-            void OnInitializationFinished();
-            virtual void OnInitializationFinishedInternal() { };
-
             // Allows for additional pass initialization between building and rendering
-            // Can be queued independently of Build so as to only invoke Initialize without Build
+            // Can be queued independently of Build so as to only invoke Initialize() without Build()
             void Initialize();
             virtual void InitializeInternal() { };
+
+            // Called after the pass initialization phase has finished. Allows passes to reset various states and flags.
+            void OnInitializationFinished();
+            virtual void OnInitializationFinishedInternal() { };
 
             // The Pass's 'Render' function. Called every frame, here the pass sets up it's rendering logic with
             // the FrameGraphBuilder. This is where your derived pass needs to call ImportScopeProducer on
@@ -398,23 +393,34 @@ namespace AZ
                 {
                     struct
                     {
+                        // Whether this pass was created with a PassRequest (in which case m_request holds valid data)
                         uint64_t m_createdByPassRequest : 1;
+
+                        // Whether the pass is enabled (behavior can be customized by overriding IsEnabled() )
                         uint64_t m_enabled : 1;
+
+                        // False if parent or one of it's ancestors is disabled
                         uint64_t m_parentEnabled : 1;
 
+                        // If this is a parent pass, indicates if the pass has already created children this frame
                         uint64_t m_alreadyCreated : 1;
+
+                        // If this is a parent pass, indicates whether the pass needs to create child passes
                         uint64_t m_createChildren : 1;
 
-                        // OLD SCHOOL
-                        uint64_t m_alreadyPrepared : 1;
-                        uint64_t m_alreadyReset : 1;
-                        uint64_t m_queuedForBuildAttachment : 1;
-
-
+                        // Whether this pass belongs to the pass hierarchy, i.e. if you can trace it's parents up to the Root pass
                         uint64_t m_partOfHierarchy : 1;
+
+                        // Whether this pass has a DrawListTag
                         uint64_t m_hasDrawListTag : 1;
+
+                        // Whether this pass has a PipelineViewTag
                         uint64_t m_hasPipelineViewTag : 1;
+
+                        // Whether the pass should gather timestamp query metrics
                         uint64_t m_timestampQueryEnabled : 1;
+
+                        // Whether the pass should gather pipeline statics
                         uint64_t m_pipelineStatisticsQueryEnabled : 1;
                     };
                     uint64_t m_allFlags = 0;
@@ -434,11 +440,6 @@ namespace AZ
             // Sort type to be used by the default sort implementation. Passes can also provide
             // fully custom sort implementations by overriding the SortDrawList() function.
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
-
-
-
-
-
 
 
         private:
@@ -528,6 +529,7 @@ namespace AZ
             // buffers and images don't get deleted during attachment build phase
             AZStd::vector<Ptr<PassAttachment>> m_importedAttachmentStore;
 
+            // Name of the pass. Will be concatenated with parent names to form a unique path
             Name m_name;
 
             // Path of the pass in the hierarchy. Example: Root.Ssao.Downsample
