@@ -42,6 +42,11 @@ namespace EMotionFX
         using MutexType = AZStd::recursive_mutex;
 
         virtual void OnActorInstanceCreated([[maybe_unused]] ActorInstance* actorInstance) {}
+
+        /**
+         * Called when any of the actor instances gets destructed.
+         * @param actorInstance The actorInstance that gets destructed.
+         */
         virtual void OnActorInstanceDestroyed([[maybe_unused]] ActorInstance* actorInstance) {}
     };
 

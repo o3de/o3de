@@ -166,12 +166,6 @@ namespace EMotionFX
     {
         ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceDestroyed, this);
 
-        // trigger the OnDeleteActorInstance event
-        GetEventManager().OnDeleteActorInstance(this);
-
-        // remove it from the recording
-        GetRecorder().RemoveActorInstanceFromRecording(this);
-
         // get rid of the motion system
         if (mMotionSystem)
         {
