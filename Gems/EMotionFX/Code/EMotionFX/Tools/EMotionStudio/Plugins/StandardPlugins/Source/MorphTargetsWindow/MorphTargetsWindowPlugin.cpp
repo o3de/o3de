@@ -111,14 +111,16 @@ namespace EMStudio
         mMorphTargetGroups.clear();
     }
 
-
     // reinit the morph target dialog, e.g. if selection changes
     void MorphTargetsWindowPlugin::ReInit(bool forceReInit)
     {
-        // get the selected actorinstance
-        const CommandSystem::SelectionList& selection       = GetCommandManager()->GetCurrentSelection();
-        EMotionFX::ActorInstance*           actorInstance   = selection.GetSingleActorInstance();
+        const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
+        EMotionFX::ActorInstance* actorInstance = selection.GetSingleActorInstance();
+        ReInit(actorInstance, forceReInit);
+    }
 
+    void MorphTargetsWindowPlugin::ReInit(EMotionFX::ActorInstance* actorInstance, bool forceReInit)
+    {
         // show hint if no/multiple actor instances is/are selected
         if (actorInstance == nullptr)
         {
@@ -136,10 +138,7 @@ namespace EMStudio
             return;
         }
 
-        // get our selected actor instance and the corresponding actor
-        EMotionFX::Actor* actor = actorInstance->GetActor();
-
-        // only reinit the morph targets if actorinstance changed
+        // only reinit the morph targets if actor instance changed
         if (mCurrentActorInstance != actorInstance || forceReInit)
         {
             // set the current actor instance in any case
@@ -151,7 +150,7 @@ namespace EMStudio
             AZStd::vector<EMotionFX::MorphSetupInstance::MorphTarget*>   phonemeInstances;
             AZStd::vector<EMotionFX::MorphSetupInstance::MorphTarget*>   defaultMorphTargetInstances;
 
-            // get the morph target setup
+            EMotionFX::Actor* actor = actorInstance->GetActor();
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(actorInstance->GetLODLevel());
             if (morphSetup == nullptr)
             {
@@ -283,7 +282,7 @@ namespace EMStudio
     {
         if (mCurrentActorInstance == actorInstance)
         {
-            ReInit(true);
+            ReInit(/*actorInstance=*/nullptr);
         }
     }
 

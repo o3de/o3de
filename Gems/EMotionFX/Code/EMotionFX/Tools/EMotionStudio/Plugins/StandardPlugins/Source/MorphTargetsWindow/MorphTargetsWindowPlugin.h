@@ -56,6 +56,7 @@ namespace EMStudio
         EMStudioPlugin* Clone() override;
 
         // update the morph targets window based on the current selection
+        void ReInit(EMotionFX::ActorInstance* actorInstance, bool forceReInit = false);
         void ReInit(bool forceReInit = false);
 
         // clear all widgets from the window
