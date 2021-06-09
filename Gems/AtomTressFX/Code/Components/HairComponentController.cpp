@@ -146,6 +146,10 @@ namespace AZ
                     Data::AssetBus::MultiHandler::BusConnect(m_hairAsset.GetId());
                     m_hairAsset.QueueLoad();
                 }
+                else
+                {
+                    RemoveHairObject();
+                }
             }
 
             void HairComponentController::RemoveHairObject()
