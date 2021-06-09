@@ -452,9 +452,9 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path)
+    AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path, const QString& projectPath)
     {
-        GemInfo gemInfo = GemInfoFromPath(pybind11::str(path.toStdString()));
+        GemInfo gemInfo = GemInfoFromPath(pybind11::str(path.toStdString()), pybind11::str(projectPath.toStdString()));
         if (gemInfo.IsValid())
         {
             return AZ::Success(AZStd::move(gemInfo));
@@ -473,7 +473,7 @@ namespace O3DE::ProjectManager
         {
             for (auto path : m_manifest.attr("get_engine_gems")())
             {
-                gems.push_back(GemInfoFromPath(path));
+                gems.push_back(GemInfoFromPath(path, pybind11::none()));
             }
         });
         if (!result.IsSuccess())
@@ -494,7 +494,7 @@ namespace O3DE::ProjectManager
             pybind11::str pyProjectPath = projectPath.toStdString();
             for (auto path : m_manifest.attr("get_all_gems")(pyProjectPath))
             {
-                gems.push_back(GemInfoFromPath(path));
+                gems.push_back(GemInfoFromPath(path, pyProjectPath));
             }
         });
         if (!result.IsSuccess())
@@ -632,12 +632,12 @@ namespace O3DE::ProjectManager
         }
     }
 
-    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path)
+    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
     {
         GemInfo gemInfo;
         gemInfo.m_path = Py_To_String(path);
 
-        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path);
+        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path, pyProjectPath);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
@@ -682,9 +682,12 @@ namespace O3DE::ProjectManager
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
-                for (auto tag : projectData["user_tags"])
+                if (projectData.contains("user_tags"))
                 {
-                    projectInfo.m_userTags.append(Py_To_String(tag));
+                    for (auto tag : projectData["user_tags"])
+                    {
+                        projectInfo.m_userTags.append(Py_To_String(tag));
+                    }
                 }
             }
             catch ([[maybe_unused]] const std::exception& e)
@@ -779,12 +782,12 @@ namespace O3DE::ProjectManager
             });
     }
 
-    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path)
+    ProjectTemplateInfo PythonBindings::ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
     {
         ProjectTemplateInfo templateInfo;
         templateInfo.m_path = Py_To_String(pybind11::str(path));
 
-        auto data = m_manifest.attr("get_template_json_data")(pybind11::none(), path);
+        auto data = m_manifest.attr("get_template_json_data")(pybind11::none(), path, pyProjectPath);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
@@ -826,14 +829,15 @@ namespace O3DE::ProjectManager
         return templateInfo;
     }
 
-    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates()
+    AZ::Outcome<QVector<ProjectTemplateInfo>> PythonBindings::GetProjectTemplates(const QString& projectPath)
     {
         QVector<ProjectTemplateInfo> templates;
 
         bool result = ExecuteWithLock([&] {
+            pybind11::str pyProjectPath = projectPath.toStdString();
             for (auto path : m_manifest.attr("get_templates_for_project_creation")())
             {
-                templates.push_back(ProjectTemplateInfoFromPath(path));
+                templates.push_back(ProjectTemplateInfoFromPath(path, pyProjectPath));
             }
         });
 
