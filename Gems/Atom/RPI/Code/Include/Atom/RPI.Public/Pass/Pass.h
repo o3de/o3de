@@ -262,6 +262,15 @@ namespace AZ
 
             PassState GetPassState() const;
 
+
+
+
+            // Update all bindings on this pass that are connected to bindings on other passes
+            void UpdateConnectedBindings();
+
+
+
+
         protected:
             explicit Pass(const PassDescriptor& descriptor);
 
@@ -393,7 +402,6 @@ namespace AZ
                         uint64_t m_enabled : 1;
                         uint64_t m_parentEnabled : 1;
 
-                        uint64_t m_initialized : 1;
                         uint64_t m_alreadyCreated : 1;
                         uint64_t m_createChildren : 1;
 
@@ -426,6 +434,12 @@ namespace AZ
             // Sort type to be used by the default sort implementation. Passes can also provide
             // fully custom sort implementations by overriding the SortDrawList() function.
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
+
+
+
+
+
+
 
         private:
             // Return the Timestamp result of this pass
@@ -474,9 +488,6 @@ namespace AZ
             // Updates a binding on this pass using the binding it is connected to.
             // This sets the binding's attachment pointer to the connected binding's attachment
             void UpdateConnectedBinding(PassAttachmentBinding& binding);
-
-            // Update all bindings on this pass that are connected to bindings on other passes
-            void UpdateConnectedBindings();
 
             // Process a PassFallbackConnection to connect an output to an input to act as a short-circuit for when Pass is disabled 
             void ProcessFallbackConnection(const PassFallbackConnection& connection);

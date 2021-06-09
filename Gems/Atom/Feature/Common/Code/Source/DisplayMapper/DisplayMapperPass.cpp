@@ -82,7 +82,7 @@ namespace AZ
                     const Name& passName = fullscreenTrianglePass->GetName();
                     if (passName.GetStringView() == "CopyToSwapChain")
                     {
-                        fullscreenTrianglePass->Invalidate();
+                        fullscreenTrianglePass->QueueForInitialization();
                     }
                 }
             }
@@ -184,6 +184,18 @@ namespace AZ
             m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
 
             ParentPass::BuildInternal();
+        }
+
+        void DisplayMapperPass::InitializeInternal()
+        {
+            // Force update on bindings because children of display mapper pass have their outputs connect
+            // to their parent's output, which is a non-conventional and non-standard workflow
+            for (const RPI::Ptr<Pass>& child : m_children)
+            {
+                child->UpdateConnectedBindings();
+            }
+
+            RPI::ParentPass::InitializeInternal();
         }
 
         void DisplayMapperPass::FrameBeginInternal(FramePrepareParams params)

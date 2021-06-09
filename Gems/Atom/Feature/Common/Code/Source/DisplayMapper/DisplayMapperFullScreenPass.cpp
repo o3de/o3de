@@ -53,9 +53,5 @@ namespace AZ
             m_inputReferenceAttachmentName = attachmentName;
         }
 
-        void DisplayMapperFullScreenPass::Init()
-        {
-            FullscreenTrianglePass::Init();
-        }
     }   // namespace Render
 }   // namespace AZ

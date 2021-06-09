@@ -48,9 +48,9 @@ namespace AZ
         {
         }
 
-        void SMAAEdgeDetectionPass::Init()
+        void SMAAEdgeDetectionPass::InitializeInternal()
         {
-            SMAABasePass::Init();
+            SMAABasePass::InitializeInternal();
 
             m_renderTargetMetricsShaderInputIndex.Reset();
             m_chromaThresholdShaderInputIndex.Reset();

@@ -103,7 +103,7 @@ namespace AZ
             m_rootPass = CreatePass<ParentPass>(Name{"Root"});
             m_rootPass->m_flags.m_partOfHierarchy = true;
 
-            //m_targetedPassDebugName = "RPISamplePipeline";
+            //m_targetedPassDebugName = "AcesOutputTransform";
 
             m_state = PassSystemState::Idle;
         }

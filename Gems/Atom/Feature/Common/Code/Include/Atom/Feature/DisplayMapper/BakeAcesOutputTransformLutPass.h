@@ -57,14 +57,12 @@ namespace AZ
             explicit BakeAcesOutputTransformLutPass(const RPI::PassDescriptor& descriptor);
 
             // Pass behavior overrides...
-            void FrameBeginInternal(FramePrepareParams params) override;
+            void InitializeInternal() override;
 
             // RHI::ScopeProducer overrides...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
-
-            void Init();
 
             void AcquireLutImage();
             void ReleaseLutImage();

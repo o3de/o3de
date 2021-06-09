@@ -1088,6 +1088,12 @@ namespace AZ
 
         void Pass::QueueForInitialization()
         {
+            // Pass::FrameBegin - Pass [Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite] is attempting to render, but is not in the Idle state.
+            if (m_path == Name("Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite"))
+            {
+                __nop();
+            }
+
             // Only queue if the pass is not in any other queue
             if (m_queueState == PassQueueState::NoQueue)
             {
@@ -1119,6 +1125,11 @@ namespace AZ
 
         void Pass::Reset()
         {
+            if (m_path == Name("Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite"))
+            {
+                __nop();
+            }
+
             bool execute = (m_state == PassState::Idle);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
@@ -1158,6 +1169,11 @@ namespace AZ
 
         void Pass::Build(bool calledFromPassSystem)
         {
+            if (m_path == Name("Root.LowEndPipeline.LowEndPipelineTemplate.LightAdaptation.LookModificationTransformPass.LookModificationComposite"))
+            {
+                __nop();
+            }
+
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
             bool execute = (m_state == PassState::Idle || m_state == PassState::Reset);
