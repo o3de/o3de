@@ -1533,17 +1533,52 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
 
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                AZStd::string pythonTestCase;
-                if (!cmdInfo.m_pythontTestCase.isEmpty())
+                struct FileAndTestCase
                 {
-                    pythonTestCase = cmdInfo.m_pythontTestCase.toUtf8().constData();
+                    AZStd::string_view m_file;
+                    AZStd::string_view m_testCase;
+                };
+                AZStd::vector<FileAndTestCase> testList;
+                testList.reserve(fileList.size());
+                for (AZStd::string_view file : fileList)
+                {
+                    testList.push_back({ file, {} });
                 }
 
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonTestCase, pythonArgs);
+                QByteArray testCaseStr = cmdInfo.m_pythontTestCase.toUtf8();
+                FileAndTestCase* testListIt = testList.begin();
+                AzFramework::StringFunc::TokenizeVisitor(testCaseStr.constData(),
+                    [&testList, &testListIt](AZStd::string_view elem)
+                    {
+                        if (testListIt != testList.end())
+                        {
+                            testListIt->m_testCase = elem;
+                            ++testListIt;
+                        }
+                    }, ';', false /* keepEmptyStrings */
+                );
 
-                // Close the editor gracefully as the test has completed
-                GetIEditor()->GetDocument()->SetModifiedFlag(false);
-                QTimer::singleShot(0, qApp, &QApplication::closeAllWindows);
+                bool success = true;
+                AZStd::for_each(fileList.begin(), fileList.end(),
+                    [&success, &pythonArgs](const FileAndTestCase& test)
+                    {
+                        bool fileSucceded = false;
+                        EditorPythonRunnerRequestBus::BroadcastResult(fileSucceded,
+                            &EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, test.m_file, test.m_testCase, pythonArgs);
+                        success = success && fileSucceded;
+                    }
+                );
+                if (success)
+                {
+                    // Close the editor gracefully as the test has completed
+                    GetIEditor()->GetDocument()->SetModifiedFlag(false);
+                    QTimer::singleShot(0, qApp, &QApplication::closeAllWindows);
+                }
+                else
+                {
+                    // Close down the application with 0xF exit code indicating failure of the test
+                    AZ::Debug::Trace::Terminate(0xF);
+                }
             }
             else
             {

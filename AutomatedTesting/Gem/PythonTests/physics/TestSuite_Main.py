@@ -27,6 +27,12 @@ revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', '
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
 
+    class test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
+        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC
+        test_module = C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC
+        is_parallelizable = True
+
+
     def test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(self, request, workspace, editor, launcher_platform):
         from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
         self._run_test(request, workspace, editor, test_module)
