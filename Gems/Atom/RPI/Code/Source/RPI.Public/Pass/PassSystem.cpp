@@ -50,7 +50,6 @@ namespace AZ
 {
     namespace RPI
     {
-#pragma optimize("", off)
 
         PassSystemInterface* PassSystemInterface::Get()
         {
@@ -486,6 +485,5 @@ namespace AZ
             return nullptr;
         }
 
-#pragma optimize("", on)
     }   // namespace RPI
 }   // namespace AZ

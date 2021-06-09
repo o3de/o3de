@@ -42,7 +42,6 @@ namespace AZ
 {
     namespace RPI
     {
-#pragma optimize("", off)
 
         // --- Constructors ---
 
@@ -1632,8 +1631,6 @@ namespace AZ
                 }
             }
         }
-
-#pragma optimize("", on)
 
     }   // namespace RPI
 }   // namespace AZ

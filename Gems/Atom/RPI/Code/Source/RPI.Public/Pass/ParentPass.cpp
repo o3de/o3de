@@ -248,6 +248,7 @@ namespace AZ
 
         void ParentPass::CreateChildPasses()
         {
+            // The already created flag prevents this function from executing multiple times a frame
             if (!m_flags.m_createChildren || m_flags.m_alreadyCreated)
             {
                 return;
