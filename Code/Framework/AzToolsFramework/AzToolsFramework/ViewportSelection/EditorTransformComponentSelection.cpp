@@ -136,12 +136,12 @@ namespace AzToolsFramework
     static const char* const s_duplicateUndoRedoDesc = s_duplicateTitle;
     static const char* const s_deleteUndoRedoDesc = s_deleteTitle;
 
-    static const char* const s_transformModeClusterTranslateTooltip = "Switch to translate mode";
-    static const char* const s_transformModeClusterRotateTooltip = "Switch to rotate mode";
-    static const char* const s_transformModeClusterScaleTooltip = "Switch to scale mode";
-    static const char* const s_spaceClusterWorldTooltip = "Toggle world space lock";
-    static const char* const s_spaceClusterParentTooltip = "Toggle parent space lock";
-    static const char* const s_spaceClusterLocalTooltip = "Toggle local space lock";
+    static const char* const TransformModeClusterTranslateTooltip = "Switch to translate mode";
+    static const char* const TransformModeClusterRotateTooltip = "Switch to rotate mode";
+    static const char* const TransformModeClusterScaleTooltip = "Switch to scale mode";
+    static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
+    static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
+    static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
 
     static const AZ::Color s_fadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
     static const AZ::Color s_fadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
@@ -2470,13 +2470,13 @@ namespace AzToolsFramework
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_translateButtonId, s_transformModeClusterTranslateTooltip);
+            m_translateButtonId, TransformModeClusterTranslateTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_rotateButtonId, s_transformModeClusterRotateTooltip);
+            m_rotateButtonId, TransformModeClusterRotateTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_transformModeClusterId,
-            m_scaleButtonId, s_transformModeClusterScaleTooltip);
+            m_scaleButtonId, TransformModeClusterScaleTooltip);
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
@@ -2519,13 +2519,13 @@ namespace AzToolsFramework
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_worldButtonId, s_spaceClusterWorldTooltip);
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_worldButtonId, SpaceClusterWorldTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_parentButtonId, s_spaceClusterParentTooltip);
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_parentButtonId, SpaceClusterParentTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_localButtonId, s_spaceClusterLocalTooltip);
+            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_localButtonId, SpaceClusterLocalTooltip);
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
