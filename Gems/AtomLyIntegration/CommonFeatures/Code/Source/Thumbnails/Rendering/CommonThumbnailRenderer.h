@@ -17,8 +17,6 @@
 #include <Thumbnails/Rendering/ThumbnailRendererContext.h>
 #include <Thumbnails/Rendering/ThumbnailRendererData.h>
 
-#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
-
 // Disables warning messages triggered by the Qt library
 // 4251: class needs to have dll-interface to be used by clients of class 
 // 4800: forcing value to bool 'true' or 'false' (performance warning)
@@ -39,7 +37,6 @@ namespace AZ
                 : public ThumbnailRendererContext
                 , private AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
                 , private SystemTickBus::Handler
-                , private ThumbnailFeatureProcessorProviderBus::Handler
             {
             public:
                 AZ_CLASS_ALLOCATOR(CommonThumbnailRenderer, AZ::SystemAllocator, 0)
@@ -60,13 +57,9 @@ namespace AZ
                 //! SystemTickBus::Handler interface overrides...
                 void OnSystemTick() override;
 
-                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
-                const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
-
                 AZStd::unordered_map<Step, AZStd::shared_ptr<ThumbnailRendererStep>> m_steps;
                 Step m_currentStep = Step::None;
                 AZStd::shared_ptr<ThumbnailRendererData> m_data;
-                AZStd::vector<AZStd::string> m_minimalFeatureProcessors;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration

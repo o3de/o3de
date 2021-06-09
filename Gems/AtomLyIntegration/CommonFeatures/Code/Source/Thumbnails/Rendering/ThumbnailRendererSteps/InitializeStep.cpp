@@ -12,7 +12,6 @@
 
 
 #include <AzCore/Math/MatrixUtils.h>
-#include <AZCore/EBus/Results.h>
 
 #include <AzFramework/Components/TransformComponent.h>
 
@@ -32,7 +31,6 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
 
 #include <Thumbnails/Rendering/ThumbnailRendererData.h>
 #include <Thumbnails/Rendering/ThumbnailRendererContext.h>
@@ -56,23 +54,24 @@ namespace AZ
                 data->m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
                 data->m_entityContext->InitContext();
 
-                // Create and register a scene with all required feature processors
+                // Create and register a scene with minimum required feature processors
                 RPI::SceneDescriptor sceneDesc;
-
-                AZ::EBusAggregateResults<AZStd::vector<AZStd::string>> results;
-                ThumbnailFeatureProcessorProviderBus::BroadcastResult(results, &ThumbnailFeatureProcessorProviderBus::Handler::GetCustomFeatureProcessors);
-
-                AZStd::set<AZStd::string> featureProcessorNames;
-                for (auto& resultCollection : results.values)
-                {
-                    for (auto& featureProcessorName : resultCollection)
-                    {
-                        if (featureProcessorNames.emplace(featureProcessorName).second)
-                        {
-                            sceneDesc.m_featureProcessorNames.push_back(featureProcessorName);
-                        }
-                    }
-                }
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::TransformServiceFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::MeshFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SimplePointLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SimpleSpotLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::PointLightFeatureProcessor");
+                // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow flickering
+                // [ATOM-13568] as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP
+                // for now. Possibly re-enable with [GFX TODO][ATOM-13639]
+                // sceneDesc.m_featureProcessorNames.push_back("AZ::Render::DirectionalLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::DiskLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::CapsuleLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::QuadLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::DecalTextureArrayFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::ImageBasedLightFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::PostProcessFeatureProcessor");
+                sceneDesc.m_featureProcessorNames.push_back("AZ::Render::SkyBoxFeatureProcessor");
 
                 data->m_scene = RPI::Scene::CreateScene(sceneDesc);
 

@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
-
 #include <AzCore/base.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
@@ -59,7 +57,6 @@ namespace AZ
             class HairFeatureProcessor final
                 : public RPI::FeatureProcessor
                 , private AZ::TickBus::Handler
-                , private LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler
             {
                 Name TestSkinningPass;
                 Name GlobalShapeConstraintsPass;
@@ -82,11 +79,6 @@ namespace AZ
                 void UpdateHairSkinning();
 
                 bool Init();
-
-                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides in
-                //!  order to make sure that the hair FP is registered to the Thumbnail scene so we
-                //!  avoid initialization errors due to matching pipeline with mainline. 
-                const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
 
                 // FeatureProcessor overrides ...
                 void Activate() override;

@@ -34,34 +34,12 @@ namespace AZ
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::MaterialAsset::RTTI_Type());
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusConnect(RPI::ModelAsset::RTTI_Type());
                 SystemTickBus::Handler::BusConnect();
-                ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
                 m_steps[Step::Initialize] = AZStd::make_shared<InitializeStep>(this);
                 m_steps[Step::FindThumbnailToRender] = AZStd::make_shared<FindThumbnailToRenderStep>(this);
                 m_steps[Step::WaitForAssetsToLoad] = AZStd::make_shared<WaitForAssetsToLoadStep>(this);
                 m_steps[Step::Capture] = AZStd::make_shared<CaptureStep>(this);
                 m_steps[Step::ReleaseResources] = AZStd::make_shared<ReleaseResourcesStep>(this);
-
-                m_minimalFeatureProcessors =
-                {
-                    "AZ::Render::TransformServiceFeatureProcessor",
-                    "AZ::Render::MeshFeatureProcessor",
-                    "AZ::Render::SimplePointLightFeatureProcessor",
-                    "AZ::Render::SimpleSpotLightFeatureProcessor",
-                    "AZ::Render::PointLightFeatureProcessor",
-                    // There is currently a bug where having multiple DirectionalLightFeatureProcessors active can result in shadow
-                    // flickering [ATOM-13568]
-                    // as well as continually rebuilding MeshDrawPackets [ATOM-13633]. Lets just disable the directional light FP for now.
-                    // Possibly re-enable with [GFX TODO][ATOM-13639]
-                    // "AZ::Render::DirectionalLightFeatureProcessor",
-                    "AZ::Render::DiskLightFeatureProcessor",
-                    "AZ::Render::CapsuleLightFeatureProcessor",
-                    "AZ::Render::QuadLightFeatureProcessor",
-                    "AZ::Render::DecalTextureArrayFeatureProcessor",
-                    "AZ::Render::ImageBasedLightFeatureProcessor",
-                    "AZ::Render::PostProcessFeatureProcessor",
-                    "AZ::Render::SkyBoxFeatureProcessor"
-                };
             }
 
             CommonThumbnailRenderer::~CommonThumbnailRenderer()
@@ -72,7 +50,6 @@ namespace AZ
                 }
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler::BusDisconnect();
                 SystemTickBus::Handler::BusDisconnect();
-                ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
             }
 
             void CommonThumbnailRenderer::SetStep(Step step)
@@ -98,11 +75,6 @@ namespace AZ
             void CommonThumbnailRenderer::OnSystemTick()
             {
                 AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::ExecuteQueuedEvents();
-            }
-
-            const AZStd::vector<AZStd::string>& CommonThumbnailRenderer::GetCustomFeatureProcessors() const
-            {
-                return m_minimalFeatureProcessors;
             }
             
             AZStd::shared_ptr<ThumbnailRendererData> CommonThumbnailRenderer::GetData() const
