@@ -16,6 +16,9 @@ endif()
 # public facing options will be used for conversion into cpack specific ones below.
 set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embedded into the installer to download additional artifacts")
 set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
+set(LY_INSTALLER_UPLOAD_URL "" CACHE STRING
+    "URL used to automatically upload the artifacts.  Can also be set via LY_INSTALLER_UPLOAD_URL environment variable.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>")
+set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING "AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable.")
 
 set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 
@@ -103,6 +106,45 @@ install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
 )
 
+# checks for and removes trailing slash
+function(strip_trailing_slash in_url out_url)
+    string(LENGTH ${in_url} _url_length)
+    MATH(EXPR _url_length "${_url_length}-1")
+
+    string(SUBSTRING ${in_url} 0 ${_url_length} _clean_url)
+    if("${in_url}" STREQUAL "${_clean_url}/")
+        set(${out_url} ${_clean_url} PARENT_SCOPE)
+    else()
+        set(${out_url} ${in_url} PARENT_SCOPE)
+    endif()
+endfunction()
+
+set(_versioned_target_url_tag ${LY_VERSION_STRING}/${PAL_HOST_PLATFORM_NAME})
+
+if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
+    set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
+endif()
+
+if(LY_INSTALLER_UPLOAD_URL)
+    ly_is_s3_url(${LY_INSTALLER_UPLOAD_URL} _is_s3_bucket)
+    if(NOT _is_s3_bucket)
+        message(FATAL_ERROR "Only S3 installer uploading is supported at this time")
+    endif()
+
+    if (LY_INSTALLER_AWS_PROFILE)
+        set(CPACK_AWS_PROFILE ${LY_INSTALLER_AWS_PROFILE})
+    elseif (DEFINED ENV{LY_INSTALLER_AWS_PROFILE})
+        set(CPACK_AWS_PROFILE $ENV{LY_INSTALLER_AWS_PROFILE})
+    else()
+        message(FATAL_ERROR
+            "An AWS profile is required for installer S3 uploading.  Please provide "
+            "one via LY_INSTALLER_AWS_PROFILE CLI argument or environment variable")
+    endif()
+
+    strip_trailing_slash(${LY_INSTALLER_UPLOAD_URL} LY_INSTALLER_UPLOAD_URL)
+    set(CPACK_UPLOAD_URL ${LY_INSTALLER_UPLOAD_URL}/${_versioned_target_url_tag})
+endif()
+
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
 
@@ -146,9 +188,11 @@ ly_configure_cpack_component(
 )
 
 if(LY_INSTALLER_DOWNLOAD_URL)
-    # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY
+    strip_trailing_slash(${LY_INSTALLER_DOWNLOAD_URL} LY_INSTALLER_DOWNLOAD_URL)
+
+    # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY (local)
     cpack_configure_downloads(
-        ${LY_INSTALLER_DOWNLOAD_URL}
+        ${LY_INSTALLER_DOWNLOAD_URL}/${_versioned_target_url_tag}
         UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
         ALL
     )

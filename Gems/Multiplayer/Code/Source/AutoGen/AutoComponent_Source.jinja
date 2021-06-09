@@ -368,26 +368,26 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
             ->Method("{{ UpperFirst(Property.attrib['Name']) }}", [](const {{ ClassName }}* self, {{ ', '.join(paramDefines) }}) {
                         self->m_controller->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
                     })
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntity", [](AZ::EntityId id, {{ ', '.join(paramDefines) }}) {
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id, {{ ', '.join(paramDefines) }}) {
 
                         AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                         if (!entity)
                         {
-                            AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                            AZ_Warning("Network Property", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
                             return;
                         }
 
                         {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
                         if (!networkComponent)
                         {
-                            AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                            AZ_Warning("Network Property", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
                             return;
                         }
 
                         {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
                         if (!controller)
                         {
-                            AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }} method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
+                            AZ_Warning("Network Property", false, "{{ ClassName }} {{ UpperFirst(Property.attrib['Name']) }}ByEntityId method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be invoked from {{InvokeFrom}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeFrom}} entity. Please check your network context before attempting to call {{ UpperFirst(Property.attrib['Name']) }}.", entity->GetName().c_str(), id.ToString().c_str())
                             return;
                         }
 
@@ -429,6 +429,32 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
         ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}Event", [](const {{ ClassName }}* self) -> AZ::Event<{{ ', '.join(paramTypes) }}>&
         {
             return self->m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
+        })
+            ->Attribute(AZ::Script::Attributes::AzEventDescription, {{ LowerFirst(Property.attrib['Name']) }}EventDesc)
+        ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId", [](AZ::EntityId id) -> AZ::Event<{{ ', '.join(paramTypes) }}>*
+        {
+            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+            if (!entity)
+            {
+                AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                return nullptr;
+            }
+
+            {{ ClassName }}* networkComponent = entity->FindComponent<{{ ClassName }}>();
+            if (!networkComponent)
+            {
+                AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntityId failed. Entity '%s' (id: %s) is missing {{ ClassName }}, be sure to add {{ ClassName }} to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                return nullptr;
+            }
+
+            {{ ClassName }}Controller* controller = static_cast<{{ ClassName }}Controller*>(networkComponent->GetController());
+            if (!controller)
+            {
+                AZ_Warning("Network Property", false, "{{ ClassName }} Get{{ UpperFirst(Property.attrib['Name']) }}EventByEntity method failed. Entity '%s' (id: %s) {{ ClassName }} is missing the network controller. This RemoteProcedure can only be received by {{InvokeTo}} network entities, because this entity doesn't have a controller, it must not be a {{InvokeTo}} entity. Please check your network context before attempting to Get{{ UpperFirst(Property.attrib['Name']) }}Event.", entity->GetName().c_str(), id.ToString().c_str())
+                return nullptr;
+            }
+
+            return &controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event();
         })
             ->Attribute(AZ::Script::Attributes::AzEventDescription, AZStd::move({{ LowerFirst(Property.attrib['Name']) }}EventDesc))
 {% endif %}
