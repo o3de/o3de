@@ -63,7 +63,6 @@ ly_append_configurations_options(
 
         # Disabling these warnings while they get fixed
         /wd4018 # signed/unsigned mismatch
-        /wd4121 # alignment of a member was sensitive to packing
         /wd4244 # conversion, possible loss of data
         /wd4245 # conversion, signed/unsigned mismatch
         /wd4267 # conversion, possible loss of data
