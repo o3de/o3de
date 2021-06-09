@@ -13,18 +13,45 @@
 #include <Mesh/EditorMeshStats.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ
 {
     namespace Render
     {
-        void EditorMeshStats::Reflect(ReflectContext* context)
+        void EditorMeshStatsForLod::Reflect(ReflectContext* context)
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
+                serializeContext->Class<EditorMeshStatsForLod>()
+                    ->Field("meshCount", &EditorMeshStatsForLod::m_meshCount)
+                    ->Field("vertCount", &EditorMeshStatsForLod::m_vertCount)
+                    ->Field("triCount", &EditorMeshStatsForLod::m_triCount)
+                ;
+
+                if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<EditorMeshStatsForLod>("EditorMeshStatsForLod", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_meshCount, "Mesh Count", "")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_vertCount, "Vert Count", "")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStatsForLod::m_triCount, "Tri Count", "")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                    ;
+                }
+            }
+        }
+
+        void EditorMeshStats::Reflect(ReflectContext* context)
+        {
+            EditorMeshStatsForLod::Reflect(context);
+
+            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
                 serializeContext->Class<EditorMeshStats>()
-                    ->Field("stringRepresentation", &EditorMeshStats::m_stringRepresentation)
+                    ->Field("meshStatsForLod", &EditorMeshStats::m_meshStatsForLod)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -32,27 +59,13 @@ namespace AZ
                     editContext->Class<EditorMeshStats>(
                         "EditorMeshStats", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                        ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorMeshStats::m_stringRepresentation, "Mesh Stats", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshStats::m_meshStatsForLod, "Mesh Stats", "")
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
             }
         }
-
-        void EditorMeshStats::UpdateStringRepresentation()
-        {
-            m_stringRepresentation = "";
-            int lodIndex = 0;
-            for (auto& meshStatsForLod : m_meshStatsForLod)
-            {
-                m_stringRepresentation += AZStd::string::format("LOD: %d:\n", lodIndex++);
-                m_stringRepresentation += AZStd::string::format("\tMesh Count: %d\n", meshStatsForLod.m_meshCount);
-                m_stringRepresentation += AZStd::string::format("\tVert Count: %d\n", meshStatsForLod.m_vertCount);
-                m_stringRepresentation += AZStd::string::format("\tTriangle Count: %d\n", meshStatsForLod.m_triCount);
-            }
-            AZ::StringFunc::TrimWhiteSpace(m_stringRepresentation, true, true);
-        };        
     } // namespace Render
 } // namespace AZ

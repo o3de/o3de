@@ -26,9 +26,11 @@ namespace AZ
             AZ_RTTI(EditorMeshStatsForLod, "{626E3AEB-0F7A-4777-BAF1-2BBA8C1857ED}");
             AZ_CLASS_ALLOCATOR(EditorMeshStatsForLod, SystemAllocator, 0);
 
-            int m_meshCount = 0;
-            int m_vertCount = 0;
-            int m_triCount = 0;
+            static void Reflect(ReflectContext* context);
+
+            AZ::u32 m_meshCount = 0;
+            AZ::u32 m_vertCount = 0;
+            AZ::u32 m_triCount = 0;
         };
 
         struct EditorMeshStats final
@@ -37,10 +39,8 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(EditorMeshStats, SystemAllocator, 0);
 
             static void Reflect(ReflectContext* context);
-            void UpdateStringRepresentation();
 
             AZStd::vector<EditorMeshStatsForLod> m_meshStatsForLod;
-            AZStd::string m_stringRepresentation = {};
         };
     } // namespace Render
 } // namespace AZ

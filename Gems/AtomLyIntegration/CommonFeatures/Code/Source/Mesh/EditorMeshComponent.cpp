@@ -60,7 +60,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Mesh Stats", "")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
 
                     editContext->Class<MeshComponentController>(
@@ -210,20 +210,21 @@ namespace AZ
 
         void EditorMeshComponent::OnModelReady(const Data::Asset<RPI::ModelAsset>& /*modelAsset*/, const Data::Instance<RPI::Model>& /*model*/)
         {
+            const auto& lodAssets = m_controller.GetConfiguration().m_modelAsset->GetLodAssets();
             m_stats.m_meshStatsForLod.clear();
-            for (auto& lod : m_controller.GetConfiguration().m_modelAsset->GetLodAssets())
+            m_stats.m_meshStatsForLod.reserve(lodAssets.size());
+            for (const auto& lodAsset : lodAssets)
             {
                 EditorMeshStatsForLod stats;
-                auto meshes = lod->GetMeshes();
-                stats.m_meshCount = lod->GetMeshes().size();
-                for (auto& mesh : meshes)
+                const auto& meshes = lodAsset->GetMeshes();
+                stats.m_meshCount = lodAsset->GetMeshes().size();
+                for (const auto& mesh : meshes)
                 {
                     stats.m_vertCount += mesh.GetVertexCount();
                     stats.m_triCount += mesh.GetIndexCount() / 3;
                 }
-                m_stats.m_meshStatsForLod.push_back(stats);
+                m_stats.m_meshStatsForLod.emplace_back(stats);
             }
-            m_stats.UpdateStringRepresentation();
 
             // Refresh the tree when the model loads to update UI based on the model.
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
@@ -238,8 +239,7 @@ namespace AZ
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
 
-            m_stats.m_meshStatsForLod.clear();
-            m_stats.UpdateStringRepresentation();
+            m_stats.m_meshStatsForLod.swap({});
             SetDirty();
 
             return BaseClass::OnConfigurationChanged();
