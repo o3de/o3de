@@ -257,7 +257,7 @@ void CViewportTitleDlg::SetupOverflowMenu()
 
     overFlowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
+    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
     connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
     m_enableAngleSnappingAction->setCheckable(true);
     overFlowMenu->addAction(m_enableAngleSnappingAction);
