@@ -59,7 +59,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorMeshComponent::AddEditorMaterialComponent)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &EditorMeshComponent::GetEditorMaterialComponentVisibility)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Mesh Stats", "Mesh statistics.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EditorMeshComponent::m_stats, "Mesh Stats", "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ;
 
