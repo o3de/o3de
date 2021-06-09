@@ -21,6 +21,8 @@
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
+#include <AzQtComponents/Application/ToolsApplication.h>
+
 #include <QApplication>
 #include <QTimer>
 
@@ -30,13 +32,14 @@ namespace MaterialEditor
 
     class MaterialEditorApplication
         : public AzFramework::Application
-        , public QApplication
+        //, public QApplication
         , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , private MaterialEditorWindowNotificationBus::Handler
         , private AzFramework::AssetSystemStatusBus::Handler
         , private AZ::UserSettingsOwnerRequestBus::Handler
         , private AZ::Debug::TraceMessageBus::Handler
         , private AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
+        , public AzQtComponents::ToolsApplication
     {
     public:
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");

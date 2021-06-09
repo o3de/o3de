@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
-
+    //*/
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);
 
     auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);

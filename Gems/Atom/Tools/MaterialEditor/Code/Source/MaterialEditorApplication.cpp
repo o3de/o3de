@@ -72,7 +72,7 @@ namespace MaterialEditor
 
     MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
         : Application(argc, argv)
-        , QApplication(*argc, *argv)
+        , ToolsApplication(*argc, *argv)
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
