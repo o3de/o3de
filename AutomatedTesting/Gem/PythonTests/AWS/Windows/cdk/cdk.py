@@ -12,12 +12,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import os
 import pytest
 import boto3
+import uuid
+import logging
 
 import ly_test_tools.environment.process_utils as process_utils
 from typing import List
 
 BOOTSTRAP_STACK_NAME = 'CDKToolkit'
 BOOTSTRAP_STAGING_BUCKET_LOGIC_ID = 'StagingBucket'
+
+logger = logging.getLogger(__name__)
+logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 class Cdk:
     """
@@ -34,7 +39,7 @@ class Cdk:
         :param workspace: ly_test_tools workspace fixture.
         """
         self._cdk_env = os.environ.copy()
-        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project
+        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project + uuid.uuid4().hex[-4:0]
         self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = session.region_name
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
         self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
@@ -46,6 +51,8 @@ class Cdk:
         self._stacks = []
         self._cdk_path = cdk_path
 
+        self._session = session
+
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',
             cwd=self._cdk_path,
@@ -56,6 +63,18 @@ class Cdk:
         """
         Deploy the bootstrap stack.
         """
+        try:
+            # Check if the bootstrap stack exists.
+            response = self._session.client('cloudformation').describe_stacks(
+                StackName=BOOTSTRAP_STACK_NAME
+            )
+            stacks = response.get('Stacks', [])
+            if stacks and len(stacks) is 1:
+                return
+
+        except Exception as e:
+            logger.info(f'Creating bootstrap stack {BOOTSTRAP_STACK_NAME}')
+
         bootstrap_cmd = ['cdk', 'bootstrap',
                          f'aws://{self._cdk_env["O3DE_AWS_DEPLOY_ACCOUNT"]}/{self._cdk_env["O3DE_AWS_DEPLOY_REGION"]}']
 
@@ -141,37 +160,36 @@ class Cdk:
         self._stacks = []
         self._cdk_path = ''
 
-    @staticmethod
-    def remove_bootstrap_stack(aws_utils: pytest.fixture) -> None:
+    def remove_bootstrap_stack(self) -> None:
         """
         Remove the CDK bootstrap stack.
         :param aws_utils: aws_utils fixture.
         """
         # Check if the bootstrap stack exists.
-        response = aws_utils.client('cloudformation').describe_stacks(
+        response = self._session.client('cloudformation').describe_stacks(
             StackName=BOOTSTRAP_STACK_NAME
         )
         stacks = response.get('Stacks', [])
-        if not stacks:
+        if not stacks or len(stacks) is 0:
             return
 
         # Clear the bootstrap staging bucket before deleting the bootstrap stack.
-        response = aws_utils.client('cloudformation').describe_stack_resource(
+        response = self._session.client('cloudformation').describe_stack_resource(
             StackName=BOOTSTRAP_STACK_NAME,
             LogicalResourceId=BOOTSTRAP_STAGING_BUCKET_LOGIC_ID
         )
 
         staging_bucket_name = response.get('StackResourceDetail', {}).get('PhysicalResourceId', '')
         if staging_bucket_name:
-            s3 = aws_utils.resource('s3')
+            s3 = self._session.resource('s3')
             bucket = s3.Bucket(staging_bucket_name)
             for key in bucket.objects.all():
                 key.delete()
 
         # Delete the bootstrap stack.
-        aws_utils.client('cloudformation').delete_stack(
-            StackName=BOOTSTRAP_STACK_NAME
-        )
+        # self._session.client('cloudformation').delete_stack(
+        #     StackName=BOOTSTRAP_STACK_NAME
+        # )
 
 
 @pytest.fixture(scope='function')
@@ -206,7 +224,7 @@ def cdk(
     def teardown():
         if destroy_stacks_on_teardown:
             cdk_obj.destroy()
-            cdk_obj.remove_bootstrap_stack(aws_utils)
+            cdk_obj.remove_bootstrap_stack()
 
     request.addfinalizer(teardown)
 
