@@ -19,8 +19,16 @@
 #include "RenderViewport.h"
 #include <AzCore/Component/Component.h>
 
+#include <IAudioSystem.h>
+
 #include <functional>
 #include <QSharedPointer>
+#include <QWidgetAction>
+#include <QComboBox>
+
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
+
+#include <HMDBus.h>
 #endif
 
 // CViewportTitleDlg dialog
@@ -42,6 +50,7 @@ class CViewportTitleDlg
     : public QWidget
     , public IEditorNotifyListener
     , public ISystemEventListener
+    , public AZ::VR::VREventBus::Handler
 {
     Q_OBJECT
 public:
@@ -63,9 +72,14 @@ public:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
+    void SetSpeedComboBox(double value);
+
     QMenu* const GetFovMenu();
     QMenu* const GetAspectMenu();
     QMenu* const GetResolutionMenu();
+
+Q_SIGNALS:
+    void ActionTriggered(int command);
 
 protected:
     virtual void OnInitDialog();
@@ -75,8 +89,19 @@ protected:
 
     void OnMaximize();
     void OnToggleHelpers();
-    void OnToggleDisplayInfo();
     void UpdateDisplayInfo();
+
+    //////////////////////////////////////////////////////////////////////////
+    /// VR Event Bus Implementation
+    //////////////////////////////////////////////////////////////////////////
+    void OnHMDInitialized() override;
+    void OnHMDShutdown() override;
+    //////////////////////////////////////////////////////////////////////////
+
+    void SetupCameraDropdownMenu();
+    void SetupResolutionDropdownMenu();
+    void SetupViewportInformationMenu();
+    void SetupOverflowMenu();
 
     QString m_title;
 
@@ -87,22 +112,84 @@ protected:
     QStringList m_customFOVPresets;
     QStringList m_customAspectRatioPresets;
 
+    float m_prevMoveSpeed;
+
+    // Speed combobox/lineEdit settings
+    double m_minSpeed = 0.1;
+    double m_maxSpeed = 100.0;
+    double m_speedStep = 0.1;
+    int m_numDecimals = 1;
+
+    // Speed presets
+    float m_speedPresetValues[3] = { 0.1f, 1.0f, 10.0f };
+
+    double m_fieldWidthMultiplier = 1.8;
+
+
     void OnMenuFOVCustom();
 
     void CreateFOVMenu();
-    void PopUpFOVMenu();
 
     void OnMenuAspectRatioCustom();
     void CreateAspectMenu();
-    void PopUpAspectMenu();
 
     void OnMenuResolutionCustom();
     void CreateResolutionMenu();
-    void PopUpResolutionMenu();
+
+    void CreateViewportInformationMenu();
+    QMenu* const GetViewportInformationMenu();
+    void SetNoViewportInfo();
+    void SetNormalViewportInfo();
+    void SetFullViewportInfo();
+    void SetCompactViewportInfo();
+
+    void OnBnClickedSyncplayer();
+    void OnBnClickedGotoPosition();
+    void OnBnClickedMuteAudio();
+    void OnBnClickedEnableVR();
+
+    void UpdateMuteActionText();
+
+    void OnToggleDisplayInfo();
+
+    void OnSpeedComboBoxEnter();
+    void OnUpdateMoveSpeedText(const QString&);
+
+    void CheckForCameraSpeedUpdate();
+
+    void OnGridSnappingToggled();
+    void OnAngleSnappingToggled();
+
+    void OnGridSpinBoxChanged(double value);
+    void OnAngleSpinBoxChanged(double value);
+
+    void UpdateOverFlowMenuState();
 
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
+    QMenu* m_viewportInformationMenu = nullptr;
+    QAction* m_noInformationAction = nullptr;
+    QAction* m_normalInformationAction = nullptr;
+    QAction* m_fullInformationAction = nullptr;
+    QAction* m_compactInformationAction = nullptr;
+    QAction* m_debugHelpersAction = nullptr;
+    QAction* m_syncPlayerToCameraAction = nullptr;
+    QAction* m_audioMuteAction = nullptr;
+    QAction* m_enableVRAction = nullptr;
+    QAction* m_enableGridSnappingAction = nullptr;
+    QAction* m_enableAngleSnappingAction = nullptr;
+    QComboBox* m_cameraSpeed = nullptr;
+    AzQtComponents::DoubleSpinBox* m_gridSpinBox = nullptr;
+    AzQtComponents::DoubleSpinBox* m_angleSpinBox = nullptr;
+    QWidgetAction* m_gridSizeActionWidget = nullptr;
+    QWidgetAction* m_angleSizeActionWidget = nullptr;
+
+    Audio::SAudioRequest m_oMuteAudioRequest;
+    Audio::SAudioManagerRequestData<Audio::eAMRT_MUTE_ALL> m_oMuteAudioRequestData;
+    Audio::SAudioRequest m_oUnmuteAudioRequest;
+    Audio::SAudioManagerRequestData<Audio::eAMRT_UNMUTE_ALL> m_oUnmuteAudioRequestData;
+
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };
