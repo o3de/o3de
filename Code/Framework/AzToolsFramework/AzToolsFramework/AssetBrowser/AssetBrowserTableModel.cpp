@@ -95,7 +95,9 @@ namespace AzToolsFramework
             for (int i = 0; i < rows; ++i)
             {
                 QModelIndex index = model->index(i, 0, parent);
-                if (!model->hasChildren(index))
+                AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
+                //We only wanna see the source assets.
+                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
                 {
                     beginInsertRows(parent, row, row);
                     m_indexMap[row] = index;

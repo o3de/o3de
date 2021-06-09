@@ -97,7 +97,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             &AzAssetBrowserWindow::SelectionChangedSlot);
         connect(
             m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this,
-            &AzAssetBrowserWindow::DoubleClickedItemTableModel);
+            &AzAssetBrowserWindow::DoubleClickedItem);
         connect(
             m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
             &AzAssetBrowser::SearchWidget::ClearStringFilter);
@@ -163,7 +163,10 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
 void AzAssetBrowserWindow::UpdatePreview() const
 {
-    auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
+    const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible()
+        ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
+        : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+
     if (selectedAssets.size() != 1)
     {
         m_ui->m_previewerFrame->Clear();
@@ -234,43 +237,10 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
     
-    // assumption: Double clicking an item selects it before telling us we double clicked it.
-    const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets();
-    for (const AzAssetBrowser::AssetBrowserEntry* entry : selectedAssets)
-    {
-        AZ::Data::AssetId assetIdToOpen;
-        AZStd::string fullFilePath;
+    const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible()
+        ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
+        : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
 
-        if (const AzAssetBrowser::ProductAssetBrowserEntry* productEntry = azrtti_cast<const AzAssetBrowser::ProductAssetBrowserEntry*>(entry))
-        {
-            assetIdToOpen = productEntry->GetAssetId();
-            fullFilePath = entry->GetFullPath();
-        }
-        else if (const AzAssetBrowser::SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const AzAssetBrowser::SourceAssetBrowserEntry*>(entry))
-        {
-            // manufacture an empty AssetID with the source's UUID
-            assetIdToOpen = AZ::Data::AssetId(sourceEntry->GetSourceUuid(), 0);
-            fullFilePath = entry->GetFullPath();
-        }
-
-        bool handledBySomeone = false;
-        if (assetIdToOpen.IsValid())
-        {
-            AzAssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
-                &AzAssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor, assetIdToOpen, handledBySomeone);
-        }
-
-        if (!handledBySomeone && !fullFilePath.empty())
-        {
-            AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
-        }
-    }
-}
-
-void AzAssetBrowserWindow::DoubleClickedItemTableModel([[maybe_unused]] const QModelIndex& element)
-{
-    namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
-    const auto& selectedAssets = m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
     for (const AzAssetBrowser::AssetBrowserEntry* entry : selectedAssets)
     {
         AZ::Data::AssetId assetIdToOpen;
