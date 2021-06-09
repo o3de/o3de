@@ -209,19 +209,19 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
 
     if (createPath)
     {
-        CreatePath(m_fileName);
+        CreatePath(m_fileName.c_str());
     }
 
 #   ifdef _UNICODE
     wchar_t fileNameW[AZ_MAX_PATH_LEN];
     size_t numCharsConverted;
     m_handle = INVALID_HANDLE_VALUE;
-    if (mbstowcs_s(&numCharsConverted, fileNameW, m_fileName, AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
+    if (mbstowcs_s(&numCharsConverted, fileNameW, m_fileName.c_str(), AZ_ARRAY_SIZE(fileNameW) - 1) == 0)
     {
         m_handle = CreateFileW(fileNameW, dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
     }
 #   else //!_UNICODE
-    m_handle = CreateFile(m_fileName, dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
+    m_handle = CreateFile(m_fileName.c_str(), dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
 #   endif // !_UNICODE
 
     if (m_handle == INVALID_HANDLE_VALUE)
@@ -261,7 +261,7 @@ namespace Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SizeType offset, SystemFile::SeekMode mode)
+    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {

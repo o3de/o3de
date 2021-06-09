@@ -8,29 +8,25 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+   
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME})
 
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    
-    ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME})
-
-    ly_add_target(
-        NAME AzTest STATIC
-        NAMESPACE AZ
-        FILES_CMAKE
-            AzTest/aztest_files.cmake
-            ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        INCLUDE_DIRECTORIES
-            PUBLIC
-                .
-                ${pal_dir}
-        BUILD_DEPENDENCIES
-            PUBLIC
-                3rdParty::googletest::GMock
-                3rdParty::googletest::GTest
-                3rdParty::GoogleBenchmark
-                AZ::AzCore
-        PLATFORM_INCLUDE_FILES
-                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-    )
-
-endif()
+ly_add_target(
+    NAME AzTest STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzTest/aztest_files.cmake
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            ${pal_dir}
+    BUILD_DEPENDENCIES
+        PUBLIC
+            3rdParty::googletest::GMock
+            3rdParty::googletest::GTest
+            3rdParty::GoogleBenchmark
+            AZ::AzCore
+    PLATFORM_INCLUDE_FILES
+            ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+)

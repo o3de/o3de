@@ -125,6 +125,10 @@ ly_add_target(
             AZ::AssetProcessorBatch.Static
 )
 
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET AssetProcessor AssetProcessorBatch APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+endif()
+
 # Adds the AssetProcessorBatch target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.

@@ -90,6 +90,11 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, ParseFunctionIfBranchWithConnectedInput)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_ParseFunctionIfBranchWithConnectedInput");
+}
+
 TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
 {
     RunUnitTestGraph("LY_SC_UnitTest_UseRawBehaviorProperties");

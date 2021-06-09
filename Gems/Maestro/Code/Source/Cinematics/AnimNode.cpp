@@ -60,7 +60,6 @@ static const EAnimCurveType DEFAULT_TRACK_TYPE = eAnimCurveType_BezierFloat;
 
 // Old serialization values that are no longer
 // defined in IMovieSystem.h, but needed for conversion:
-static const int OLD_APARAM_USER = 100;
 static const int OLD_ACURVE_GOTO = 21;
 static const int OLD_APARAM_PARTICLE_COUNT_SCALE = 95;
 static const int OLD_APARAM_PARTICLE_PULSE_PERIOD = 96;

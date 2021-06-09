@@ -13,22 +13,11 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "InputAssembly"
                 },
-                // Outputs...
+                // Input/Output...
                 {
-                    "Name": "Output",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                {}
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
+                    "Name": "MotionInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
                 },
                 {
                     "Name": "OutputDepthStencil",
@@ -47,19 +36,6 @@
             ],
             "ImageAttachments": [
                 {
-                    "Name": "MotionBuffer",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
-                        }
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R16G16_FLOAT",
-                        "SharedQueueMask": "Graphics"
-                     }
-                },
-                {
                     "Name": "DepthStencil",
                     "SizeSource": {
                         "Source": {
@@ -74,13 +50,6 @@
                 }
             ],
             "Connections": [
-                {
-                    "LocalSlot": "Output",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "MotionBuffer"
-                    }
-                },
                 {
                     "LocalSlot": "OutputDepthStencil",
                     "AttachmentRef": {

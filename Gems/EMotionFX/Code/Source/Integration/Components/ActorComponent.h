@@ -44,7 +44,6 @@ namespace EMotionFX
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzFramework::CharacterPhysicsDataRequestBus::Handler
             , private AzFramework::RagdollPhysicsNotificationBus::Handler
-            , private EMotionFX::ActorNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
@@ -167,9 +166,6 @@ namespace EMotionFX
             // AZ::TickBus::Handler
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
-
-            // ActorNotificationBus::Handler
-            void OnActorReady(Actor* actor) override;
 
             void CheckActorCreation();
             void DestroyActor();

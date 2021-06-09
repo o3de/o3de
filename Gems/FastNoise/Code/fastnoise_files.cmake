@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/FastNoise_precompiled.cpp
     Source/FastNoise_precompiled.h
     Include/FastNoise/Ebuses/FastNoiseBus.h
     Include/FastNoise/Ebuses/FastNoiseGradientRequestBus.h

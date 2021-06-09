@@ -24,40 +24,6 @@ logger = logging.getLogger()
 logging.basicConfig()
 
 
-def remove_gem_dependency(cmake_file: pathlib.Path,
-                          gem_name: str) -> int:
-    """
-    removes a gem dependency from a cmake file
-    :param cmake_file: path to the cmake file
-    :param gem_name: name of the gem
-    :return: 0 for success or non 0 failure code
-    """
-    if not cmake_file.is_file():
-        logger.error(f'Failed to locate cmake file {cmake_file}')
-        return 1
-
-    # on a line by basis, remove any line with {gem_name}
-    t_data = []
-    # Remove the gem from the enabled_gem file by skipping the gem name entry
-    removed = False
-    with open(cmake_file, 'r') as s:
-        for line in s:
-            if gem_name == line.strip():
-                removed = True
-            else:
-                t_data.append(line)
-
-    if not removed:
-        logger.error(f'Failed to remove {gem_name} from cmake file {cmake_file}')
-        return 1
-
-    # write the cmake
-    with open(cmake_file, 'w') as s:
-        s.writelines(t_data)
-
-    return 0
-
-
 def disable_gem_in_project(gem_name: str = None,
                            gem_path: pathlib.Path = None,
                            project_name: str = None,
@@ -98,7 +64,7 @@ def disable_gem_in_project(gem_name: str = None,
 
     # if gem name resolve it into a path
     if gem_name and not gem_path:
-        gem_path = manifest.get_registered(gem_name=gem_name)
+        gem_path = manifest.get_registered(gem_name=gem_name, project_path=project_path)
     if not gem_path:
         logger.error(f'Unable to locate gem path from the registered manifest.json files:'
                      f' {str(pathlib.Path.home() / ".o3de/manifest.json")},'
@@ -112,7 +78,7 @@ def disable_gem_in_project(gem_name: str = None,
 
 
     # Read gem.json from the gem path
-    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path)
+    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
     if not gem_json_data:
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1
@@ -128,7 +94,7 @@ def disable_gem_in_project(gem_name: str = None,
         logger.error(f'Enabled gem file {enabled_gem_file} is not present.')
         return 1
     # remove the gem
-    error_code = remove_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
+    error_code = cmake.remove_gem_dependency(enabled_gem_file, gem_json_data['gem_name'])
     if error_code:
         ret_val = error_code
 

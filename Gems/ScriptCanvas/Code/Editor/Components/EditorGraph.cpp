@@ -91,7 +91,8 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
 
-////
+    AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
+        "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
 
 namespace EditorGraphCpp
 {
@@ -3642,7 +3643,7 @@ namespace ScriptCanvasEditor
 
                 if (scriptCanvasNode)
                 {
-                    if (scriptCanvasNode->IsDeprecated())
+                     if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
                     {
                         ScriptCanvas::NodeConfiguration nodeConfig = scriptCanvasNode->GetReplacementNodeConfiguration();
                         if (nodeConfig.IsValid())

@@ -88,27 +88,27 @@ if(NOT INSTALLED_ENGINE)
     # Add external subdirectories listed in the engine.json. LY_EXTERNAL_SUBDIRS is a cache variable so the user can add extra
     # external subdirectories
     add_engine_json_external_subdirectories()
-    get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
-    list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
-
-    # Loop over the additional external subdirectories and invoke add_subdirectory on them
-    foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
-        # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
-        # This is to deal with potential situations where multiple external directories has the same last directory name
-        # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
-        file(REAL_PATH ${external_directory} full_directory_path)
-        string(SHA256 full_directory_hash ${full_directory_path})
-        # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
-        # when the external subdirectory contains relative paths of significant length
-        string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
-        # Use the last directory as the suffix path to use for the Binary Directory
-        get_filename_component(directory_name ${external_directory} NAME)
-    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
-    endforeach()
-
 else()
     ly_find_o3de_packages()
 endif()
+
+get_property(external_subdirs GLOBAL PROPERTY LY_EXTERNAL_SUBDIRS)
+list(APPEND LY_EXTERNAL_SUBDIRS ${external_subdirs})
+
+# Loop over the additional external subdirectories and invoke add_subdirectory on them
+foreach(external_directory ${LY_EXTERNAL_SUBDIRS})
+    # Hash the extenal_directory name and append it to the Binary Directory section of add_subdirectory
+    # This is to deal with potential situations where multiple external directories has the same last directory name
+    # For example if D:/Company1/RayTracingGem and F:/Company2/Path/RayTracingGem were both added as a subdirectory
+    file(REAL_PATH ${external_directory} full_directory_path)
+    string(SHA256 full_directory_hash ${full_directory_path})
+    # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
+    # when the external subdirectory contains relative paths of significant length
+    string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)
+    # Use the last directory as the suffix path to use for the Binary Directory
+    get_filename_component(directory_name ${external_directory} NAME)
+    add_subdirectory(${external_directory} ${CMAKE_BINARY_DIR}/External/${directory_name}-${full_directory_hash})
+endforeach()
 
 ################################################################################
 # Post-processing

@@ -165,8 +165,8 @@ namespace EMotionFX
         const AZ::Outcome<size_t> boolYParamIndexOutcome = m_animGraphInstance->FindParameterIndex(nameBoolY);
         success = boolXParamIndexOutcome.IsSuccess() && boolYParamIndexOutcome.IsSuccess();
 
-        uint32 boolXOutputPortIndex;
-        uint32 boolYOutputPortIndex;
+        uint32 boolXOutputPortIndex = InvalidIndex32;
+        uint32 boolYOutputPortIndex = InvalidIndex32;
         const int portIndicesTosetCount = 2;
         int portIndicesFound = 0;
         const AZStd::vector<EMotionFX::AnimGraphNode::Port>& parameterNodeOutputPorts = parameterNode->GetOutputPorts();

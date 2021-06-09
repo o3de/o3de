@@ -161,7 +161,56 @@ namespace AZ
                  return "A pair is an fixed size collection of two elements.";
              }
          };
- 
+
+         template<typename T>
+         void GetTypeNamesFold(AZStd::vector<AZStd::string>& result, AZ::BehaviorContext& context)
+         {
+             result.push_back(OnDemandPrettyName<T>::Get(context));
+         };
+
+         template<typename... T>
+         void GetTypeNames(AZStd::vector<AZStd::string>& result, AZ::BehaviorContext& context)
+         {
+             (GetTypeNamesFold<T>(result, context), ...);
+         };
+
+         template<typename T>
+         void GetTypeNamesFold(AZStd::string& result, AZ::BehaviorContext& context)
+         {
+             if (!result.empty())
+             {
+                 result += ", ";
+             }
+
+             result += OnDemandPrettyName<T>::Get(context);
+         };
+
+         template<typename... T>
+         void GetTypeNames(AZStd::string& result, AZ::BehaviorContext& context)
+         {
+             (GetTypeNamesFold<T>(result, context), ...);
+         };
+
+         template<typename... T>
+         struct OnDemandPrettyName<AZStd::tuple<T...>>
+         {
+             static AZStd::string Get(AZ::BehaviorContext& context)
+             {
+                 AZStd::string typeNames;
+                 GetTypeNames<T...>(typeNames, context);
+                 return AZStd::string::format("Tuple<%s>", typeNames.c_str());
+             }
+         };
+
+         template<typename... T>
+         struct OnDemandToolTip<AZStd::tuple<T...>>
+         {
+             static AZStd::string Get(AZ::BehaviorContext&)
+             {
+                 return "A tuple is an fixed size collection of any number of any type of element.";
+             }
+         };
+
          template<class Key, class MappedType, class Hasher, class EqualKey, class Allocator>
          struct OnDemandPrettyName< AZStd::unordered_map<Key, MappedType, Hasher, EqualKey, Allocator> >
          {
