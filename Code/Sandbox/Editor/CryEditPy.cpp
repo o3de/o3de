@@ -32,6 +32,7 @@
 #include "GameEngine.h"
 #include "UndoConfigSpec.h"
 #include "ViewManager.h"
+#include "EditorViewportCamera.h"
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -241,25 +242,14 @@ namespace
 
     void PySetCurrentViewPosition(float x, float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
-        {
-            editorCameraController->SetCurrentViewPosition(AZ::Vector3{ x, y, z });
-        }
+        SandboxEditor::SetDefaultViewportCameraPosition(AZ::Vector3(x, y, z));
     }
 
-    void PySetCurrentViewRotation(float x, float y, float z)
+    void PySetCurrentViewRotation(float x, [[maybe_unused]] float y, float z)
     {
-        AzToolsFramework::IEditorCameraController* editorCameraController = AZ::Interface<AzToolsFramework::IEditorCameraController>::Get();
-        AZ_Error("editor", editorCameraController, "IEditorCameraController is not registered.");
-        if (editorCameraController)
-        {
-            editorCameraController->SetCurrentViewRotation(AZ::Vector3{ x, y, z });
-        }
+        SandboxEditor::SetDefaultViewportCameraRotation(x, z);
     }
 }
-
 
 namespace
 {
