@@ -86,7 +86,6 @@ namespace AZ
             void HairFeatureProcessor::Activate()
             {
                 m_hairFeatureProcessorRegistryName = { "AZ::Render::Hair::HairFeatureProcessor" };
-                LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler::BusConnect();
 
                 EnableSceneNotification();
                 TickBus::Handler::BusConnect();
@@ -94,7 +93,6 @@ namespace AZ
 
             void HairFeatureProcessor::Deactivate()
             {
-                LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler::BusDisconnect();
                 DisableSceneNotification();
                 TickBus::Handler::BusDisconnect();
 
@@ -553,12 +551,6 @@ namespace AZ
                 }
                 return m_hairPPLLRasterPass;
             }
-
-            const AZStd::vector<AZStd::string>& HairFeatureProcessor::GetCustomFeatureProcessors() const
-            {
-                return m_hairFeatureProcessorRegistryName;
-            }
-
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
