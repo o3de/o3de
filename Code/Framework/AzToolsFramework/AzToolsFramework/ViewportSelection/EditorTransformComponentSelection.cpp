@@ -3097,15 +3097,16 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& /*point*/, const int /*flags*/)
+    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu([[maybe_unused]] QMenu* menu, const AZ::Vector2& /*point*/, const int /*flags*/)
     {
-        QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]()
-            {
-                ToggleCenterPivotSelection();
-            });
+        // Disabled until we can make this work with Atom
+//         QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
+//         QObject::connect(
+//             action, &QAction::triggered, action,
+//             [this]()
+//             {
+//                 ToggleCenterPivotSelection();
+//             });
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()
