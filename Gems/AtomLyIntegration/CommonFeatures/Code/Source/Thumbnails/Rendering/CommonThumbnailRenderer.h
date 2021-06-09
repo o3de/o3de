@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
+
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Thumbnails/Rendering/ThumbnailRendererContext.h>
@@ -37,6 +39,7 @@ namespace AZ
                 : public ThumbnailRendererContext
                 , private AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::MultiHandler
                 , private SystemTickBus::Handler
+                , private ThumbnailFeatureProcessorProviderBus::Handler
             {
             public:
                 AZ_CLASS_ALLOCATOR(CommonThumbnailRenderer, AZ::SystemAllocator, 0)
@@ -57,9 +60,13 @@ namespace AZ
                 //! SystemTickBus::Handler interface overrides...
                 void OnSystemTick() override;
 
+                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides...
+                const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
+
                 AZStd::unordered_map<Step, AZStd::shared_ptr<ThumbnailRendererStep>> m_steps;
                 Step m_currentStep = Step::None;
                 AZStd::shared_ptr<ThumbnailRendererData> m_data;
+                AZStd::vector<AZStd::string> m_minimalFeatureProcessors;
             };
         } // namespace Thumbnails
     } // namespace LyIntegration
