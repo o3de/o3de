@@ -95,6 +95,10 @@ namespace AZ
             //! Notifies consumers when the projection matrix has changed.
             void ConnectProjectionMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
 
+            using TransformChangedEvent = AZ::Event<AZ::Transform>;
+            //! Notifies consumers when the camera transform has changed.
+            void ConnectCameraTransformChangedHandler(TransformChangedEvent::Handler& handler);
+
             using SceneChangedEvent = AZ::Event<ScenePtr>;
             //! Notifies consumers when the render scene has changed.
             void ConnectSceneChangedHandler(SceneChangedEvent::Handler& handler);
@@ -141,6 +145,7 @@ namespace AZ
             MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;
             MatrixChangedEvent::Handler m_onProjectionMatrixChangedHandler;
+            TransformChangedEvent m_onCameraTransformChangedHandler;
             SceneChangedEvent m_sceneChangedEvent;
             PipelineChangedEvent m_currentPipelineChangedEvent;
             ViewChangedEvent m_defaultViewChangedEvent;

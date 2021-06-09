@@ -44,6 +44,12 @@ namespace AZ
             m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
                 m_viewMatrixChangedEvent.Signal(matrix);
+
+                // Only compute our AZ Transform if we've got handlers listening to the signal
+                if (m_onCameraTransformChangedHandler.HasHandlerConnected())
+                {
+                    m_onCameraTransformChangedHandler.Signal(GetCameraTransform());
+                }
             });
 
             SetRenderScene(renderScene);
@@ -113,9 +119,9 @@ namespace AZ
                 }
                 m_currentPipeline.reset();
                 UpdatePipelineView();
-            }
 
-            m_sceneChangedEvent.Signal(scene);
+                m_sceneChangedEvent.Signal(scene);
+            }
         }
 
         void ViewportContext::RenderTick()
@@ -168,6 +174,11 @@ namespace AZ
             handler.Connect(m_projectionMatrixChangedEvent);
         }
 
+        void ViewportContext::ConnectCameraTransformChangedHandler(TransformChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_onCameraTransformChangedHandler);
+        }
+
         void ViewportContext::ConnectSceneChangedHandler(SceneChangedEvent::Handler& handler)
         {
             handler.Connect(m_sceneChangedEvent);
@@ -196,7 +207,6 @@ namespace AZ
         void ViewportContext::SetCameraViewMatrix(const AZ::Matrix4x4& matrix)
         {
             GetDefaultView()->SetWorldToViewMatrix(matrix);
-            m_viewMatrixChangedEvent.Signal(matrix);
         }
 
         const AZ::Matrix4x4& ViewportContext::GetCameraProjectionMatrix() const
@@ -218,7 +228,6 @@ namespace AZ
         {
             const auto view = GetDefaultView();
             view->SetCameraTransform(AZ::Matrix3x4::CreateFromTransform(transform.GetOrthogonalized()));
-            m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
         }
 
         void ViewportContext::SetDefaultView(ViewPtr view)
@@ -234,6 +243,11 @@ namespace AZ
                 m_defaultViewChangedEvent.Signal(view);
                 m_viewMatrixChangedEvent.Signal(view->GetWorldToViewMatrix());
                 m_projectionMatrixChangedEvent.Signal(view->GetViewToClipMatrix());
+                // Only compute our AZ Transform if we've got handlers listening to the signal
+                if (m_onCameraTransformChangedHandler.HasHandlerConnected())
+                {
+                    m_onCameraTransformChangedHandler.Signal(GetCameraTransform());
+                }
 
                 view->ConnectWorldToViewMatrixChangedHandler(m_onViewMatrixChangedHandler);
                 view->ConnectWorldToClipMatrixChangedHandler(m_onProjectionMatrixChangedHandler);
