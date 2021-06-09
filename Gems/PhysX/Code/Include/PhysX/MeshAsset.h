@@ -75,6 +75,8 @@ namespace PhysX
             AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator, 0);
             AZ_RTTI(MeshAsset, "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}", AZ::Data::AssetData);
 
+            static void Reflect(AZ::ReflectContext* context);
+
             MeshAssetData m_assetData;
         };
     } // namespace Pipeline
