@@ -125,10 +125,7 @@ namespace AZ
 
                 m_hairRenderObjects.push_back(renderObject);
 
-                BuildDispatchItems(renderObject);
-
-                // Render / Raster pass
-                m_hairPPLLRasterPass->BuildDrawPacket(renderObject.get());
+                BuildDispatchAndDrawItems(renderObject);
 
                 EnablePasses(true);
             }
@@ -229,9 +226,7 @@ namespace AZ
                 {
                     for (auto& hairRenderObject : m_hairRenderObjects)
                     {
-                        BuildDispatchItems(hairRenderObject);
-                        
-                        m_hairPPLLRasterPass->BuildDrawPacket(hairRenderObject.get());
+                        BuildDispatchAndDrawItems(hairRenderObject);
                     }
                     m_forceRebuildRenderData = false;
                     m_addDispatchEnabled = true;
@@ -289,7 +284,7 @@ namespace AZ
                         }
                     }
 
-                    // Render / Raster Passes
+                    // Render / Raster Passes - these might be enabled even is simulation is on pause / reload
                     m_hairPPLLRasterPass->AddDrawPacket(renderObject);
                 }
             }
@@ -516,10 +511,11 @@ namespace AZ
                 return true;
             }
 
-            void HairFeatureProcessor::BuildDispatchItems(Data::Instance<HairRenderObject> renderObject)
+            void HairFeatureProcessor::BuildDispatchAndDrawItems(Data::Instance<HairRenderObject> renderObject)
             {
                 HairRenderObject* renderObjectPtr = renderObject.get();
 
+                // Dispatches for Compute passes
                 m_computePasses[TestSkinningPass]->BuildDispatchItem(
                     renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
                 m_computePasses[GlobalShapeConstraintsPass]->BuildDispatchItem(
@@ -534,6 +530,10 @@ namespace AZ
                     renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
                 m_computePasses[UpdateFollowHairPass]->BuildDispatchItem(
                     renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
+
+                // Render / Raster pass - adding the object will schedule Srgs binding
+                // and DrawItem build.
+                m_hairPPLLRasterPass->SchedulePacketBuild(renderObjectPtr);
             }
 
             Data::Instance<HairSkinningComputePass> HairFeatureProcessor::GetHairSkinningComputegPass()

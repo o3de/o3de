@@ -22,9 +22,80 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
+//==============================================================================
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairRenderingSrgs.azsli>
 
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG the holds the dynamic shared read-write buffer shared 
+//!  across all dispatches and draw calls and used for all the dynamic buffers
+//!  that can change between passes due to the application of skinning, simulation 
+//!  and physics affect and is then read by the rendering shaders.  
+ShaderResourceGroup PassSrg : SRG_PerPass 
+{   //! This shared buffer needs to match the SharedBuffer structure  
+    //! shared between all draw calls / dispatches for the hair skinning
+    StructuredBuffer<int>           m_skinnedHairSharedBuffer;
+
+    //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
+    //!  hair OIT data and shade it in the full screen resolve pass.
+    //! Originally used space3 for raster pass linked lists and space0 for the resolve pass.
+    RWTexture2D<uint>               m_fragmentListHead;
+    RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
+    RWStructuredBuffer<uint>        m_linkedListCounter;    // [To Do] Adi: change to RWBuffer
+
+    // Linera depth is used for getting the screen to world transform
+    Texture2D<float>                m_linearDepth;
+}
+
+//------------------------------------------------------------------------------
+// Originally marked for the TressFX raster pass at space3
+#define RWFragmentListHead          PassSrg::m_fragmentListHead
+#define LinkedListUAV               PassSrg::m_linkedListNodes
+#define LinkedListCounter           PassSrg::m_linkedListCounter
+//------------------------------------------------------------------------------
+
+
+//!=============================================================================
+//! 
+//!   Per Instance Space 1 - Dynamic Buffers for Hair Skinning and Simulation
+//! 
+//! ----------------------------------------------------------------------------
+struct StrandLevelData
+{
+    float4 skinningQuat;
+    float4 vspQuat;
+    float4 vspTranslation;
+};
+//!------------------------------ SRG Structure --------------------------------
+//! Per instance/draw SRG representing dynamic read-write set of buffers
+//!  that are unique per instance and are shared and changed between passes due 
+//!  to the application of skinning, simulation and physics affect.
+//! It is then also read by the rendering shaders. 
+//! This Srg is NOT shared by the passes since it requires having barriers between
+//!  both passes and draw calls, instead, all buffers are allocated from a single 
+//!  shared buffer (through BufferViews) and that buffer is then shared between 
+//!  the passes via the PerPass Srg frequency. 
+// Adi [To Do] - change this to Buffer rather than StructuredBuffer
+ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance / object
+{
+    Buffer<float4>      m_hairVertexPositions;
+    Buffer<float4>      m_hairVertexTangents;
+
+    //! Per hair object offset to the start location of each buffer within 
+    //! 'm_skinnedHairSharedBuffer'. The offset is in bytes!
+    uint m_positionBufferOffset;
+    uint m_tangentBufferOffset;
+};
+//------------------------------------------------------------------------------
+// Allow for the code to run with minimal changes - skinning / simulation compute passes
+
+// Usage of per-instance buffer
+#define g_GuideHairVertexPositions  HairDynamicDataSrg::m_hairVertexPositions
+#define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
+
+//==============================================================================
 #include <HairStrands.azsli>
-
+//==============================================================================
 //! Hair input structure to Pixel shaders
 struct PS_INPUT_HAIR
 {
@@ -34,7 +105,6 @@ struct PS_INPUT_HAIR
     float4 StrandColor : TEXCOORD1;
 };
 
-//////////////////////////////////////////////////////////////
 //! Hair Render VS 
 PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
 {

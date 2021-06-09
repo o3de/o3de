@@ -94,12 +94,6 @@ namespace AZ
                     return;
                 }
 
-                // Input
-                // This is the buffer that is shared between all objects and dispatches and contains
-                // the dynamic data that can change between passes.
-                // NO need to define it - this is already defined by the Compute pass
-//                AttachBufferToSlot(Name{ "SkinnedHairSharedBuffer" }, SharedBufferInterface::Get()->GetBuffer());
-
                 // Output
                 AttachBufferToSlot(Name{ "PPLLIndexCounter" }, m_featureProcessor->GetPerPixelCounterBuffer());
                 AttachBufferToSlot(Name{ "PerPixelLinkedList" }, m_featureProcessor->GetPerPixelListBuffer());
@@ -143,7 +137,7 @@ namespace AZ
 
                 // Per Pass Srg
                 {
-                    // Need to use 'PerPass' naming as currently RasterPass assume working with this name!
+                    // Need to use 'PerPass' naming as currently RasterPass assumes specific naming!
                     // [To Do] - RasterPass should use srg slot index and not name - currently this will
                     //  result in a crash in one of the Atom existing MSAA passes that requires further dive. 
 //                    m_shaderResourceGroup = UtilityClass::CreateShaderResourceGroup(m_shader, "HairPerPassSrg", "Hair Gem");
@@ -184,6 +178,11 @@ namespace AZ
                 return true;
             }
 
+            void HairPPLLRasterPass::SchedulePacketBuild(HairRenderObject* hairObject)
+            {
+                m_newRenderObjects.insert(hairObject);
+            }
+
             bool HairPPLLRasterPass::BuildDrawPacket(HairRenderObject* hairObject)
             {
                 if (!m_initialized)
@@ -194,64 +193,80 @@ namespace AZ
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = m_drawListTag;
                 drawRequest.m_pipelineState = m_pipelineState;
-//                drawRequest.m_streamBufferViews =  // nor explicit vertex buffer.  shader is using the srg buffers
+//                drawRequest.m_streamBufferViews =  // no explicit vertex buffer.  shader is using the srg buffers
                 drawRequest.m_stencilRef = 0;
                 drawRequest.m_sortKey = 0;
 
                 // Seems that the PerView and PerScene are gathered through RenderPass::CollectSrgs()
                 // The PerPass is gathered through the RasterPass::m_shaderResourceGroup
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+
                 return hairObject->BuildPPLLDrawPacket(drawRequest);
             }
 
-
             bool HairPPLLRasterPass::AddDrawPacket(HairRenderObject* hairObject)
             {
-                const RPI::ViewPtr currentView = GetView();
-                if (!currentView)
-                {
-                    return false;
-                }
-
-                // If this view is ignoring packets with our draw list tag then skip this view
-                if (!currentView->HasDrawListTag(m_drawListTag))
-                {
-                    AZ_Warning("Hair Gem", false, "HairPPLLRasterPass failed to match the DrawListTag - check that your pass and shader tag name match");
-                    return false;
-                }
-
                 const RHI::DrawPacket* drawPacket = hairObject->GetFillDrawPacket();
                 if (!drawPacket)
-                {
-                    AZ_Error("Hair Gem", false, "HairPPLLRasterPass failed to get or create the DrawPacket");
+                {   // might not be an error - the object might have just been added and the DrawPacket is
+                    // scheduled to be built when the render frame begins
+                    AZ_Warning("Hair Gem", !m_newRenderObjects.empty(), "HairPPLLRasterPass - DrawPacket wasn't built");
                     return false;
                 }
 
-                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                currentView->AddDrawPacket(drawPacket);
+                if (!m_currentView &&
+                    (!(m_currentView = GetView()) || !m_currentView->HasDrawListTag(m_drawListTag)))
+                {
+                    m_currentView = nullptr;    // set it to nullptr to prevent further attempts this frame
+                    AZ_Warning("Hair Gem", false, "HairPPLLRasterPass failed to acquire or match the DrawListTag - check that your pass and shader tag name match");
+                    return false;
+                }
 
+                m_currentView->AddDrawPacket(drawPacket);
                 return true;
             }
 
             void HairPPLLRasterPass::FrameBeginInternal(FramePrepareParams params)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-                if (!m_initialized && AcquireFeatureProcessor())
                 {
-                    LoadShaderAndPipelineState();
-                    m_featureProcessor->ForceRebuildRenderData();
+                    AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                    if (!m_initialized && AcquireFeatureProcessor())
+                    {
+                        LoadShaderAndPipelineState();
+                        m_featureProcessor->ForceRebuildRenderData();
+                    }
                 }
 
-                if (m_featureProcessor && m_initialized)
+                if (!m_initialized)
                 {
-                    if (auto ppllCounterBuffer = m_featureProcessor->GetPerPixelCounterBuffer())
-                    {   // This is crucial to be able to count properly from 0. Currently trying to
-                        // do this from the pass does not work.
-                        // [To Do] Adi: try to move the transient creation to be pass data driven.
-                        uint32_t sourceData = 0;
-                        bool updateSuccess = ppllCounterBuffer->UpdateData(&sourceData, sizeof(uint32_t), 0);
-                        AZ_Warning("Hair Gem", updateSuccess, "HairPPLLRasterPass::CompileResources could not reset PPLL counter");
-                    }
+                    return;
+                }
+
+                // Bind the Per Object resources and trigger the RHI validation that will use attachment
+                // for its validation.  The attachments are invalidated outside the render begin/end frame.
+                for (HairRenderObject* newObject : m_newRenderObjects)
+                {
+                    newObject->BindPerObjectSrgForRaster();
+                    BuildDrawPacket(newObject);
+                }
+                // Clear the objects, hence this is only done once per object/shader lifetime
+                m_newRenderObjects.clear();
+
+                // Reset the hair PPLL items current index.
+                // [To Do] Adi: move to be pass data driven - currently not possible!
+                if (auto ppllCounterBuffer = m_featureProcessor->GetPerPixelCounterBuffer())
+                {   
+                    uint32_t sourceData = 0;
+                    bool updateSuccess = ppllCounterBuffer->UpdateData(&sourceData, sizeof(uint32_t), 0);
+                    AZ_Error("Hair Gem", updateSuccess, "HairPPLLRasterPass::CompileResources could not reset PPLL counter");
+                }
+
+                // Refresh current view every frame
+                if (!(m_currentView = GetView()) || !m_currentView->HasDrawListTag(m_drawListTag))
+                {
+                    m_currentView = nullptr;    // set it to null if view exists but no tag match
+                    AZ_Warning("Hair Gem", false, "HairPPLLRasterPass failed to acquire or match the DrawListTag - check that your pass and shader tag name match");
+                    return;
                 }
 
                 RPI::RasterPass::FrameBeginInternal(params);
