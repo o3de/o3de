@@ -117,9 +117,5 @@ namespace AZ
         //! the file size is larger than the max file size provided.
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize = DefaultMaxFileSize);
-
-        //! Read a file into a string. Returns a failure with error message if the content could not be loaded.
-        template<typename Container = AZStd::string>
-        AZ::Outcome<Container, AZStd::string> ReadFileWithNoSizeLimit(AZStd::string_view filePath);
     }
 }
