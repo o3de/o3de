@@ -29,7 +29,7 @@ StrEq(const AZStd::string& str)
       str, true, true));
 }
 
-AZ_PUSH_DISABLE_WARNING(4100, "-Wmissing-declarations") // 'result_listener': unreferenced formal parameter
+AZ_PUSH_DISABLE_WARNING(4100 4324, "-Wmissing-declarations") // 'result_listener': unreferenced formal parameter, structure was padded due to alignment specifier
 MATCHER(StrEq, "")
 {
     const auto& lhs = testing::get<0>(arg);
