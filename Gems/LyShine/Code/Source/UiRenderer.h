@@ -45,7 +45,7 @@ public: // types
     // Base state
     struct BaseState
     {
-        BaseState::BaseState()
+        BaseState()
         {
             ResetToDefault();
         }
