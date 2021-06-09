@@ -366,6 +366,9 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
             palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
         }
     }
 }
@@ -578,14 +581,12 @@ finally {
             )
         }
         node('controller') {
-            emailRecipients = [[$class: 'RequesterRecipientProvider']]
-            if (env.WATCHED_BRANCHES.tokenize(',').contains(branchName)) {
-                emailRecipients.add([$class: 'CulpritsRecipientProvider'])
-            }
             step([
-                $class: 'Mailer', 
-                notifyEveryUnstableBuild: true, 
-                recipients: emailextrecipients(emailRecipients)
+                $class: 'Mailer',
+                notifyEveryUnstableBuild: true,
+                recipients: emailextrecipients([
+                    [$class: 'RequesterRecipientProvider']
+                ])
             ])
         }
     } catch(Exception e) {

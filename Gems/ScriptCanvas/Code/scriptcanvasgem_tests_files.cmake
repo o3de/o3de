@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/precompiled.cpp
     Source/precompiled.h
     Tests/ScriptCanvasTest.cpp
 )

@@ -11,7 +11,6 @@
 
 set(FILES
     AzToolsFramework_precompiled.h
-    AzToolsFramework_precompiled.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui

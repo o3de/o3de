@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/precompiled.cpp
     Source/precompiled.h
     Include/ScriptCanvasDeveloper/ScriptCanvasDeveloperGem.h
     Include/ScriptCanvasDeveloper/ScriptCanvasDeveloperComponent.h
