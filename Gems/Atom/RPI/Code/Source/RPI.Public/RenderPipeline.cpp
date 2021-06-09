@@ -109,7 +109,6 @@ namespace AZ
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
 
             // Manually create the pipeline so we can gather the view tags from it's passes
-            pipeline->m_rootPass->Reset();
             pipeline->m_rootPass->Build();
             pipeline->m_rootPass->Initialize();
             pipeline->m_rootPass->OnInitializationFinished();
