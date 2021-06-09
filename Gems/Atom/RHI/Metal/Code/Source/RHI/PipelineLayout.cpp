@@ -125,12 +125,12 @@ namespace AZ
         
         size_t PipelineLayout::GetSlotByIndex(size_t index) const
         {
-            return m_slotToIndexTable[index];
+            return m_indexToSlotTable[index];
         }
         
         size_t PipelineLayout::GetIndexBySlot(size_t slot) const
         {
-            return m_indexToSlotTable[slot];
+            return m_slotToIndexTable[slot];
         }
         
         const RHI::ShaderStageMask& PipelineLayout::GetSrgVisibility(uint32_t index) const

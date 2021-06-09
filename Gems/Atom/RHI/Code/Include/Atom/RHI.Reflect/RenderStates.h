@@ -160,6 +160,24 @@ namespace AZ
             StencilState m_stencil;
         };
 
+        enum class WriteChannel : uint32_t
+        {            
+            ColorWriteMaskRed = 0,
+            ColorWriteMaskGreen,
+            ColorWriteMaskBlue,
+            ColorWriteMaskAlpha,
+        };
+    
+        enum class WriteChannelMask : uint32_t
+        {
+            ColorWriteMaskNone = 0,
+            ColorWriteMaskRed = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskRed)),
+            ColorWriteMaskGreen = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskGreen)),
+            ColorWriteMaskBlue = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskBlue)),
+            ColorWriteMaskAlpha = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskAlpha)),
+            ColorWriteMaskAll = ColorWriteMaskRed | ColorWriteMaskGreen | ColorWriteMaskBlue | ColorWriteMaskAlpha
+        };
+    
         struct TargetBlendState
         {
             AZ_TYPE_INFO(TargetBlendState, "{2CDF00FE-614D-44FC-929F-E6B50C348578}");

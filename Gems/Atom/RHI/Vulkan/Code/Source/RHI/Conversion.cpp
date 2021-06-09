@@ -334,19 +334,19 @@ namespace AZ
         VkColorComponentFlags ConvertComponentFlags(uint8_t sflags)
         {
             VkColorComponentFlags dflags = 0;
-            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(1)))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= VK_COLOR_COMPONENT_R_BIT;
             }
-            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(2)))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskGreen)))
             {
                 dflags |= VK_COLOR_COMPONENT_G_BIT;
             }
-            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(4)))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskBlue)))
             {
                 dflags |= VK_COLOR_COMPONENT_B_BIT;
             }
-            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(8)))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAlpha)))
             {
                 dflags |= VK_COLOR_COMPONENT_A_BIT;
             }

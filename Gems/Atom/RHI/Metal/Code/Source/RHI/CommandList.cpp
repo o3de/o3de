@@ -13,6 +13,7 @@
 
 #include <Atom/RHI.Reflect/Bits.h>
 #include <AzCore/Debug/EventTrace.h>
+#include <AzCore/std/algorithm.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferMemoryView.h>
@@ -249,68 +250,88 @@ namespace AZ
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(stateType);
             const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
             
-            for (uint32_t srgIndex = 0; srgIndex < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++srgIndex)
+            uint32_t bufferVertexRegisterIdMin = RHI::Limits::Pipeline::ShaderResourceGroupCountMax;
+            uint32_t bufferFragmentOrComputeRegisterIdMin = RHI::Limits::Pipeline::ShaderResourceGroupCountMax;
+            uint32_t bufferVertexRegisterIdMax = 0;
+            uint32_t bufferFragmentOrComputeRegisterIdMax = 0;
+            
+            MetalArgumentBufferArray mtlVertexArgBuffers;
+            MetalArgumentBufferArrayOffsets mtlVertexArgBufferOffsets;
+            MetalArgumentBufferArray mtlFragmentOrComputeArgBuffers;
+            MetalArgumentBufferArrayOffsets mtlFragmentOrComputeArgBufferOffsets;
+            
+            mtlVertexArgBuffers.fill(nil);
+            mtlFragmentOrComputeArgBuffers.fill(nil);
+            mtlVertexArgBufferOffsets.fill(0);
+            mtlFragmentOrComputeArgBufferOffsets.fill(0);
+            
+            for (uint32_t slot = 0; slot < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++slot)
             {
-                const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[srgIndex];
-                uint32_t slotIndex = pipelineLayout.GetSlotByIndex(srgIndex);
+                const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
+                uint32_t slotIndex = pipelineLayout.GetIndexBySlot(slot);
                 if(!shaderResourceGroup || slotIndex == RHI::Limits::Pipeline::ShaderResourceGroupCountMax)
                 {
                     continue;
                 }
 
-                uint32_t srgVisIndex = pipelineLayout.GetSlotByIndex(shaderResourceGroup->GetBindingSlot());
+                uint32_t srgVisIndex = pipelineLayout.GetIndexBySlot(shaderResourceGroup->GetBindingSlot());
                 const RHI::ShaderStageMask& srgVisInfo = pipelineLayout.GetSrgVisibility(srgVisIndex);
 
-                if (bindings.m_srgsByIndex[srgIndex] != shaderResourceGroup)
+                bool isSrgUpdatd = bindings.m_srgsByIndex[slot] != shaderResourceGroup;
+                if(isSrgUpdatd)
                 {
-                    bindings.m_srgsByIndex[srgIndex] = shaderResourceGroup;
+                    bindings.m_srgsByIndex[slot] = shaderResourceGroup;
                     auto& compiledArgBuffer = shaderResourceGroup->GetCompiledArgumentBuffer();
                     id<MTLBuffer> argBuffer = compiledArgBuffer.GetArgEncoderBuffer();
                     size_t argBufferOffset = compiledArgBuffer.GetOffset();
                                                             
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
-                        //For graphics and compute encoder bind the argument buffer
+                        //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
                             id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                             uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgVisInfo));
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Vertex)
                             {
-                                [renderEncoder setVertexBuffer:argBuffer
-                                                                offset:argBufferOffset
-                                                                atIndex:slotIndex];
+                                mtlVertexArgBuffers[slotIndex] = argBuffer;
+                                mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
+                                bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
+                                bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);
+                                
                             }
                             
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)
                             {
-                                [renderEncoder setFragmentBuffer:argBuffer
-                                                            offset:argBufferOffset
-                                                           atIndex:slotIndex];
+                                mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
+                                mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
+                                bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
+                                bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
                             }
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
-                            [computeEncoder setBuffer:argBuffer
-                                                 offset:argBufferOffset
-                                                atIndex:pipelineLayout.GetSlotByIndex(srgIndex)];
+                            mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
+                            mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
+                            bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
+                            bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
                         }
                     }
                 }
                 
-                //Check againgst the srg resources visibility hash as it is possible for draw items to have different PSO in the same pass. 
+                //Check if the srg has been updated or if the srg resources visibility hash has been updated
+                //as it is possible for draw items to have different PSOs in the same pass.
                 const AZ::HashValue64 srgResourcesVisHash = pipelineLayout.GetSrgResourcesVisibilityHash(srgVisIndex);
-                if(bindings.m_srgVisHashByIndex[srgIndex] != srgResourcesVisHash)
+                if(bindings.m_srgVisHashByIndex[slot] != srgResourcesVisHash || isSrgUpdatd)
                 {
-                    bindings.m_srgVisHashByIndex[srgIndex] = srgResourcesVisHash;
+                    bindings.m_srgVisHashByIndex[slot] = srgResourcesVisHash;
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
                         const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
                         
-                        //For graphics and compute encoder bind the argument buffer and
-                        //make the resource resident for the duration of the work associated with the current scope
-                        //and ensure that it's in a format compatible with the appropriate metal function.
+                        //For graphics and compute encoder make the resource resident (call UseResource) for the duration
+                        //of the work associated with the current scope and ensure that it's in a
+                        //format compatible with the appropriate metal function.
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
                             shaderResourceGroup->AddUntrackedResourcesToEncoder(m_encoder, srgResourcesVisInfo);
@@ -322,8 +343,80 @@ namespace AZ
                     }
                 }
             }
-                        
+            
+            //For graphics and compute encoder bind all the argument buffers
+            if(m_commandEncoderType == CommandEncoderType::Render)
+            {
+                BindArgumentBuffers(RHI::ShaderStage::Vertex, bufferVertexRegisterIdMin, bufferVertexRegisterIdMax, mtlVertexArgBuffers, mtlVertexArgBufferOffsets);
+                BindArgumentBuffers(RHI::ShaderStage::Fragment, bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax, mtlFragmentOrComputeArgBuffers, mtlFragmentOrComputeArgBufferOffsets);
+            }
+            else if(m_commandEncoderType == CommandEncoderType::Compute)
+            {
+                BindArgumentBuffers(RHI::ShaderStage::Compute, bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax, mtlFragmentOrComputeArgBuffers, mtlFragmentOrComputeArgBufferOffsets);
+            }
+            
             return true;
+        }
+    
+        void CommandList::BindArgumentBuffers(RHI::ShaderStage shaderStage, uint16_t registerIdMin, uint16_t registerIdMax, MetalArgumentBufferArray& mtlArgBuffers, MetalArgumentBufferArrayOffsets mtlArgBufferOffsets)
+        {
+            //Metal Api only lets you bind multiple argument buffers in an array as long as there are no gaps in the array
+            //In order to accomodate that we break up the calls when a gap is noticed in the array and reconfigure the NSRange.
+            uint16_t startingIndex = registerIdMin;
+            bool trackingRange = true;
+            for(int i = registerIdMin; i <= registerIdMax+1; i++)
+            {
+                if(trackingRange)
+                {
+                    if(mtlArgBuffers[i] == nil)
+                    {
+                        NSRange range = { startingIndex, i-startingIndex };
+                        
+                        switch(shaderStage)
+                        {
+                            case RHI::ShaderStage::Vertex:
+                            {
+                                id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
+                                [renderEncoder setVertexBuffers:&mtlArgBuffers[startingIndex]
+                                                        offsets:&mtlArgBufferOffsets[startingIndex]
+                                                      withRange:range];
+                                break;
+                            }
+                            case RHI::ShaderStage::Fragment:
+                            {
+                                id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
+                                [renderEncoder setFragmentBuffers:&mtlArgBuffers[startingIndex]
+                                                          offsets:&mtlArgBufferOffsets[startingIndex]
+                                                        withRange:range];
+                                break;
+                            }
+                            case RHI::ShaderStage::Compute:
+                            {
+                                id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
+                                [computeEncoder     setBuffers:&mtlArgBuffers[startingIndex]
+                                                       offsets:&mtlArgBufferOffsets[startingIndex]
+                                                     withRange:range];
+                                break;
+                            }
+                            default:
+                            {
+                                AZ_Assert(false, "Not supported");
+                            }
+                        }
+
+                        trackingRange = false;
+                        
+                    }
+                }
+                else
+                {
+                    if(mtlArgBuffers[i] != nil)
+                    {
+                        startingIndex = i;
+                        trackingRange = true;
+                    }
+                }
+            }
         }
         
         void CommandList::Submit(const RHI::DrawItem& drawItem)
@@ -486,7 +579,7 @@ namespace AZ
         
         void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
         {
-            int bufferArrayLen = 0;
+            uint16_t bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBuffers;
             AZStd::array<NSUInteger, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBufferOffsets;
             
