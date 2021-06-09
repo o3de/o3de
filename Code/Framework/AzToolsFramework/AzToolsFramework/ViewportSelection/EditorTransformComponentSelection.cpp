@@ -3103,6 +3103,7 @@ namespace AzToolsFramework
     {
         return aznumeric_cast<int>(EditorContextMenuOrdering::BOTTOM);
     }
+
     AZStd::string EditorTransformComponentSelection::GetMenuIdentifier() const
     {
         return "Transform Component";
