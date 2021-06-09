@@ -26,4 +26,9 @@ namespace Multiplayer
     {
         return m_providerTicket;
     }
+
+    inline void ClientToServerConnectionData::SetProviderTicket(const AZStd::string& ticket)
+    {
+        m_providerTicket = ticket;
+    }
 }

@@ -208,6 +208,11 @@ namespace Multiplayer
         {
             connection->SetUserData(new ClientToServerConnectionData(connection, *this, config.m_playerSessionId));
         }
+        else
+        {
+            reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetProviderTicket(config.m_playerSessionId);
+        }
+
         return true;
     }
 

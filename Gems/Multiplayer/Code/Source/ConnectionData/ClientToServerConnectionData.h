@@ -40,6 +40,7 @@ namespace Multiplayer
         //! @}
 
         const AZStd::string& GetProviderTicket() const;
+        void SetProviderTicket(const AZStd::string&);
 
     private:
         EntityReplicationManager m_entityReplicationManager;
