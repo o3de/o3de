@@ -49,23 +49,7 @@ namespace AZ
                     if (!propertyName.IsEmpty())
                     {
                         AZStd::any propertyValue;
-                        if (LoadAny<bool>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::u8>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::u16>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::u32>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::u64>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::s8>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::s16>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::s32>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::s64>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<float>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<double>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::Vector2>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::Vector3>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::Vector4>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::Color>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZStd::string>(propertyValue, inputPropertyPair.value, context, result) ||
-                            LoadAny<AZ::Data::AssetId>(propertyValue, inputPropertyPair.value, context, result) ||
+                        if (AttemptLoadAny(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, inputPropertyPair.value, context, result))
                         {
@@ -125,23 +109,7 @@ namespace AZ
                         if (!propertyName.IsEmpty() && !propertyValue.empty())
                         {
                             rapidjson::Value outputPropertyValue;
-                            if (StoreAny<bool>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::u8>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::u16>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::u32>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::u64>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::s8>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::s16>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::s32>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::s64>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<float>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<double>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Vector2>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Vector3>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Vector4>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Color>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZStd::string>(propertyValue, outputPropertyValue, context, result) ||
-                                StoreAny<AZ::Data::AssetId>(propertyValue, outputPropertyValue, context, result) ||
+                            if (AttemptStoreAny(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(
                                     propertyValue, outputPropertyValue, context, result))
@@ -164,51 +132,6 @@ namespace AZ
                 result,
                 result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored MaterialAssignment information."
                                                                   : "Failed to store MaterialAssignment information.");
-        }
-
-        template<typename T>
-        bool JsonMaterialAssignmentSerializer::LoadAny(
-            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
-            AZ::JsonSerializationResult::ResultCode& result)
-        {
-            if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
-            {
-                // Requiring explicit type info to differentiate be=tween colors versus vectors and numeric types
-                const AZ::Uuid baseTypeId = azrtti_typeid<T>();
-                AZ::Uuid typeId = AZ::Uuid::CreateNull();
-                result.Combine(LoadTypeId(typeId, inputPropertyValue, context, &baseTypeId));
-
-                if (typeId == azrtti_typeid<T>())
-                {
-                    T value = {};
-                    result.Combine(ContinueLoadingFromJsonObjectField(&value, azrtti_typeid<T>(), inputPropertyValue, "Value", context));
-                    propertyValue = value;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        template<typename T>
-        bool JsonMaterialAssignmentSerializer::StoreAny(
-            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
-            AZ::JsonSerializationResult::ResultCode& result)
-        {
-            if (propertyValue.is<T>())
-            {
-                outputPropertyValue.SetObject();
-
-                // Storing explicit type info to differentiate be=tween colors versus vectors and numeric types
-                rapidjson::Value typeValue;
-                result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
-                outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
-
-                T value = AZStd::any_cast<T>(propertyValue);
-                result.Combine(
-                    ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
-                return true;
-            }
-            return false;
         }
     } // namespace Render
 } // namespace AZ

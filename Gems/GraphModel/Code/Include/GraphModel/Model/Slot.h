@@ -12,6 +12,7 @@
 #pragma once
 
 // AZ
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/std/containers/list.h>
@@ -165,6 +166,22 @@ namespace GraphModel
         ExtendableSlotConfiguration m_extendableSlotConfiguration;
     };
 
+    //! Custom JSON serializer for Slot because we use an AZStd::any for m_value
+    class JsonSlotSerializer
+        : public AZ::BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(JsonSlotSerializer, "{8AC96D70-7BCD-4D68-8813-269938982D51}", AZ::BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR(JsonSlotSerializer, AZ::SystemAllocator, 0);
+
+        AZ::JsonSerializationResult::Result Load(
+            void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context) override;
+
+        AZ::JsonSerializationResult::Result Store(
+            rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, const AZ::Uuid& valueTypeId,
+            AZ::JsonSerializerContext& context) override;
+    };
 
     //!!! Start in Graph.h for high level GraphModel documentation !!!
 
@@ -180,6 +197,7 @@ namespace GraphModel
     class Slot : public GraphElement, public AZStd::enable_shared_from_this<Slot>
     {
         friend class Graph; // So the Graph can update the Slot's cache of Connection pointers
+        friend class JsonSlotSerializer; // So we can set the m_value and m_subId directly from the serializer
 
     public:
         AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);

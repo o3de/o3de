@@ -10,6 +10,10 @@
 *
 */
 
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonDeserializer.h>
@@ -330,5 +334,53 @@ namespace AZ
     rapidjson::Value BaseJsonSerializer::GetExplicitDefault()
     {
         return JsonSerializer::GetExplicitDefault();
+    }
+
+    bool BaseJsonSerializer::AttemptLoadAny(
+        AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+        AZ::JsonSerializationResult::ResultCode& result)
+    {
+        return LoadAny<bool>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::u8>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::u16>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::u32>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::u64>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::s8>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::s16>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::s32>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::s64>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<float>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<double>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::Vector2>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::Vector3>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::Vector4>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::Color>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZStd::string>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::EntityId>(propertyValue, inputPropertyValue, context, result) ||
+            LoadAny<AZ::Data::AssetId>(propertyValue, inputPropertyValue, context, result);
+    }
+
+    bool BaseJsonSerializer::AttemptStoreAny(
+        const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+        AZ::JsonSerializationResult::ResultCode& result)
+    {
+        return StoreAny<bool>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::u8>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::u16>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::u32>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::u64>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::s8>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::s16>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::s32>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::s64>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<float>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<double>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::Vector2>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::Vector3>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::Vector4>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::Color>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZStd::string>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::EntityId>(propertyValue, outputPropertyValue, context, result) ||
+            StoreAny<AZ::Data::AssetId>(propertyValue, outputPropertyValue, context, result);
     }
 } // namespace AZ

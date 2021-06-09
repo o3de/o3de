@@ -14,6 +14,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 // Graph Model
@@ -294,13 +295,101 @@ namespace GraphModel
     /////////////////////////////////////////////////////////
     // Slot
 
+    AZ::JsonSerializationResult::Result JsonSlotSerializer::Load(
+        void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+        AZ::JsonDeserializerContext& context)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        AZ_Assert(
+            azrtti_typeid<Slot>() == outputValueTypeId,
+            "Unable to deserialize Slot from json because the provided type is %s.",
+            outputValueTypeId.ToString<AZStd::string>().c_str());
+
+        Slot* slot = reinterpret_cast<Slot*>(outputValue);
+        AZ_Assert(slot, "Output value for JsonSlotSerializer can't be null.");
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+        if (inputValue.HasMember("m_value") && inputValue["m_value"].IsObject())
+        {
+            auto serializedSlotValue = inputValue.FindMember("m_value");
+            AZStd::any slotValue;
+            if (AttemptLoadAny(slotValue, serializedSlotValue->value, context, result))
+            {
+                slot->m_value = slotValue;
+            }
+        }
+
+        // Load m_subId normally because it's just an int
+        {
+            SlotSubId slotSubId = 0;
+            result.Combine(ContinueLoadingFromJsonObjectField(
+                &slotSubId, azrtti_typeid<SlotSubId>(), inputValue,
+                "m_subId", context));
+            slot->m_subId = slotSubId;
+        }
+
+        return context.Report(
+            result,
+            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded Slot information."
+            : "Failed to load Slot information.");
+    }
+
+    AZ::JsonSerializationResult::Result JsonSlotSerializer::Store(
+        rapidjson::Value& outputValue, const void* inputValue, [[maybe_unused]] const void* defaultValue, const AZ::Uuid& valueTypeId,
+        AZ::JsonSerializerContext& context)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        AZ_Assert(
+            azrtti_typeid<Slot>() == valueTypeId,
+            "Unable to Serialize Slot because the provided type is %s.", valueTypeId.ToString<AZStd::string>().c_str());
+
+        const Slot* slot = reinterpret_cast<const Slot*>(inputValue);
+        AZ_Assert(slot, "Input value for JsonSlotSerializer can't be null.");
+
+        outputValue.SetObject();
+
+        JSR::ResultCode result(JSR::Tasks::WriteValue);
+        {
+            AZ::ScopedContextPath subPathPropertyOverrides(context, "m_value");
+
+            if (!slot->m_value.empty())
+            {
+                rapidjson::Value outputPropertyValue;
+                if (AttemptStoreAny(slot->m_value, outputPropertyValue, context, result))
+                {
+                    outputValue.AddMember("m_value", outputPropertyValue, context.GetJsonAllocator());
+                }
+            }
+        }
+
+        {
+            AZ::ScopedContextPath subSlotId(context, "m_subId");
+            SlotSubId defaultSubId = 0;
+
+            result.Combine(ContinueStoringToJsonObjectField(
+                outputValue, "m_subId", &slot->m_subId, &defaultSubId,
+                azrtti_typeid<SlotSubId>(), context));
+        }
+
+        return context.Report(
+            result,
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored MaterialAssignment information."
+            : "Failed to store MaterialAssignment information.");
+    }
+
     void Slot::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<JsonSlotSerializer>()->HandlesType<Slot>();
+        }
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Slot>()
-                ->Version(0)
+                ->Version(1)
                 ->Field("m_value", &Slot::m_value)
                 ->Field("m_subId", &Slot::m_subId)
                 // m_slotDescription is not reflected because that data is populated procedurally by each node

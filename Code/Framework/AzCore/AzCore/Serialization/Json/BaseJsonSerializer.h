@@ -249,6 +249,65 @@ namespace AZ
         //! Gets a value to represent an explicit default. This useful for containers where not storing anything as a default would mean
         //! a slot wouldn't be used so something has to be added to represent the fully default target.
         rapidjson::Value GetExplicitDefault();
+
+        //! Attempt to load from an AZStd::any value. This will attempt going through many of our AZ primitive types.
+        bool AttemptLoadAny(
+            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result);
+
+        //! Attempt to store to an AZStd::any value. This will attempt going through many of our AZ primitive types.
+        bool AttemptStoreAny(
+            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result);
+
+        //! Helper function to load a handled type from an AZStd::any value
+        template<typename T>
+        bool LoadAny(
+            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result)
+        {
+            if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
+            {
+                // Requiring explicit type info to differentiate between colors versus vectors and numeric types
+                const AZ::Uuid baseTypeId = azrtti_typeid<T>();
+                AZ::Uuid typeId = AZ::Uuid::CreateNull();
+                result.Combine(LoadTypeId(typeId, inputPropertyValue, context, &baseTypeId));
+
+                if (typeId == azrtti_typeid<T>())
+                {
+                    T value;
+                    result.Combine(ContinueLoadingFromJsonObjectField(&value, azrtti_typeid<T>(), inputPropertyValue, "Value", context));
+                    propertyValue = value;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        //! Helper function to store a handled type to an AZStd::any value
+        template<typename T>
+        bool StoreAny(
+            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result)
+        {
+            if (propertyValue.is<T>())
+            {
+                outputPropertyValue.SetObject();
+
+                // Storing explicit type info to differentiate between colors versus vectors and numeric types
+                rapidjson::Value typeValue;
+                result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
+                outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
+
+                T value = AZStd::any_cast<T>(propertyValue);
+                result.Combine(
+                    ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
+                return true;
+            }
+
+            return false;
+        }
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::BaseJsonSerializer::ContinuationFlags)
