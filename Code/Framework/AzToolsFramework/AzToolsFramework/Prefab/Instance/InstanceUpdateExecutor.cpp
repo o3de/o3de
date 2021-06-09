@@ -56,7 +56,7 @@ namespace AzToolsFramework
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
-        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId)
+        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude)
         {
             auto findInstancesResult =
                 m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
@@ -70,9 +70,18 @@ namespace AzToolsFramework
                 return;
             }
 
+            Instance* instanceToExcludePtr = nullptr;
+            if (instanceToExclude.has_value())
+            {
+                instanceToExcludePtr = &(instanceToExclude->get());
+            }
+
             for (auto instance : findInstancesResult->get())
             {
-                m_instancesUpdateQueue.emplace_back(instance);
+                if (instance != instanceToExcludePtr)
+                {
+                    m_instancesUpdateQueue.emplace_back(instance);
+                }
             }
         }
 
@@ -103,7 +112,7 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, EntityIdList());
+                    PrefabDom instanceDomFromRootDocument;
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -148,13 +157,62 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        Template& currentTemplate = currentTemplateReference->get();
                         Instance::EntityList newEntities;
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, currentTemplate.GetPrefabDom()))
+
+                        // Climb up to the root of the instance hierarchy from this instance
+                        InstanceOptionalConstReference rootInstance = *instanceToUpdate;
+                        AZStd::vector<InstanceOptionalConstReference> pathOfInstances;
+
+                        while (rootInstance->get().GetParentInstance() != AZStd::nullopt)
                         {
-                            // If a link was created for a nested instance before the changes were propagated,
-                            // then we associate it correctly here
-                            instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) {
+                            pathOfInstances.emplace_back(rootInstance);
+                            rootInstance = rootInstance->get().GetParentInstance();
+                        }
+
+                        AZStd::string aliasPathResult = "";
+                        for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
+                        {
+                            aliasPathResult.append("/Instances/");
+                            aliasPathResult.append((*instanceIter)->get().GetInstanceAlias());
+                        }
+
+                        PrefabDomPath rootPrefabDomPath(aliasPathResult.c_str());
+
+                        PrefabDom& rootPrefabTemplateDom =
+                            m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
+
+                        auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
+                        if (!instanceDomFromRootValue)
+                        {
+                            AZ_Assert(
+                                false,
+                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                "Could not load Instance DOM from the top level ancestor's DOM.");
+
+                            isUpdateSuccessful = false;
+                            continue;
+                        }
+
+                        PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
+                        if (!instanceDomFromRoot.has_value())
+                        {
+                            AZ_Assert(
+                                false,
+                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                "Could not load Instance DOM from the top level ancestor's DOM.");
+
+                            isUpdateSuccessful = false;
+                            continue;
+                        }
+
+                        // If a link was created for a nested instance before the changes were propagated,
+                        // then we associate it correctly here
+                        instanceDomFromRootDocument.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDocument.GetAllocator());
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument))
+                        {
+                            Template& currentTemplate = currentTemplateReference->get();
+                            instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
+                            {
                                 if (nestedInstance->GetLinkId() != InvalidLinkId)
                                 {
                                     return;
@@ -179,22 +237,11 @@ namespace AzToolsFramework
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
                         }
-                        else
-                        {
-                            AZ_Error(
-                                "Prefab", false,
-                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                "Could not load Instance from Prefab DOM of Template with Id '%llu' on file path '%s'.",
-                                currentTemplateId, currentTemplate.GetFilePath().c_str());
-
-                            isUpdateSuccessful = false;
-                        }
                     }
-
                     for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
                     {
-                        // Since entities get recreated during propagation, we need to check whether the entities correspoding to the list
-                        // of selected entity ids are present or not.
+                        // Since entities get recreated during propagation, we need to check whether the entities
+                        // corresponding to the list of selected entity ids are present or not.
                         AZ::Entity* entity = GetEntityById(*entityIdIterator);
                         if (entity == nullptr)
                         {

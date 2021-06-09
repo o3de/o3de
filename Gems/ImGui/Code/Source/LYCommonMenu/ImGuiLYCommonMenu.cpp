@@ -693,7 +693,7 @@ namespace ImGui
         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Left Stick");
         ImGui::NextColumn();
         ImGui::Bullet();
-        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Mova Mouse Pointer");
+        ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Move Mouse Pointer");
         ImGui::Separator();
         ImGui::NextColumn();
 
