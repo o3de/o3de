@@ -49,6 +49,12 @@ QFrame#SeparatorLine
     color: #2d2d2d;
 }
 
+QFrame#ErrorPage
+{
+    background-color: #2d2d2d;
+    padding: 20px;
+}
+
 /* QComboBox */
 QComboBox
 {

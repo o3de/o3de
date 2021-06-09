@@ -40,6 +40,7 @@ class NotificationFrame(QFrame):
         icon_label.setPixmap(pixmap)
 
         self._title_label: QLabel = QLabel(title, self)
+        self._title_label.setOpenExternalLinks(True)
         self._title_label.setObjectName("Title")
         self._title_label.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred))
         self._title_label.setWordWrap(True)
