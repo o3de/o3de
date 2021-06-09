@@ -3099,7 +3099,7 @@ namespace AzToolsFramework
 
     void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu([[maybe_unused]] QMenu* menu, const AZ::Vector2& /*point*/, const int /*flags*/)
     {
-        // Disabled until we can make this work with Atom
+        // Disabled until this works with Atom - when re-enabling, make sure it isn't at the top of the context menu
 //         QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
 //         QObject::connect(
 //             action, &QAction::triggered, action,
