@@ -110,6 +110,19 @@ namespace UnitTest
         }
     }
 
+    void TestEditorActions::AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* parent)
+    {
+        AZ_Assert(action, "Attempting to add a null action");
+
+        if (action)
+        {
+            action->setParent(parent);
+            action->setData(aznumeric_cast<int>(id));
+            action->setShortcutContext(Qt::ApplicationShortcut);
+            m_defaultWidget.addAction(action);
+        }
+    }
+
     void TestEditorActions::RemoveActionViaBus(QAction* action)
     {
         AZ_Assert(action, "Attempting to remove a null action");

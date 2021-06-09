@@ -180,7 +180,7 @@ bool ShortcutDispatcher::FindCandidateActionAndFire(QShortcutEvent* shortcutEven
 
             if (m_allActions[i].second->isEnabled())
             {
-                //Checking if the parent is on focus so that we can use it.
+                //Checking if the parent is in focus so that we can use it.
                 if (registered == focused)
                 {
                     bool isAmbiguous = false;
@@ -335,7 +335,7 @@ void ShortcutDispatcher::AddNewAction(QAction* newAction, AZ::Crc32 reverseUrl)
 
 void ShortcutDispatcher::AddNewAction(QAction* newAction)
 {
-    //Here we are adding directly the Url with 0 since we have none, this is here to keep track of the old shortcuts.
+    //Add the Url directly with 0 since one isn't provided, used to keep track of old shortcuts
     const int newId = newAction->data().toInt();
 
     size_t actionCount = m_allActions.size();

@@ -154,8 +154,8 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         /// Allow default actions to be added to the Action Manager via a Bus call.
-        //The parent in the Add Action would be the tool where the action is being registered, the parent can be null but then the shorcut might be overriten by another shortcut.
-        //e.g: the MainWindow for the editor. or what is on focus at the moment.
+        //!The parent in the Add Action would be the tool where the action is being registered, the parent can be null but then the shortcut might be overridden by another shortcut.
+        //!e.g: the MainWindow for the editor. or what is on focus at the moment.
         virtual void AddActionViaBus(int id, QAction* action, QObject* parent) = 0;
         /// Allow default actions to be added to the Action Manager via a Bus call.
         virtual void AddActionViaBusCrc(AZ::Crc32 id, QAction* action, QObject* parent) = 0; 

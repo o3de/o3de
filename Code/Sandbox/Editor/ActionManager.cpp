@@ -451,7 +451,6 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
     connect(action, &QAction::triggered, m_actionMapper, mapped);
     m_actionMapper->setMapping(action, id);
 
-
     if (auto* widget = qobject_cast<QWidget*>(parent()))
     {
         widget->addAction(action);
