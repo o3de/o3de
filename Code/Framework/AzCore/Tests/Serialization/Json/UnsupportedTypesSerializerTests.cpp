@@ -46,17 +46,18 @@ namespace JsonSerializationTests
         void SetUp() override
         {
             BaseJsonSerializerFixture::SetUp();
-            m_serializer = AZStd::make_unique<Serializer>();
+            this->m_serializer = AZStd::make_unique<Serializer>();
         }
 
         void TearDown() override
         {
-            m_serializer.reset();
+            this->m_serializer.reset();
             BaseJsonSerializerFixture::TearDown();
         }
 
     protected:
         AZStd::unique_ptr<Serializer> m_serializer;
+        Type m_instance{};
     };
 
     using UnsupportedTypesTestTypes = ::testing::Types<AnyInfo, VariantInfo, OptionalInfo>;
@@ -64,80 +65,78 @@ namespace JsonSerializationTests
 
     TYPED_TEST(JsonUnsupportedTypesSerializerTests, Load_CallDirectly_ReportsIssueAndHalts)
     {
-        using namespace AZ::JsonSerializationResult;
+        namespace JSR = AZ::JsonSerializationResult;
 
         bool hasMessage = false;
-        auto callback = [&hasMessage](AZStd::string_view message, ResultCode result, AZStd::string_view) -> ResultCode
+        auto callback = [&hasMessage](AZStd::string_view message, JSR::ResultCode result, AZStd::string_view) -> JSR::ResultCode
         {
             hasMessage = !message.empty();
             return result;
         };
-        m_jsonDeserializationContext->PushReporter(AZStd::move(callback));
+        this->m_jsonDeserializationContext->PushReporter(AZStd::move(callback));
 
-        Type instance{};
-        Result result = m_serializer->Load(&instance, azrtti_typeid<Type>(), *m_jsonDocument, *m_jsonDeserializationContext);
-        m_jsonDeserializationContext->PopReporter();
+        JSR::Result result = this->m_serializer->Load(
+            &this->m_instance, azrtti_typeid(this->m_instance), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
+        this->m_jsonDeserializationContext->PopReporter();
 
-        EXPECT_EQ(Processing::Halted, result.GetResultCode().GetProcessing());
+        EXPECT_EQ(JSR::Processing::Halted, result.GetResultCode().GetProcessing());
         EXPECT_TRUE(hasMessage);
     }
 
     TYPED_TEST(JsonUnsupportedTypesSerializerTests, Load_CallThroughFrontEnd_ReportsIssueAndHalts)
     {
-        using namespace AZ::JsonSerializationResult;
+        namespace JSR = AZ::JsonSerializationResult;
 
         bool hasMessage = false;
-        auto callback = [&hasMessage](AZStd::string_view message, ResultCode result, AZStd::string_view) -> ResultCode
+        auto callback = [&hasMessage](AZStd::string_view message, JSR::ResultCode result, AZStd::string_view) -> JSR::ResultCode
         {
             hasMessage = !message.empty();
             return result;
         };
-        m_deserializationSettings->m_reporting = AZStd::move(callback);
+        this->m_deserializationSettings->m_reporting = AZStd::move(callback);
         
-        Type instance{};
-        ResultCode result = AZ::JsonSerialization::Load(instance, *m_jsonDocument, *m_deserializationSettings);
+        JSR::ResultCode result = AZ::JsonSerialization::Load(this->m_instance, *this->m_jsonDocument, *this->m_deserializationSettings);
         
-        EXPECT_EQ(Processing::Halted, result.GetProcessing());
+        EXPECT_EQ(JSR::Processing::Halted, result.GetProcessing());
         EXPECT_TRUE(hasMessage);
     }
 
     TYPED_TEST(JsonUnsupportedTypesSerializerTests, Save_CallDirectly_ReportsIssueAndHalts)
     {
-        using namespace AZ::JsonSerializationResult;
+        namespace JSR = AZ::JsonSerializationResult;
 
         bool hasMessage = false;
-        auto callback = [&hasMessage](AZStd::string_view message, ResultCode result, AZStd::string_view) -> ResultCode
+        auto callback = [&hasMessage](AZStd::string_view message, JSR::ResultCode result, AZStd::string_view) -> JSR::ResultCode
         {
             hasMessage = !message.empty();
             return result;
         };
-        m_jsonSerializationContext->PushReporter(AZStd::move(callback));
+        this->m_jsonSerializationContext->PushReporter(AZStd::move(callback));
 
-        Type instance{};
-        Result result = m_serializer->Store(*m_jsonDocument, &instance, nullptr, azrtti_typeid<Type>(), *m_jsonSerializationContext);
-        m_jsonSerializationContext->PopReporter();
+        JSR::Result result = this->m_serializer->Store(
+            *this->m_jsonDocument, &this->m_instance, nullptr, azrtti_typeid(this->m_instance), *this->m_jsonSerializationContext);
+        this->m_jsonSerializationContext->PopReporter();
 
-        EXPECT_EQ(Processing::Halted, result.GetResultCode().GetProcessing());
+        EXPECT_EQ(JSR::Processing::Halted, result.GetResultCode().GetProcessing());
         EXPECT_TRUE(hasMessage);
     }
 
     TYPED_TEST(JsonUnsupportedTypesSerializerTests, Save_CallThroughFrontEnd_ReportsIssueAndHalts)
     {
-        using namespace AZ::JsonSerializationResult;
+        namespace JSR = AZ::JsonSerializationResult;
 
         bool hasMessage = false;
-        auto callback = [&hasMessage](AZStd::string_view message, ResultCode result, AZStd::string_view) -> ResultCode
+        auto callback = [&hasMessage](AZStd::string_view message, JSR::ResultCode result, AZStd::string_view) -> JSR::ResultCode
         {
             hasMessage = !message.empty();
             return result;
         };
-        m_serializationSettings->m_reporting = AZStd::move(callback);
+        this->m_serializationSettings->m_reporting = AZStd::move(callback);
         
-        Type instance{};
-        ResultCode result =
-            AZ::JsonSerialization::Store(*m_jsonDocument, m_jsonDocument->GetAllocator(), instance, *m_serializationSettings);
+        JSR::ResultCode result = AZ::JsonSerialization::Store(
+            *this->m_jsonDocument, this->m_jsonDocument->GetAllocator(), this->m_instance, *this->m_serializationSettings);
 
-        EXPECT_EQ(Processing::Halted, result.GetProcessing());
+        EXPECT_EQ(JSR::Processing::Halted, result.GetProcessing());
         EXPECT_TRUE(hasMessage);
     }
 } // namespace JsonSerializationTests
