@@ -98,7 +98,10 @@ namespace AZ
             public:           
                 //! Creates the GPU dynamic buffers of a single hair object
                 //! Equivalent to TressFXDynamicHairData::CreateGPUResources
-                bool CreateAndBindGPUResources(Data::Instance<RPI::Shader>, uint32_t vertexCount, uint32_t strandsCount);
+                bool CreateDynamicGPUResources(
+                    Data::Instance<RPI::Shader> computeShader,
+                    Data::Instance<RPI::Shader> rasterShader,
+                    uint32_t vertexCount, uint32_t strandsCount);
 
                 //! Data upload - copy the hair mesh asset data (positions and tangents) into the buffers.
                 //! In the following line I assume that positions and tangents are of the same size.
@@ -120,9 +123,11 @@ namespace AZ
                 //! Matching between the buffers Srg and its buffers descriptors, this method fills the Srg with
                 //!  the views of the buffers to be used by the hair instance.
                 //! Do not call this method manually as it is called from CreateAndBindGPUResources.
-                bool BindSrgBufferViewsAndOffsets();
+                bool BindPerObjectSrgForCompute();
+                bool BindPerObjectSrgForRaster();
  
-                Data::Instance<RPI::ShaderResourceGroup> GetSimSRG() { return m_simSrg; }
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForCompute() { return m_simSrgForCompute; }
+                Data::Instance<RPI::ShaderResourceGroup> GetSimSrgForRaster() { return m_simSrgForRaster; }
 
                 bool IsInitialized() { return m_initialized;  }
 
@@ -138,7 +143,8 @@ namespace AZ
                 //! This indirectly forces the sync to be applied to all 'sub-buffers' used by each of the
                 //!  HairObjects / HairDispatches and therefore allows us to change their data in the shader
                 //!  between passes.
-                AZStd::vector<Data::Instance<RHI::BufferView>> m_dynamicBuffersViews;
+                AZStd::vector<Data::Instance<RHI::BufferView>> m_dynamicBuffersViews;   // RW used for the Compute
+                AZStd::vector<Data::Instance<RHI::BufferView>> m_readBuffersViews;      // Read only used for the Raster fill
 
                 //! The following vector is required in order to keep the allocators 'alive' or
                 //!  else they are cleared from the buffer and can be re-allocated.
@@ -160,7 +166,8 @@ namespace AZ
                 //!     - pApplySDFLayout / m_pApplySDFBindSets
                 //!     - pRenderPosTanLayout / m_pRenderBindSets.    
                 //------------------------------------------------------------------
-                Data::Instance<RPI::ShaderResourceGroup> m_simSrg;      //! TressFX equivalent: pSimPosTanLayout / m_pSimBindSets
+                Data::Instance<RPI::ShaderResourceGroup> m_simSrgForCompute;    //! TressFX equivalent: pSimPosTanLayout / m_pSimBindSets
+                Data::Instance<RPI::ShaderResourceGroup> m_simSrgForRaster;     //! Targeting only the Fill pass / shader
 
                 bool m_initialized = false;
             };
@@ -222,14 +229,14 @@ namespace AZ
                     return m_hairGenerationSrg;
                 }
 
-                Data::Instance<RPI::ShaderResourceGroup> GetHairSimSrg()
+                bool BindPerObjectSrgForCompute()
                 {
-                    return m_dynamicHairData.GetSimSRG();
+                    return m_dynamicHairData.IsInitialized() ? m_dynamicHairData.BindPerObjectSrgForCompute() : false;
                 }
 
-                bool BindDynamicSrgResources()
+                bool BindPerObjectSrgForRaster()
                 {
-                    return m_dynamicHairData.IsInitialized() ? m_dynamicHairData.BindSrgBufferViewsAndOffsets() : false;
+                    return m_dynamicHairData.IsInitialized() ? m_dynamicHairData.BindPerObjectSrgForRaster() : false;
                 }
 
                 //!-----------------------------------------------------------------

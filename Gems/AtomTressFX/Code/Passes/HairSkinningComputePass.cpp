@@ -130,7 +130,7 @@ namespace AZ
                 // are invalidated outside the render begin / end frame.
                 for (HairRenderObject* newObject : m_newRenderObjects)
                 {
-                    newObject->BindDynamicSrgResources();
+                    newObject->BindPerObjectSrgForCompute();
                 }
                 // Clear the objects, hence this is only done once per object/shader lifetime
                 m_newRenderObjects.clear();

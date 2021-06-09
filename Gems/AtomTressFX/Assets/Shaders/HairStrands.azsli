@@ -25,10 +25,38 @@
 
 #pragma once 
 
-#include <HairRenderingSrgs.azsli>
 #include <HairUtilities.azsli>
 
 #define CM_TO_METERS_RENDER 0.01
+
+float4 GetSharedVector4(int offset)
+{
+    return float4(
+        float3(
+            asfloat(PassSrg::m_skinnedHairSharedBuffer[offset]),
+            asfloat(PassSrg::m_skinnedHairSharedBuffer[offset + 1]),
+            asfloat(PassSrg::m_skinnedHairSharedBuffer[offset + 2])
+        ),// * CM_TO_METERS,   // convert to meters when using
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[offset + 3])
+    );
+}
+
+float4 GetSharedPosition(int vertexIndex)
+{
+    int  vertexOffset = (HairDynamicDataSrg::m_positionBufferOffset >> 2) + (vertexIndex << 2);
+    return GetSharedVector4(vertexOffset);
+}
+
+float3 GetSharedTangent(int tangentIndex)
+{
+    int tangentOffset = (HairDynamicDataSrg::m_tangentBufferOffset >> 2) + (tangentIndex << 2);
+
+    return float3(
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset]),
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset + 1]),
+        asfloat(PassSrg::m_skinnedHairSharedBuffer[tangentOffset + 2])
+    );
+}
 
 struct TressFXVertex
 {
@@ -60,9 +88,11 @@ TressFXVertex GetExpandedTressFXVert(uint vertexId, float3 eye, float2 winSize, 
     // Access the current line segment
     uint index = vertexId / 2;  // vertexId is actually the indexed vertex id when indexed triangles are used
     // Get updated positions and tangents from simulation result
-    float3 v = GetSharedPosition(index).xyz; // Adi: g_GuideHairVertexPositions[index].xyz;
+//    float3 v = GetSharedPosition(index).xyz;
+    float3 v = g_GuideHairVertexPositions[index].xyz;
 
-//    float3 t = GetSharedTangent(index);   // Adi: both approaches will work!!
+    // Both approach (offset to shared buffer or BufferView) will work!!
+//    float3 t = GetSharedTangent(index);   
     float3 t = g_GuideHairVertexTangents[index].xyz;
 
     // Get hair strand thickness
@@ -108,7 +138,8 @@ TressFXVertex GetExpandedTressFXShadowVert(uint vertexId, float3 eye, float2 win
     // Access the current line segment
     uint index = vertexId / 2;  // vertexId is actually the indexed vertex id when indexed triangles are used
                                 // Get updated positions and tangents from simulation result
-    float3 v = GetSharedPosition(index).xyz; // Adi: g_GuideHairVertexPositions[index].xyz;
+//    float3 v = GetSharedPosition(index).xyz; 
+    float3 v = g_GuideHairVertexPositions[index].xyz;
 //    float3 t = GetSharedTangent(index);   // Adi: both approaches will work!!
     float3 t = g_GuideHairVertexTangents[index].xyz;
 

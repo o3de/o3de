@@ -60,8 +60,10 @@ namespace AZ
                 //! Creates a HairPPLLRasterPass
                 static RPI::Ptr<HairPPLLRasterPass> Create(const RPI::PassDescriptor& descriptor);
 
-                bool BuildDrawPacket(HairRenderObject* hairObject);
                 bool AddDrawPacket(HairRenderObject* hairObject);
+
+                //! The following will be called when an object was added or shader has been compiled
+                void SchedulePacketBuild(HairRenderObject* hairObject);
 
                 Data::Instance<RPI::Shader> GetShader() { return m_shader; }
 
@@ -83,6 +85,7 @@ namespace AZ
                 bool LoadShaderAndPipelineState();
                 bool AcquireFeatureProcessor();
                 void BuildShaderAndRenderData();
+                bool BuildDrawPacket(HairRenderObject* hairObject);
 
                 // Pass behavior overrides
                 void BuildAttachmentsInternal() override;
@@ -102,12 +105,13 @@ namespace AZ
                 RPI::PassDescriptor m_passDescriptor;
 
                 const RHI::PipelineState* m_pipelineState = nullptr;
+                RPI::ViewPtr m_currentView = nullptr;
 
                 AZStd::mutex m_mutex;
 
-                //! list of dispatch items, each represents a single hair object that
-                //!  will be used by the skinning compute shader.
-                AZStd::unordered_set<const RHI::DrawPacket*> m_drawPackets;
+                //! List of new render objects that their Per Object (dynamic) Srg should be bound
+                //!  to the resources.  Done once per pass per object only.
+                AZStd::unordered_set<HairRenderObject*> m_newRenderObjects;
 
                 bool m_initialized = false;
             };
