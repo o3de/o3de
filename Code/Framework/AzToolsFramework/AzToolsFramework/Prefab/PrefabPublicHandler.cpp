@@ -897,7 +897,13 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("No entities to duplicate."));
             }
 
-            if (!EntitiesBelongToSameInstance(entityIds))
+            const EntityIdList entityIdsNoLevelInstance = GenerateEntityIdListWithoutLevelInstance(entityIds);
+            if (entityIdsNoLevelInstance.empty())
+            {
+                return AZ::Failure(AZStd::string("No entities to duplicate because only instance selected is the level instance."));
+            }
+
+            if (!EntitiesBelongToSameInstance(entityIdsNoLevelInstance))
             {
                 return AZ::Failure(AZStd::string("Cannot duplicate multiple entities belonging to different instances with one operation."
                     "Change your selection to contain entities in the same instance."));
@@ -905,7 +911,7 @@ namespace AzToolsFramework
 
             // We've already verified the entities are all owned by the same instance,
             // so we can just retrieve our instance from the first entity in the list.
-            AZ::EntityId firstEntityIdToDuplicate = entityIds[0];
+            AZ::EntityId firstEntityIdToDuplicate = entityIdsNoLevelInstance[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDuplicate);
             if (!commonOwningInstance.has_value())
             {
@@ -925,7 +931,7 @@ namespace AzToolsFramework
 
             // This will cull out any entities that have ancestors in the list, since we will end up duplicating
             // the full nested hierarchy with what is returned from RetrieveAndSortPrefabEntitiesAndInstances
-            AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIds);
+            AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIdsNoLevelInstance);
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -1000,17 +1006,19 @@ namespace AzToolsFramework
 
         PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
         {
-            if (entityIds.empty())
+            const EntityIdList entityIdsNoLevelInstance = GenerateEntityIdListWithoutLevelInstance(entityIds);
+
+            if (entityIdsNoLevelInstance.empty())
             {
                 return AZ::Success();
             }
 
-            if (!EntitiesBelongToSameInstance(entityIds))
+            if (!EntitiesBelongToSameInstance(entityIdsNoLevelInstance))
             {
                 return AZ::Failure(AZStd::string("Cannot delete multiple entities belonging to different instances with one operation."));
             }
 
-            AZ::EntityId firstEntityIdToDelete = entityIds[0];
+            AZ::EntityId firstEntityIdToDelete = entityIdsNoLevelInstance[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDelete);
 
             // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
@@ -1018,15 +1026,10 @@ namespace AzToolsFramework
             if (commonOwningInstance->get().GetContainerEntityId() == firstEntityIdToDelete)
             {
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
-                if (!commonOwningInstance.has_value())
-                {
-                    // In this case if there isn't a parent instance (likely it is the top level instance), simply return.
-                    return AZ::Failure(AZStd::string("Cannot delete the loaded level instance."));
-                }
             }
 
             // Retrieve entityList from entityIds
-            EntityList inputEntityList = EntityIdListToEntityList(entityIds);
+            EntityList inputEntityList = EntityIdListToEntityList(entityIdsNoLevelInstance);
 
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -1082,7 +1085,7 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    for (AZ::EntityId entityId : entityIds)
+                    for (AZ::EntityId entityId : entityIdsNoLevelInstance)
                     {
                         InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
                         // If this is the container entity, it actually represents the instance so get its owner
@@ -1436,6 +1439,22 @@ namespace AzToolsFramework
             }
 
             return (outEntities.size() + outInstances.size()) > 0;
+        }
+
+        EntityIdList PrefabPublicHandler::GenerateEntityIdListWithoutLevelInstance(
+            const EntityIdList& entityIds) const
+        {
+            EntityIdList outEntityIds;
+            outEntityIds.reserve(entityIds.size()); // Actual size could be smaller.
+
+            for (const AZ::EntityId& entityId : entityIds)
+            {
+                if (!IsLevelInstanceContainerEntity(entityId))
+                {
+                    outEntityIds.emplace_back(entityId);
+                }
+            }
+            return outEntityIds;
         }
 
         bool PrefabPublicHandler::EntitiesBelongToSameInstance(const EntityIdList& entityIds) const
