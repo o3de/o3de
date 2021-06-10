@@ -217,7 +217,6 @@ CRenderViewport::CRenderViewport(const QString& name, QWidget* parent)
 
     setFocusPolicy(Qt::StrongFocus);
 
-    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     Camera::EditorCameraRequestBus::Handler::BusConnect();
     m_editorEntityNotifications = AZStd::make_unique<EditorEntityNotifications>(*this);
 
@@ -243,7 +242,6 @@ CRenderViewport::~CRenderViewport()
     AzFramework::WindowRequestBus::Handler::BusDisconnect();
     DisconnectViewportInteractionRequestBus();
     m_editorEntityNotifications.reset();
-    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
     OnDestroy();
     GetIEditor()->GetUndoManager()->RemoveListener(this);
