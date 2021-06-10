@@ -31,7 +31,6 @@
 
 #pragma once
 
-#include <HairSrgs.azsli>
 #include <viewsrg.srgi>
 
 //------------------------------------------------------------------------------
@@ -109,8 +108,8 @@ struct TressFXStrandParameters
 ShaderResourceGroup HairRenderingMaterialSrg : SRG_PerMaterial
 {
     // Generated 
-    StructuredBuffer<float>     m_hairThicknessCoeffs;  // Does not seem to be used!
-    StructuredBuffer<float2>    m_hairStrandTexCd;
+    Buffer<float>     m_hairThicknessCoeffs;  // Does not seem to be used!
+    Buffer<float2>    m_hairStrandTexCd;
 
     //! The hair textures defining the color of the hair at its base
     Texture2D<float4>           m_baseAlbedoTexture;
@@ -159,4 +158,33 @@ ShaderResourceGroup HairRenderingMaterialSrg : SRG_PerMaterial
 #define RenderParamsIndex       HairRenderingMaterialSrg::m_tressFXStrandParameters.m_renderParamsIndex
 #define EnableStrandUV          HairRenderingMaterialSrg::m_tressFXStrandParameters.m_enableStrandUV
 #define EnableStrandTangent     HairRenderingMaterialSrg::m_tressFXStrandParameters.m_enableStrandTangent
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+//! If you change this, you MUST also change TressFXShadeParams in TressFXConstantBuffers.h 
+//!  and ShadeParams in TressFXShortcut.hlsl
+struct HairObjectShadeParams
+{
+    // General information
+    float       m_fiberRadius;
+    // For deep approximated shadow lookup
+    float       m_shadowAlpha;
+    float       m_fiberSpacing;
+    // For lighting/shading
+    float       m_hairEx2;
+    float4		m_matKValue;   // KAmbient, KDiffuse, KSpec1, Exp1
+    float       m_hairKs2;
+    float		fPadding0;
+    float		fPadding1;
+    float		fPadding2;
+};
+
+//------------------------------------------------------------------------------
+struct PPLL_STRUCT
+{
+    uint	depth;
+    uint	data;
+    uint    color;
+    uint    uNext;
+};
 //------------------------------------------------------------------------------

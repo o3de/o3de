@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h>
-
 #include <AzCore/base.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/list.h>
@@ -59,7 +57,6 @@ namespace AZ
             class HairFeatureProcessor final
                 : public RPI::FeatureProcessor
                 , private AZ::TickBus::Handler
-                , private LyIntegration::Thumbnails::ThumbnailFeatureProcessorProviderBus::Handler
             {
                 Name TestSkinningPass;
                 Name GlobalShapeConstraintsPass;
@@ -82,11 +79,6 @@ namespace AZ
                 void UpdateHairSkinning();
 
                 bool Init();
-
-                //! Render::ThumbnailFeatureProcessorProviderBus::Handler interface overrides in
-                //!  order to make sure that the hair FP is registered to the Thumbnail scene so we
-                //!  avoid initialization errors due to matching pipeline with mainline. 
-                const AZStd::vector<AZStd::string>& GetCustomFeatureProcessors() const override;
 
                 // FeatureProcessor overrides ...
                 void Activate() override;
@@ -138,7 +130,7 @@ namespace AZ
                 bool InitPPLLResolvePass();
                 bool InitComputePass(const Name& passName, bool allowIterations = false);
 
-                void BuildDispatchItems(Data::Instance<HairRenderObject> renderObject);
+                void BuildDispatchAndDrawItems(Data::Instance<HairRenderObject> renderObject);
 
                 void EnablePasses(bool enable);
 
@@ -177,7 +169,7 @@ namespace AZ
                 float m_currentDeltaTime = 0.02f;    // per frame delta time for the physics simulation.
                 bool m_addDispatchEnabled = true; // flag to disable/enable feature processor adding dispatch calls to compute passes.
                 bool m_sharedResourcesCreated = false;
-                bool m_forceRebuildRenderData = true;     // reload / pipeline changes force build dispatches and render items
+                bool m_forceRebuildRenderData = false;      // reload / pipeline changes force build dispatches and render items
                 bool m_forceClearRenderData = false;
                 bool m_initialized = false;
                 bool m_isEnabled = true;

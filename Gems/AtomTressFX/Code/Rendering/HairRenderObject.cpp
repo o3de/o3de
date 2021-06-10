@@ -92,10 +92,68 @@ namespace AZ
                 );
             }
 
+
+            bool DynamicHairData::BindPerObjectSrgForRaster()
+            {
+                uint8_t streams[2] = {
+                    uint8_t(HairDynamicBuffersSemantics::Position),
+                    uint8_t(HairDynamicBuffersSemantics::Tangent)
+                };
+                Name offsetNames[2] = {
+                    Name("m_positionBufferOffset"),
+                    Name("m_tangentBufferOffset")
+                };
+
+                m_readBuffersViews.resize(2);
+           
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                for (uint8_t index = 0; index < 2 ; ++index)
+                {
+                    // Buffer view creation from the shared buffer
+                    uint8_t stream = streams[index];
+                    SrgBufferDescriptor streamDesc = m_dynamicBuffersDescriptors[stream];
+//                    streamDesc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+
+                    streamDesc.m_viewOffsetInBytes = uint32_t(m_dynamicViewAllocators[stream]->GetVirtualAddress().m_ptr);
+                    AZ_Assert(streamDesc.m_viewOffsetInBytes % streamDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
+                    const RHI::BufferViewDescriptor viewDescriptor = SharedBuffer::CreateResourceViewWithDifferentFormat(
+                        streamDesc.m_viewOffsetInBytes, streamDesc.m_elementCount, streamDesc.m_elementSize,
+                        streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
+//                        streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite    // No need for ReadWrite in the raster fill
+                    );
+
+                    m_readBuffersViews[index] = RHI::Factory::Get().CreateBufferView();
+                    RHI::ResultCode resultCode = m_readBuffersViews[index]->Init(*rhiBuffer, viewDescriptor);
+                    if (resultCode != RHI::ResultCode::Success)
+                    {
+                        AZ_Error("Hair Gem", false, "Read BufferView could not be retrieved for [%s]", streamDesc.m_bufferName.GetCStr());
+                        return false;
+                    }
+
+                    // Buffer binding into the raster srg
+                    RHI::ShaderInputBufferIndex indexHandle = m_simSrgForRaster->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
+                    if (!m_simSrgForRaster->SetBufferView(indexHandle, m_readBuffersViews[index].get()))
+                    {
+                        AZ_Error("Hair Gem", false, "Failed to bind raster buffer view for %s", streamDesc.m_bufferName.GetCStr());
+                        return false;
+                    }
+
+                    // And now for the offsets (if using offsets rather than BufferView)
+                    RHI::ShaderInputConstantIndex indexConstHandle = m_simSrgForRaster->FindShaderInputConstantIndex(offsetNames[index]);
+                    if (!m_simSrgForRaster->SetConstant(indexConstHandle, streamDesc.m_viewOffsetInBytes))
+                    {
+                        AZ_Error("Hair Gem", false, "Failed to bind Raster Constant [%s]", offsetNames[index].GetCStr());
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
             //! Matching between the buffers Srg and its buffers descriptors, this method fills the Srg with
             //!  the views of the buffers to be used by the hair instance.
             //! Do not call this method manually as it is called from CreateAndBindGPUResources.
-            bool DynamicHairData::BindSrgBufferViewsAndOffsets()
+            bool DynamicHairData::BindPerObjectSrgForCompute()
             {
                 //! Get the SRG indices for each input stream and set it in the Srg.
                 //! Currently the dynamic streams are not used (not clear if RWBuffer is supported properly
@@ -105,12 +163,12 @@ namespace AZ
                 for (uint8_t buffer = 0; buffer < uint8_t(HairDynamicBuffersSemantics::NumBufferStreams); ++buffer)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[buffer];
-                    RHI::ShaderInputBufferIndex indexHandle = m_simSrg->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
+                    RHI::ShaderInputBufferIndex indexHandle = m_simSrgForCompute->FindShaderInputBufferIndex(streamDesc.m_paramNameInSrg);
                     streamDesc.m_resourceShaderIndex = indexHandle.GetIndex();
 
-                    if (!m_simSrg->SetBufferView(indexHandle, m_dynamicBuffersViews[buffer].get()))
+                    if (!m_simSrgForCompute->SetBufferView(indexHandle, m_dynamicBuffersViews[buffer].get()))
                     {
-                        AZ_Error("Hair Gem", false, "Failed to bind buffer view for %s", streamDesc.m_bufferName.GetCStr());
+                        AZ_Error("Hair Gem", false, "Failed to bind compute buffer view for %s", streamDesc.m_bufferName.GetCStr());
                         return false;
                     }
                 }
@@ -128,10 +186,10 @@ namespace AZ
                 for (uint8_t buffer=0 ; buffer < uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++buffer)
                 {
                     uint32_t viewOffsetInBytes = uint32_t(m_dynamicViewAllocators[buffer]->GetVirtualAddress().m_ptr);
-                    RHI::ShaderInputConstantIndex indexHandle = m_simSrg->FindShaderInputConstantIndex(offsetNames[buffer]);
-                    if (!m_simSrg->SetConstant(indexHandle, viewOffsetInBytes))
+                    RHI::ShaderInputConstantIndex indexHandle = m_simSrgForCompute->FindShaderInputConstantIndex(offsetNames[buffer]);
+                    if (!m_simSrgForCompute->SetConstant(indexHandle, viewOffsetInBytes))
                     {
-                        AZ_Error("Hair Gem", false, "Failed to bind Constant [%s]", offsetNames[buffer].GetCStr());
+                        AZ_Error("Hair Gem", false, "Failed to bind Compute Constant [%s]", offsetNames[buffer].GetCStr());
                         return false;
                     }
                 }
@@ -141,29 +199,30 @@ namespace AZ
 
             //! Creates the GPU dynamic buffers of a single hair object
             //! Equivalent to TressFXDynamicHairData::CreateGPUResources
-            bool DynamicHairData::CreateAndBindGPUResources(
-                Data::Instance<RPI::Shader> shader, uint32_t vertexCount, uint32_t strandsCount )
+            bool DynamicHairData::CreateDynamicGPUResources(
+                Data::Instance<RPI::Shader> computeShader,
+                Data::Instance<RPI::Shader> rasterShader,
+                uint32_t vertexCount, uint32_t strandsCount )
             {
                 AZ_Assert(vertexCount <= std::numeric_limits<uint32_t>().max(), "Hair vertex count exceeds uint32_t size.");
 
-                // Create the dynamic shared buffers Srg .
-                // Notice that Atom Hair will be using a single Srg instead of the three used by TressFX
-                // to represent Sim, SDF collision and Render since the one we use (equivalent to the
-                // TressFX sim one) is the superset of the other two that can simply use it.
-                m_simSrg = UtilityClass::CreateShaderResourceGroup(shader, "HairDynamicDataSrg", "Hair Gem");
-                if (!m_simSrg)
+                // Create the dynamic shared buffers Srg.
+                m_simSrgForCompute = UtilityClass::CreateShaderResourceGroup(computeShader, "HairDynamicDataSrg", "Hair Gem");
+                m_simSrgForRaster = UtilityClass::CreateShaderResourceGroup(rasterShader, "HairDynamicDataSrg", "Hair Gem");
+                if (!m_simSrgForCompute || !m_simSrgForRaster)
                 {
-                    AZ_Error("Hair Gem", false, "Failed to create the hair shared simulation shader resource group [m_dynamicBuffersSrg]");
+                    AZ_Error("Hair Gem", false, "Failed to create the Per Object shader resource group [HairDynamicDataSrg]");
                     return false;
                 }
 
                 // Buffers preparation and creation.
                 // The shared buffer must already be created and initialized at this point.
-                PrepareSrgDescriptors(vertexCount, strandsCount );
+                PrepareSrgDescriptors(vertexCount, strandsCount);
 
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
+                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
@@ -177,21 +236,15 @@ namespace AZ
                         return false;
                     }
 
-                  /*
-//                    [To Do] Adi: This should be put back in use if dynamic buffers are to be used.
-//                    Currently indications are that this approach cannot work in Atom or proper care
-//                    should be to match the buffer type - not clear at this point but it doesn't work.
-//                    Due to that I am employing general shared buffer with offsets into the locations of
-//                    each desired stream and per object
-*/
-                    // Create the buffer view into the shared buffer and store it. It will be used by the shader Srg.
+                    // Create the buffer view into the shared buffer - it will be used as a separate buffer
+                    // by the PerObject Srg.
                     streamDesc.m_viewOffsetInBytes = uint32_t(m_dynamicViewAllocators[stream]->GetVirtualAddress().m_ptr);
                     AZ_Assert(streamDesc.m_viewOffsetInBytes % streamDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
                     const RHI::BufferViewDescriptor viewDescriptor = SharedBuffer::CreateResourceViewWithDifferentFormat(
                         streamDesc.m_viewOffsetInBytes, streamDesc.m_elementCount, streamDesc.m_elementSize,
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite
                     );
-                    RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+
                     m_dynamicBuffersViews[stream] = RHI::Factory::Get().CreateBufferView();
                     RHI::ResultCode resultCode = m_dynamicBuffersViews[stream]->Init(*rhiBuffer, viewDescriptor);
                     if (resultCode != RHI::ResultCode::Success)
@@ -916,7 +969,9 @@ namespace AZ
 
                 //-------------------------------------
                 // Dynamic buffers, data and Srg creation - shared between passes and changed on the GPU
-                if (!m_dynamicHairData.CreateAndBindGPUResources(m_skinningShader, m_NumTotalVertices, m_NumTotalStrands))
+                if (!m_dynamicHairData.CreateDynamicGPUResources(
+                    m_skinningShader, m_PPLLFillShader,
+                    m_NumTotalVertices, m_NumTotalStrands))
                 {
                     AZ_Error("Hair Gem", false, "Hair - Error creating dynamic resources [%s]", assetName );
                     return false;
@@ -1018,17 +1073,19 @@ namespace AZ
                     updatedCB &= m_strandCB.UpdateGPUData();
                 }
 
-                RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSRG().get();
+                RPI::ShaderResourceGroup* simSrgForCompute = m_dynamicHairData.GetSimSrgForCompute().get();
+                RPI::ShaderResourceGroup* simSrgForRaster= m_dynamicHairData.GetSimSrgForRaster().get();
                 RPI::ShaderResourceGroup* generationSrg = m_hairGenerationSrg.get();
                 RPI::ShaderResourceGroup* renderMaterialSrg = m_hairRenderSrg.get();
-                if (!simSrg || !generationSrg || !renderMaterialSrg)
+                if (!simSrgForCompute || !simSrgForRaster || !generationSrg || !renderMaterialSrg)
                 {
                     AZ_Error("Hair Gem", false, "Failed to get one of the Hair Object Srgs.");
                     return false;
                 }
 
                 // Single compilation per frame
-                simSrg->Compile();
+                simSrgForCompute->Compile();
+                simSrgForRaster->Compile();
                 generationSrg->Compile();
                 renderMaterialSrg->Compile();
 
@@ -1068,9 +1125,8 @@ namespace AZ
                 drawPacketBuilder.SetDrawArguments(drawIndexed);
                 drawPacketBuilder.SetIndexBufferView(m_indexBufferView);
 
-                // Adi: m_hairRenderSrg is per material srg - should it be avoided from adding it as the per draw srg?
                 RPI::ShaderResourceGroup* renderMaterialSrg = m_hairRenderSrg.get();
-                RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSRG().get();
+                RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSrgForRaster().get();
 
                 if (!renderMaterialSrg || !simSrg)
                 {
@@ -1111,7 +1167,7 @@ namespace AZ
 
             bool HairRenderObject::BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel)
             {
-                RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSRG().get();
+                RPI::ShaderResourceGroup* simSrg = m_dynamicHairData.GetSimSrgForCompute().get();
                 RPI::ShaderResourceGroup* hairGenerationSrg = m_hairGenerationSrg.get();
                 if (!simSrg || !hairGenerationSrg || !computeShader)
                 {
