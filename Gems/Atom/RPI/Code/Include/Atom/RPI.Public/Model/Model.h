@@ -40,7 +40,6 @@ namespace AZ
             : public Data::InstanceData
         {
             friend class ModelSystem;
-            friend class Render::MeshFeatureProcessor;
 
         public:
             AZ_INSTANCE_DATA(Model, "{C30F5522-B381-4B38-BBAF-6E0B1885C8B9}");
@@ -62,8 +61,6 @@ namespace AZ
 
             //! Returns whether a buffer upload is pending.
             bool IsUploadPending() const;
-
-            const AZ::Aabb& GetAabb() const;
 
             const Data::Asset<ModelAsset>& GetModelAsset() const;
 
@@ -98,8 +95,6 @@ namespace AZ
         private:
             Model() = default;
 
-            void SetAabb(const AZ::Aabb&);
-
             static Data::Instance<Model> CreateInternal(ModelAsset& modelAsset);
             RHI::ResultCode Init(ModelAsset& modelAsset);
 
@@ -110,8 +105,6 @@ namespace AZ
 
             // Tracks whether buffers have all been streamed up to the GPU.
             bool m_isUploadPending = false;
-
-            AZ::Aabb m_aabb;
         };
     } // namespace RPI
 } // namespace AZ

@@ -62,8 +62,6 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
-            m_aabb = modelAsset.GetAabb();
-
             m_lods.resize(modelAsset.GetLodAssets().size());
 
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
@@ -127,16 +125,6 @@ namespace AZ
             return m_isUploadPending;
         }
 
-        const AZ::Aabb& Model::GetAabb() const
-        {
-            return m_aabb;
-        }
-
-        void Model::SetAabb(const AZ::Aabb& bb)
-        {
-            m_aabb = bb;
-        }
-
         const Data::Asset<ModelAsset>& Model::GetModelAsset() const
         {
             return m_modelAsset;
@@ -145,8 +133,15 @@ namespace AZ
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            
+            if (!GetModelAsset())
+            {
+                AZ_Assert(false, "Invalid Model - not created from a ModelAsset?");
+                return false;
+            }
+            
             float firstHit;
-            const int result = Intersect::IntersectRayAABB2(rayStart, dir.GetReciprocal(), m_aabb, firstHit, distance);
+            const int result = Intersect::IntersectRayAABB2(rayStart, dir.GetReciprocal(), GetModelAsset()->GetAabb(), firstHit, distance);
             if (Intersect::ISECT_RAY_AABB_NONE != result)
             {
                 if (ModelAsset* modelAssetPtr = m_modelAsset.Get())

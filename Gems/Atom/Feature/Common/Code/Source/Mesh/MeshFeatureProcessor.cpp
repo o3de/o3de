@@ -173,6 +173,7 @@ namespace AZ
             meshDataHandle->m_originalModelAsset = modelAsset;
             meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
             meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
+            meshDataHandle->m_aabb = modelAsset->GetAabb();
 
             return meshDataHandle;
         }
@@ -309,12 +310,24 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 MeshDataInstance& meshData = *meshHandle;
+                meshData.m_aabb = localAabb;
                 meshData.m_cullBoundsNeedsUpdate = true;
                 meshData.m_objectSrgNeedsUpdate = true;
-
-                meshData.m_model->SetAabb(localAabb);
             }
         };
+
+        AZ::Aabb MeshFeatureProcessor::GetLocalAabb(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_aabb;
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return Aabb::CreateNull();
+            }
+        }
 
         Transform MeshFeatureProcessor::GetTransform(const MeshHandle& meshHandle)
         {
@@ -863,7 +876,7 @@ namespace AZ
             RPI::Cullable::CullData& cullData = m_cullable.m_cullData;
             RPI::Cullable::LodData& lodData = m_cullable.m_lodData;
 
-            const Aabb& localAabb = m_model->GetAabb();
+            const Aabb& localAabb = m_aabb;
             lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
 
             const size_t modelLodCount = m_model->GetLodCount();
@@ -944,7 +957,7 @@ namespace AZ
 
             Vector3 center;
             float radius;
-            Aabb localAabb = m_model->GetAabb();
+            Aabb localAabb = m_aabb;
             localAabb.MultiplyByScale(nonUniformScale);
 
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);

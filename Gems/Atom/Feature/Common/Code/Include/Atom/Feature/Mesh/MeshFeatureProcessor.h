@@ -95,6 +95,8 @@ namespace AZ
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
 
+            Aabb m_aabb = Aabb::CreateNull();
+
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
@@ -161,6 +163,7 @@ namespace AZ
             Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
 
             void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) override;
+            AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
