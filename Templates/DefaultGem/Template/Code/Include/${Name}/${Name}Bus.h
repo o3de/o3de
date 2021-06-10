@@ -16,9 +16,9 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Requests
+    class ${SanitizedCppName}Requests
         : public AZ::EBusTraits
     {
     public:
@@ -31,6 +31,6 @@ namespace ${Name}
         // Put your public methods here
     };
 
-    using ${Name}RequestBus = AZ::EBus<${Name}Requests>;
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests>;
 
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}

@@ -18,14 +18,14 @@
 
 #include <${Name}/${Name}Bus.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}SystemComponent
+    class ${SanitizedCppName}SystemComponent
         : public AZ::Component
-        , protected ${Name}RequestBus::Handler
+        , protected ${SanitizedCppName}RequestBus::Handler
     {
     public:
-        AZ_COMPONENT(${Name}SystemComponent, "${SysCompClassId}");
+        AZ_COMPONENT(${SanitizedCppName}SystemComponent, "${SysCompClassId}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -36,7 +36,7 @@ namespace ${Name}
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // ${Name}RequestBus interface implementation
+        // ${SanitizedCppName}RequestBus interface implementation
 
         ////////////////////////////////////////////////////////////////////////
 

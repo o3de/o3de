@@ -1232,10 +1232,12 @@ def create_from_template(destination_path: str,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    sanitized_cpp_name = utils.sanitize_identifier_for_cpp(destination_name)
     # dst name is Name
     replacements.append(("${Name}", destination_name))
     replacements.append(("${NameUpper}", destination_name.upper()))
     replacements.append(("${NameLower}", destination_name.lower()))
+    replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     if _instantiate_template(template_json_data,
                              destination_name,
@@ -1536,10 +1538,12 @@ def create_project(project_path: str,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    sanitized_cpp_name = utils.sanitize_identifier_for_cpp(project_name)
     # project name
     replacements.append(("${Name}", project_name))
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
+    replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     # module id is a uuid with { and -
     if module_id:
@@ -1927,10 +1931,13 @@ def create_gem(gem_path: str,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    sanitized_cpp_name = utils.sanitize_identifier_for_cpp(gem_name)
     # gem name
     replacements.append(("${Name}", gem_name))
     replacements.append(("${NameUpper}", gem_name.upper()))
     replacements.append(("${NameLower}", gem_name.lower()))
+    replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    
 
     # module id is a uuid with { and -
     if module_id:
