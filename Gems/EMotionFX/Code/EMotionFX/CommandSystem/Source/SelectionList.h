@@ -15,6 +15,7 @@
 #include "CommandSystemConfig.h"
 #include <EMotionFX/Source/ActorBus.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/MotionInstance.h>
@@ -27,7 +28,8 @@ namespace CommandSystem
      * specific time stamp in a scene.
      */
     class COMMANDSYSTEM_API SelectionList
-        : EMotionFX::ActorNotificationBus::Handler
+        : private EMotionFX::ActorNotificationBus::Handler
+        , private EMotionFX::ActorInstanceNotificationBus::Handler
     {
         MCORE_MEMORYOBJECTCATEGORY(SelectionList, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_COMMANDSYSTEM);
 
@@ -399,6 +401,9 @@ namespace CommandSystem
     private:
         // ActorNotificationBus overrides
         void OnActorDestroyed(EMotionFX::Actor* actor) override;
+
+        // ActorInstanceNotificationBus overrides
+        void OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance) override;
 
         AZStd::vector<EMotionFX::Node*>             mSelectedNodes;             /**< Array of selected nodes. */
         AZStd::vector<EMotionFX::Actor*>            mSelectedActors;            /**< The selected actors.  */

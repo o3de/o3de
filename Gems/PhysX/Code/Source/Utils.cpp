@@ -608,48 +608,6 @@ namespace PhysX
             return true;
         }
 
-        void GetMaterialList(
-            AZStd::vector<physx::PxMaterial*>& pxMaterials, const AZStd::vector<int>& terrainSurfaceIdIndexMapping,
-            const Physics::TerrainMaterialSurfaceIdMap& terrainMaterialsToSurfaceIds)
-        {
-            pxMaterials.reserve(terrainSurfaceIdIndexMapping.size());
-
-            AZStd::shared_ptr<Material> defaultMaterial;
-            MaterialManagerRequestsBus::BroadcastResult(defaultMaterial, &MaterialManagerRequestsBus::Events::GetDefaultMaterial);
-
-            if (terrainSurfaceIdIndexMapping.empty())
-            {
-                pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                return;
-            }
-
-            AZStd::vector<physx::PxMaterial*> materials;
-
-            for (auto& surfaceId : terrainSurfaceIdIndexMapping)
-            {
-                const auto& userAssignedMaterials = terrainMaterialsToSurfaceIds;
-                const auto& matSelectionIterator = userAssignedMaterials.find(surfaceId);
-                if (matSelectionIterator != userAssignedMaterials.end())
-                {
-                    MaterialManagerRequestsBus::Broadcast(&MaterialManagerRequests::GetPxMaterials, matSelectionIterator->second, materials);
-
-                    if (!materials.empty())
-                    {
-                        pxMaterials.push_back(materials.front());
-                    }
-                    else
-                    {
-                        AZ_Error("PhysX", false, "Creating materials: array with materials can't be empty");
-                        pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                    }
-                }
-                else
-                {
-                    pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                }
-            }
-        }
-
         AZStd::string ReplaceAll(AZStd::string str, const AZStd::string& fromString, const AZStd::string& toString) {
             size_t positionBegin = 0;
             while ((positionBegin = str.find(fromString, positionBegin)) != AZStd::string::npos)
@@ -921,9 +879,9 @@ namespace PhysX
 
         AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
         {
-            AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
-            AZ::TransformBus::EventResult(worldScale, entityId, &AZ::TransformBus::Events::GetWorldScale);
-            return worldScale;
+            float worldUniformScale = 1.0f;
+            AZ::TransformBus::EventResult(worldUniformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return AZ::Vector3(worldUniformScale);
         }
 
         AZ::Vector3 GetUniformScale(AZ::EntityId entityId)

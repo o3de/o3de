@@ -48,11 +48,15 @@ class ConfigurationManager(object):
     def configuration(self, new_configuration: ConfigurationManager) -> None:
         self._configuration = new_configuration
 
-    def setup(self) -> None:
+    def setup(self, config_path: str) -> bool:
+        result: bool = True
         logger.info("Setting up default configuration ...")
-        # TODO: remove config directory and files default setup once integrating with user input
         try:
-            self._configuration.config_directory = file_utils.get_current_directory_path()
+            normalized_config_path: str = file_utils.normalize_file_path(config_path);
+            if normalized_config_path:
+                self._configuration.config_directory = normalized_config_path
+            else:
+                self._configuration.config_directory = file_utils.get_current_directory_path()
             self._configuration.config_files = \
                 file_utils.find_files_with_suffix_under_directory(self._configuration.config_directory,
                                                                   constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
@@ -60,5 +64,7 @@ class ConfigurationManager(object):
             self._configuration.account_id = aws_utils.get_default_account_id()
             self._configuration.region = aws_utils.get_default_region()
         except (RuntimeError, FileNotFoundError) as e:
-            logger.exception(e)
+            logger.error(e)
+            result = False
         logger.debug(self._configuration)
+        return result

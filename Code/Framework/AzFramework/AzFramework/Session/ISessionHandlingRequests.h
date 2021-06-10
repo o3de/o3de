@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 
 namespace AzFramework
@@ -45,24 +46,32 @@ namespace AzFramework
     };
 
     //! ISessionHandlingClientRequests
-    //! The session handling events to invoke multiplayer component handle the work on client side
+    //! Requests made to the client to manage their membership in a session
     class ISessionHandlingClientRequests
     {
     public:
-        // Handle the player join session process
+        AZ_RTTI(ISessionHandlingClientRequests, "{41DE6BD3-72BC-4443-BFF9-5B1B9396657A}");
+        ISessionHandlingClientRequests() = default;
+        virtual ~ISessionHandlingClientRequests() = default;
+
+        // Request the player join session
         // @param  sessionConnectionConfig The required properties to handle the player join session process
         // @return The result of player join session process
-        virtual bool HandlePlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) = 0;
+        virtual bool RequestPlayerJoinSession(const SessionConnectionConfig& sessionConnectionConfig) = 0;
 
-        // Handle the player leave session process
-        virtual void HandlePlayerLeaveSession() = 0;
+        // Request the connected player leave session
+        virtual void RequestPlayerLeaveSession() = 0;
     };
 
-    //! ISessionHandlingServerRequests
-    //! The session handling events to invoke server provider handle the work on server side
-    class ISessionHandlingServerRequests
+    //! ISessionProviderRequests
+    //! Requests made to the service providing server/fleet management by the server
+    class ISessionHandlingProviderRequests
     {
     public:
+        AZ_RTTI(ISessionHandlingProviderRequests, "{4F0C17BA-F470-4242-A8CB-EC7EA805257C}");
+        ISessionHandlingProviderRequests() = default;
+        virtual ~ISessionHandlingProviderRequests() = default;
+
         // Handle the destroy session process
         virtual void HandleDestroySession() = 0;
 
@@ -74,5 +83,15 @@ namespace AzFramework
         // Handle the player leave session process
         // @param  playerConnectionConfig The required properties to handle the player leave session process
         virtual void HandlePlayerLeaveSession(const PlayerConnectionConfig& playerConnectionConfig) = 0;
+
+        // Retrieves the file location of a pem-encoded TLS certificate for Client to Server communication
+        // @return If successful, returns the file location of TLS certificate file; if not successful, returns
+        //         empty string.
+        virtual AZ::IO::Path GetExternalSessionCertificate() = 0;
+
+        // Retrieves the file location of a pem-encoded TLS certificate for Server to Server communication
+        // @return If successful, returns the file location of TLS certificate file; if not successful, returns
+        //         empty string.
+        virtual AZ::IO::Path GetInternalSessionCertificate() = 0;
     };
 } // namespace AzFramework

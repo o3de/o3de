@@ -36,6 +36,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/PostProcess/Bloom/BloomComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DepthOfField/DepthOfFieldComponentConfig.h
+    Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/DisplayMapper/DisplayMapperComponentConstants.h
     Include/AtomLyIntegration/CommonFeatures/PostProcess/ExposureControl/ExposureControlBus.h

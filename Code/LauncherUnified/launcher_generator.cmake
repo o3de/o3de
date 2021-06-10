@@ -16,6 +16,7 @@ set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
 get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
 foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
+    
     # Computes the realpath to the project
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
@@ -35,6 +36,28 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                 "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
         endif()
     endif()
+
+    ################################################################################
+    # Assets
+    ################################################################################
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        add_custom_target(${project_name}.Assets
+            COMMENT "Processing ${project_name} assets..."
+            COMMAND "${CMAKE_COMMAND}" 
+                -DLY_LOCK_FILE=$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>/project_assets.lock
+                -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
+                    EXEC_COMMAND $<TARGET_FILE:AZ::AssetProcessorBatch> 
+                        --zeroAnalysisMode 
+                        --project-path=${project_real_path} 
+                        --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
+        )
+        set_target_properties(${project_name}.Assets
+            PROPERTIES 
+                EXCLUDE_FROM_ALL TRUE
+                FOLDER ${project_name}
+        )
+    endif()
+
     ################################################################################
     # Monolithic game
     ################################################################################
@@ -179,6 +202,7 @@ function(ly_delayed_generate_static_modules_inl)
                 ${launcher_unified_binary_dir}/${project_name}.GameLauncher/Includes/StaticModules.inl
             )
 
+            ly_target_link_libraries(${project_name}.GameLauncher PRIVATE ${all_game_gem_dependencies})
             if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
                 get_property(server_gem_dependencies GLOBAL PROPERTY LY_STATIC_MODULE_PROJECTS_DEPENDENCIES_${project_name}.ServerLauncher)
 
@@ -204,6 +228,7 @@ function(ly_delayed_generate_static_modules_inl)
                     ${launcher_unified_binary_dir}/${project_name}.ServerLauncher/Includes/StaticModules.inl
                 )
 
+                ly_target_link_libraries(${project_name}.ServerLauncher PRIVATE ${all_server_gem_dependencies})
             endif()
         endforeach()
     endif()

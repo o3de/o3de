@@ -421,17 +421,18 @@ QMenu* LevelEditorMenuHandler::CreateFileMenu()
     fileMenu.AddSeparator();
 
     // Project Settings
-    auto projectSettingMenu = fileMenu.AddMenu(tr("Project Settings"));
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS);
 
-    // Project Settings Tool
+    // Platform Settings - Project Settings Tool
     // Shortcut must be set while adding the action otherwise it doesn't work
-    projectSettingMenu.Get()->addAction(
+    fileMenu.Get()->addAction(
         tr(LyViewPane::ProjectSettingsTool),
         []() { QtViewPaneManager::instance()->OpenPane(LyViewPane::ProjectSettingsTool); },
         tr("Ctrl+Shift+P"));
 
-    projectSettingMenu.AddSeparator();
-
+    fileMenu.AddSeparator();
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_NEW);
+    fileMenu.AddAction(ID_FILE_PROJECT_MANAGER_OPEN);
     fileMenu.AddSeparator();
 
     // NEWMENUS: NEEDS IMPLEMENTATION
@@ -472,18 +473,8 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // editMenu->addAction(ID_EDIT_PASTE);
     // editMenu.AddSeparator();
 
-    bool isPrefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
-    {
-        // Duplicate
-        editMenu.AddAction(ID_EDIT_CLONE);
-    }
+    // Duplicate
+    editMenu.AddAction(ID_EDIT_CLONE);
 
     // Delete
     editMenu.AddAction(ID_EDIT_DELETE);
@@ -911,6 +902,12 @@ QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
         action = new QAction(menuText, this);
         action->setObjectName(view->m_name);
         action->setCheckable(true);
+
+        if (view->m_options.showOnToolsToolbar)
+        {
+            action->setIcon(QIcon(view->m_options.toolbarIcon));
+        }
+
         m_actionManager->AddAction(view->m_id, action);
 
         if (!view->m_options.shortcut.isEmpty())
@@ -939,6 +936,11 @@ QAction* LevelEditorMenuHandler::CreateViewPaneMenuItem(
     }
 
     menu->addAction(action);
+
+    if (view->m_options.showOnToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 
     return action;
 }

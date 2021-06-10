@@ -11,6 +11,7 @@
  */
 
 #include <ProjectButtonWidget.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -20,8 +21,7 @@
 #include <QPixmap>
 #include <QMenu>
 #include <QSpacerItem>
-
-//#define SHOW_ALL_PROJECT_ACTIONS
+#include <QProgressBar>
 
 namespace O3DE::ProjectManager
 {
@@ -32,11 +32,26 @@ namespace O3DE::ProjectManager
         : QLabel(parent)
     {
         setObjectName("labelButton");
+
+        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        vLayout->setContentsMargins(0, 0, 0, 0);
+        vLayout->setSpacing(5);
+
+        setLayout(vLayout);
         m_overlayLabel = new QLabel("", this);
         m_overlayLabel->setObjectName("labelButtonOverlay");
         m_overlayLabel->setWordWrap(true);
         m_overlayLabel->setAlignment(Qt::AlignCenter);
         m_overlayLabel->setVisible(false);
+        vLayout->addWidget(m_overlayLabel);
+
+        m_buildButton = new QPushButton(tr("Build Project"), this);
+        m_buildButton->setVisible(false);
+
+        m_progressBar = new QProgressBar(this);
+        m_progressBar->setObjectName("labelButtonProgressBar");
+        m_progressBar->setVisible(false);
+        vLayout->addWidget(m_progressBar);
     }
 
     void LabelButton::mousePressEvent([[maybe_unused]] QMouseEvent* event)
@@ -58,23 +73,42 @@ namespace O3DE::ProjectManager
         m_overlayLabel->setText(text);
     }
 
-    ProjectButton::ProjectButton(const QString& projectName, QWidget* parent)
-        : QFrame(parent)
-        , m_projectName(projectName)
-        , m_projectImagePath(":/Resources/DefaultProjectImage.png")
+    QLabel* LabelButton::GetOverlayLabel()
     {
-        Setup();
+        return m_overlayLabel;
     }
 
-    ProjectButton::ProjectButton(const QString& projectName, const QString& projectImage, QWidget* parent)
-        : QFrame(parent)
-        , m_projectName(projectName)
-        , m_projectImagePath(projectImage)
+    QProgressBar* LabelButton::GetProgressBar()
     {
-        Setup();
+        return m_progressBar;
     }
 
-    void ProjectButton::Setup()
+    QPushButton* LabelButton::GetBuildButton()
+    {
+        return m_buildButton;
+    }
+
+    ProjectButton::ProjectButton(const ProjectInfo& projectInfo, QWidget* parent, bool processing)
+        : QFrame(parent)
+        , m_projectInfo(projectInfo)
+    {
+        if (m_projectInfo.m_imagePath.isEmpty())
+        {
+            m_projectInfo.m_imagePath = ":/DefaultProjectImage.png";
+        }
+
+        BaseSetup();
+        if (processing)
+        {
+            ProcessingSetup();
+        }
+        else
+        {
+            ReadySetup();
+        }
+    }
+
+    void ProjectButton::BaseSetup()
     {
         setObjectName("projectButton");
 
@@ -85,56 +119,81 @@ namespace O3DE::ProjectManager
 
         m_projectImageLabel = new LabelButton(this);
         m_projectImageLabel->setFixedSize(s_projectImageWidth, s_projectImageHeight);
+        m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
 
-        m_projectImageLabel->setPixmap(QPixmap(m_projectImagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
+        m_projectImageLabel->setPixmap(
+            QPixmap(m_projectInfo.m_imagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
-        QMenu* newProjectMenu = new QMenu(this);
-        m_editProjectAction = newProjectMenu->addAction(tr("Edit Project Settings..."));
-
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-        m_editProjectGemsAction = newProjectMenu->addAction(tr("Cutomize Gems..."));
-        newProjectMenu->addSeparator();
-        m_copyProjectAction = newProjectMenu->addAction(tr("Duplicate"));
-        newProjectMenu->addSeparator();
-        m_removeProjectAction = newProjectMenu->addAction(tr("Remove from O3DE"));
-        m_deleteProjectAction = newProjectMenu->addAction(tr("Delete the Project"));
-#endif
-
-        QFrame* footer = new QFrame(this);
+        m_projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(0, 0, 0, 0);
-        footer->setLayout(hLayout);
+        m_projectFooter->setLayout(hLayout);
         {
-            QLabel* projectNameLabel = new QLabel(m_projectName, this);
+            QLabel* projectNameLabel = new QLabel(m_projectInfo.m_displayName, this);
             hLayout->addWidget(projectNameLabel);
-
-            QPushButton* projectMenuButton = new QPushButton(this);
-            projectMenuButton->setObjectName("projectMenuButton");
-            projectMenuButton->setMenu(newProjectMenu);
-            hLayout->addWidget(projectMenuButton);
         }
 
-        vLayout->addWidget(footer);
-
-        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectName); });
-        connect(m_editProjectAction, &QAction::triggered, [this]() { emit EditProject(m_projectName); });
-
-#ifdef SHOW_ALL_PROJECT_ACTIONS
-        connect(m_editProjectGemsAction, &QAction::triggered, [this]() { emit EditProjectGems(m_projectName); });
-        connect(m_copyProjectAction, &QAction::triggered, [this]() { emit CopyProject(m_projectName); });
-        connect(m_removeProjectAction, &QAction::triggered, [this]() { emit RemoveProject(m_projectName); });
-        connect(m_deleteProjectAction, &QAction::triggered, [this]() { emit DeleteProject(m_projectName); });
-#endif
+        vLayout->addWidget(m_projectFooter);
     }
 
-    void ProjectButton::SetButtonEnabled(bool enabled)
+    void ProjectButton::ProcessingSetup()
+    {
+        m_projectImageLabel->GetOverlayLabel()->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+        m_projectImageLabel->SetEnabled(false);
+        m_projectImageLabel->SetOverlayText(tr("Processing...\n\n"));
+
+        QProgressBar* progressBar = m_projectImageLabel->GetProgressBar();
+        progressBar->setVisible(true);
+        progressBar->setValue(0);
+    }
+
+    void ProjectButton::ReadySetup()
+    {
+        connect(m_projectImageLabel->GetBuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
+
+        QMenu* menu = new QMenu(this);
+        menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
+        menu->addSeparator();
+        menu->addAction(tr("Open Project folder..."), this, [this]()
+        { 
+            AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
+        });
+        menu->addSeparator();
+        menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo.m_path); });
+        menu->addSeparator();
+        menu->addAction(tr("Remove from O3DE"), this, [this]() { emit RemoveProject(m_projectInfo.m_path); });
+        menu->addAction(tr("Delete this Project"), this, [this]() { emit DeleteProject(m_projectInfo.m_path); });
+
+        QPushButton* projectMenuButton = new QPushButton(this);
+        projectMenuButton->setObjectName("projectMenuButton");
+        projectMenuButton->setMenu(menu);
+        m_projectFooter->layout()->addWidget(projectMenuButton);
+    }
+
+    void ProjectButton::SetLaunchButtonEnabled(bool enabled)
     {
         m_projectImageLabel->SetEnabled(enabled);
+    }
+
+    void ProjectButton::ShowBuildButton(bool show)
+    {
+        QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        m_projectImageLabel->layout()->addItem(buttonSpacer);
+        m_projectImageLabel->layout()->addWidget(m_projectImageLabel->GetBuildButton());
+        m_projectImageLabel->GetBuildButton()->setVisible(show);
     }
 
     void ProjectButton::SetButtonOverlayText(const QString& text)
     {
         m_projectImageLabel->SetOverlayText(text);
+    }
+
+    void ProjectButton::SetProgressBarValue(int progress)
+    {
+        m_projectImageLabel->GetProgressBar()->setValue(progress);
     }
 } // namespace O3DE::ProjectManager

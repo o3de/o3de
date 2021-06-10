@@ -35,9 +35,6 @@ namespace Physics
         MOCK_METHOD2(CreateShape, AZStd::shared_ptr<Physics::Shape>(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void* nativeMeshObject));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration& materialConfiguration));
-        MOCK_METHOD0(GetDefaultMaterial, AZStd::shared_ptr<Physics::Material>());
-        MOCK_METHOD1(CreateMaterialsFromLibrary, AZStd::vector<AZStd::shared_ptr<Physics::Material>>(const Physics::MaterialSelection& materialSelection));
-        MOCK_METHOD2(UpdateMaterialSelection, bool(const Physics::ShapeConfiguration& shapeConfiguration, Physics::ColliderConfiguration& colliderConfiguration));
         MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
         MOCK_METHOD1(CreateJointLimitConfiguration, AZStd::shared_ptr<Physics::JointLimitConfiguration>(AZ::TypeId jointType));
         MOCK_METHOD3(CreateJoint, AZStd::shared_ptr<Physics::Joint>(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration, AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody));
@@ -59,7 +56,6 @@ namespace Physics
         void Shutdown() override {}
         void Simulate([[maybe_unused]] float deltaTime) override {}
         void UpdateConfiguration([[maybe_unused]] const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization = false) override {}
-        void UpdateDefaultMaterialLibrary([[maybe_unused]] const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary) override {}
         void UpdateDefaultSceneConfiguration([[maybe_unused]] const AzPhysics::SceneConfiguration& sceneConfiguration) override {}
         void RemoveScene([[maybe_unused]] AzPhysics::SceneHandle handle) override {}
         void RemoveScenes([[maybe_unused]] const AzPhysics::SceneHandleList& handles) override {}
@@ -73,7 +69,6 @@ namespace Physics
         MOCK_METHOD0(GetAllScenes, AzPhysics::SceneList& ());
         MOCK_METHOD1(FindAttachedBodyHandleFromEntityId, AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle>(AZ::EntityId entityId));
         MOCK_CONST_METHOD0(GetConfiguration, const AzPhysics::SystemConfiguration* ());
-        MOCK_CONST_METHOD0(GetDefaultMaterialLibrary, const AZ::Data::Asset<Physics::MaterialLibraryAsset>& ());
         MOCK_CONST_METHOD0(GetDefaultSceneConfiguration, const AzPhysics::SceneConfiguration& ());
     };
 

@@ -23,10 +23,6 @@
 #include <QPainter>
 #include <QStaticText>
 
-static const QColor timeMarkerCol = QColor(255, 0, 255);
-static const QColor textCol = QColor(0, 0, 0);
-static const QColor ltgrayCol = QColor(110, 110, 110);
-
 QColor InterpolateColor(const QColor& c1, const QColor& c2, float fraction)
 {
     const int r = (c2.red() - c1.red()) * fraction + c1.red();

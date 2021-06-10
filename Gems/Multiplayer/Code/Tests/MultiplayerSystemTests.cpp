@@ -30,7 +30,6 @@ namespace UnitTest
         {
             SetupAllocator();
             AZ::NameDictionary::Create();
-            m_spawnableComponent = new AzFramework::SpawnableSystemComponent();
             m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
@@ -46,7 +45,6 @@ namespace UnitTest
         {
             delete m_mpComponent;
             delete m_netComponent;
-            delete m_spawnableComponent;
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
@@ -76,7 +74,6 @@ namespace UnitTest
 
         AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
-        AzFramework::SpawnableSystemComponent* m_spawnableComponent = nullptr;
     };
 
     TEST_F(MultiplayerSystemTests, TestInitEvent)

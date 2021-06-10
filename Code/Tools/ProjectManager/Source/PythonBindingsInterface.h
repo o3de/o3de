@@ -57,13 +57,27 @@ namespace O3DE::ProjectManager
          * @param path the absolute path to the Gem 
          * @return an outcome with GemInfo on success 
          */
-        virtual AZ::Outcome<GemInfo> GetGem(const QString& path) = 0;
+        virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
 
         /**
-         * Get info about all known Gems
-         * @return an outcome with GemInfos on success 
+         * Get all available gem infos. This concatenates gems registered by the engine and the project.
+         * @param path The absolute path to the project.
+         * @return A list of gem infos.
          */
-        virtual AZ::Outcome<QVector<GemInfo>> GetGems() = 0;
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) = 0;
+
+        /**
+        * Get engine gem infos.
+        * @return A list of all registered gem infos.
+        */
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() = 0;
+
+        /**
+         * Get a list of all enabled gem names for a given project.
+         * @param[in] projectPath Absolute file path to the project.
+         * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
+         */
+        virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) = 0;
 
 
         // Projects 
@@ -88,29 +102,43 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectInfo>> GetProjects() = 0;
+        
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool AddProject(const QString& path) = 0;
+
+        /**
+         * Adds existing project on disk
+         * @param path the absolute path to the project
+         * @return true on success, false on failure
+         */
+        virtual bool RemoveProject(const QString& path) = 0;
 
         /**
          * Update a project
          * @param projectInfo the info to use to update the project 
          * @return true on success, false on failure
          */
-        virtual bool UpdateProject(const ProjectInfo& projectInfo) = 0;
+        virtual AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) = 0;
 
         /**
          * Add a gem to a project
          * @param gemPath the absolute path to the gem 
          * @param projectPath the absolute path to the project
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual bool AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
+        virtual AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
 
         /**
          * Remove gem to a project
          * @param gemPath the absolute path to the gem 
          * @param projectPath the absolute path to the project
-         * @return true on success, false on failure
+         * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual bool RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
 
 
         // Project Templates
@@ -119,7 +147,7 @@ namespace O3DE::ProjectManager
          * Get info about all known project templates
          * @return an outcome with ProjectTemplateInfos on success 
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

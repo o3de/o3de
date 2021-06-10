@@ -18,12 +18,14 @@
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
 #include <Decals/DecalComponent.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h>
 #include <Grid/GridComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
 #include <ReflectionProbe/ReflectionProbeComponent.h>
+#include <OcclusionCullingPlane/OcclusionCullingPlaneComponent.h>
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
@@ -47,7 +49,8 @@
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <Decals/EditorDecalComponent.h>
-#include <DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h>
 #include <Grid/EditorGridComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
@@ -55,6 +58,7 @@
 #include <Mesh/EditorMeshComponent.h>
 #include <Mesh/EditorMeshSystemComponent.h>
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
+#include <OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
@@ -111,9 +115,11 @@ namespace AZ
                         EntityReferenceComponent::CreateDescriptor(),
                         GradientWeightModifierComponent::CreateDescriptor(),
                         DiffuseProbeGridComponent::CreateDescriptor(),
+                        DiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
+                        OcclusionCullingPlaneComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
@@ -142,9 +148,11 @@ namespace AZ
                         EditorEntityReferenceComponent::CreateDescriptor(),
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
                         EditorDiffuseProbeGridComponent::CreateDescriptor(),
+                        EditorDiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         EditorDeferredFogComponent::CreateDescriptor(),
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),
+                        EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
 #endif
                     });
             }
