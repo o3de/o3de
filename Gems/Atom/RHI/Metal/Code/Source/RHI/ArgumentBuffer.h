@@ -125,9 +125,9 @@ namespace AZ
                 AZStd::array<id <MTLResource>, MaxEntriesInArgTable> m_resourceArray;
                 int m_resourceArrayLen = 0;
             };
-            //Map tp cache all the resoources based on the usage as we can batch all the resources for a given usage
+            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
             using ComputeResourcesToMakeResidentMap =  AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;
-            //Map tp cache all the resoources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
+            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
             using GraphicsResourcesToMakeResidentMap =  AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, MetalResourceArray>;
             
             void CollectResourcesForCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingData, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
