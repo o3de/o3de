@@ -15,7 +15,6 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
-#pragma optimize("", off)
 namespace UnitTest
 {
     using SpawnableCreateTest = PrefabTestFixture;
