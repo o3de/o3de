@@ -278,8 +278,11 @@ namespace O3DE::ProjectManager
             pybind11::gil_scoped_acquire acquire;
 
             // sanity import check
-            int result = PyRun_SimpleString("import sys");
-            AZ_Error("ProjectManagerWindow", result != -1, "Import sys failed");
+            if (PyRun_SimpleString("import sys") != 0)
+            {
+                AZ_Assert(false, "Import sys failed");
+                return false;
+            }
 
             // import required modules
             m_cmake = pybind11::module::import("o3de.cmake");
@@ -293,7 +296,7 @@ namespace O3DE::ProjectManager
             // make sure the engine is registered
             RegisterThisEngine();
 
-            return result == 0 && !PyErr_Occurred();
+            return !PyErr_Occurred();
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
