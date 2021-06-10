@@ -1365,24 +1365,24 @@ namespace AZ
                 return dflags;
             }
             
-            if(RHI::CheckBitsAll(writeMask, RHI::WriteChannelMask::ColorWriteMaskAll))
+            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
             {
                 return D3D12_COLOR_WRITE_ENABLE_ALL;
             }
             
-            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskRed))
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= D3D12_COLOR_WRITE_ENABLE_RED;
             }
-            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskGreen))
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskGreen)))
             {
                 dflags |= D3D12_COLOR_WRITE_ENABLE_GREEN;
             }
-            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskBlue))
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskBlue)))
             {
                 dflags |= D3D12_COLOR_WRITE_ENABLE_BLUE;
             }
-            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskAlpha))
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAlpha)))
             {
                 dflags |= D3D12_COLOR_WRITE_ENABLE_ALPHA;
             }

@@ -340,24 +340,24 @@ namespace AZ
                 return dflags;
             }
             
-            if(RHI::CheckBitsAll(writeMask, RHI::WriteChannelMask::ColorWriteMaskAll))
+            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
             {
                 return VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             }
             
-            if (RHI::CheckBitsAny(sflags, RHI::WriteChannelMask::ColorWriteMaskRed))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= VK_COLOR_COMPONENT_R_BIT;
             }
-            if (RHI::CheckBitsAny(sflags, RHI::WriteChannelMask::ColorWriteMaskGreen))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskGreen)))
             {
                 dflags |= VK_COLOR_COMPONENT_G_BIT;
             }
-            if (RHI::CheckBitsAny(sflags, RHI::WriteChannelMask::ColorWriteMaskBlue))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskBlue)))
             {
                 dflags |= VK_COLOR_COMPONENT_B_BIT;
             }
-            if (RHI::CheckBitsAny(sflags, RHI::WriteChannelMask::ColorWriteMaskAlpha))
+            if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAlpha)))
             {
                 dflags |= VK_COLOR_COMPONENT_A_BIT;
             }

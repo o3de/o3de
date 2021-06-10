@@ -160,21 +160,13 @@ namespace AZ
             StencilState m_stencil;
         };
 
-        enum class WriteChannel : uint32_t
-        {            
-            ColorWriteMaskRed = 0,
-            ColorWriteMaskGreen,
-            ColorWriteMaskBlue,
-            ColorWriteMaskAlpha,
-        };
-    
-        enum class WriteChannelMask : uint32_t
+        enum class WriteChannelMask : uint8_t
         {
             ColorWriteMaskNone = 0,
-            ColorWriteMaskRed = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskRed)),
-            ColorWriteMaskGreen = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskGreen)),
-            ColorWriteMaskBlue = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskBlue)),
-            ColorWriteMaskAlpha = AZ_BIT(static_cast<uint32_t>(WriteChannel::ColorWriteMaskAlpha)),
+            ColorWriteMaskRed = AZ_BIT(0),
+            ColorWriteMaskGreen = AZ_BIT(1),
+            ColorWriteMaskBlue = AZ_BIT(2),
+            ColorWriteMaskAlpha = AZ_BIT(3),
             ColorWriteMaskAll = ColorWriteMaskRed | ColorWriteMaskGreen | ColorWriteMaskBlue | ColorWriteMaskAlpha
         };
     
