@@ -88,7 +88,7 @@ If you have the Git credential manager core or other credential helpers installe
         *   Game Development with C++
         *   MSVC v142 - VS 2019 C++ x64/x86
         *   C++ 2019 redistributable update
-*   CMake 3.19.1 minimum: [https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi](https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi)
+*   CMake 3.20 minimum: [https://cmake.org/download/](https://cmake.org/download/)
 
 #### Optional
 

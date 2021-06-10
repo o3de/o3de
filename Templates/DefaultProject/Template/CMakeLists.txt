@@ -12,7 +12,7 @@
 # {END_LICENSE}
 
 if(NOT PROJECT_NAME)
-    cmake_minimum_required(VERSION 3.19)
+    cmake_minimum_required(VERSION 3.20)
     project(${Name}
         LANGUAGES C CXX
         VERSION 1.0.0.0
