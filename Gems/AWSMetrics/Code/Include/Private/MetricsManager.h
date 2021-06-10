@@ -122,10 +122,6 @@ namespace AWSMetrics
         //! @return Outcome of the operation.
         AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue);
 
-        //! Check whether the consumer should flush the metrics queue.
-        //! @return whether the limit is hit.
-        bool ShouldSendMetrics();
-
         //! Push metrics events to the front of the queue for retry.
         //! @param metricsEventsForRetry Metrics events for retry.
         void PushMetricsForRetry(MetricsQueue& metricsEventsForRetry);
@@ -134,7 +130,7 @@ namespace AWSMetrics
 
         ////////////////////////////////////////////
         // These data are protected by m_metricsMutex.
-        AZStd::mutex m_metricsMutex;
+        AZStd::recursive_mutex m_metricsMutex;
         AZStd::chrono::system_clock::time_point m_lastSendMetricsTime;
         MetricsQueue m_metricsQueue;
         ////////////////////////////////////////////
