@@ -15,6 +15,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
@@ -177,7 +178,7 @@ namespace PhysX
             AZ_CLASS_ALLOCATOR_DECL
 
             MeshGroup();
-            ~MeshGroup() override = default;
+            ~MeshGroup() override;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -224,6 +225,9 @@ namespace PhysX
             bool GetDecomposeMeshesVisibility() const;
 
             AZStd::string GetMaterialSlotLabel(int index) const;
+            AZStd::vector<AZStd::string> GetPhysicsMaterialNames() const;
+
+            void OnMaterialLibraryChanged(const AZ::Data::AssetId& materialLibraryAssetId);
 
             AZ::Uuid m_id{};
             AZStd::string m_name{};
@@ -239,6 +243,8 @@ namespace PhysX
             AZStd::vector<AZStd::string> m_physicsMaterials;
 
             const AZ::SceneAPI::Containers::SceneGraph* m_graph = nullptr;
+            
+            AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_materialLibraryChangedHandler;
         };
     }
 }
