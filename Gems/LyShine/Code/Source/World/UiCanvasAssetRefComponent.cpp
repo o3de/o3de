@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <LyShine/Bus/UiCanvasBus.h>
+#include <LyShine/LyShineBus.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasAssetRefNotificationBus Behavior context handler class
@@ -177,7 +178,10 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
 
             editInfo->DataElement("SimpleAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
                 "Canvas pathname", "The pathname of the canvas.")
-                ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg");
+                ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
+                ->Attribute("EditButton", "")
+                ->Attribute("EditDescription", "Open in UI Editor")
+                ->Attribute("EditCallback", &UiCanvasAssetRefComponent::LaunchUIEditor);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiCanvasAssetRefComponent::m_isAutoLoad,
                 "Load automatically", "When checked, the canvas is loaded when this component is activated.")
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshEntireTree", 0xefbc823c));
@@ -208,6 +212,12 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PROTECTED MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasAssetRefComponent::LaunchUIEditor([[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
+{
+    LyShine::LyShineRequestBus::Broadcast(&LyShine::LyShineRequests::EditUICanvas, GetCanvasPathname());
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasAssetRefComponent::Activate()

@@ -64,13 +64,13 @@ namespace PhysX
             //! A struct to store the materials of the mesh nodes selected in a mesh group.
             struct AssetMaterialsData
             {
-                //! Material names coming from FBX
+                //! Material names coming from FBX.
                 AZStd::vector<AZStd::string> m_fbxMaterialNames;
 
-                //! Look-up table for fbxMaterialNames
+                //! Look-up table for fbxMaterialNames.
                 AZStd::unordered_map<AZStd::string, size_t> m_materialIndexByName;
 
-                //! Map of mesh nodes to their list of material indices associated to each face
+                //! Map of mesh nodes to their list of material indices associated to each face.
                 AZStd::unordered_map<AZStd::string, AZStd::vector<AZ::u16>> m_nodesToPerFaceMaterialIndices;
             };
 

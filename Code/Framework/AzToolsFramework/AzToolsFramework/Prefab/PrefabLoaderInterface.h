@@ -21,8 +21,6 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        constexpr size_t MaxPrefabFileSize = 1024 * 1024;
-
         /*!
          * PrefabLoaderInterface
          * Interface for saving/loading Prefab files.

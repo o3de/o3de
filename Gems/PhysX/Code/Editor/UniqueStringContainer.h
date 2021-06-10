@@ -67,4 +67,4 @@ namespace PhysX
         using StringGroups = AZStd::unordered_map<AZ::Crc32, StringSet>;
         StringGroups m_stringGroups; ///< Collection of groups of unique strings, each group identified by an ID.
     };
-}
+} // namespace PhysX
