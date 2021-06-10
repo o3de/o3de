@@ -1447,6 +1447,49 @@ namespace AzToolsFramework
                 GUI->SetBrowseButtonIcon(QIcon(iconPath.c_str()));
             }
         }
+        else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
+        {
+            PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
+            if (func)
+            {
+                GUI->SetEditButtonVisible(true);
+                GUI->SetEditNotifyCallback(func);
+            }
+            else
+            {
+                GUI->SetEditNotifyCallback(nullptr);
+            }
+        }
+        else if (attrib == AZ_CRC("EditButton", 0x898c35dc))
+        {
+            GUI->SetEditButtonVisible(true);
+
+            AZStd::string iconPath;
+            attrValue->Read<AZStd::string>(iconPath);
+
+            if (!iconPath.empty())
+            {
+                QString path(iconPath.c_str());
+
+                if (!QFile::exists(path))
+                {
+                    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+                    QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
+
+                    path = engineDir.absoluteFilePath(iconPath.c_str());
+                }
+
+                GUI->SetEditButtonIcon(QIcon(path));
+            }
+        }
+        else if (attrib == AZ_CRC("EditDescription", 0x9b52634a))
+        {
+            AZStd::string buttonTooltip;
+            if (attrValue->Read<AZStd::string>(buttonTooltip))
+            {
+                GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
+            }
+        }
     }
 
     void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
@@ -1476,6 +1519,7 @@ namespace AzToolsFramework
         // Set the hint in case the asset is not able to be found by assetId
         GUI->SetCurrentAssetHint(instance.GetAssetPath());
         GUI->SetSelectedAssetID(assetId, instance.GetAssetType());
+        GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);
         return false;
