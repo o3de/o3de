@@ -301,7 +301,7 @@ namespace JsonSerializationTests
         
         ResultCode result = m_serializer->Store(*m_jsonDocument, &instance, &instance, azrtti_typeid(&instance), *m_jsonSerializationContext);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq("[{}]");
     }
 
@@ -315,7 +315,7 @@ namespace JsonSerializationTests
 
         ResultCode result = m_serializer->Store(*m_jsonDocument, &instance, nullptr, azrtti_typeid(&instance), *m_jsonSerializationContext);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq("[{},{}]");
     }
 
@@ -330,7 +330,6 @@ namespace JsonSerializationTests
         ResultCode result = m_serializer->Store(*m_jsonDocument, &instance, nullptr, azrtti_typeid(&instance), *m_jsonSerializationContext);
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
-        EXPECT_NE(Outcomes::DefaultsUsed, result.GetOutcome());
         Expect_DocStrEq(R"([{"$type": "SimpleInheritence"},{"$type": "SimpleInheritence"}])");
     }
 

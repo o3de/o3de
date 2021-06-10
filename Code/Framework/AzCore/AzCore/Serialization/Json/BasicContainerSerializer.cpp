@@ -102,17 +102,6 @@ namespace AZ
             return context.Report(retVal, "Processing of basic container was halted.");
         }
 
-        // If each container element was 'DefaultsUsed', then the result code will be 'DefaultsUsed'
-        // But this is wrong if the container has at least one element, because a container with
-        // at least one element is certainly not the default container value.
-        // Basically, the following are different objects:
-        //   [ {} ]       // The container which has only default elements, but is not the empty container
-        //   {}           // The default container, which is empty
-        if (index > 0)
-        {
-            retVal.Combine(JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::Success));
-        }
-
         if (context.ShouldKeepDefaults())
         {
             outputValue = AZStd::move(array);
@@ -134,6 +123,10 @@ namespace AZ
         {
             if (retVal.HasDoneWork())
             {
+                // If at least one value was written, even if it has all defaults, then the array has
+                // a value written to it and is therefore not in a default state anymore.
+                retVal.Combine(JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::Success));
+
                 outputValue = AZStd::move(array);
                 return context.Report(retVal, "Content written to basic container.");
             }

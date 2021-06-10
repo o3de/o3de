@@ -636,7 +636,7 @@ namespace JsonSerializationTests
             azrtti_typeid(&values), *m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq(R"(
             {
                 "{}": {}
@@ -654,7 +654,7 @@ namespace JsonSerializationTests
             azrtti_typeid(&values), *m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
         Expect_DocStrEq(R"(
             {
                 "{}": {}
