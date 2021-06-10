@@ -168,6 +168,13 @@ namespace AZ::Render
         m_deviceBufferNeedsUpdate = true;
     }
 
+    void ProjectedShadowFeatureProcessor::SetEsmExponent(ShadowId id, float exponent)
+    {
+        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
+        shadowData.m_esmExponent = exponent;
+        m_deviceBufferNeedsUpdate = true;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowFilterMethod().");
