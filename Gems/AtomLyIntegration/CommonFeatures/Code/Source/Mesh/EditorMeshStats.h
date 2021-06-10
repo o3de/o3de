@@ -39,6 +39,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(EditorMeshStats, SystemAllocator, 0);
 
             static void Reflect(ReflectContext* context);
+            AZStd::string GetLodLabel(int index) const;
 
             AZStd::vector<EditorMeshStatsForLod> m_meshStatsForLod;
         };

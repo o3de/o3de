@@ -71,9 +71,15 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &EditorMeshStats::GetLodLabel)
                         ;
                 }
             }
+        }
+
+        AZStd::string EditorMeshStats::GetLodLabel(int index) const
+        {
+            return AZStd::string::format("LOD %d", index);
         }
     } // namespace Render
 } // namespace AZ
