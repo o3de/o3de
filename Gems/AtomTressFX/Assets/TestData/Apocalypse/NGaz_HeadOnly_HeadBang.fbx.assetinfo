@@ -1,0 +1,57 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "NGaz_HeadOnly_HeadBang",
+            "selectedRootBone": "RootNode.Neck_01",
+            "id": "{C1EBF953-F228-5849-A465-DAC77D5A9D93}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MotionSamplingRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "NGaz_HeadOnly_HeadBang",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.HeadFinal3",
+                    "RootNode.HeadFinal3.HeadFinal3_1",
+                    "RootNode.HeadFinal3.HeadFinal3_2",
+                    "RootNode.HeadFinal3.HeadFinal3_3",
+                    "RootNode.Neck_01",
+                    "RootNode.Neck_01.Neck_02",
+                    "RootNode.Neck_01.Neck_02.Head_01",
+                    "RootNode.Neck_01.Neck_02.Head_01.Head_02",
+                    "RootNode.Neck_01.Neck_02.Head_01.R_Eye_01",
+                    "RootNode.Neck_01.Neck_02.Head_01.L_Eye_01",
+                    "RootNode.Neck_01.Neck_02.Head_01.R_Eye_01.R_Eye_02",
+                    "RootNode.Neck_01.Neck_02.Head_01.L_Eye_01.L_Eye_02"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "SkinRule"
+                    },
+                    {
+                        "$type": "StaticMeshAdvancedRule",
+                        "vertexColorStreamName": "Col0"
+                    },
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{66628E25-AA57-5BAA-B76E-F5B17D70AE77}"
+        }
+    ]
+}
