@@ -234,7 +234,7 @@ namespace AZ::IO
         uint64_t FTell(AZ::IO::HandleType handle) override;
         int FFlush(AZ::IO::HandleType handle) override;
         int FClose(AZ::IO::HandleType handle) override;
-        AZ::IO::ArchiveFileIterator FindFirst(AZStd::string_view pDir, uint32_t nPathFlags = 0, bool bAllOwUseFileSystem = false) override;
+        AZ::IO::ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_AllowInZipsOnly) override;
         AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator fileIterator) override;
         bool FindClose(AZ::IO::ArchiveFileIterator fileIterator) override;
         int FEof(AZ::IO::HandleType handle) override;
