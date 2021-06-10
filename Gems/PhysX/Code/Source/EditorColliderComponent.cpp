@@ -58,10 +58,12 @@ namespace PhysX
             {
                 editContext->Class<EditorProxyAssetShapeConfig>("EditorProxyShapeConfig", "PhysX Base shape collider")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_pxAsset, "PhysX Mesh", "PhysX mesh collider asset")
+                        ->Attribute(AZ_CRC_CE("EditButton"), "")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in FBX Settings")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_configuration, "Configuration", "Configuration of asset shape")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
@@ -356,6 +358,7 @@ namespace PhysX
             [this](const AZ::Data::AssetId& defaultMaterialLibrary)
             {
                 m_configuration.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
+                UpdateMaterialSlotsFromMeshAsset();
 
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);

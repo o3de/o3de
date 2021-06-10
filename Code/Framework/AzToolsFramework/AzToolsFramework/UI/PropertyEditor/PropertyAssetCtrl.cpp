@@ -1130,6 +1130,16 @@ namespace AzToolsFramework
         m_browseEdit->setAttachedButtonIcon(icon);
     }
 
+    void PropertyAssetCtrl::SetBrowseButtonEnabled(bool enabled)
+    {
+        m_browseEdit->setEnabled(enabled);
+    }
+
+    void PropertyAssetCtrl::SetBrowseButtonVisible(bool visible)
+    {
+        m_browseEdit->setVisible(visible);
+    }
+
     const QModelIndex PropertyAssetCtrl::GetSourceIndex(const QModelIndex& index)
     {
         if (!index.isValid())
@@ -1358,6 +1368,22 @@ namespace AzToolsFramework
             if (!iconPath.empty())
             {
                 GUI->SetBrowseButtonIcon(QIcon(iconPath.c_str()));
+            }
+        }
+        else if (attrib == AZ_CRC_CE("BrowseButtonEnabled"))
+        {
+            bool enabled = true;
+            if (attrValue->Read<bool>(enabled))
+            {
+                GUI->SetBrowseButtonEnabled(enabled);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("BrowseButtonVisible"))
+        {
+            bool visible = true;
+            if (attrValue->Read<bool>(visible))
+            {
+                GUI->SetBrowseButtonVisible(visible);
             }
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))

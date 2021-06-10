@@ -219,6 +219,14 @@ namespace PhysX
                 GUI->setMaxLen(maxLen);
             }
         }
+        else if (attrib == AZ::Edit::Attributes::ReadOnly)
+        {
+            bool isReadOnly = false;
+            if (attrValue->Read<AZ::Crc32>(isReadOnly))
+            {
+                GUI->setEnabled(!isReadOnly);
+            }
+        }
         else if (attrib == Physics::MaterialConfiguration::s_stringGroup)
         {
             AZ::Crc32 uniqueGroup;
