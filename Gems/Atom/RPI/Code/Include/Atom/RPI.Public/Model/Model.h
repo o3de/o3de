@@ -26,14 +26,6 @@
 
 namespace AZ
 {
-    namespace Render
-    {
-        class MeshFeatureProcessor;
-    }
-}
-
-namespace AZ
-{
     namespace RPI
     {
         class Model final
