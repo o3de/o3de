@@ -34,6 +34,9 @@ namespace ${SanitizedCppName}
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
+        ${SanitizedCppName}SystemComponent();
+        ~${SanitizedCppName}SystemComponent();
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         // ${SanitizedCppName}RequestBus interface implementation
