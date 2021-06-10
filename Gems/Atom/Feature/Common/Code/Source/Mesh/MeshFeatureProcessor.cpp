@@ -173,7 +173,6 @@ namespace AZ
             meshDataHandle->m_originalModelAsset = modelAsset;
             meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
             meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
-            meshDataHandle->m_aabb = modelAsset->GetAabb();
 
             return meshDataHandle;
         }
@@ -627,6 +626,8 @@ namespace AZ
             {
                 SetRayTracingData();
             }
+
+            m_aabb = model->GetModelAsset()->GetAabb();
 
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
