@@ -1,0 +1,128 @@
+/*
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
+
+#pragma once
+
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/Session/ISessionRequests.h>
+#include <Request/IAWSGameLiftRequests.h>
+
+namespace Aws
+{
+    namespace GameLift
+    {
+        class GameLiftClient;
+    }
+}
+
+namespace AWSGameLift
+{
+    // ISessionAsyncRequests EBus wrapper for scripting
+    class AWSGameLiftSessionAsyncRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftSessionAsyncRequestBus = AZ::EBus<AzFramework::ISessionAsyncRequests, AWSGameLiftSessionAsyncRequests>;
+
+    // SessionAsyncRequestNotificationBus EBus handler for scripting
+    class AWSGameLiftSessionAsyncRequestNotificationBusHandler
+        : public AzFramework::SessionAsyncRequestNotificationBus::Handler
+        , public AZ::BehaviorEBusHandler
+    {
+    public:
+        AZ_EBUS_BEHAVIOR_BINDER(
+            AWSGameLiftSessionAsyncRequestNotificationBusHandler, "{6E13FC73-53DC-4B6B-AEA7-9038DE4C9635}", AZ::SystemAllocator,
+            OnCreateSessionAsyncComplete, OnSearchSessionsAsyncComplete, OnJoinSessionAsyncComplete, OnLeaveSessionAsyncComplete);
+
+        void OnCreateSessionAsyncComplete(const AZStd::string& createSessionReponse) override
+        {
+            Call(FN_OnCreateSessionAsyncComplete, createSessionReponse);
+        }
+
+        void OnSearchSessionsAsyncComplete(const AzFramework::SearchSessionsResponse& searchSessionsResponse) override
+        {
+            Call(FN_OnSearchSessionsAsyncComplete, searchSessionsResponse);
+        }
+
+        void OnJoinSessionAsyncComplete(bool joinSessionsResponse) override
+        {
+            Call(FN_OnJoinSessionAsyncComplete, joinSessionsResponse);
+        }
+
+        void OnLeaveSessionAsyncComplete() override
+        {
+            Call(FN_OnLeaveSessionAsyncComplete);
+        }
+    };
+
+    // ISessionRequests EBus wrapper for scripting
+    class AWSGameLiftSessionRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftSessionRequestBus = AZ::EBus<AzFramework::ISessionRequests, AWSGameLiftSessionRequests>;
+
+    //! AWSGameLiftClientManager
+    //! GameLift client manager to support game and player session related client requests
+    class AWSGameLiftClientManager
+        : public AWSGameLiftRequestBus::Handler
+        , public AWSGameLiftSessionAsyncRequestBus::Handler
+        , public AWSGameLiftSessionRequestBus::Handler
+    {
+    public:
+        static constexpr const char AWSGameLiftClientManagerName[] = "AWSGameLiftClientManager";
+        static constexpr const char AWSGameLiftClientRegionMissingErrorMessage[] =
+            "Missing AWS region for GameLift client.";
+        static constexpr const char AWSGameLiftClientCredentialMissingErrorMessage[] =
+            "Missing AWS credential for GameLift client.";
+        static constexpr const char AWSGameLiftClientMissingErrorMessage[] =
+            "GameLift client is not configured yet.";
+
+        AWSGameLiftClientManager();
+        virtual ~AWSGameLiftClientManager() = default;
+
+        virtual void ActivateManager();
+        virtual void DeactivateManager();
+
+        // AWSGameLiftRequestBus interface implementation
+        bool ConfigureGameLiftClient(const AZStd::string& region);
+        AZStd::string CreatePlayerId(bool includeBrackets, bool includeDashes);
+
+        // AWSGameLiftSessionAsyncRequestBus interface implementation
+        void CreateSessionAsync(const AzFramework::CreateSessionRequest& createSessionRequest) override;
+        void SearchSessionsAsync(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
+        void JoinSessionAsync(const AzFramework::JoinSessionRequest& joinSessionRequest) override;
+        void LeaveSessionAsync() override;
+
+        // AWSGameLiftSessionRequestBus interface implementation
+        AZStd::string CreateSession(const AzFramework::CreateSessionRequest& createSessionRequest) override;
+        AzFramework::SearchSessionsResponse SearchSessions(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
+        bool JoinSession(const AzFramework::JoinSessionRequest& joinSessionRequest) override;
+        void LeaveSession() override;
+
+    protected:
+        // Use for automation tests only to inject mock objects. 
+        void SetGameLiftClient(AZStd::shared_ptr<Aws::GameLift::GameLiftClient> gameliftClient);
+
+    private:
+        AZStd::shared_ptr<Aws::GameLift::GameLiftClient> m_gameliftClient;
+    };
+} // namespace AWSGameLift
