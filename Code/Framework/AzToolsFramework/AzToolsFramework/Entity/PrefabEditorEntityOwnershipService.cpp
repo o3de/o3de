@@ -185,13 +185,7 @@ namespace AzToolsFramework
     bool PrefabEditorEntityOwnershipService::LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename)
     {
         Reset();
-        // Make loading from stream to behave the same in terms of filesize as regular loading of prefabs
-        // This may need to be revisited in the future for supporting higher sizes along with prefab loading
-        if (stream.GetLength() > Prefab::MaxPrefabFileSize)
-        {
-            AZ_Error("Prefab", false, "'%.*s' prefab content is bigger than the max supported size (%f MB)", AZ_STRING_ARG(filename), Prefab::MaxPrefabFileSize / (1024.f * 1024.f));
-            return false;
-        }
+
         const size_t bufSize = stream.GetLength();
         AZStd::unique_ptr<char[]> buf(new char[bufSize]);
         AZ::IO::SizeType bytes = stream.Read(bufSize, buf.get());
