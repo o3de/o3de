@@ -217,13 +217,13 @@ namespace AZ
             {
                 EditorMeshStatsForLod stats;
                 const auto& meshes = lodAsset->GetMeshes();
-                stats.m_meshCount = lodAsset->GetMeshes().size();
+                stats.m_meshCount = meshes.size();
                 for (const auto& mesh : meshes)
                 {
                     stats.m_vertCount += mesh.GetVertexCount();
                     stats.m_triCount += mesh.GetIndexCount() / 3;
                 }
-                m_stats.m_meshStatsForLod.emplace_back(stats);
+                m_stats.m_meshStatsForLod.emplace_back(AZStd::move(stats));
             }
 
             // Refresh the tree when the model loads to update UI based on the model.
