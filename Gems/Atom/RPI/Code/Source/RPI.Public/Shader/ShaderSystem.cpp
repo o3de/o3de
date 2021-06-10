@@ -68,27 +68,27 @@ namespace AZ
 
             {
                 Data::InstanceHandler<Shader> handler;
-                handler.m_createFunction = [](Data::AssetData* shaderAsset)
+                handler.m_createFunctionWithParam = [](Data::AssetData* shaderAsset, const AZStd::any* supervariantName)
                 {
-                    return Shader::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
+                    return Shader::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)), supervariantName);
                 };
                 Data::InstanceDatabase<Shader>::Create(azrtti_typeid<ShaderAsset>(), handler);
             }
 
             {
                 Data::InstanceHandler<ShaderResourceGroup> handler;
-                handler.m_createFunction = [](Data::AssetData* shaderAsset)
+                handler.m_createFunctionWithParam = [](Data::AssetData* shaderAsset, const AZStd::any* srgInitBlob)
                 {
-                    return ShaderResourceGroup::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
+                    return ShaderResourceGroup::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)), srgInitBlob);
                 };
                 Data::InstanceDatabase<ShaderResourceGroup>::Create(azrtti_typeid<ShaderResourceGroup>(), handler, false);
             }
 
             {
                 Data::InstanceHandler<ShaderResourceGroupPool> handler;
-                handler.m_createFunction = [](Data::AssetData* shaderAsset)
+                handler.m_createFunctionWithParam = [](Data::AssetData* shaderAsset, const AZStd::any* srgInitBlob)
                 {
-                    return ShaderResourceGroupPool::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
+                    return ShaderResourceGroupPool::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)), srgInitBlob);
                 };
                 Data::InstanceDatabase<ShaderResourceGroupPool>::Create(azrtti_typeid<ShaderResourceGroupPool>(), handler, false);
             }

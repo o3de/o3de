@@ -44,6 +44,12 @@ namespace AZ
                 return false;
             }
 
+            if (!m_asset->m_buildTimestamp)
+            {
+                ReportError("Invalid timestamp");
+                return false;
+            }
+
             bool foundDrawFunctions = false;
             bool foundDispatchFunctions = false;
 

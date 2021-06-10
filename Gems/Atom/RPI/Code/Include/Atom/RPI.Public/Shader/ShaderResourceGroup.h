@@ -60,11 +60,6 @@ namespace AZ
             AZ_INSTANCE_DATA(ShaderResourceGroup, "{88B52D0C-9CBF-4B4D-B9E2-180BA602E1EA}");
             AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
 
-            /// Instantiates or returns an existing shader resource group instance using an InstanceId
-            /// created with the private static function: MakeInstanceId.
-            static Data::Instance<ShaderResourceGroup> FindOrCreate(
-                const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
-
             /// Instantiates a unique shader resource group instance using its paired asset but with a random InstanceId.
             static Data::Instance<ShaderResourceGroup> Create(
                 const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
@@ -283,6 +278,15 @@ namespace AZ
         private:
             ShaderResourceGroup() = default;
 
+            //! Will be passed as AZStd::any to CreateInternal.
+            //! The data comes from the same parameters of ::Create() or ::FindOrCreate().
+            struct SrgInitParams
+            {
+                AZ_TYPE_INFO(SrgInitParams, "{FDBDDB75-3DE6-4383-8D19-C0092246A411}");
+                SupervariantIndex m_supervariantIndex;
+                AZ::Name m_srgName;
+            };
+
             //! Usually subclasses of AZ::Data::InstanceData leverage the AssetId of the given asset as a means to define
             //! the AZ::Data::InstanceId. This works well when there's a one-to-one relationship between the Asset and the InstanceData.
             //!
@@ -299,10 +303,9 @@ namespace AZ
             //! @param srgName: Name of the ShaderResourceGroup as it was declared in the azsl file of origin.
             static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
-            bool IsInitialized() { return m_isInitialized; }
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
-            static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderAsset& shaderAsset);
+            static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* srgInitParams);
 
             /// A name to be used in error messages
             static const char* s_traceCategoryName;

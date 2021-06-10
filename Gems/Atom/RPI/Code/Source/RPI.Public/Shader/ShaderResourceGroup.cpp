@@ -40,46 +40,27 @@ namespace AZ
             return Data::InstanceId::CreateData(idString.data(), idString.size());
         }
 
-        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::FindOrCreate(
-            const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
-        {
-            auto instanceId = MakeInstanceId(shaderAsset, supervariantIndex, srgName);
-            auto srg = Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(instanceId, shaderAsset);
-            if (!srg->IsInitialized())
-            {
-                const RHI::ResultCode resultCode = srg->Init(*shaderAsset.Get(), supervariantIndex, srgName);
-
-                if (resultCode == RHI::ResultCode::Success)
-                {
-                    return srg;
-                }
-
-                return nullptr;
-            }
-
-            return srg;
-        }
-
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
-            auto srg = Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
-                Data::InstanceId::CreateRandom(),
-                shaderAsset);
-            // Because the InstanceId is random, this is always a brand new SRG.
-            const RHI::ResultCode resultCode = srg->Init(*shaderAsset.Get(), supervariantIndex, srgName);
-
-            if (resultCode == RHI::ResultCode::Success)
-            {
-                return srg;
-            }
-
-            return nullptr;
+            SrgInitParams initParams{ supervariantIndex, srgName };
+            auto anyInitParams = AZStd::any(initParams);
+            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
+                Data::InstanceId::CreateRandom(), shaderAsset, &anyInitParams);
         }
 
-        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal([[maybe_unused]] ShaderAsset& shaderAsset)
+        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* anySrgInitParams)
         {
+            AZ_Assert(anySrgInitParams, "Invalid SrgInitParams");
+            auto srgInitParams = AZStd::any_cast<SrgInitParams>(*anySrgInitParams);
+
             Data::Instance<ShaderResourceGroup> srg = aznew ShaderResourceGroup();
+            const RHI::ResultCode resultCode = srg->Init(shaderAsset, srgInitParams.m_supervariantIndex, srgInitParams.m_srgName);
+            if (resultCode != RHI::ResultCode::Success)
+            {
+                return nullptr;
+            }
+
             return srg;
         }
 

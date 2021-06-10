@@ -30,24 +30,9 @@ namespace AZ
     {
         Data::Instance<Shader> Shader::FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName)
         {
+            auto anySupervariantName = AZStd::any(supervariantName);
             Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(
-                Data::InstanceId::CreateFromAssetId(shaderAsset.GetId()),
-                shaderAsset);
-            if (!shaderInstance)
-            {
-                return nullptr;
-            }
-
-            if (!shaderInstance->SelectSupervariant(supervariantName))
-            {
-                return nullptr;
-            }
-
-            const RHI::ResultCode resultCode = shaderInstance->Init(*shaderAsset.Get());
-            if (resultCode != RHI::ResultCode::Success)
-            {
-                return nullptr;
-            }
+                Data::InstanceId::CreateFromAssetId(shaderAsset.GetId()), shaderAsset, &anySupervariantName);
             return shaderInstance;
         }
 
@@ -56,33 +41,29 @@ namespace AZ
             return FindOrCreate(shaderAsset, AZ::Name { "" });
         }
 
-        Data::Instance<Shader> Shader::CreateInternal([[maybe_unused]] ShaderAsset& shaderAsset)
+        Data::Instance<Shader> Shader::CreateInternal([[maybe_unused]] ShaderAsset& shaderAsset, const AZStd::any* anySupervariantName)
         {
-            Data::Instance<Shader> shader = aznew Shader();
+            AZ_Assert(anySupervariantName != nullptr, "Invalid supervariant name param");
+            auto supervariantName = AZStd::any_cast<AZ::Name>(*anySupervariantName);
+            auto supervariantIndex = shaderAsset.GetSupervariantIndex(supervariantName);
+            if (!supervariantIndex.IsValid())
+            {
+                AZ_Error("Shader", false, "Supervariant with name %s, was not found in shader %s", supervariantName.GetCStr(), shaderAsset.GetName().GetCStr());
+                return nullptr;
+            }
+
+            Data::Instance<Shader> shader = aznew Shader(supervariantIndex);
+            const RHI::ResultCode resultCode = shader->Init(shaderAsset);
+            if (resultCode != RHI::ResultCode::Success)
+            {
+                return nullptr;
+            }
             return shader;
         }
 
         Shader::~Shader()
         {
             Shutdown();
-        }
-
-        bool Shader::SelectSupervariant(const Name& supervariantName)
-        {
-            if (supervariantName.IsEmpty())
-            {
-                m_supervariantIndex = DefaultSupervariantIndex;
-                return true;
-            }
-
-            auto supervariantIndex = m_asset->GetSupervariantIndex(supervariantName);
-            if (supervariantIndex == InvalidSupervariantIndex)
-            {
-                return false;
-            }
-
-            m_supervariantIndex = supervariantIndex;
-            return true;
         }
 
         RHI::ResultCode Shader::Init(ShaderAsset& shaderAsset)

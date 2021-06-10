@@ -926,6 +926,7 @@ namespace AZ
             variantCreator.Begin(
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
+            variantCreator.SetBuildTimestamp(creationContext.m_assetBuildTimestamp);
 
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;
             for (const auto& shaderEntryPoint : shaderEntryPoints)

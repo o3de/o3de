@@ -140,11 +140,10 @@ namespace AZ
             RHI::DrawListTag GetDrawListTag() const;
 
         private:
-            Shader() = default;
+            explicit Shader(const SupervariantIndex& supervariantIndex) : m_supervariantIndex(supervariantIndex){};
+            Shader() = delete;
 
-            static Data::Instance<Shader> CreateInternal(ShaderAsset& shaderAsset);
-
-            bool SelectSupervariant(const Name& supervariantName);
+            static Data::Instance<Shader> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* supervariantName);
 
             RHI::ResultCode Init(ShaderAsset& shaderAsset);
 

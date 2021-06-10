@@ -62,12 +62,11 @@ namespace AZ
             ShaderResourceGroupPool() = default;
 
             // Standard RPI runtime instance initialization
-            static Data::Instance<ShaderResourceGroupPool> CreateInternal(ShaderAsset& shaderAsset);
-            bool IsInitialized() { return m_isInitialized; }
+            // @param anySrgInitParams Of Type RPI::ShaderResourceGroup::SrgInitParams.
+            static Data::Instance<ShaderResourceGroupPool> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* anySrgInitParams);
+
             RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
-            /// If true, Init() was called and was successful.
-            bool m_isInitialized = false;
             RHI::Ptr<RHI::ShaderResourceGroupPool> m_pool;
         };
     }

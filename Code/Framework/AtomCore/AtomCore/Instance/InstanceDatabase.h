@@ -46,14 +46,22 @@ namespace AZ
              */
             using CreateFunction = AZStd::function<Instance<Type>(AssetData*)>;
 
+            using CreateFunctionWithParam = AZStd::function<Instance<Type>(AssetData*, const AZStd::any* param)>;
+
             /**
              * Deletion takes an asset as input and transfers ownership to the method.
              */
             using DeleteFunction = AZStd::function<void(Type*)>;
 
-            /// [Required] The function to use when creating an instance.
-            ///  The system will assert if no creation function is provided.
-            CreateFunction m_createFunction;
+            /// A function to use when creating an instance.
+            ///  The system will assert if both  @m_createFunction and @m_createFunctionWithParam
+            ///  creation functions are invalid.
+            CreateFunction m_createFunction = nullptr;
+
+            /// A function with an additional custom param to use when creating an instance.
+            ///  The system will assert if both  @m_createFunction and @m_createFunctionWithParam
+            ///  creation functions are invalid.
+            CreateFunctionWithParam m_createFunctionWithParam = nullptr;
 
             /// [Optional] The function to use when deleting an instance.
             DeleteFunction m_deleteFunction = [](Type* t) { delete t; };
@@ -191,13 +199,13 @@ namespace AZ
              *      when acquiring an instance.
              * @return Returns a smart pointer to the instance, which was either found or created.
              */
-            Data::Instance<Type> FindOrCreate(const InstanceId& id, const Asset<AssetData>& asset);
+            Data::Instance<Type> FindOrCreate(const InstanceId& id, const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
             //! Calls the above FindOrCreate using an InstanceId created from the asset
-            Data::Instance<Type> FindOrCreate(const Asset<AssetData>& asset);
+            Data::Instance<Type> FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
             //! Calls FindOrCreate using a random InstanceId
-            Data::Instance<Type> Create(const Asset<AssetData>& asset);
+            Data::Instance<Type> Create(const Asset<AssetData>& asset, const AZStd::any* param = nullptr);
 
         private:
             InstanceDatabase(const AssetType& assetType);
@@ -260,7 +268,7 @@ namespace AZ
 
         template<typename Type>
         Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(
-            const InstanceId& id, const Asset<AssetData>& asset)
+            const InstanceId& id, const Asset<AssetData>& asset, const AZStd::any* param)
         {
             if (!id.IsValid())
             {
@@ -313,34 +321,43 @@ namespace AZ
             }
 
             // Emplace a new instance and return it.
-             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
-             // the contents of m_database may change within this call.
-             Data::Instance<Type> instance = m_instanceHandler.m_createFunction(assetLocal.Get());
-             if (instance)
-             {
-                 AZ_Assert(m_database.find(id) == m_database.end(),
-                     "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
-                     "This asset might be erroneously referencing itself as a dependent asset.", id.ToString<AZStd::string>().c_str());
+            // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
+            // the contents of m_database may change within this call.
+            Data::Instance<Type> instance = nullptr;
+            if (!param)
+            {
+                instance = m_instanceHandler.m_createFunction(assetLocal.Get());
+            }
+            else
+            {
+                instance = m_instanceHandler.m_createFunctionWithParam(assetLocal.Get(), param);
+            }
 
-                 instance->m_id = id;
-                 instance->m_parentDatabase = this;
-                 instance->m_assetId = assetLocal.GetId();
-                 instance->m_assetType = assetLocal.GetType();
-                 m_database.emplace(id, instance.get());
-             }
-             return AZStd::move(instance);
+            if (instance)
+            {
+                AZ_Assert(m_database.find(id) == m_database.end(),
+                    "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
+                    "This asset might be erroneously referencing itself as a dependent asset.", id.ToString<AZStd::string>().c_str());
+
+                instance->m_id = id;
+                instance->m_parentDatabase = this;
+                instance->m_assetId = assetLocal.GetId();
+                instance->m_assetType = assetLocal.GetType();
+                m_database.emplace(id, instance.get());
+            }
+            return AZStd::move(instance);
         }
 
         template<typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset)
+        Data::Instance<Type> InstanceDatabase<Type>::FindOrCreate(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset);
+            return FindOrCreate(Data::InstanceId::CreateFromAssetId(asset.GetId()), asset, param);
         }
 
         template<typename Type>
-        Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset)
+        Data::Instance<Type> InstanceDatabase<Type>::Create(const Asset<AssetData>& asset, const AZStd::any* param)
         {
-            return FindOrCreate(Data::InstanceId::CreateRandom(), asset);
+            return FindOrCreate(Data::InstanceId::CreateRandom(), asset, param);
         }
 
         template<typename Type>
@@ -413,6 +430,8 @@ namespace AZ
             {
                 ms_instance.Set(aznew InstanceDatabase<Type>(assetType));
             }
+
+            AZ_Assert(handler.m_createFunction || handler.m_createFunctionWithParam, "At least one create function must be valid");
             ms_instance.Get()->m_instanceHandler = handler;
             ms_instance.Get()->m_checkAssetIds = checkAssetIds;
         }
