@@ -252,6 +252,13 @@
                             }
                         },
                         {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
                             "LocalSlot": "DepthStencil",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
@@ -332,6 +339,13 @@
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
                                 "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "MotionVectorPass",
+                                "Attachment": "MotionVectorOutput"
                             }
                         },
                         {

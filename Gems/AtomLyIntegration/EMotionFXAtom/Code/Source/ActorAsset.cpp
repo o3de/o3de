@@ -500,7 +500,16 @@ namespace AZ
                 skinnedMeshLod.SetIndexBufferAsset(mesh0.GetIndexBufferAssetView().GetBufferAsset());
                 skinnedMeshLod.SetStaticBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "UV" })->GetBufferAsset(), SkinnedMeshStaticVertexStreams::UV_0);
 
-                const RPI::BufferAssetView* morphBufferAssetView = mesh0.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                const RPI::BufferAssetView* morphBufferAssetView = nullptr;
+                for (const auto& mesh : modelLodAsset->GetMeshes())
+                {
+                    morphBufferAssetView = mesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                    if (morphBufferAssetView)
+                    {
+                        break;
+                    }
+                }
+
                 if (morphBufferAssetView)
                 {
                     ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), lodIndex, fullFileName, skinnedMeshLod);
@@ -586,7 +595,7 @@ namespace AZ
             // Create a buffer and populate it with the transforms
             RPI::CommonBufferDescriptor descriptor;
             descriptor.m_bufferData = boneTransforms.data();
-            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s_%s", actorInstance->GetActor()->GetName(), Uuid::CreateRandom().ToString<AZStd::string>().c_str());
+            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s", actorInstance->GetActor()->GetName());
             descriptor.m_byteCount = boneTransforms.size() * sizeof(float);
             descriptor.m_elementSize = floatsPerBone * sizeof(float);
             descriptor.m_poolType = RPI::CommonBufferPoolType::ReadOnly;

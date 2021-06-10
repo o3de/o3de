@@ -27,7 +27,7 @@ namespace Blast
         PhysX::ColliderComponentRequestBus::Handler::BusDisconnect(m_entityId);
     }
 
-    Physics::ShapeConfigurationList ShapesProvider::GetShapeConfigurations()
+    AzPhysics::ShapeColliderPairList ShapesProvider::GetShapeConfigurations()
     {
         return {};
     }

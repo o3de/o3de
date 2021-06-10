@@ -34,7 +34,7 @@ ly_add_target(
             Gem::ScriptCanvas
             Gem::ScriptCanvasEditor
             Gem::GraphCanvasWidgets
-            Gem::ScriptEvents
+            Gem::ScriptEvents.Editor
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
@@ -45,6 +45,11 @@ ly_add_target(
             *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+    RUNTIME_DEPENDENCIES
+        Gem::ScriptCanvas.Editor
+        Gem::ScriptCanvasEditor
+        Gem::GraphCanvasWidgets
+        Gem::ScriptEvents
 )
 
 ly_add_target(
@@ -72,6 +77,9 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvas.Editor
 )
+
+# By default, the above module is used only in tools:
+ly_create_alias(NAME ScriptCanvasTesting.Tools  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
 
 ################################################################################
 # Tests
@@ -101,6 +109,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Gem::ScriptCanvasTesting.Editor.Static
+                Gem::ScriptCanvas.Editor
         RUNTIME_DEPENDENCIES
             Gem::GraphCanvas.Editor
             Gem::ScriptCanvas.Editor

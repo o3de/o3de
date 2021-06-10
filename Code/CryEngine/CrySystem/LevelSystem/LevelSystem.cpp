@@ -19,7 +19,6 @@
 #include "IMovieSystem.h"
 #include <ILocalizationManager.h>
 #include "CryPath.h"
-#include <Pak/CryPakUtils.h>
 
 #include <LoadScreenBus.h>
 

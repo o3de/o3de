@@ -17,6 +17,17 @@ namespace AzFramework
 {
     ClickDetector::ClickOutcome ClickDetector::DetectClick(const ClickEvent clickEvent, const ScreenVector& cursorDelta)
     {
+        const auto previousDetectionState = m_detectionState;
+        if (previousDetectionState == DetectionState::WaitingForMove)
+        {
+            // only allow the action to begin if the mouse has been moved a small amount
+            m_moveAccumulator += ScreenVectorLength(cursorDelta);
+            if (m_moveAccumulator > m_deadZone)
+            {
+                m_detectionState = DetectionState::Moved;
+            }
+        }
+
         if (clickEvent == ClickEvent::Down)
         {
             const auto now = std::chrono::steady_clock::now();
@@ -52,15 +63,9 @@ namespace AzFramework
             return clickOutcome;
         }
 
-        if (m_detectionState == DetectionState::WaitingForMove)
+        if (previousDetectionState == DetectionState::WaitingForMove && m_detectionState == DetectionState::Moved)
         {
-            // only allow the action to begin if the mouse has been moved a small amount
-            m_moveAccumulator += ScreenVectorLength(cursorDelta);
-            if (m_moveAccumulator > m_deadZone)
-            {
-                m_detectionState = DetectionState::Moved;
-                return ClickOutcome::Move;
-            }
+            return ClickOutcome::Move;
         }
 
         return ClickOutcome::Nil;

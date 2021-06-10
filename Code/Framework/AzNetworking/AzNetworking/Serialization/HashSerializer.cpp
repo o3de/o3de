@@ -22,7 +22,9 @@ namespace AzNetworking
     AZ::HashValue32 HashSerializer::GetHash() const
     {
         // Just truncate the upper bits
-        return static_cast<AZ::HashValue32>(m_hash);
+        const AZ::HashValue32 lower = static_cast<AZ::HashValue32>(m_hash);
+        const AZ::HashValue32 upper = static_cast<AZ::HashValue32>(m_hash >> 32);
+        return lower ^ upper;
     }
 
     SerializerMode HashSerializer::GetSerializerMode() const

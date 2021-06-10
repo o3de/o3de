@@ -12,10 +12,11 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/function/function_fwd.h>
-#include <AzCore/std/string/string.h>
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/IO/SystemFile_Platform.h>
+#include <AzCore/std/function/function_fwd.h>
+#include <AzCore/std/string/fixed_string.h>
 
 // Establish a consistent size that works across platforms. It's actually larger than this
 // on platforms we support, but this is a good least common denominator
@@ -51,10 +52,14 @@ namespace AZ
             };
 
             using SizeType = AZ::IO::Internal::SizeType;
+            using SeekSizeType = AZ::IO::Internal::SeekSizeType;
             using FileHandleType = AZ::IO::Internal::FileHandleType;
 
             SystemFile();
             ~SystemFile();
+
+            SystemFile(SystemFile&&);
+            SystemFile& operator=(SystemFile&&);
 
             /**
              * Opens a file.
@@ -69,7 +74,7 @@ namespace AZ
             /// Closes a file, if file already close it has no effect.
             void Close();
             /// Seek in current file.
-            void Seek(SizeType offset, SeekMode mode);
+            void Seek(SeekSizeType offset, SeekMode mode);
             /// Get the cursor position in the current file.
             SizeType Tell();
             /// Is the cursor at the end of the file?
@@ -87,7 +92,7 @@ namespace AZ
             /// Return disc offset if possible, otherwise 0
             SizeType DiskOffset() const;
             /// Return file name or NULL if file is not open.
-            AZ_FORCE_INLINE const char* Name() const    { return m_fileName; }
+            AZ_FORCE_INLINE const char* Name() const    { return m_fileName.c_str(); }
             bool IsOpen() const;
 
             /// Return native handle to the file.
@@ -124,12 +129,12 @@ namespace AZ
 
         private:
             static void CreatePath(const char * fileName);
-            
+
             bool PlatformOpen(int mode, int platformFlags);
             void PlatformClose();
-            
-            FileHandleType  m_handle;
-            char            m_fileName[AZ_MAX_PATH_LEN];
+
+            FileHandleType m_handle;
+            AZ::IO::FixedMaxPathString m_fileName;
         };
 
         /**

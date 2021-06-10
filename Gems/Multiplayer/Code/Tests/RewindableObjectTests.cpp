@@ -10,8 +10,8 @@
 *
 */
 
-#include <Multiplayer/RewindableObject.h>
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/NetworkTime/RewindableObject.h>
 #include <Source/NetworkTime/NetworkTime.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/Time/TimeSystemComponent.h>

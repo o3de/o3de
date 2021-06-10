@@ -79,8 +79,8 @@ namespace MaterialEditor
 
         if (!m_documentId.IsNull() && isOpen)
         {
-            // Create the top group for displaying details about the material
-            AddDetailsGroup();
+            // Create the top group for displaying overview info about the material
+            AddOverviewGroup();
             // Create groups for displaying editable UV names
             AddUvNamesGroup();
             // Create groups for displaying editable properties
@@ -105,25 +105,25 @@ namespace MaterialEditor
         return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
     }
 
-    void MaterialInspector::AddDetailsGroup()
+    void MaterialInspector::AddOverviewGroup()
     {
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
         MaterialDocumentRequestBus::EventResult(
             materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
 
-        const AZStd::string groupNameId = "details";
-        const AZStd::string groupDisplayName = "Details";
+        const AZStd::string groupNameId = "overview";
+        const AZStd::string groupDisplayName = "Overview";
         const AZStd::string groupDescription = materialTypeSourceData->m_description;
         auto& group = m_groups[groupNameId];
 
         AtomToolsFramework::DynamicProperty property;
         MaterialDocumentRequestBus::EventResult(
-            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.materialType"));
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("overview.materialType"));
         group.m_properties.push_back(property);
 
         property = {};
         MaterialDocumentRequestBus::EventResult(
-            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.parentMaterial"));
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("overview.parentMaterial"));
         group.m_properties.push_back(property);
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
@@ -139,7 +139,7 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(materialAsset, m_documentId, &MaterialDocumentRequestBus::Events::GetAsset);
 
         const AZStd::string groupNameId = UvGroupName;
-        const AZStd::string groupDisplayName = "UV Names";
+        const AZStd::string groupDisplayName = "UV Sets";
         const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
         auto& group = m_groups[groupNameId];
 
@@ -198,6 +198,11 @@ namespace MaterialEditor
                 &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
                 [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
             AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+            
+            bool isGroupVisible = false;
+            MaterialDocumentRequestBus::EventResult(
+                isGroupVisible, m_documentId, &MaterialDocumentRequestBus::Events::IsPropertyGroupVisible, AZ::Name{groupNameId});
+            SetGroupVisible(groupNameId, isGroupVisible);
         }
     }
 
@@ -221,8 +226,7 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialInspector::OnDocumentPropertyConfigModified(
-        const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property)
+    void MaterialInspector::OnDocumentPropertyConfigModified(const AZ::Uuid&, const AtomToolsFramework::DynamicProperty& property)
     {
         for (auto& groupPair : m_groups)
         {
@@ -234,19 +238,22 @@ namespace MaterialEditor
                     if (reflectedProperty.GetVisibility() != property.GetVisibility())
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(
-                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RebuildGroup, groupPair.first);
+                        RebuildGroup(groupPair.first);
                     }
                     else
                     {
                         reflectedProperty.SetConfig(property.GetConfig());
-                        AtomToolsFramework::InspectorRequestBus::Event(
-                            documentId, &AtomToolsFramework::InspectorRequestBus::Events::RefreshGroup, groupPair.first);
+                        RefreshGroup(groupPair.first);
                     }
                     return;
                 }
             }
         }
+    }
+    
+    void MaterialInspector::OnDocumentPropertyGroupVisibilityChanged(const AZ::Uuid&, const AZ::Name& groupId, bool visible)
+    {
+        SetGroupVisible(groupId.GetStringView(), visible);
     }
 
     void MaterialInspector::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)

@@ -11,12 +11,12 @@
  */
 #include <ScreenFactory.h>
 
-#include <FirstTimeUseScreen.h>
-#include <ProjectSettingsCtrl.h>
+#include <CreateProjectCtrl.h>
+#include <UpdateProjectCtrl.h>
 #include <NewProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
-#include <ProjectsHomeScreen.h>
-#include <ProjectSettingsScreen.h>
+#include <ProjectsScreen.h>
+#include <UpdateProjectSettingsScreen.h>
 #include <EngineSettingsScreen.h>
 
 namespace O3DE::ProjectManager
@@ -27,11 +27,8 @@ namespace O3DE::ProjectManager
 
         switch(screen)
         {
-        case (ProjectManagerScreen::FirstTimeUse):
-            newScreen = new FirstTimeUseScreen(parent);
-            break;
-        case (ProjectManagerScreen::NewProjectSettingsCore):
-            newScreen = new ProjectSettingsCtrl(parent);
+        case (ProjectManagerScreen::CreateProject):
+            newScreen = new CreateProjectCtrl(parent);
             break;
         case (ProjectManagerScreen::NewProjectSettings):
             newScreen = new NewProjectSettingsScreen(parent);
@@ -39,11 +36,14 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::GemCatalog):
             newScreen = new GemCatalogScreen(parent);
             break;
-        case (ProjectManagerScreen::ProjectsHome):
-            newScreen = new ProjectsHomeScreen(parent);
+        case (ProjectManagerScreen::Projects):
+            newScreen = new ProjectsScreen(parent);
             break;
-        case (ProjectManagerScreen::ProjectSettings):
-            newScreen = new ProjectSettingsScreen(parent);
+        case (ProjectManagerScreen::UpdateProject):
+            newScreen = new UpdateProjectCtrl(parent);
+            break;
+        case (ProjectManagerScreen::UpdateProjectSettings):
+            newScreen = new UpdateProjectSettingsScreen(parent);
             break;
         case (ProjectManagerScreen::EngineSettings):
             newScreen = new EngineSettingsScreen(parent);

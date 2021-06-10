@@ -236,8 +236,6 @@ namespace AzFramework
         // Archive classes relies on the FileIOBase DirectInstance to close
         // files properly
         m_directFileIO.reset();
-
-        // The AZ::Console skips destruction and always leaks to allow it to be used in static memory
     }
 
     void Application::Start(const Descriptor& descriptor, const StartupParameters& startupParameters)
@@ -681,8 +679,6 @@ namespace AzFramework
         {
             auto fileIoBase = m_archiveFileIO.get();
             // Set up the default file aliases based on the settings registry
-            fileIoBase->SetAlias("@assets@", "");
-            fileIoBase->SetAlias("@root@", GetEngineRoot());
             fileIoBase->SetAlias("@engroot@", GetEngineRoot());
             fileIoBase->SetAlias("@projectroot@", GetEngineRoot());
             fileIoBase->SetAlias("@exefolder@", GetExecutableFolder());
@@ -696,8 +692,8 @@ namespace AzFramework
                 pathAliases.clear();
                 if (m_settingsRegistry->Get(pathAliases.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
                 {
-                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@assets@", pathAliases.c_str());
+                    fileIoBase->SetAlias("@projectplatformcache@", pathAliases.c_str());
                     fileIoBase->SetAlias("@root@", pathAliases.c_str()); // Deprecated Use @projectplatformcache@
                 }
                 pathAliases.clear();
@@ -715,8 +711,8 @@ namespace AzFramework
                 }
             }
 
-            AZ::IO::FixedMaxPath projectUserPath;
-            if (m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            if (AZ::IO::FixedMaxPath projectUserPath;
+                m_settingsRegistry->Get(projectUserPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
             {
                 fileIoBase->SetAlias("@user@", projectUserPath.c_str());
                 AZ::IO::FixedMaxPath projectLogPath = projectUserPath / "log";
@@ -724,6 +720,15 @@ namespace AzFramework
                 fileIoBase->CreatePath(projectLogPath.c_str()); // Create the log directory at this point
 
                 CreateUserCache(projectUserPath, *fileIoBase);
+            }
+            else
+            {
+                AZ::IO::FixedMaxPath fallbackLogPath = GetEngineRoot();
+                fallbackLogPath /= "user";
+                fileIoBase->SetAlias("@user@", fallbackLogPath.c_str());
+                fallbackLogPath /= "log";
+                fileIoBase->SetAlias("@log@", fallbackLogPath.c_str());
+                fileIoBase->CreatePath(fallbackLogPath.c_str());
             }
         }
     }

@@ -55,6 +55,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
+    Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
@@ -75,8 +76,11 @@ set(FILES
     Include/Atom/RPI.Reflect/Pass/PassTemplate.h
     Include/Atom/RPI.Reflect/Pass/RasterPassData.h
     Include/Atom/RPI.Reflect/Pass/RenderPassData.h
+    Include/Atom/RPI.Reflect/Shader/ShaderCommonTypes.h
     Include/Atom/RPI.Reflect/Shader/ShaderAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator.h
+    Include/Atom/RPI.Reflect/Shader/ShaderAsset2.h
+    Include/Atom/RPI.Reflect/Shader/ShaderAssetCreator2.h
     Include/Atom/RPI.Reflect/Shader/ShaderInputContract.h
     Include/Atom/RPI.Reflect/Shader/ShaderOptionGroup.h
     Include/Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h
@@ -87,7 +91,9 @@ set(FILES
     Include/Atom/RPI.Reflect/Shader/ShaderVariantKey.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h
     Include/Atom/RPI.Reflect/Shader/ShaderVariantAsset.h
+    Include/Atom/RPI.Reflect/Shader/ShaderVariantAsset2.h
     Include/Atom/RPI.Reflect/Shader/IShaderVariantFinder.h
+    Include/Atom/RPI.Reflect/Shader/IShaderVariantFinder2.h
     Include/Atom/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.h
     Include/Atom/RPI.Reflect/System/AnyAsset.h
     Include/Atom/RPI.Reflect/System/AssetAliases.h
@@ -135,6 +141,7 @@ set(FILES
     Source/RPI.Reflect/Material/MaterialAssetCreatorCommon.cpp
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
+    Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp
     Source/RPI.Reflect/Material/MaterialPropertiesLayout.cpp
     Source/RPI.Reflect/Material/MaterialTypeAsset.cpp
@@ -145,8 +152,11 @@ set(FILES
     Source/RPI.Reflect/Pass/PassAttachmentReflect.cpp
     Source/RPI.Reflect/Pass/PassRequest.cpp
     Source/RPI.Reflect/Pass/PassTemplate.cpp
+    Source/RPI.Reflect/Shader/ShaderStageType.cpp
     Source/RPI.Reflect/Shader/ShaderAsset.cpp
     Source/RPI.Reflect/Shader/ShaderAssetCreator.cpp
+    Source/RPI.Reflect/Shader/ShaderAsset2.cpp
+    Source/RPI.Reflect/Shader/ShaderAssetCreator2.cpp
     Source/RPI.Reflect/Shader/ShaderInputContract.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroup.cpp
     Source/RPI.Reflect/Shader/ShaderOptionGroupLayout.cpp
@@ -156,6 +166,7 @@ set(FILES
     Source/RPI.Reflect/Shader/ShaderVariantKey.cpp
     Source/RPI.Reflect/Shader/ShaderVariantTreeAsset.cpp
     Source/RPI.Reflect/Shader/ShaderVariantAsset.cpp
+    Source/RPI.Reflect/Shader/ShaderVariantAsset2.cpp
     Source/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.cpp
     Source/RPI.Reflect/System/AnyAsset.cpp
     Source/RPI.Reflect/System/AssetAliases.cpp

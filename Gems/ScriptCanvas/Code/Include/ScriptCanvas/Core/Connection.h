@@ -22,6 +22,7 @@
 namespace ScriptCanvas
 {
     class Slot;
+    struct NodeUpdateSlotReport;
 
     class Connection
         : public AZ::Component
@@ -63,6 +64,8 @@ namespace ScriptCanvas
 
         // GraphNotificationBus
         void OnNodeRemoved(const ID& nodeId) override;
+
+        void UpdateConnectionStatus(NodeUpdateSlotReport& report);
 
     protected:
         //-------------------------------------------------------------------------

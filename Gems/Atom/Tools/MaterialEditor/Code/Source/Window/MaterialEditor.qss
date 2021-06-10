@@ -11,8 +11,8 @@
 */
 
 /* Style for visualizing property values overridden from their prefab values */
-AzToolsFramework--PropertyRowWidget[IsOverridden=true] QLabel
+AzToolsFramework--PropertyRowWidget[IsOverridden="true"] QLabel
 {
     font-weight: bold;
-    color: #F5A623;
+    color: #1E70EB;
 }

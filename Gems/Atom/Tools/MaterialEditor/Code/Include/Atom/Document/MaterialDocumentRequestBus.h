@@ -19,6 +19,7 @@
 #include <AzCore/std/any.h>
 
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 
 namespace AZ
 {
@@ -32,7 +33,7 @@ namespace AZ
 namespace MaterialEditor
 {
     //! UVs are processed in a property group but will be handled differently.
-    static constexpr const char UvGroupName[] = "UvNames";
+    static constexpr const char UvGroupName[] = "uvSets";
 
     class MaterialDocumentRequests
         : public AZ::EBusTraits
@@ -67,6 +68,10 @@ namespace MaterialEditor
         //! Returns a property object
         //! If the document is not open or the id can't be found, an invalid property is returned.
         virtual const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const = 0;
+        
+        //! Returns whether a property group is visible
+        //! If the document is not open or the id can't be found, returns false.
+        virtual bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const = 0;
 
         //! Modify material property value
         virtual void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) = 0;

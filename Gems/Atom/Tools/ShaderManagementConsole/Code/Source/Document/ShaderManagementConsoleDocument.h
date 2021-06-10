@@ -14,6 +14,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>

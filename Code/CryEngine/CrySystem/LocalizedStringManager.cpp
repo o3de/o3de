@@ -28,8 +28,6 @@
 #include <locale.h>
 #include <time.h>
 
-#include "CryZlib.h"
-
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 

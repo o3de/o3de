@@ -47,7 +47,7 @@ def get_active_platforms_from_db(asset_db_path) -> List[str]:
 # Convert a source product path into a db product path
 # cache_platform/projectname/product_path
 def get_db_product_path(workspace, source_path, cache_platform):
-    product_path = os.path.join(cache_platform, workspace.project, source_path)
+    product_path = os.path.join(cache_platform, source_path)
     product_path = product_path.replace('\\', '/')
     return product_path
 

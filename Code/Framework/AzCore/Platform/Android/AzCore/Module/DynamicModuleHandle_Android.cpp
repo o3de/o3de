@@ -11,6 +11,7 @@
 */
 
 #include <AzCore/std/string/osstring.h>
+#include <AzCore/Utils/Utils.h>
 #include <dlfcn.h>
 
 namespace AZ

@@ -1,0 +1,10 @@
+{
+    "Amazon": 
+    {
+        "AWSCore": 
+        {
+            "ProfileName": "AWSAutomationTest",
+            "ResourceMappingConfigFileName": "aws_resource_mappings.json"
+        }
+    } 
+}

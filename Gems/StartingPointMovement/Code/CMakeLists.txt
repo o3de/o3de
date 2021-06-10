@@ -10,21 +10,6 @@
 #
 
 ly_add_target(
-    NAME StartingPointMovement.Static STATIC
-    NAMESPACE Gem
-    FILES_CMAKE
-        startingpointmovement_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Source
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-)
-
-ly_add_target(
     NAME StartingPointMovement ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
@@ -36,7 +21,12 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::StartingPointMovement.Static
             AZ::AzCore
             AZ::AzFramework
 )
+
+# the above module is for use in all application types (there is no tool specialization)
+ly_create_alias(NAME StartingPointMovement.Servers  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Clients  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Builders NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Tools    NAMESPACE Gem TARGETS Gem::StartingPointMovement)

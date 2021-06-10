@@ -26,10 +26,16 @@ namespace O3DE::ProjectManager
     class LinkLabel
         : public QLabel
     {
+        Q_OBJECT // AUTOMOC
+
     public:
-        LinkLabel(const QString& text, const QUrl& url = {}, QWidget* parent = nullptr);
+        LinkLabel(const QString& text = {}, const QUrl& url = {}, QWidget* parent = nullptr);
 
         void SetUrl(const QUrl& url);
+
+    signals:
+        void clicked();
+
     private:
         void mousePressEvent(QMouseEvent* event) override;
         void enterEvent(QEvent* event) override;

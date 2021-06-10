@@ -12,13 +12,16 @@
 
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
+
+class QString;
 
 namespace AzToolsFramework
 {
@@ -27,7 +30,6 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
         class PrefabLoaderInterface;
@@ -44,7 +46,7 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) override;
+            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) override;
             PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
@@ -60,28 +62,70 @@ namespace AzToolsFramework
 
             PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
+            PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
             bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
-                EntityList& outEntities, AZStd::vector<AZStd::unique_ptr<Instance>>& outInstances) const;
+                EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
 
             /**
+             * Duplicate a list of entities owned by a common owning instance by directly
+             * copying/modifying their entries in the instance DOM
+             *
+             * \param commonOwningInstance The common owning instance of all the entities being duplicated.
+             * \param entities The list of Entities that will be duplicated.
+             * \param domToAddDuplicatedEntitiesUnder The DOM of the common owning instance where the duplicated
+             *      entity DOM values will be added to.
+             * \param duplicatedEntityIds A list of EntityIds corresponding to the entities that were duplicated.
+             */
+            void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
+                const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
+                EntityIdList& duplicatedEntityIds);
+            /**
+             * Duplicate a list of instances owned by a common owning instance by directly
+             * copying/modifying their entries in the instance DOM
+             *
+             * \param commonOwningInstance The common owning instance of all the instances being duplicated.
+             * \param entities The list of Instances that will be duplicated.
+             * \param domToAddDuplicatedInstancesUnder The DOM of the common owning instance where the duplicated
+             *      instance DOM values will be added to.
+             * \param duplicatedEntityIds A list of EntityIds corresponding to the instances that were duplicated.
+             */
+            void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
+                const AZStd::vector<Instance*>& instances, PrefabDom& domToAddDuplicatedInstancesUnder,
+                EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
+            
+            /**
+             * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
+             * The container will be parented to parentId, moved to the average transform of the future direct children and its cache will be updated.
+             * This helper function won't support undo/redo, update the templates or create any links. All that needs to be done by the caller.
+             * 
+             * \param containerEntityId The container to apply the changes to.
+             * \param parentEntityId The id of the entity the container should be parented to.
+             * \param childEntities A list of entities that will subsequently be parented to this container.
+             * \return The PrefabDom containing the patches that should be stored in the parent link.
+             */
+            PrefabDom ApplyContainerTransformAndGeneratePatch(
+                AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities);
+
+            /**
              * Creates a link between the templates of an instance and its parent.
              * 
-             * \param topLevelEntities The list of entities that are immediate children to the container entity of the instance.
-             * \param sourceInstance The instance that corresponds to the source template of the link.
-             * \param targetInstance The id of the target template.
+             * \param sourceInstance The instance that corresponds to the source template of the link (child).
+             * \param targetInstance The id of the target template (parent).
              * \param undoBatch The undo batch to set as parent for this create link action.
-             * \param commonRootEntityId The id of the entity that the source instance should be parented under.
+             * \param patch The patch to store in the newly created link dom.
              * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
              */
             void CreateLink(
-                const EntityList& topLevelEntities, Instance& sourceInstance, TemplateId targetTemplateId,
-                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId commonRootEntityId, const bool isUndoRedoSupportNeeded = true);
+                Instance& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch,
+                PrefabDom patch, const bool isUndoRedoSupportNeeded = true);
 
             /**
              * Removes the link between template of the sourceInstance and the template corresponding to targetTemplateId.
@@ -107,13 +151,30 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::EntityId>& entityIds, EntityList& inputEntityList, EntityList& topLevelEntities,
                 AZ::EntityId& commonRootEntityId, InstanceOptionalReference& commonRootEntityOwningInstance);
 
-            /* Detects whether an instance of prefabTemplateId is present in the hierarchy of ancestors of instance.
+            /* Checks whether the template source path of any of the ancestors in the instance hierarchy matches with one of the
+             * paths provided in a set.
              *
-             * \param prefabTemplateId The template id to test for
-             * \param instance The instance whose ancestor hierarchy prefabTemplateId will be tested against.
-             * \return true if an instance of the template of id prefabTemplateId could be found in the ancestor hierarchy of instance, false otherwise.
+             * \param instance The instance whose ancestor hierarchy the provided set of template source paths will be tested against.
+             * \param templateSourcePaths The template source paths provided to be checked against the instance ancestor hierarchy.
+             * \return true if any of the template source paths could be found in the ancestor hierarchy of instance, false otherwise.
              */
-            bool IsPrefabInInstanceAncestorHierarchy(TemplateId prefabTemplateId, InstanceOptionalConstReference instance);
+            bool IsCyclicalDependencyFound(
+                InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
+            static void Internal_HandleContainerOverride(
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
+                const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
+            static void Internal_HandleEntityChange(
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
+                PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
+            void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
+
+            void UpdateLinkPatchesWithNewEntityAliases(
+                PrefabDom& linkPatch,
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
+                Instance& newParent);
+
+            static void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);
@@ -129,5 +190,5 @@ namespace AzToolsFramework
 
             uint64_t m_newEntityCounter = 1;
         };
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

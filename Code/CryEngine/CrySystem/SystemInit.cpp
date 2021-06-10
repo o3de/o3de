@@ -91,7 +91,6 @@
 #include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
-#include <Pak/CryPakUtils.h>
 #include "XConsole.h"
 #include "Log.h"
 #include "XML/xml.h"
@@ -120,6 +119,10 @@
 #if defined(REMOTE_ASSET_PROCESSOR)
 // Over here, we'd put the header to the Remote Asset Processor interface (as opposed to the Local built in version  below)
 #   include <AzFramework/Network/AssetProcessorConnection.h>
+#endif
+
+#ifdef WIN32
+extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPointers);
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -631,7 +634,7 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
     IConsole* pConsole = GetIConsole();
 
     ICVar* pOldVar = pConsole->GetCVar (szVarName);
-    int nDefault;
+    int nDefault = 0;
     if (pOldVar)
     {
         nDefault = pOldVar->GetIVal();
@@ -861,11 +864,6 @@ bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
 
     EBUS_EVENT(UiSystemBus, InitializeSystem);
 
-    if (!m_env.pLyShine)
-    {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in *_dependencies.cmake.");
-        return false;
-    }
     return true;
 }
 
@@ -1210,7 +1208,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         {
             assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, false, R"(A valid asset platform is missing in "%s/assets" key in the SettingsRegistry.)""\n"
-                R"(This typically done by setting he "assets" field in the bootstrap.cfg for within a .setreg file)""\n"
+                R"(This typically done by setting the "assets" field within a .setreg file)""\n"
                 R"(A fallback of %s will be used.)",
                 AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
                 assetPlatform.c_str());
@@ -1484,6 +1482,13 @@ AZ_POP_DISABLE_WARNING
         LogBuildInfo();
 
         InlineInitializationProcessing("CSystem::Init LoadConfigurations");
+
+#ifdef WIN32
+        if (g_cvars.sys_WER)
+        {
+            SetUnhandledExceptionFilter(CryEngineExceptionFilterWER);
+        }
+#endif
 
         //////////////////////////////////////////////////////////////////////////
         // Localization
@@ -2012,8 +2017,8 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_streaming_in_blocks", &g_cvars.sys_streaming_in_blocks, 1, VF_NULL,
         "Streaming of large files happens in blocks");
 
-#if (defined(WIN32) || defined(WIN64)) && !defined(_RELEASE)
-    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 3, 0, "Use or not use floating point exceptions.");
+#if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
+    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
 #else // Float exceptions by default disabled for console builds.
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 0, 0, "Use or not use floating point exceptions.");
 #endif
@@ -2021,6 +2026,14 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_update_profile_time", &g_cvars.sys_update_profile_time, 1.0f, 0, "Time to keep updates timings history for.");
     REGISTER_CVAR2("sys_no_crash_dialog", &g_cvars.sys_no_crash_dialog, m_bNoCrashDialog, VF_NULL, "Whether to disable the crash dialog window");
     REGISTER_CVAR2("sys_no_error_report_window", &g_cvars.sys_no_error_report_window, m_bNoErrorReportWindow, VF_NULL, "Whether to disable the error report list");
+#if defined(_RELEASE)
+    if (!gEnv->IsDedicated())
+    {
+        REGISTER_CVAR2("sys_WER", &g_cvars.sys_WER, 1, 0, "Enables Windows Error Reporting");
+    }
+#else
+    REGISTER_CVAR2("sys_WER", &g_cvars.sys_WER, 0, 0, "Enables Windows Error Reporting");
+#endif
 
 #ifdef USE_HTTP_WEBSOCKETS
     REGISTER_CVAR2("sys_simple_http_base_port", &g_cvars.sys_simple_http_base_port, 1880, VF_REQUIRE_APP_RESTART,

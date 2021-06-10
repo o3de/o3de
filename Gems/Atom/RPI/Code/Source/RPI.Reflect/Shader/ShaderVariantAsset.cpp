@@ -10,6 +10,7 @@
 *
 */
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -21,6 +22,30 @@ namespace AZ
 {
     namespace RPI
     {
+        uint32_t ShaderVariantAsset::MakeAssetProductSubId(
+            uint32_t rhiApiUniqueIndex, ShaderVariantStableId variantStableId, uint32_t subProductType)
+        {
+            static constexpr uint32_t SubProductTypeBitPosition = 17;
+            static constexpr uint32_t SubProductTypeNumBits = RhiIndexBitPosition - SubProductTypeBitPosition;
+            static constexpr uint32_t SubProductTypeMaxValue = (1 << SubProductTypeNumBits) - 1;
+
+            static constexpr uint32_t StableIdBitPosition = 0;
+            static constexpr uint32_t StableIdNumBits = SubProductTypeBitPosition - StableIdBitPosition;
+            static constexpr uint32_t StableIdMaxValue = (1 << StableIdNumBits) - 1;
+
+            static_assert(RhiIndexMaxValue == RHI::Limits::APIType::PerPlatformApiUniqueIndexMax);
+
+            // The 2 Most significant bits encode the the RHI::API unique index.
+            AZ_Assert(rhiApiUniqueIndex <= RhiIndexMaxValue, "Invalid rhiApiUniqueIndex [%u]", rhiApiUniqueIndex);
+            AZ_Assert(subProductType <= SubProductTypeMaxValue, "Invalid subProductType [%u]", subProductType);
+            AZ_Assert(variantStableId.GetIndex() <= StableIdMaxValue, "Invalid variantStableId [%u]", variantStableId.GetIndex());
+
+            const uint32_t assetProductSubId = (rhiApiUniqueIndex << RhiIndexBitPosition) |
+                (subProductType << SubProductTypeBitPosition) |
+                (variantStableId.GetIndex() << StableIdBitPosition);
+            return assetProductSubId;
+        }
+
         void ShaderVariantAsset::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -42,16 +67,6 @@ namespace AZ
         AZStd::sys_time_t ShaderVariantAsset::GetShaderAssetBuildTimestamp() const
         {
             return m_shaderAssetBuildTimestamp;
-        }
-
-        uint32_t ShaderVariantAsset::GetAssetSubId(uint32_t rhiApiUniqueIndex, ShaderVariantStableId variantStableId)
-        {
-            //The 2 Most significant bits encode the the RHI::API unique index.
-            AZ_Assert(rhiApiUniqueIndex <= RHI::Limits::APIType::PerPlatformApiUniqueIndexMax, "Invalid rhiApiUniqueIndex [%u]", rhiApiUniqueIndex);
-            AZ_Assert(variantStableId != RootShaderVariantStableId, "The product subId for the root variant is built differently.");
-            const uint32_t rhiApiSubId = rhiApiUniqueIndex << 30;
-            const uint32_t productSubId = rhiApiSubId | variantStableId.GetIndex();
-            return productSubId;
         }
 
         const RHI::ShaderStageFunction* ShaderVariantAsset::GetShaderStageFunction(RHI::ShaderStage shaderStage) const

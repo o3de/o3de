@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include <Multiplayer/NetworkInput.h>
-#include <Multiplayer/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkInput/NetworkInput.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 

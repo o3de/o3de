@@ -86,6 +86,8 @@ namespace PhysX
         Physics::ShapeConfiguration& GetCurrent();
         const Physics::ShapeConfiguration& GetCurrent() const;
 
+        AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
+
         bool ShowingSubdivisionLevel() const;
 
         AZ::u32 OnConfigurationChanged();
@@ -156,7 +158,6 @@ namespace PhysX
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
         Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialAsset(const AZ::Data::AssetId& id) override;
         void SetMaterialId(const Physics::MaterialId& id) override;
         void UpdateMaterialSlotsFromMeshAsset();
 
@@ -249,7 +250,7 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.

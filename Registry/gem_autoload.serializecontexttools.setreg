@@ -9,6 +9,24 @@
       },
       "PythonAssetBuilder.Editor": {
         "AutoLoad": false
+      },
+      "AWSCore": {
+        "AutoLoad": false
+      },
+      "AWSCore.Editor": {
+        "AutoLoad": false
+      },
+      "AWSClientAuth": {
+        "AutoLoad": false
+      },
+      "AWSClientAuth.Editor": {
+        "AutoLoad": false
+      },
+      "AWSMetrics": {
+        "AutoLoad": false
+      },
+      "AWSMetrics.Editor": {
+        "AutoLoad": false
       }
     }
   }

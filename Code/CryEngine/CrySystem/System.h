@@ -208,6 +208,7 @@ struct SSystemCVars
     int sys_no_crash_dialog;
     int sys_no_error_report_window;
     int sys_dump_aux_threads;
+    int sys_WER;
     int sys_dump_type;
     int sys_ai;
     int sys_entitysystem;
@@ -728,7 +729,7 @@ protected: // -------------------------------------------------------------
     CCmdLine*                                      m_pCmdLine;
 
     string  m_currentLanguageAudio;
-    string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_es3.cfg or system_android_opengl.cfg or system_windows_pc.cfg
+    string  m_systemConfigName; // computed from system_(hardwareplatform)_(assetsPlatform) - eg, system_android_android.cfg or system_windows_pc.cfg
 
     std::vector< std::pair<CTimeValue, float> > m_updateTimes;
 

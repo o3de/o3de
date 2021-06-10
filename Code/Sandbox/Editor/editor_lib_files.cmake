@@ -307,11 +307,6 @@ set(FILES
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Alembic/AlembicCompileDialog.cpp
-    Alembic/AlembicCompileDialog.h
-    Alembic/AlembicCompileDialog.ui
-    Alembic/AlembicCompiler.h
-    Alembic/AlembicCompiler.cpp
     Animation/AnimationBipedBoneNames.cpp
     Animation/AnimationBipedBoneNames.h
     AnimationContext.cpp
@@ -429,10 +424,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    InfoBar.cpp
-    InfoBar.qrc
-    InfoBar.h
-    InfoBar.ui
     LayoutConfigDialog.cpp
     LayoutConfigDialog.h
     LayoutConfigDialog.ui
@@ -591,6 +582,8 @@ set(FILES
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
     EditorPreferencesPageExperimentalLighting.cpp
+    EditorPreferencesPageAWS.h
+    EditorPreferencesPageAWS.cpp
     EditorPreferencesDialog.h
     EditorPreferencesDialog.cpp
     EditorPreferencesDialog.ui
@@ -714,14 +707,12 @@ set(FILES
     TrackView/TrackViewNode.cpp
     TrackView/TrackViewSequence.cpp
     TrackView/TrackViewNodeFactories.cpp
-    TrackView/TrackViewGeomCacheAnimationTrack.cpp
     TrackView/TrackViewEventNode.cpp
     TrackView/TrackViewAnimNode.h
     TrackView/TrackViewTrack.h
     TrackView/TrackViewNode.h
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
-    TrackView/TrackViewGeomCacheAnimationTrack.h
     TrackView/TrackViewEventNode.h
     ConfigGroup.cpp
     ConfigGroup.h
@@ -824,12 +815,12 @@ set(FILES
     LayoutWnd.h
     EditorViewportWidget.cpp
     EditorViewportWidget.h
+    EditorViewportSettings.cpp
+    EditorViewportSettings.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
-    ModernViewportCameraController.cpp
-    ModernViewportCameraController.h
     RenderViewport.cpp
     RenderViewport.h
     TopRendererWnd.cpp

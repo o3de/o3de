@@ -61,8 +61,8 @@ namespace AZ
 #endif
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::PipelineState
-            RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::RayTracingShaderTableDescriptor* descriptor, const RHI::RayTracingBufferPools& bufferPools) override;
+            // RHI::RayTracingShaderTable
+            RHI::ResultCode BuildInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
             static const uint32_t BufferCount = 3;

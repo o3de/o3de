@@ -10,7 +10,7 @@
 #
 
 set(FILES
-    Source/Multiplayer_precompiled.cpp
+    Include/Multiplayer/IMultiplayerTools.h
     Source/Multiplayer_precompiled.h
     Source/Pipeline/NetworkPrefabProcessor.cpp
     Source/Pipeline/NetworkPrefabProcessor.h

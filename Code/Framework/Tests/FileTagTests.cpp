@@ -83,6 +83,7 @@ namespace UnitTest
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
+
             m_data = AZStd::make_unique<StaticData>();
             using namespace  AzFramework::FileTag;
             AZ::ComponentApplication::Descriptor desc;

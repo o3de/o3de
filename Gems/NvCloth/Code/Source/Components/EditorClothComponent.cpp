@@ -374,12 +374,15 @@ namespace NvCloth
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_solverFrequency, "Solver frequency", 
                         "Target solver iterations per second. At least 1 iteration per frame will be solved regardless of the value set.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_accelerationFilterIterations, "Acceleration filter Iterations", 
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_accelerationFilterIterations, "Acceleration filter iterations", 
                         "Number of iterations to average delta time factor used for gravity and external acceleration.")
                         ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_removeStaticTriangles, "Remove static triangles",
                         "Removing static triangles improves performance by not taking into account triangles whose particles are all static.\n"
                         "The removed static particles will not be present for collision or self collision during simulation.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_updateNormalsOfStaticParticles, "Update normals of static particles",
+                        "When enabled the normals of static particles will be updated according with the movement of the simulated mesh.\n"
+                        "When disabled the static particles will keep the same normals as the original mesh.")
                     ;
             }
         }

@@ -85,10 +85,10 @@ namespace LmbrCentral
         AZStd::vector<AZStd::string> GetBundleList(const char* bundlePath, const char* bundleExtension) const;
 
         //! Bundles which are split across archives (Usually due to size constraints) have the dependent bundles listed in the manifest
-        //! of the master bundle.  This method manages opening the dependent bundles.
+        //! of the main bundle.  This method manages opening the dependent bundles.
         void OpenDependentBundles(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest);
         //! Bundles which are split across archives (Usually due to size constraints) have the dependent bundles listed in the manifest
-        //! of the master bundle.  This method manages closing the dependent bundles.
+        //! of the main bundle.  This method manages closing the dependent bundles.
         void CloseDependentBundles(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest);
 
         size_t GetOpenedBundleCount() const override;

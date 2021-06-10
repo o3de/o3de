@@ -51,3 +51,6 @@ ly_add_target(
             3rdParty::Qt::Core
             Gem::SliceFavorites.Editor.Static
 )
+
+# the above module is for use in Tools only (no need to load it in builders)
+ly_create_alias(NAME SliceFavorites.Tools    NAMESPACE Gem TARGETS Gem::SliceFavorites.Editor)

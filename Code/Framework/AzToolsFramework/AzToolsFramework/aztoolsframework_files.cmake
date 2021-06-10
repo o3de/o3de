@@ -11,7 +11,6 @@
 
 set(FILES
     AzToolsFramework_precompiled.h
-    AzToolsFramework_precompiled.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
     AssetEditor/AssetEditorStatusBar.ui
@@ -46,6 +45,7 @@ set(FILES
     API/EditorWindowRequestBus.h
     API/EntityCompositionRequestBus.h
     API/EntityCompositionNotificationBus.h
+    API/EditorViewportIconDisplayInterface.h
     API/ViewPaneOptions.h
     Application/Ticker.h
     Application/Ticker.cpp
@@ -292,8 +292,6 @@ set(FILES
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h
-    ToolsComponents/TransformScalePropertyHandler.cpp
-    ToolsComponents/TransformScalePropertyHandler.h
     ToolsComponents/ScriptEditorComponent.cpp
     ToolsComponents/ScriptEditorComponent.h
     ToolsComponents/ToolsAssetCatalogComponent.cpp
@@ -303,6 +301,8 @@ set(FILES
     ToolsComponents/AzToolsFrameworkConfigurationSystemComponent.cpp
     ToolsComponents/EditorNonUniformScaleComponent.h
     ToolsComponents/EditorNonUniformScaleComponent.cpp
+    ToolsComponents/EditorNonUniformScaleComponentMode.h
+    ToolsComponents/EditorNonUniformScaleComponentMode.cpp
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h

@@ -15,6 +15,8 @@ set(FILES
     CmdLineArg.cpp
     ConsoleBatchFile.cpp
     ConsoleHelpGen.cpp
+    DebugCallStack.cpp
+    IDebugCallStack.cpp
     Log.cpp
     System.cpp
     SystemCFG.cpp
@@ -31,6 +33,8 @@ set(FILES
     CmdLineArg.h
     ConsoleBatchFile.h
     ConsoleHelpGen.h
+    DebugCallStack.h
+    IDebugCallStack.h
     Log.h
     SimpleStringPool.h
     CrySystem_precompiled.h
@@ -71,5 +75,5 @@ set(FILES
     ViewSystem/View.h
     ViewSystem/ViewSystem.cpp
     ViewSystem/ViewSystem.h
-    CrySystem_precompiled.cpp
+    WindowsErrorReporting.cpp
 )
