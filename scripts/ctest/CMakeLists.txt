@@ -21,18 +21,20 @@ endif()
 ################################################################################
 
 foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
-    ly_add_pytest(
-        NAME pytest_sanity_${suite_name}_no_gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
-        TEST_SUITE ${suite_name}
-    )
+    if(PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
+        ly_add_pytest(
+            NAME pytest_sanity_${suite_name}_no_gpu
+            PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
+            TEST_SUITE ${suite_name}
+        )
 
-    ly_add_pytest(
-        NAME pytest_sanity_${suite_name}_requires_gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
-        TEST_SUITE ${suite_name}
-        TEST_REQUIRES gpu
-    )
+        ly_add_pytest(
+            NAME pytest_sanity_${suite_name}_requires_gpu
+            PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
+            TEST_SUITE ${suite_name}
+            TEST_REQUIRES gpu
+        )
+    endif()
 endforeach()
 
 # EPB Sanity test is being registered here to validate that the ly_add_editor_python_test function works.
