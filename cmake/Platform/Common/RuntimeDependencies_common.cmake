@@ -35,6 +35,8 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
         return() # Nothing to do
     endif()
 
+    ly_de_alias_target(${ly_TARGET} ly_TARGET)
+
     # To optimize the search, we are going to cache the dependencies for the targets we already walked through.
     # To do so, we will create a variable named LY_RUNTIME_DEPENDENCIES_${ly_TARGET} which will contain a list
     # of all the dependencies
@@ -96,15 +98,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
     # Add the imported locations
     get_target_property(is_imported ${ly_TARGET} IMPORTED)
     if(is_imported)
-        # Skip Qt if this is a 3rdParty
-        # Qt is deployed using qt_deploy, no need to copy the dependencies
         set(skip_imported FALSE)
-        string(REGEX MATCH "3rdParty::([^:,]*)" target_package ${ly_TARGET})
-        if(target_package)
-            if(${CMAKE_MATCH_1} STREQUAL "Qt")
-                set(skip_imported TRUE)
-            endif()
-        endif()
         if(target_type MATCHES "(STATIC_LIBRARY)")
             # No need to copy these dependencies since the outputs are not used at runtime
             set(skip_imported TRUE)
@@ -118,12 +112,34 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
             else()
                 set(imported_property IMPORTED_LOCATION)
             endif()
-            get_target_property(target_locations ${ly_TARGET} ${imported_property})
 
+            set(target_locations)
+            get_target_property(current_target_locations ${ly_TARGET} ${imported_property})
+            if(current_target_locations)
+                string(APPEND target_locations ${current_target_locations})
+            else()
+                # Check if the property exists for configurations
+                foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                    string(TOUPPER ${conf} UCONF)
+                    unset(current_target_locations)
+                    get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${UCONF})
+                    if(current_target_locations)
+                        string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
+                    else()
+                        # try to use the mapping
+                        get_target_property(mapped_conf ${ly_TARGET} MAP_IMPORTED_CONFIG_${UCONF})
+                        if(mapped_conf)
+                            get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${mapped_conf})
+                            if(current_target_locations)
+                                string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
+                            endif()
+                        endif()
+                    endif()
+                endforeach()
+            endif()
             if(target_locations)
                 list(APPEND all_runtime_dependencies ${target_locations})
             endif()
-
         endif()
 
     endif()
@@ -238,6 +254,8 @@ function(ly_copy source_file target_directory)
         if(\"\${source_file}\" IS_NEWER_THAN \"\${target_directory}/\${target_filename}\")
             file(LOCK \"\${target_directory}/\${target_filename}.lock\" GUARD FUNCTION TIMEOUT 30)
             file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+            file(LOCK \"\${target_directory}/\${target_filename}.lock\" RELEASE)
+            file(REMOVE \"\${target_directory}/\${target_filename}.lock\")
         endif()
     endif()    
 endfunction()

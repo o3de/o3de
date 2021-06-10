@@ -88,3 +88,8 @@ if(LY_TIMESTAMP_REFERENCE)
     # Touch the timestamp file
     file(TOUCH ${LY_TIMESTAMP_FILE})
 endif()
+
+if(LY_LOCK_FILE)
+    file(LOCK ${LY_LOCK_FILE} RELEASE)
+    file(REMOVE ${LY_LOCK_FILE})
+endif()
