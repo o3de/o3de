@@ -311,7 +311,7 @@ namespace PhysX
                         AZStd::string materialName = DefaultMaterialName;
                         if (!localFbxMaterialsList.empty())
                         {
-                            int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
+                            const int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
                             if (materialId >= localFbxMaterialsList.size())
                             {
                                 AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow,
@@ -332,7 +332,7 @@ namespace PhysX
                             }
                         }
 
-                        AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
+                        const AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
                         assetMaterialData.m_nodesToPerFaceMaterialIndices[nodeName][faceIndex] = materialIndex;
                     }
                 }
@@ -729,7 +729,7 @@ namespace PhysX
             {
                 // Gather material data from asset for the mesh group
                 AZStd::optional<Utils::AssetMaterialsData> assetMaterialData = Utils::GatherMaterialsFromMeshGroup(pxMeshGroup, graph);
-                if (!assetMaterialData)
+                if (!assetMaterialData.has_value())
                 {
                     return SceneEvents::ProcessingResult::Failure;
                 }
