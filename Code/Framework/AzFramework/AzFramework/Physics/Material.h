@@ -319,7 +319,8 @@ namespace Physics
         // EditorContext callbacks
         AZStd::string GetMaterialSlotLabel(int index);
 
-        // Only used for EditorContext as it requires to have a asset, to get the material library use GetMaterialLibraryId()
+        // Only used for Edit Context as it requires to have an asset reflected.
+        // To get the material library use GetMaterialLibraryId()
         AZ::Data::Asset<Physics::MaterialLibraryAsset> m_editContextMaterialLibrary{ AZ::Data::AssetLoadBehavior::NoLoad };
     };
 
