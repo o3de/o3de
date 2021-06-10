@@ -12,17 +12,8 @@ REM
 
 where /Q cmake
 IF NOT %ERRORLEVEL%==0 (
-    IF "%LY_CMAKE_PATH%"=="" (SET LY_CMAKE_PATH=%LY_3RDPARTY_PATH%/CMake/3.19.1/Windows/bin)
-    IF NOT EXIST !LY_CMAKE_PATH! (
-        ECHO [ci_build] CMake path not found
-        GOTO :error
-    )
-    PATH !LY_CMAKE_PATH!;!PATH!
-    where /Q cmake
-    IF NOT !ERRORLEVEL!==0 (
-        ECHO [ci_build] CMake not found
-        GOTO :error
-    )
+    ECHO [ci_build] CMake not found
+    GOTO :error
 )
 
 EXIT /b 0
