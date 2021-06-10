@@ -38,8 +38,10 @@ namespace AzToolsFramework
             QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
             QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
         public Q_SLOTS:
             void UpdateTableModelMaps();
+
         protected:
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;
@@ -48,6 +50,7 @@ namespace AzToolsFramework
         private:
             AssetBrowserEntry* GetAssetEntry(QModelIndex index) const;
             int BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
+
         private:
             QPointer<AssetBrowserFilterModel> m_filterModel;
             QMap<int, QModelIndex> m_indexMap;

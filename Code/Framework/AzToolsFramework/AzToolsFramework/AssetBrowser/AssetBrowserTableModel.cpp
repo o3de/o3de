@@ -46,16 +46,7 @@ namespace AzToolsFramework
         {
             if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
             {
-                auto columnRole = aznumeric_cast<AssetBrowserEntry::Column>(role);
-                switch (columnRole)
-                {
-                case AssetBrowserEntry::Column::Name:
-                    return tr("Name");
-                case AssetBrowserEntry::Column::Path:
-                    return tr("Path");
-                default:
-                    return QString::number(section);
-                }
+                return tr(AssetBrowserEntry::m_columnNames[section]);
             }
             return QSortFilterProxyModel::headerData(section, orientation, role);
         }
