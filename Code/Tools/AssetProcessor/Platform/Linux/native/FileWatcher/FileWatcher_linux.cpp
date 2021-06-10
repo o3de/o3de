@@ -162,7 +162,7 @@ bool FolderRootWatch::Start()
     m_platformImpl->AddWatchFolder(m_root);
 
     m_shutdownThreadSignal = false;
-    m_thread = std::thread(std::bind(&FolderRootWatch::WatchFolderLoop, this));
+    m_thread = std::thread([this]() { WatchFolderLoop(); });
     return true;
 }
 
