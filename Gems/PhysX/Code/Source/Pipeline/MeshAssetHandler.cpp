@@ -151,8 +151,8 @@ namespace PhysX
 
                 serializeContext->Class<MeshAssetData>()
                     ->Field("ColliderShapes", &MeshAssetData::m_colliderShapes)
-                    ->Field("SurfaceNames", &MeshAssetData::m_surfaceNames)
-                    ->Field("MaterialNames", &MeshAssetData::m_materialNames)
+                    ->Field("SurfaceNames", &MeshAssetData::m_materialNames)
+                    ->Field("MaterialNames", &MeshAssetData::m_physicsMaterialNames)
                     ->Field("MaterialIndexPerShape", &MeshAssetData::m_materialIndexPerShape)
                     ;
             }

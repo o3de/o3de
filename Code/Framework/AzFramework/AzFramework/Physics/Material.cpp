@@ -300,7 +300,7 @@ namespace Physics
     {
         auto foundMaterialConfiguration = AZStd::find_if(m_materialLibrary.begin(), m_materialLibrary.end(), [&materialName](const auto& data)
         {
-            return data.m_configuration.m_surfaceType == materialName;
+            return AZ::StringFunc::Equal(data.m_configuration.m_surfaceType, materialName, false/*bCaseSensitive*/);
         });
 
         if (foundMaterialConfiguration != m_materialLibrary.end())
@@ -377,15 +377,16 @@ namespace Physics
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<Physics::MaterialSelection>("Physics Material", "Select physics material library and which materials to use for the object")
+                editContext->Class<Physics::MaterialSelection>("Physics Materials", "Select which physics materials to use for each element of this object")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_materialIdsAssignedToSlots, "Mesh Surfaces", "Specify which Physics Material to use for each element of this object")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_materialIdsAssignedToSlots, "", "")
                         ->ElementAttribute(Attributes::MaterialLibraryAssetId, &MaterialSelection::GetMaterialLibraryId)
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &MaterialSelection::GetMaterialSlotLabel)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->ElementAttribute(AZ::Edit::Attributes::ReadOnly, &MaterialSelection::AreMaterialSlotsReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }

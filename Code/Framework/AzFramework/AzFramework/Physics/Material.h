@@ -25,6 +25,8 @@ namespace AZ
 
 namespace Physics
 {
+    static constexpr AZStd::string_view DefaultPhysicsMaterialLabel = "<Default Physics Material>";
+
     /// Physics material
     /// =========================
     /// This is the interface to the wrapper around native material type (such as PxMaterial in PhysX gem)

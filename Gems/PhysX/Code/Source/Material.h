@@ -21,12 +21,6 @@
 
 namespace PhysX
 {
-    /// Name used by physx asset exporter to indicate that the default
-    /// physics material should be used for a mesh surface. The exporter
-    /// will use it as the fallback option when it's not possible to obtain
-    /// the surface information from the mesh material.
-    static const char* const DefaultPhysicsMaterialNameFromPhysicsAsset = "<Default>";
-
     /// PhysX implementation of Physics::Material interface
     /// ===================================================
     /// 
