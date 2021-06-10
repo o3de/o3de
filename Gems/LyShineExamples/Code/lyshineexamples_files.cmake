@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/LyShineExamples_precompiled.cpp
     Source/LyShineExamples_precompiled.h
     Include/LyShineExamples/LyShineExamplesBus.h
     Include/LyShineExamples/LyShineExamplesCppExampleBus.h

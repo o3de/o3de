@@ -16,6 +16,5 @@ set(FILES
     Include/CameraFramework/ICameraTransformBehavior.h
     Source/CameraRigComponent.h
     Source/CameraRigComponent.cpp
-    Source/CameraFramework_precompiled.cpp
     Source/CameraFramework_precompiled.h
 )

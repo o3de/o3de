@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/InAppPurchases_precompiled.cpp
     Source/InAppPurchases_precompiled.h
     Include/InAppPurchases/InAppPurchasesBus.h
     Include/InAppPurchases/InAppPurchasesInterface.h

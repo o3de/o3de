@@ -15,7 +15,6 @@ set(FILES
     ComponentEntityEditorPlugin.cpp
     SandboxIntegration.h
     SandboxIntegration.cpp
-    ComponentEntityEditorPlugin_precompiled.cpp
     ComponentEntityEditorPlugin_precompiled.h
     UI/ComponentEntityEditorOutlinerWindow.qrc
     UI/QComponentEntityEditorMainWindow.h
