@@ -10,9 +10,12 @@
 *
 */
 
-#include <Mesh/EditorMeshStats.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+
+#include <Mesh/EditorMeshStats.h>
+#include <Mesh/EditorMeshStatsSerializer.h>
 
 namespace AZ
 {
@@ -47,6 +50,11 @@ namespace AZ
         void EditorMeshStats::Reflect(ReflectContext* context)
         {
             EditorMeshStatsForLod::Reflect(context);
+
+            if (auto jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
+            {
+                jsonContext->Serializer<JsonEditorMeshStatsSerializer>()->HandlesType<EditorMeshStats>();
+            }
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {

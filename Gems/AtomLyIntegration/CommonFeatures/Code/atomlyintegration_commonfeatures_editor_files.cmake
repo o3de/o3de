@@ -54,6 +54,8 @@ set(FILES
     Source/Mesh/EditorMeshStats.cpp
     Source/Mesh/EditorMeshSystemComponent.cpp
     Source/Mesh/EditorMeshSystemComponent.h
+    Source/Mesh/EditorMeshStatsSerializer.cpp
+    Source/Mesh/EditorMeshStatsSerializer.h
     Source/Mesh/MeshThumbnail.h
     Source/Mesh/MeshThumbnail.cpp
     Source/PostProcess/EditorPostFxLayerComponent.cpp
