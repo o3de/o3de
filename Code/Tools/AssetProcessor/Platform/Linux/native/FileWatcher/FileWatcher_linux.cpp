@@ -19,10 +19,10 @@
 #include <sys/inotify.h>
 
 
-static const int s_handleToFolderMapLockTimeout = 1000;      // 1 sec timeout for obtaining the handle to folder map lock
-static const size_t s_iNotifyMaxEntries = 1024 * 16;         // Control the maximum number of entries (from inotify) that can be read at one time
-static const size_t s_iNotifyEventSize = sizeof(struct inotify_event);
-static const size_t s_iNotifyReadBufferSize = s_iNotifyMaxEntries * s_iNotifyEventSize;
+static constexpr int s_handleToFolderMapLockTimeout = 1000;      // 1 sec timeout for obtaining the handle to folder map lock
+static constexpr size_t s_iNotifyMaxEntries = 1024 * 16;         // Control the maximum number of entries (from inotify) that can be read at one time
+static constexpr size_t s_iNotifyEventSize = sizeof(struct inotify_event);
+static constexpr size_t s_iNotifyReadBufferSize = s_iNotifyMaxEntries * s_iNotifyEventSize;
 
 struct FolderRootWatch::PlatformImplementation
 {
