@@ -12,7 +12,7 @@
 
 AzToolsFramework--EntityOutlinerWidget #m_display_options
 {
-    qproperty-icon: url(:/stylesheet/img/UI20/menu-centered.svg);
+    qproperty-icon: url(:/Cards/img/UI20/Cards/menu_ico.svg);
     qproperty-iconSize: 16px 16px;
     qproperty-flat: true;
 }

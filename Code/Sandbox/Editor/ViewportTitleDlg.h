@@ -143,7 +143,6 @@ protected:
     void SetFullViewportInfo();
     void SetCompactViewportInfo();
 
-    void OnBnClickedSyncplayer();
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
     void OnBnClickedEnableVR();
@@ -174,7 +173,6 @@ protected:
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
     QAction* m_debugHelpersAction = nullptr;
-    QAction* m_syncPlayerToCameraAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
     QAction* m_enableVRAction = nullptr;
     QAction* m_enableGridSnappingAction = nullptr;
