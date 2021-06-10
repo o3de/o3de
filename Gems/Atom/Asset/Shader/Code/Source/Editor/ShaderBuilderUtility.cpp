@@ -321,8 +321,7 @@ namespace AZ
                     AZStd::remove_if(AZ_BEGIN_END(platformInterfaces),
                         [&](const RHI::ShaderPlatformInterface* shaderPlatformInterface) {
                             return !shaderPlatformInterface ||
-                                   shaderSourceData.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName()) ||
-                                   (shaderPlatformInterface->GetAPIUniqueIndex() == static_cast<uint32_t>(AZ::RHI::APIIndex::Null));
+                                   shaderSourceData.IsRhiBackendDisabled(shaderPlatformInterface->GetAPIName());
                         }),
                     platformInterfaces.end());
                 return platformInterfaces;
