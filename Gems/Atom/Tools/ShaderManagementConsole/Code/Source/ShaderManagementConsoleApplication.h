@@ -22,6 +22,8 @@
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 
+#include <AzQtComponents/Application/ToolsApplication.h>
+
 #include <QApplication>
 #include <QTimer>
 
@@ -29,7 +31,7 @@ namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
         : public AzFramework::Application
-        , public QApplication
+        , public AzQtComponents::AzQtApplication
         , private AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler
         , private ShaderManagementConsoleWindowNotificationBus::Handler
         , private AzFramework::AssetSystemStatusBus::Handler

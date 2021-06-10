@@ -68,7 +68,7 @@ namespace ShaderManagementConsole
 
     ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
         : Application(argc, argv)
-        , QApplication(*argc, *argv)
+        , AzQtApplication(*argc, *argv)
     {
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(

@@ -26,18 +26,18 @@ namespace AzQtComponents
     }
     */
 
-     class ToolsApplication::Impl
+     class AzQtApplication::Impl
          : private AZ::Debug::TraceMessageBus::Handler
-         , public AzFramework::Application
+         //, public AzFramework::Application
     {
-         friend class ToolsApplication;
+         friend class AzQtApplication;
 
     public:
-         Impl(ToolsApplication* app) : m_app(app)
+         Impl(AzQtApplication* app) : m_app(app)
          {
              
          }
-         ToolsApplication* m_app;
+         AzQtApplication* m_app;
 
          bool OnOutput(const char* window, const char* message) override;         
 
@@ -53,14 +53,18 @@ namespace AzQtComponents
 
     };
 
-    ToolsApplication::ToolsApplication(int& argc, char** argv)
+    AzQtApplication::AzQtApplication(int& argc, char** argv)
         : QApplication(argc, argv)
         , m_impl(new Impl(this))
     {
-         /*
-         QApplication::setOrganizationName("Amazon");
-         QApplication::setOrganizationDomain("amazon.com");
-         QApplication::setApplicationName("O3DEToolsApplication");
+         
+         // Use a common Qt settings path for applications that don't register their own application name
+         if (QApplication::applicationName().isEmpty())
+         {
+            QApplication::setOrganizationName("Amazon");
+            QApplication::setOrganizationDomain("amazon.com");
+            QApplication::setApplicationName("O3DEToolsApplication");
+         }
 
          AzQtComponents::PrepareQtPaths();
 
@@ -74,19 +78,19 @@ namespace AzQtComponents
          QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
          QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
          AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
-         */
+         
 
-         //m_impl->AZ::Debug::TraceMessageBus::Handler::BusConnect();
+         m_impl->AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
     }
 
-    ToolsApplication::~ToolsApplication()
+    AzQtApplication::~AzQtApplication()
     {
-        //m_impl->AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+        m_impl->AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
 
     
-    bool ToolsApplication::Impl::OnOutput(const char* window, const char* message)
+    bool AzQtApplication::Impl::OnOutput(const char* window, const char* message)
     {
         // Suppress spam from the Source Control system
         constexpr char sourceControlWindow[] = "Source Control";

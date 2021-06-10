@@ -52,12 +52,12 @@
 
 namespace AzQtComponents
 {
-    class AZ_QT_COMPONENTS_API ToolsApplication
+    class AZ_QT_COMPONENTS_API AzQtApplication
         : public QApplication
     {
     public:       
-        ToolsApplication(int& argc, char** argv);
-        ~ToolsApplication();
+        AzQtApplication(int& argc, char** argv);
+        ~AzQtApplication();
         
     private:
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
