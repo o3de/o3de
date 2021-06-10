@@ -138,7 +138,6 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
                     list(APPEND all_runtime_dependencies ${target_locations})
                 endif()
             endif()
-
         endif()
 
     endif()
