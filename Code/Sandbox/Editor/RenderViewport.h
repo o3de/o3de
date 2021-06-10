@@ -34,6 +34,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <MathConversion.h>
 #endif
@@ -68,6 +69,7 @@ class SANDBOX_API CRenderViewport
     , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
     , public AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler
     , public AzFramework::WindowRequestBus::Handler
+    , public AzToolsFramework::EditorContextMenuBus::Handler
 {
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
@@ -179,7 +181,7 @@ public:
     virtual void OnStartPlayInEditor();
     virtual void OnStopPlayInEditor();
 
-    // AzToolsFramework::EditorEvents::Bus (handler moved to cpp to resolve link issues in unity builds)
+    // AzToolsFramework::EditorContextMenu::Bus (handler moved to cpp to resolve link issues in unity builds)
     // We use this to determine when the viewport context menu is being displayed so we can exit move mode
     void PopulateEditorGlobalContextMenu(QMenu* /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/);
 

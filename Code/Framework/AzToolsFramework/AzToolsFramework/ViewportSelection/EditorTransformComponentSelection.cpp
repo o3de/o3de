@@ -3109,7 +3109,7 @@ namespace AzToolsFramework
         return "Transform Component";
     }
 
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu)
+    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
     {
          QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
          QObject::connect(

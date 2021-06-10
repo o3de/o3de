@@ -49,6 +49,7 @@
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -112,20 +113,20 @@ static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no 
 
 class EditorEntityNotifications
     : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-    , public AzToolsFramework::EditorEvents::Bus::Handler
+    , public AzToolsFramework::EditorContextMenuBus::Handler
 {
 public:
     EditorEntityNotifications(CRenderViewport& renderViewport)
         : m_renderViewport(renderViewport)
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     ~EditorEntityNotifications() override
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     }
 
     // AzToolsFramework::EditorEntityContextNotificationBus
@@ -138,7 +139,7 @@ public:
         m_renderViewport.OnStopPlayInEditor();
     }
 
-    // AzToolsFramework::EditorEvents::Bus
+    // AzToolsFramework::EditorContextMenu::Bus
     void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override
     {
         m_renderViewport.PopulateEditorGlobalContextMenu(menu, point, flags);
@@ -216,6 +217,7 @@ CRenderViewport::CRenderViewport(const QString& name, QWidget* parent)
 
     setFocusPolicy(Qt::StrongFocus);
 
+    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     Camera::EditorCameraRequestBus::Handler::BusConnect();
     m_editorEntityNotifications = AZStd::make_unique<EditorEntityNotifications>(*this);
 
@@ -241,6 +243,7 @@ CRenderViewport::~CRenderViewport()
     AzFramework::WindowRequestBus::Handler::BusDisconnect();
     DisconnectViewportInteractionRequestBus();
     m_editorEntityNotifications.reset();
+    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
     OnDestroy();
     GetIEditor()->GetUndoManager()->RemoveListener(this);

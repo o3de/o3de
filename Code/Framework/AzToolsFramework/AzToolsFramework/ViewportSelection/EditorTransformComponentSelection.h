@@ -241,7 +241,7 @@ namespace AzToolsFramework
             AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
 
         // EditorContextMenuBus...
-        void PopulateEditorGlobalContextMenu(QMenu* menu) override;
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2 & point, int flags) override;
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
 
