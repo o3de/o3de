@@ -15,6 +15,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
