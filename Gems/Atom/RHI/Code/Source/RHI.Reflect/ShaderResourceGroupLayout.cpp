@@ -24,7 +24,7 @@ namespace AZ
                 serializeContext->Class<ShaderResourceGroupLayout>()
                     ->Version(8) // ATOM-15472
                     ->Field("m_name", &ShaderResourceGroupLayout::m_name)
-                    ->Field("m_uniqueId", &ShaderResourceGroupLayout::m_uniqueId)
+                    ->Field("m_azslFileOfOrigin", &ShaderResourceGroupLayout::m_uniqueId)
                     ->Field("m_staticSamplers", &ShaderResourceGroupLayout::m_staticSamplers)
                     ->Field("m_inputsForBuffers", &ShaderResourceGroupLayout::m_inputsForBuffers)
                     ->Field("m_inputsForImages", &ShaderResourceGroupLayout::m_inputsForImages)
