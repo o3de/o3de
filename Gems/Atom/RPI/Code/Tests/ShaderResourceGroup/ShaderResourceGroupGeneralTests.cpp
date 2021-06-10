@@ -64,23 +64,16 @@ namespace UnitTest
         }
     };
 
-    TEST_F(ShaderResourceGroupGeneralTests, TestCreateVsFindOrCreate)
+    TEST_F(ShaderResourceGroupGeneralTests, TestCreate)
     {        
-        Data::Instance<ShaderResourceGroup> srgInstance1 = ShaderResourceGroup::FindOrCreate(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
-        Data::Instance<ShaderResourceGroup> srgInstance2 = ShaderResourceGroup::FindOrCreate(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
         Data::Instance<ShaderResourceGroup> srgInstance3 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
         Data::Instance<ShaderResourceGroup> srgInstance4 = ShaderResourceGroup::Create(m_testShaderAsset, AZ::RPI::DefaultSupervariantIndex, m_testSrgLayout->GetName());
 
-        EXPECT_TRUE(srgInstance1);
-        EXPECT_TRUE(srgInstance2);
         EXPECT_TRUE(srgInstance3);
         EXPECT_TRUE(srgInstance4);
 
-        // Instances created via FindOrCreate should be the same object
+        // Instances created via Create should be the same object
 
-        EXPECT_EQ(srgInstance1, srgInstance2);
-        EXPECT_NE(srgInstance1, srgInstance3);
-        EXPECT_NE(srgInstance1, srgInstance4);
         EXPECT_NE(srgInstance3, srgInstance4);
     }
 

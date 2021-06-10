@@ -63,7 +63,7 @@ namespace UnitTest
 
         AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
         srgLayout->SetName(Name("MaterialSrg"));
-        srgLayout->SetAzslFileOfOrigin(Uuid::CreateRandom().ToString<AZStd::string>()); // Any random string will suffice.
+        srgLayout->SetUniqueId(Uuid::CreateRandom().ToString<AZStd::string>()); // Any random string will suffice.
         srgLayout->SetBindingSlot(SrgBindingSlot::Material);
         srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_unused" }, 0, 4, 0});
         srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_color" }, 4, 16, 0});
