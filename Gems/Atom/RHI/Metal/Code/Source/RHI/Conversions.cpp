@@ -463,24 +463,24 @@ namespace AZ
                 return colorMask;
             }
             
-            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
+            if(RHI::CheckBitsAll(writeMask, RHI::WriteChannelMask::ColorWriteMaskAll))
             {
                 return MTLColorWriteMaskAll;
             }
                         
-            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
+            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskRed))
             {
                 colorMask |= MTLColorWriteMaskRed;
             }
-            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskGreen)))
+            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskGreen))
             {
                 colorMask |= MTLColorWriteMaskGreen;
             }
-            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskBlue)))
+            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskBlue))
             {
                 colorMask |= MTLColorWriteMaskBlue;
             }
-            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAlpha)))
+            if (RHI::CheckBitsAny(writeMask, RHI::WriteChannelMask::ColorWriteMaskAlpha))
             {
                 colorMask |= MTLColorWriteMaskAlpha;
             }
