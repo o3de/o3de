@@ -25,6 +25,22 @@ namespace ${SanitizedCppName}
         }
     }
 
+    ${SanitizedCppName}EditorSystemComponent::${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == nullptr)
+        {
+            ${SanitizedCppName}Interface::Register(this);
+        }
+    }
+
+    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == this)
+        {
+            ${SanitizedCppName}Interface::Unregister(this);
+        }
+    }
+
     void ${SanitizedCppName}EditorSystemComponent::Activate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();

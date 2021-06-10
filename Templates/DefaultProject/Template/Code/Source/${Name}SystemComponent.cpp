@@ -66,7 +66,7 @@ namespace ${SanitizedCppName}
             ${SanitizedCppName}Interface::Register(this);
         }
     }
-    
+
     ${SanitizedCppName}SystemComponent::~${SanitizedCppName}SystemComponent()
     {
         if (${SanitizedCppName}Interface::Get() == this)

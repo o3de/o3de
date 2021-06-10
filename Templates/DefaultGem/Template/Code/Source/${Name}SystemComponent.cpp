@@ -59,6 +59,22 @@ namespace ${SanitizedCppName}
         AZ_UNUSED(dependent);
     }
 
+    ${SanitizedCppName}SystemComponent::${SanitizedCppName}SystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == nullptr)
+        {
+            ${SanitizedCppName}Interface::Register(this);
+        }
+    }
+
+    ${SanitizedCppName}SystemComponent::~${SanitizedCppName}SystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == this)
+        {
+            ${SanitizedCppName}Interface::Unregister(this);
+        }
+    }
+
     void ${SanitizedCppName}SystemComponent::Init()
     {
     }
