@@ -62,8 +62,8 @@ namespace PhysX
             using ShapeConfigurationList = AZStd::vector<ShapeConfigurationPair>;
 
             ShapeConfigurationList m_colliderShapes; //!< Shapes data with optional collider configuration override.
-            AZStd::vector<AZStd::string> m_surfaceNames; //!< List of all surface names.
-            AZStd::vector<AZStd::string> m_materialNames; //!< List of all material names.
+            AZStd::vector<AZStd::string> m_materialNames; //!< List of material names of the mesh asset.
+            AZStd::vector<AZStd::string> m_physicsMaterialNames; //!< List of physics material names associated with each material.
             AZStd::vector<AZ::u16> m_materialIndexPerShape; //!< An index of the material in m_materialNames for each shape.
         };
 
