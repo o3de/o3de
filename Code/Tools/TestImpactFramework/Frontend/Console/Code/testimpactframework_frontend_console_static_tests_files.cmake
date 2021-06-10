@@ -6,4 +6,9 @@
 #
 
 set(FILES
+    Tests/TestImpactCommandLineOptionsTest.cpp
+    Tests/TestImpactRuntimeConfigurationFactoryTest.cpp
+    Tests/TestImpactFrontendConsoleStaticTestMain.cpp
+    Tests/TestImpactConsoleMainTest.cpp
+    Tests/TestImpactConsoleTestSequenceEventHandlerTest.cpp
 )

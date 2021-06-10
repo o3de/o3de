@@ -311,6 +311,7 @@ function(ly_add_pytest)
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
 endfunction()
 
