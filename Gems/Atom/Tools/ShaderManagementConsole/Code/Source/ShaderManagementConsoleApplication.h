@@ -22,7 +22,7 @@
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 
-#include <AzQtComponents/Application/ToolsApplication.h>
+#include <AzQtComponents/Application/AzQtApplication.h>
 
 #include <QApplication>
 #include <QTimer>

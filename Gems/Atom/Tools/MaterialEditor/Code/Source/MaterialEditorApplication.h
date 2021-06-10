@@ -21,7 +21,7 @@
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
-#include <AzQtComponents/Application/ToolsApplication.h>
+#include <AzQtComponents/Application/AzQtApplication.h>
 
 #include <QApplication>
 #include <QTimer>
