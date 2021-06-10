@@ -25,6 +25,9 @@ class TestControllerManager(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        error_controller_patcher: patch = patch("manager.controller_manager.ErrorController")
+        cls._mock_error_controller = error_controller_patcher.start()
+
         import_resources_controller_patcher: patch = patch("manager.controller_manager.ImportResourcesController")
         cls._mock_import_resources_controller = import_resources_controller_patcher.start()
 
@@ -52,8 +55,14 @@ class TestControllerManager(TestCase):
         mocked_import_resources_controller: MagicMock = \
             TestControllerManager._mock_import_resources_controller.return_value
 
-        TestControllerManager._expected_controller_manager.setup()
+        TestControllerManager._expected_controller_manager.setup(False)
         mocked_view_edit_controller.setup.assert_called_once()
         mocked_import_resources_controller.setup.assert_called_once()
         mocked_import_resources_controller.add_import_resources_sender.connect.assert_called_once_with(
             mocked_view_edit_controller.add_import_resources_receiver)
+
+    def test_setup_error_controller_setup_gets_invoked(self) -> None:
+        mocked_error_controller: MagicMock = TestControllerManager._mock_error_controller.return_value
+
+        TestControllerManager._expected_controller_manager.setup(True)
+        mocked_error_controller.setup.assert_called_once()

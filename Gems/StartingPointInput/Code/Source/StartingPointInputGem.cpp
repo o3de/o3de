@@ -167,6 +167,7 @@ namespace StartingPointInput
                         { "actionName", "The name of the Input event action used to create an InputEventNotificationId" } } });
 
                 behaviorContext->EBus<InputEventNotificationBus>("InputEventNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ->Handler<BehaviorInputEventNotificationBusHandler>()
                     ->Event("OnPressed", &InputEventNotificationBus::Events::OnPressed)
                     ->Event("OnHeld", &InputEventNotificationBus::Events::OnHeld)

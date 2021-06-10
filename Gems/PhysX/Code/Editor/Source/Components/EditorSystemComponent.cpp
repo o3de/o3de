@@ -134,6 +134,7 @@ namespace PhysX
     void EditorSystemComponent::Activate()
     {
         Physics::EditorWorldBus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
 
         m_onMaterialLibraryLoadErrorEventHandler = AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler(
             [this]([[maybe_unused]] AzPhysics::SystemEvents::MaterialLibraryLoadErrorType error)
@@ -168,6 +169,7 @@ namespace PhysX
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         Physics::EditorWorldBus::Handler::BusDisconnect();
 
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())

@@ -30,7 +30,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 
-#include <WIndow/MaterialEditorBrowserInteractions.h>
+#include <Window/MaterialEditorBrowserInteractions.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
