@@ -199,10 +199,9 @@ namespace AZ::IO
 
         enum EFileSearchType
         {
-            eFileSearchType_OnDiskAndInZipsFavorDisk = 0,
-            eFileSearchType_OnDiskAndInZipsFavorZips,
-            eFileSearchType_OnDiskOnly,
-            eFileSearchType_InZipsOnly
+            eFileSearchType_AllowInZipsOnly = 0,
+            eFileSearchType_AllowOnDiskAndInZips,
+            eFileSearchType_AllowOnDiskOnly
         };
 
         using SignedFileSize = int64_t;
@@ -323,7 +322,7 @@ namespace AZ::IO
 
         // Arguments:
         //   nFlags is a combination of EPathResolutionRules flags.
-        virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_OnDiskAndInZipsFavorDisk) = 0;
+        virtual ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_AllowInZipsOnly) = 0;
         virtual ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator handle) = 0;
         virtual bool FindClose(AZ::IO::ArchiveFileIterator handle) = 0;
         //returns file modification time

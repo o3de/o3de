@@ -1299,18 +1299,20 @@ namespace AZ::IO
             return {};
         }
 
-        bool bScanZips = true;
-        bool bAllowUseFileSystem = false;
+        bool bScanZips{};
+        bool bAllowUseFileSystem{};
         switch (searchType)
         {
-            case IArchive::eFileSearchType_OnDiskAndInZipsFavorDisk:
-            case IArchive::eFileSearchType_OnDiskAndInZipsFavorZips:
-                bAllowUseFileSystem = true;
-                break;
-            case IArchive::eFileSearchType_InZipsOnly:
+            case IArchive::eFileSearchType_AllowInZipsOnly:
                 bAllowUseFileSystem = false;
+                bScanZips = true;
                 break;
-            case IArchive::eFileSearchType_OnDiskOnly:
+            case IArchive::eFileSearchType_AllowOnDiskAndInZips:
+                bAllowUseFileSystem = true;
+                bScanZips = true;
+                break;
+            case IArchive::eFileSearchType_AllowOnDiskOnly:
+                bAllowUseFileSystem = true;
                 bScanZips = false;
                 break;
         }
@@ -1692,7 +1694,7 @@ namespace AZ::IO
             return true;
         }
 
-        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, IArchive::eFileSearchType_OnDiskOnly); fileIterator)
+        if (AZ::IO::ArchiveFileIterator fileIterator = FindFirst(pWildcardIn, IArchive::eFileSearchType_AllowOnDiskOnly); fileIterator)
         {
             AZStd::vector<AZStd::string> files;
             do
