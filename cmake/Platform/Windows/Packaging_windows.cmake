@@ -9,24 +9,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_WIX_PATH "" CACHE PATH "Path to the WiX install path")
-
-if(LY_WIX_PATH)
-    file(TO_CMAKE_PATH ${LY_QTIFW_PATH} CPACK_WIX_ROOT)
-elseif(DEFINED ENV{WIX})
-    file(TO_CMAKE_PATH $ENV{WIX} CPACK_WIX_ROOT)
-endif()
+set(CPACK_WIX_ROOT "" CACHE PATH "Path to the WiX install path")
 
 if(CPACK_WIX_ROOT)
     if(NOT EXISTS ${CPACK_WIX_ROOT})
-        message(FATAL_ERROR "Invalid path supplied for LY_WIX_PATH argument or WIX environment variable")
+        message(FATAL_ERROR "Invalid path supplied for CPACK_WIX_ROOT argument")
     endif()
 else()
     # early out as no path to WiX has been supplied effectively disabling support
     return()
 endif()
 
-set(CPACK_GENERATOR "WIX")
+set(CPACK_GENERATOR WIX)
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")

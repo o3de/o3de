@@ -720,7 +720,7 @@ namespace AZ
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             StringList::iterator itRayTracingExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
             m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
-            m_features.m_unboundedArrays = true;
+            m_features.m_unboundedArrays = physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
 
             const auto& deviceLimits = physicalDevice.GetDeviceLimits();
             m_limits.m_maxImageDimension1D = deviceLimits.maxImageDimension1D;

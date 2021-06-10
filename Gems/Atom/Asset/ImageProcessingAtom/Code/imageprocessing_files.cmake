@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/ImageProcessing_precompiled.cpp
     Source/ImageProcessing_precompiled.h
     Source/Compressors/CryTextureSquisher/CryTextureSquisher.cpp
     Source/Compressors/CryTextureSquisher/CryTextureSquisher.h

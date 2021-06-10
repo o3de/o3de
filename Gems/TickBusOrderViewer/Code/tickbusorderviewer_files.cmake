@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/TickBusOrderViewer_precompiled.cpp
     Source/TickBusOrderViewer_precompiled.h
     Include/TickBusOrderViewer/TickBusOrderViewerBus.h
     Source/TickBusOrderViewerSystemComponent.cpp

@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    precompiled.cpp
     precompiled.h
     Include/GraphCanvas/Widgets/RootGraphicsItem.h
     Include/GraphCanvas/tools.h

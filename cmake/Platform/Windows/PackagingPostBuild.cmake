@@ -59,12 +59,21 @@ set(_light_command
 message(STATUS "Creating Bootstrap Installer...")
 execute_process(
     COMMAND ${_candle_command}
-    COMMAND_ERROR_IS_FATAL ANY
+    RESULT_VARIABLE _candle_result
+    ERROR_VARIABLE _candle_errors
 )
+if(NOT ${_candle_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred invoking candle.exe.  ${_candle_errors}")
+endif()
+
 execute_process(
     COMMAND ${_light_command}
-    COMMAND_ERROR_IS_FATAL ANY
+    RESULT_VARIABLE _light_result
+    ERROR_VARIABLE _light_errors
 )
+if(NOT ${_light_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred invoking light.exe.  ${_light_errors}")
+endif()
 
 file(COPY ${_bootstrap_output_file}
     DESTINATION ${CPACK_PACKAGE_DIRECTORY}
@@ -87,3 +96,42 @@ file(COPY ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
 )
 message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
+
+if(NOT CPACK_UPLOAD_URL)
+    return()
+endif()
+
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
+
+file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
+file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
+file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
+
+# strip the scheme and extract the bucket/key prefix from the URL
+string(REPLACE "s3://" "" _stripped_url ${CPACK_UPLOAD_URL})
+string(REPLACE "/" ";" _tokens ${_stripped_url})
+
+list(POP_FRONT _tokens _bucket)
+string(JOIN "/" _prefix ${_tokens})
+
+set(_file_regex ".*(cab|exe|msi)$")
+
+set(_upload_command
+    ${_python_cmd} -s
+    -u ${_upload_script}
+    --base_dir ${_cpack_wix_out_dir}
+    --file_regex="${_file_regex}"
+    --bucket ${_bucket}
+    --key_prefix ${_prefix}
+    --profile ${CPACK_AWS_PROFILE}
+)
+
+execute_process(
+    COMMAND ${_upload_command}
+    RESULT_VARIABLE _upload_result
+    ERROR_VARIABLE _upload_errors
+)
+
+if (NOT ${_upload_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred uploading artifacts.  ${_upload_errors}")
+endif()

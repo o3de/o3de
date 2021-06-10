@@ -486,7 +486,7 @@ def register_default_engines_folder(json_data: dict,
                                     remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_engines_folder() if remove else default_engines_folder,
-                                               'default_engines_folder', remove)
+                                               'default_engines_folder')
 
 
 def register_default_projects_folder(json_data: dict,
@@ -494,7 +494,7 @@ def register_default_projects_folder(json_data: dict,
                                      remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_projects_folder() if remove else default_projects_folder,
-                                               'default_projects_folder', remove)
+                                               'default_projects_folder')
 
 
 def register_default_gems_folder(json_data: dict,
@@ -502,7 +502,7 @@ def register_default_gems_folder(json_data: dict,
                                  remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_gems_folder() if remove else default_gems_folder,
-                                               'default_gems_folder', remove)
+                                               'default_gems_folder')
 
 
 def register_default_templates_folder(json_data: dict,
@@ -510,16 +510,22 @@ def register_default_templates_folder(json_data: dict,
                                       remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_templates_folder() if remove else default_templates_folder,
-                                               'default_templates_folder', remove)
+                                               'default_templates_folder')
 
 
 def register_default_restricted_folder(json_data: dict,
                                        default_restricted_folder: str or pathlib.Path,
-                                       reset_to_default: bool = False) -> int:
+                                       remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_restricted_folder() if remove else default_restricted_folder,
-                                               'default_restricted_folder', remove)
+                                               'default_restricted_folder')
 
+def register_default_third_party_folder(json_data: dict,
+                                       default_third_party_folder: pathlib.Path,
+                                       remove: bool = False) -> int:
+    return register_default_o3de_object_folder(json_data,
+                                               manifest.get_o3de_third_party_folder() if remove else default_third_party_folder,
+                                               'default_third_party_folder')
 
 def register(engine_path: str or pathlib.Path = None,
              project_path: str or pathlib.Path = None,
@@ -533,6 +539,7 @@ def register(engine_path: str or pathlib.Path = None,
              default_gems_folder: str or pathlib.Path = None,
              default_templates_folder: str or pathlib.Path = None,
              default_restricted_folder: str or pathlib.Path = None,
+             default_third_party_folder: pathlib.Path = None,
              external_subdir_engine_path: pathlib.Path = None,
              external_subdir_project_path: pathlib.Path = None,
              remove: bool = False,
@@ -553,6 +560,7 @@ def register(engine_path: str or pathlib.Path = None,
     :param default_gems_folder: default gems folder
     :param default_templates_folder: default templates folder
     :param default_restricted_folder: default restricted code folder
+    :param default_third_party_folder: default 3rd party cache folder
     :param external_subdir_engine_path: Path to the engine to use when registering an external subdirectory.
      The registration occurs in the engine.json file in this case
     :param external_subdir_engine_path: Path to the project to use when registering an external subdirectory.
@@ -572,62 +580,65 @@ def register(engine_path: str or pathlib.Path = None,
         if not project_path:
             logger.error(f'Project path cannot be empty.')
             return 1
-        result = register_project_path(json_data, project_path, remove, engine_path)
+        result = result or register_project_path(json_data, project_path, remove, engine_path)
 
-    elif isinstance(gem_path, str) or isinstance(gem_path, pathlib.PurePath):
+    if isinstance(gem_path, str) or isinstance(gem_path, pathlib.PurePath):
         if not gem_path:
             logger.error(f'Gem path cannot be empty.')
             return 1
-        result = register_gem_path(json_data, gem_path, remove,
+        result = result or register_gem_path(json_data, gem_path, remove,
                                    external_subdir_engine_path, external_subdir_project_path)
-    elif isinstance(external_subdir_path, str) or isinstance(external_subdir_path, pathlib.PurePath):
+    if isinstance(external_subdir_path, str) or isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')
             return 1
-        result = register_external_subdirectory(json_data, external_subdir_path, remove,
+        result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
                                                 external_subdir_engine_path, external_subdir_project_path)
 
-    elif isinstance(template_path, str) or isinstance(template_path, pathlib.PurePath):
+    if isinstance(template_path, str) or isinstance(template_path, pathlib.PurePath):
         if not template_path:
             logger.error(f'Template path cannot be empty.')
             return 1
-        result = register_template_path(json_data, template_path, remove, engine_path)
+        result = result or register_template_path(json_data, template_path, remove, engine_path)
 
-    elif isinstance(restricted_path, str) or isinstance(restricted_path, pathlib.PurePath):
+    if isinstance(restricted_path, str) or isinstance(restricted_path, pathlib.PurePath):
         if not restricted_path:
             logger.error(f'Restricted path cannot be empty.')
             return 1
-        result = register_restricted_path(json_data, restricted_path, remove, engine_path)
+        result = result or register_restricted_path(json_data, restricted_path, remove, engine_path)
 
-    elif isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
+    if isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
         if not repo_uri:
             logger.error(f'Repo URI cannot be empty.')
             return 1
-        result = register_repo(json_data, repo_uri, remove)
+        result = result or register_repo(json_data, repo_uri, remove)
 
-    elif isinstance(default_engines_folder, str) or isinstance(default_engines_folder, pathlib.PurePath):
-        result = register_default_engines_folder(json_data, default_engines_folder, remove)
+    if isinstance(default_engines_folder, str) or isinstance(default_engines_folder, pathlib.PurePath):
+        result = result or register_default_engines_folder(json_data, default_engines_folder, remove)
 
-    elif isinstance(default_projects_folder, str) or isinstance(default_projects_folder, pathlib.PurePath):
-        result = register_default_projects_folder(json_data, default_projects_folder, remove)
+    if isinstance(default_projects_folder, str) or isinstance(default_projects_folder, pathlib.PurePath):
+        result = result or register_default_projects_folder(json_data, default_projects_folder, remove)
 
-    elif isinstance(default_gems_folder, str) or isinstance(default_gems_folder, pathlib.PurePath):
-        result = register_default_gems_folder(json_data, default_gems_folder, remove)
+    if isinstance(default_gems_folder, str) or isinstance(default_gems_folder, pathlib.PurePath):
+        result = result or register_default_gems_folder(json_data, default_gems_folder, remove)
 
-    elif isinstance(default_templates_folder, str) or isinstance(default_templates_folder, pathlib.PurePath):
-        result = register_default_templates_folder(json_data, default_templates_folder, remove)
+    if isinstance(default_templates_folder, str) or isinstance(default_templates_folder, pathlib.PurePath):
+        result = result or register_default_templates_folder(json_data, default_templates_folder, remove)
 
-    elif isinstance(default_restricted_folder, str) or isinstance(default_restricted_folder, pathlib.PurePath):
-        result = register_default_restricted_folder(json_data, default_restricted_folder, remove)
+    if isinstance(default_restricted_folder, str) or isinstance(default_restricted_folder, pathlib.PurePath):
+        result = result or register_default_restricted_folder(json_data, default_restricted_folder, remove)
+
+    if isinstance(default_third_party_folder, str) or isinstance(default_third_party_folder, pathlib.PurePath):
+        result = result or register_default_third_party_folder(json_data, default_third_party_folder, remove)
 
     # engine is done LAST
     # Now that everything that could have an engine context is done, if the engine is supplied that means this is
     # registering the engine itself
-    elif isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
+    if isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
         if not engine_path:
             logger.error(f'Engine path cannot be empty.')
             return 1
-        result = register_engine_path(json_data, engine_path, remove, force)
+        result = result or register_engine_path(json_data, engine_path, remove, force)
 
     if not result:
         manifest.save_o3de_manifest(json_data)
@@ -712,6 +723,15 @@ def remove_invalid_o3de_objects() -> None:
             f" Set default {default_restricted_folder}")
         register(default_restricted_folder=default_restricted_folder.as_posix())
 
+    default_third_party_folder = pathlib.Path(json_data['default_third_party_folder']).resolve()
+    if not default_third_party_folder.is_dir():
+        default_third_party_folder = manifest.get_o3de_folder() / '3rdParty'
+        default_third_party_folder.mkdir(parents=True, exist_ok=True)
+        logger.warn(
+            f"Default 3rd Party folder {default_third_party_folder} is invalid."
+            f" Set default {default_third_party_folder}")
+        register(default_third_party_folder=default_third_party_folder.as_posix())
+
 
 def _run_register(args: argparse) -> int:
     if args.override_home_folder:
@@ -751,6 +771,7 @@ def _run_register(args: argparse) -> int:
                         default_gems_folder=args.default_gems_folder,
                         default_templates_folder=args.default_templates_folder,
                         default_restricted_folder=args.default_restricted_folder,
+                        default_third_party_folder=args.default_third_party_folder,
                         external_subdir_engine_path=args.external_subdirectory_engine_path,
                         external_subdir_project_path=args.external_subdirectory_project_path,
                         remove=args.remove,
@@ -804,6 +825,8 @@ def add_parser_args(parser):
                        help='The default templates folder to register/remove.')
     group.add_argument('-drf', '--default-restricted-folder', type=str, required=False,
                        help='The default restricted folder to register/remove.')
+    group.add_argument('-dtpf', '--default-third-party-folder', type=pathlib.Path, required=False,
+                       help='The default 3rd Party folder to register/remove.')
     group.add_argument('-u', '--update', action='store_true', required=False,
                        default=False,
                        help='Refresh the repo cache.')

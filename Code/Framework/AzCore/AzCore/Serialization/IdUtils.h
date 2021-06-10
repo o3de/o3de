@@ -28,7 +28,13 @@ namespace AZ
 {
     namespace IdUtils
     {
-        template<typename IdType>
+        /**
+        * \param AllowDuplicates - If true allows the same id to be registered multiple times,
+            with the newer value overwriting the stored value. If false, duplicates are not allowed and
+            the first stored value is kept.The default is false.
+        */
+            
+        template<typename IdType, bool AllowDuplicates = false>
         struct Remapper
         {
             /**
@@ -138,14 +144,18 @@ namespace AZ
             * \param context - The serialize context for enumerating the @classPtr elements
             */
             template<typename T, typename MapType>
-            static void GenerateNewIdsAndFixRefs(T* object, MapType& newIdMap, AZ::SerializeContext* context = nullptr)
+            static void GenerateNewIdsAndFixRefs(
+                T* object, MapType& newIdMap, AZ::SerializeContext* context = nullptr)
             {
                 if (!context)
                 {
                     AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
                     if (!context)
                     {
-                        AZ_Error("Serialization", false, "No serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or input serialize context should not be null!");
+                        AZ_Error(
+                            "Serialization", false,
+                            "No serialize context provided! Failed to get component application default serialize context! ComponentApp is "
+                            "not started or input serialize context should not be null!");
                         return;
                     }
                 }
@@ -156,8 +166,16 @@ namespace AZ
                     {
                         if (idGenerator)
                         {
-                            auto it = newIdMap.emplace(originalId, idGenerator());
-                            return it.first->second;
+                            if constexpr(AllowDuplicates)
+                            {
+                                auto it = newIdMap.insert_or_assign(originalId, idGenerator());
+                                return it.first->second;
+                            }
+                            else
+                            {
+                                auto it = newIdMap.emplace(originalId, idGenerator());
+                                return it.first->second;
+                            }
                         }
                         return originalId;
                     }

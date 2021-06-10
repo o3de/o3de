@@ -74,7 +74,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), MaxPrefabFileSize);
+            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), AZStd::numeric_limits<size_t>::max());
             if (!readResult.IsSuccess())
             {
                 AZ_Error(
@@ -297,6 +297,45 @@ namespace AzToolsFramework
                     domAndFilepath->second.c_str(),
                     outcome.GetError().c_str()
                 );
+                return false;
+            }
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
+            return true;
+        }
+
+        bool PrefabLoader::SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath)
+        {
+            AZ_Assert(absolutePath.IsAbsolute(), "SaveTemplateToFile requires an absolute path for saving the initial prefab file.");
+
+            const auto& domAndFilepath = StoreTemplateIntoFileFormat(templateId);
+            if (!domAndFilepath)
+            {
+                return false;
+            }
+
+            // Verify that the absolute path provided to this matches the relative path saved in the template.
+            // Otherwise, the saved prefab won't be able to be loaded.
+            auto relativePath = GenerateRelativePath(absolutePath);
+            if (relativePath != domAndFilepath->second)
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::SaveTemplateToFile - "
+                    "Failed to save template '%s' to location '%.*s'."
+                    "Error: Relative path '%.*s' for location didn't match template name.",
+                    domAndFilepath->second.c_str(), AZ_STRING_ARG(absolutePath.Native()), AZ_STRING_ARG(relativePath.Native()));
+                return false;
+            }
+
+            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, absolutePath);
+            if (!outcome.IsSuccess())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::SaveTemplateToFile - "
+                    "Failed to save template '%s' to location '%.*s'."
+                    "Error: %s",
+                    domAndFilepath->second.c_str(), AZ_STRING_ARG(absolutePath.Native()), outcome.GetError().c_str());
                 return false;
             }
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);

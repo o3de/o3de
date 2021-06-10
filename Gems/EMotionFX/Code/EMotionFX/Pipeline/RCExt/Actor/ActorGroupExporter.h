@@ -14,6 +14,7 @@
 #include <AzCore/std/optional.h>
 #include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
+#include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <Integration/System/SystemCommon.h>
 
 
@@ -44,6 +45,8 @@ namespace EMotionFX
 
             //! Get the mesh asset id to which the actor is linked to by default.
             AZStd::optional<AZ::Data::AssetId> GetMeshAssetId(const ActorGroupExportContext& context) const;
+            static AZStd::optional<AZ::SceneAPI::Events::ExportProduct> GetFirstProductByType(
+                const ActorGroupExportContext& context, AZ::Data::AssetType type);
 
             AutoRegisteredActor m_actor;
             AZStd::vector<AZStd::string> m_actorMaterialReferences;
