@@ -285,7 +285,7 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(1, m_jsonRegistrationContext->GetRegisteredSerializers().size());
         AZ::BaseJsonSerializer* mockSerializer = m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<bool>());
-        EXPECT_NE(mockSerializer, nullptr);
+        ASSERT_NE(mockSerializer, nullptr);
         EXPECT_EQ(AZ::AzTypeInfo<SerializerWithOneType>::Uuid(), mockSerializer->RTTI_GetType());
 
         SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
@@ -301,7 +301,7 @@ namespace JsonSerializationTests
         
         EXPECT_EQ(1, m_jsonRegistrationContext->GetRegisteredSerializers().size());
         AZ::BaseJsonSerializer* mockSerializer = m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<bool>());
-        EXPECT_NE(mockSerializer, nullptr);
+        ASSERT_NE(mockSerializer, nullptr);
         EXPECT_EQ(AZ::AzTypeInfo<SerializerWithOneDuplicatedTypeWithOverride>::Uuid(), mockSerializer->RTTI_GetType());
 
         SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());

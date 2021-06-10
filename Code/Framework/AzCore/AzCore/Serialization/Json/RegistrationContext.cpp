@@ -51,7 +51,8 @@ namespace AZ
                 AZ_Assert(
                     emplaceResult.second,
                     "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
-                    serializer->RTTI_GetTypeName(), emplaceResult.first->second->RTTI_GetTypeName(), uuid);
+                    serializer->RTTI_GetTypeName(), emplaceResult.first->second->RTTI_GetTypeName(),
+                    uuid.ToString<AZStd::string>().c_str());
             }
             else
             {
