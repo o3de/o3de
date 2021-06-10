@@ -16,6 +16,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
@@ -580,7 +582,21 @@ namespace PhysX
 
         MeshGroup::MeshGroup()
             : m_id(AZ::Uuid::CreateRandom())
+            , m_materialLibraryChangedHandler(
+                [this](const AZ::Data::AssetId& materialLibraryAssetId)
+                {
+                    OnMaterialLibraryChanged(materialLibraryAssetId);
+                })
         {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                physicsSystem->RegisterOnMaterialLibraryChangedEventHandler(m_materialLibraryChangedHandler);
+            }
+        }
+
+        MeshGroup::~MeshGroup()
+        {
+            m_materialLibraryChangedHandler.Disconnect();
         }
 
         void MeshGroup::Reflect(AZ::ReflectContext* context)
@@ -669,6 +685,8 @@ namespace PhysX
                             ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &MeshGroup::GetMaterialSlotLabel)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ::Edit::UIHandlers::ComboBox)
+                            ->ElementAttribute(AZ::Edit::Attributes::StringList, &MeshGroup::GetPhysicsMaterialNames)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MeshGroup::m_rules, "",
                             "Add or remove rules to fine-tune the export process.")
@@ -855,6 +873,35 @@ namespace PhysX
             {
                 return "<Unknown>";
             }
+        }
+
+        AZStd::vector<AZStd::string> MeshGroup::GetPhysicsMaterialNames() const
+        {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
+                {
+                    const auto& materials = physicsConfiguration->m_materialLibraryAsset->GetMaterialsData();
+
+                    AZStd::vector<AZStd::string> physicsMaterialNames;
+                    physicsMaterialNames.reserve(materials.size() + 1);
+
+                    physicsMaterialNames.emplace_back(Physics::DefaultPhysicsMaterialLabel);
+                    for (const auto& material : materials)
+                    {
+                        physicsMaterialNames.emplace_back(material.m_configuration.m_surfaceType);
+                    }
+
+                    return physicsMaterialNames;
+                }
+            }
+            return {Physics::DefaultPhysicsMaterialLabel};
+        }
+
+        void MeshGroup::OnMaterialLibraryChanged([[maybe_unused]] const AZ::Data::AssetId& materialLibraryAssetId)
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
         }
 
         bool MeshGroup::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)

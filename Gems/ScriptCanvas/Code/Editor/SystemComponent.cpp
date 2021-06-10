@@ -167,6 +167,8 @@ namespace ScriptCanvasEditor
         options.canHaveMultipleInstances = false;
         options.isPreview = true;
         options.showInMenu = true;
+        options.showOnToolsToolbar = true;
+        options.toolbarIcon = ":/Menu/script_canvas_editor.svg";
 
         AzToolsFramework::RegisterViewPane<ScriptCanvasEditor::MainWindow>(LyViewPane::ScriptCanvas, LyViewPane::CategoryTools, options);
     }
