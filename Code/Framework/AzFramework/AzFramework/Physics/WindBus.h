@@ -13,6 +13,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 
 namespace Physics

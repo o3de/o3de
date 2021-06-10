@@ -28,8 +28,8 @@ namespace AZ
     {
         class PostProcessSettings;
 
-        // Base name of the buffer used for the exposure control feature. Usually distinct identifier will be added to this name for each exposure control settings.
-        static const char* const ExposureControlBufferBaseName = "ExposureControlBuffer";
+        // Name of the buffer used for the exposure control feature
+        static const char* const ExposureControlBufferName = "ExposureControlBuffer";
 
         // The post process sub-settings class for the exposure control feature
         class ExposureControlSettings final
@@ -84,8 +84,7 @@ namespace AZ
 
             void UpdateExposureControlRelatedPassParameters();
             
-            void UpdateLuminanceHeatmap(RPI::PassSystemInterface* passSystem);
-            void UpdateEyeAdaptationPass(RPI::PassSystemInterface* passSystem);
+            void UpdateLuminanceHeatmap();
             
             PostProcessSettings* m_parentSettings = nullptr;
             bool m_shouldUpdatePassParameters = true;

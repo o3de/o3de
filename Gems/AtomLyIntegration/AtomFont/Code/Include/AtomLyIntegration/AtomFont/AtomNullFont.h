@@ -79,7 +79,6 @@ namespace AZ
         virtual FontFamilyPtr LoadFontFamily([[maybe_unused]] const char* fontFamilyName) override { CRY_ASSERT(false); return nullptr; }
         virtual FontFamilyPtr GetFontFamily([[maybe_unused]] const char* fontFamilyName) override { CRY_ASSERT(false); return nullptr; }
         virtual void AddCharsToFontTextures([[maybe_unused]] FontFamilyPtr fontFamily, [[maybe_unused]] const char* chars, [[maybe_unused]] int glyphSizeX, [[maybe_unused]] int glyphSizeY) override {};
-        virtual void SetRendererProperties([[maybe_unused]] IRenderer* pRenderer) override {}
         virtual void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {}
         virtual string GetLoadedFontNames() const override { return ""; }
         virtual void OnLanguageChanged() override { }

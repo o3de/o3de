@@ -23,4 +23,9 @@ set(FILES
     PAL_windows.cmake
     PALDetection_windows.cmake
     Install_windows.cmake
+    Packaging_windows.cmake
+    PackagingPostBuild.cmake
+    Packaging/Bootstrapper.wxs
+    Packaging/Shortcuts.wxs
+    Packaging/Template.wxs.in
 )

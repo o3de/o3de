@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
@@ -572,6 +573,12 @@ namespace UnitTest
         {
             AllocatorsTestFixture::SetUp();
 
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             AzFramework::Application::Descriptor descriptor;
             descriptor.m_enableDrilling = false;
             m_app.Start(descriptor);
@@ -1100,6 +1107,10 @@ namespace UnitTest
         void UnregisterComponentDescriptor(const ComponentDescriptor*) override {}
         void RegisterEntityAddedEventHandler(EntityAddedEvent::Handler&) override {}
         void RegisterEntityRemovedEventHandler(EntityRemovedEvent::Handler&) override {}
+        void RegisterEntityActivatedEventHandler(EntityActivatedEvent::Handler&) override {}
+        void RegisterEntityDeactivatedEventHandler(EntityDeactivatedEvent::Handler&) override {}
+        void SignalEntityActivated(Entity*) override {}
+        void SignalEntityDeactivated(Entity*) override {}
         bool AddEntity(Entity*) override { return true; }
         bool RemoveEntity(Entity*) override { return true; }
         bool DeleteEntity(const EntityId&) override { return true; }
@@ -1125,6 +1136,7 @@ namespace UnitTest
             AllocatorsFixture::SetUp();
 
             ComponentApplicationBus::Handler::BusConnect();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
             m_serializeContext.reset(aznew AZ::SerializeContext(true, true));
 
             Entity::Reflect(m_serializeContext.get());
@@ -1139,6 +1151,7 @@ namespace UnitTest
             m_descriptors.set_capacity(0);
 
             m_serializeContext.reset();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
 
             AllocatorsFixture::TearDown();

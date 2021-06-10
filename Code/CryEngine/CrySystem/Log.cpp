@@ -20,14 +20,13 @@
 //this should not be included here
 #include <IConsole.h>
 #include <ISystem.h>
-#include <IStreamEngine.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
-#include <Pak/CryPakUtils.h>
 #include "UnicodeFunctions.h"
 
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 
 #ifdef WIN32
 #include <time.h>
@@ -51,7 +50,7 @@
 #define LOG_BACKUP_PATH "@log@/LogBackups"
 
 #if defined(IOS)
-#include "SystemUtilsApple.h"
+#include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
 
 //////////////////////////////////////////////////////////////////////
@@ -90,7 +89,6 @@ CLog::CLog(ISystem* pSystem)
 
     m_nMainThreadId = CryGetCurrentThreadId();
 
-    m_logFileHandle = AZ::IO::InvalidHandle;
 #if defined(KEEP_LOG_FILE_OPEN)
     m_bFirstLine = true;
 #endif
@@ -164,35 +162,6 @@ void CLog::RegisterConsoleVariables()
         REGISTER_COMMAND("log_flush", &LogFlushFile, 0, "Flush the log file");
 #endif
     }
-    /*
-        //testbed
-        {
-            int iSave0 = m_pLogVerbosity->GetIVal();
-            int iSave1 = m_pLogFileVerbosity->GetIVal();
-
-            for(int i=0;i<=4;++i)
-            {
-                m_pLogVerbosity->Set(i);
-                m_pLogFileVerbosity->Set(i);
-
-                LogWithType(eAlways,"CLog selftest: Verbosity=%d FileVerbosity=%d",m_pLogVerbosity->GetIVal(),m_pLogFileVerbosity->GetIVal());
-                LogWithType(eAlways,"--------------");
-
-                LogWithType(eError,"eError");
-                LogWithType(eWarning,"eWarning");
-                LogWithType(eMessage,"eMessage");
-                LogWithType(eInput,"eInput");
-                LogWithType(eInputResponse,"eInputResponse");
-
-                LogWarning("LogWarning()");
-                LogError("LogError()");
-                LogWithType(eAlways,"--------------");
-            }
-
-            m_pLogVerbosity->Set(iSave0);
-            m_pLogFileVerbosity->Set(iSave1);
-        }
-    */
     #undef DEFAULT_VERBOSITY
 }
 
@@ -212,7 +181,7 @@ CLog::~CLog()
 
     UnregisterConsoleVariables();
 
-    CloseLogFile(true);
+    CloseLogFile();
 }
 
 void CLog::UnregisterConsoleVariables()
@@ -226,32 +195,36 @@ void CLog::UnregisterConsoleVariables()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLog::CloseLogFile([[maybe_unused]] bool forceClose)
+void CLog::CloseLogFile()
 {
-    if (m_logFileHandle != AZ::IO::InvalidHandle)
-    {
-        AZ::IO::FileIOBase::GetDirectInstance()->Close(m_logFileHandle);
-        m_logFileHandle = AZ::IO::InvalidHandle;
-    }
+    m_logFileHandle.Close();
 }
 
 //////////////////////////////////////////////////////////////////////////
-AZ::IO::HandleType CLog::OpenLogFile(const char* filename, const char* mode)
+bool CLog::OpenLogFile(const char* filename, int mode)
 {
-    CDebugAllowFileAccess ignoreInvalidFileAccess;
-    using namespace AZ::IO;
-
-    AZ_Assert(m_logFileHandle == AZ::IO::InvalidHandle, "Attempt to open log file when one is already open.  This would lead to a handle leak.");
-    
-    if ((!filename) || (filename[0] == 0))
+    if (m_logFileHandle.IsOpen())
     {
-        return m_logFileHandle;
+        // Can only AZ_Assert if a file is open, otherwise the AZ_Assert
+        // would eventually lead to OpenLogFile being opened up again
+        AZ_Assert(false, "Attempt to open log file when one is already open.  This would lead to a handle leak.");
+        return false;
+    }
+    
+    if (filename == nullptr || filename[0] == '\0')
+    {
+        return false;
     }
 
     // it is assumed that @log@ points at the appropriate place (so for apple, to the user profile dir)
-    AZ::IO::FileIOBase::GetDirectInstance()->Open(filename, AZ::IO::GetOpenModeFromStringMode(mode), m_logFileHandle);
+    AZ::IO::FileIOBase* fileSystem = AZ::IO::FileIOBase::GetDirectInstance();
+    if (AZ::IO::FixedMaxPath logFilePath; fileSystem->ReplaceAlias(logFilePath, filename))
+    {
+        logFilePath = logFilePath.LexicallyNormal();
+        m_logFileHandle.Open(logFilePath.c_str(), mode);
+    }
 
-    if (m_logFileHandle != AZ::IO::InvalidHandle)
+    if (m_logFileHandle.IsOpen())
     {
 #if defined(KEEP_LOG_FILE_OPEN)
         m_bFirstLine = true;
@@ -260,11 +233,11 @@ AZ::IO::HandleType CLog::OpenLogFile(const char* filename, const char* mode)
     else
     {
 #if defined(LINUX) || defined(APPLE)
-        syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%s]", filename, mode);
+        syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%d]", filename, mode);
 #endif
     }
 
-    return m_logFileHandle;
+    return m_logFileHandle.IsOpen();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -418,7 +391,7 @@ void CLog::LogV(const ELogType type, const char* szFormat, va_list args)
     LogV(type, 0, szFormat, args);
 }
 
-void CLog::LogV(const ELogType type, int flags, const char* szFormat, va_list args)
+void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFormat, va_list args)
 {
     // this is here in case someone called LogV directly, with an invalid formatter.
     if (!CheckLogFormatter(szFormat))
@@ -595,28 +568,6 @@ void CLog::LogV(const ELogType type, int flags, const char* szFormat, va_list ar
     case eErrorAlways:
         GetISystem()->GetIRemoteConsole()->AddLogError(szString);
         break;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    if (type == eWarningAlways || type == eWarning || type == eError || type == eErrorAlways)
-    {
-        IValidator* pValidator = m_pSystem->GetIValidator();
-        if (pValidator && (flags & VALIDATOR_FLAG_SKIP_VALIDATOR) == 0)
-        {
-            CryAutoCriticalSection scope_lock(m_logCriticalSection);
-
-            SValidatorRecord record;
-            record.text = szBuffer;
-            record.module = VALIDATOR_MODULE_SYSTEM;
-            record.severity = VALIDATOR_WARNING;
-            record.assetScope = GetAssetScopeString();
-            record.flags = flags;
-            if (type == eError || type == eErrorAlways)
-            {
-                record.severity = VALIDATOR_ERROR;
-            }
-            pValidator->Report(record);
-        }
     }
 }
 
@@ -920,13 +871,7 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
-        // don't try to store the log message for later in case of out of memory, since then its very likely that this allocation
-        // also fails and results in a stack overflow. This way we should at least get a out of memory on-screen message instead of
-        // a not obvious crash
-        if ((gEnv) && (gEnv->bIsOutOfMemory == false))
-        {
-            m_threadSafeMsgQueue.push(msg);
-        }
+        m_threadSafeMsgQueue.push(msg);
         return true;
     }
     return false;
@@ -1145,14 +1090,15 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 
     if (logToFile)
     {
-        CDebugAllowFileAccess dafa;
-
-        if (m_logFileHandle == AZ::IO::InvalidHandle)
+        if (!m_logFileHandle.IsOpen())
         {
-            OpenLogFile(m_szFilename, "w+t");
+            constexpr auto openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND
+                | AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
+                | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+            OpenLogFile(m_szFilename, openMode);
         }
 
-        if (m_logFileHandle != AZ::IO::InvalidHandle)
+        if (m_logFileHandle.IsOpen())
         {
 #if defined(KEEP_LOG_FILE_OPEN)
             if (m_bFirstLine)
@@ -1163,9 +1109,9 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
             if (bAdd)
             {
                 // if adding to a prior line erase the \n at the end.
-                AZ::IO::FileIOBase::GetDirectInstance()->Seek(m_logFileHandle, -2, AZ::IO::SeekType::SeekFromEnd);
+                m_logFileHandle.Seek(-2, AZ::IO::SystemFile::SeekMode::SF_SEEK_END);
             }
-            AZ::IO::FPutS(tempString.c_str(), m_logFileHandle);
+            m_logFileHandle.Write(tempString.c_str(), tempString.size());
 #if !defined(KEEP_LOG_FILE_OPEN)
             CloseLogFile();
 #endif
@@ -1416,6 +1362,23 @@ bool CLog::SetFileName(const char* fileNameOrAbsolutePath, bool backupLogs)
 
     CreateBackupFile();
 
+    AZ::IO::FileIOBase* fileSystem = AZ::IO::FileIOBase::GetDirectInstance();
+    AZ::IO::FixedMaxPath newLogFilePath;
+    if (fileSystem->ReplaceAlias(newLogFilePath, m_szFilename))
+    {
+        newLogFilePath = newLogFilePath.LexicallyNormal();
+    }
+    if (m_logFileHandle.IsOpen() && newLogFilePath != m_logFileHandle.Name())
+    {
+        constexpr auto openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND
+            | AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
+            | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+        if(AZ::IO::SystemFile newLogFile; newLogFile.Open(m_szFilename, openMode))
+        {
+            m_logFileHandle = AZStd::move(newLogFile);
+        }
+    }
+
     return true;
 }
 
@@ -1445,24 +1408,6 @@ void CLog::UpdateLoadingScreen(const char* szFormat, ...)
         va_end(args);
     }
 #endif
-
-    if (CryGetCurrentThreadId() == m_nMainThreadId)
-    {
-        ((CSystem*)m_pSystem)->UpdateLoadingScreen();
-
-#ifndef LINUX
-        // Take this opportunity to update streaming engine.
-        if (IStreamEngine* pStreamEngine = GetISystem()->GetStreamEngine())
-        {
-            const float curTime = m_pSystem->GetITimer()->GetAsyncCurTime();
-            if (curTime - m_fLastLoadingUpdateTime > .1f)    // not frequent than once in 100ms
-            {
-                m_fLastLoadingUpdateTime = curTime;
-                pStreamEngine->Update();
-            }
-        }
-#endif
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1588,9 +1533,9 @@ const char* CLog::GetModuleFilter()
 void CLog::FlushAndClose()
 {
 #if defined(KEEP_LOG_FILE_OPEN)
-    if (m_logFileHandle)
+    if (m_logFileHandle.IsOpen())
     {
-        CloseLogFile(true);
+        CloseLogFile();
     }
 #endif
 }

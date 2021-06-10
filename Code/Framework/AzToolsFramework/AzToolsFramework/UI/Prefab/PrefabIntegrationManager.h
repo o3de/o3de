@@ -93,6 +93,7 @@ namespace AzToolsFramework
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
+            static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
 
             // Prompt and resolve dialogs
             static bool QueryUserForPrefabSaveLocation(

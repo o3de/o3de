@@ -64,6 +64,7 @@ namespace PhysX
             incompatible.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
             incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
             incompatible.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)

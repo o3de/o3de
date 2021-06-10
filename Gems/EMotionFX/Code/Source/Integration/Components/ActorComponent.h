@@ -44,7 +44,6 @@ namespace EMotionFX
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzFramework::CharacterPhysicsDataRequestBus::Handler
             , private AzFramework::RagdollPhysicsNotificationBus::Handler
-            , private EMotionFX::ActorNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
@@ -136,6 +135,7 @@ namespace EMotionFX
             {
                 incompatible.push_back(AZ_CRC("EMotionFXActorService", 0xd6e8f48d));
                 incompatible.push_back(AZ_CRC("MeshService", 0x71d8a455));
+                incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -166,9 +166,6 @@ namespace EMotionFX
             // AZ::TickBus::Handler
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
-
-            // ActorNotificationBus::Handler
-            void OnActorReady(Actor* actor) override;
 
             void CheckActorCreation();
             void DestroyActor();

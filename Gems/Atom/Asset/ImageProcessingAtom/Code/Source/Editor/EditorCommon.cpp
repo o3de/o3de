@@ -108,11 +108,11 @@ namespace ImageProcessingAtomEditor
         {
             readableString = "PC";
         }
-        else if (platformStrLowerCase == "es3")
+        else if (platformStrLowerCase == "android")
         {
             readableString = "Android";
         }
-        else if (platformStrLowerCase == "osx_gl")
+        else if (platformStrLowerCase == "mac")
         {
             readableString = "macOS";
         }

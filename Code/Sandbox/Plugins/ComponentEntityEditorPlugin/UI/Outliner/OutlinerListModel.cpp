@@ -65,6 +65,7 @@
 #include "OutlinerTreeView.hxx"
 #include "Include/ICommandManager.h"
 #include "Include/IObjectManager.h"
+#include "OutlinerCacheBus.h"
 
 #include <Editor/CryEditDoc.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -1473,14 +1474,15 @@ void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin(AZ::EntityId parentI
     emit EnableSelectionUpdates(false);
     auto parentIndex = GetIndexFromEntity(parentId);
     auto childIndex = GetIndexFromEntity(childId);
-    beginRemoveRows(parentIndex, childIndex.row(), childIndex.row());
+    beginResetModel();
 }
 
 void OutlinerListModel::OnEntityInfoUpdatedRemoveChildEnd(AZ::EntityId parentId, AZ::EntityId childId)
 {
     (void)childId;
     AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
-    endRemoveRows();
+
+    endResetModel();
 
     //must refresh partial lock/visibility of parents
     m_isFilterDirty = true;
@@ -1537,6 +1539,16 @@ void OutlinerListModel::OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZS
 {
     (void)name;
     QueueEntityUpdate(entityId);
+
+    bool isSelected = false;
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        isSelected, &AzToolsFramework::ToolsApplicationRequests::IsSelected, entityId);
+
+    if (isSelected)
+    {
+        // Ask the system to scroll to the entity in case it is off screen after the rename
+        OutlinerModelNotificationBus::Broadcast(&OutlinerModelNotifications::QueueScrollToNewContent, entityId);
+    }
 }
 
 void OutlinerListModel::OnEntityInfoUpdatedUnsavedChanges(AZ::EntityId entityId)

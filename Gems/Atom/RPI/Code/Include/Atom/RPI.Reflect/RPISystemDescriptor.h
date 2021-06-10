@@ -44,9 +44,6 @@ namespace AZ
             //! The path of the only one view srg asset for the RPI system. This is used to create any RPI::View.
             AZStd::string m_viewSrgAssetPath = "shaderlib/viewsrg_viewsrg.azsrg";
 
-            //! Path of pass templates' name-assetid mapping file.
-            AZStd::string m_passTemplatesMappingPath = "Passes/PassTemplates.azasset";
-
             ImageSystemDescriptor m_imageSystemDescriptor;
             GpuQuerySystemDescriptor m_gpuQuerySystemDescriptor;
             DynamicDrawSystemDescriptor m_dynamicDrawSystemDescriptor;

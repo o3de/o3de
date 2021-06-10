@@ -57,6 +57,7 @@ namespace LmbrCentral
             required.push_back(AZ_CRC("SplineService", 0x2b674d3c));
         }
 
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
     private:
         AZ_DISABLE_COPY_MOVE(EditorTubeShapeComponent)
 

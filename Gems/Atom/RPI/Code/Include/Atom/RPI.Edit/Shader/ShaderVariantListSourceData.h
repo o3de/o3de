@@ -30,6 +30,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ShaderVariantListSourceData, AZ::SystemAllocator, 0);
 
             static constexpr const char* Extension = "shadervariantlist";
+            static constexpr const char* Extension2 = "shadervariantlist2";
 
             static void Reflect(ReflectContext* context);
 

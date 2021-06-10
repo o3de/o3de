@@ -30,7 +30,7 @@ namespace PhysXEditorTests
         PhysX::BaseColliderComponent* colliderComponent = gameEntity->FindComponent<PhysX::BaseColliderComponent>();
         ASSERT_TRUE(colliderComponent != nullptr);
 
-        Physics::ShapeConfigurationList shapeConfigList = colliderComponent->GetShapeConfigurations();
+        AzPhysics::ShapeColliderPairList shapeConfigList = colliderComponent->GetShapeConfigurations();
         EXPECT_EQ(shapeConfigList.size(), 1);
 
         for (const auto& shapeConfigPair : shapeConfigList)
@@ -68,7 +68,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId editorId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.5f));
+        worldTM.SetUniformScale(1.5f);
         worldTM.SetTranslation(AZ::Vector3(5.0f, 6.0f, 7.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)));
         AZ::TransformBus::Event(editorId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -77,7 +77,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         const AZ::Aabb aabb = staticBody->GetAabb();
         EXPECT_THAT(aabb.GetMin(), UnitTest::IsCloseTolerance(AZ::Vector3(5.6045f, 4.9960f, 11.7074f), 1e-3f));
@@ -99,7 +99,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId editorId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.5f));
+        worldTM.SetUniformScale(1.5f);
         worldTM.SetTranslation(AZ::Vector3(5.0f, 6.0f, 7.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)));
         AZ::TransformBus::Event(editorId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -144,7 +144,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId capsuleId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(0.5f));
+        worldTM.SetUniformScale(0.5f);
         worldTM.SetTranslation(AZ::Vector3(3.0f, 1.0f, -4.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -153,7 +153,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         const AZ::Aabb aabb = staticBody->GetAabb();
 
@@ -176,7 +176,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId capsuleId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(0.5f));
+        worldTM.SetUniformScale(0.5f);
         worldTM.SetTranslation(AZ::Vector3(3.0f, 1.0f, -4.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -222,7 +222,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId sphereId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.2f));
+        worldTM.SetUniformScale(1.2f);
         worldTM.SetTranslation(AZ::Vector3(-2.0f, -1.0f, 3.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
@@ -231,7 +231,7 @@ namespace PhysXEditorTests
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetStaticRigidBody();
+        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
 
         const AZ::Aabb aabb = staticBody->GetAabb();
 
@@ -254,7 +254,7 @@ namespace PhysXEditorTests
 
         AZ::EntityId sphereId = editorEntity->GetId();
         AZ::Transform worldTM;
-        worldTM.SetScale(AZ::Vector3(1.2f));
+        worldTM.SetUniformScale(1.2f);
         worldTM.SetTranslation(AZ::Vector3(-2.0f, -1.0f, 3.0f));
         worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
         AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);

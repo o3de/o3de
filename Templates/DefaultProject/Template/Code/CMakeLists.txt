@@ -15,7 +15,7 @@
 #       in which case it will see if that platform is present here or in the restricted folder.
 #       i.e. It could here : ${Name}/Code/Platform/<platorm_name>  or
 #            <restricted_folder>/<platform_name>/${Name}/Code
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${o3de_project_restricted_path} ${o3de_project_path} ${o3de_project_name})
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this project
@@ -33,7 +33,7 @@ endif()
 # in ${pal_dir}/${NameLower}_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
 ly_add_target(
     NAME ${Name}.Static STATIC
-    NAMESPACE Project
+    NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_files.cmake
         ${pal_dir}/${NameLower}_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -48,7 +48,7 @@ ly_add_target(
 
 ly_add_target(
     NAME ${Name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-    NAMESPACE Project
+    NAMESPACE Gem
     FILES_CMAKE
         ${NameLower}_shared_files.cmake
         ${pal_dir}/${NameLower}_shared_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -57,48 +57,60 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Project::${Name}.Static
+            Gem::${Name}.Static
             AZ::AzCore
 )
+
+# if enabled, ${Name} is used by all kinds of applications
+ly_create_alias(NAME ${Name}.Builders NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Tools    NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Clients  NAMESPACE Gem TARGETS Gem::${Name})
+ly_create_alias(NAME ${Name}.Servers  NAMESPACE Gem TARGETS Gem::${Name})
 
 ################################################################################
 # Gem dependencies
 ################################################################################
-ly_add_project_dependencies(
-    PROJECT_NAME
-        ${Name}
+
+# The GameLauncher uses "Clients" gem variants:
+ly_enable_gems(
+    PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
     TARGETS 
         ${Name}.GameLauncher
-    DEPENDENCIES_FILES
-        runtime_dependencies.cmake
-        ${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_runtime_dependencies.cmake
-)
+    VARIANTS 
+        Clients)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_add_project_dependencies(
-        PROJECT_NAME
-            ${Name}
+
+    # the builder type applications use the "Builders" variants of the enabled gems.
+    ly_enable_gems(
+        PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
         TARGETS
             AssetBuilder
             AssetProcessor
             AssetProcessorBatch
+        VARIANTS 
+            Builders)
+    
+    # the Editor applications use the "Tools" variants of the enabled gems.
+    ly_enable_gems(
+        PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
+        TARGETS
             Editor
-        DEPENDENCIES_FILES
-            tool_dependencies.cmake
-            ${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_tool_dependencies.cmake
-    )
+        VARIANTS 
+            Tools)
 endif()
 
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    ly_add_project_dependencies(
-        PROJECT_NAME
-            ${Name}
+    # this property causes it to actually make a ServerLauncher.
+    # if you don't want a Server application, you can remove this and the
+    # following ly_enable_gems lines.
+    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS ${Name})
+    
+    # The ServerLauncher uses the "Servers" variants of enabled gems:
+    ly_enable_gems(
+        PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
         TARGETS
             ${Name}.ServerLauncher
-        DEPENDENCIES_FILES
-            server_dependencies.cmake
-            ${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_server_dependencies.cmake
-    )
-    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS ${Name})
-
+        VARIANTS 
+            Servers)
 endif()

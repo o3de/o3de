@@ -34,7 +34,7 @@ namespace AZ
         const size_t NumBins = 8;
         const size_t MaxLightsPerTile = 256;
         // TODO convert this to R16_UINT. It just needs RHI support
-        // https://jira.agscollab.com/browse/ATOM-3975
+        // ATOM-3975
         const RHI::Format LightListRemappedFormat = RHI::Format::R32_UINT;
 
         RPI::Ptr<LightCullingRemap> LightCullingRemap::Create(const RPI::PassDescriptor& descriptor)
@@ -118,14 +118,9 @@ namespace AZ
 
         void LightCullingRemap::CreateRemappedLightListBuffer()
         {
-            // generate a UUID for the buffer name to keep it unique when there are multiple render pipelines
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
-            desc.m_bufferName = AZStd::string::format("LightListRemapped_%s", uuidString.c_str());
+            desc.m_bufferName = "LightListRemapped";
             desc.m_elementSize = RHI::GetFormatSize(LightListRemappedFormat);
             desc.m_byteCount = m_tileDim.m_width * m_tileDim.m_height * NumBins * MaxLightsPerTile * desc.m_elementSize;
             m_lightListRemapped = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);

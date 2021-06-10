@@ -394,6 +394,7 @@ namespace ScriptCanvas
         AZ::Uuid m_type = AZ::Uuid::CreateNull();
         AZStd::string m_className;
         AZStd::string m_methodName;
+        PropertyStatus m_propertyStatus = PropertyStatus::None;
 
         bool IsValid()
         {
@@ -713,6 +714,8 @@ namespace ScriptCanvas
         virtual SlotId GetLoopSlotId() const { return {}; }
 
         virtual PropertyFields GetPropertyFields() const;
+
+        virtual Grammar::MultipleFunctionCallFromSingleSlotInfo GetMultipleFunctionCallFromSingleSlotInfo(const Slot& slot) const;
 
         virtual VariableId GetVariableIdRead(const Slot*) const;
 

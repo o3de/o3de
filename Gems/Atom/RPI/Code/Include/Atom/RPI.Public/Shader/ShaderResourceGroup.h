@@ -13,6 +13,8 @@
 
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
@@ -63,6 +65,10 @@ namespace AZ
             /// Instantiates a unique shader resource group instance using its paired asset.
             static Data::Instance<ShaderResourceGroup> Create(const Data::Asset<ShaderResourceGroupAsset>& srgAsset);
 
+            /// [GFX TODO] [ATOM-15472] Shader Build Pipeline: Remove Deprecated Files And Functions That Predate The Shader Supervariants
+            /// This is a temporary hack to enable integration of the new supervariant system.
+            bool ReplaceSrgLayoutUsingShaderAsset(Data::Asset<ShaderAsset2> shaderAsset, const Name& supervariantName, const Name& srgName);
+
             /// Queues a request that the underlying hardware shader resource group be compiled.
             void Compile();
 
@@ -74,6 +80,9 @@ namespace AZ
             RHI::ShaderInputImageIndex     FindShaderInputImageIndex(const Name& name) const;
             RHI::ShaderInputSamplerIndex   FindShaderInputSamplerIndex(const Name& name) const;
             RHI::ShaderInputConstantIndex  FindShaderInputConstantIndex(const Name& name) const;
+
+            RHI::ShaderInputBufferUnboundedArrayIndex FindShaderInputBufferUnboundedArrayIndex(const Name& name) const;
+            RHI::ShaderInputImageUnboundedArrayIndex  FindShaderInputImageUnboundedArrayIndex(const Name& name) const;
 
             /// Returns the parent shader resource group asset.
             const Data::Asset<ShaderResourceGroupAsset>& GetAsset() const;
@@ -275,6 +284,7 @@ namespace AZ
             ShaderResourceGroup() = default;
 
             RHI::ResultCode Init(ShaderResourceGroupAsset& shaderResourceGroupAsset);
+
             static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderResourceGroupAsset& srgAsset);
 
             /// A name to be used in error messages
@@ -295,8 +305,11 @@ namespace AZ
             /// The shader resource group that can be submitted to the renderer
             RHI::Ptr<RHI::ShaderResourceGroup> m_shaderResourceGroup;
 
-            /// A reference to the parent template asset used to initialize and manipulate this group.
+            /// A reference to the SRG asset used to initialize and manipulate this group.
             AZ::Data::Asset<ShaderResourceGroupAsset> m_asset;
+
+            /// A reference to the shader asset used to initialize and manipulate this group.
+            AZ::Data::Asset<ShaderAsset2> m_shaderAsset;
 
             /// A pointer to the layout inside of m_srgAsset
             const RHI::ShaderResourceGroupLayout* m_layout = nullptr;

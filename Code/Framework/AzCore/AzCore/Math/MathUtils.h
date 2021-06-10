@@ -13,16 +13,17 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/std/math.h>
+#include <AzCore/std/typetraits/conditional.h>
+#include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/is_signed.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/std/utils.h>
-#include <math.h>
+
 #include <float.h>
 #include <limits>
-#include <cmath>
+#include <math.h>
 #include <utility>
-#include <AzCore/std/typetraits/conditional.h>
-#include <AzCore/std/typetraits/is_integral.h>
 
 // We have a separate inline define for math functions.
 // The performance of these functions is very sensitive to inlining, and some compilers don't deal well with this.
@@ -308,12 +309,12 @@ namespace AZ
 
     AZ_MATH_INLINE bool IsClose(float a, float b, float tolerance = Constants::Tolerance)
     {
-        return (fabsf(a - b) <= tolerance);
+        return (AZStd::abs(a - b) <= tolerance);
     }
 
     AZ_MATH_INLINE bool IsClose(double a, double b, double tolerance = Constants::Tolerance)
     {
-        return (fabs(a - b) <= tolerance);
+        return (AZStd::abs(a - b) <= tolerance);
     }
 
     //! Returns x >= 0.0f ? 1.0f : -1.0f.
@@ -402,12 +403,12 @@ namespace AZ
 
     AZ_MATH_INLINE float GetAbs(float a)
     {
-        return fabsf(a);
+        return AZStd::abs(a);
     }
 
     AZ_MATH_INLINE double GetAbs(double a)
     {
-        return std::abs(a);
+        return AZStd::abs(a);
     }
 
     AZ_MATH_INLINE float GetMod(float a, float b)
@@ -441,7 +442,7 @@ namespace AZ
     template<typename T>
     AZ_MATH_INLINE bool IsCloseMag(T x, T y, T epsilonValue = std::numeric_limits<T>::epsilon())
     {
-        return (std::fabs(x - y) <= epsilonValue * GetMax<T>(GetMax<T>(T(1.0), std::fabs(x)), std::fabs(y)));
+        return (AZStd::abs(x - y) <= epsilonValue * GetMax<T>(GetMax<T>(T(1.0), AZStd::abs(x)), AZStd::abs(y)));
     }
 
     //! ClampIfCloseMag(x, y, epsilon) returns y when x and y are within epsilon of each other (taking magnitude into account).  Otherwise returns x.

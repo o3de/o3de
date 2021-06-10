@@ -100,15 +100,6 @@ public:
     }
 };
 
-class ShaderPropertyEditor
-    : public GenericPopupPropertyEditor
-{
-public:
-    ShaderPropertyEditor(QWidget* pParent = nullptr)
-        : GenericPopupPropertyEditor(pParent){}
-    void onEditClicked() override;
-};
-
 class ReverbPresetPropertyEditor
     : public GenericPopupPropertyEditor
 {
@@ -168,7 +159,6 @@ public:
 // So we use our own
 #define CONST_AZ_CRC(name, value) AZ::u32(value)
 
-using ShaderPropertyHandler = GenericPopupWidgetHandler<ShaderPropertyEditor, CONST_AZ_CRC("ePropertyShader", 0xc40932f1)>;
 using ReverbPresetPropertyHandler = GenericPopupWidgetHandler<ReverbPresetPropertyEditor, CONST_AZ_CRC("ePropertyReverbPreset", 0x51469f38)>;
 using MissionObjPropertyHandler = GenericPopupWidgetHandler<MissionObjPropertyEditor, CONST_AZ_CRC("ePropertyMissionObj", 0x4a2d0dc8)>;
 using SequencePropertyHandler = GenericPopupWidgetHandler<SequencePropertyEditor, CONST_AZ_CRC("ePropertySequence", 0xdd1c7d44)>;

@@ -28,7 +28,7 @@ namespace ScriptCanvasEditor
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateEBusSenderMimeEvent() = default;
-        CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName, bool isOverload);
+        CreateEBusSenderMimeEvent(AZStd::string_view busName, AZStd::string_view eventName, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus);
         ~CreateEBusSenderMimeEvent() = default;
 
     protected:
@@ -36,6 +36,7 @@ namespace ScriptCanvasEditor
         
     private:
         bool m_isOverload;
+        ScriptCanvas::PropertyStatus m_propertyStatus = ScriptCanvas::PropertyStatus::None;
         AZStd::string m_busName;
         AZStd::string m_eventName;
     };
@@ -50,7 +51,7 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(EBusSendEventPaletteTreeItem, AZ::SystemAllocator, 0);
         AZ_RTTI(EBusSendEventPaletteTreeItem, "{26258B0A-8E2C-434D-ACAD-3DE85E64A4F8}", GraphCanvas::DraggableNodePaletteTreeItem);
 
-        EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload);
+        EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus);
         ~EBusSendEventPaletteTreeItem() = default;
         
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
@@ -63,6 +64,8 @@ namespace ScriptCanvasEditor
 
         bool IsOverload() const;
 
+        ScriptCanvas::PropertyStatus GetPropertyStatus() const;
+
     private:
         bool m_isOverload;
         QString m_busName;
@@ -70,6 +73,7 @@ namespace ScriptCanvasEditor
 
         ScriptCanvas::EBusBusId   m_busId;
         ScriptCanvas::EBusEventId m_eventId;
+        ScriptCanvas::PropertyStatus m_propertyStatus = ScriptCanvas::PropertyStatus::None;
     };
     
     // </EbusSender>

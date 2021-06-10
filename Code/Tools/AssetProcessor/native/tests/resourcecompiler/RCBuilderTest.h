@@ -34,7 +34,7 @@ public:
     {
     }
 
-    bool Initialize([[maybe_unused]] const QString& systemRoot, [[maybe_unused]] const QString& rcExecutableFullPath) override
+    bool Initialize() override
     {
         m_initialize++;
         return m_initializeResult;

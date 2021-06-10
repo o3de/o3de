@@ -13,7 +13,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactRepoPath.h>
-#include <TestImpactFramework/TestImpactUtils.h>
+#include <TestImpactFramework/TestImpactFileUtils.h>
 
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 #include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>

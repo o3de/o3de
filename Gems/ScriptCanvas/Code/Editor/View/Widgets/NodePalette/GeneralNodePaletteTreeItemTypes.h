@@ -30,7 +30,7 @@ namespace ScriptCanvasEditor
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateClassMethodMimeEvent() = default;
-        CreateClassMethodMimeEvent(const QString& className, const QString& methodName, bool isOverload);
+        CreateClassMethodMimeEvent(const QString& className, const QString& methodName, bool isOverload, ScriptCanvas::PropertyStatus);
         ~CreateClassMethodMimeEvent() = default;
 
     protected:
@@ -40,6 +40,7 @@ namespace ScriptCanvasEditor
         bool m_isOverload = false;
         AZStd::string m_className;
         AZStd::string m_methodName;
+        ScriptCanvas::PropertyStatus m_propertyStatus = ScriptCanvas::PropertyStatus::None;
     };
 
     class ClassMethodEventPaletteTreeItem
@@ -49,7 +50,7 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(ClassMethodEventPaletteTreeItem, AZ::SystemAllocator, 0);
         AZ_RTTI(ClassMethodEventPaletteTreeItem, "{96F93970-F38A-4F08-8DC5-D52FCCE34E25}", GraphCanvas::DraggableNodePaletteTreeItem);
 
-        ClassMethodEventPaletteTreeItem(AZStd::string_view className, AZStd::string_view methodName, bool isOverload);
+        ClassMethodEventPaletteTreeItem(AZStd::string_view className, AZStd::string_view methodName, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus);
         ~ClassMethodEventPaletteTreeItem() = default;
 
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
@@ -57,11 +58,13 @@ namespace ScriptCanvasEditor
         AZStd::string GetClassMethodName() const;
         AZStd::string GetMethodName() const;
         bool IsOverload() const;
+        ScriptCanvas::PropertyStatus GetPropertyStatus() const;
 
     private:
         bool m_isOverload = false;
         QString m_className;
         QString m_methodName;
+        ScriptCanvas::PropertyStatus m_propertyStatus = ScriptCanvas::PropertyStatus::None;
     };
     // </ClassMethod>
 

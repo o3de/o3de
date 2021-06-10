@@ -49,8 +49,6 @@ bool CViewManager::IsMultiViewportEnabled()
 //////////////////////////////////////////////////////////////////////
 CViewManager::CViewManager()
 {
-    gSettings.pGrid = &m_grid;
-
     m_zoomFactor = 1;
 
     m_origin2D(0, 0, 0);

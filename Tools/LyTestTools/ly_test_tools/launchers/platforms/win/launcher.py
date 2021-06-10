@@ -42,21 +42,26 @@ class WinLauncher(Launcher):
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), f"{self.workspace.project}.GameLauncher.exe")
 
-    def setup(self, backupFiles = True, launch_ap = True):
+    def setup(self, backupFiles=True, launch_ap=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
 
         :param backupFiles: Bool to backup setup files
+        :param lauch_ap: Bool to lauch the asset processor
         :return: None
         """
         # Backup
         if backupFiles:
             self.backup_settings()
 
+        # Base setup defaults to None
+        if launch_ap is None:
+            launch_ap = True
+
         # Modify and re-configure
         self.configure_settings()
-        super(WinLauncher, self).setup(launch_ap=launch_ap)
+        super(WinLauncher, self).setup(backupFiles, launch_ap)
 
     def launch(self):
         """
@@ -177,6 +182,21 @@ class WinLauncher(Launcher):
 
 class DedicatedWinLauncher(WinLauncher):
 
+    def setup(self, backupFiles=True, launch_ap=False):
+        """
+        Perform setup of this launcher, must be called before launching.
+        Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
+
+        :param backupFiles: Bool to backup setup files
+        :param lauch_ap: Bool to lauch the asset processor
+        :return: None
+        """
+        # Base setup defaults to None
+        if launch_ap is None:
+            launch_ap = False
+
+        super(DedicatedWinLauncher, self).setup(backupFiles, launch_ap)
+
     def binary_path(self):
         """
         Return full path to the dedicated server launcher for the build directory.
@@ -203,3 +223,28 @@ class WinEditor(WinLauncher):
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "Editor.exe")
+
+
+class WinGenericLauncher(WinLauncher):
+
+    def __init__(self, build, exe_file_name, args=None):
+        super(WinGenericLauncher, self).__init__(build, args)
+        self.exe_file_name = exe_file_name
+        self.expected_executable_path = os.path.join(
+            self.workspace.paths.build_directory(), f"{self.exe_file_name}.exe")
+
+        if not os.path.exists(self.expected_executable_path):
+            raise ProcessNotStartedError(
+                f"Unable to locate executable '{self.exe_file_name}.exe' "
+                f"in path: '{self.expected_executable_path}'")
+
+    def binary_path(self):
+        """
+        Return full path to the .exe file for this build's configuration and project
+        Relies on the build_directory() in self.workspace.paths to be accurate
+
+        :return: full path to the given exe file
+        """
+        assert self.workspace.project is not None, (
+            'Project cannot be NoneType - please specify a project name string.')
+        return self.expected_executable_path

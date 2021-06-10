@@ -20,7 +20,7 @@
 class Surface
 {
     ClearCoatSurfaceData clearCoat;
-    TransmissionSurfaceData transmission;
+    TransmissionSurfaceData transmission; // This is not actually used for Standard PBR, but must be present for common lighting code to compile
 
     // ------- BasePbrSurfaceData -------
     
@@ -42,7 +42,6 @@ class Surface
     void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
 
 };
-
 
 // Specular Anti-Aliasing technique from this paper:
 // http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf

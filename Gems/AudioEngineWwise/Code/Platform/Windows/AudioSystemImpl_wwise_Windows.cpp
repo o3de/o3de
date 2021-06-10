@@ -25,8 +25,6 @@ namespace Audio
 
         void SetupAkSoundEngine(AkPlatformInitSettings& platformInitSettings)
         {
-            // Turn off XAudio2 output type due to rare startup crashes.  Prefers WASAPI or DirectSound.
-            platformInitSettings.eAudioAPI = static_cast<AkAudioAPI>(platformInitSettings.eAudioAPI & ~AkAPI_XAudio2);
             platformInitSettings.threadBankManager.dwAffinityMask = 0;
             platformInitSettings.threadLEngine.dwAffinityMask = 0;
             platformInitSettings.threadMonitor.dwAffinityMask = 0;

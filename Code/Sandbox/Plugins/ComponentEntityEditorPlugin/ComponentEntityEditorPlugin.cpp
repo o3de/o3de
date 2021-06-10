@@ -15,7 +15,6 @@
 
 #include <LyViewPaneNames.h>
 #include "IResourceSelectorHost.h"
-#include "CryExtension/ICryFactoryRegistry.h"
 
 #include "UI/QComponentEntityEditorMainWindow.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
@@ -180,11 +179,11 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
             LyViewPane::EntityOutliner,
             LyViewPane::CategoryTools,
             outlinerOptions);
-    }
 
-    AzToolsFramework::ViewPaneOptions options;
-    options.preferedDockingArea = Qt::NoDockWidgetArea;
-    RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
+        AzToolsFramework::ViewPaneOptions options;
+        options.preferedDockingArea = Qt::NoDockWidgetArea;
+        RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
+    }
 
     RegisterModuleResourceSelectors(GetIEditor()->GetResourceSelectorHost());
 

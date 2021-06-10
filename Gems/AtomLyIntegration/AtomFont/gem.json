@@ -1,19 +1,10 @@
 {
-    "gem_name": "AtomLyIntegration_AtomFont",
-    "Dependencies": [
-    ],    
-    "GemFormatVersion": 4,
-    "Uuid": "{16ef36f2e3fc4e6ca15fcc484ec895fc}",
-    "Name": "AtomLyIntegration_AtomFont",
-    "DisplayName": "AtomLyIntegration.AtomFont",
-    "Version": "0.1.0",
-    "LinkType": "Dynamic",
-    "Summary": "Implement ICryFont & IFFont interfaces on Atom. Uses duplicated CryFont code",
-    "Tags": [ "Atom", "Font" ],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
+    "gem_name": "AtomFont",
+    "display_name": "Atom Font",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
     ]
 }

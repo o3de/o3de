@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/PhysX_precompiled.cpp
     Source/PhysX_precompiled.h
     Source/SystemComponent.cpp
     Source/SystemComponent.h
@@ -102,7 +101,6 @@ set(FILES
     Source/PhysXCharacters/Components/CharacterGameplayComponent.h
     Source/PhysXCharacters/Components/RagdollComponent.cpp
     Source/PhysXCharacters/Components/RagdollComponent.h
-
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h

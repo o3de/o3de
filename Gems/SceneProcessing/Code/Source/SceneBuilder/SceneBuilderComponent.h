@@ -32,6 +32,8 @@ namespace SceneBuilder
         void Activate() override;
         void Deactivate() override;
         
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        
     private:
         SceneBuilderWorker m_sceneBuilder;
     };

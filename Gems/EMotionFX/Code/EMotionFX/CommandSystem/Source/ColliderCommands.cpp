@@ -251,7 +251,7 @@ namespace EMotionFX
             return false;
         }
 
-        Physics::ShapeConfigurationPair newCollider;
+        AzPhysics::ShapeColliderPair newCollider;
 
         // Either in case the contents got specified via a command parameter or in case of redo.
         if (m_contents)
@@ -263,7 +263,7 @@ namespace EMotionFX
         else if (m_colliderType)
         {
             // Create new collider.
-            AZ::Outcome<Physics::ShapeConfigurationPair> colliderOutcome = PhysicsSetup::CreateColliderByType(m_colliderType.value(), outResult);
+            AZ::Outcome<AzPhysics::ShapeColliderPair> colliderOutcome = PhysicsSetup::CreateColliderByType(m_colliderType.value(), outResult);
             if (!colliderOutcome.IsSuccess())
             {
                 return false;
@@ -367,7 +367,7 @@ namespace EMotionFX
             return false;
         }
 
-        const Physics::ShapeConfigurationPair& collider = nodeConfig->m_shapes[m_oldColliderIndex.value()];
+        const AzPhysics::ShapeColliderPair& collider = nodeConfig->m_shapes[m_oldColliderIndex.value()];
         m_contents = MCore::ReflectionSerializer::Serialize(&collider).GetValue();
 
         CommandColliderHelpers::RemoveCollider(m_actorId, m_jointName, m_configType, m_oldColliderIndex.value(), /*commandGroup*/ nullptr, true);
@@ -472,7 +472,7 @@ namespace EMotionFX
         AZ_UNUSED(parameters);
 
         Actor* actor = nullptr;
-        Physics::ShapeConfigurationPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
+        AzPhysics::ShapeColliderPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
         if (!shapeConfigPair)
         {
             return false;
@@ -524,7 +524,7 @@ namespace EMotionFX
         AZ_UNUSED(parameters);
 
         Actor* actor = nullptr;
-        Physics::ShapeConfigurationPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
+        AzPhysics::ShapeColliderPair* shapeConfigPair = GetShapeConfigPair(&actor, outResult);
         if (!shapeConfigPair)
         {
             return false;
@@ -606,7 +606,7 @@ namespace EMotionFX
         return true;
     }
 
-    Physics::ShapeConfigurationPair* CommandAdjustCollider::GetShapeConfigPair(Actor** outActor, AZStd::string& outResult) const
+    AzPhysics::ShapeColliderPair* CommandAdjustCollider::GetShapeConfigPair(Actor** outActor, AZStd::string& outResult) const
     {
         Actor* actor = GetActor(this, outResult);
         if (!actor)
@@ -647,7 +647,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        Physics::ShapeConfigurationPair& shapeConfigPair = nodeConfig->m_shapes[m_index.value()];
+        AzPhysics::ShapeColliderPair& shapeConfigPair = nodeConfig->m_shapes[m_index.value()];
         return &shapeConfigPair;
     }
 

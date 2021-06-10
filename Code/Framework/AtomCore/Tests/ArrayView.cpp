@@ -293,15 +293,12 @@ namespace UnitTest
     {
         array_view<int> view({ 1,2,3,4 });
 
-        UnitTest::TestRunner::Instance().StartAssertTests();
+        AZ_TEST_START_TRACE_SUPPRESSION;
 
-        EXPECT_EQ(0, UnitTest::TestRunner::Instance().m_numAssertsFailed);
         view[4];
-        EXPECT_EQ(1, UnitTest::TestRunner::Instance().m_numAssertsFailed);
         view[5];
-        EXPECT_EQ(2, UnitTest::TestRunner::Instance().m_numAssertsFailed);
 
-        UnitTest::TestRunner::Instance().StopAssertTests();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
     }
 
 }

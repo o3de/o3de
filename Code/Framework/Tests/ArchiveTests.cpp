@@ -16,6 +16,7 @@
 #include <AzCore/UnitTest/UnitTest.h>
 
 #include <AzCore/IO/SystemFile.h> // for max path decl
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/functional.h> // for function<> in the find files callback.
@@ -42,6 +43,14 @@ namespace UnitTest
         {
             AZ::ComponentApplication::Descriptor descriptor;
             descriptor.m_stackRecordLevels = 30;
+
+            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
+
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
             m_application->Start(descriptor);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -270,6 +279,39 @@ namespace UnitTest
 
         // ---- Archive FGetCachedFileDataTests (these leverage Archive CachedFile mechanism for caching data ---
         TestFGetCachedFileData(fileInArchiveFile, dataString.size(), dataString.data());
+    }
+
+    TEST_F(ArchiveTestFixture, TestArchiveOpenPacks_FindsMultiplePaks_Works)
+    {
+        AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        ASSERT_NE(nullptr, archive);
+
+        AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
+        ASSERT_NE(nullptr, fileIo);
+
+        auto resetArchiveFile = [archive, fileIo](const AZStd::string& filePath)
+        {
+            archive->ClosePack(filePath.c_str());
+            fileIo->Remove(filePath.c_str());
+
+            auto pArchive = archive->OpenArchive(filePath.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+            EXPECT_NE(nullptr, pArchive);
+            pArchive.reset();
+            archive->ClosePack(filePath.c_str());
+        };
+
+        AZStd::string testArchivePath_pakOne = "@usercache@/one.pak";
+        AZStd::string testArchivePath_pakTwo = "@usercache@/two.pak";
+
+        // reset test files in case they already exist
+        resetArchiveFile(testArchivePath_pakOne);
+        resetArchiveFile(testArchivePath_pakTwo);
+
+        // open and fetch the opened pak file using a *.pak
+        AZStd::vector<AZ::IO::FixedMaxPathString> fullPaths;
+        archive->OpenPacks("@usercache@/*.pak", AZ::IO::IArchive::EPathResolutionRules::FLAGS_PATH_REAL, &fullPaths);
+        EXPECT_TRUE(AZStd::any_of(fullPaths.cbegin(), fullPaths.cend(), [](auto& path) { return path.ends_with("one.pak"); }));
+        EXPECT_TRUE(AZStd::any_of(fullPaths.cbegin(), fullPaths.cend(), [](auto& path) { return path.ends_with("two.pak"); }));
     }
 
     TEST_F(ArchiveTestFixture, TestArchiveFGetCachedFileData_LooseFile)

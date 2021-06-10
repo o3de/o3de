@@ -12,9 +12,6 @@
 
 #pragma once
 
-//! The following constants are extracted from ImageExtensionHelper.h
-//! Please make sure they are always synced with the same constants defined in ImageExtensionHelper.h
-
 namespace ImageProcessingAtom
 {
     // flags to propagate from the RC to the engine through GetImageFlags()

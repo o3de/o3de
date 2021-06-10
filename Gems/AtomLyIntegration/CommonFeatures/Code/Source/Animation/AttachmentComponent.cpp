@@ -243,14 +243,14 @@ namespace AZ
             {
                 // apply offset in world-space
                 finalTransform = m_targetEntityTransform * m_targetBoneTransform;
-                finalTransform.SetScale(AZ::Vector3::CreateOne());
+                finalTransform.SetUniformScale(1.0f);
                 finalTransform *= m_targetOffset;
             }
             else if (m_scaleSource == AttachmentConfiguration::ScaleSource::TargetEntityScale)
             {
                 // apply offset in target-entity-space (ignoring bone scale)
                 AZ::Transform boneNoScale = m_targetBoneTransform;
-                boneNoScale.SetScale(AZ::Vector3::CreateOne());
+                boneNoScale.SetUniformScale(1.0f);
 
                 finalTransform = m_targetEntityTransform * boneNoScale * m_targetOffset;
             }

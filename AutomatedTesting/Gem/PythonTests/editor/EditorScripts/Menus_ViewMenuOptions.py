@@ -50,7 +50,6 @@ class TestViewMenuOptions(EditorTestHelper):
             ("Center on Selection",),
             ("Show Quick Access Bar",),
             ("Viewport", "Wireframe"),
-            ("Viewport", "Grid Settings"),
             ("Viewport", "Go to Position"),
             ("Viewport", "Center on Selection"),
             ("Viewport", "Go to Location"),

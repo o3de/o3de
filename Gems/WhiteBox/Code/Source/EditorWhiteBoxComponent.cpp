@@ -265,6 +265,11 @@ namespace WhiteBox
         provided.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
     }
 
+    void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+    }
+
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
 
     EditorWhiteBoxComponent::~EditorWhiteBoxComponent()
@@ -414,8 +419,7 @@ namespace WhiteBox
         m_localAabb.reset();
         m_faces.reset();
 
-        AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-            &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+        AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
         // must have been created in Activate or have had the Entity made visible again
         if (m_renderMesh.has_value())

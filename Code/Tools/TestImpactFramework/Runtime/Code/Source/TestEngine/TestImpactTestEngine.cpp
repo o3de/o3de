@@ -10,6 +10,8 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactFileUtils.h>
+
 #include <Target/TestImpactTestTarget.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/TestImpactTestEngine.h>
@@ -247,10 +249,16 @@ namespace TestImpact
         , m_testEnumerator(AZStd::make_unique<TestEnumerator>(maxConcurrentRuns))
         , m_instrumentedTestRunner(AZStd::make_unique<InstrumentedTestRunner>(maxConcurrentRuns))
         , m_testRunner(AZStd::make_unique<TestRunner>(maxConcurrentRuns))
+        , m_artifactDir(artifactDir)
     {
     }
 
     TestEngine::~TestEngine() = default;
+
+    void TestEngine::DeleteArtifactXmls() const
+    {
+        DeleteFiles(m_artifactDir, "*.xml");
+    }
 
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> TestEngine::UpdateEnumerationCache(
         const AZStd::vector<const TestTarget*>& testTargets,
@@ -283,6 +291,8 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
+        DeleteArtifactXmls();
+
         TestEngineJobMap<TestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateRegularTestRunJobInfos(testTargets);
 
@@ -308,6 +318,8 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
         AZStd::optional<TestEngineJobCompleteCallback> callback)
     {
+        DeleteArtifactXmls();
+
         TestEngineJobMap<InstrumentedTestRunner::JobInfo::IdType> engineJobs;
         const auto jobInfos = m_testJobInfoGenerator->GenerateInstrumentedTestRunJobInfos(testTargets, CoverageLevel::Source);
 

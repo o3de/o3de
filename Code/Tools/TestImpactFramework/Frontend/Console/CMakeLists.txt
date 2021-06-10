@@ -9,5 +9,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(Executable)
-add_subdirectory(Static)
+add_subdirectory(Code)

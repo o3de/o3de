@@ -23,7 +23,7 @@
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
 namespace UnitTest
 {
@@ -45,12 +45,12 @@ namespace UnitTest
     };
 
     class MockPhysicsWorldBusProvider
-        : public Physics::WorldBodyRequestBus::Handler
+        : public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
         MockPhysicsWorldBusProvider(const AZ::EntityId& id, AZ::Vector3 inPosition, bool setHitResult, const SurfaceData::SurfacePoint& hitResult)
         {
-            Physics::WorldBodyRequestBus::Handler::BusConnect(id);
+            AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(id);
 
             // Whether or not the test should return a successful hit, we still want to create a valid
             // AABB so that the SurfaceData component registers itself as a provider.
@@ -73,14 +73,15 @@ namespace UnitTest
 
         virtual ~MockPhysicsWorldBusProvider()
         {
-            Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+            AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         }
 
         // Minimal mocks needed to mock out this ebus
         void EnablePhysics() override {}
         void DisablePhysics() override {}
         bool IsPhysicsEnabled() const override { return true; }
-        AzPhysics::SimulatedBody* GetWorldBody() override { return nullptr; }
+        AzPhysics::SimulatedBody* GetSimulatedBody() override { return nullptr; }
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override { return AzPhysics::InvalidSimulatedBodyHandle; }
 
         // Functional mocks to mock out the data needed by the component
         AZ::Aabb GetAabb() const override { return m_aabb; }

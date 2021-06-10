@@ -196,7 +196,7 @@ namespace EMotionFX
         ASSERT_TRUE(nodeConfig != nullptr);
         EXPECT_EQ(nodeConfig->m_shapes.size(), 1);
 
-        Physics::ShapeConfigurationPair& shapeConfigPair = nodeConfig->m_shapes[0];
+        AzPhysics::ShapeColliderPair& shapeConfigPair = nodeConfig->m_shapes[0];
         Physics::ColliderConfiguration* colliderConfig = shapeConfigPair.first.get();
         Physics::ShapeConfiguration* shapeConfig = shapeConfigPair.second.get();
         Physics::BoxShapeConfiguration* boxShapeConfig = azdynamic_cast<Physics::BoxShapeConfiguration*>(shapeConfig);

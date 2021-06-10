@@ -85,7 +85,7 @@ TEST_F(AWSCoreEditorSystemComponentTest, NotifyMainWindowInitialized_HaveDummyMe
     testMenuBar->addMenu("dummy menu");
     AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, &testMainWindow);
     EXPECT_TRUE(testMenuBar->actions().size() == 2);
-    EXPECT_TRUE(QString::compare(testMenuBar->actions()[1]->text(), AWSCoreEditorManager::CLOUD_SERVICES_MENU_TEXT) == 0);
+    EXPECT_TRUE(QString::compare(testMenuBar->actions()[1]->text(), AWSCoreEditorManager::AWS_MENU_TEXT) == 0);
 }
 
 TEST_F(AWSCoreEditorSystemComponentTest, NotifyMainWindowInitialized_HaveHelpMenuInMenuBar_ExpectedMenuGetsAddedAtFront)
@@ -95,5 +95,5 @@ TEST_F(AWSCoreEditorSystemComponentTest, NotifyMainWindowInitialized_HaveHelpMen
     testMenuBar->addMenu(AWSCoreEditorSystemComponent::EDITOR_HELP_MENU_TEXT);
     AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, &testMainWindow);
     EXPECT_TRUE(testMenuBar->actions().size() == 2);
-    EXPECT_TRUE(QString::compare(testMenuBar->actions()[0]->text(), AWSCoreEditorManager::CLOUD_SERVICES_MENU_TEXT) == 0);
+    EXPECT_TRUE(QString::compare(testMenuBar->actions()[0]->text(), AWSCoreEditorManager::AWS_MENU_TEXT) == 0);
 }

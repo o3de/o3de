@@ -11,7 +11,7 @@
 */
 
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
-#include <Source/NetworkEntity/NetworkEntityHandle.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 

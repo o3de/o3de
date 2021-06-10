@@ -19,6 +19,7 @@
 #include <IAudioConnection.h>
 #include <IAudioSystemControl.h>
 
+#include <ISystem.h>
 #include <IXml.h>
 
 namespace AudioControls

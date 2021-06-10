@@ -61,6 +61,7 @@ namespace AZ
                 {
                     const aiBone* m_bone = nullptr;
                     unsigned m_numVertices = 0;
+                    unsigned m_vertOffset = 0;
                     AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> m_skinWeightData;
                 };
 

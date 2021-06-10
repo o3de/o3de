@@ -70,6 +70,12 @@ namespace AZ
                 }
             }
 
+            if (classElement.GetVersion() < 5)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("matModUvOverrides"));
+                classElement.RemoveElementByName(AZ_CRC_CE("propertyOverrides"));
+            }
+
             return true;
         }
 
@@ -78,11 +84,9 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorMaterialComponentSlot>()
-                    ->Version(4, &EditorMaterialComponentSlot::ConvertVersion)
+                    ->Version(5, &EditorMaterialComponentSlot::ConvertVersion)
                     ->Field("id", &EditorMaterialComponentSlot::m_id)
                     ->Field("materialAsset", &EditorMaterialComponentSlot::m_materialAsset)
-                    ->Field("propertyOverrides", &EditorMaterialComponentSlot::m_propertyOverrides)
-                    ->Field("matModUvOverrides", &EditorMaterialComponentSlot::m_matModUvOverrides)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -269,7 +273,8 @@ namespace AZ
 
             QAction* action = nullptr;
 
-            menu.addAction("Open Material Editor", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
+            action = menu.addAction("Open Material Editor...", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
+            action->setVisible(!m_materialAsset.GetId().IsValid());
 
             action = menu.addAction("Clear", [this]() { Clear(); });
             action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());

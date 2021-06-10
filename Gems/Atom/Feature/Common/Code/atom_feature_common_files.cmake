@@ -27,8 +27,6 @@ set(FILES
     Include/Atom/Feature/ImGui/SystemBus.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
-    Include/Atom/Feature/Material/MaterialAssignment.h
-    Include/Atom/Feature/Material/MaterialAssignmentId.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
@@ -121,24 +119,28 @@ set(FILES
     Source/Decals/AsyncLoadTracker.h
     Source/Decals/DecalTextureArrayFeatureProcessor.h
     Source/Decals/DecalTextureArrayFeatureProcessor.cpp    
-    Source/DiffuseProbeGrid/DiffuseProbeGridRayTracingPass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridRayTracingPass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridBlendIrradiancePass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridBlendIrradiancePass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridBlendDistancePass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridBlendDistancePass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridBorderUpdatePass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridBorderUpdatePass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridRelocationPass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridRelocationPass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridClassificationPass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridClassificationPass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridRenderPass.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridRenderPass.h
-    Source/DiffuseProbeGrid/DiffuseProbeGrid.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGrid.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridFeatureProcessor.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendIrradiancePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridBlendDistancePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridBorderUpdatePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGrid.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
     Source/DisplayMapper/AcesOutputTransformLutPass.cpp
     Source/DisplayMapper/ApplyShaperLookupTablePass.cpp
@@ -155,18 +157,12 @@ set(FILES
     Source/LookupTable/LookupTableAsset.cpp
     Source/Material/ConvertEmissiveUnitFunctor.cpp
     Source/Material/ConvertEmissiveUnitFunctor.h
-    Source/Material/MaterialAssignment.cpp
-    Source/Material/MaterialAssignmentId.cpp
-    Source/Material/ShaderEnableFunctor.cpp
-    Source/Material/ShaderEnableFunctor.h
     Source/Material/SubsurfaceTransmissionParameterFunctor.cpp
     Source/Material/SubsurfaceTransmissionParameterFunctor.h
     Source/Material/Transform2DFunctor.cpp
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/PropertyVisibilityFunctor.cpp
-    Source/Material/PropertyVisibilityFunctor.h
     Source/Material/DrawListFunctor.cpp
     Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h
@@ -179,6 +175,10 @@ set(FILES
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp
     Source/MorphTargets/MorphTargetDispatchItem.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneFeatureProcessor.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlane.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlane.cpp
     Source/PostProcess/PostProcessBase.cpp
     Source/PostProcess/PostProcessBase.h
     Source/PostProcess/PostProcessFeatureProcessor.cpp
@@ -252,10 +252,15 @@ set(FILES
     Source/PostProcessing/SsaoPasses.h
     Source/PostProcessing/SubsurfaceScatteringPass.cpp
     Source/PostProcessing/SubsurfaceScatteringPass.h
+    Source/PostProcessing/TaaPass.h
+    Source/PostProcessing/TaaPass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
+    Source/RayTracing/RayTracingPass.cpp
+    Source/RayTracing/RayTracingPass.h
+    Source/RayTracing/RayTracingPassData.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp

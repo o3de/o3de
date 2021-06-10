@@ -486,17 +486,30 @@ namespace AZ
                     AZ_Assert(jointIndicesBufferAsset->GetBufferDescriptor().m_byteCount == remappedJointIndexBufferSizeInBytes, "Joint indices data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
                     AZ_Assert(skinWeightsBufferAsset->GetBufferDescriptor().m_byteCount == remappedSkinWeightsBufferSizeInBytes, "Skin weights data from EMotionFX is not the same size as the buffer from the model in '%s', lod '%d'", fullFileName.c_str(), lodIndex);
 
-                    Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset);
-                    jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
-                    Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset);
-                    skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                    if (Data::Instance<RPI::Buffer> jointIndicesBuffer = RPI::Buffer::FindOrCreate(jointIndicesBufferAsset))
+                    {
+                        jointIndicesBuffer->UpdateData(blendIndexBufferData.data(), remappedJointIndexBufferSizeInBytes);
+                    }
+                    if (Data::Instance<RPI::Buffer> skinWeightsBuffer = RPI::Buffer::FindOrCreate(skinWeightsBufferAsset))
+                    {
+                        skinWeightsBuffer->UpdateData(blendWeightBufferData.data(), remappedSkinWeightsBufferSizeInBytes);
+                    }
                 }
 
                 // Create read-only input assembly buffers that are not modified during skinning and shared across all instances
                 skinnedMeshLod.SetIndexBufferAsset(mesh0.GetIndexBufferAssetView().GetBufferAsset());
                 skinnedMeshLod.SetStaticBufferAsset(mesh0.GetSemanticBufferAssetView(Name{ "UV" })->GetBufferAsset(), SkinnedMeshStaticVertexStreams::UV_0);
 
-                const RPI::BufferAssetView* morphBufferAssetView = mesh0.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                const RPI::BufferAssetView* morphBufferAssetView = nullptr;
+                for (const auto& mesh : modelLodAsset->GetMeshes())
+                {
+                    morphBufferAssetView = mesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
+                    if (morphBufferAssetView)
+                    {
+                        break;
+                    }
+                }
+
                 if (morphBufferAssetView)
                 {
                     ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), lodIndex, fullFileName, skinnedMeshLod);
@@ -582,7 +595,7 @@ namespace AZ
             // Create a buffer and populate it with the transforms
             RPI::CommonBufferDescriptor descriptor;
             descriptor.m_bufferData = boneTransforms.data();
-            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s_%s", actorInstance->GetActor()->GetName(), Uuid::CreateRandom().ToString<AZStd::string>().c_str());
+            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s", actorInstance->GetActor()->GetName());
             descriptor.m_byteCount = boneTransforms.size() * sizeof(float);
             descriptor.m_elementSize = floatsPerBone * sizeof(float);
             descriptor.m_poolType = RPI::CommonBufferPoolType::ReadOnly;

@@ -191,9 +191,7 @@ private:
     void InitToolActionHandlers();
     void InitToolBars();
     void InitStatusBar();
-    void OnUpdateSnapToGrid(QAction* action);
     void OnViewPaneCreated(const QtViewPane* pane);
-    void LoadConfig();
 
     template <class TValue>
     void ReadConfigValue(const QString& key, TValue& value)
@@ -204,16 +202,9 @@ private:
     // AzToolsFramework::SourceControlNotificationBus::Handler:
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState state) override;
 
-    QWidget* CreateSnapToGridWidget();
-    QWidget* CreateSnapToAngleWidget();
     QWidget* CreateSpacerRightWidget();
 
     QToolButton* CreateUndoRedoButton(int command);
-
-    QToolButton* CreateEnvironmentModeButton();
-    QToolButton* CreateDebugModeButton();
-    void InitEnvironmentModeMenu(CVarMenu* environmentModeMenu);
-    void InitDebugModeMenu(CVarMenu* debugModeMenu);
 
 private Q_SLOTS:
     void ShowKeyboardCustomization();

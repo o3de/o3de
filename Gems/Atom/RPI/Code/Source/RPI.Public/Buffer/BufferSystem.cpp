@@ -61,10 +61,16 @@ namespace AZ
                 Data::InstanceDatabase<BufferPool>::Create(azrtti_typeid<ResourcePoolAsset>(), handler);
             }
             Interface<BufferSystemInterface>::Register(this);
+
+            m_initialized = true;
         }
 
         void BufferSystem::Shutdown()
         {
+            if (!m_initialized)
+            {
+                return;
+            }
             for (uint8_t index = 0; index < static_cast<uint8_t>(CommonBufferPoolType::Count); index++)
             {
                 m_commonPools[index] = nullptr;
@@ -72,6 +78,7 @@ namespace AZ
             Interface<BufferSystemInterface>::Unregister(this);
             Data::InstanceDatabase<Buffer>::Destroy();
             Data::InstanceDatabase<BufferPool>::Destroy();
+            m_initialized = false;
         }
         
         RHI::Ptr<RHI::BufferPool> BufferSystem::GetCommonBufferPool(CommonBufferPoolType poolType)
@@ -87,6 +94,10 @@ namespace AZ
         
         bool BufferSystem::CreateCommonBufferPool(CommonBufferPoolType poolType)
         {
+            if (!m_initialized)
+            {
+                return false;
+            }
             auto* device = RHI::RHISystemInterface::Get()->GetDevice();
             
             RHI::Ptr<RHI::BufferPool> bufferPool = RHI::Factory::Get().CreateBufferPool();
@@ -141,15 +152,22 @@ namespace AZ
         }
 
         Data::Instance<Buffer> BufferSystem::CreateBufferFromCommonPool(const CommonBufferDescriptor& descriptor)
-        {
-            Uuid bufferId = Uuid::CreateName(descriptor.m_bufferName.c_str());
-
-            // Report error if there is a buffer with same name.
-            // Note: this shouldn't return the existing buffer because users are expecting a newly created buffer.
-            if (Data::InstanceDatabase<Buffer>::Instance().Find(Data::InstanceId(bufferId)))
+        {            
+            Uuid bufferId;
+            if (descriptor.m_isUniqueName)
             {
-                AZ_Error("BufferSystem", false, "Buffer with same name '%s' already exist", descriptor.m_bufferName.c_str());
-                return nullptr;
+                bufferId = Uuid::CreateName(descriptor.m_bufferName.c_str());
+                // Report error if there is a buffer with same name.
+                // Note: this shouldn't return the existing buffer because users are expecting a newly created buffer.
+                if (Data::InstanceDatabase<Buffer>::Instance().Find(Data::InstanceId(bufferId)))
+                {
+                    AZ_Error("BufferSystem", false, "Buffer with same name '%s' already exist", descriptor.m_bufferName.c_str());
+                    return nullptr;
+                }
+            }
+            else
+            {
+                bufferId = Uuid::CreateRandom();
             }
 
             RHI::Ptr<RHI::BufferPool> bufferPool = GetCommonBufferPool(descriptor.m_poolType);
@@ -196,9 +214,9 @@ namespace AZ
             return nullptr;
         }
 
-        Data::Instance<Buffer> BufferSystem::FindCommonBuffer(AZStd::string_view bufferName)
+        Data::Instance<Buffer> BufferSystem::FindCommonBuffer(AZStd::string_view uniqueBufferName)
         {
-            Uuid bufferId = Uuid::CreateName(bufferName.data());
+            Uuid bufferId = Uuid::CreateName(uniqueBufferName.data());
             return Data::InstanceDatabase<Buffer>::Instance().Find(Data::InstanceId(bufferId));
         }
     } // namespace RPI

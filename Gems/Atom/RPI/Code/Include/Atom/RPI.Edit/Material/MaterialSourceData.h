@@ -32,7 +32,7 @@ namespace AZ
         //! In the source data, properties and UV names are loaded separately.
         //! However, treating UV names as a special property group can greatly simplify the editor code.
         //! See MaterialInspector::AddUvNamesGroup() for more details.
-        static constexpr const char UvGroupName[] = "UvNames";
+        static constexpr const char UvGroupName[] = "uvSets";
 
         class MaterialAsset;
 

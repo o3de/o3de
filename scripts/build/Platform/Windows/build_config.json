@@ -17,17 +17,19 @@
   },
   "debug_vs2019_pipe": {
     "TAGS": [
-      "nightly"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "steps": [
       "debug_vs2019",
-      "test_impact_seed",
       "test_debug_vs2019"
     ]
   },
   "profile_vs2019_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "steps": [
       "profile_vs2019",
@@ -80,22 +82,13 @@
       "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
-  "test_impact_seed": {
-    "TAGS": [
-    ],
-    "COMMAND": "python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
-      "SCRIPT_PARAMETERS": "--sequenceType seed --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.debug.json\""
-    }
-  },
   "test_impact_analysis": {
     "TAGS": [
     ],
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
-      "SCRIPT_PARAMETERS": "--sequenceType tia --destCommit !CHANGE_ID! --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.profile.json\""
+      "SCRIPT_PARAMETERS": "--testFailurePolicy abort --safeMode --suite main --pipeline !PIPELINE_NAME! --destCommit !CHANGE_ID! --config \"!OUTPUT_DIRECTORY!\\TestImpactFramework\\persistent\\tiaf.profile.json\""
     }
   },
   "debug_vs2019": {
@@ -106,7 +99,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=\"c:\\ly\\3rdParty\\ackages\\OpenCppCoverage\\Binary\\windows-x64\\OpenCppCoverage.exe\"",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -120,12 +113,13 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "profile_vs2019": {
@@ -137,7 +131,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE  -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=\"c:\\ly\\3rdParty\\ackages\\OpenCppCoverage\\Binary\\windows-x64\\OpenCppCoverage.exe\"",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=!TEST_IMPACT_WIN_BINARY!",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -145,7 +139,8 @@
   },
   "profile_vs2019_nounity": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -172,15 +167,17 @@
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "test_gpu_profile_vs2019": {
     "TAGS":[
-        "nightly"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "PIPELINE_ENV":{
-        "NODE_LABEL":"windows-gpu"
+      "NODE_LABEL":"windows-gpu"
     },
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
@@ -191,12 +188,15 @@
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "asset_profile_vs2019": {
     "TAGS": [
-        "weekly-build-metrics"
+      "weekly-build-metrics",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_asset_windows.cmd",
     "PARAMETERS": {
@@ -211,21 +211,10 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "asset_clean_profile_vs2019": {
-    "TAGS": [
-      "nightly"
-    ],
-    "PIPELINE_ENV": {
-      "CLEAN_ASSETS": "1"
-    },
-    "steps": [
-      "clean",
-      "asset_profile_vs2019"
-    ]
-  },
   "periodic_test_profile_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -237,12 +226,14 @@
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "sandbox_test_profile_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
@@ -257,12 +248,14 @@
       "CMAKE_TARGET": "TEST_SUITE_sandbox",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "benchmark_test_profile_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -274,12 +267,14 @@
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test",
-      "TEST_METRICS": "True"
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "release_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -294,7 +289,8 @@
   },
   "monolithic_release_vs2019": {
     "TAGS": [
-      "nightly",
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -309,15 +305,30 @@
   },
   "install_profile_vs2019": {
     "TAGS": [
-      "nightly"
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCMAKE_INSTALL_PREFIX=install",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE",
         "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "INSTALL",
+        "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "windows_installer": {
+    "TAGS": [
+      "package"
+    ],
+    "COMMAND": "build_installer_windows.cmd",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCPACK_WIX_ROOT=\"!WIX!\"",
+        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_TARGET": "ALL_BUILD",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
@@ -347,7 +358,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/build/windows_vs2019/install/cmake",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/install/cmake",
       "CMAKE_LY_PROJECTS": "",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

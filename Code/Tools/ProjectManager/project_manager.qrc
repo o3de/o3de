@@ -1,8 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-    <qresource>
-        <file>Resources/ProjectManager.qss</file>
-        <file>Resources/Add.svg</file>
-        <file>Resources/Select_Folder.svg</file>
-        <file>Resources/o3de_editor.ico</file>
-    </qresource>
-</RCC>

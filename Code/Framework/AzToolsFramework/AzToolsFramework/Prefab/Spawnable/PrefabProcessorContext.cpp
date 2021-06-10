@@ -10,6 +10,8 @@
 *
 */
 
+#include <AzFramework/Spawnable/Spawnable.h>
+
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
@@ -24,37 +26,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return result.second;
     }
 
-    bool PrefabProcessorContext::RemovePrefab(AZStd::string_view prefabName)
-    {
-        if (!m_isIterating)
-        {
-            return m_prefabs.erase(prefabName) > 0;
-        }
-        else
-        {
-            m_delayedDelete.emplace_back(prefabName);
-        }
-        return false;
-    }
-
     void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, PrefabDom&)>& callback)
     {
         m_isIterating = true;
         for (auto& it : m_prefabs)
         {
-            if (AZStd::find(m_delayedDelete.begin(), m_delayedDelete.end(), it.first) == m_delayedDelete.end())
-            {
-                callback(it.first, it.second);
-            }
+            callback(it.first, it.second);
         }
         m_isIterating = false;
-
-        // Clear out any prefabs that have been deleted.
-        for (AZStd::string& deleted : m_delayedDelete)
-        {
-            m_prefabs.erase(deleted);
-        }
-        m_delayedDelete.clear();
     }
 
     void PrefabProcessorContext::ListPrefabs(const AZStd::function<void(AZStd::string_view, const PrefabDom&)>& callback) const
@@ -70,6 +49,44 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return !m_prefabs.empty();
     }
 
+    bool PrefabProcessorContext::RegisterSpawnableProductAssetDependency(AZStd::string prefabName, AZStd::string dependentPrefabName)
+    {
+        using ConversionUtils = PrefabConversionUtils::ProcessedObjectStore;
+
+        prefabName += AzFramework::Spawnable::DotFileExtension;
+        uint32_t spawnableSubId = ConversionUtils::BuildSubId(AZStd::move(prefabName));
+
+        dependentPrefabName += AzFramework::Spawnable::DotFileExtension;
+        uint32_t spawnablePrefabSubId = ConversionUtils::BuildSubId(AZStd::move(dependentPrefabName));
+
+        return RegisterSpawnableProductAssetDependency(spawnableSubId, spawnablePrefabSubId);
+    }
+
+    bool PrefabProcessorContext::RegisterSpawnableProductAssetDependency(AZStd::string prefabName, const AZ::Data::AssetId& dependentAssetId)
+    {
+        using ConversionUtils = PrefabConversionUtils::ProcessedObjectStore;
+
+        prefabName += AzFramework::Spawnable::DotFileExtension;
+        uint32_t spawnableSubId = ConversionUtils::BuildSubId(AZStd::move(prefabName));
+
+        AZ::Data::AssetId spawnableAssetId(GetSourceUuid(), spawnableSubId);
+
+        return RegisterProductAssetDependency(spawnableAssetId, dependentAssetId);
+    }
+
+    bool PrefabProcessorContext::RegisterSpawnableProductAssetDependency(uint32_t spawnableAssetSubId, uint32_t dependentSpawnableAssetSubId)
+    {
+        AZ::Data::AssetId spawnableAssetId(GetSourceUuid(), spawnableAssetSubId);
+        AZ::Data::AssetId dependentSpawnableAssetId(GetSourceUuid(), dependentSpawnableAssetSubId);
+
+        return RegisterProductAssetDependency(spawnableAssetId, dependentSpawnableAssetId);
+    }
+
+    bool PrefabProcessorContext::RegisterProductAssetDependency(const AZ::Data::AssetId& assetId, const AZ::Data::AssetId& dependentAssetId)
+    {
+        return m_registeredProductAssetDependencies[assetId].emplace(dependentAssetId).second;
+    }
+
     PrefabProcessorContext::ProcessedObjectStoreContainer& PrefabProcessorContext::GetProcessedObjects()
     {
         return m_products;
@@ -78,6 +95,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     const PrefabProcessorContext::ProcessedObjectStoreContainer& PrefabProcessorContext::GetProcessedObjects() const
     {
         return m_products;
+    }
+
+    PrefabProcessorContext::ProductAssetDependencyContainer& PrefabProcessorContext::GetRegisteredProductAssetDependencies()
+    {
+        return m_registeredProductAssetDependencies;
+    }
+
+    const PrefabProcessorContext::ProductAssetDependencyContainer& PrefabProcessorContext::GetRegisteredProductAssetDependencies() const
+    {
+        return m_registeredProductAssetDependencies;
     }
 
     void PrefabProcessorContext::SetPlatformTags(AZ::PlatformTagSet tags)

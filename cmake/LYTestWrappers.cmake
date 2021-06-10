@@ -71,6 +71,7 @@ endfunction()
 #! ly_add_test: Adds a new RUN_TEST using for the specified target using the supplied command
 #
 # \arg:NAME - Name to for the test run target
+# \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
@@ -94,7 +95,7 @@ endfunction()
 # sets LY_ADDED_TEST_NAME to the fully qualified name of the test, in parent scope
 function(ly_add_test)
     set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
-    set(one_value_args NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
+    set(one_value_args NAME PARENT_NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
     set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
     # note that we dont use TEST_LIBRARY here, but PAL files might so do not remove!
 
@@ -241,12 +242,24 @@ function(ly_add_test)
 
     endif()
 
-    # Store the test so we can walk through all of them in LYTestImpactFramework.cmake
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${ly_add_test_NAME})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_SUITE ${ly_add_test_TEST_SUITE})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_test_NAME}_TEST_TIMEOUT ${ly_add_test_TIMEOUT})
+    if(NOT ly_add_test_PARENT_NAME)
+        set(test_target ${ly_add_test_NAME})
+    else()
+        set(test_target ${ly_add_test_PARENT_NAME})
+    endif()
 
+    # Check to see whether or not this test target has been stored in the global list for walking by the test impact analysis framework
+    get_property(all_tests GLOBAL PROPERTY LY_ALL_TESTS)
+    if(NOT "${test_target}" IN_LIST all_tests)
+        # This is the first reference to this test target so add it to the global list
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
+        set_property(GLOBAL  PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
+    endif()
+    # Add the test suite and timeout value to the test target params
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
+    # Store the params for this test target
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
 endfunction()
 
 #! ly_add_pytest: registers target PyTest-based test with CTest
@@ -288,8 +301,12 @@ function(ly_add_pytest)
 
     string(REPLACE "::" "_" pytest_report_directory "${PYTEST_XML_OUTPUT_DIR}/${ly_add_pytest_NAME}.xml")
 
+    # Add the script path to the test target params
+    set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
+
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
+        PARENT_NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
         LABELS FRAMEWORK_pytest
         TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
@@ -341,10 +358,13 @@ function(ly_add_editor_python_test)
 
     file(REAL_PATH ${ly_add_editor_python_test_TEST_PROJECT} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
 
+    # Add the script path to the test target params
+    set(LY_TEST_PARAMS "${ly_add_editor_python_test_PATH}")
     # Run test via the run_epbtest.cmake script.
     # Parameters used are explained in run_epbtest.cmake.
     ly_add_test(
         NAME ${ly_add_editor_python_test_NAME}
+        PARENT_NAME ${ly_add_editor_python_test_NAME}
         TEST_REQUIRES ${ly_add_editor_python_test_TEST_REQUIRES}
         TEST_COMMAND ${CMAKE_COMMAND}
             -DCMD_ARG_TEST_PROJECT=${project_real_path} 
@@ -362,14 +382,13 @@ function(ly_add_editor_python_test)
         TIMEOUT ${ly_add_editor_python_test_TIMEOUT}
         COMPONENT ${ly_add_editor_python_test_COMPONENT}
     )
-
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_editor_python_test_NAME}_SCRIPT_PATH ${ly_add_editor_python_test_PATH})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_editor_python_test_TEST_SERIAL}")
 endfunction()
 
 #! ly_add_googletest: Adds a new RUN_TEST using for the specified target using the supplied command or fallback to running
 #                     googletest tests through AzTestRunner
 # \arg:NAME Name to for the test run target
+# \arg:TARGET Name of the target module that is being run for tests. If not provided, will default to 'NAME'
 # \arg:TEST_REQUIRES(optional) List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
@@ -384,14 +403,20 @@ function(ly_add_googletest)
         message(FATAL_ERROR "Platform does not support test targets")
     endif()
 
-    set(one_value_args NAME TEST_SUITE) 
+    set(one_value_args NAME TARGET TEST_SUITE) 
     set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    if (ly_add_googletest_TARGET)
+        set(target_name ${ly_add_googletest_TARGET})
+    else()
+        set(target_name ${ly_add_googletest_NAME})
+    endif()
 
 
     # AzTestRunner modules only supports google test libraries, regardless of whether or not 
     # google test suites are supported
-    set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${ly_add_googletest_NAME}")
+    set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
 
     if(NOT PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED)
         return()
@@ -400,7 +425,7 @@ function(ly_add_googletest)
 
     if (ly_add_googletest_TEST_SUITE AND NOT ly_add_googletest_TEST_SUITE STREQUAL "main")
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
-        set(non_ide_params "-gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
+        set(non_ide_params "--gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
     else()
         # otherwise, if its the main suite we only runs things that dont have any of the other suites. 
         # Note: it doesn't do AND, only 'or' - so specifying SUITE_main:REQUIRES_gpu
@@ -412,11 +437,11 @@ function(ly_add_googletest)
 
     if(NOT ly_add_googletest_TEST_COMMAND)
         # Use the NAME parameter as the build target
-        set(build_target ${ly_add_googletest_NAME})
+        set(build_target ${target_name})
         ly_strip_target_namespace(TARGET ${build_target} OUTPUT_VARIABLE build_target)
 
         if(NOT TARGET ${build_target})
-            message(FATAL_ERROR "A valid build target \"${build_target}\" for test run \"${ly_add_googletest_NAME}\" has not been found.\
+            message(FATAL_ERROR "A valid build target \"${build_target}\" for test run \"${target_name}\" has not been found.\
                 A valid target via the TARGET parameter or a custom TEST_COMMAND must be supplied")
         endif()
 
@@ -424,14 +449,16 @@ function(ly_add_googletest)
         set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunUnitTests)
         # Add AzTestRunner as a build dependency
         ly_add_dependencies(${build_target} AZ::AzTestRunner)
+        # Start the test target params and dd the command runner command
         # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND "AzRunUnitTests")
+        set(LY_TEST_PARAMS "AzRunUnitTests")
     else()
         set(full_test_command ${ly_add_googletest_TEST_COMMAND})
         # Remove the generator expressions so we are left with the argument(s) required to run unit tests for executable targets
         string(REPLACE ";" "" stripped_test_command ${full_test_command})
         string(GENEX_STRIP ${stripped_test_command} stripped_test_command)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND ${stripped_test_command})
+        # Start the test target params and dd the command runner command
+        set(LY_TEST_PARAMS "${stripped_test_command}")
     endif()
 
     string(REPLACE "::" "_" report_directory "${GTEST_XML_OUTPUT_DIR}/${ly_add_googletest_NAME}.xml")
@@ -439,6 +466,7 @@ function(ly_add_googletest)
     # Invoke the lower level ly_add_test command to add the actual ctest and setup the test labels to add_dependencies on the target
     ly_add_test(
         NAME ${ly_add_googletest_NAME}
+        PARENT_NAME ${target_name}
         TEST_SUITE ${ly_add_googletest_TEST_SUITE}
         LABELS FRAMEWORK_googletest
         TEST_COMMAND ${full_test_command} --gtest_output=xml:${report_directory} ${LY_GOOGLETEST_EXTRA_PARAMS}
@@ -513,18 +541,22 @@ function(ly_add_googlebenchmark)
 
         # If command is not supplied attempts, uses the AzTestRunner to run googlebenchmarks on the supplied TARGET
         set(full_test_command $<TARGET_FILE:AZ::AzTestRunner> $<TARGET_FILE:${build_target}> AzRunBenchmarks ${output_format_args})
+        # Start the test target params and dd the command runner command
         # Ideally, we would populate the full command procedurally but the generator expressions won't be expanded by the time we need this data
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googlebenchmark_NAME}_TEST_COMMAND "AzRunUnitTests")
+        set(LY_TEST_PARAMS "AzRunUnitTests")
     else()
         set(full_test_command ${ly_add_googlebenchmark_TEST_COMMAND})
         # Remove the generator expressions so we are left with the argument(s) required to run unit tests for executable targets
         string(REPLACE ";" "" stripped_test_command ${full_test_command})
         string(GENEX_STRIP ${stripped_test_command} stripped_test_command)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_googletest_NAME}_TEST_COMMAND ${stripped_test_command})
+        # Start the test target params and dd the command runner command
+        set(LY_TEST_PARAMS "${stripped_test_command}")
     endif()
 
+    # Set the name of the current test target for storage in the global list
     ly_add_test(
         NAME ${ly_add_googlebenchmark_NAME}
+        PARENT_NAME ${ly_add_googlebenchmark_NAME}
         TEST_REQUIRES ${ly_add_googlebenchmark_TEST_REQUIRES}
         TEST_COMMAND ${full_test_command} ${LY_GOOGLETEST_EXTRA_PARAMS}
         TEST_SUITE "benchmark"

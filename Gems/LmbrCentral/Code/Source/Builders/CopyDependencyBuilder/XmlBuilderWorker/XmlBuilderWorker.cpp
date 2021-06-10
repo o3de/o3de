@@ -471,7 +471,7 @@ namespace CopyDependencyBuilder
         [[maybe_unused]] const AZStd::string& watchFolderPath) const
     {
         // Check the existing schema info stored in the asset database
-        // https://jira.agscollab.com/browse/LY-99056
+        // LY-99056
         return SchemaMatchResult::NoMatchFound;
     }
 
@@ -526,7 +526,7 @@ namespace CopyDependencyBuilder
             {
             case SchemaMatchResult::MatchFound:
                 // Update the LastUsedSchema info stored in the asset database
-                // https://jira.agscollab.com/browse/LY-99056
+                // LY-99056
                 AZ_Printf("XmlBuilderWorker", "Schema file %s found for source %s.", schemaFilePath.c_str(), sourceFilePath.c_str());
                 return matchResult;
             case SchemaMatchResult::NoMatchFound:

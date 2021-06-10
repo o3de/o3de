@@ -15,6 +15,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>

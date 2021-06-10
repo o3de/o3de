@@ -159,7 +159,7 @@ namespace EMotionFX
         static const char* s_commandName;
 
     private:
-        Physics::ShapeConfigurationPair* GetShapeConfigPair(Actor** outActor, AZStd::string& outResult) const;
+        AzPhysics::ShapeColliderPair* GetShapeConfigPair(Actor** outActor, AZStd::string& outResult) const;
 
         AZStd::optional<PhysicsSetup::ColliderConfigType> m_configType;
         AZStd::optional<size_t> m_index;

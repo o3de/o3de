@@ -15,6 +15,8 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
 
 #include "MaterialInputs/BaseColorInput.azsli"
 #include "MaterialInputs/RoughnessInput.azsli"
@@ -71,30 +73,26 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
     };
-
-    // Parameters for subsurface scattering
-    float m_subsurfaceScatteringFactor;
-    float m_subsurfaceScatteringQuality;
-    float3 m_scatterDistance;
-    Texture2D m_subsurfaceScatteringInfluenceMap;
-    uint m_subsurfaceScatteringInfluenceMapUvIndex;
-
-    // Parameters for transmission
-    
-    // Elements of m_transmissionParams:
-    // Thick object mode: (attenuation coefficient, power, distortion, scale)
-    // Thin  object mode:  (float3 scatter distance, scale)
-    float4 m_transmissionParams;
-    
-    // (float3 TintColor, thickness)
-    float4 m_transmissionTintThickness;
-    Texture2D m_transmissionThicknessMap;
-    uint m_transmissionThicknessMapUvIndex;
 }
 
 // Callback function for ParallaxMapping.azsli
-float GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 {
-    return SampleDepthOrHeightMap(MaterialSrg::m_depthInverted, MaterialSrg::m_depthMap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
 }
 
+
+COMMON_OPTIONS_PARALLAX()
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+}
+
+bool ShouldHandleParallaxInDepthShaders()
+{
+    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
+    // parallax could affect texel clipping.
+    return ShouldHandleParallax() && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
+}

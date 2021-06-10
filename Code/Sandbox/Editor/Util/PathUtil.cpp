@@ -272,21 +272,6 @@ namespace Path
         return str;
     }
 
-    //! Set the current mod NAME for editing purposes.  After doing this the above functions will take this into account
-    //! name only, please!
-    void SetModName(const char* input)
-    {
-        if (
-            (!input) ||
-            ((gEnv) && (gEnv->pSystem) && (!gEnv->pSystem->IsMODValid(input))) // we can only validate
-            )
-        {
-            AZ_Warning("PathUtil", false, "Invalid mod name supplied to SetModName: %s - ignored.", input ? input : "(NULL)");
-            return;
-        }
-        g_currentModName = input;
-    }
-
     //! Get the root folder (in source control or other writable assets) where you should save root data.
     AZStd::string GetEditingRootFolder()
     {

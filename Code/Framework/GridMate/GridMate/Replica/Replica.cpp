@@ -106,7 +106,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::Destroy()
     {
-        AZ_Assert(IsMaster(), "We don't own replica 0x%x!", GetRepId());
+        AZ_Assert(IsPrimary(), "We don't own replica 0x%x!", GetRepId());
         if (m_manager)
         {
             m_manager->Destroy(this);
@@ -327,7 +327,7 @@ namespace GridMate
 
         if (IsActive())
         {
-            if (IsMaster())
+            if (IsPrimary())
             {
                 EBUS_EVENT(Debug::ReplicaDrillerBus, OnRequestReplicaChangeOwnership, this, requestor);
 

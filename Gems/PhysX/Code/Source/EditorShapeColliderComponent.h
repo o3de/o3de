@@ -16,7 +16,7 @@
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/WorldBodyBus.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -68,7 +68,7 @@ namespace PhysX
         , protected DebugDraw::DisplayCallback
         , protected LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
-        , protected Physics::WorldBodyRequestBus::Handler
+        , protected AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorShapeColliderComponent, "{2389DDC7-871B-42C6-9C95-2A679DDA0158}",
@@ -120,12 +120,13 @@ namespace PhysX
         // handling for non-uniform scale
         void OnNonUniformScaleChanged(const AZ::Vector3& scale);
 
-        // WorldBodyRequestBus
+        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
         void EnablePhysics() override;
         void DisablePhysics() override;
         bool IsPhysicsEnabled() const override;
         AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetWorldBody() override;
+        AzPhysics::SimulatedBody* GetSimulatedBody() override;
+        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
         // LmbrCentral::ShapeComponentNotificationBus
@@ -142,7 +143,6 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
         AzPhysics::SceneInterface* m_sceneInterface = nullptr;
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
-        StaticRigidBody* m_editorBody = nullptr; //!< Body in the editor physics scene if there is no rigid body component.
         AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!< Handle to the body in the editor physics scene if there is no rigid body component.
         bool m_shapeTypeWarningIssued = false; //!< Records whether a warning about unsupported shapes has been previously issued.
         PolygonPrismMeshUtils::Mesh2D m_mesh; //!< Used for storing decompositions of the polygon prism.
@@ -155,7 +155,7 @@ namespace PhysX
         mutable GeometryCache m_geometryCache; //!< Cached data for generating sample points inside the attached shape.
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.

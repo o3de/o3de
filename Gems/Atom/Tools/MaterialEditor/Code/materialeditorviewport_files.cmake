@@ -12,6 +12,7 @@
 set(FILES
     Include/Atom/Viewport/InputController/MaterialEditorViewportInputControllerBus.h
     Include/Atom/Viewport/MaterialViewportModule.h
+    Include/Atom/Viewport/MaterialViewportSettings.h
     Include/Atom/Viewport/MaterialViewportRequestBus.h
     Include/Atom/Viewport/MaterialViewportNotificationBus.h
     Include/Atom/Viewport/PerformanceMetrics.h
@@ -35,6 +36,7 @@ set(FILES
     Source/Viewport/InputController/RotateModelBehavior.cpp
     Source/Viewport/InputController/RotateModelBehavior.h
     Source/Viewport/MaterialViewportModule.cpp
+    Source/Viewport/MaterialViewportSettings.cpp
     Source/Viewport/MaterialViewportComponent.cpp
     Source/Viewport/MaterialViewportComponent.h
     Source/Viewport/MaterialViewportWidget.cpp

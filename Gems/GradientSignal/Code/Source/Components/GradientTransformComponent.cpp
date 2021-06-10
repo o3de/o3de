@@ -200,6 +200,7 @@ namespace GradientSignal
     void GradientTransformComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
         services.push_back(AZ_CRC("GradientTransformService", 0x8c8c5ecc));
+        services.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void GradientTransformComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
@@ -333,7 +334,7 @@ namespace GradientSignal
         AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
         //transforming coordinate into "local" relative space of shape bounds
-        outUVW = m_shapeTransformInverse.TransformPoint(inPosition);
+        outUVW = m_shapeTransformInverse * inPosition;
 
         if (!m_configuration.m_advancedMode || !m_configuration.m_is3d)
         {
@@ -387,7 +388,7 @@ namespace GradientSignal
     void GradientTransformComponent::GetGradientEncompassingBounds(AZ::Aabb& bounds) const
     {
         bounds = m_shapeBounds;
-        bounds.ApplyTransform(m_shapeTransformInverse.GetInverse());
+        bounds.ApplyMatrix3x4(m_shapeTransformInverse.GetInverseFull());
     }
 
     void GradientTransformComponent::OnCompositionChanged()
@@ -492,7 +493,7 @@ namespace GradientSignal
 
         if (!m_configuration.m_advancedMode || !m_configuration.m_overrideScale)
         {
-            m_configuration.m_scale = shapeTransform.GetScale();
+            m_configuration.m_scale = AZ::Vector3(shapeTransform.GetUniformScale());
         }
 
         //rebuild bounds from parameters
@@ -500,10 +501,11 @@ namespace GradientSignal
         m_shapeBounds = AZ::Aabb::CreateFromMinMax(-m_configuration.m_bounds * 0.5f, m_configuration.m_bounds * 0.5f);
 
         //rebuild transform from parameters
-        AZ::Quaternion rotation;
-        rotation.SetFromEulerDegrees(m_configuration.m_rotate);
-        const AZ::Transform shapeTransformFinal(m_configuration.m_translate, rotation, m_configuration.m_scale);
-        m_shapeTransformInverse = shapeTransformFinal.GetInverse();
+        AZ::Matrix3x4 shapeTransformFinal;
+        shapeTransformFinal.SetFromEulerDegrees(m_configuration.m_rotate);
+        shapeTransformFinal.SetTranslation(m_configuration.m_translate);
+        shapeTransformFinal.MultiplyByScale(m_configuration.m_scale);
+        m_shapeTransformInverse = shapeTransformFinal.GetInverseFull();
     }
 
     AZ::EntityId GradientTransformComponent::GetShapeEntityId() const

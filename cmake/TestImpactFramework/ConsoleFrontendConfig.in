@@ -3,6 +3,13 @@
     "platform": "${platform}",
     "timestamp": "${timestamp}"
   },
+  "jenkins": {
+    "pipeline_of_truth" : [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "use_test_impact_analysis": ${use_tiaf}
+  },
   "repo": {
     "root": "${repo_dir}",
     "tiaf_bin": "${tiaf_bin}"
@@ -17,7 +24,11 @@
     "active": {
       "root": "${active_dir}",
       "relative_paths": {
-        "test_impact_data_file": "TestImpactData.spartia",
+        "test_impact_data_files": {
+          "main": "TestImpactData.main.spartia",
+          "periodic": "TestImpactData.periodic.spartia",
+          "sandbox": "TestImpactData.sandbox.spartia"
+        },
         "enumeration_cache_dir": "EnumerationCache",
         "last_build_target_list_file": "LastRunBuildTargets.json"
       }

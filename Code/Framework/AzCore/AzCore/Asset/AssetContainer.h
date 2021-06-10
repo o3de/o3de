@@ -137,6 +137,7 @@ namespace AZ
             AZStd::atomic_int m_invalidDependencies{ 0 };
             AZStd::unordered_set<AZ::Data::AssetId> m_unloadedDependencies;
             AZStd::atomic_bool m_initComplete{ false };
+            AZStd::atomic_bool m_finalNotificationSent{false};
 
             mutable AZStd::recursive_mutex m_preloadMutex;
             // AssetId -> List of assets it is still waiting on 

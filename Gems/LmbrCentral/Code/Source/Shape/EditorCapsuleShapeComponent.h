@@ -40,6 +40,8 @@ namespace LmbrCentral
             provided.push_back(AZ_CRC("CapsuleShapeService", 0x9bc1122c));
         }
 
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 

@@ -263,8 +263,6 @@ namespace AzToolsFramework
                     return SourceFileDetails("Icons/AssetBrowser/XML_16.svg");
                 }
 
-
-                // this is here to prevent having to include IResourceCompilerHelper, which is in CryCommon.
                 static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png" };
 
                 for (unsigned int sourceImageFormatIndex = 0, numSources = AZ_ARRAY_SIZE(sourceFormats); sourceImageFormatIndex < numSources; ++sourceImageFormatIndex)

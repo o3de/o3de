@@ -55,7 +55,7 @@ namespace SettingsRegistryConsoleUtilsTests
     {
         constexpr const char* settingsKey = "/TestKey";
         constexpr const char* expectedValue = "TestValue";
-        AZ::Console testConsole;
+        AZ::Console testConsole(*m_registry);
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle handle{
             AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_registry, testConsole) };
         EXPECT_TRUE(testConsole.PerformCommand(AZ::SettingsRegistryConsoleUtils::SettingsRegistrySet, { settingsKey, expectedValue }));
@@ -69,7 +69,7 @@ namespace SettingsRegistryConsoleUtilsTests
     {
         constexpr const char* settingsKey = "/TestKey";
         constexpr const char* expectedValue = "TestValue";
-        AZ::Console testConsole;
+        AZ::Console testConsole(*m_registry);
 
         // Scopes the console functor handle so that it destructs and unregisters the console functors
         {
@@ -89,7 +89,7 @@ namespace SettingsRegistryConsoleUtilsTests
         constexpr const char* settingsKey2 = "/TestKey2";
         constexpr const char* expectedValue = R"(TestValue)";
         constexpr const char* expectedValue2 = R"(Hello World)";
-        AZ::Console testConsole;
+        AZ::Console testConsole(*m_registry);
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle handle{
             AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_registry, testConsole) };
 
@@ -109,7 +109,7 @@ namespace SettingsRegistryConsoleUtilsTests
         constexpr const char* settingsKey2 = "/TestKey2";
         constexpr const char* expectedValue = R"(TestValue)";
         constexpr const char* expectedValue2 = R"(Hello World)";
-        AZ::Console testConsole;
+        AZ::Console testConsole(*m_registry);
 
         // Add settings to settings registry
         EXPECT_TRUE(m_registry->Set(settingsKey, expectedValue));
@@ -137,7 +137,7 @@ namespace SettingsRegistryConsoleUtilsTests
         constexpr const char* settingsKey2 = "/TestKey2";
         constexpr const char* expectedValue = R"(TestValue)";
         constexpr const char* expectedValue2 = R"(Hello World)";
-        AZ::Console testConsole;
+        AZ::Console testConsole(*m_registry);
 
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle handle{
             AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_registry, testConsole) };
@@ -195,7 +195,7 @@ namespace SettingsRegistryConsoleUtilsTests
         constexpr const char* SettingsKey2 = "TestKey2";
         constexpr const char* ExpectedValue = R"(TestValue)";
         constexpr const char* ExpectedValue2 = R"(Hello World)";
-        AZ::Console testConsole;
+        AZ::Console testConsole(*m_registry);
 
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle handle{
             AZ::SettingsRegistryConsoleUtils::RegisterAzConsoleCommands(*m_registry, testConsole) };

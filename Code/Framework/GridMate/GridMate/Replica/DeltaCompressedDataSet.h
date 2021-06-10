@@ -159,7 +159,7 @@ namespace GridMate
         }
 
         /**
-            Modify the DataSet. Call this on the Master node to change the data,
+            Modify the DataSet. Call this on the Primary node to change the data,
             which will be propagated to all proxies.
         **/
         void Set(const FieldType& v)
@@ -201,7 +201,7 @@ namespace GridMate
     private:
         DataSet<FieldType, MarshalerType> m_absolutePortion;
         DataSet<FieldType, DeltaMarshalerType> m_relativePortion;
-        FieldType m_combinedValue; // the latest value on either master or proxy
+        FieldType m_combinedValue; // the latest value on either primary or proxy
     };
 
     //-----------------------------------------------------------------------------

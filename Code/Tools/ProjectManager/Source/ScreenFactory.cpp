@@ -11,33 +11,48 @@
  */
 #include <ScreenFactory.h>
 
-#include <FirstTimeUse.h>
-#include <NewProjectSettings.h>
-#include <GemCatalog.h>
-#include <ProjectsHome.h>
-#include <ProjectSettings.h>
-#include <EngineSettings.h>
+#include <CreateProjectCtrl.h>
+#include <UpdateProjectCtrl.h>
+#include <NewProjectSettingsScreen.h>
+#include <GemCatalog/GemCatalogScreen.h>
+#include <ProjectsScreen.h>
+#include <UpdateProjectSettingsScreen.h>
+#include <EngineSettingsScreen.h>
 
 namespace O3DE::ProjectManager
 {
-    QWidget* BuildScreen(ProjectManagerWindow* window, ProjectManagerScreen screen)
+    ScreenWidget* BuildScreen(QWidget* parent, ProjectManagerScreen screen)
     {
+        ScreenWidget* newScreen;
+
         switch(screen)
         {
-        case (ProjectManagerScreen::FirstTimeUse):
-            return new FirstTimeUse(window);
+        case (ProjectManagerScreen::CreateProject):
+            newScreen = new CreateProjectCtrl(parent);
+            break;
         case (ProjectManagerScreen::NewProjectSettings):
-            return new NewProjectSettings(window);
+            newScreen = new NewProjectSettingsScreen(parent);
+            break;
         case (ProjectManagerScreen::GemCatalog):
-            return new GemCatalog(window);
-        case (ProjectManagerScreen::ProjectsHome):
-            return new ProjectsHome(window);
-        case (ProjectManagerScreen::ProjectSettings):
-            return new ProjectSettings(window);
+            newScreen = new GemCatalogScreen(parent);
+            break;
+        case (ProjectManagerScreen::Projects):
+            newScreen = new ProjectsScreen(parent);
+            break;
+        case (ProjectManagerScreen::UpdateProject):
+            newScreen = new UpdateProjectCtrl(parent);
+            break;
+        case (ProjectManagerScreen::UpdateProjectSettings):
+            newScreen = new UpdateProjectSettingsScreen(parent);
+            break;
         case (ProjectManagerScreen::EngineSettings):
-            return new EngineSettings(window);
+            newScreen = new EngineSettingsScreen(parent);
+            break;
+        case (ProjectManagerScreen::Empty):
         default:
-            return new QWidget(window->GetScreenStack());
+            newScreen = new ScreenWidget(parent);
         }
+
+        return newScreen;
     }
 } // namespace O3DE::ProjectManager

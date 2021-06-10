@@ -10,6 +10,8 @@
  *
  */
 
+#pragma once
+
 #include <TestImpactFramework/TestImpactRepoPath.h>
 
 #include <TestImpactTestUtils.h>

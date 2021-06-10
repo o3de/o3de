@@ -22,7 +22,7 @@ end
  
 function Process(context)
     local enable = context:GetMaterialPropertyValue_bool("emissive.enable")
-    local textureMap = context:GetMaterialPropertyValue_image("emissive.textureMap")
+    local textureMap = context:GetMaterialPropertyValue_Image("emissive.textureMap")
     local useTextureMap = context:GetMaterialPropertyValue_bool("emissive.useTexture")
     
     context:SetShaderOptionValue_bool("o_emissiveEnabled", enable)
@@ -47,7 +47,7 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("emissive.textureMapUv", mainVisibility)
 
     if(enable) then
-        local textureMap = context:GetMaterialPropertyValue_image("emissive.textureMap")
+        local textureMap = context:GetMaterialPropertyValue_Image("emissive.textureMap")
         local useTextureMap = context:GetMaterialPropertyValue_bool("emissive.useTexture")
 
         if(textureMap == nil) then

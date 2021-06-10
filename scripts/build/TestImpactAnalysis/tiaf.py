@@ -23,45 +23,45 @@ def is_child_path(parent_path, child_path):
     child_path = os.path.abspath(child_path)
     return os.path.commonpath([os.path.abspath(parent_path)]) == os.path.commonpath([os.path.abspath(parent_path), os.path.abspath(child_path)])
 
-# Enumerations for test sequence types
-class SequenceType(Enum):
-    # Regular sequence as-per the tiaf regular sequence
-    REGULAR = 1
-     # TIA sequence as-per the tiaf read-only impact analysis sequence
-    TEST_IMPACT_ANALYSIS = 2
-    # Seed sequence as-per the tiaf seed sequence
-    SEED = 3
-
 class TestImpact:
-    def __init__(self, config_file, dst_commit):
+    def __init__(self, config_file, pipeline, dst_commit):
+        self.__pipeline = pipeline
+        self.__dst_commit = dst_commit
+        self.__src_commit = None
+        self.__has_src_commit = False
         self.__parse_config_file(config_file)
-        self.__init_repo(dst_commit)
-        self.__generate_change_list()
+        if self.__use_test_impact_analysis and not self.__is_pipeline_of_truth:
+            self.__generate_change_list()
 
     # Parse the configuration file and retrieve the data needed for launching the test impact analysis runtime
     def __parse_config_file(self, config_file):
         print(f"Attempting to parse configuration file '{config_file}'...")
         with open(config_file, "r") as config_data:
             config = json.load(config_data)
+            # Repository
             self.__repo_dir = config["repo"]["root"]
+            # Jenkins
+            self.__use_test_impact_analysis = config["jenkins"]["use_test_impact_analysis"]
+            self.__pipeline_of_truth = config["jenkins"]["pipeline_of_truth"]
+            print(f"Pipeline of truth: '{self.__pipeline_of_truth}'.")
+            print(f"This pipeline: '{self.__pipeline}'.")
+            if self.__pipeline in self.__pipeline_of_truth:
+                self.__is_pipeline_of_truth = True
+            else:
+                self.__is_pipeline_of_truth = False
+            print(f"Is pipeline of truth: '{self.__is_pipeline_of_truth}'.")
+            # TIAF binary
             self.__tiaf_bin = config["repo"]["tiaf_bin"]
-            if not os.path.isfile(self.__tiaf_bin):
+            if self.__use_test_impact_analysis and not os.path.isfile(self.__tiaf_bin):
                 raise FileNotFoundError("Could not find tiaf binary")
+            # Workspaces
             self.__active_workspace = config["workspace"]["active"]["root"]
             self.__historic_workspace = config["workspace"]["historic"]["root"]
             self.__temp_workspace = config["workspace"]["temp"]["root"]
-            last_commit_hash_path_rel = config["workspace"]["historic"]["relative_paths"]["last_run_hash_file"]
-            self.__last_commit_hash_path = os.path.join(self.__historic_workspace, last_commit_hash_path_rel)
+            # Last commit hash
+            last_commit_hash_path_file = config["workspace"]["historic"]["relative_paths"]["last_run_hash_file"]
+            self.__last_commit_hash_path = os.path.join(self.__historic_workspace, last_commit_hash_path_file)
             print("The configuration file was parsed successfully.")
-
-    # Initializes the internal representation of the repository being targeted for test impact analysis
-    def __init_repo(self, dst_commit):
-        self.__repo = Repo(self.__repo_dir)
-        self.__branch = self.__repo.current_branch
-        self.__dst_commit = dst_commit
-        self.__src_commit = None
-        self.__has_src_commit = False
-        print(f"The repository is located at '{self.__repo_dir}' and the current branch is '{self.__branch}'.")
 
     # Restricts change lists from checking in test impact analysis files
     def __check_for_restricted_files(self, file_path):
@@ -71,12 +71,13 @@ class TestImpact:
     def __read_last_run_hash(self):
         self.__has_src_commit = False
         if os.path.isfile(self.__last_commit_hash_path):
-            print(f"Previous commit hash found at '{self.__last_commit_hash_path}'")            
+            print(f"Previous commit hash found at '{self.__last_commit_hash_path}'.")
             with open(self.__last_commit_hash_path) as file:
                 self.__src_commit = file.read()
                 self.__has_src_commit = True
 
     def __write_last_run_hash(self, last_run_hash):
+        os.mkdir(self.__historic_workspace)
         f = open(self.__last_commit_hash_path, "w")
         f.write(last_run_hash)
         f.close()
@@ -144,47 +145,78 @@ class TestImpact:
             return
 
     # Runs the specified test sequence
-    def run(self, sequence_type, safe_mode, test_timeout, global_timeout):
+    def run(self, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
         args = []
-        print("Please note: test impact analysis sequences will be run in read-only mode (seed sequences are unaffected).")
-        if sequence_type == SequenceType.REGULAR:
-            print("Sequence type: regular.")
-            args.append("--sequence=regular")
-            args.append("--fpolicy=abort")
-        elif sequence_type == SequenceType.SEED:
-            print("Sequence type: seed.")
-            args.append("--sequence=seed")
-            args.append("--fpolicy=continue")
-        elif sequence_type == SequenceType.TEST_IMPACT_ANALYSIS:
-            print("Sequence type: test impact analysis (no write).")
-            args.append("--fpolicy=abort")
-            if self.__has_change_list:
-                args.append(f"-changelist={self.__change_list_path}")
-                args.append("--sequence=tianowrite")
-            else:
-                print(f"No change list was generated, falling back to a regular sequence.")
-                print("Sequence type: Regular.")
-                args.append("--sequence=regular")
-        else:
-            raise ValueError(sequence_type)
-
+        pipeline_of_truth_test_failure_policy = "continue"
+        # Suite
+        args.append(f"--suite={suite}")
+        print(f"Test suite is set to '{suite}'.")
+        # Timeouts
         if test_timeout != None:
             args.append(f"--ttimeout={test_timeout}")
             print(f"Test target timeout is set to {test_timeout} seconds.")
         if global_timeout != None:
             args.append(f"--gtimeout={global_timeout}")
             print(f"Global sequence timeout is set to {test_timeout} seconds.")
-
+        if self.__use_test_impact_analysis:
+            print("Test impact analysis is enabled.")
+            # Pipeline of truth sequence
+            if self.__is_pipeline_of_truth:
+                # Sequence type
+                args.append("--sequence=seed")
+                print("Sequence type is set to 'seed'.")
+                # Test failure policy
+                args.append(f"--fpolicy={pipeline_of_truth_test_failure_policy}")
+                print(f"Test failure policy is set to '{pipeline_of_truth_test_failure_policy}'.")
+            # Non pipeline of truth sequence
+            else:
+                if self.__has_change_list:
+                    # Change list
+                    args.append(f"--changelist={self.__change_list_path}")
+                    print(f"Change list is set to '{self.__change_list_path}'.")
+                    # Sequence type
+                    args.append("--sequence=tianowrite")
+                    print("Sequence type is set to 'tianowrite'.")
+                    # Safe mode
+                    if safe_mode:
+                        args.append("--safemode=on")
+                        print("Safe mode set to 'on'.")
+                    else:
+                        args.append("--safemode=off")
+                        print("Safe mode set to 'off'.")
+                else:
+                    args.append("--sequence=regular")
+                    print("Sequence type is set to 'regular'.")
+                # Test failure policy
+                args.append(f"--fpolicy={test_failure_policy}")
+                print(f"Test failure policy is set to '{test_failure_policy}'.")
+        else:
+            print("Test impact analysis ie disabled.")
+             # Sequence type
+            args.append("--sequence=regular")
+            print("Sequence type is set to 'seed'.")
+            # Pipeline of truth sequence
+            if self.__is_pipeline_of_truth:
+                # Test failure policy
+                args.append(f"--fpolicy={pipeline_of_truth_test_failure_policy}")
+                print(f"Test failure policy is set to '{pipeline_of_truth_test_failure_policy}'.")
+            # Non pipeline of truth sequence
+            else:
+                # Test failure policy
+                args.append(f"--fpolicy={test_failure_policy}")
+                print(f"Test failure policy is set to '{test_failure_policy}'.")
+        
         print("Args: ", end='')
         print(*args)
         result = subprocess.run([self.__tiaf_bin] + args)
-        if result.returncode == 0:
+        # If the sequence completed 9with or without failures) we will update the historical meta-data
+        if result.returncode == 0 or result.returncode == 7:
             print("Test impact analysis runtime returned successfully.")
-            if sequence_type == SequenceType.SEED:
+            if self.__is_pipeline_of_truth:
                 print("Writing historical meta-data...")
                 self.__write_last_run_hash(self.__dst_commit)
             print("Complete!")
         else:
             print(f"The test impact analysis runtime returned with error: '{result.returncode}'.")
         return result.returncode
-
+        

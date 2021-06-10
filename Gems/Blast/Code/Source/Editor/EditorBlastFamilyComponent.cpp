@@ -85,6 +85,7 @@ namespace Blast
     void EditorBlastFamilyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("BlastFamilyService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorBlastFamilyComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -130,6 +131,6 @@ namespace Blast
 
     AZ::Data::AssetId EditorBlastFamilyComponent::GetPhysicsMaterialLibraryAssetId() const
     {
-        return AZ::Interface<AzPhysics::SystemInterface>::Get()->GetDefaultMaterialLibrary()->GetId();
+        return AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_materialLibraryAsset.GetId();
     }
 } // namespace Blast

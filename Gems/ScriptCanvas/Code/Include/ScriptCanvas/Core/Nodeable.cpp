@@ -104,8 +104,7 @@ namespace ScriptCanvas
 
     const FunctorOut& Nodeable::GetExecutionOutChecked(size_t index) const
     {
-
-        if (index >= m_outs.size() && m_outs[index])
+        if (index >= m_outs.size() || !m_outs[index])
         {
             return m_noOpFunctor;
         }

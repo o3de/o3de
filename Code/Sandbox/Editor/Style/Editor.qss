@@ -38,6 +38,11 @@ AzToolsFramework--ComponentPaletteWidget > QTreeView
     background-color: #222222;
 }
 
+AzToolsFramework--PropertyRowWidget[canBeReordered="true"]  QLabel#Name
+{
+    font-weight: bold;
+}
+
 /* Style for visualizing property values overridden from their prefab values */
 AzToolsFramework--PropertyRowWidget[IsOverridden=true] #Name QLabel,
 AzToolsFramework--ComponentEditorHeader #Title[IsOverridden="true"]
@@ -137,20 +142,6 @@ AzToolsFramework--SlicePushWidget QTreeWidget#WarningTreeWidget::item:pressed
 EditorWindow QToolBar
 {
     border-bottom: 2px solid #111111;
-}
-
-/* InfoBar (Toolbar below the main viewport) */
-
-QToolBar#InfoBar
-{
-    qproperty-iconSize: 22px 18px;
-}
-
-QToolBar#InfoBar AzQtComponents--VectorElement[Coordinate="X"] QLabel,
-QToolBar#InfoBar AzQtComponents--VectorElement[Coordinate="Y"] QLabel,
-QToolBar#InfoBar AzQtComponents--VectorElement[Coordinate="Z"] QLabel
-{
-    background-color: #333333;
 }
 
 DockWidgetTitleBar #DockWidgetContextMenu

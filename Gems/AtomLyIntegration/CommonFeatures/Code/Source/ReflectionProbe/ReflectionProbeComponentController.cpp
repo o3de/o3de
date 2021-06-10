@@ -46,6 +46,7 @@ namespace AZ
                     ->Field("InnerLength", &ReflectionProbeComponentConfig::m_innerLength)
                     ->Field("InnerWidth", &ReflectionProbeComponentConfig::m_innerWidth)
                     ->Field("UseBakedCubemap", &ReflectionProbeComponentConfig::m_useBakedCubemap)
+                    ->Field("BakedCubemapQualityLevel", &ReflectionProbeComponentConfig::m_bakedCubeMapQualityLevel)
                     ->Field("BakedCubeMapRelativePath", &ReflectionProbeComponentConfig::m_bakedCubeMapRelativePath)
                     ->Field("BakedCubeMapAsset", &ReflectionProbeComponentConfig::m_bakedCubeMapAsset)
                     ->Field("AuthoredCubeMapAsset", &ReflectionProbeComponentConfig::m_authoredCubeMapAsset)
@@ -80,6 +81,7 @@ namespace AZ
         void ReflectionProbeComponentController::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
             incompatible.push_back(AZ_CRC("ReflectionProbeService", 0xa5b919ce));
+            incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         void ReflectionProbeComponentController::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -164,6 +166,7 @@ namespace AZ
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveProbe(m_handle);
+                m_handle = nullptr;
             }
 
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
@@ -252,8 +255,7 @@ namespace AZ
             m_configuration.m_outerLength = dimensions.GetY();
             m_configuration.m_outerHeight = dimensions.GetZ();
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
 
             // clamp the inner extents to the outer extents
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);

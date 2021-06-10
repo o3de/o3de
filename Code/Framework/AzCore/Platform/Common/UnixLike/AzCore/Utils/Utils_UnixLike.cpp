@@ -25,15 +25,22 @@ namespace AZ
 
         void NativeErrorMessageBox(const char*, const char*) {}
 
-        AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
+        AZ::IO::FixedMaxPathString GetHomeDirectory()
         {
+            constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
+            AZ::IO::FixedMaxPathString overrideHomeDir;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
+                {
+                    AZ::IO::FixedMaxPath path{overrideHomeDir};
+                    return path.Native();
+                }
+            }
+
             if (const char* homePath = std::getenv("HOME"); homePath != nullptr)
             {
                 AZ::IO::FixedMaxPath path{homePath};
-                if (!path.empty())
-                {
-                    path /= ".o3de";
-                }
                 return path.Native();
             }
             return {};

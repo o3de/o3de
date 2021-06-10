@@ -87,19 +87,19 @@ namespace PhysXDebug
     {
         AZ_RTTI(ColorMappings, "{021E40A6-568E-430A-9332-EF180DACD3C0}");
         // user defined colors for physx debug primitives
-        ColorB m_defaultColor;
-        ColorB m_black;
-        ColorB m_red;
-        ColorB m_green;
-        ColorB m_blue;
-        ColorB m_yellow;
-        ColorB m_magenta;
-        ColorB m_cyan;
-        ColorB m_white;
-        ColorB m_grey;
-        ColorB m_darkRed;
-        ColorB m_darkGreen;
-        ColorB m_darkBlue;
+        AZ::Color m_defaultColor;
+        AZ::Color m_black;
+        AZ::Color m_red;
+        AZ::Color m_green;
+        AZ::Color m_blue;
+        AZ::Color m_yellow;
+        AZ::Color m_magenta;
+        AZ::Color m_cyan;
+        AZ::Color m_white;
+        AZ::Color m_grey;
+        AZ::Color m_darkRed;
+        AZ::Color m_darkGreen;
+        AZ::Color m_darkBlue;
     };
 
     class SystemComponent
@@ -156,13 +156,10 @@ namespace PhysXDebug
         /// Convert from PhysX Visualization debug colors to user defined colors.
         /// @param originalColor a color from the PhysX debug visualization data.
         /// @return a user specified color mapping (defaulting to the original PhysX color).
-        ColorB MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor);
+        AZ::Color MapOriginalPhysXColorToUserDefinedValues(const physx::PxU32& originalColor);
 
         /// Initialise the PhysX debug draw colors based on defaults.
         void InitPhysXColorMappings();
-
-        /// Register debug drawing PhysX commands with Open 3D Engine console during game mode.
-        void RegisterCommands();
 
         /// Draw the culling box being used by the viewport.
         /// @param cullingBoxAabb culling box Aabb to debug draw.
@@ -194,7 +191,7 @@ namespace PhysXDebug
 
 #ifdef IMGUI_ENABLED
         /// Build a specific color picker menu option.
-        void BuildColorPickingMenuItem(const AZStd::string& label, ColorB& color);
+        void BuildColorPickingMenuItem(const AZStd::string& label, AZ::Color& color);
 #endif // IMGUI_ENABLED
 
         physx::PxScene* GetCurrentPxScene();
@@ -209,10 +206,10 @@ namespace PhysXDebug
         bool m_editorPhysicsSceneDirty = true;
         static const float m_maxCullingBoxSize;
 
-        AZStd::vector<Vec3> m_linePoints;
-        AZStd::vector<ColorB> m_lineColors;
-        AZStd::vector<Vec3> m_trianglePoints;
-        AZStd::vector<ColorB> m_triangleColors;
+        AZStd::vector<AZ::Vector3> m_linePoints;
+        AZStd::vector<AZ::Color> m_lineColors;
+        AZStd::vector<AZ::Vector3> m_trianglePoints;
+        AZStd::vector<AZ::Color> m_triangleColors;
 
         // joint limit buffers
         AZStd::vector<AZ::Vector3> m_jointVertexBuffer;

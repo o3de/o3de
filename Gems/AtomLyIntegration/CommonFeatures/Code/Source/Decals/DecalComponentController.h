@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AtomLyIntegration/CommonFeatures/Decals/DecalBus.h>
 #include <AtomLyIntegration/CommonFeatures/Decals/DecalComponentConfig.h>
 #include <Atom/Feature/Decals/DecalFeatureProcessorInterface.h>
@@ -33,6 +34,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
             DecalComponentController() = default;
             DecalComponentController(const DecalComponentConfig& config);
@@ -64,11 +66,18 @@ namespace AZ
             void OpacityChanged();
             void SortKeyChanged();
             void MaterialChanged();
+            void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
 
             DecalComponentConfig m_configuration;
             DecalFeatureProcessorInterface* m_featureProcessor = nullptr;
             DecalFeatureProcessorInterface::DecalHandle m_handle;
             EntityId m_entityId;
+            AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+
+            AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler
+            {
+                [&](const AZ::Vector3& nonUniformScale) { HandleNonUniformScaleChange(nonUniformScale); }
+            };
         };
     } // namespace Render
 } // AZ namespace

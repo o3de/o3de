@@ -12,6 +12,7 @@
 
 
 #include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -22,11 +23,9 @@ namespace AZ
 {
     namespace Render
     {
-
         SkinnedMeshComputePass::SkinnedMeshComputePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
-            m_cachedShaderOptions.SetShader(m_shader);
         }
 
         RPI::Ptr<SkinnedMeshComputePass> SkinnedMeshComputePass::Create(const RPI::PassDescriptor& descriptor)
@@ -40,42 +39,30 @@ namespace AZ
             return m_shader;
         }
 
-        RPI::ShaderOptionGroup SkinnedMeshComputePass::CreateShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler)
+        void SkinnedMeshComputePass::SetFeatureProcessor(SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor)
         {
-            m_cachedShaderOptions.ConnectToShaderReinitializedEvent(shaderReinitializedHandler);
-            return m_cachedShaderOptions.CreateShaderOptionGroup(shaderOptions);
-        }
-
-        void SkinnedMeshComputePass::AddDispatchItem(const RHI::DispatchItem* dispatchItem)
-        {
-            AZ_Assert(dispatchItem != nullptr, "invalid dispatchItem");
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            //using an unordered_set here to prevent redundantly adding the same dispatchItem to the submission queue
-            //(i.e. if the same skinnedMesh exists in multiple views, it can call AddDispatchItem multiple times with the same item)
-            m_dispatches.insert(dispatchItem);  
+            m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
         }
         
         void SkinnedMeshComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            RHI::CommandList* commandList = context.GetCommandList();
-
-            SetSrgsForDispatch(commandList);
-
-            AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-            for (const RHI::DispatchItem* dispatchItem : m_dispatches)
+            if (m_skinnedMeshFeatureProcessor)
             {
-                commandList->Submit(*dispatchItem);
-            }
+                RHI::CommandList* commandList = context.GetCommandList();
 
-            // Clear the dispatch items. They will need to be re-populated next frame
-            m_dispatches.clear();
+                SetSrgsForDispatch(commandList);
+
+                m_skinnedMeshFeatureProcessor->SubmitSkinningDispatchItems(commandList);
+            }
         }
 
         void SkinnedMeshComputePass::OnShaderReinitialized(const RPI::Shader& shader)
         {
             ComputePass::OnShaderReinitialized(shader);
-            m_cachedShaderOptions.SetShader(m_shader);
+            if (m_skinnedMeshFeatureProcessor)
+            {
+                m_skinnedMeshFeatureProcessor->OnSkinningShaderReinitialized(m_shader);
+            }
         }
 
         void SkinnedMeshComputePass::OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId&, RPI::ShaderVariantStableId)

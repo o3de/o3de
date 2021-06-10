@@ -174,6 +174,6 @@ namespace LmbrCentral
 
     AZ::Vector3 EditorBoxShapeComponent::GetBoxScale()
     {
-        return AZ::Vector3(m_boxShape.GetCurrentTransform().GetScale().GetMaxElement() * m_boxShape.GetCurrentNonUniformScale());
+        return AZ::Vector3(m_boxShape.GetCurrentTransform().GetUniformScale() * m_boxShape.GetCurrentNonUniformScale());
     }
 } // namespace LmbrCentral

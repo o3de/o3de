@@ -73,14 +73,14 @@ class DataIngestion:
 
         api_id_output = core.CfnOutput(
             self._stack,
-            id='RestApiId',
+            id='RESTApiId',
             description='Service API Id for the analytics pipeline',
             export_name=f"{application_name}:RestApiId",
             value=self._rest_api.rest_api_id)
 
         stage_output = core.CfnOutput(
             self._stack,
-            id='DeploymentStage',
+            id='RESTApiStage',
             description='Stage for the REST API deployment',
             export_name=f"{application_name}:DeploymentStage",
             value=self._rest_api.deployment_stage.stage_name)

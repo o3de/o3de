@@ -17,7 +17,6 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Components/AnimAudioComponent.h>
 #include <Integration/Components/AnimGraphComponent.h>
-#include <Integration/Components/AnimGraphNetSyncComponent.h>
 #include <Integration/Components/SimpleMotionComponent.h>
 #include <Integration/Components/SimpleLODComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -74,8 +73,6 @@ namespace EMotionFX
                     AnimGraphComponent::CreateDescriptor(),
                     SimpleMotionComponent::CreateDescriptor(),
                     SimpleLODComponent::CreateDescriptor(),
-                    
-                    Network::AnimGraphNetSyncComponent::CreateDescriptor(),
 
     #if defined(EMOTIONFXANIMATION_EDITOR)
                     // Pipeline components

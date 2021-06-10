@@ -1,19 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+ * its licensors.
+ *
+ * For complete copyright and license terms please see the LICENSE at the root of this
+ * distribution (the "License"). All use of this software is governed by the License,
+ * or, if provided, by the license below or the license accompanying this file. Do not
+ * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ */
 
 #pragma once
 
-#include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
+#include <Atom/Feature/CoreLights/ShadowConstants.h>
+#include <Atom/RPI.Public/FeatureProcessor.h>
 
 namespace AZ
 {
@@ -22,9 +23,25 @@ namespace AZ
 
     namespace Render
     {
+        struct PointLightData
+        {
+            AZStd::array<float, 3> m_position = {{0.0f, 0.0f, 0.0f}};
+
+            // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+            float m_invAttenuationRadiusSquared = 0.0f;
+
+            AZStd::array<float, 3> m_rgbIntensity = {{0.0f, 0.0f, 0.0f}};
+
+            // Radius of spherical light in meters.
+            float m_bulbRadius = 0.0f; 
+
+            static const int NumShadowFaces = 6;
+            AZStd::array<uint16_t, NumShadowFaces> m_shadowIndices = {{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}};
+            uint32_t m_padding;
+        };
+
         //! PointLightFeatureProcessorInterface provides an interface to acquire, release, and update a point light.
-        class PointLightFeatureProcessorInterface
-            : public RPI::FeatureProcessor
+        class PointLightFeatureProcessorInterface : public RPI::FeatureProcessor
         {
         public:
             AZ_RTTI(AZ::Render::PointLightFeatureProcessorInterface, "{D3E0B016-F3C6-4C7A-A29E-0B3A4FA87806}", AZ::RPI::FeatureProcessor);
@@ -33,7 +50,8 @@ namespace AZ
             using LightHandle = RHI::Handle<uint16_t, class PointLight>;
             static constexpr PhotometricUnit PhotometricUnitType = PhotometricUnit::Candela;
 
-            //! Creates a new point light which can be referenced by the returned LightHandle. Must be released via ReleaseLight() when no longer needed.
+            //! Creates a new point light which can be referenced by the returned LightHandle. Must be released via ReleaseLight() when no
+            //! longer needed.
             virtual LightHandle AcquireLight() = 0;
             //! Releases a LightHandle which removes the point light.
             virtual bool ReleaseLight(LightHandle& handle) = 0;
@@ -48,6 +66,24 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the bulb radius for the provided LightHandle. Values greater than zero effectively make it a spherical light.
             virtual void SetBulbRadius(LightHandle handle, float bulbRadius) = 0;
+            //! Sets if shadows are enabled
+            virtual void SetShadowsEnabled(LightHandle handle, bool enabled) = 0;
+            //! Sets the shadowmap size (width and height) of the light.
+            virtual void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) = 0;
+            //! Specifies filter method of shadows.
+            virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
+            //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on
+            //! the boundary. 0 disables softening.
+            virtual void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) = 0;
+            //! Sets sample count to predict boundary of shadow (up to 16). It will be clamped to be less than or equal to the filtering
+            //! sample count.
+            virtual void SetPredictionSampleCount(LightHandle handle, uint16_t count) = 0;
+            //! Sets sample count for filtering of shadow boundary (up to 64)
+            virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
+            //! Sets the shadowmap Pcf (percentage closer filtering) method.
+            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+            //! Sets all of the the point data for the provided LightHandle.
+            virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
         };
     } // namespace Render
 } // namespace AZ

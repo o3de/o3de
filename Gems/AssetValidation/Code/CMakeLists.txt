@@ -65,3 +65,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME Gem::AssetValidation.Tests
     )
 endif()
+
+# AssetValidation should be active in all clients plus tools
+ly_create_alias(NAME AssetValidation.Clients NAMESPACE Gem TARGETS Gem::AssetValidation)
+ly_create_alias(NAME AssetValidation.Tools   NAMESPACE Gem TARGETS Gem::AssetValidation)
+

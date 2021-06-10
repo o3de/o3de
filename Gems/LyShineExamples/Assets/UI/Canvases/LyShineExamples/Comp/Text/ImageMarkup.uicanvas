@@ -56,7 +56,7 @@
 			</Class>
 			<Class name="AZStd::string" field="Name" value="17276776339261280904" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 			<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-				<Class name="SliceComponent" field="element" version="4" type="{AFD304E4-1773-47C8-855A-8B622398934F}">
+				<Class name="SliceComponent" field="element" version="3" type="{AFD304E4-1773-47C8-855A-8B622398934F}">
 					<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
 						<Class name="AZ::u64" field="Id" value="6533525738636311866" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
 					</Class>

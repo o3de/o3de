@@ -22,8 +22,6 @@
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
-#include <AzFramework/Network/NetBindingComponent.h>
-#include <AzFramework/Network/NetBindingSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Script/ScriptComponent.h>
@@ -42,8 +40,6 @@ namespace AzFramework
             AzFramework::AssetCatalogComponent::CreateDescriptor(),
             AzFramework::CustomAssetTypeComponent::CreateDescriptor(),
             AzFramework::FileTag::ExcludeFileComponent::CreateDescriptor(),
-            AzFramework::NetBindingComponent::CreateDescriptor(),
-            AzFramework::NetBindingSystemComponent::CreateDescriptor(),
             AzFramework::TransformComponent::CreateDescriptor(),
             AzFramework::NonUniformScaleComponent::CreateDescriptor(),
             AzFramework::GameEntityContextComponent::CreateDescriptor(),

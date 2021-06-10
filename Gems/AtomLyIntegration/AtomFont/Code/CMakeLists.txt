@@ -12,7 +12,7 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 ly_add_target(
-    NAME AtomFont ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAME AtomFont ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         atomfont_files.cmake
@@ -29,7 +29,8 @@ ly_add_target(
             Legacy::CryCommon
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public
-            Gem::Atom_Bootstrap.Headers
+        PUBLIC
+            Gem::Atom_AtomBridge.Static
 )
 
 ################################################################################

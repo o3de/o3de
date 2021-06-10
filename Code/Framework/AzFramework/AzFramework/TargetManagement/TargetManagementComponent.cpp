@@ -177,7 +177,7 @@ namespace AzFramework
                 Neighborhood::NeighborReplicaPtr replicaChunk = GridMate::CreateReplicaChunk<Neighborhood::NeighborReplica>(session->GetMyMember()->GetId().Compact(), m_component->m_settings->m_persistentName.c_str(), Neighborhood::NEIGHBOR_CAP_LUA_VM | Neighborhood::NEIGHBOR_CAP_LUA_DEBUGGER);
                 replicaChunk->SetDisplayName(m_component->m_settings->m_persistentName.c_str());
                 replica->AttachReplicaChunk(replicaChunk);
-                session->GetReplicaMgr()->AddMaster(replica);
+                session->GetReplicaMgr()->AddPrimary(replica);
             }
         }
 

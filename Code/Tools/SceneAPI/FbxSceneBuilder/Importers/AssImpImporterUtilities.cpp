@@ -69,7 +69,7 @@ namespace AZ
 
             aiMatrix4x4 GetConcatenatedLocalTransform(const aiNode* currentNode)
             {
-                aiNode* parent = currentNode->mParent;
+                const aiNode* parent = currentNode->mParent;
                 aiMatrix4x4 combinedTransform = currentNode->mTransformation;
 
                 while (parent)

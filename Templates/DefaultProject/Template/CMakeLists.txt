@@ -44,17 +44,5 @@ else()
 
     set_property(GLOBAL APPEND PROPERTY LY_PROJECTS_TARGET_NAME ${project_target_name})
 
-    # Currently we are in the ${Name} folder: ${CMAKE_CURRENT_LIST_DIR}
-    # Get the platform specific folder ${pal_dir} for the current folder: ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}
-    # Note: ly_get_list_relative_pal_filename will take care of the details for us, as this may be a restricted platform
-    #       in which case it will see if that platform is present here or in the restricted folder.
-    #       i.e. It could here: ${Name}/Platform/<platorm_name>  or
-    #            <restricted_folder>/<platform_name>/${Name}
-    ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-
-    # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
-    # project cmake for this platform.
-    include(${pal_dir}/${PAL_PLATFORM_NAME_LOWERCASE}_project.cmake)
-
     add_subdirectory(Code)
 endif()

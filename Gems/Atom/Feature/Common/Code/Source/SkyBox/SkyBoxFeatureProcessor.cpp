@@ -193,7 +193,7 @@ namespace AZ
 
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::Constant;
-            desc.m_bufferName = AZStd::string::format("SkyboxBuffer_%p", this);
+            desc.m_bufferName = "SkyboxBuffer";
             desc.m_byteCount = byteCount;
             desc.m_elementSize = byteCount;
             desc.m_bufferData = &m_physicalSkyData;

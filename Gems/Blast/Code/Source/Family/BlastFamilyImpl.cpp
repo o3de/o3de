@@ -179,7 +179,7 @@ namespace Blast
         {
             return;
         }
-        parentBody = parentActor->GetWorldBody();
+        parentBody = parentActor->GetSimulatedBody();
 
         const bool parentStatic = parentActor->IsStatic();
 
@@ -202,7 +202,7 @@ namespace Blast
             if (parentBody)
             {
                 parentTransform = parentBody->GetTransform();
-                parentTransform.MultiplyByScale(m_initialTransform.GetScale());
+                parentTransform.MultiplyByUniformScale(m_initialTransform.GetUniformScale());
             }
             else
             {
@@ -239,9 +239,8 @@ namespace Blast
         AzPhysics::RigidBodyConfiguration configuration;
         configuration.m_position = transform.GetTranslation();
         configuration.m_orientation = transform.GetRotation();
-        configuration.m_scale = transform.GetScale();
         configuration.m_ccdEnabled = m_actorConfiguration.m_isCcdEnabled;
-        configuration.m_simulated = m_actorConfiguration.m_isSimulated;
+        configuration.m_startSimulationEnabled = m_actorConfiguration.m_isSimulated;
         configuration.m_initialAngularVelocity = AZ::Vector3::CreateZero();
 
         BlastActorDesc actorDesc;
@@ -255,6 +254,7 @@ namespace Blast
         actorDesc.m_parentCenterOfMass = transform.GetTranslation();
         actorDesc.m_parentLinearVelocity = AZ::Vector3::CreateZero();
         actorDesc.m_bodyConfiguration = configuration;
+        actorDesc.m_scale = transform.GetUniformScale();
 
         return actorDesc;
     }
@@ -493,7 +493,7 @@ namespace Blast
             }
 
             // transform all added lines from local to global
-            AZ::Transform localToGlobal = blastActor->GetWorldBody()->GetTransform();
+            AZ::Transform localToGlobal = blastActor->GetSimulatedBody()->GetTransform();
             for (uint32_t i = lineStartIndex; i < debugRenderBuffer.m_lines.size(); i++)
             {
                 DebugLine& line = debugRenderBuffer.m_lines[i];

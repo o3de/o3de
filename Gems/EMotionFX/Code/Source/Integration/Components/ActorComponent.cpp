@@ -154,17 +154,15 @@ namespace EMotionFX
             Actor* actor = m_configuration.m_actorAsset->GetActor();
             if (actor)
             {
-                OnActorReady(actor);
+                CheckActorCreation();
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
             : m_debugDrawRoot(false)
-            , m_sceneFinishSimHandler([this](
-                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-                float fixedDeltatime
-                )
+            , m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                float fixedDeltatime)
                 {
                     if (m_actorInstance)
                     {
@@ -192,18 +190,9 @@ namespace EMotionFX
 
             if (cfg.m_actorAsset.GetId().IsValid())
             {
-                EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
                 AZ::Data::AssetBus::Handler::BusDisconnect();
-                EMotionFX::ActorNotificationBus::Handler::BusConnect();
                 AZ::Data::AssetBus::Handler::BusConnect(cfg.m_actorAsset.GetId());
                 cfg.m_actorAsset.QueueLoad();
-
-                // In case the asset was already loaded fully, create the actor directly.
-                if (cfg.m_actorAsset.IsReady() &&
-                    cfg.m_actorAsset->GetActor())
-                {
-                    cfg.m_actorAsset->GetActor()->LoadRemainingAssets();
-                }
             }
 
             AZ::TickBus::Handler::BusConnect();
@@ -231,7 +220,6 @@ namespace EMotionFX
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusDisconnect();
             AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
-            EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
             DestroyActor();
             m_configuration.m_actorAsset.Release();
@@ -311,31 +299,14 @@ namespace EMotionFX
         void ActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_configuration.m_actorAsset = asset;
-            Actor* actor = m_configuration.m_actorAsset->GetActor();
-            AZ_Assert(m_configuration.m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
+            AZ_Assert(m_configuration.m_actorAsset.IsReady() && m_configuration.m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
-            actor->LoadRemainingAssets();
-            actor->CheckFinalizeActor();
+            CheckActorCreation();
         }
 
         void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            DestroyActor();
-            m_configuration.m_actorAsset = asset;
-
-            const Actor* oldActor = m_configuration.m_actorAsset->GetActor();
-            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset = oldActor->GetMeshAsset();
-            AZ::Data::Asset<AZ::RPI::SkinMetaAsset> skinMetaAsset = oldActor->GetSkinMetaAsset();
-            AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> morphTargetMetaAsset = oldActor->GetMorphTargetMetaAsset();
-
-            m_configuration.m_actorAsset = asset;
-            Actor* newActor = m_configuration.m_actorAsset->GetActor();
-            AZ_Assert(m_configuration.m_actorAsset.IsReady() && newActor, "Actor asset should be loaded and actor valid.");
-
-            newActor->SetMeshAsset(meshAsset);
-            newActor->SetSkinMetaAsset(skinMetaAsset);
-            newActor->SetMorphTargetMetaAsset(morphTargetMetaAsset);
-            newActor->CheckFinalizeActor();
+            OnAssetReady(asset);
         }
 
         bool ActorComponent::IsPhysicsSceneSimulationFinishEventConnected() const
@@ -504,8 +475,7 @@ namespace EMotionFX
             {
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
-                AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                    &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
+                AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.
@@ -849,14 +819,6 @@ namespace EMotionFX
             if (targetActorInstance)
             {
                 m_actorInstance->RemoveAttachment(targetActorInstance);
-            }
-        }
-
-        void ActorComponent::OnActorReady(Actor* actor)
-        {
-            if (m_configuration.m_actorAsset && m_configuration.m_actorAsset->GetActor() == actor)
-            {
-                CheckActorCreation();
             }
         }
     } // namespace Integration

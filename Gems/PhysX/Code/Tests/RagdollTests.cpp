@@ -37,7 +37,7 @@ namespace PhysX
                 <Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
                     <Class name="AZ::u64" field="Id" value="0" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
                 </Class>
-                <Class name="PhysX::Ragdoll" field="PhysXRagdoll" type="{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}"/>
+                <Class name="AZStd::shared_ptr" field="PhysXRagdoll" type="{A3E470C6-D6E0-5A32-9E83-96C379D9E7FA}"/>
             </Class>
             </ObjectStream>)DELIMITER";
 

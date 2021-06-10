@@ -43,8 +43,34 @@ class TestConfigurationManager(TestCase):
                                                        mock_find_files_with_suffix_under_directory: MagicMock,
                                                        mock_get_default_account_id: MagicMock,
                                                        mock_get_default_region: MagicMock) -> None:
-        TestConfigurationManager._expected_configuration_manager.setup()
+        TestConfigurationManager._expected_configuration_manager.setup("")
         mock_get_current_directory_path.assert_called_once()
+        mock_check_path_exists.assert_called_once_with(TestConfigurationManager._expected_directory_path)
+        mock_find_files_with_suffix_under_directory.assert_called_once_with(
+            TestConfigurationManager._expected_directory_path, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)
+        mock_get_default_account_id.assert_called_once()
+        mock_get_default_region.assert_called_once()
+        assert TestConfigurationManager._expected_configuration_manager.configuration.config_directory == \
+               TestConfigurationManager._expected_directory_path
+        assert TestConfigurationManager._expected_configuration_manager.configuration.config_files == \
+               TestConfigurationManager._expected_config_files
+        assert TestConfigurationManager._expected_configuration_manager.configuration.account_id == \
+               TestConfigurationManager._expected_account_id
+        assert TestConfigurationManager._expected_configuration_manager.configuration.region == \
+               TestConfigurationManager._expected_region
+
+    @patch("utils.aws_utils.get_default_region", return_value=_expected_region)
+    @patch("utils.aws_utils.get_default_account_id", return_value=_expected_account_id)
+    @patch("utils.file_utils.find_files_with_suffix_under_directory", return_value=_expected_config_files)
+    @patch("utils.file_utils.check_path_exists", return_value=True)
+    @patch("utils.file_utils.normalize_file_path", return_value=_expected_directory_path)
+    def test_setup_get_configuration_setup_with_path_as_expected(self, mock_normalize_file_path: MagicMock,
+                                                                 mock_check_path_exists: MagicMock,
+                                                                 mock_find_files_with_suffix_under_directory: MagicMock,
+                                                                 mock_get_default_account_id: MagicMock,
+                                                                 mock_get_default_region: MagicMock) -> None:
+        TestConfigurationManager._expected_configuration_manager.setup(TestConfigurationManager._expected_directory_path)
+        mock_normalize_file_path.assert_called_once()
         mock_check_path_exists.assert_called_once_with(TestConfigurationManager._expected_directory_path)
         mock_find_files_with_suffix_under_directory.assert_called_once_with(
             TestConfigurationManager._expected_directory_path, constants.RESOURCE_MAPPING_CONFIG_FILE_NAME_SUFFIX)

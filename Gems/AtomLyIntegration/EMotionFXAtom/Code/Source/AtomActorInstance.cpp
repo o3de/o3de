@@ -18,6 +18,7 @@
 #include <Integration/System/SystemCommon.h>
 #include <Integration/System/SystemComponent.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/MorphSetup.h>
 #include <EMotionFX/Source/MorphSetupInstance.h>
 #include <EMotionFX/Source/MorphTargetStandard.h>
@@ -27,7 +28,10 @@
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
 
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/Image/StreamingImage.h>
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/EntityId.h>
@@ -39,6 +43,8 @@ namespace AZ
 {
     namespace Render
     {
+        static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
+
         AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator, 0)
 
         AtomActorInstance::AtomActorInstance(AZ::EntityId entityId,
@@ -54,6 +60,8 @@ namespace AZ
                 Activate();
                 AzFramework::BoundsRequestBus::Handler::BusConnect(m_entityId);
             }
+
+            m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
         }
 
         AtomActorInstance::~AtomActorInstance()
@@ -82,11 +90,122 @@ namespace AZ
             // Update RenderActorInstance local bounding box
             m_localAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetStaticBasedAABB().GetMin(), m_actorInstance->GetStaticBasedAABB().GetMax());
 
-            AzFramework::EntityBoundsUnionRequestBus::Broadcast(
-                &AzFramework::EntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, m_entityId);
+            AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
 
-        AZ::Aabb AtomActorInstance:: GetWorldBounds()
+        void AtomActorInstance::DebugDraw(const DebugOptions& debugOptions)
+        {
+            if (m_auxGeomFeatureProcessor)
+            {
+                if (RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue())
+                {
+                    if (debugOptions.m_drawAABB)
+                    {
+                        const MCore::AABB emfxAabb = m_actorInstance->GetAABB();
+                        const AZ::Aabb azAabb = AZ::Aabb::CreateFromMinMax(emfxAabb.GetMin(), emfxAabb.GetMax());
+                        auxGeom->DrawAabb(azAabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+                    }
+
+                    if (debugOptions.m_drawSkeleton)
+                    {
+                        RenderSkeleton(auxGeom.get());
+                    }
+
+                    if (debugOptions.m_emfxDebugDraw)
+                    {
+                        RenderEMFXDebugDraw(auxGeom.get());
+                    }
+                }
+            }
+        }
+
+        void AtomActorInstance::RenderSkeleton(RPI::AuxGeomDraw* auxGeom)
+        {
+            AZ_Assert(m_actorInstance, "Valid actor instance required.");
+            const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
+            const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
+            const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+
+            const AZ::u32 transformCount = transformData->GetNumTransforms();
+            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
+            const AZ::u32 numJoints = skeleton->GetNumNodes();
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(numJoints * 2);
+
+            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            {
+                const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
+                if (!joint->GetSkeletalLODStatus(lodLevel))
+                {
+                    continue;
+                }
+
+                const AZ::u32 parentIndex = joint->GetParentIndex();
+                if (parentIndex == InvalidIndex32)
+                {
+                    continue;
+                }
+
+                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                m_auxVertices.emplace_back(parentPos);
+
+                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                m_auxVertices.emplace_back(bonePos);
+            }
+
+            const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_colors = &skeletonColor;
+            lineArgs.m_colorCount = 1;
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
+
+        void AtomActorInstance::RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom)
+        {
+            EMotionFX::DebugDraw& debugDraw = EMotionFX::GetDebugDraw();
+            debugDraw.Lock();
+            EMotionFX::DebugDraw::ActorInstanceData* actorInstanceData = debugDraw.GetActorInstanceData(m_actorInstance);
+            actorInstanceData->Lock();
+            const AZStd::vector<EMotionFX::DebugDraw::Line>& lines = actorInstanceData->GetLines();
+            if (lines.empty())
+            {
+                actorInstanceData->Unlock();
+                debugDraw.Unlock();
+                return;
+            }
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(lines.size() * 2);
+            m_auxColors.clear();
+            m_auxColors.reserve(m_auxVertices.size());
+
+            for (const EMotionFX::DebugDraw::Line& line : actorInstanceData->GetLines())
+            {
+                m_auxVertices.emplace_back(line.m_start);
+                m_auxColors.emplace_back(line.m_startColor);
+                m_auxVertices.emplace_back(line.m_end);
+                m_auxColors.emplace_back(line.m_endColor);
+            }
+
+            AZ_Assert(m_auxVertices.size() == m_auxColors.size(),
+                "Number of vertices and number of colors need to match.");
+            actorInstanceData->Unlock();
+            debugDraw.Unlock();
+
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_colors = m_auxColors.data();
+            lineArgs.m_colorCount = m_auxColors.size();
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
+
+        AZ::Aabb AtomActorInstance::GetWorldBounds()
         {
             return m_worldAABB;
         }
@@ -414,6 +533,10 @@ namespace AZ
                     EMotionFX::MorphSetup* morphSetup = m_actorInstance->GetActor()->GetMorphSetup(lodIndex);
                     if (morphSetup)
                     {
+                        // Track all the masks/weights that are currently active
+                        m_wrinkleMasks.clear();
+                        m_wrinkleMaskWeights.clear();
+
                         uint32_t morphTargetCount = morphSetup->GetNumMorphTargets();
                         m_morphTargetWeights.clear();
                         for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
@@ -438,11 +561,28 @@ namespace AZ
                                 const EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
                                 if (deformData->mNumVerts > 0)
                                 {
-                                    m_morphTargetWeights.push_back(morphTargetSetupInstance->GetWeight());
+                                    float weight = morphTargetSetupInstance->GetWeight();
+                                    m_morphTargetWeights.push_back(weight);
+
+                                    // If the morph target is active and it has a wrinkle mask
+                                    auto wrinkleMaskIter = m_morphTargetWrinkleMaskMapsByLod[lodIndex].find(morphTargetStandard);
+                                    if (weight > 0 && wrinkleMaskIter != m_morphTargetWrinkleMaskMapsByLod[lodIndex].end())
+                                    {
+                                        // Add the wrinkle mask and weight, to be set on the material
+                                        m_wrinkleMasks.push_back(wrinkleMaskIter->second);
+                                        m_wrinkleMaskWeights.push_back(weight);
+                                    }
                                 }
                             }
                         }
                         m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
+
+                        // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from
+                        // Until that is fixed, just use lod 0 [ATOM-15251]
+                        if (lodIndex == 0)
+                        {
+                            UpdateWrinkleMasks();
+                        }
                     }
                 }
             }
@@ -453,6 +593,8 @@ namespace AZ
             MaterialAssignmentMap materials;
             MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
             CreateRenderProxy(materials);
+
+            InitWrinkleMasks();
 
             TransformNotificationBus::Handler::BusConnect(m_entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
@@ -574,5 +716,77 @@ namespace AZ
         {
             CreateSkinnedMeshInstance();
         }
+
+        void AtomActorInstance::InitWrinkleMasks()
+        {
+            EMotionFX::Actor* actor = m_actorAsset->GetActor();
+            m_morphTargetWrinkleMaskMapsByLod.resize(m_skinnedMeshInputBuffers->GetLodCount());
+            m_wrinkleMasks.reserve(s_maxActiveWrinkleMasks);
+            m_wrinkleMaskWeights.reserve(s_maxActiveWrinkleMasks);
+
+            for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
+            {
+                EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
+                if (morphSetup)
+                {
+                    const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
+                    // Loop over all the EMotionFX morph targets
+                    uint32_t numMorphTargets = morphSetup->GetNumMorphTargets();
+                    for (uint32_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+                    {
+                        EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
+                        for (const RPI::MorphTargetMetaAsset::MorphTarget& metaData : metaDatas)
+                        {
+                            // Find the metaData associated with this morph target
+                            if (metaData.m_morphTargetName == morphTarget->GetNameString() && metaData.m_wrinkleMask && metaData.m_numVertices > 0)
+                            {
+                                // If the metaData has a wrinkle mask, add it to the map
+                                Data::Instance<RPI::StreamingImage> streamingImage = RPI::StreamingImage::FindOrCreate(metaData.m_wrinkleMask);
+                                if (streamingImage)
+                                {
+                                    m_morphTargetWrinkleMaskMapsByLod[lodIndex][morphTarget] = streamingImage;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void AtomActorInstance::UpdateWrinkleMasks()
+        {
+            if (m_meshHandle)
+            {
+                Data::Instance<RPI::ShaderResourceGroup> wrinkleMaskObjectSrg = m_meshFeatureProcessor->GetObjectSrg(*m_meshHandle);
+                if (wrinkleMaskObjectSrg)
+                {
+                    RHI::ShaderInputImageIndex wrinkleMasksIndex = wrinkleMaskObjectSrg->FindShaderInputImageIndex(Name{ "m_wrinkle_masks" });
+                    RHI::ShaderInputConstantIndex wrinkleMaskWeightsIndex = wrinkleMaskObjectSrg->FindShaderInputConstantIndex(Name{ "m_wrinkle_mask_weights" });
+                    RHI::ShaderInputConstantIndex wrinkleMaskCountIndex = wrinkleMaskObjectSrg->FindShaderInputConstantIndex(Name{ "m_wrinkle_mask_count" });
+                    if (wrinkleMasksIndex.IsValid() || wrinkleMaskWeightsIndex.IsValid() || wrinkleMaskCountIndex.IsValid())
+                    {
+                        AZ_Error("AtomActorInstance", wrinkleMasksIndex.IsValid(), "m_wrinkle_masks not found on the ObjectSrg, but m_wrinkle_mask_weights and/or m_wrinkle_mask_count are being used.");
+                        AZ_Error("AtomActorInstance", wrinkleMaskWeightsIndex.IsValid(), "m_wrinkle_mask_weights not found on the ObjectSrg, but m_wrinkle_masks and/or m_wrinkle_mask_count are being used.");
+                        AZ_Error("AtomActorInstance", wrinkleMaskCountIndex.IsValid(), "m_wrinkle_mask_count not found on the ObjectSrg, but m_wrinkle_mask_weights and/or m_wrinkle_masks are being used.");
+
+                        if (m_wrinkleMasks.size())
+                        {
+                            wrinkleMaskObjectSrg->SetImageArray(wrinkleMasksIndex, AZStd::array_view<Data::Instance<RPI::Image>>(m_wrinkleMasks.data(), m_wrinkleMasks.size()));
+
+                            // Set the weights for any active masks
+                            for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
+                            {
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], i);
+                            }
+                            AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
+                        }
+
+                        wrinkleMaskObjectSrg->SetConstant(wrinkleMaskCountIndex, aznumeric_cast<uint32_t>(m_wrinkleMasks.size()));
+                        m_meshFeatureProcessor->QueueObjectSrgForCompile(*m_meshHandle);
+                    }
+                }
+            }
+        }
+
     } //namespace Render
 } // namespace AZ

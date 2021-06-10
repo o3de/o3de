@@ -55,6 +55,7 @@ ENGINE_ROOT_CHECK_FILE = 'engine.json'
 HASH_CHUNK_SIZE = 200000
 
 
+
 class LmbrCmdError(Exception):
     """
     Wrapper class to the general exception class where will absorb and prevent the printing of stack.
@@ -137,19 +138,32 @@ def get_config_file_values(config_file_path, keys_to_extract):
     return result_map
 
 
-def get_bootstrap_values(engine_root, keys_to_extract):
+def get_bootstrap_values(bootstrap_dir, keys_to_extract):
     """
-    Extract requested values from the bootstrap.cfg file in the def root folder
-    :param engine_root:         The engine root folder where bootstrap.cfg exists
+    Extract requested values from the bootstrap.setreg file in the Registry folder
+    :param bootstrap_dir:       The parent directory of the bootstrap.setreg file
     :param keys_to_extract:     The keys to extract into a dictionary
     :return: Dictionary of keys and its values (for matched keys)
     """
-    bootstrap_file = os.path.join(engine_root, 'bootstrap.cfg')
+    bootstrap_file = os.path.join(bootstrap_dir, 'bootstrap.setreg')
     if not os.path.isfile(bootstrap_file):
-        raise LmbrCmdError("Missing 'bootstrap.cfg' file from engine root ('{}')".format(engine_root),
-                           ERROR_CODE_FILE_NOT_FOUND)
+        raise logging.error(f'Bootstrap.setreg file {bootstrap_file} does not exist.')
     
-    result_map = get_config_file_values(bootstrap_file, keys_to_extract)
+    result_map = {}
+    with open(bootstrap_file, 'r') as f:
+        try:
+            json_data = json.load(f)
+        except Exception as e:
+            logging.error(f'Bootstrap.setreg failed to load: {str(e)}')
+        else:
+            for search_key in keys_to_extract:
+                try:
+                    search_result = json_data["Amazon"]["AzCore"]["Bootstrap"][search_key]
+                except KeyError as e:
+                    logging.warning(f'Bootstrap.setreg cannot find /Amazon/AzCore/Bootstrap/{search_key}: {str(e)}')
+                else:
+                    result_map[search_key] = search_result
+    
     return result_map
 
 
@@ -231,6 +245,19 @@ def load_template_file(template_file_path, template_env):
         raise FileNotFoundError(f"Invalid file path. Cannot find template file located at {str(template_file_path)}")
 
 
+# Determine the possible file extensions for executable files based on the host platform
+PLATFORM_EXECUTABLE_EXTENSIONS = [''] # Files without extensions are always considered
+
+if platform.system() == 'Windows':
+    # Windows manages its executable extensions through the %PATHEXT% environment variable
+    path_extensions_str = os.environ.get('PATHEXT', default='.EXE;.COM;.BAT;.CMD')
+    PLATFORM_EXECUTABLE_EXTENSIONS.extend([pathext.lower() for pathext in path_extensions_str.split(';')])
+elif platform.system() == 'Linux':
+    PLATFORM_EXECUTABLE_EXTENSIONS = ['', '.out']
+else:
+    PLATFORM_EXECUTABLE_EXTENSIONS = ['']
+
+
 def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, tool_version_argument, tool_version_regex, min_version, max_version):
     """
     Support method to validate a required system tool needed for the build either through an installed tool in the
@@ -257,12 +284,21 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
             elif not isinstance(override_tool_path, pathlib.Path):
                 raise LmbrCmdError(f"Invalid {tool_name} path argument. '{override_tool_path}' must be a string or Path",
                                    ERROR_CODE_INVALID_PARAMETER)
-            check_tool_path = override_tool_path / tool_filename
 
-            if not check_tool_path.is_file():
-                check_tool_path = pathlib.Path(override_tool_path) / 'bin' / tool_filename
+            file_found = False
+            for executable_path_ext in PLATFORM_EXECUTABLE_EXTENSIONS:
+                check_tool_filename = f'{tool_filename}{executable_path_ext}'
 
-            if not check_tool_path.is_file():
+                check_tool_path = override_tool_path / check_tool_filename
+                if check_tool_path.is_file():
+                    file_found = True
+                    break
+                check_tool_path = override_tool_path / 'bin' / check_tool_filename
+                if check_tool_path.is_file():
+                    file_found = True
+                    break
+
+            if not file_found:
                 raise LmbrCmdError(f"Invalid {tool_name} path argument. '{override_tool_path}' is not a valid {tool_name} path",
                                    ERROR_CODE_INVALID_PARAMETER)
             resolved_override_tool_path = str(check_tool_path.resolve())
@@ -271,7 +307,7 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         else:
             resolved_override_tool_path = None
             tool_source = tool_name
-            tool_desc = "installed gradle in the system path"
+            tool_desc = f"installed {tool_name} in the system path"
 
         # Extract the version and verify
         version_output = subprocess.check_output([tool_source, tool_version_argument],
@@ -280,13 +316,17 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         version_match = tool_version_regex.search(version_output)
         if not version_match:
             raise RuntimeError()
-        result_version = LooseVersion(str(version_match.group(1)).strip())
+
+
+        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the LooseVersion comparison
+        result_version_str = re.sub(r"[^\.0-9]", "", str(version_match.group(1)).strip())
+        result_version = LooseVersion(result_version_str)
 
         if min_version and result_version < min_version:
-            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of gradle required ({str(min_version)}).",
+            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",
                                ERROR_CODE_ENVIRONMENT_ERROR)
         elif max_version and result_version > max_version:
-            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of gradle supported ({str(max_version)}).",
+            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of {tool_name} supported ({str(max_version)}).",
                                ERROR_CODE_ENVIRONMENT_ERROR)
 
         return result_version, resolved_override_tool_path

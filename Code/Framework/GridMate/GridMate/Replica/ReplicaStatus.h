@@ -50,10 +50,10 @@ namespace GridMate
         //! Called on the originator node to request replica migration.
         Rpc<RpcArg<PeerId> >::BindInterface<ReplicaStatusInterface, & ReplicaStatusInterface::RequestOwnershipFn> RequestOwnership;
         
-        //! Called by the master to suspend upstream requests during replica migration.
+        //! Called by the primary to suspend upstream requests during replica migration.
         Rpc<RpcArg<PeerId>, RpcArg<AZ::u32> >::BindInterface<ReplicaStatusInterface, & ReplicaStatusInterface::MigrationSuspendUpstreamFn, RpcAuthoritativeTraits> MigrationSuspendUpstream;
         
-        //! Called by the master to signal downstream flush during replica migration.
+        //! Called by the primary to signal downstream flush during replica migration.
         Rpc<RpcArg<PeerId>, RpcArg<AZ::u32> >::BindInterface<ReplicaStatusInterface, & ReplicaStatusInterface::MigrationRequestDownstreamAckFn, RpcAuthoritativeTraits> MigrationRequestDownstreamAck;
 
         struct ReplicaOptions

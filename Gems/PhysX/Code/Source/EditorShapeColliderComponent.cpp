@@ -44,11 +44,14 @@ namespace PhysX
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
-        , m_onDefaultMaterialLibraryChangedEventHandler(
+        , m_onMaterialLibraryChangedEventHandler(
             [this](const AZ::Data::AssetId& defaultMaterialLibrary)
             {
-                m_colliderConfig.m_materialSelection.OnDefaultMaterialLibraryChanged(defaultMaterialLibrary);
+                m_colliderConfig.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
                 Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
+
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {
@@ -120,8 +123,6 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        // Not compatible with Legacy Cry Physics services
-        incompatible.push_back(AZ_CRC("ColliderService", 0x902d4e93));
         incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
         incompatible.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
     }
@@ -207,7 +208,7 @@ namespace PhysX
         }
 
         AZ::Transform transform = GetWorldTM();
-        transform.ExtractScale();
+        transform.ExtractUniformScale();
         const size_t numPoints = m_geometryCache.m_cachedSamplePoints.size();
         for (size_t pointIndex = 0; pointIndex < numPoints; ++pointIndex)
         {
@@ -228,7 +229,7 @@ namespace PhysX
     void EditorShapeColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* shapeColliderComponent = gameEntity->CreateComponent<ShapeColliderComponent>();
-        Physics::ShapeConfigurationList shapeConfigurationList;
+        AzPhysics::ShapeColliderPairList shapeConfigurationList;
         shapeConfigurationList.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
@@ -259,21 +260,27 @@ namespace PhysX
         configuration.m_entityId = GetEntityId();
         configuration.m_debugName = GetEntity()->GetName();
 
-        AZStd::vector<AzPhysics::ShapeColliderPair> colliderShapePairs;
+        AzPhysics::ShapeColliderPairList colliderShapePairs;
         colliderShapePairs.reserve(m_shapeConfigs.size());
         for (const auto& shapeConfig : m_shapeConfigs)
         {
-            colliderShapePairs.emplace_back(&m_colliderConfig, shapeConfig.get());
+            colliderShapePairs.emplace_back(
+                AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), shapeConfig);
         }
         configuration.m_colliderAndShapeData = colliderShapePairs;
 
         if (m_sceneInterface)
         {
+            //remove the previous body if any
+            if (m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+            {
+                m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
+            }
+
             m_editorBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &configuration);
-            m_editorBody = azdynamic_cast<StaticRigidBody*>(m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle));
         }
 
-        Physics::WorldBodyRequestBus::Handler::BusConnect(GetEntityId());
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
     AZ::u32 EditorShapeColliderComponent::OnConfigurationChanged()
@@ -323,6 +330,7 @@ namespace PhysX
         else
         {
             m_shapeType = !shapeCrc ? ShapeType::None : ShapeType::Unsupported;
+            m_shapeConfigs.clear();
             AZ_Warning("PhysX Shape Collider Component", m_shapeTypeWarningIssued, "Unsupported shape type for "
                 "entity \"%s\". The following shapes are currently supported - box, capsule, sphere, polygon prism.",
                 GetEntity()->GetName().c_str());
@@ -663,7 +671,7 @@ namespace PhysX
 
     void EditorShapeColliderComponent::Deactivate()
     {
-        Physics::WorldBodyRequestBus::Handler::BusDisconnect();
+        AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         m_colliderDebugDraw.Disconnect();
 
         m_nonUniformScaleChangedHandler.Disconnect();
@@ -677,8 +685,6 @@ namespace PhysX
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorBodyHandle);
-            m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-            m_editorBody = nullptr;
         }
     }
 
@@ -691,16 +697,16 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onDefaultMaterialLibraryChangedEventHandler.IsConnected())
+            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
             {
-                physXSystem->RegisterOnDefaultMaterialLibraryChangedEventHandler(m_onDefaultMaterialLibraryChangedEventHandler);
+                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
             }
         }
     }
 
     void EditorShapeColliderComponent::OnDeselected()
     {
-        m_onDefaultMaterialLibraryChangedEventHandler.Disconnect();
+        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 
@@ -749,28 +755,53 @@ namespace PhysX
 
     bool EditorShapeColliderComponent::IsPhysicsEnabled() const
     {
-        return m_editorBody != nullptr && m_editorBody->m_simulating;
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->m_simulating;
+            }
+        }
+        return false;
     }
 
     AZ::Aabb EditorShapeColliderComponent::GetAabb() const
     {
-        if (m_editorBody)
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
-            return m_editorBody->GetAabb();
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->GetAabb();
+            }
         }
         return AZ::Aabb::CreateNull();
     }
 
-    AzPhysics::SimulatedBody* EditorShapeColliderComponent::GetWorldBody()
+    AzPhysics::SimulatedBody* EditorShapeColliderComponent::GetSimulatedBody()
     {
-        return m_editorBody;
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
+        {
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body;
+            }
+        }
+        return nullptr;
+    }
+
+    AzPhysics::SimulatedBodyHandle EditorShapeColliderComponent::GetSimulatedBodyHandle() const
+    {
+        return m_editorBodyHandle;
     }
 
     AzPhysics::SceneQueryHit EditorShapeColliderComponent::RayCast(const AzPhysics::RayCastRequest& request)
     {
-        if (m_editorBody)
+        if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
-            return m_editorBody->RayCast(request);
+            if (auto* body = m_sceneInterface->GetSimulatedBodyFromHandle(m_editorSceneHandle, m_editorBodyHandle))
+            {
+                return body->RayCast(request);
+            }
         }
         return AzPhysics::SceneQueryHit();
     }
