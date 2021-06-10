@@ -2907,7 +2907,7 @@ namespace AssetProcessor
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileAPath));
 
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-        
+
         UNIT_TEST_EXPECT_TRUE(processResults.size() == 2);
 
         for (JobDetails& jobDetail : processResults)

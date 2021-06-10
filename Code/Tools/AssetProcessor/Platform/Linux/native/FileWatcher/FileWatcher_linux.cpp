@@ -26,28 +26,24 @@ static constexpr size_t s_iNotifyReadBufferSize = s_iNotifyMaxEntries * s_iNotif
 
 struct FolderRootWatch::PlatformImplementation
 {
-    PlatformImplementation() : m_iNotifyHandle(-1) { }
+    PlatformImplementation() = default;
 
-    int                         m_iNotifyHandle;
+    int                         m_iNotifyHandle = -1;
     QMutex                      m_handleToFolderMapLock;
     QHash<int, QString>         m_handleToFolderMap;
 
     bool Initialize()
     {
-        if (m_iNotifyHandle<0)
+        if (m_iNotifyHandle < 0)
         {
             m_iNotifyHandle = inotify_init();
-            if (m_iNotifyHandle<0)
-            {
-                
-            }
         }
-        return (m_iNotifyHandle>=0);
+        return (m_iNotifyHandle >= 0);
     }
 
     void Finalize()
     {
-        if (m_iNotifyHandle>=0)
+        if (m_iNotifyHandle >= 0)
         {
             if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
             {
@@ -72,7 +68,7 @@ struct FolderRootWatch::PlatformImplementation
 
     void AddWatchFolder(QString folder)
     {
-        if (m_iNotifyHandle>=0)
+        if (m_iNotifyHandle >= 0)
         {
             // Clean up the path before accepting it as a watch folder
             QString cleanPath = QDir::cleanPath(folder);
@@ -118,7 +114,7 @@ struct FolderRootWatch::PlatformImplementation
 
     void RemoveWatchFolder(int watchHandle)
     {
-        if (m_iNotifyHandle>=0)
+        if (m_iNotifyHandle >= 0)
         {
             if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
             {
@@ -190,7 +186,7 @@ void FolderRootWatch::WatchFolderLoop()
     while (!m_shutdownThreadSignal)
     {
         ssize_t bytesRead = ::read(m_platformImpl->m_iNotifyHandle, eventBuffer, s_iNotifyReadBufferSize);
-        if (bytesRead<0)
+        if (bytesRead < 0)
         {
             // Break out of the loop when the notify handle was closed (outside of this thread)
             break;
@@ -206,29 +202,33 @@ void FolderRootWatch::WatchFolderLoop()
                 {
                     QString pathStr = QString("%1%2%3").arg(m_platformImpl->m_handleToFolderMap[event->wd], QDir::separator(), event->name);
 
-                    if ( event->mask & (IN_CREATE | IN_MOVED_TO) ) {
-                        if ( event->mask & IN_ISDIR ) {
+                    if (event->mask & (IN_CREATE | IN_MOVED_TO)) 
+                    {
+                        if ( event->mask & IN_ISDIR ) 
+                        {
                             // New Directory, add it to the watch
                             m_platformImpl->AddWatchFolder(pathStr);
                         }
-                        else {
+                        else 
+                        {
                             ProcessNewFileEvent(pathStr);
                         }
                     }
-                    else if ( event->mask & (IN_DELETE | IN_MOVED_FROM) ) {
-                        if ( event->mask & IN_ISDIR ) {
+                    else if (event->mask & (IN_DELETE | IN_MOVED_FROM)) 
+                    {
+                        if (event->mask & IN_ISDIR) 
+                        {
+                            // Directory Deleted, remove it from the watch
                             m_platformImpl->RemoveWatchFolder(event->wd);
                         }
-                        else {
+                        else 
+                        {
                             ProcessDeleteFileEvent(pathStr);
                         }
                     }
-                    else if ( event->mask & IN_MODIFY ) {
-                        if ( event->mask & IN_ISDIR ) {
-                        }
-                        else {
-                            ProcessModifyFileEvent(pathStr);
-                        }
+                    else if ((event->mask & IN_MODIFY) && ((event->mask & IN_ISDIR) != IN_ISDIR))
+                    {
+                        ProcessModifyFileEvent(pathStr);
                     }
                 }
                 index += s_iNotifyEventSize + event->len;

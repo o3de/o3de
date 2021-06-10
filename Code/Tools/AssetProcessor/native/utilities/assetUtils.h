@@ -105,7 +105,7 @@ namespace AssetUtilities
 
     //! Determine the absolute path of the current project
     //! The path computed path will be cached on subsequent calls unless resetCachedProjectPath=true
-    QString ComputeProjectPath(bool resetCachedProjectPath=false);
+    QString ComputeProjectPath(bool resetCachedProjectPath = false);
 
     //! Reads the allowed list directly from the bootstrap file
     QString ReadAllowedlistFromSettingsRegistry(QString initialFolder = QString());
