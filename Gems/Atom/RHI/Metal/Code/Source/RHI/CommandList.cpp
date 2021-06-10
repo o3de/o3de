@@ -255,6 +255,7 @@ namespace AZ
             uint32_t bufferVertexRegisterIdMax = 0;
             uint32_t bufferFragmentOrComputeRegisterIdMax = 0;
             
+            //Arrays to cache all the buffers and offsets in order to make batch calls
             MetalArgumentBufferArray mtlVertexArgBuffers;
             MetalArgumentBufferArrayOffsets mtlVertexArgBufferOffsets;
             MetalArgumentBufferArray mtlFragmentOrComputeArgBuffers;
@@ -298,7 +299,6 @@ namespace AZ
                                 mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
                                 bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);
-                                
                             }
                             
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)
@@ -595,7 +595,7 @@ namespace AZ
                 AZ_Assert(count <= METAL_MAX_ENTRIES_BUFFER_ARG_TABLE , "Slots needed cannot exceed METAL_MAX_ENTRIES_BUFFER_ARG_TABLE");
                 
                 NSRange range = {METAL_MAX_ENTRIES_BUFFER_ARG_TABLE - count, count};
-                //For metal the stream buffers are populated from bottom to top as the top slots are taken by argument buffers
+                //The stream buffers are populated from bottom to top as the top slots are taken by argument buffers
                 for (int i = count-1; i >= 0; --i)
                 {
                     if (streams[i].GetBuffer())

@@ -386,8 +386,9 @@ namespace AZ
     
         void ArgumentBuffer::AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
         {
-            
+            //Map tp cache all the resoources based on the usage as we can batch all the resources for a given usage
             ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
+            //Map tp cache all the resoources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
             GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
             
             //Cache the constant buffer associated with a srg
