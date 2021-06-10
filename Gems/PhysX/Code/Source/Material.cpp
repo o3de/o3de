@@ -441,6 +441,7 @@ namespace PhysX
                     "UpdateMaterialSelectionFromPhysicsAsset: Physics material '%s' not found in the material library. Mesh material '%s' will use the default physics material.",
                     physicsMaterialNameFromPhysicsAsset.c_str(),
                     meshAsset->m_assetData.m_materialNames[slotIndex].c_str());
+                materialSelection.SetMaterialId(Physics::MaterialId(), slotIndex);
             }
         }
     }
