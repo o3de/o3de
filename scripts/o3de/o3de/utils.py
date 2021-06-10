@@ -46,9 +46,6 @@ def sanitize_identifier_for_cpp(identifier: str) -> str:
         return ''
     
     sanitized_identifier = list(identifier)
-    if not (sanitized_identifier[0].isalpha() or sanitized_identifier[0] == '_'):
-        sanitized_identifier.insert(0, '_')
-    
     for index, character in enumerate(sanitized_identifier):
         if not (character.isalnum() or character == '_'):
             sanitized_identifier[index] = '_'

@@ -1894,6 +1894,10 @@ def create_gem(gem_path: str,
     # gem name is now the last component of the gem_path
     gem_name = os.path.basename(gem_path)
 
+    if not utils.validate_identifier(gem_name):
+        logger.error(f'Gem name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {gem_name}')
+        return 1
+
     # gem name cannot be the same as a restricted platform name
     if gem_name in restricted_platforms:
         logger.error(f'Gem path cannot be a restricted name. {gem_name}')
