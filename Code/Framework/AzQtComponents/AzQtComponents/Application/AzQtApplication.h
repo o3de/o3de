@@ -64,20 +64,6 @@ namespace AzQtComponents
         class Impl;
         AZStd::unique_ptr<Impl> m_impl;
         AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-
-        //QTimer m_timer;
-        //void Tick(float deltaOverride = -1.f) override;
-
-
-        /*
-        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation);
-        void RemoveDockWidget(const AZStd::string& name);
-        void SetDockWidgetVisible(const AZStd::string& name, bool visible);
-        bool IsDockWidgetVisible(const AZStd::string& name) const;
-        AZStd::vector<AZStd::string> GetDockWidgetNames() const;
-
-        AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
-        */
     };
 } // namespace AzQtComponents
 

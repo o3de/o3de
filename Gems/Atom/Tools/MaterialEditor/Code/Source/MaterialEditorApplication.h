@@ -22,8 +22,6 @@
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 #include <AzQtComponents/Application/AzQtApplication.h>
-
-#include <QApplication>
 #include <QTimer>
 
 namespace MaterialEditor

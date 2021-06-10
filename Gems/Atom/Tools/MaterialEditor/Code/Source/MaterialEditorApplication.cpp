@@ -74,8 +74,6 @@ namespace MaterialEditor
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
     {
-        //AZ::Debug::TraceMessageBus::Handler::BusConnect();
-
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
 
@@ -88,7 +86,6 @@ namespace MaterialEditor
 
     MaterialEditorApplication::~MaterialEditorApplication()
     {
-        //AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();

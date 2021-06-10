@@ -16,19 +16,8 @@
 
 namespace AzQtComponents
 {
-    /*
-    AZStd::string_view GetBuildTargetName()
-    {
-#if !defined(LY_CMAKE_TARGET)
-#error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
-#endif
-        return AZStd::string_view { LY_CMAKE_TARGET };
-    }
-    */
-
      class AzQtApplication::Impl
          : private AZ::Debug::TraceMessageBus::Handler
-         //, public AzFramework::Application
     {
          friend class AzQtApplication;
 
@@ -57,7 +46,6 @@ namespace AzQtComponents
         : QApplication(argc, argv)
         , m_impl(new Impl(this))
     {
-         
          // Use a common Qt settings path for applications that don't register their own application name
          if (QApplication::applicationName().isEmpty())
          {
@@ -110,69 +98,6 @@ namespace AzQtComponents
         }
         return false;
     }
-
-    /*
-    bool ToolsApplication::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end() || !widget)
-        {
-            return false;
-        }
-
-        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
-        dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
-        dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(name.c_str());
-        widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
-        dockWidget->setWidget(widget);
-        //QMainWindow::addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
-        //QMainWindow::resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
-        m_dockWidgets[name] = dockWidget;
-        return true;
-    }
-
-    void ToolsApplication::RemoveDockWidget(const AZStd::string& name)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            delete dockWidgetItr->second;
-            m_dockWidgets.erase(dockWidgetItr);
-        }
-    }
-
-    void ToolsApplication::SetDockWidgetVisible(const AZStd::string& name, bool visible)
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            dockWidgetItr->second->setVisible(visible);
-        }
-    }
-
-    bool ToolsApplication::IsDockWidgetVisible(const AZStd::string& name) const
-    {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
-        {
-            return dockWidgetItr->second->isVisible();
-        }
-        return false;
-    }
-
-    AZStd::vector<AZStd::string> ToolsApplication::GetDockWidgetNames() const
-    {
-        AZStd::vector<AZStd::string> names;
-        names.reserve(m_dockWidgets.size());
-        for (const auto& dockWidgetPair : m_dockWidgets)
-        {
-            names.push_back(dockWidgetPair.first);
-        }
-        return names;
-    }
-    */
     
 } // namespace AzQtComponents
 
