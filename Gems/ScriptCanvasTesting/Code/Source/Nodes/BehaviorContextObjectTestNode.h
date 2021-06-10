@@ -53,6 +53,7 @@ namespace ScriptCanvasTestingNodes
                     ->Method("SetString", &BehaviorContextObjectTest::SetString)
                     ->Method("GetString", &BehaviorContextObjectTest::GetString)
                     ->Property("Name", BehaviorValueProperty(&BehaviorContextObjectTest::m_name))
+                    ->Constant("Always24", BehaviorConstant(24))
                     ;
             }
         }

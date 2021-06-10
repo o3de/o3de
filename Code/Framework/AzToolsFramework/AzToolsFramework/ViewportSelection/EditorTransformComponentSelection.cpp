@@ -1018,6 +1018,7 @@ namespace AzToolsFramework
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
+        EditorContextMenuBus::Handler::BusConnect();
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1038,6 +1039,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
@@ -3097,15 +3099,25 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& /*point*/, const int /*flags*/)
+    int EditorTransformComponentSelection::GetMenuPosition() const
     {
-        QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]()
-            {
-                ToggleCenterPivotSelection();
-            });
+        return aznumeric_cast<int>(EditorContextMenuOrdering::BOTTOM);
+    }
+
+    AZStd::string EditorTransformComponentSelection::GetMenuIdentifier() const
+    {
+        return "Transform Component";
+    }
+
+    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    {
+         QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
+         QObject::connect(
+             action, &QAction::triggered, action,
+             [this]()
+             {
+                 ToggleCenterPivotSelection();
+             });
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()

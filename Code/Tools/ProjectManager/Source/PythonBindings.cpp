@@ -246,7 +246,7 @@ namespace O3DE::ProjectManager
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
-            AZ_Warning("python", false, "Python home path must exist. path:%s", pyBasePath.c_str());
+            AZ_Assert(false, "Python home path must exist. path:%s", pyBasePath.c_str());
             return false;
         }
 
@@ -277,11 +277,12 @@ namespace O3DE::ProjectManager
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
 
-            // Setup sys.path
-            int result = PyRun_SimpleString("import sys");
-            AZ_Warning("ProjectManagerWindow", result != -1, "Import sys failed");
-            result = PyRun_SimpleString(AZStd::string::format("sys.path.append('%s')", m_enginePath.c_str()).c_str());
-            AZ_Warning("ProjectManagerWindow", result != -1, "Append to sys path failed");
+            // sanity import check
+            if (PyRun_SimpleString("import sys") != 0)
+            {
+                AZ_Assert(false, "Import sys failed");
+                return false;
+            }
 
             // import required modules
             m_cmake = pybind11::module::import("o3de.cmake");
@@ -295,11 +296,11 @@ namespace O3DE::ProjectManager
             // make sure the engine is registered
             RegisterThisEngine();
 
-            return result == 0 && !PyErr_Occurred();
+            return !PyErr_Occurred();
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
-            AZ_Warning("ProjectManagerWindow", false, "Py_Initialize() failed with %s", e.what());
+            AZ_Assert(false, "Py_Initialize() failed with %s", e.what());
             return false;
         }
     }

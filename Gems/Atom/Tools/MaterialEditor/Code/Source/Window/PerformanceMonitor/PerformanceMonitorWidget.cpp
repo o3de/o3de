@@ -15,7 +15,7 @@
 #include <Source/Window/PerformanceMonitor/PerformanceMonitorWidget.h>
 #include <Source/Window/PerformanceMonitor/ui_PerformanceMonitorWidget.h>
 
-#include <Qtimer>
+#include <QTimer>
 
 namespace MaterialEditor
 {
