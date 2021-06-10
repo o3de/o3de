@@ -23,7 +23,7 @@
 #include <BallJointComponent.h>
 #include <FixedJointComponent.h>
 #include <HingeJointComponent.h>
-#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/TransformComponent.h>

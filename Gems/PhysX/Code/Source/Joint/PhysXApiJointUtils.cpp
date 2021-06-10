@@ -17,7 +17,7 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzCore/EBus/EBus.h>
 
-#include <Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/PhysXLocks.h>
 #include <Source/Joint/PhysXApiJointUtils.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>

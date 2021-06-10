@@ -17,7 +17,7 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
-#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzCore/Interface/Interface.h>
 

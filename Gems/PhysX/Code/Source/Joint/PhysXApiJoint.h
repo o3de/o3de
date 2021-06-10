@@ -13,7 +13,7 @@
 #pragma once
 
 #include <AzFramework/Physics/Common/PhysicsApiJoint.h>
-#include <Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <Joint/PhysXApiJointUtils.h>
 
 namespace PhysX

@@ -19,7 +19,7 @@
 #include <AzCore/Component/TransformBus.h>
 
 #include <Source/Joint.h>
-#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace AzPhysics
 {

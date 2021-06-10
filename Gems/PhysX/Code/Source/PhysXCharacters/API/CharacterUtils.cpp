@@ -20,11 +20,11 @@
 #include <AzFramework/Physics/SystemBus.h>
 #include <cfloat>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>
 #include <Source/Joint.h>
-#include <Source/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace PhysX
 {
