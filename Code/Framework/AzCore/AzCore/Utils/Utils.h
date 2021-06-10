@@ -113,7 +113,8 @@ namespace AZ
         //! Save a string to a file. Otherwise returns a failure with error message.
         AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);
 
-        //! Read a file into a string. Returns a failure with error message if the content could not be loaded.
+        //! Read a file into a string. Returns a failure with error message if the content could not be loaded or if
+        //! the file size is larger than the max file size provided.
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize = DefaultMaxFileSize);
     }

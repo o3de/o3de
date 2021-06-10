@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
          * @param path the absolute path to the Gem 
          * @return an outcome with GemInfo on success 
          */
-        virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path) = 0;
+        virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
 
         /**
          * Get all available gem infos. This concatenates gems registered by the engine and the project.
@@ -147,7 +147,7 @@ namespace O3DE::ProjectManager
          * Get info about all known project templates
          * @return an outcome with ProjectTemplateInfos on success 
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

@@ -9,6 +9,12 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
+ERROR_PAGE_TOOL_SETUP_ERROR_MESSAGE: str = \
+    "AWS credentials are missing or invalid. See " \
+    "<a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/\">"\
+    "<span style=\"color:#4A90E2;\">documentation</span></a> for details." \
+    "<br>Check log file under Gems/AWSCore/Code/Tool/ResourceMappingTool for further information."
+
 VIEW_EDIT_PAGE_SAVING_FAILED_WITH_INVALID_ROW_ERROR_MESSAGE: str = \
     "Row {} have errors. Please correct errors or delete the row to proceed."
 VIEW_EDIT_PAGE_READ_FROM_JSON_FAILED_WITH_UNEXPECTED_FILE_ERROR_MESSAGE: str = \

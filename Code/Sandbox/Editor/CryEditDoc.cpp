@@ -729,6 +729,9 @@ bool CCryEditDoc::SaveModified()
 void CCryEditDoc::OnFileSaveAs()
 {
     CLevelFileDialog levelFileDialog(false);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
+
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
         if (OnSaveDocument(levelFileDialog.GetFileName()))

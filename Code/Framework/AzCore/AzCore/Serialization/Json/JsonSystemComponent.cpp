@@ -24,7 +24,12 @@
 #include <AzCore/Serialization/Json/StringSerializer.h>
 #include <AzCore/Serialization/Json/TupleSerializer.h>
 #include <AzCore/Serialization/Json/UnorderedSetSerializer.h>
+#include <AzCore/Serialization/Json/UnsupportedTypesSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/any.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/tuple.h>
+#include <AzCore/std/utils.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/forward_list.h>
@@ -33,12 +38,11 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/tuple.h>
-#include <AzCore/std/utils.h>
 
 namespace AZ
 {
@@ -97,6 +101,13 @@ namespace AZ
 
             jsonContext->Serializer<JsonArraySerializer>()
                 ->HandlesType<AZStd::array>();
+
+            jsonContext->Serializer<JsonAnySerializer>()
+                ->HandlesType<AZStd::any>();
+            jsonContext->Serializer<JsonVariantSerializer>()
+                ->HandlesType<AZStd::variant>();
+            jsonContext->Serializer<JsonOptionalSerializer>()
+                ->HandlesType<AZStd::optional>();
 
             MathReflect(jsonContext);
         }
