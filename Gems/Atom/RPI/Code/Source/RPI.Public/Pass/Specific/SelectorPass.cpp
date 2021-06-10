@@ -72,7 +72,7 @@ namespace AZ
             m_connections[outputSlotIndex] = inputSlotIndex;
 
             // Queue to rebuild attachment connections
-            QueueForBuild();
+            QueueForBuildAndInitialization();
         }
 
         void SelectorPass::Connect(const AZ::Name& inputSlot, const AZ::Name& outputSlot)
@@ -113,7 +113,7 @@ namespace AZ
             m_connections[outputIdx] = inputIdx;
 
             // Queue to rebuild attachment connections
-            QueueForBuild();
+            QueueForBuildAndInitialization();
         }
 
     } // namespace RPI

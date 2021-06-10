@@ -109,9 +109,7 @@ namespace AZ
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
 
             // Manually build the pipeline so we can gather the view tags from it's passes
-            pipeline->m_rootPass->Build();
-            pipeline->m_rootPass->Initialize();
-            pipeline->m_rootPass->OnInitializationFinished();
+            pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
 
             pipeline->BuildPipelineViews();
         }
@@ -327,9 +325,7 @@ namespace AZ
                 newRoot->SetRenderPipeline(this);
 
                 // Manually build the pipeline
-                newRoot->Build();
-                newRoot->Initialize();
-                newRoot->OnInitializationFinished();
+                newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
                 PassValidationResults validation;

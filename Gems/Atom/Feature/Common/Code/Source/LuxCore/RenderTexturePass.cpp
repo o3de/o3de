@@ -38,7 +38,7 @@ namespace AZ
             m_attachmentSize = image->GetRHIImage()->GetDescriptor().m_size;
             m_attachmentFormat = format;
             m_shaderResourceGroup->SetImage(m_textureIndex, image);
-            QueueForBuild();
+            QueueForBuildAndInitialization();
         }
 
         void RenderTexturePass::BuildInternal()

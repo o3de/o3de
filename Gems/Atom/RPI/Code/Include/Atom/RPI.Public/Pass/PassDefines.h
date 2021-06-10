@@ -27,46 +27,75 @@ namespace AZ
     namespace RPI
     {
         // This enum tracks the state of passes across build, initialization and rendering
+        // 
+        // Standard order of state progression:
+        // 
+        // Uninitialized -> Queued -> Resetting -> Reset -> Building -> Built -> Initializing -> Initialized -> Idle -> Rendering -> Idle ...
+        //
+        // Addition state transitions:
+        //
+        // Queued -> Resetting
+        //        -> Building
+        //        -> Initializing
+        // 
+        // Idle -> Queued
+        //      -> Resetting
+        //      -> Building
+        //      -> Initializing
+        //      -> Rendering
+        //
+        // Rendering -> Idle
+        //           -> Queued (Rendering will transition to Queued if a pass was queued with the PassSystem during Rendering)
+        //
         enum class PassState : u8
         {
             // Default value, you should only ever see this in the Pass constructor
             // Once the constructor is done, the Pass will set it's state to Reset
             Uninitialized,
-
+            //   |
+            //   |
+            //   V
             // Pass is queued with the Pass System for an update (see PassQueueState below)
-            // From Queued, the pass can transition into Resetting, Building or Initializing depending on the PassQueueState
             Queued,
-
+            //   |
+            //   |
+            //   V
             // Pass is currently in the process of resetting
-            // From Resetting, the pass can transition into 
             Resetting,
-
-            // Pass has been reset and is await build
-            // From Reset, the pass can transition to Building
+            //   |
+            //   |
+            //   V
+            // Pass has been reset and is awaiting build
             Reset,
-
+            //   |
+            //   |
+            //   V
             // Pass is currently building
-            // From Building, the pass can transition to Built
             Building,
-
+            //   |
+            //   |
+            //   V
             // Pass has been built and is awaiting initialization
-            // From Built, the pass can transition to Initializing
             Built,
-
+            //   |
+            //   |
+            //   V
             // Pass is currently being initialized
-            // From Initializing, the pass can transition to Initialized
             Initializing,
-
+            //   |
+            //   |
+            //   V
             // Pass has been initialized
-            // From Initialized, the pass can transition to Idle
             Initialized,
-
+            //   |
+            //   |
+            //   V
             // Idle state, pass is awaiting rendering
-            // From Idle, the pass can transition to Queued, Resetting, Building, Initializing or Rendering
             Idle,
-
+            //   |
+            //   |
+            //   V
             // Pass is currently rendering. Pass must be in Idle state before entering this state
-            // From Rendering, the pass can transition to Idle or Queue if the pass was queued with the Pass System during Rendering
             Rendering
         };
 
@@ -76,15 +105,15 @@ namespace AZ
             // The pass is currently not in any queued state and may therefore transition to any queued state
             NoQueue,
 
-            // The pass is queued for Removal at the start of the next frame. Cannot be overridden by any other queue state
+            // The pass is queued for Removal at the start of the next frame. Has the highest priority and cannot be overridden by any other queue state
             QueuedForRemoval,
 
-            // The pass is queued for Build at the start of the frame. Note that any pass built at the start of the frame will also be initialized.
-            // This state can be overridden by QueuedForRemoval
-            QueuedForBuild,
+            // The pass is queued for Build at the start of the frame. Note that any pass built at the start of the frame will also be Initialized.
+            // This state can be overridden by QueuedForRemoval, as we don't want to build a pass that has been removed.
+            QueuedForBuildAndInitialization,
 
             // The pass is queued for Initialization at the start of the frame.
-            // This state has the lowest priority and can therefore be overridden by QueueForBuild or QueueForRemoval
+            // This state has the lowest priority and can therefore be overridden by QueueForBuildAndInitialization or QueueForRemoval.
             QueuedForInitialization,
         };
     }

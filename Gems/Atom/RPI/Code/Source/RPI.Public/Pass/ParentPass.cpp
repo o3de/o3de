@@ -59,7 +59,7 @@ namespace AZ
             child->m_parent = this;
             child->OnHierarchyChange();
 
-            QueueForBuild();
+            QueueForBuildAndInitialization();
 
             // Notify pipeline
             if (m_pipeline)
@@ -249,11 +249,11 @@ namespace AZ
         void ParentPass::CreateChildPasses()
         {
             // The already created flag prevents this function from executing multiple times a frame
-            if (!m_flags.m_createChildren || m_flags.m_alreadyCreated)
+            if (!m_flags.m_createChildren || m_flags.m_alreadyCreatedChildren)
             {
                 return;
             }
-            m_flags.m_alreadyCreated = true;
+            m_flags.m_alreadyCreatedChildren = true;
 
             RemoveChildren();
             CreatePassesFromTemplate();

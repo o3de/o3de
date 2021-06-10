@@ -73,7 +73,7 @@ namespace AZ
         {
             m_sizes = sizes;
             m_updateChildren = true;
-            QueueForBuild();
+            QueueForBuildAndInitialization();
 
             m_atlas.Initialize();
             for (const auto& it : m_sizes)

@@ -81,7 +81,7 @@ namespace AZ
         //! ending with 'Internal' to define the behavior of your passes. These virtual are recursively
         //! called in preorder traversal throughout the pass tree. Only FrameBegin and FrameEnd are
         //! guaranteed to be called per frame. The other override-able functions are called as needed 
-        //! when scheduled with the PassSystem. See QueueForBuild, QueueForRemoval and QueueForInitialization.
+        //! when scheduled with the PassSystem. See QueueForBuildAndInitialization, QueueForRemoval and QueueForInitialization.
         //! 
         //! Passes are created by the PassFactory. They can be created using either Pass Name,
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
@@ -154,8 +154,8 @@ namespace AZ
 
             // --- Utility functions ---
             
-            //! Queues the pass to have Build() called by the PassSystem on frame update 
-            void QueueForBuild();
+            //! Queues the pass to have Build() and Initilize() called by the PassSystem on frame update 
+            void QueueForBuildAndInitialization();
 
             //! Queues the pass to have RemoveFromParent() called by the PassSystem on frame update
             void QueueForRemoval();
@@ -319,12 +319,12 @@ namespace AZ
             // customize it's behavior, hence why these functions are called the pass behavior functions.
 
             // Resets everything in the pass (like Attachments).
-            // Called from PassSystem when pass is QueueForBuild.
+            // Called from PassSystem when pass is QueueForBuildAndInitialization.
             void Reset();
             virtual void ResetInternal() { }
 
             // Builds and sets up any attachments and input/output connections the pass needs.
-            // Called from PassSystem when pass is QueueForBuild.
+            // Called from PassSystem when pass is QueueForBuildAndInitialization.
             void Build(bool calledFromPassSystem = false);
             virtual void BuildInternal() { }
 
@@ -403,7 +403,8 @@ namespace AZ
                         uint64_t m_parentEnabled : 1;
 
                         // If this is a parent pass, indicates if the pass has already created children this frame
-                        uint64_t m_alreadyCreated : 1;
+                        // Prevents ParentPass::CreateChildPasses from executing multiple times in the same pass 
+                        uint64_t m_alreadyCreatedChildren : 1;
 
                         // If this is a parent pass, indicates whether the pass needs to create child passes
                         uint64_t m_createChildren : 1;
@@ -452,6 +453,10 @@ namespace AZ
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
             void StoreImportedAttachmentReferences();
+
+            // Used by the RenderPipeline to create it's passes immediately instead of waiting on
+            // the next Pass System update. The function internally build and initializes the pass.
+            void ManualPipelineBuildAndInitialize();
 
             // --- Hierarchy related functions ---
 

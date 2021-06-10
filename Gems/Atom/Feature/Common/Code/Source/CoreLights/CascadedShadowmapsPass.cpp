@@ -100,7 +100,7 @@ namespace AZ
             m_arraySize = arraySize;
             m_updateChildren = true;
 
-            QueueForBuild();
+            QueueForBuildAndInitialization();
 
             m_atlas.Initialize();
             for (size_t cascadeIndex = 0; cascadeIndex < m_arraySize; ++cascadeIndex)
@@ -215,7 +215,7 @@ namespace AZ
                 AZ_RPI_PASS_WARNING(child, "CascadedShadowmapsPass child Pass creation failed for %d", cascadeIndex);
                 if (child)
                 {
-                    child->QueueForBuild();
+                    child->QueueForBuildAndInitialization();
                     AddChild(child);
                 }
             }

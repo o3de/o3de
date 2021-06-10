@@ -513,7 +513,7 @@ namespace AZ
                         desc.m_acesParameterOverrides.m_overrideDefaults != m_displayMapperConfigurationDescriptor.m_acesParameterOverrides.m_overrideDefaults)
                     {
                         m_flags.m_createChildren = true;
-                        QueueForBuild();
+                        QueueForBuildAndInitialization();
                     }
                     m_displayMapperConfigurationDescriptor = desc;
                 }

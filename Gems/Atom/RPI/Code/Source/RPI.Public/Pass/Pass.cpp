@@ -73,7 +73,7 @@ namespace AZ
             }
 
             PassSystemInterface::Get()->RegisterPass(this);
-            QueueForBuild();
+            QueueForBuildAndInitialization();
 
             // Skip reset since the pass just got created
             m_state = PassState::Reset;
@@ -1038,15 +1038,22 @@ namespace AZ
 
         // --- Queuing functions with PassSystem ---
 
-        void Pass::QueueForBuild()
+        void Pass::QueueForBuildAndInitialization()
         {
-            // Queue if not already queued or if queued for initialization only. Don't queue if we're currently building.
+            // Don't queue if we're currently building. Don't queue if we're already queued for Build or Removal
             if (m_state != PassState::Building &&
-                (m_queueState == PassQueueState::NoQueue || m_queueState == PassQueueState::QueuedForInitialization))
+                m_queueState != PassQueueState::QueuedForBuildAndInitialization &&
+                m_queueState != PassQueueState::QueuedForRemoval)
             {
+                // NOTE: We only queue for Build here, the queue for Initialization happens at the end of Pass::Build
+                // (doing it this way is an optimization to minimize the number of passes queued for initialization,
+                //  as many passes will be initialized by their parent passes and thus don't need to be queued)
                 PassSystemInterface::Get()->QueueForBuild(this);
-                m_queueState = PassQueueState::QueuedForBuild;
 
+                m_queueState = PassQueueState::QueuedForBuildAndInitialization;
+
+                // Transition state
+                // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
                 if (m_state != PassState::Rendering)
                 {
                     m_state = PassState::Queued;
@@ -1056,12 +1063,16 @@ namespace AZ
 
         void Pass::QueueForInitialization()
         {
-            // Only queue if the pass is not in any other queue. Don't queue if we're currently initializing.
+            // Only queue if the pass is not in any queue. Don't queue if we're currently initializing.
             if (m_queueState == PassQueueState::NoQueue && m_state != PassState::Initializing)
             {
                 PassSystemInterface::Get()->QueueForInitialization(this);
                 m_queueState = PassQueueState::QueuedForInitialization;
 
+                // Transition state
+                // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
+                // If the state is Built, preserve the state since [Built -> Initializing] is a valid transition
+                // Preserving PassState::Built lets the pass ignore subsequent build calls in the same frame
                 if (m_state != PassState::Rendering && m_state != PassState::Built)
                 {
                     m_state = PassState::Queued;
@@ -1072,12 +1083,14 @@ namespace AZ
         void Pass::QueueForRemoval()
         {
             // Skip only if we're already queued for removal, otherwise proceed.
-            // QueuedForRemoval overrides QueuedForBuild and QueuedForInitialization.
+            // QueuedForRemoval overrides QueuedForBuildAndInitialization and QueuedForInitialization.
             if (m_queueState != PassQueueState::QueuedForRemoval)
             {
                 PassSystemInterface::Get()->QueueForRemoval(this);
                 m_queueState = PassQueueState::QueuedForRemoval;
 
+                // Transition state
+                // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
                 if (m_state != PassState::Rendering)
                 {
                     m_state = PassState::Queued;
@@ -1091,7 +1104,7 @@ namespace AZ
         {
             // Ensure we're in a valid state to reset. This ensures the pass won't be reset multiple times in the same frame.
             bool execute = (m_state == PassState::Idle);
-            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuild);
+            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuildAndInitialization);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
 
             if (!execute)
@@ -1187,7 +1200,7 @@ namespace AZ
 
         void Pass::OnInitializationFinished()
         {
-            m_flags.m_alreadyCreated = false;
+            m_flags.m_alreadyCreatedChildren = false;
             m_importedAttachmentStore.clear();
             OnInitializationFinishedInternal();
 
@@ -1303,6 +1316,13 @@ namespace AZ
         RenderPipeline* Pass::GetRenderPipeline() const
         {
             return m_pipeline;
+        }
+
+        void Pass::ManualPipelineBuildAndInitialize()
+        {
+            Build();
+            Initialize();
+            OnInitializationFinished();
         }
 
         Scene* Pass::GetScene() const

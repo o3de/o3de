@@ -526,7 +526,7 @@ namespace AZ::Render
 
             for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
             {
-                esmPass->QueueForBuild();
+                esmPass->QueueForBuildAndInitialization();
             }
             
             for (ProjectedShadowmapsPass* shadowPass : m_projectedShadowmapsPasses)

@@ -150,7 +150,7 @@ namespace AZ
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
-            QueueForBuild();
+            QueueForBuildAndInitialization();
         }
 
         void SwapChainPass::ReadbackSwapChain(AZStd::shared_ptr<AttachmentReadback> readback)

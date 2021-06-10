@@ -100,7 +100,7 @@ namespace AZ
             m_passData.m_width = width;
             m_passData.m_height = height;
             OnUpdateOutputSize();
-            QueueForBuild();
+            QueueForBuildAndInitialization();
         }
 
         void RenderToTexturePass::OnUpdateOutputSize()
