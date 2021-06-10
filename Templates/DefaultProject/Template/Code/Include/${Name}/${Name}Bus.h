@@ -23,7 +23,7 @@ namespace ${SanitizedCppName}
     {
     public:
         AZ_RTTI(${SanitizedCppName}Requests, "${Random_Uuid}");
-        virtual ~${SanitizedCppName}Requests = default();
+        virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
     
