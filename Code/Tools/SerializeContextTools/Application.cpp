@@ -35,7 +35,7 @@ namespace AZ
         Application::Application(int argc, char** argv)
             : AzToolsFramework::ToolsApplication(&argc, &argv)
         {
-            // We need a specialized variant of EditorEntityContextCompnent for the SliceConverter, so we register the descriptor here.
+            // We need a specialized variant of EditorEntityContextComponent for the SliceConverter, so we register the descriptor here.
             RegisterComponentDescriptor(AzToolsFramework::SliceConverterEditorEntityContextComponent::CreateDescriptor());
 
             AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
