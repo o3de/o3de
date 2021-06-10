@@ -29,7 +29,8 @@ namespace ${SanitizedCppName}
         AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}");
         static void Reflect(AZ::ReflectContext* context);
 
-        ${SanitizedCppName}EditorSystemComponent() = default;
+        ${SanitizedCppName}EditorSystemComponent();
+        ~${SanitizedCppName}EditorSystemComponent();
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
