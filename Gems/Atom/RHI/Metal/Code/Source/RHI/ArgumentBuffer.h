@@ -123,7 +123,7 @@ namespace AZ
             struct MetalResourceArray
             {
                 AZStd::array<id <MTLResource>, MaxEntriesInArgTable> m_resourceArray;
-                int m_resourceArrayLen = 0;
+                uint16_t m_resourceArrayLen = 0;
             };
             //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
             using ComputeResourcesToMakeResidentMap =  AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;

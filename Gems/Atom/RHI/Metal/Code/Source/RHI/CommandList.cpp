@@ -347,18 +347,35 @@ namespace AZ
             //For graphics and compute encoder bind all the argument buffers
             if(m_commandEncoderType == CommandEncoderType::Render)
             {
-                BindArgumentBuffers(RHI::ShaderStage::Vertex, bufferVertexRegisterIdMin, bufferVertexRegisterIdMax, mtlVertexArgBuffers, mtlVertexArgBufferOffsets);
-                BindArgumentBuffers(RHI::ShaderStage::Fragment, bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax, mtlFragmentOrComputeArgBuffers, mtlFragmentOrComputeArgBufferOffsets);
+                BindArgumentBuffers(RHI::ShaderStage::Vertex,
+                                    bufferVertexRegisterIdMin,
+                                    bufferVertexRegisterIdMax,
+                                    mtlVertexArgBuffers,
+                                    mtlVertexArgBufferOffsets);
+                
+                BindArgumentBuffers(RHI::ShaderStage::Fragment,
+                                    bufferFragmentOrComputeRegisterIdMin,
+                                    bufferFragmentOrComputeRegisterIdMax,
+                                    mtlFragmentOrComputeArgBuffers,
+                                    mtlFragmentOrComputeArgBufferOffsets);
             }
             else if(m_commandEncoderType == CommandEncoderType::Compute)
             {
-                BindArgumentBuffers(RHI::ShaderStage::Compute, bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax, mtlFragmentOrComputeArgBuffers, mtlFragmentOrComputeArgBufferOffsets);
+                BindArgumentBuffers(RHI::ShaderStage::Compute,
+                                    bufferFragmentOrComputeRegisterIdMin,
+                                    bufferFragmentOrComputeRegisterIdMax,
+                                    mtlFragmentOrComputeArgBuffers,
+                                    mtlFragmentOrComputeArgBufferOffsets);
             }
             
             return true;
         }
     
-        void CommandList::BindArgumentBuffers(RHI::ShaderStage shaderStage, uint16_t registerIdMin, uint16_t registerIdMax, MetalArgumentBufferArray& mtlArgBuffers, MetalArgumentBufferArrayOffsets mtlArgBufferOffsets)
+        void CommandList::BindArgumentBuffers(RHI::ShaderStage shaderStage,
+                                              uint16_t registerIdMin,
+                                              uint16_t registerIdMax,
+                                              MetalArgumentBufferArray& mtlArgBuffers,
+                                              MetalArgumentBufferArrayOffsets mtlArgBufferOffsets)
         {
             //Metal Api only lets you bind multiple argument buffers in an array as long as there are no gaps in the array
             //In order to accomodate that we break up the calls when a gap is noticed in the array and reconfigure the NSRange.
@@ -609,7 +626,9 @@ namespace AZ
                     }
                 }
                 id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-                [renderEncoder setVertexBuffers: mtlStreamBuffers.data() offsets: mtlStreamBufferOffsets.data() withRange: range];
+                [renderEncoder setVertexBuffers: mtlStreamBuffers.data()
+                                        offsets: mtlStreamBufferOffsets.data()
+                                      withRange: range];
             }
         }
         
