@@ -78,7 +78,7 @@ namespace AZ
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetSrgLayout(
-            uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex, uint32_t shaderIndex) const
+            uint32_t shaderIndex, const SupervariantIndex& supervariantIndex, uint32_t srgBindingSlot) const
         {
             const bool validShaderIndex = (m_shaderCollection.size() > shaderIndex);
             if (!validShaderIndex)
@@ -90,7 +90,7 @@ namespace AZ
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetSrgLayout(
-            uint32_t srgBindingSlot, const AZ::Name& supervariantName, uint32_t shaderIndex) const
+            uint32_t shaderIndex, const AZ::Name& supervariantName, uint32_t srgBindingSlot) const
         {
             const bool validShaderIndex = (m_shaderCollection.size() > shaderIndex);
             if (!validShaderIndex)
@@ -105,12 +105,12 @@ namespace AZ
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetMaterialSrgLayout(
             const SupervariantIndex& supervariantIndex) const
         {
-            return GetSrgLayout(RPI::SrgBindingSlot::Material, supervariantIndex, m_materialSrgShaderIndex);
+            return GetSrgLayout(m_materialSrgShaderIndex, supervariantIndex, RPI::SrgBindingSlot::Material);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetMaterialSrgLayout(const AZ::Name& supervariantName) const
         {
-            return GetSrgLayout(RPI::SrgBindingSlot::Material, supervariantName, m_materialSrgShaderIndex);
+            return GetSrgLayout(m_materialSrgShaderIndex, supervariantName, RPI::SrgBindingSlot::Material);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetMaterialSrgLayout() const
@@ -128,12 +128,12 @@ namespace AZ
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(
             const SupervariantIndex& supervariantIndex) const
         {
-            return GetSrgLayout(RPI::SrgBindingSlot::Object, supervariantIndex, m_objectSrgShaderIndex);
+            return GetSrgLayout(m_objectSrgShaderIndex, supervariantIndex, RPI::SrgBindingSlot::Object);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(const AZ::Name& supervariantName) const
         {
-            return GetSrgLayout(RPI::SrgBindingSlot::Object, supervariantName, m_objectSrgShaderIndex);
+            return GetSrgLayout(m_objectSrgShaderIndex, supervariantName, RPI::SrgBindingSlot::Object);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout() const

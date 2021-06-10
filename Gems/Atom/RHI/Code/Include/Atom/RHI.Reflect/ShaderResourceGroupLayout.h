@@ -78,8 +78,13 @@ namespace AZ
             void SetName(const Name& name) {  m_name = name; }
             const Name& GetName() const { return m_name; }
 
-            void SetAzslFileOfOrigin(const AZStd::string& filePath) { m_azslFileOfOrigin = filePath; }
-            const AZStd::string& GetAzslFileOfOrigin() const { return m_azslFileOfOrigin; }
+            //! This string will be used at runtime for both ShaderResourceGroup and ShaderResourceGroupPool to
+            //! create a unique InstanceId to avoid redundant copies in memory.
+            const AZStd::string& GetUniqueId() const { return m_uniqueId; }
+
+            //! The Set function as described above.
+            //! It is usually the Source azsl/azsli/srgi file where this SRG comes from.
+            void SetUniqueId(const AZStd::string& uniqueId) { m_uniqueId = uniqueId; }
 
             /**
              * Designates this SRG as ShaderVariantKey fallback by providing the generated
@@ -280,10 +285,8 @@ namespace AZ
             //! Name of the ShaderResourceGroup as specified in the original *.azsl/*.azsli file.
             Name m_name;
 
-            //! Source azsl/azsli/srgi file where this SRG comes from.
-            //! This string will be used at runtime for both ShaderResourceGroup and ShaderResourceGroupPool to
-            //! create a unique InstanceId to avoid redundant copies in memory.
-            AZStd::string m_azslFileOfOrigin;
+            //! Usually the AZSL file of origin/definition.
+            AZStd::string m_uniqueId;
 
             AZStd::vector<ShaderInputStaticSamplerDescriptor> m_staticSamplers;
 

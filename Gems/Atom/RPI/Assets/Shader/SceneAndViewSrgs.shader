@@ -1,5 +1,5 @@
 { 
-    "Source" : "scene_and_view_srgs.azsl",
+    "Source" : "SceneAndViewSrgs.azsl",
 
     "DepthStencilState" : 
     {

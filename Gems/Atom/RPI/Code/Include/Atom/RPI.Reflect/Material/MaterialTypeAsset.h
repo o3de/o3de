@@ -128,8 +128,8 @@ namespace AZ
         private:
             bool PostLoadInit();
 
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t srgBindingSlot, const SupervariantIndex& supervariantIndex, uint32_t shaderIndex) const;
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t srgBindingSlot, const AZ::Name& supervariantName, uint32_t shaderIndex) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t shaderIndex, const SupervariantIndex& supervariantIndex, uint32_t srgBindingSlot) const;
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& GetSrgLayout(uint32_t shaderIndex, const AZ::Name& supervariantName, uint32_t srgBindingSlot) const;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
