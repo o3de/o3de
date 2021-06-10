@@ -126,12 +126,17 @@ namespace AZ
                 uint16_t m_resourceArrayLen = 0;
             };
             //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
-            using ComputeResourcesToMakeResidentMap =  AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;
+            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;
             //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
-            using GraphicsResourcesToMakeResidentMap =  AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, MetalResourceArray>;
+            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, MetalResourceArray>;
             
-            void CollectResourcesForCompute(id<MTLCommandEncoder> encoder, const ResourceBindingsSet& resourceBindingData, ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
-            void CollectResourcesForGraphics(id<MTLCommandEncoder> encoder, RHI::ShaderStageMask visShaderMask, const ResourceBindingsSet& resourceBindingDataSet, GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
+            void CollectResourcesForCompute(id<MTLCommandEncoder> encoder,
+                                            const ResourceBindingsSet& resourceBindingData,
+                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
+            void CollectResourcesForGraphics(id<MTLCommandEncoder> encoder,
+                                             RHI::ShaderStageMask visShaderMask,
+                                             const ResourceBindingsSet& resourceBindingDataSet,
+                                             GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
             //! Use visibility information to call UseResource on all resources for this Argument Buffer
             void ApplyUseResource(id<MTLCommandEncoder> encoder,
                                   const ResourceBindingsMap& resourceMap,

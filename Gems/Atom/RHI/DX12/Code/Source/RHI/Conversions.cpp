@@ -1360,6 +1360,16 @@ namespace AZ
         uint32_t ConvertColorWriteMask(uint8_t writeMask)
         {            
             uint32_t dflags = 0;
+            if(writeMask == 0)
+            {
+                return dflags;
+            }
+            
+            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
+            {
+                return D3D12_COLOR_WRITE_ENABLE_ALL;
+            }
+            
             if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= D3D12_COLOR_WRITE_ENABLE_RED;

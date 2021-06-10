@@ -458,6 +458,16 @@ namespace AZ
         MTLColorWriteMask ConvertColorWriteMask(AZ::u8 writeMask)
         {
             MTLColorWriteMask colorMask = MTLColorWriteMaskNone;
+            if(writeMask == 0)
+            {
+                return colorMask;
+            }
+            
+            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
+            {
+                return MTLColorWriteMaskAll;
+            }
+                        
             if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 colorMask |= MTLColorWriteMaskRed;

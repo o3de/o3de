@@ -397,19 +397,18 @@ namespace AZ
                 uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgResourcesVisInfo.m_constantDataStageMask));
                 if( numBitsSet > 0)
                 {
+                    id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
                     if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
                     {
-                        uint16_t arrayIndex = resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArrayLen;
-                        resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArray[arrayIndex] = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
-                        resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArrayLen++;
+                        uint16_t arrayIndex = resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArrayLen++;
+                        resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArray[arrayIndex] = mtlconstantBufferResource;
                     }
                     else
                     {
                         MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
                         AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);
-                        uint16_t arrayIndex = resourcesToMakeResidentGraphics[key].m_resourceArrayLen;
-                        resourcesToMakeResidentGraphics[key].m_resourceArray[arrayIndex] = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
-                        resourcesToMakeResidentGraphics[key].m_resourceArrayLen++;
+                        uint16_t arrayIndex = resourcesToMakeResidentGraphics[key].m_resourceArrayLen++;
+                        resourcesToMakeResidentGraphics[key].m_resourceArray[arrayIndex] = mtlconstantBufferResource;
                     }
                 }
             }
@@ -431,7 +430,8 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Assert(RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment), "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
+                        bool isBoundToGraphics = RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Vertex) || RHI::CheckBitsAny(visMaskIt->second, RHI::ShaderStageMask::Fragment);
+                        AZ_Assert(isBoundToGraphics, "The visibility mask %i is not set for Vertex or fragment stage", visMaskIt->second);
                         CollectResourcesForGraphics(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }
                 }
@@ -480,9 +480,9 @@ namespace AZ
                         AZ_Assert(false, "Undefined Resource type");
                     }
                 }
-                uint16_t arrayIndex = resourcesToMakeResidentMap[resourceUsage].m_resourceArrayLen;
-                resourcesToMakeResidentMap[resourceUsage].m_resourceArray[arrayIndex] = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
-                resourcesToMakeResidentMap[resourceUsage].m_resourceArrayLen++;
+                uint16_t arrayIndex = resourcesToMakeResidentMap[resourceUsage].m_resourceArrayLen++;
+                id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
+                resourcesToMakeResidentMap[resourceUsage].m_resourceArray[arrayIndex] = mtlResourceToBind;
             }
         }
 
@@ -516,9 +516,9 @@ namespace AZ
                 }
                 
                 AZStd::pair <MTLResourceUsage, MTLRenderStages> key = AZStd::make_pair(resourceUsage, mtlRenderStages);
-                uint16_t arrayIndex = resourcesToMakeResidentMap[key].m_resourceArrayLen;
-                resourcesToMakeResidentMap[key].m_resourceArray[arrayIndex] = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
-                resourcesToMakeResidentMap[key].m_resourceArrayLen++;
+                uint16_t arrayIndex = resourcesToMakeResidentMap[key].m_resourceArrayLen++;
+                id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
+                resourcesToMakeResidentMap[key].m_resourceArray[arrayIndex] = mtlResourceToBind;
             }
         }
     }

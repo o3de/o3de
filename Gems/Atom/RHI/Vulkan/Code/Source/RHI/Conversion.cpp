@@ -334,6 +334,12 @@ namespace AZ
         VkColorComponentFlags ConvertComponentFlags(uint8_t sflags)
         {
             VkColorComponentFlags dflags = 0;
+            
+            if(sflags == 0)
+            {
+                return dflags;
+            }
+            
             if (RHI::CheckBitsAny(sflags, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
             {
                 dflags |= VK_COLOR_COMPONENT_R_BIT;
