@@ -39,12 +39,12 @@ namespace Benchmark
         }
 
         state.SetComplexityN(numInstances);
-    }
+    }/*
     BENCHMARK_REGISTER_F(BM_PrefabInstantiate, InstantiatePrefab_SingleEntityInstance)
         ->RangeMultiplier(10)
         ->Range(100, 10000)
         ->Unit(benchmark::kMillisecond)
-        ->Complexity();
+        ->Complexity();*/
 }
 
 #endif

@@ -42,11 +42,12 @@ namespace Benchmark
 
         state.SetComplexityN(numSpawnables);
     }
+    /*
     BENCHMARK_REGISTER_F(BM_SpawnableCreate, CreateSpawnable_SingleEntityInstance)
         ->RangeMultiplier(10)
         ->Range(100, 10000)
         ->Unit(benchmark::kMillisecond)
-        ->Complexity();
+        ->Complexity();*/
 }
 
 #endif
