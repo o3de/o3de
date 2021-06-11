@@ -35,9 +35,6 @@ namespace Physics
         MOCK_METHOD2(CreateShape, AZStd::shared_ptr<Physics::Shape>(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration));
         MOCK_METHOD1(ReleaseNativeMeshObject, void(void* nativeMeshObject));
         MOCK_METHOD1(CreateMaterial, AZStd::shared_ptr<Physics::Material>(const Physics::MaterialConfiguration& materialConfiguration));
-        MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
-        MOCK_METHOD1(CreateJointLimitConfiguration, AZStd::shared_ptr<Physics::JointLimitConfiguration>(AZ::TypeId jointType));
-        MOCK_METHOD3(CreateJoint, AZStd::shared_ptr<Physics::Joint>(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration, AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3* vertices, AZ::u32 vertexCount, AZStd::vector<AZ::u8>& result));
         MOCK_METHOD5(CookTriangleMeshToFile, bool(const AZStd::string& filePath, const AZ::Vector3* vertices, AZ::u32 vertexCount, const AZ::u32* indices, AZ::u32 indexCount));
@@ -73,10 +70,13 @@ namespace Physics
     class MockJointHelpersInterface : AZ::Interface<AzPhysics::JointHelpersInterface>::Registrar
     {
     public:
+        MOCK_CONST_METHOD0(GetSupportedJointTypeIds, const AZStd::vector<AZ::TypeId>());
+        MOCK_CONST_METHOD1(GetSupportedJointTypeId, AZStd::optional<const AZ::TypeId>(AzPhysics::JointTypes typeEnum));
+
         MOCK_METHOD5(
             ComputeInitialJointLimitConfiguration,
             AZStd::unique_ptr<AzPhysics::ApiJointConfiguration>(
-                const AzPhysics::JointTypes& jointLimitTypeId,
+                const AZ::TypeId& jointLimitTypeId,
                 const AZ::Quaternion& parentWorldRotation,
                 const AZ::Quaternion& childWorldRotation,
                 const AZ::Vector3& axis,

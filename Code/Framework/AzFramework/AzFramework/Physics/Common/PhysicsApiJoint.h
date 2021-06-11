@@ -101,6 +101,12 @@ namespace AzPhysics
         virtual ~JointHelpersInterface() = default;
         AZ_DISABLE_COPY_MOVE(JointHelpersInterface);
 
+        //! Returns a list of supported Joint types
+        virtual const AZStd::vector<AZ::TypeId> GetSupportedJointTypeIds() const = 0;
+
+        //! Returns a TypeID if the request joint type is supported.
+        virtual AZStd::optional<const AZ::TypeId> GetSupportedJointTypeId(JointTypes typeEnum) const = 0;
+
         //! Computes parameters such as joint limit local rotations to give the desired initial joint limit orientation.
         //! @param jointLimitTypeId The type ID used to identify the particular kind of joint limit configuration to be created.
         //! @param parentWorldRotation The rotation in world space of the parent world body associated with the joint.
@@ -110,7 +116,7 @@ namespace AzPhysics
         //! of the child world body relative to the parent world body, which may optionally be used to help estimate the extents
         //! of the joint limit.
         virtual AZStd::unique_ptr<ApiJointConfiguration> ComputeInitialJointLimitConfiguration(
-            const JointTypes& jointLimitTypeId,
+            const AZ::TypeId& jointLimitTypeId,
             const AZ::Quaternion& parentWorldRotation,
             const AZ::Quaternion& childWorldRotation,
             const AZ::Vector3& axis,

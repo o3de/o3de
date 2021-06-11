@@ -184,14 +184,29 @@ namespace PhysX
         }
     } // namespace
 
+    const AZStd::vector<AZ::TypeId> PhysXJointHelpersInterface::GetSupportedJointTypeIds() const
+    {
+        return AZStd::vector<AZ::TypeId>{ D6ApiJointLimitConfiguration::RTTI_Type() };
+    }
+
+    AZStd::optional<const AZ::TypeId> PhysXJointHelpersInterface::GetSupportedJointTypeId(AzPhysics::JointTypes typeEnum) const
+    {
+        switch (typeEnum)
+        {
+        case AzPhysics::JointTypes::D6Joint:
+            return azrtti_typeid<D6ApiJointLimitConfiguration>();
+        }
+        return AZStd::nullopt;
+    }
+
     AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> PhysXJointHelpersInterface::ComputeInitialJointLimitConfiguration(
-        const AzPhysics::JointTypes& jointLimitTypeId,
+        const AZ::TypeId& jointLimitTypeId,
         const AZ::Quaternion& parentWorldRotation,
         const AZ::Quaternion& childWorldRotation,
         const AZ::Vector3& axis,
         [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
     {
-        if (jointLimitTypeId == AzPhysics::JointTypes::D6Joint)
+        if (jointLimitTypeId == azrtti_typeid<D6ApiJointLimitConfiguration>())
         {
             const AZ::Vector3& normalizedAxis = axis.IsZero() ? AZ::Vector3::CreateAxisX() : axis.GetNormalized();
 

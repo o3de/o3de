@@ -907,6 +907,7 @@ namespace PhysX
             m_deferredDeletionsJoints.push_back(m_joints[index].second);
             m_joints[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
             m_freeJointSlots.push(index);
+            jointHandle = AzPhysics::InvalidApiJointHandle;
         }
     }
 

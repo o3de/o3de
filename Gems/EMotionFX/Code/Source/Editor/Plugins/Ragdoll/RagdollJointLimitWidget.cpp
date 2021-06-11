@@ -91,7 +91,10 @@ namespace EMotionFX
         if (serializeContext)
         {
             AZStd::vector<AZ::TypeId> supportedJointLimitTypes;
-            Physics::SystemRequestBus::BroadcastResult(supportedJointLimitTypes, &Physics::SystemRequests::GetSupportedJointTypes);
+            if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
+            {
+                supportedJointLimitTypes = jointHelpers->GetSupportedJointTypeIds();
+            }
             for (const AZ::TypeId& jointLimitType : supportedJointLimitTypes)
             {
                 const char* jointLimitName = serializeContext->FindClassData(jointLimitType)->m_editData->m_name;

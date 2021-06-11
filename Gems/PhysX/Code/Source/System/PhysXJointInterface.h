@@ -27,8 +27,11 @@ namespace PhysX
     public:
         AZ_RTTI(PhysX::PhysXJointHelpersInterface, "{48AC5137-2226-4C57-8E4C-FCF3C1965252}", AzPhysics::JointHelpersInterface);
 
+        const AZStd::vector<AZ::TypeId> GetSupportedJointTypeIds() const override;
+        AZStd::optional<const AZ::TypeId> GetSupportedJointTypeId(AzPhysics::JointTypes typeEnum) const override;
+
         AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> ComputeInitialJointLimitConfiguration(
-            const AzPhysics::JointTypes& jointLimitTypeId,
+            const AZ::TypeId& jointLimitTypeId,
             const AZ::Quaternion& parentWorldRotation,
             const AZ::Quaternion& childWorldRotation,
             const AZ::Vector3& axis,

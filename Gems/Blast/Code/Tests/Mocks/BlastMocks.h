@@ -221,12 +221,6 @@ namespace Blast
             AZStd::vector<AZStd::shared_ptr<Physics::Material>>(const Physics::MaterialSelection&));
         MOCK_METHOD2(
             UpdateMaterialSelection, bool(const Physics::ShapeConfiguration&, Physics::ColliderConfiguration&));
-        MOCK_METHOD0(GetSupportedJointTypes, AZStd::vector<AZ::TypeId>());
-        MOCK_METHOD1(CreateJointLimitConfiguration, AZStd::shared_ptr<Physics::JointLimitConfiguration>(AZ::TypeId));
-        MOCK_METHOD3(
-            CreateJoint,
-            AZStd::shared_ptr<Physics::Joint>(
-                const AZStd::shared_ptr<Physics::JointLimitConfiguration>&, AzPhysics::SimulatedBody*, AzPhysics::SimulatedBody*));
         MOCK_METHOD3(CookConvexMeshToFile, bool(const AZStd::string&, const AZ::Vector3*, AZ::u32));
         MOCK_METHOD3(CookConvexMeshToMemory, bool(const AZ::Vector3*, AZ::u32, AZStd::vector<AZ::u8>&));
         MOCK_METHOD5(

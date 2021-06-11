@@ -55,13 +55,22 @@ namespace EMotionFX
 
         Physics::MockPhysicsSystem physicsSystem;
         Physics::MockPhysicsInterface physicsInterface;
-        EXPECT_CALL(physicsSystem, GetSupportedJointTypes)
-            .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{azrtti_typeid<D6JointLimitConfiguration>()}));
-
         Physics::MockJointHelpersInterface jointHelpers;
-        EXPECT_CALL(jointHelpers, ComputeInitialJointLimitConfiguration(AzPhysics::JointTypes::D6Joint, _, _, _, _))
+        EXPECT_CALL(jointHelpers, GetSupportedJointTypeIds)
+            .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+        EXPECT_CALL(jointHelpers, GetSupportedJointTypeId(_))
             .WillRepeatedly(
-                []([[maybe_unused]] const AzPhysics::JointTypes& jointLimitTypeId,
+                [](AzPhysics::JointTypes jointType) -> AZStd::optional<const AZ::TypeId>
+                {
+                    if (jointType == AzPhysics::JointTypes::D6Joint)
+                    {
+                        return azrtti_typeid<D6JointLimitConfiguration>();
+                    }
+                    return AZStd::nullopt;
+                });
+        EXPECT_CALL(jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+            .WillRepeatedly(
+                []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
                    [[maybe_unused]] const AZ::Quaternion& parentWorldRotation, [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
                    [[maybe_unused]] const AZ::Vector3& axis, [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
                 {

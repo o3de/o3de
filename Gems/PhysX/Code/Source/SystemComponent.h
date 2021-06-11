@@ -115,11 +115,6 @@ namespace PhysX
         AZStd::shared_ptr<Physics::Shape> CreateShape(const Physics::ColliderConfiguration& colliderConfiguration, const Physics::ShapeConfiguration& configuration) override;
         AZStd::shared_ptr<Physics::Material> CreateMaterial(const Physics::MaterialConfiguration& materialConfiguration) override;
 
-        AZStd::vector<AZ::TypeId> GetSupportedJointTypes() override;
-        AZStd::shared_ptr<Physics::JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType) override;
-        AZStd::shared_ptr<Physics::Joint> CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-            AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody) override;
-
         void ReleaseNativeMeshObject(void* nativeMeshObject) override;
 
         // Assets related data

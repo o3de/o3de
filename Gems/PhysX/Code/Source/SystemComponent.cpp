@@ -347,22 +347,6 @@ namespace PhysX
         return AZStd::make_shared<PhysX::Material>(materialConfiguration);
     }
 
-    AZStd::vector<AZ::TypeId> SystemComponent::GetSupportedJointTypes()
-    {
-        return JointUtils::GetSupportedJointTypes();
-    }
-
-    AZStd::shared_ptr<Physics::JointLimitConfiguration> SystemComponent::CreateJointLimitConfiguration(AZ::TypeId jointType)
-    {
-        return JointUtils::CreateJointLimitConfiguration(jointType);
-    }
-
-    AZStd::shared_ptr<Physics::Joint> SystemComponent::CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-        AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody)
-    {
-        return JointUtils::CreateJoint(configuration, parentBody, childBody);
-    }
-
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)
     {
         if (nativeMeshObject)

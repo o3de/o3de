@@ -45,11 +45,22 @@ namespace EMotionFX
 
             D6JointLimitConfiguration::Reflect(GetSerializeContext());
 
-            EXPECT_CALL(m_physicsSystem, GetSupportedJointTypes)
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
 
-            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(AzPhysics::JointTypes::D6Joint, _, _, _, _))
-                .WillRepeatedly([]([[maybe_unused]] const AzPhysics::JointTypes& jointLimitTypeId,
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointTypes jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointTypes::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
+                .WillRepeatedly([]([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
                                    [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
                                    [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
                                    [[maybe_unused]] const AZ::Vector3& axis,

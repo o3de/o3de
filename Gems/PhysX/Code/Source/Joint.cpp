@@ -294,14 +294,6 @@ namespace PhysX
     {
     }
 
-    AZStd::vector<AZ::TypeId> JointUtils::GetSupportedJointTypes()
-    {
-        return AZStd::vector<AZ::TypeId>
-        {
-            D6JointLimitConfiguration::RTTI_Type()
-        };
-    }
-
     AZStd::shared_ptr<Physics::JointLimitConfiguration> JointUtils::CreateJointLimitConfiguration([[maybe_unused]] AZ::TypeId jointType)
     {
         return AZStd::make_shared<D6JointLimitConfiguration>();

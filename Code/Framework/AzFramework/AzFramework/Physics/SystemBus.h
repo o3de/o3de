@@ -149,14 +149,6 @@ namespace Physics
         virtual void ReleaseNativeMeshObject(void* nativeMeshObject) = 0;
 
         //////////////////////////////////////////////////////////////////////////
-        //// Joints
-
-        virtual AZStd::vector<AZ::TypeId> GetSupportedJointTypes() = 0;
-        virtual AZStd::shared_ptr<JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType) = 0;
-        virtual AZStd::shared_ptr<Joint> CreateJoint(const AZStd::shared_ptr<JointLimitConfiguration>& configuration,
-            AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody) = 0;
-
-        //////////////////////////////////////////////////////////////////////////
         //// Cooking
 
         /// Cooks a convex mesh and writes it to a file.

@@ -102,12 +102,17 @@ namespace EMotionFX
 
         if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
         {
-            AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> jointLimitConfig = jointHelpers->ComputeInitialJointLimitConfiguration(
-                AzPhysics::JointTypes::D6Joint, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
+            if (AZStd::optional<const AZ::TypeId> d6jointTypeId = jointHelpers->GetSupportedJointTypeId(AzPhysics::JointTypes::D6Joint);
+                d6jointTypeId.has_value())
+            {
+                AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> jointLimitConfig = jointHelpers->ComputeInitialJointLimitConfiguration(
+                    *d6jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
 
-            AZ_Assert(jointLimitConfig, "Could not create joint limit configuration.");
-            return jointLimitConfig;
+                AZ_Assert(jointLimitConfig, "Could not create joint limit configuration.");
+                return jointLimitConfig;
+            }
         }
+        AZ_Assert(false, "Could not create joint limit configuration.");
         return nullptr;
     }
 

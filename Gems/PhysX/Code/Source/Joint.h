@@ -231,7 +231,6 @@ namespace PhysX
     class JointUtils
     {
     public:
-        static AZStd::vector<AZ::TypeId> GetSupportedJointTypes();
 
         static AZStd::shared_ptr<Physics::JointLimitConfiguration> CreateJointLimitConfiguration(AZ::TypeId jointType);
 
