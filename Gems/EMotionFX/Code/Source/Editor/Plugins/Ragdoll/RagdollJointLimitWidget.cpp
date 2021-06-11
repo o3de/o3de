@@ -134,7 +134,7 @@ namespace EMotionFX
         Physics::RagdollNodeConfiguration* ragdollNodeConfig = GetRagdollNodeConfig();
         if (ragdollNodeConfig)
         {
-            Physics::JointLimitConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointLimit.get();
+            AzPhysics::ApiJointConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointConfig.get();
             if (jointLimitConfig)
             {
                 const AZ::TypeId& jointTypeId = jointLimitConfig->RTTI_GetType();
@@ -262,13 +262,13 @@ namespace EMotionFX
         {
             if (type.IsNull())
             {
-                ragdollNodeConfig->m_jointLimit = nullptr;
+                ragdollNodeConfig->m_jointConfig = nullptr;
             }
             else
             {
                 const Node* node = m_nodeIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
                 const Skeleton* skeleton = m_nodeIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>()->GetSkeleton();
-                ragdollNodeConfig->m_jointLimit = CommandRagdollHelpers::CreateJointLimitByType(type, skeleton, node);
+                ragdollNodeConfig->m_jointConfig = CommandRagdollHelpers::CreateJointLimitByType(skeleton, node);
             }
 
             Update();

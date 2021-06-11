@@ -134,6 +134,8 @@ set(FILES
     Source/System/PhysXCpuDispatcher.h
     Source/System/PhysXJob.cpp
     Source/System/PhysXJob.h
+    Source/System/PhysXJointInterface.h
+    Source/System/PhysXJointInterface.cpp
     Source/System/PhysXSdkCallbacks.h
     Source/System/PhysXSdkCallbacks.cpp
     Source/System/PhysXSystem.h

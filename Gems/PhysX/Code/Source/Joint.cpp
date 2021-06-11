@@ -371,36 +371,44 @@ namespace PhysX
         }
     }
 
-    D6JointState JointUtils::CalculateD6JointState(
-        const AZ::Quaternion& parentWorldRotation,
-        const AZ::Quaternion& parentLocalRotation,
-        const AZ::Quaternion& childWorldRotation,
-        const AZ::Quaternion& childLocalRotation)
+    namespace Internal
     {
-        D6JointState result;
+        struct D6JointState
+        {
+            float m_swingAngleY;
+            float m_swingAngleZ;
+            float m_twistAngle;
+        };
 
-        const AZ::Quaternion parentRotation = parentWorldRotation * parentLocalRotation;
-        const AZ::Quaternion childRotation = childWorldRotation * childLocalRotation;
-        const AZ::Quaternion relativeRotation = parentRotation.GetConjugate() * childRotation;
-        AZ::Quaternion twistQuat = AZ::IsClose(relativeRotation.GetX(), 0.0f, AZ::Constants::FloatEpsilon)
-            ? AZ::Quaternion::CreateIdentity()
-            : AZ::Quaternion(relativeRotation.GetX(), 0.0f, 0.0f, relativeRotation.GetW()).GetNormalized();
-        AZ::Quaternion swingQuat = relativeRotation * twistQuat.GetConjugate();
+        D6JointState CalculateD6JointState(
+            const AZ::Quaternion& parentWorldRotation, const AZ::Quaternion& parentLocalRotation, const AZ::Quaternion& childWorldRotation,
+            const AZ::Quaternion& childLocalRotation)
+        {
+            D6JointState result;
 
-        // make sure the twist angle has the correct sign for the rotation
-        twistQuat *= AZ::GetSign(twistQuat.GetX());
-        // make sure we get the shortest arcs for the swing degrees of freedom
-        swingQuat *= AZ::GetSign(swingQuat.GetW());
-        // the PhysX swing limits work in terms of tan quarter angles
-        result.m_swingAngleY = 4.0f * atan2f(swingQuat.GetY(), 1.0f + swingQuat.GetW());
-        result.m_swingAngleZ = 4.0f * atan2f(swingQuat.GetZ(), 1.0f + swingQuat.GetW());
-        const float twistAngle = twistQuat.GetAngle();
-        // GetAngle returns an angle in the range 0..2 pi, but the twist limits work in the range -pi..pi
-        const float wrappedTwistAngle = twistAngle > AZ::Constants::Pi ? twistAngle - AZ::Constants::TwoPi : twistAngle;
-        result.m_twistAngle = wrappedTwistAngle;
+            const AZ::Quaternion parentRotation = parentWorldRotation * parentLocalRotation;
+            const AZ::Quaternion childRotation = childWorldRotation * childLocalRotation;
+            const AZ::Quaternion relativeRotation = parentRotation.GetConjugate() * childRotation;
+            AZ::Quaternion twistQuat = AZ::IsClose(relativeRotation.GetX(), 0.0f, AZ::Constants::FloatEpsilon)
+                ? AZ::Quaternion::CreateIdentity()
+                : AZ::Quaternion(relativeRotation.GetX(), 0.0f, 0.0f, relativeRotation.GetW()).GetNormalized();
+            AZ::Quaternion swingQuat = relativeRotation * twistQuat.GetConjugate();
 
-        return result;
-    }
+            // make sure the twist angle has the correct sign for the rotation
+            twistQuat *= AZ::GetSign(twistQuat.GetX());
+            // make sure we get the shortest arcs for the swing degrees of freedom
+            swingQuat *= AZ::GetSign(swingQuat.GetW());
+            // the PhysX swing limits work in terms of tan quarter angles
+            result.m_swingAngleY = 4.0f * atan2f(swingQuat.GetY(), 1.0f + swingQuat.GetW());
+            result.m_swingAngleZ = 4.0f * atan2f(swingQuat.GetZ(), 1.0f + swingQuat.GetW());
+            const float twistAngle = twistQuat.GetAngle();
+            // GetAngle returns an angle in the range 0..2 pi, but the twist limits work in the range -pi..pi
+            const float wrappedTwistAngle = twistAngle > AZ::Constants::Pi ? twistAngle - AZ::Constants::TwoPi : twistAngle;
+            result.m_twistAngle = wrappedTwistAngle;
+
+            return result;
+        }
+    } // namespace Internal
 
     bool JointUtils::IsD6SwingValid(
         float swingAngleY,
@@ -548,7 +556,8 @@ namespace PhysX
             const AZ::u32 angularSubdivisionsClamped = AZ::GetClamp(angularSubdivisions, 4u, 32u);
             const AZ::u32 radialSubdivisionsClamped = AZ::GetClamp(radialSubdivisions, 1u, 4u);
 
-            const D6JointState jointState = CalculateD6JointState(parentRotation, d6JointConfiguration->m_parentLocalRotation,
+            const Internal::D6JointState jointState = Internal::CalculateD6JointState(
+                parentRotation, d6JointConfiguration->m_parentLocalRotation,
                 childRotation, d6JointConfiguration->m_childLocalRotation);
             const float swingAngleY = jointState.m_swingAngleY;
             const float swingAngleZ = jointState.m_swingAngleZ;
@@ -565,34 +574,6 @@ namespace PhysX
             AppendD6CurrentTwistToLineBuffer(d6JointConfiguration->m_parentLocalRotation, twistAngle, twistLimitLower,
                 twistLimitUpper, scale, lineBufferOut, lineValidityBufferOut);
         }
-    }
-
-    AZStd::unique_ptr<Physics::JointLimitConfiguration> JointUtils::ComputeInitialJointLimitConfiguration(
-        const AZ::TypeId& jointLimitTypeId,
-        const AZ::Quaternion& parentWorldRotation,
-        const AZ::Quaternion& childWorldRotation,
-        const AZ::Vector3& axis,
-        const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
-    {
-        AZ_UNUSED(exampleLocalRotations);
-
-        if (jointLimitTypeId == D6JointLimitConfiguration::RTTI_Type())
-        {
-            const AZ::Vector3& normalizedAxis = axis.IsZero()
-                ? AZ::Vector3::CreateAxisX()
-                : axis.GetNormalized();
-
-            D6JointLimitConfiguration d6JointLimitConfig;
-            const AZ::Quaternion childLocalRotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisX(),
-                childWorldRotation.GetConjugate().TransformVector(normalizedAxis));
-            d6JointLimitConfig.m_childLocalRotation = childLocalRotation;
-            d6JointLimitConfig.m_parentLocalRotation = parentWorldRotation.GetConjugate() * childWorldRotation * childLocalRotation;
-
-            return AZStd::make_unique<D6JointLimitConfiguration>(d6JointLimitConfig);
-        }
-
-        AZ_Warning("PhysX Joint Utils", false, "Unsupported joint type in ComputeInitialJointLimitConfiguration");
-        return nullptr;
     }
 
     const char* D6JointLimitConfiguration::GetTypeName()

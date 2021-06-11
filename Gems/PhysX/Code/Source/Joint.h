@@ -92,13 +92,6 @@ namespace PhysX
             AZStd::vector<bool>& lineValidityBufferOut) override;
     };
 
-    struct D6JointState
-    {
-        float m_swingAngleY;
-        float m_swingAngleZ;
-        float m_twistAngle;
-    };
-
     /// A fixed joint locks 2 bodies relative to one another on all axes of freedom.
     class FixedJoint : public Joint
     {
@@ -245,12 +238,6 @@ namespace PhysX
         static AZStd::shared_ptr<Physics::Joint> CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
             AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody);
 
-        static D6JointState CalculateD6JointState(
-            const AZ::Quaternion& parentWorldRotation,
-            const AZ::Quaternion& parentLocalRotation,
-            const AZ::Quaternion& childWorldRotation,
-            const AZ::Quaternion& childLocalRotation);
-
         static bool IsD6SwingValid(
             float swingAngleY,
             float swingAngleZ,
@@ -300,12 +287,5 @@ namespace PhysX
             AZStd::vector<AZ::u32>& indexBufferOut,
             AZStd::vector<AZ::Vector3>& lineBufferOut,
             AZStd::vector<bool>& lineValidityBufferOut);
-
-        static AZStd::unique_ptr<Physics::JointLimitConfiguration> ComputeInitialJointLimitConfiguration(
-            const AZ::TypeId& jointLimitTypeId,
-            const AZ::Quaternion& parentWorldRotation,
-            const AZ::Quaternion& childWorldRotation,
-            const AZ::Vector3& axis,
-            const AZStd::vector<AZ::Quaternion>& exampleLocalRotations);
     };
 } // namespace PhysX

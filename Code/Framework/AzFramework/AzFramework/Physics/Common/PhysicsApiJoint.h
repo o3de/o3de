@@ -29,6 +29,8 @@ namespace AZ
 
 namespace AzPhysics
 {
+    struct ApiJointConfiguration;
+
     //! Base class for all Joints in Physics.
     struct ApiJoint
     {
@@ -82,4 +84,59 @@ namespace AzPhysics
 
     //! Alias for a list of non owning weak pointers to ApiJoint objects.
     using ApiJointList = AZStd::vector<ApiJoint*>;
+
+    //! List of supported Joint types.
+    enum class JointTypes
+    {
+        D6Joint
+    };
+
+    //! Interface to access Joint utilities and helper functions
+    class JointHelpersInterface
+    {
+    public:
+        AZ_RTTI(AzPhysics::JointHelpersInterface, "{A511C64D-C8A5-4E8F-9C69-8DC5EFAD0C4C}");
+
+        JointHelpersInterface() = default;
+        virtual ~JointHelpersInterface() = default;
+        AZ_DISABLE_COPY_MOVE(JointHelpersInterface);
+
+        //! Computes parameters such as joint limit local rotations to give the desired initial joint limit orientation.
+        //! @param jointLimitTypeId The type ID used to identify the particular kind of joint limit configuration to be created.
+        //! @param parentWorldRotation The rotation in world space of the parent world body associated with the joint.
+        //! @param childWorldRotation The rotation in world space of the child world body associated with the joint.
+        //! @param axis Axis used to define the centre for limiting angular degrees of freedom.
+        //! @param exampleLocalRotations A vector (which may be empty) containing example valid rotations in the local space
+        //! of the child world body relative to the parent world body, which may optionally be used to help estimate the extents
+        //! of the joint limit.
+        virtual AZStd::unique_ptr<ApiJointConfiguration> ComputeInitialJointLimitConfiguration(
+            const JointTypes& jointLimitTypeId,
+            const AZ::Quaternion& parentWorldRotation,
+            const AZ::Quaternion& childWorldRotation,
+            const AZ::Vector3& axis,
+            const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) = 0;
+
+        /// Generates joint limit visualization data in appropriate format to pass to DebugDisplayRequests draw functions.
+        /// @param configuration The joint configuration to generate visualization data for.
+        /// @param parentRotation The rotation of the joint's parent body (in the same frame as childRotation).
+        /// @param childRotation The rotation of the joint's child body (in the same frame as parentRotation).
+        /// @param scale Scale factor for the output display data.
+        /// @param angularSubdivisions Level of detail in the angular direction (may be clamped in the implementation).
+        /// @param radialSubdivisions Level of detail in the radial direction (may be clamped in the implementation).
+        /// @param[out] vertexBufferOut Used with indexBufferOut to define triangles to be displayed.
+        /// @param[out] indexBufferOut Used with vertexBufferOut to define triangles to be displayed.
+        /// @param[out] lineBufferOut Used to define lines to be displayed.
+        /// @param[out] lineValidityBufferOut Whether each line in the line buffer is part of a valid or violated limit.
+        virtual void GenerateJointLimitVisualizationData(
+            const ApiJointConfiguration& configuration,
+            const AZ::Quaternion& parentRotation,
+            const AZ::Quaternion& childRotation,
+            float scale,
+            AZ::u32 angularSubdivisions,
+            AZ::u32 radialSubdivisions,
+            AZStd::vector<AZ::Vector3>& vertexBufferOut,
+            AZStd::vector<AZ::u32>& indexBufferOut,
+            AZStd::vector<AZ::Vector3>& lineBufferOut,
+            AZStd::vector<bool>& lineValidityBufferOut) = 0;
+    };
 }
