@@ -34,18 +34,6 @@ namespace AZ
         DepthOfFieldReadBackFocusDepthPass::DepthOfFieldReadBackFocusDepthPass(const RPI::PassDescriptor& descriptor)
             : ParentPass(descriptor)
         {
-            RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
-
-            // Create read back pass
-            m_readbackPass = passSystem->CreatePass<DepthOfFieldCopyFocusDepthToCpuPass>(AZ::Name("DepthOfFieldReadBackPass"));
-            AZ_Assert(m_readbackPass, "DepthOfFieldReadBackFocusDepthPass : read back pass is invalid");
-
-            AddChild(m_readbackPass);
-
-            // Find GetDepth pass on template
-            auto pass = FindChildPass(Name("DepthOfFieldWriteFocusDepthFromGpu"));
-            m_getDepthPass = static_cast<DepthOfFieldWriteFocusDepthFromGpuPass*>(pass.get());
-
             // Create buffer for read back focus depth. We append static counter to avoid name conflicts.
             RPI::CommonBufferDescriptor desc;
             desc.m_bufferName = "DepthOfFieldReadBackAutoFocusDepthBuffer";
@@ -55,9 +43,6 @@ namespace AZ
             desc.m_bufferData = nullptr;
             desc.m_elementFormat = RHI::Format::R32_FLOAT;
             m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-
-            m_getDepthPass->SetBufferRef(m_buffer);
-            m_readbackPass->SetBufferRef(m_buffer);
         }
 
         DepthOfFieldReadBackFocusDepthPass::~DepthOfFieldReadBackFocusDepthPass()
@@ -83,6 +68,24 @@ namespace AZ
             {
                 m_getDepthPass->SetScreenPosition(screenPosition);
             }
+        }
+
+        void DepthOfFieldReadBackFocusDepthPass::CreateChildPassesInternal()
+        {
+            RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
+
+            // Create read back pass
+            m_readbackPass = passSystem->CreatePass<DepthOfFieldCopyFocusDepthToCpuPass>(AZ::Name("DepthOfFieldReadBackPass"));
+            AZ_Assert(m_readbackPass, "DepthOfFieldReadBackFocusDepthPass : read back pass is invalid");
+
+            AddChild(m_readbackPass);
+
+            // Find GetDepth pass on template
+            auto pass = FindChildPass(Name("DepthOfFieldWriteFocusDepthFromGpu"));
+            m_getDepthPass = static_cast<DepthOfFieldWriteFocusDepthFromGpuPass*>(pass.get());
+
+            m_getDepthPass->SetBufferRef(m_buffer);
+            m_readbackPass->SetBufferRef(m_buffer);
         }
 
         void DepthOfFieldReadBackFocusDepthPass::FrameBeginInternal(FramePrepareParams params)

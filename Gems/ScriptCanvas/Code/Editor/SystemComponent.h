@@ -22,6 +22,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <Editor/Assets/ScriptCanvasAssetTracker.h>
 
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
@@ -42,6 +43,7 @@ namespace ScriptCanvasEditor
         , private AZ::Data::AssetBus::MultiHandler
         , private AZ::Interface<IUpgradeRequests>::Registrar
         , private AzToolsFramework::AssetSeedManagerRequests::Bus::Handler
+        , private AzToolsFramework::EditorContextMenuBus::Handler
     {
     public:
         AZ_COMPONENT(SystemComponent, "{1DE7A120-4371-4009-82B5-8140CB1D7B31}");
@@ -71,8 +73,12 @@ namespace ScriptCanvasEditor
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
-        // AztoolsFramework::EditorEvents::Bus::Handler...
+        // AztoolsFramework::EditorContextMenuBus::Handler...
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // AztoolsFramework::EditorEvents::Bus::Handler...
         void NotifyRegisterViews() override;
         ////////////////////////////////////////////////////////////////////////
 

@@ -58,7 +58,7 @@ namespace AZ
                 float   m_exposureValue = 1.0f;
             };
 
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             void FrameBeginInternal(FramePrepareParams params) override;
 

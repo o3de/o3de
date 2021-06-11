@@ -179,7 +179,7 @@ public:
     virtual void OnStartPlayInEditor();
     virtual void OnStopPlayInEditor();
 
-    // AzToolsFramework::EditorEvents::Bus (handler moved to cpp to resolve link issues in unity builds)
+    // AzToolsFramework::EditorContextMenu::Bus (handler moved to cpp to resolve link issues in unity builds)
     // We use this to determine when the viewport context menu is being displayed so we can exit move mode
     void PopulateEditorGlobalContextMenu(QMenu* /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/);
 

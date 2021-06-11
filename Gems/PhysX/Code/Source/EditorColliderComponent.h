@@ -244,7 +244,7 @@ namespace PhysX
         AZ::Data::AssetId FindMatchingPhysicsAsset(const AZ::Data::Asset<AZ::Data::AssetData>& renderMeshAsset,
             const AZStd::vector<AZ::Data::AssetId>& physicsAssets);
 
-        void ValidateMaterialSurfaces();
+        void ValidateAssetMaterials();
 
         void InitEventHandlers();
         DebugDraw::Collider m_colliderDebugDraw;

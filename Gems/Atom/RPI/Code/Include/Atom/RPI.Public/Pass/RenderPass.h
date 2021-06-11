@@ -96,7 +96,7 @@ namespace AZ
             void BindPassSrg(const RHI::FrameGraphCompileContext& context, Data::Instance<ShaderResourceGroup>& shaderResourceGroup);
 
             // Pass behavior overrides...
-            void OnBuildAttachmentsFinishedInternal() override;
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 

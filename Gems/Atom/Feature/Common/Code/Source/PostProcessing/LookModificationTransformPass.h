@@ -52,7 +52,7 @@ namespace AZ
             //! Pass overrides ...
             void FrameBeginInternal(FramePrepareParams params) override;
 
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
         private:
             const RPI::PassAttachmentBinding* m_swapChainAttachmentBinding = nullptr;

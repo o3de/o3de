@@ -45,7 +45,9 @@ namespace AZ
 
         protected:
             explicit ApplyShaperLookupTablePass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
+
+            // Pass behavior overrides...
+            void InitializeInternal() override;
 
             RHI::ShaderInputImageIndex m_shaderInputLutImageIndex;
 
