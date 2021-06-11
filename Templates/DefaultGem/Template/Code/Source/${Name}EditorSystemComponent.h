@@ -18,32 +18,33 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    /// System component for ${Name} editor
-    class ${Name}EditorSystemComponent
+    /// System component for ${SanitizedCppName} editor
+    class ${SanitizedCppName}EditorSystemComponent
         : public AZ::Component
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
-        AZ_COMPONENT(${Name}EditorSystemComponent, "${EditorSysCompClassId}");
+        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}");
         static void Reflect(AZ::ReflectContext* context);
 
-        ${Name}EditorSystemComponent() = default;
+        ${SanitizedCppName}EditorSystemComponent();
+        ~${SanitizedCppName}EditorSystemComponent();
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("${Name}EditorService"));
+            provided.push_back(AZ_CRC("${SanitizedCppName}EditorService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("${Name}Service"));
+            required.push_back(AZ_CRC("${SanitizedCppName}Service"));
         }
 
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
     };
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}

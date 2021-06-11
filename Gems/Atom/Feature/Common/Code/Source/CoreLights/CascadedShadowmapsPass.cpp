@@ -100,7 +100,7 @@ namespace AZ
             m_arraySize = arraySize;
             m_updateChildren = true;
 
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
 
             m_atlas.Initialize();
             for (size_t cascadeIndex = 0; cascadeIndex < m_arraySize; ++cascadeIndex)
@@ -149,7 +149,7 @@ namespace AZ
             return m_atlas;
         }
 
-        void CascadedShadowmapsPass::BuildAttachmentsInternal()
+        void CascadedShadowmapsPass::BuildInternal()
         {
             UpdateChildren();
 
@@ -159,7 +159,7 @@ namespace AZ
             }
 
             UpdateShadowmapImageSize();
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
         void CascadedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
@@ -215,7 +215,7 @@ namespace AZ
                 AZ_RPI_PASS_WARNING(child, "CascadedShadowmapsPass child Pass creation failed for %d", cascadeIndex);
                 if (child)
                 {
-                    child->QueueForBuildAttachments();
+                    child->QueueForBuildAndInitialization();
                     AddChild(child);
                 }
             }
