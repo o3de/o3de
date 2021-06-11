@@ -11,27 +11,29 @@
 */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/std/string/fixed_string.h>
+#include <AzCore/std/containers/fixed_vector.h>
+
 DECLARE_AZ_UNIT_TEST_MAIN();
 
 int runDefaultRunner(int argc, char* argv[])
 {
-    INVOKE_AZ_UNIT_TEST_MAIN(nullptr);
+    INVOKE_AZ_UNIT_TEST_MAIN(nullptr)
     return 0;
 }
 
 int main(int argc, char* argv[])
 {
-    // ran with no parameters?
     if (argc == 1)
     {
-        constexpr int defaultArgc = 2;
-        char unittest_arg[] = "--unittests"; // Conversion from string literal to char* is not allowed per ISO C++11
-        char* defaultArgv[defaultArgc] =
-        {
-            argv[0],
-            unittest_arg
-        };
-        return runDefaultRunner(defaultArgc, defaultArgv);
+        // if no parameters are provided, add the --unittests parameter
+        constexpr size_t MaxCommandArgsCount = 128;
+        using ArgumentContainer = AZStd::fixed_vector<char*, MaxCommandArgsCount>;
+
+        constexpr AZStd::basic_fixed_string unittestArg{ "--unittests" };
+        ArgumentContainer argContainer{ argv[0], const_cast<char*>(unittestArg.data()) };
+
+        return runDefaultRunner(aznumeric_cast<int>(argContainer.size()), argContainer.data());
     }
     INVOKE_AZ_UNIT_TEST_MAIN(nullptr); 
     return 0;

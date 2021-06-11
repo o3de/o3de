@@ -17,39 +17,25 @@
 namespace O3DE::ProjectManager
 {
     class ProjectManagerApplicationTests 
-        : public ::testing::Test
-        , public ::UnitTest::AllocatorsBase
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
 
-        static void SetUpTestCase()
+        ProjectManagerApplicationTests()
         {
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-
-            s_application = AZStd::make_unique<ProjectManager::Application>(/*argc=*/nullptr, /*argv=*/nullptr);
+            m_application = AZStd::make_unique<ProjectManager::Application>();
         }
 
-        static void TearDownTestCase()
+        ~ProjectManagerApplicationTests()
         {
-            s_application->TearDown();
-            s_application.reset();
-
-            if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
+            m_application.reset();
         }
 
-        static AZStd::unique_ptr<ProjectManager::Application> s_application;
+        AZStd::unique_ptr<ProjectManager::Application> m_application;
     };
-
-    AZStd::unique_ptr<ProjectManager::Application> ProjectManagerApplicationTests::s_application;
 
     TEST_F(ProjectManagerApplicationTests, Application_Init_Succeeds)
     {
-        EXPECT_TRUE(s_application->Init());
+        EXPECT_TRUE(m_application->Init());
     }
 }
