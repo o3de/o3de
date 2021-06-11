@@ -29,7 +29,7 @@ namespace AWSMetrics
     MetricsManager::MetricsManager()
         : m_clientConfiguration(AZStd::make_unique<ClientConfiguration>())
         , m_clientIdProvider(IdentityProvider::CreateIdentityProvider())
-        , m_consumerTerminated(true)
+        , m_monitorTerminated(true)
         , m_sendMetricsId(0)
     {
     }
@@ -53,25 +53,25 @@ namespace AWSMetrics
 
     void MetricsManager::StartMetrics()
     {
-        if (!m_consumerTerminated)
+        if (!m_monitorTerminated)
         {
             // The background thread has been started.
             return;
         }
 
-        m_consumerTerminated = false;
+        m_monitorTerminated = false;
 
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
         m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
 
         // Start a separate thread to monitor and consume the metrics queue.
         // Avoid using the job system since the worker is long-running over multiple frames
-        m_consumerThread = AZStd::thread(AZStd::bind(&MetricsManager::MonitorMetricsQueue, this));
+        m_monitorThread = AZStd::thread(AZStd::bind(&MetricsManager::MonitorMetricsQueue, this));
     }
 
     void MetricsManager::MonitorMetricsQueue()
     {
-        while (!m_consumerTerminated)
+        while (!m_monitorTerminated)
         {
             AZStd::unique_lock<AZStd::recursive_mutex> metricsMutexlock(m_metricsMutex);
             AZStd::chrono::duration timeDuration = AZStd::chrono::system_clock::now() - m_lastSendMetricsTime;
@@ -80,6 +80,8 @@ namespace AWSMetrics
                 metricsMutexlock.unlock();
 
                 // Wake up periodically to check whether the time limit has been hit or the background thread has been required to shut down.
+                // The sleep call is used to reduce the CPU usage. Setting the sleep time low will increate the frequency on checking the
+                // system time while setting it high will block the shutdown process since the main thread needs to wait for this sleep to complete.
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             }
             else if (m_metricsQueue.GetNumMetrics() > 0)
@@ -386,18 +388,18 @@ namespace AWSMetrics
 
     void MetricsManager::ShutdownMetrics()
     {
-        if (m_consumerTerminated)
+        if (m_monitorTerminated)
         {
             return;
         }
 
         // Terminate the consumer thread
-        m_consumerTerminated = true;
+        m_monitorTerminated = true;
         FlushMetricsAsync();
 
-        if (m_consumerThread.joinable())
+        if (m_monitorThread.joinable())
         {
-            m_consumerThread.join();
+            m_monitorThread.join();
         }
     }
 

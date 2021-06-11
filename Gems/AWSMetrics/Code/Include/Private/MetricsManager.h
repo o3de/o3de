@@ -139,8 +139,8 @@ namespace AWSMetrics
 
         AZStd::atomic<int> m_sendMetricsId;//!< Request ID for sending metrics
 
-        AZStd::thread m_consumerThread;  //!< Thread to monitor and consume the metrics queue
-        AZStd::atomic<bool> m_consumerTerminated;
+        AZStd::thread m_monitorThread; //!< Thread to monitor the metrics queue
+        AZStd::atomic<bool> m_monitorTerminated;
 
         // Client Configurations.
         AZStd::unique_ptr<ClientConfiguration> m_clientConfiguration;
