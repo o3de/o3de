@@ -1,0 +1,82 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "Ngaz_headBang",
+            "selectedRootBone": "RootNode.NGaz_Root_Jnt_01",
+            "id": "{48CB2B03-56BF-5DEF-A676-BD87707AF6C8}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MotionSamplingRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "Ngaz_headBang",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.HeadFinal2",
+                    "RootNode.HeadFinal2.HeadFinal2_1",
+                    "RootNode.HeadFinal2.HeadFinal2_2",
+                    "RootNode.HeadFinal2.HeadFinal2_3",
+                    "RootNode.NGaz_Root_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_lipup_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_teethup_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eye_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eye_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.mouth_C0_liplow_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.mouth_C0_teethlow_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Upper_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Lower_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Lower_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Upper_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Upper_Eyelid_Jnt_01.L_Upper_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Lower_Eyelid_Jnt_01.L_Lower_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Lower_Eyelid_Jnt_01.R_Lower_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Upper_Eyelid_Jnt_01.R_Upper_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.TongueTip_RF_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.TongueTip_LF_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.TongueTip_LF_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.TongueTip_RF_02"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "SkinRule"
+                    },
+                    {
+                        "$type": "StaticMeshAdvancedRule",
+                        "vertexColorStreamName": "Col0"
+                    },
+                    {
+                        "$type": "MaterialRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            },
+            "id": "{C6E10062-26C0-5B22-A934-84795E5F1B49}"
+        }
+    ]
+}

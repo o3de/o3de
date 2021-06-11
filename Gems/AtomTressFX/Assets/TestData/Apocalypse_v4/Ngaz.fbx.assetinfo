@@ -1,0 +1,140 @@
+{
+    "values": [
+        {
+            "$type": "ActorGroup",
+            "name": "Ngaz",
+            "id": "{3BB64ADC-AC79-50C8-A0A2-266E99F81066}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "Ngaz",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode",
+                    "RootNode.HeadFinal2",
+                    "RootNode.NGaz_Root_Jnt_01",
+                    "RootNode.HeadFinal2.HeadFinal2_1",
+                    "RootNode.HeadFinal2.HeadFinal2_2",
+                    "RootNode.HeadFinal2.HeadFinal2_3",
+                    "RootNode.NGaz_Root_Jnt_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1",
+                    "RootNode.HeadFinal2.HeadFinal2_1.Col0",
+                    "RootNode.HeadFinal2.HeadFinal2_1.Col1",
+                    "RootNode.HeadFinal2.HeadFinal2_1.Bitangent",
+                    "RootNode.HeadFinal2.HeadFinal2_1.SkinWeight_0",
+                    "RootNode.HeadFinal2.HeadFinal2_1.transform",
+                    "RootNode.HeadFinal2.HeadFinal2_1.Tangent",
+                    "RootNode.HeadFinal2.HeadFinal2_1.UV0",
+                    "RootNode.HeadFinal2.HeadFinal2_1.UV1",
+                    "RootNode.HeadFinal2.HeadFinal2_1.NGaztak_XGEN_Start_0001:HeadFrM_Usethis1_lambert",
+                    "RootNode.HeadFinal2.HeadFinal2_1.NGaztak_XGEN_Start_0001:blinn1",
+                    "RootNode.HeadFinal2.HeadFinal2_1.NGaztak_XGEN_Start_0001:Material #31",
+                    "RootNode.HeadFinal2.HeadFinal2_2.Col0",
+                    "RootNode.HeadFinal2.HeadFinal2_2.Col1",
+                    "RootNode.HeadFinal2.HeadFinal2_2.Bitangent",
+                    "RootNode.HeadFinal2.HeadFinal2_2.SkinWeight_1",
+                    "RootNode.HeadFinal2.HeadFinal2_2.transform",
+                    "RootNode.HeadFinal2.HeadFinal2_2.Tangent",
+                    "RootNode.HeadFinal2.HeadFinal2_2.UV0",
+                    "RootNode.HeadFinal2.HeadFinal2_2.UV1",
+                    "RootNode.HeadFinal2.HeadFinal2_2.NGaztak_XGEN_Start_0001:HeadFrM_Usethis1_lambert",
+                    "RootNode.HeadFinal2.HeadFinal2_2.NGaztak_XGEN_Start_0001:blinn1",
+                    "RootNode.HeadFinal2.HeadFinal2_2.NGaztak_XGEN_Start_0001:Material #31",
+                    "RootNode.HeadFinal2.HeadFinal2_3.Col0",
+                    "RootNode.HeadFinal2.HeadFinal2_3.Col1",
+                    "RootNode.HeadFinal2.HeadFinal2_3.Bitangent",
+                    "RootNode.HeadFinal2.HeadFinal2_3.SkinWeight_2",
+                    "RootNode.HeadFinal2.HeadFinal2_3.transform",
+                    "RootNode.HeadFinal2.HeadFinal2_3.Tangent",
+                    "RootNode.HeadFinal2.HeadFinal2_3.UV0",
+                    "RootNode.HeadFinal2.HeadFinal2_3.UV1",
+                    "RootNode.HeadFinal2.HeadFinal2_3.NGaztak_XGEN_Start_0001:HeadFrM_Usethis1_lambert",
+                    "RootNode.HeadFinal2.HeadFinal2_3.NGaztak_XGEN_Start_0001:blinn1",
+                    "RootNode.HeadFinal2.HeadFinal2_3.NGaztak_XGEN_Start_0001:Material #31",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_lipup_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_teethup_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eye_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eye_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.mouth_C0_liplow_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.mouth_C0_teethlow_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_lipup_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_teethup_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eye_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Upper_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Lower_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eye_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Lower_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Upper_Eyelid_Jnt_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.mouth_C0_liplow_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.mouth_C0_teethlow_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Upper_Eyelid_Jnt_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Upper_Eyelid_Jnt_01.L_Upper_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Lower_Eyelid_Jnt_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Lower_Eyelid_Jnt_01.L_Lower_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Lower_Eyelid_Jnt_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Lower_Eyelid_Jnt_01.R_Lower_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Upper_Eyelid_Jnt_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Upper_Eyelid_Jnt_01.R_Upper_Eyelid_Jnt_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Upper_Eyelid_Jnt_01.L_Upper_Eyelid_Jnt_02.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_L0_eyeOver_jnt.L_Lower_Eyelid_Jnt_01.L_Lower_Eyelid_Jnt_02.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Lower_Eyelid_Jnt_01.R_Lower_Eyelid_Jnt_02.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.eye_R0_eyeOver_jnt.R_Upper_Eyelid_Jnt_01.R_Upper_Eyelid_Jnt_02.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.TongueTip_RF_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.TongueTip_LF_01",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.TongueTip_LF_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.TongueTip_RF_02",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.TongueTip_RF_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.TongueTip_LF_01.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.TongueTip_LF_02.transform",
+                    "RootNode.NGaz_Root_Jnt_01.neck_C0_0_jnt1.neck_C0_1_jnt.neck_C0_2_jnt.neck_C0_head_jnt.mouth_C0_jaw_jnt.tongue_C0_0_jnt.tongue_C0_1_jnt.tongue_C0_2_jnt.tongue_C0_3_jnt.TongueTip_RF_02.transform"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "SkinRule"
+                    },
+                    {
+                        "$type": "StaticMeshAdvancedRule",
+                        "vertexColorStreamName": "Col0"
+                    },
+                    {
+                        "$type": "MaterialRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule"
+                    }
+                ]
+            },
+            "id": "{3C4357EE-72B3-5DBE-8E71-D64C78C8ED1B}"
+        }
+    ]
+}
