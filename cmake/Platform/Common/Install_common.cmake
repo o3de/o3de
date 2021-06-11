@@ -23,9 +23,11 @@ set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/
 
 
 #! ly_setup_target: Setup the data needed to re-create the cmake target commands for a single target
-function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
+function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME ALIAS_TARGET_SOURCE_DIR)
     # De-alias target name
     ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
+
+    set(target_source_dir ${ALIAS_TARGET_SOURCE_DIR})
 
     # get the component ID.  if the property isn't set for the target, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
     get_property(install_component TARGET ${TARGET_NAME} PROPERTY INSTALL_COMPONENT)
@@ -226,15 +228,14 @@ function(ly_setup_subdirectories)
 endfunction()
 
 
-#! ly_setup_subdirectory: setup  all targets in the subdirectory
+#! ly_setup_subdirectory: setup all targets in the subdirectory
 function(ly_setup_subdirectory absolute_target_source_dir)
 
     # The builtin BUILDSYSTEM_TARGETS property isn't being used here as that returns the de-alised
     # TARGET and we need the alias namespace for recreating the CMakeLists.txt in the install layout
     get_property(ALIAS_TARGETS_NAME DIRECTORY ${absolute_target_source_dir} PROPERTY LY_DIRECTORY_TARGETS)
-    file(RELATIVE_PATH target_source_dir ${LY_ROOT_FOLDER} ${absolute_target_source_dir})
     foreach(ALIAS_TARGET_NAME IN LISTS ALIAS_TARGETS_NAME)
-        ly_setup_target(configured_target ${ALIAS_TARGET_NAME})
+        ly_setup_target(configured_target ${ALIAS_TARGET_NAME} ${absolute_target_source_dir})
         string(APPEND all_configured_targets "${configured_target}")
     endforeach()
 
@@ -257,7 +258,41 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         string(APPEND CREATE_ALIASES_PLACEHOLDER ${create_alias_command})
     endforeach()
 
+
+    # Reproduce the ly_enable_gems() calls made in the the SOURCE_DIR for this target into the CMakeLists.txt that
+    # is about to be generated
+    string(JOIN "\n" enable_gems_template
+        "   ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEM@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)"
+        "endif()"
+        ""
+    )
+    get_property(enable_gems_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
+    foreach(enable_gems_single_command_arg_list ${enable_gems_commands_arg_list})
+        # Split the ly_enable_gems arguments back out based on commas
+        string(REPLACE "," ";" ly_enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
+        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_PROJECT_NAME)
+        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM)
+        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM_FILE)
+        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM)
+        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_VARIANTS)
+        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_TARGETS)
+        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEM GEM_FILE GEM VARIANTS TARGETS)
+            list(POP_FRONT enable_gems_single_command_arg_list enable_gem_${enable_gem_arg_kw})
+            if(enable_gem_${enable_gem_arg_kw})
+                # if the argument exist append to argument keyword to the front
+                string(PREPEND enable_gem_${enable_gem_arg_kw} "${enable_gem_arg_kw} ")
+            endif()
+        endforeach()
+
+        string(CONFIGURE "${enable_gems_template}" enable_gems_command @ONLY)
+        string(APPEND ENABLE_GEMS_PLACEHOLDER ${enable_gems_command})
+    endforeach()
+
+
     file(READ ${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
+
+    # Make a relative path to the target source directory from the LY_ROOT_FOLDER
+    file(RELATIVE_PATH target_source_dir ${LY_ROOT_FOLDER} ${absolute_target_source_dir})
 
     if(IS_ABSOLUTE ${target_source_dir})
         # This normally applies the target_source_dir is outside of the engine root
@@ -278,13 +313,14 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
+        "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
     # get the component ID. if the property isn't set for the directory, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
     get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
 
     install(FILES "${target_install_source_dir}/CMakeLists.txt"
-        DESTINATION ${target_source_dir}
+        DESTINATION ${target_install_source_dir}
         COMPONENT ${install_component}
     )
 
