@@ -10,9 +10,8 @@
 #
 
 set(FILES
-    Resources/ProjectManager.qrc
-    Resources/ProjectManager.qss
-    Source/main.cpp
+    Source/Application.h
+    Source/Application.cpp
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp

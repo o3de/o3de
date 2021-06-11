@@ -10,90 +10,27 @@
 *
 */
 
-#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzFramework/CommandLine/CommandLine.h>
-
-#include <ProjectManagerWindow.h>
-#include <ProjectUtils.h>
-
-#include <QApplication>
-#include <QCoreApplication>
-#include <QGuiApplication>
-
-using namespace O3DE::ProjectManager;
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
+#include <Application.h>
 
 int main(int argc, char* argv[])
 {
-    QApplication::setOrganizationName("O3DE");
-    QApplication::setOrganizationDomain("o3de.org");
-    QCoreApplication::setApplicationName("ProjectManager");
-    QCoreApplication::setApplicationVersion("1.0");
-
-    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-    QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
-    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-    AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
-
     AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
     {
-        QApplication app(argc, argv);
+        // Call before using any Qt, or the app may not be able to locate Qt libs
+        AzQtComponents::PrepareQtPaths();
 
-        AZ::IO::FixedMaxPath engineRootPath;
+        O3DE::ProjectManager::Application application(&argc, &argv);
+        if (!application.Init())
         {
-            // ComponentApplication creates the SettingsRegistery we need to get the engine root folder
-            AZ::ComponentApplication componentApplication;
-
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            if (engineRootPath.empty())
-            {
-                AZ_Warning("ProjectManager", false, "Failed to retrieve engine root folder from registry.");
-                AZ_Assert(settingsRegistry, "Failed to get a valid SettingsRegistry");
-                engineRootPath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*settingsRegistry);
-            }
+            AZ_Error("ProjectManager", false, "Failed to initialize");
+            runSuccess = 1;
         }
-
-        AzQtComponents::StyleManager styleManager(&app);
-        styleManager.initialize(&app, engineRootPath);
-
-        // Get the initial start screen if one is provided via command line
-        constexpr char optionPrefix[] = "--";
-        AZ::CommandLine commandLine(optionPrefix);
-        commandLine.Parse(argc, argv);
-
-        ProjectManagerScreen startScreen = ProjectManagerScreen::Projects;
-        if(commandLine.HasSwitch("screen"))
+        else
         {
-            QString screenOption = commandLine.GetSwitchValue("screen", 0).c_str();
-            ProjectManagerScreen screen = ProjectUtils::GetProjectManagerScreen(screenOption);
-            if (screen != ProjectManagerScreen::Invalid)
-            {
-                startScreen = screen;
-            }
+            runSuccess = application.Run() ? 0 : 1;
         }
-
-        AZ::IO::FixedMaxPath projectPath;
-        if (commandLine.HasSwitch("project-path"))
-        {
-            projectPath = commandLine.GetSwitchValue("project-path", 0).c_str();
-        }
-
-        ProjectManagerWindow window(nullptr, engineRootPath, projectPath, startScreen);
-        window.show();
-
-        // somethings is preventing us from moving the window to the center of the
-        // primary screen - likely an Az style or component helper
-        constexpr int width = 1200;
-        constexpr int height = 800;
-        window.resize(width, height);
-
-        runSuccess = app.exec();
     }
     AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 
