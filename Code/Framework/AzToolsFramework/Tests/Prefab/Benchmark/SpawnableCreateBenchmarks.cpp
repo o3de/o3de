@@ -29,26 +29,28 @@ namespace Benchmark
             {},
             m_pathString));
 
+        AZStd::vector<AZStd::unique_ptr<AzFramework::Spawnable>> spawnables;
+        spawnables.resize(numSpawnables);
+
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
         for (auto _ : state)
         {
-            state.PauseTiming();
-
-            AzFramework::Spawnable spawnable;
-            AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
-            
-            
-            state.ResumeTiming();
+            for (int instanceCounter = 0; instanceCounter < numSpawnables; ++instanceCounter)
+            {
+                AZStd::unique_ptr<AzFramework::Spawnable> spawnable = AZStd::make_unique<AzFramework::Spawnable>();
+                AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(*spawnable, prefabDom);
+                spawnables[instanceCounter] = AZStd::move(spawnable);
+            }
         }
 
         state.SetComplexityN(numSpawnables);
     }
-    /*
     BENCHMARK_REGISTER_F(BM_SpawnableCreate, CreateSpawnable_SingleEntityInstance)
         ->RangeMultiplier(10)
         ->Range(100, 10000)
         ->Unit(benchmark::kMillisecond)
-        ->Complexity();*/
+        ->Complexity();
 }
 
 #endif
+
