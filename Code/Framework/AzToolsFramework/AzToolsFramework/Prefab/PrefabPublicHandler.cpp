@@ -638,6 +638,19 @@ namespace AzToolsFramework
                         (&beforeOwningInstance->get() != &afterOwningInstance->get()))
                     {
                         isNewParentOwnedByDifferentInstance = true;
+
+                        // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
+                        const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(beforeOwningInstance->get().GetTemplateId());
+                        AZStd::unordered_set<AZ::IO::Path> templatePaths;
+                        PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
+
+                        if (IsCyclicalDependencyFound(afterOwningInstance->get(), templatePaths))
+                        {
+                            AZ_Assert(false, "Prefab - Cyclical dependency detected on reparenting.");
+
+                            // We normally would not return after an assert, but cyclical dependencies would freeze the Editor and hurt debugging.
+                            return;
+                        }
                     }
                 }
 
