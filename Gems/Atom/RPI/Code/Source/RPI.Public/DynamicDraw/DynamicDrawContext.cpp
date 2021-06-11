@@ -129,17 +129,17 @@ namespace AZ
             }
 
             // Create per context srg if it exist
-            auto shaderAsset = shader->GetAsset();
-            auto contextSrgAsset = shaderAsset->FindShaderResourceGroupAsset(Name{ PerContextSrgName });
-            if (contextSrgAsset.GetId().IsValid())
+            auto contextSrgLayout = m_shader->FindShaderResourceGroupLayout(Name { PerContextSrgName });
+            if (contextSrgLayout)
             {
-                m_srgPerContext = AZ::RPI::ShaderResourceGroup::Create(contextSrgAsset);
+                m_srgPerContext = AZ::RPI::ShaderResourceGroup::Create(
+                    m_shader->GetAsset(), m_shader->GetSupervariantIndex(), Name { PerContextSrgName });
                 m_srgGroups[0] = m_srgPerContext->GetRHIShaderResourceGroup();
             }
 
             // Save per draw srg asset which can be used to create draw srg later
-            m_drawSrgAsset = shaderAsset->FindShaderResourceGroupAsset(SrgBindingSlot::Draw);
-            m_hasShaderVariantKeyFallbackEntry = (m_drawSrgAsset && m_drawSrgAsset->GetLayout()->HasShaderVariantKeyFallbackEntry());
+            m_drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
+            m_hasShaderVariantKeyFallbackEntry = (m_drawSrgLayout && m_drawSrgLayout->HasShaderVariantKeyFallbackEntry());
         }
 
         void DynamicDrawContext::InitVertexFormat(const AZStd::vector<VertexChannel>& vertexChannels)
@@ -397,7 +397,7 @@ namespace AZ
                 return;
             }
 
-            if (m_drawSrgAsset.GetId().IsValid() && drawSrg == nullptr)
+            if (!m_drawSrgLayout)
             {
                 AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
                 return;
@@ -487,7 +487,7 @@ namespace AZ
                 return;
             }
 
-            if (m_drawSrgAsset.GetId().IsValid() && drawSrg == nullptr)
+            if (!m_drawSrgLayout)
             {
                 AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
                 return;
@@ -563,11 +563,11 @@ namespace AZ
 
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::NewDrawSrg()
         {
-            if (!m_drawSrgAsset.IsReady())
+            if (!m_drawSrgLayout)
             {
                 return nullptr;
             }
-            auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_drawSrgAsset);
+            auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
 
             // Set fallback value for shader variant if draw srg contains constant for shader variant fallback 
             if (m_hasShaderVariantKeyFallbackEntry)

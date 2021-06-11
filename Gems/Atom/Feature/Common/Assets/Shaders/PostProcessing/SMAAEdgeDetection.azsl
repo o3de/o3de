@@ -24,7 +24,7 @@ struct VSOutputSMAAEdgeDetection
     float4 m_offset[3] : TEXCOORD1;
 };
 
-ShaderResourceGroup PassSrg : SRG_PerDraw
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
     Texture2D<float4> m_depthTexture;
