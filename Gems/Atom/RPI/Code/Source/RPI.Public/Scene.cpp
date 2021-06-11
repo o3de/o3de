@@ -289,9 +289,10 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->BuildPipelineViews();
 
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
             RebuildPipelineStatesLookup();
 
             AZ_Assert(!m_id.IsNull(), "RPI::Scene needs to have a valid uuid.");

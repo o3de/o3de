@@ -38,9 +38,9 @@ namespace AZ
             ReleaseLutImage();
         }
 
-        void ApplyShaperLookupTablePass::Init()
+        void ApplyShaperLookupTablePass::InitializeInternal()
         {
-            DisplayMapperFullScreenPass::Init();
+            DisplayMapperFullScreenPass::InitializeInternal();
 
             AZ_Assert(m_shaderResourceGroup != nullptr, "ApplyShaperLookupTablePass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 

@@ -88,7 +88,7 @@ If you have the Git credential manager core or other credential helpers installe
         *   Game Development with C++
         *   MSVC v142 - VS 2019 C++ x64/x86
         *   C++ 2019 redistributable update
-*   CMake 3.19.1 minimum: [https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi](https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi)
+*   CMake 3.20 minimum: [https://cmake.org/download/](https://cmake.org/download/)
 
 #### Optional
 
@@ -105,7 +105,7 @@ If you have the Git credential manager core or other credential helpers installe
 
 1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
-    - CMake can be installed to any location, as long as it's available in the system path, otherwise it can be installed to: `<3rdParty Path>\CMake\3.19.1`
+    - CMake can be installed to any location, as long as it's available in the system path
     - WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
     
 1.  Navigate into the repo folder, then download the python runtime with this command

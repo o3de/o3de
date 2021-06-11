@@ -107,7 +107,7 @@ namespace AZ
             pipeline->m_originalRenderSettings = desc.m_renderSettings;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
-            pipeline->BuildPipelineViews();
+            pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
         }
 
         RenderPipeline::~RenderPipeline()
@@ -320,8 +320,8 @@ namespace AZ
                 Ptr<ParentPass> newRoot = m_rootPass->Recreate();
                 newRoot->SetRenderPipeline(this);
 
-                // Force processing of queued changes so we can validate the new pipeline
-                passSystem->ProcessQueuedChanges();
+                // Manually build the pipeline
+                newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
                 PassValidationResults validation;
@@ -329,9 +329,8 @@ namespace AZ
                 if (validation.IsValid())
                 {
                     // Remove old pass
-                    bool deletePass = true;
                     m_rootPass->SetRenderPipeline(nullptr);
-                    m_rootPass->QueueForRemoval(deletePass);
+                    m_rootPass->QueueForRemoval();
 
                     // Set new root
                     m_rootPass = newRoot;
