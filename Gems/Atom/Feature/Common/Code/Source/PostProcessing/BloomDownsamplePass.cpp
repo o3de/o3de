@@ -74,10 +74,10 @@ namespace AZ
                 AddAttachmentBinding(outBinding);
             }
 
-            ComputePass::BuildAttachmentsInternal();
+            ComputePass::BuildInternal();
         }
 
-        void BloomDownsamplePass::BuildAttachmentsInternal()
+        void BloomDownsamplePass::BuildInternal()
         {
             BuildOutAttachmentBinding();
         }
