@@ -32,7 +32,7 @@ namespace O3DE::ProjectManager
         TearDown();
     }
 
-    bool Application::Init()
+    bool Application::Init(bool interactive)
     {
         constexpr char* applicationName{ "O3DE" };
 
@@ -76,11 +76,14 @@ namespace O3DE::ProjectManager
         m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
         if (!m_pythonBindings || !m_pythonBindings->PythonStarted())
         {
-            QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
-                QObject::tr("This tool requires an O3DE engine with a Python runtime, "
-                    "but either Python is missing or mis-configured. Please rename "
-                    "your python/runtime folder to python/runtime_bak, then run "
-                    "python/get_python.bat to restore the Python runtime folder."));
+            if (interactive)
+            {
+                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
+                    QObject::tr("This tool requires an O3DE engine with a Python runtime, "
+                        "but either Python is missing or mis-configured. Please rename "
+                        "your python/runtime folder to python/runtime_bak, then run "
+                        "python/get_python.bat to restore the Python runtime folder."));
+            }
             return false;
         }
 

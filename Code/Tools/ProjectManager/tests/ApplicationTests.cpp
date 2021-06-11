@@ -36,6 +36,7 @@ namespace O3DE::ProjectManager
 
     TEST_F(ProjectManagerApplicationTests, Application_Init_Succeeds)
     {
-        EXPECT_TRUE(m_application->Init());
+        // we don't want to interact with actual GUI or display it
+        EXPECT_TRUE(m_application->Init(/*interactive=*/false));
     }
 }

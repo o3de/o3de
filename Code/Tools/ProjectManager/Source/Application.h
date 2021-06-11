@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         using AzFramework::Application::Application;
         virtual ~Application();
 
-        bool Init();
+        bool Init(bool interactive = true);
         bool Run();
         void TearDown();
 
