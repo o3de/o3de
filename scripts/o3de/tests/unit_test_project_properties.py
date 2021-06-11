@@ -31,34 +31,52 @@ TEST_DEFAULT_PROJECT_DATA = {
     "icon_path": "preview.png"
 }
 
-def get_project_json_data(project_name, project_path) -> str:
-    if project_path == '':
-        return None
-    return TEST_DEFAULT_PROJECT_DATA
+@pytest.fixture(scope='class')
+def init_project_json_data(request):
+    class ProjectJsonData:
+        def __init__(self):
+            self.data = TEST_DEFAULT_PROJECT_DATA
+    request.cls.project_json = ProjectJsonData()
 
-def save_o3de_manifest(new_proj_data, project_path):
-    temp = new_proj_data
+@pytest.mark.usefixtures('init_project_json_data')
+class TestEditProjectProperties:
+    @pytest.mark.parametrize("project_path, project_name, project_origin, project_display,\
+                            project_summary, project_icon, add_tags, delete_tags,\
+                            replace_tags, expected_result", [
+        pytest.param(pathlib.PurePath('E:/TestProject'),
+        'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'B', 'D E F', 0),
+        pytest.param('',
+        'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
+        'B', 'D E F', 1)
+        ]
+    )
+    def test_edit_project_properties(self,project_path, project_name, project_origin, project_display,
+                                    project_summary, project_icon, add_tags, delete_tags,
+                                    replace_tags, expected_result):
 
-@pytest.mark.parametrize("project_path, project_name, project_origin, project_display,\
-                          project_summary, project_icon, add_tags, delete_tags,\
-                          replace_tags, expected_result", [
-    pytest.param(pathlib.PurePath('E:/TestProject'),
-    'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
-    'B', 'D E F', 0),
-    pytest.param('',
-    'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
-    'B', 'D E F', 1)
-    ]
-)
+        def get_project_json_data(project_name: str, project_path) -> dict:
+            if not project_path:
+                self.project_json.data = None
+                return None
+            return self.project_json.data
 
-def test_edit_project_properties(project_path, project_name, project_origin, project_display,
-                                project_summary, project_icon, add_tags, delete_tags,
-                                replace_tags, expected_result):
+        def save_o3de_manifest(new_proj_data: dict, project_path) -> None:
+            self.project_json.data = new_proj_data
 
-    with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
-            patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
-        result = project_properties.edit_project_props(project_path, project_name, project_origin,
-                                                        project_display, project_summary, project_icon,
-                                                        add_tags, delete_tags, replace_tags)
-        assert result == expected_result
-
+        with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
+                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
+            result = project_properties.edit_project_props(project_path, project_name, project_origin,
+                                                            project_display, project_summary, project_icon,
+                                                            add_tags, delete_tags, replace_tags)
+            assert result == expected_result
+            if project_path:
+                assert self.project_json.data
+                assert self.project_json.data.get('origin', '') == project_origin
+                assert self.project_json.data.get('display_name', '') == project_display
+                assert self.project_json.data.get('summary', '') == project_summary
+                assert self.project_json.data.get('icon_path', '') == project_icon
+                expected_tag_set = set(replace_tags.split())
+                assert expected_tag_set.issubset(self.project_json.data.get('user_tags', set()))
+            else:
+                assert not self.project_json.data
