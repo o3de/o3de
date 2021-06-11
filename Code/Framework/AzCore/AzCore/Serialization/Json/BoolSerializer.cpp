@@ -30,8 +30,8 @@ namespace AZ
 
             if (text && textLength > 0)
             {
-                static constexpr const char* trueString = "true";
-                static constexpr const char* falseString = "false";
+                static constexpr const char trueString[] = "true";
+                static constexpr const char falseString[] = "false";
                 // remove null terminator for string length counts
                 // rapidjson stringlength doesn't include it in length calculations, but sizeof() will
                 static constexpr size_t trueStringLength = sizeof(trueString) - 1;
