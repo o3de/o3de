@@ -122,29 +122,22 @@ namespace AWSMetrics
         //! @return Outcome of the operation.
         AZ::Outcome<void, AZStd::string> SendMetricsToFile(AZStd::shared_ptr<MetricsQueue> metricsQueue);
 
-        //! Check whether the consumer should flush the metrics queue.
-        //! @return whether the limit is hit.
-        bool ShouldSendMetrics();
-
         //! Push metrics events to the front of the queue for retry.
         //! @param metricsEventsForRetry Metrics events for retry.
         void PushMetricsForRetry(MetricsQueue& metricsEventsForRetry);
 
         void SubmitLocalMetricsAsync();
 
-        ////////////////////////////////////////////
-        // These data are protected by m_metricsMutex.
-        AZStd::mutex m_metricsMutex;
-        AZStd::chrono::system_clock::time_point m_lastSendMetricsTime;
-        MetricsQueue m_metricsQueue;
-        ////////////////////////////////////////////
+        AZStd::mutex m_metricsMutex; //!< Mutex to protect the metrics queue
+        MetricsQueue m_metricsQueue; //!< Queue fo buffering the metrics events
 
-        AZStd::mutex m_metricsFileMutex; //!< Local metrics file is protected by m_metricsFileMutex
+        AZStd::mutex m_metricsFileMutex; //!< Mutex to protect the local metrics file
 
         AZStd::atomic<int> m_sendMetricsId;//!< Request ID for sending metrics
 
-        AZStd::thread m_consumerThread;  //!< Thread to monitor and consume the metrics queue
-        AZStd::atomic<bool> m_consumerTerminated;
+        AZStd::thread m_monitorThread; //!< Thread to monitor and consume the metrics queue
+        AZStd::atomic<bool> m_monitorTerminated;
+        AZStd::binary_semaphore m_waitEvent;
 
         // Client Configurations.
         AZStd::unique_ptr<ClientConfiguration> m_clientConfiguration;
