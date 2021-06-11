@@ -20,8 +20,8 @@ endif()
 # Tests
 ################################################################################
 
-foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
-    if(PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
+if(PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED)
+    foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
         ly_add_pytest(
             NAME pytest_sanity_${suite_name}_no_gpu
             PATH ${CMAKE_CURRENT_LIST_DIR}/sanity_test.py
@@ -34,8 +34,8 @@ foreach(suite_name ${LY_TEST_GLOBAL_KNOWN_SUITE_NAMES})
             TEST_SUITE ${suite_name}
             TEST_REQUIRES gpu
         )
-    endif()
-endforeach()
+    endforeach()
+endif()
 
 # EPB Sanity test is being registered here to validate that the ly_add_editor_python_test function works.
 #if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedTesting IN_LIST LY_PROJECTS_TARGET_NAME)
