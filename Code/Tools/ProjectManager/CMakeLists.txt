@@ -85,8 +85,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 3rdParty::Qt::Core
-				3rdParty::Qt::Concurrent
-				3rdParty::Qt::Widgets
+                3rdParty::Qt::Concurrent
+                3rdParty::Qt::Widgets
                 3rdParty::Python
                 3rdParty::pybind11
                 AZ::AzTest
