@@ -209,6 +209,7 @@ namespace AWSCore
             {
                 QMenu* subMenu = new QMenu(QObject::tr(menuText.c_str()));
                 subMenu->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
+                subMenu->setProperty("noHover", true);
                 this->insertMenu(*itr, subMenu);
                 this->removeAction(*itr);
                 return subMenu;
