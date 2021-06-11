@@ -247,22 +247,7 @@ function(ly_delayed_generate_runtime_dependencies)
         endif()
 
         unset(runtime_dependencies)
-        set(runtime_commands "
-function(ly_copy source_file target_directory)
-    get_filename_component(target_filename \"\${source_file}\" NAME)
-    if(NOT \"\${source_file}\" STREQUAL \"\${target_directory}/\${target_filename}\")
-        if(NOT EXISTS \"\${target_directory}\")
-            file(MAKE_DIRECTORY \"\${target_directory}\")
-        endif()
-        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_directory}/\${target_filename}\")
-            file(LOCK \"\${target_directory}/\${target_filename}.lock\" GUARD FUNCTION TIMEOUT 30)
-            file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-            file(LOCK \"\${target_directory}/\${target_filename}.lock\" RELEASE)
-            file(REMOVE \"\${target_directory}/\${target_filename}.lock\")
-        endif()
-    endif()    
-endfunction()
-    \n")
+        set(runtime_commands ${LY_RUNTIME_DEPENDENCIES_HEADER})
 
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
@@ -270,6 +255,8 @@ endfunction()
             ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
             string(APPEND runtime_commands ${runtime_command})
         endforeach()
+
+        string(APPEND runtime_commands ${LY_RUNTIME_DEPENDENCIES_FOOTER})
         
         # Generate the output file
         set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
