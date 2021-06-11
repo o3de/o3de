@@ -170,10 +170,11 @@ namespace AzFramework
         Activation m_activation = Activation::Idle;
     };
 
+    //! Properties to use to configure behavior across all types of camera.
     struct CameraProps
     {
-        AZStd::function<float()> m_rotateSmoothnessFn;
-        AZStd::function<float()> m_translateSmoothnessFn;
+        AZStd::function<float()> m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()> m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
     };
 
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, float deltaTime);
@@ -278,8 +279,8 @@ namespace AzFramework
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_panSpeedFn;
-        AZStd::function<bool()> m_panInvertXFn;
-        AZStd::function<bool()> m_panInvertYFn;
+        AZStd::function<bool()> m_invertPanXFn;
+        AZStd::function<bool()> m_invertPanYFn;
 
     private:
         PanAxesFn m_panAxesFn;

@@ -290,8 +290,7 @@ void EditorViewportWidget::resizeEvent(QResizeEvent* event)
 void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
     // Do not call CViewport::OnPaint() for painting messages
-    // FIXME: paintEvent() isn't the best place for such logic. Should listen to proper eNotify events and to the stuff there instead.
-    // (Repeats for other view port classes too).
+    // FIXME: paintEvent() isn't the best place for such logic. Should listen to proper eNotify events and to the stuff there instead. (Repeats for other view port classes too).
     CGameEngine* ge = GetIEditor()->GetGameEngine();
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
@@ -409,8 +408,7 @@ bool EditorViewportWidget::event(QEvent* event)
     {
     case QEvent::WindowActivate:
         GetIEditor()->GetViewManager()->SelectViewport(this);
-        // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll
-        // get the keyrelease event anyways)
+        // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll get the keyrelease event anyways)
         m_keyDown.clear();
         break;
 
@@ -1241,11 +1239,11 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             {
                 return SandboxEditor::CameraPanSpeed();
             };
-            firstPersonPanCamera->m_panInvertXFn = []
+            firstPersonPanCamera->m_invertPanXFn = []
             {
                 return SandboxEditor::CameraPanInvertedX();
             };
-            firstPersonPanCamera->m_panInvertYFn = []
+            firstPersonPanCamera->m_invertPanYFn = []
             {
                 return SandboxEditor::CameraPanInvertedY();
             };
@@ -1341,11 +1339,11 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             {
                 return SandboxEditor::CameraPanSpeed();
             };
-            orbitPanCamera->m_panInvertXFn = []
+            orbitPanCamera->m_invertPanXFn = []
             {
                 return SandboxEditor::CameraPanInvertedX();
             };
-            orbitPanCamera->m_panInvertYFn = []
+            orbitPanCamera->m_invertPanYFn = []
             {
                 return SandboxEditor::CameraPanInvertedY();
             };

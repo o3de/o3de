@@ -376,12 +376,12 @@ namespace AzFramework
             return 0.01f;
         };
 
-        m_panInvertXFn = []
+        m_invertPanXFn = []
         {
             return true;
         };
 
-        m_panInvertYFn = []
+        m_invertPanYFn = []
         {
             return true;
         };
@@ -422,8 +422,8 @@ namespace AzFramework
         const auto deltaPanX = float(cursorDelta.m_x) * panAxes.m_horizontalAxis * panSpeed;
         const auto deltaPanY = float(cursorDelta.m_y) * panAxes.m_verticalAxis * panSpeed;
 
-        nextCamera.m_lookAt += deltaPanX * Invert(m_panInvertXFn());
-        nextCamera.m_lookAt += deltaPanY * -Invert(m_panInvertYFn());
+        nextCamera.m_lookAt += deltaPanX * Invert(m_invertPanXFn());
+        nextCamera.m_lookAt += deltaPanY * -Invert(m_invertPanYFn());
 
         return nextCamera;
     }
