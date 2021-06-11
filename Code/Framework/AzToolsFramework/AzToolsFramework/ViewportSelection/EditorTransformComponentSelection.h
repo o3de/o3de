@@ -265,7 +265,7 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
-        // EditorEntityContextNotificationBus ...
+        // EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
 
@@ -278,6 +278,9 @@ namespace AzToolsFramework
 
         // Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
+
+        // Hides/Shows all viewportUi toolbars.
+        void SetAllViewportUiVisible(const bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
         AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
