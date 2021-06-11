@@ -408,9 +408,6 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnChangemovespeedIncrease();
-    void OnChangemovespeedDecrease();
-    void OnChangemovespeedChangestep();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();

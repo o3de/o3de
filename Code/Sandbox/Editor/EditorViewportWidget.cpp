@@ -13,7 +13,6 @@
 
 // Description : implementation filefov
 
-
 #include "EditorDefs.h"
 
 #include "EditorViewportWidget.h"
@@ -173,6 +172,7 @@ namespace AZ::ViewportHelpers
         {
             m_renderViewport.OnStopPlayInEditor();
         }
+
     private:
         EditorViewportWidget& m_renderViewport;
     };
@@ -290,7 +290,8 @@ void EditorViewportWidget::resizeEvent(QResizeEvent* event)
 void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
     // Do not call CViewport::OnPaint() for painting messages
-    // FIXME: paintEvent() isn't the best place for such logic. Should listen to proper eNotify events and to the stuff there instead. (Repeats for other view port classes too).
+    // FIXME: paintEvent() isn't the best place for such logic. Should listen to proper eNotify events and to the stuff there instead.
+    // (Repeats for other view port classes too).
     CGameEngine* ge = GetIEditor()->GetGameEngine();
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
@@ -402,13 +403,14 @@ void EditorViewportWidget::InjectFakeMouseMove(int deltaX, int deltaY, Qt::Mouse
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool  EditorViewportWidget::event(QEvent* event)
+bool EditorViewportWidget::event(QEvent* event)
 {
     switch (event->type())
     {
     case QEvent::WindowActivate:
         GetIEditor()->GetViewManager()->SelectViewport(this);
-        // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll get the keyrelease event anyways)
+        // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll
+        // get the keyrelease event anyways)
         m_keyDown.clear();
         break;
 
@@ -478,7 +480,6 @@ void EditorViewportWidget::Update()
         m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
     }
     m_updatingCameraPosition = false;
-
 
     // Don't wait for changes to update the focused viewport.
     if (CheckRespondToInput())
@@ -1232,14 +1233,59 @@ void EditorViewportWidget::SetViewportId(int id)
         AzFramework::ReloadCameraKeyBindings();
 
         auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+        controller->SetCameraPropsBuilderCallback(
+            [](AzFramework::CameraProps& cameraProps)
+            {
+                cameraProps.m_rotateSmoothnessFn = []
+                {
+                    return SandboxEditor::CameraRotateSmoothness();
+                };
+
+                cameraProps.m_translateSmoothnessFn = []
+                {
+                    return SandboxEditor::CameraTranslateSmoothness();
+                };
+            });
+
         controller->SetCameraListBuilderCallback(
             [id](AzFramework::Cameras& cameras)
             {
                 auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
+                firstPersonRotateCamera->m_rotateSpeedFn = []
+                {
+                    return SandboxEditor::CameraRotateSpeed();
+                };
+
                 auto firstPersonPanCamera =
                     AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
+                firstPersonPanCamera->m_panSpeedFn = []
+                {
+                    return SandboxEditor::CameraPanSpeed();
+                };
+                firstPersonPanCamera->m_panInvertXFn = []
+                {
+                    return SandboxEditor::CameraPanInvertedX();
+                };
+                firstPersonPanCamera->m_panInvertYFn = []
+                {
+                    return SandboxEditor::CameraPanInvertedY();
+                };
+
                 auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
+                firstPersonTranslateCamera->m_translateSpeedFn = []
+                {
+                    return SandboxEditor::CameraTranslateSpeed();
+                };
+                firstPersonTranslateCamera->m_boostMultiplierFn = []
+                {
+                    return SandboxEditor::CameraBoostMultiplier();
+                };
+
                 auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
+                firstPersonWheelCamera->m_scrollSpeedFn = []
+                {
+                    return SandboxEditor::CameraScrollSpeed();
+                };
 
                 auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
                 orbitCamera->SetLookAtFn(
@@ -1279,12 +1325,52 @@ void EditorViewportWidget::SetViewportId(int id)
                     });
 
                 auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
+                orbitRotateCamera->m_rotateSpeedFn = []
+                {
+                    return SandboxEditor::CameraRotateSpeed();
+                };
+                orbitRotateCamera->m_invertYawFn = []
+                {
+                    return SandboxEditor::CameraOrbitYawRotationInverted();
+                };
+
                 auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
+                orbitTranslateCamera->m_translateSpeedFn = []
+                {
+                    return SandboxEditor::CameraTranslateSpeed();
+                };
+                orbitTranslateCamera->m_boostMultiplierFn = []
+                {
+                    return SandboxEditor::CameraBoostMultiplier();
+                };
+
                 auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+                orbitDollyWheelCamera->m_scrollSpeedFn = []
+                {
+                    return SandboxEditor::CameraScrollSpeed();
+                };
+
                 auto orbitDollyMoveCamera =
                     AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+                orbitDollyMoveCamera->m_cursorSpeedFn = []
+                {
+                    return SandboxEditor::CameraDollyMotionSpeed();
+                };
+
                 auto orbitPanCamera =
                     AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+                orbitPanCamera->m_panSpeedFn = []
+                {
+                    return SandboxEditor::CameraPanSpeed();
+                };
+                orbitPanCamera->m_panInvertXFn = []
+                {
+                    return SandboxEditor::CameraPanInvertedX();
+                };
+                orbitPanCamera->m_panInvertYFn = []
+                {
+                    return SandboxEditor::CameraPanInvertedY();
+                };
 
                 orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
                 orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
@@ -1367,7 +1453,7 @@ namespace AZ::ViewportHelpers
         action->setCheckable(true);
         action->setChecked(*variable);
     }
-}
+} // namespace AZ::ViewportHelpers
 
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnTitleMenu(QMenu* menu)
@@ -1615,36 +1701,11 @@ void EditorViewportWidget::ToggleCameraObject()
     GetIEditor()->GetAnimation()->ForceAnimation();
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetCamera(const CCamera& camera)
 {
     m_Camera = camera;
     SetViewTM(m_Camera.GetMatrix());
-}
-
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetCameraMoveSpeed() const
-{
-    return gSettings.cameraMoveSpeed;
-}
-
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetCameraRotateSpeed() const
-{
-    return gSettings.cameraRotateSpeed;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::GetCameraInvertYRotation() const
-{
-    return gSettings.invertYRotation;
-}
-
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetCameraInvertPan() const
-{
-    return gSettings.invertPan;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1945,7 +2006,6 @@ void EditorViewportWidget::RenderSelectedRegion()
             Vec3(x2, y2, fMinZ),
             Vec3(x1, y2, fMinZ)
         };
-
 
         // Generate vertices
         static AABB boxPrev(AABB::RESET);
@@ -2508,14 +2568,14 @@ void EditorViewportWidget::SetSequenceCamera()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void  EditorViewportWidget::SetComponentCamera(const AZ::EntityId& entityId)
+void EditorViewportWidget::SetComponentCamera(const AZ::EntityId& entityId)
 {
     ResetToViewSourceType(ViewSourceType::CameraComponent);
     SetViewEntity(entityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void  EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement)
+void EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement)
 {
     ResetToViewSourceType(ViewSourceType::AZ_Entity);
     SetViewEntity(entityId, lockCameraMovement);
@@ -2752,18 +2812,18 @@ bool EditorViewportWidget::IsRenderingDisabled() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-QPoint EditorViewportWidget::WidgetToViewport(const QPoint &point) const
+QPoint EditorViewportWidget::WidgetToViewport(const QPoint& point) const
 {
     return point * WidgetToViewportFactor();
 }
 
-QPoint EditorViewportWidget::ViewportToWidget(const QPoint &point) const
+QPoint EditorViewportWidget::ViewportToWidget(const QPoint& point) const
 {
     return point / WidgetToViewportFactor();
 }
 
 //////////////////////////////////////////////////////////////////////////
-QSize EditorViewportWidget::WidgetToViewport(const QSize &size) const
+QSize EditorViewportWidget::WidgetToViewport(const QSize& size) const
 {
     return size * WidgetToViewportFactor();
 }

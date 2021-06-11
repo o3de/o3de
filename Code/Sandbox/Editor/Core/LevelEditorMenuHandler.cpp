@@ -759,11 +759,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
 
     viewportViewsMenuWrapper.AddSeparator();
 
-    auto changeMoveSpeedMenu = viewportViewsMenuWrapper.AddMenu(tr("Change Move Speed"));
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_INCREASE);
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_DECREASE);
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_CHANGESTEP);
-
     auto switchCameraMenu = viewportViewsMenuWrapper.AddMenu(tr("Switch Camera"));
     switchCameraMenu.AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA);
     switchCameraMenu.AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA);

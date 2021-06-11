@@ -327,11 +327,6 @@ protected:
 
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
 
-    virtual float GetCameraMoveSpeed() const;
-    virtual float GetCameraRotateSpeed() const;
-    virtual bool  GetCameraInvertYRotation() const;
-    virtual float GetCameraInvertPan() const;
-
     // Called to render stuff.
     virtual void OnRender();
 
