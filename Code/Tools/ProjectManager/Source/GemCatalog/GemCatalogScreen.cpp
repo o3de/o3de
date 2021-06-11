@@ -14,6 +14,7 @@
 #include <PythonBindingsInterface.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <GemCatalog/GemItemDelegate.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -63,6 +64,7 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(filterWidget);
         hLayout->addLayout(middleVLayout);
         hLayout->addWidget(m_gemInspector);
+
     }
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath, bool isNewProject)
@@ -81,6 +83,9 @@ namespace O3DE::ProjectManager
         m_filterWidgetLayout->addWidget(m_filterWidget);
 
         m_headerWidget->ReinitForProject();
+
+        connect(m_gemListView->GetGemItemDelegate(), &GemItemDelegate::GemSelectionChanged,
+            m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{

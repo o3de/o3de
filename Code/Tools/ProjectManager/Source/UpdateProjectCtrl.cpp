@@ -189,11 +189,13 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
-            m_header->setSubTitle(QString(tr("Configure Gems for \"%1\"")).arg(m_projectInfo.m_projectName));
-            m_nextButton->setText(tr("Confirm"));
+            m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.m_projectName));
+            m_header->setSubTitle(QString(tr("Configure Gems")));
+            m_nextButton->setText(tr("Finalize"));
         }
         else
         {
+            m_header->setTitle("");
             m_header->setSubTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.m_projectName));
             m_nextButton->setText(tr("Save"));
         }
