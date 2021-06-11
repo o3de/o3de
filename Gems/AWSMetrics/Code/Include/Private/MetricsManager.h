@@ -131,7 +131,7 @@ namespace AWSMetrics
         AZStd::mutex m_metricsMutex; //!< Mutex to protect the metrics queue
         MetricsQueue m_metricsQueue; //!< Queue fo buffering the metrics events
 
-        AZStd::mutex m_metricsFileMutex; //!< Mutext to protect the local metrics file
+        AZStd::mutex m_metricsFileMutex; //!< Mutex to protect the local metrics file
 
         AZStd::atomic<int> m_sendMetricsId;//!< Request ID for sending metrics
 
