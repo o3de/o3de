@@ -46,8 +46,6 @@ namespace AZ
         DisplayMapperPass::DisplayMapperPass(const RPI::PassDescriptor& descriptor)
             : RPI::ParentPass(descriptor)
         {
-            m_flags.m_alreadyCreated = false;
-
             AzFramework::NativeWindowHandle windowHandle = nullptr;
             AzFramework::WindowSystemRequestBus::BroadcastResult(
                 windowHandle,
@@ -61,8 +59,6 @@ namespace AZ
             {
                 m_displayMapperConfigurationDescriptor = passData->m_config;
             }
-
-            m_needToRebuildChildren = true;
         }
 
         DisplayMapperPass::~DisplayMapperPass()
@@ -86,7 +82,7 @@ namespace AZ
                     const Name& passName = fullscreenTrianglePass->GetName();
                     if (passName.GetStringView() == "CopyToSwapChain")
                     {
-                        fullscreenTrianglePass->Invalidate();
+                        fullscreenTrianglePass->QueueForInitialization();
                     }
                 }
             }
@@ -137,7 +133,7 @@ namespace AZ
             }
         }
 
-        void DisplayMapperPass::BuildAttachmentsInternal()
+        void DisplayMapperPass::BuildInternal()
         {
             const Name outputName = Name{ "Output" };
             Name inputPass = Name{ "Parent" };
@@ -187,7 +183,21 @@ namespace AZ
 
             m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
 
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
+        }
+
+        void DisplayMapperPass::InitializeInternal()
+        {
+            // Force update on bindings because children of display mapper pass have their outputs connect to
+            // their parent's output, which is a non-conventional and non-standard workflow. Parent outputs are
+            // updated after child outputs, so post-build the child outputs do not yet point to the attachments on
+            // the parent bindings they are connected to. Forcing this refresh sets the attachment on the child output.
+            for (const RPI::Ptr<Pass>& child : m_children)
+            {
+                child->UpdateConnectedBindings();
+            }
+
+            RPI::ParentPass::InitializeInternal();
         }
 
         void DisplayMapperPass::FrameBeginInternal(FramePrepareParams params)
@@ -199,24 +209,14 @@ namespace AZ
         void DisplayMapperPass::FrameEndInternal()
         {
             GetDisplayMapperConfiguration();
-            if (m_needToRebuildChildren)
-            {
-                ClearChildren();
-                BuildGradingLutTemplate();
-                CreateGradingAndAcesPasses();
-            }
             ParentPass::FrameEndInternal();
         }
 
         void DisplayMapperPass::CreateChildPassesInternal()
         {
-            if (m_needToRebuildChildren)
-            {
-                ClearChildren();
-                BuildGradingLutTemplate();
-                CreateGradingAndAcesPasses();
-            }
-            ParentPass::CreateChildPassesInternal();
+            ClearChildren();
+            BuildGradingLutTemplate();
+            CreateGradingAndAcesPasses();
         }
 
         AZStd::shared_ptr<RPI::PassTemplate> CreatePassTemplateHelper(
@@ -485,7 +485,6 @@ namespace AZ
             {
                 AddChild(m_ldrGradingLookupTablePass);
             }
-            m_needToRebuildChildren = false;
         }
 
         void DisplayMapperPass::GetDisplayMapperConfiguration()
@@ -513,7 +512,8 @@ namespace AZ
                         desc.m_ldrColorGradingLut != m_displayMapperConfigurationDescriptor.m_ldrColorGradingLut ||
                         desc.m_acesParameterOverrides.m_overrideDefaults != m_displayMapperConfigurationDescriptor.m_acesParameterOverrides.m_overrideDefaults)
                     {
-                        m_needToRebuildChildren = true;
+                        m_flags.m_createChildren = true;
+                        QueueForBuildAndInitialization();
                     }
                     m_displayMapperConfigurationDescriptor = desc;
                 }
@@ -527,41 +527,15 @@ namespace AZ
 
         void DisplayMapperPass::ClearChildren()
         {
-            if (m_acesOutputTransformPass)
-            {
-                RemoveChild(m_acesOutputTransformPass);
-                m_acesOutputTransformPass = nullptr;
-            }
-            if (m_bakeAcesOutputTransformLutPass)
-            {
-                RemoveChild(m_bakeAcesOutputTransformLutPass);
-                m_bakeAcesOutputTransformLutPass = nullptr;
-            }
-            if (m_acesOutputTransformLutPass)
-            {
-                RemoveChild(m_acesOutputTransformLutPass);
-                m_acesOutputTransformLutPass = nullptr;
-            }
-            if (m_displayMapperPassthroughPass)
-            {
-                RemoveChild(m_displayMapperPassthroughPass);
-                m_displayMapperPassthroughPass = nullptr;
-            }
-            if (m_displayMapperOnlyGammaCorrectionPass)
-            {
-                RemoveChild(m_displayMapperOnlyGammaCorrectionPass);
-                m_displayMapperOnlyGammaCorrectionPass = nullptr;
-            }
-            if (m_ldrGradingLookupTablePass)
-            {
-                RemoveChild(m_ldrGradingLookupTablePass);
-                m_ldrGradingLookupTablePass = nullptr;
-            }
-            if (m_outputTransformPass)
-            {
-                RemoveChild(m_outputTransformPass);
-                m_outputTransformPass = nullptr;
-            }
+            RemoveChildren();
+
+            m_acesOutputTransformPass = nullptr;
+            m_bakeAcesOutputTransformLutPass = nullptr;
+            m_acesOutputTransformLutPass = nullptr;
+            m_displayMapperPassthroughPass = nullptr;
+            m_displayMapperOnlyGammaCorrectionPass = nullptr;
+            m_ldrGradingLookupTablePass = nullptr;
+            m_outputTransformPass = nullptr;
         }
     }   // namespace Render
 }   // namespace AZ

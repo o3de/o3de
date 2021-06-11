@@ -43,14 +43,9 @@ namespace AZ
             ReleaseLutImage();
         }
 
-        void BlendColorGradingLutsPass::FrameBeginInternal(FramePrepareParams params)
+        void BlendColorGradingLutsPass::InitializeInternal()
         {
-            if (!m_flags.m_initialized)
-            {
-                Init();
-            }
-
-            ComputePass::FrameBeginInternal(params);
+            InitializeShaderVariant();
         }
 
         void BlendColorGradingLutsPass::InitializeShaderVariant()
@@ -104,12 +99,6 @@ namespace AZ
                 m_currentShaderVariantKeyFallbackValue = shaderOption.GetShaderVariantKeyFallbackValue();
             }
             m_needToUpdateShaderVariant = false;
-        }
-
-        void BlendColorGradingLutsPass::Init()
-        {
-            InitializeShaderVariant();
-            m_flags.m_initialized = true;
         }
 
         void BlendColorGradingLutsPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
