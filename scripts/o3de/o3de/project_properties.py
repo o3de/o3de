@@ -45,10 +45,10 @@ def edit_project_props(proj_path, proj_name, new_origin, new_display,
     if new_icon:
         proj_json['icon_path'] = new_icon
     if new_tags:
-        tag_list = [new_tags] if isinstance(new_tags, str) else new_tags
+        tag_list = new_tags.split() if isinstance(new_tags, str) else new_tags
         proj_json.setdefault('user_tags', []).extend(tag_list)
     if delete_tags:
-        removal_list = [delete_tags] if isinstance(delete_tags, str) else delete_tags
+        removal_list = delete_tags.split() if isinstance(delete_tags, str) else delete_tags
         if 'user_tags' in proj_json:
             for tag in removal_list:
                 if tag in proj_json['user_tags']:
