@@ -152,6 +152,15 @@ PSOutput MainPS(VSOutput input)
                 float3 srgbColor = Z * HosekWilkie(cosGamma, gamma, cosTheta) * SceneSrg::m_physicalSkyData.m_physicalSkyAndSunIntensity.x;
                 color = TransformColor(srgbColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
             }
+
+            if (input.m_cubemapCoord.z <= 0.01)
+            {
+                color = lerp(float3(1.0, 1.0, 1.0), color, input.m_cubemapCoord.z > 0.0 ? input.m_cubemapCoord.z/0.01 : 0.0);
+            }
+        } 
+        else if (input.m_cubemapCoord.z >= -.02)
+        {
+            color = float3(1.0, 1.0, 1.0);
         }
     }
     else
