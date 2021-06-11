@@ -51,7 +51,7 @@ class TestEditProjectProperties:
         'B', 'D E F', 1)
         ]
     )
-    def test_edit_project_properties(self,project_path, project_name, project_origin, project_display,
+    def test_edit_project_properties(self, project_path, project_name, project_origin, project_display,
                                     project_summary, project_icon, add_tags, delete_tags,
                                     replace_tags, expected_result):
 
@@ -77,6 +77,7 @@ class TestEditProjectProperties:
                 assert self.project_json.data.get('summary', '') == project_summary
                 assert self.project_json.data.get('icon_path', '') == project_icon
                 expected_tag_set = set(replace_tags.split())
-                assert expected_tag_set.issubset(self.project_json.data.get('user_tags', set()))
+                project_json_tag_set = set(self.project_json.data.get('user_tags', []))
+                assert project_json_tag_set == expected_tag_set
             else:
                 assert not self.project_json.data
