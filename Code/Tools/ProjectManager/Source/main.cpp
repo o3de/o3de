@@ -15,24 +15,21 @@
 
 int main(int argc, char* argv[])
 {
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
-    {
-        // Call before using any Qt, or the app may not be able to locate Qt libs
-        AzQtComponents::PrepareQtPaths();
 
-        O3DE::ProjectManager::Application application(&argc, &argv);
-        if (!application.Init())
-        {
-            AZ_Error("ProjectManager", false, "Failed to initialize");
-            runSuccess = 1;
-        }
-        else
-        {
-            runSuccess = application.Run() ? 0 : 1;
-        }
+    // Call before using any Qt, or the app may not be able to locate Qt libs
+    AzQtComponents::PrepareQtPaths();
+
+    O3DE::ProjectManager::Application application(&argc, &argv);
+    if (!application.Init())
+    {
+        AZ_Error("ProjectManager", false, "Failed to initialize");
+        runSuccess = 1;
     }
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+    else
+    {
+        runSuccess = application.Run() ? 0 : 1;
+    }
 
     return runSuccess;
 }
