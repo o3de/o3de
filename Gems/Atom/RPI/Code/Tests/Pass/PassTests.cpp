@@ -329,7 +329,7 @@ namespace UnitTest
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);
@@ -351,7 +351,7 @@ namespace UnitTest
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);
@@ -373,7 +373,7 @@ namespace UnitTest
 
             Ptr<Pass> parentPass = m_passSystem->CreatePassFromTemplate(Name("ParentPass"), Name("ParentPass"));
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);
@@ -397,7 +397,7 @@ namespace UnitTest
             parentPass->m_flags.m_partOfHierarchy = true;
             parentPass->OnHierarchyChange();
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);
@@ -421,7 +421,7 @@ namespace UnitTest
             parentPass->m_flags.m_partOfHierarchy = true;
             parentPass->OnHierarchyChange();
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);
@@ -445,7 +445,7 @@ namespace UnitTest
             parentPass->m_flags.m_partOfHierarchy = true;
             parentPass->OnHierarchyChange();
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);
@@ -469,7 +469,7 @@ namespace UnitTest
             parentPass->m_flags.m_partOfHierarchy = true;
             parentPass->OnHierarchyChange();
             parentPass->Reset();
-            parentPass->BuildAttachments();
+            parentPass->Build();
 
             PassValidationResults validationResults;
             parentPass->Validate(validationResults);

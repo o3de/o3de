@@ -227,8 +227,9 @@ void UtilitiesUnitTests::StartTest()
 #else
         int handle = open(lockTestFileName.toUtf8().constData(), O_RDONLY | O_EXLOCK | O_NONBLOCK);       
 #endif // AZ_PLATFORM_WINDOWS
-        UNIT_TEST_EXPECT_FALSE(AssetUtilities::CheckCanLock(lockTestFileName));
+
 #if defined(AZ_PLATFORM_WINDOWS)
+        UNIT_TEST_EXPECT_FALSE(AssetUtilities::CheckCanLock(lockTestFileName));
         lockTestFile.close();
 #else
         if (handle != -1)

@@ -38,7 +38,7 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::Activate()
     {
-        const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+        const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
         GpuBufferHandler::Descriptor desc;
 
@@ -526,7 +526,7 @@ namespace AZ::Render
 
             for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
             {
-                esmPass->QueueForBuildAttachments();
+                esmPass->QueueForBuildAndInitialization();
             }
             
             for (ProjectedShadowmapsPass* shadowPass : m_projectedShadowmapsPasses)

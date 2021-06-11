@@ -81,19 +81,14 @@ namespace AZ
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-            auto perInstanceSrgAsset = m_skinningShader->FindShaderResourceGroupAsset(AZ::Name{ "InstanceSrg" });
-            if (!perInstanceSrgAsset.GetId().IsValid())
+            auto perInstanceSrgLayout = m_skinningShader->FindShaderResourceGroupLayout(AZ::Name{ "InstanceSrg" });
+            if (!perInstanceSrgLayout)
             {
-                AZ_Error("SkinnedMeshDispatchItem", false, "Failed to get shader resource group asset");
-                return false;
-            }
-            else if (!perInstanceSrgAsset.IsReady())
-            {
-                AZ_Error("SkinnedMeshDispatchItem", false, "Shader resource group asset is not loaded");
+                AZ_Error("SkinnedMeshDispatchItem", false, "Failed to get shader resource group layout");
                 return false;
             }
 
-            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(m_skinningShader->GetAsset(), m_skinningShader->GetSupervariantIndex(), perInstanceSrgLayout->GetName());
             if (!m_instanceSrg)
             {
                 AZ_Error("SkinnedMeshDispatchItem", false, "Failed to create shader resource group for skinned mesh");

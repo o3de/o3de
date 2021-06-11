@@ -48,7 +48,7 @@ namespace AZ
             void BuildCommandList(const RHI::FrameGraphExecuteContext& context) override;
 
             // Pass overrides
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             RPI::Ptr<RPI::Buffer> m_bufferRef;

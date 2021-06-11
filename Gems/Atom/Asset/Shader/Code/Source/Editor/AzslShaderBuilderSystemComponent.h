@@ -18,14 +18,10 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
-#include "AzslBuilder.h"
-#include "SrgLayoutBuilder.h"
 #include "ShaderAssetBuilder.h"
 #include "ShaderVariantAssetBuilder.h"
 #include "PrecompiledShaderBuilder.h"
 #include "ShaderPlatformInterfaceRequest.h"
-#include "ShaderAssetBuilder2.h"
-#include "ShaderVariantAssetBuilder2.h"
 
 namespace AZ
 {
@@ -68,13 +64,9 @@ namespace AZ
             AZStd::vector<RHI::ShaderPlatformInterface*> GetShaderPlatformInterface(const AssetBuilderSDK::PlatformInfo& platformInfo) override;
 
         private:
-            AzslBuilder m_azslBuilder;
-            SrgLayoutBuilder m_srgLayoutBuilder;
             ShaderAssetBuilder m_shaderAssetBuilder;
             ShaderVariantAssetBuilder m_shaderVariantAssetBuilder;
             PrecompiledShaderBuilder m_precompiledShaderBuilder;
-            ShaderAssetBuilder2 m_shaderAssetBuilder2;
-            ShaderVariantAssetBuilder2 m_shaderVariantAssetBuilder2;
 
             /// Contains the ShaderPlatformInterface for all registered RHIs
             AZStd::unordered_map<RHI::APIType, RHI::ShaderPlatformInterface*> m_shaderPlatformInterfaces;

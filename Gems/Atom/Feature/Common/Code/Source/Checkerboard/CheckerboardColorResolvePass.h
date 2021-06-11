@@ -52,7 +52,7 @@ namespace AZ
         protected:
             // Pass overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameEndInternal() override;
 
             // Scope producer functions...

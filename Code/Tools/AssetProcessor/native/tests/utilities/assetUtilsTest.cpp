@@ -137,10 +137,13 @@ TEST_F(AssetUtilitiesTest, UpdateToCorrectCase_ExistingFile_ReturnsTrue_Corrects
     thingsToTry << "SomeFile.TxT";
     thingsToTry << "otherfile.txt";
     thingsToTry << "subfolder1/otherfile.txt";
+
+    #if defined(AZ_PLATFORM_WINDOWS)
     thingsToTry << "subfolder2\\otherfile.txt";
     thingsToTry << "subFolder3\\somefile.txt";
     thingsToTry << "subFolder4\\subfolder6\\somefile.txt";
     thingsToTry << "subFolder5\\subfolder7/someFile.txt";
+    #endif // AZ_PLATFORM_WINDOWS
     thingsToTry << "specialFileName[.txt";
     thingsToTry << "specialFileName].txt";
     thingsToTry << "specialFileName!.txt";
