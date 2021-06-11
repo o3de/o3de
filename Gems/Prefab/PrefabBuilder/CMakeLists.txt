@@ -26,7 +26,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME PrefabBuilder MODULE
+    NAME PrefabBuilder GEM_MODULE
     NAMESPACE Gem
     INCLUDE_DIRECTORIES
         PRIVATE

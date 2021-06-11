@@ -45,7 +45,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME QtForPython.Editor MODULE 
+    NAME QtForPython.Editor GEM_MODULE
     NAMESPACE Gem
     FILES_CMAKE
         qtforpython_shared_files.cmake
