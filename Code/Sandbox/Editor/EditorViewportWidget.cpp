@@ -1206,6 +1206,166 @@ bool EditorViewportWidget::ShowingWorldSpace()
     return BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()).Shift();
 }
 
+AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
+    AzFramework::ViewportId viewportId)
+{
+    AzFramework::ReloadCameraKeyBindings();
+
+    auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+    controller->SetCameraPropsBuilderCallback(
+        [](AzFramework::CameraProps& cameraProps)
+        {
+            cameraProps.m_rotateSmoothnessFn = []
+            {
+                return SandboxEditor::CameraRotateSmoothness();
+            };
+
+            cameraProps.m_translateSmoothnessFn = []
+            {
+                return SandboxEditor::CameraTranslateSmoothness();
+            };
+        });
+
+    controller->SetCameraListBuilderCallback(
+        [viewportId](AzFramework::Cameras& cameras)
+        {
+            auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
+            firstPersonRotateCamera->m_rotateSpeedFn = []
+            {
+                return SandboxEditor::CameraRotateSpeed();
+            };
+
+            auto firstPersonPanCamera =
+                AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
+            firstPersonPanCamera->m_panSpeedFn = []
+            {
+                return SandboxEditor::CameraPanSpeed();
+            };
+            firstPersonPanCamera->m_panInvertXFn = []
+            {
+                return SandboxEditor::CameraPanInvertedX();
+            };
+            firstPersonPanCamera->m_panInvertYFn = []
+            {
+                return SandboxEditor::CameraPanInvertedY();
+            };
+
+            auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
+            firstPersonTranslateCamera->m_translateSpeedFn = []
+            {
+                return SandboxEditor::CameraTranslateSpeed();
+            };
+            firstPersonTranslateCamera->m_boostMultiplierFn = []
+            {
+                return SandboxEditor::CameraBoostMultiplier();
+            };
+
+            auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
+            firstPersonWheelCamera->m_scrollSpeedFn = []
+            {
+                return SandboxEditor::CameraScrollSpeed();
+            };
+
+            auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
+            orbitCamera->SetLookAtFn(
+                [viewportId](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
+                {
+                    AZStd::optional<AZ::Vector3> lookAtAfterInterpolation;
+                    AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+                        lookAtAfterInterpolation, viewportId,
+                        &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
+
+                    // initially attempt to use the last set look at point after an interpolation has finished
+                    if (lookAtAfterInterpolation.has_value())
+                    {
+                        return *lookAtAfterInterpolation;
+                    }
+
+                    const float RayDistance = 1000.0f;
+                    AzFramework::RenderGeometry::RayRequest ray;
+                    ray.m_startWorldPosition = position;
+                    ray.m_endWorldPosition = position + direction * RayDistance;
+                    ray.m_onlyVisible = true;
+
+                    AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
+                    AzFramework::RenderGeometry::IntersectorBus::EventResult(
+                        renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
+                        &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, ray);
+
+                    // attempt a ray intersection with any visible mesh and return the intersection position if successful
+                    if (renderGeometryIntersectionResult)
+                    {
+                        return renderGeometryIntersectionResult.m_worldPosition;
+                    }
+
+                    // if there is no selection or no intersection, fallback to default camera orbit behavior (ground plane
+                    // intersection)
+                    return {};
+                });
+
+            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
+            orbitRotateCamera->m_rotateSpeedFn = []
+            {
+                return SandboxEditor::CameraRotateSpeed();
+            };
+            orbitRotateCamera->m_invertYawFn = []
+            {
+                return SandboxEditor::CameraOrbitYawRotationInverted();
+            };
+
+            auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
+            orbitTranslateCamera->m_translateSpeedFn = []
+            {
+                return SandboxEditor::CameraTranslateSpeed();
+            };
+            orbitTranslateCamera->m_boostMultiplierFn = []
+            {
+                return SandboxEditor::CameraBoostMultiplier();
+            };
+
+            auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
+            orbitDollyWheelCamera->m_scrollSpeedFn = []
+            {
+                return SandboxEditor::CameraScrollSpeed();
+            };
+
+            auto orbitDollyMoveCamera =
+                AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
+            orbitDollyMoveCamera->m_cursorSpeedFn = []
+            {
+                return SandboxEditor::CameraDollyMotionSpeed();
+            };
+
+            auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
+            orbitPanCamera->m_panSpeedFn = []
+            {
+                return SandboxEditor::CameraPanSpeed();
+            };
+            orbitPanCamera->m_panInvertXFn = []
+            {
+                return SandboxEditor::CameraPanInvertedX();
+            };
+            orbitPanCamera->m_panInvertYFn = []
+            {
+                return SandboxEditor::CameraPanInvertedY();
+            };
+
+            orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
+            orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
+
+            cameras.AddCamera(firstPersonRotateCamera);
+            cameras.AddCamera(firstPersonPanCamera);
+            cameras.AddCamera(firstPersonTranslateCamera);
+            cameras.AddCamera(firstPersonWheelCamera);
+            cameras.AddCamera(orbitCamera);
+        });
+
+    return controller;
+}
+
 void EditorViewportWidget::SetViewportId(int id)
 {
     CViewport::SetViewportId(id);
@@ -1230,162 +1390,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
     if (ed_useNewCameraSystem)
     {
-        AzFramework::ReloadCameraKeyBindings();
-
-        auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
-        controller->SetCameraPropsBuilderCallback(
-            [](AzFramework::CameraProps& cameraProps)
-            {
-                cameraProps.m_rotateSmoothnessFn = []
-                {
-                    return SandboxEditor::CameraRotateSmoothness();
-                };
-
-                cameraProps.m_translateSmoothnessFn = []
-                {
-                    return SandboxEditor::CameraTranslateSmoothness();
-                };
-            });
-
-        controller->SetCameraListBuilderCallback(
-            [id](AzFramework::Cameras& cameras)
-            {
-                auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
-                firstPersonRotateCamera->m_rotateSpeedFn = []
-                {
-                    return SandboxEditor::CameraRotateSpeed();
-                };
-
-                auto firstPersonPanCamera =
-                    AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
-                firstPersonPanCamera->m_panSpeedFn = []
-                {
-                    return SandboxEditor::CameraPanSpeed();
-                };
-                firstPersonPanCamera->m_panInvertXFn = []
-                {
-                    return SandboxEditor::CameraPanInvertedX();
-                };
-                firstPersonPanCamera->m_panInvertYFn = []
-                {
-                    return SandboxEditor::CameraPanInvertedY();
-                };
-
-                auto firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation);
-                firstPersonTranslateCamera->m_translateSpeedFn = []
-                {
-                    return SandboxEditor::CameraTranslateSpeed();
-                };
-                firstPersonTranslateCamera->m_boostMultiplierFn = []
-                {
-                    return SandboxEditor::CameraBoostMultiplier();
-                };
-
-                auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
-                firstPersonWheelCamera->m_scrollSpeedFn = []
-                {
-                    return SandboxEditor::CameraScrollSpeed();
-                };
-
-                auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
-                orbitCamera->SetLookAtFn(
-                    [id](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
-                    {
-                        AZStd::optional<AZ::Vector3> lookAtAfterInterpolation;
-                        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-                            lookAtAfterInterpolation, id,
-                            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
-
-                        // initially attempt to use the last set look at point after an interpolation has finished
-                        if (lookAtAfterInterpolation.has_value())
-                        {
-                            return *lookAtAfterInterpolation;
-                        }
-
-                        const float RayDistance = 1000.0f;
-                        AzFramework::RenderGeometry::RayRequest ray;
-                        ray.m_startWorldPosition = position;
-                        ray.m_endWorldPosition = position + direction * RayDistance;
-                        ray.m_onlyVisible = true;
-
-                        AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
-                        AzFramework::RenderGeometry::IntersectorBus::EventResult(
-                            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
-                            &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, ray);
-
-                        // attempt a ray intersection with any visible mesh and return the intersection position if successful
-                        if (renderGeometryIntersectionResult)
-                        {
-                            return renderGeometryIntersectionResult.m_worldPosition;
-                        }
-
-                        // if there is no selection or no intersection, fallback to default camera orbit behavior (ground plane
-                        // intersection)
-                        return {};
-                    });
-
-                auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
-                orbitRotateCamera->m_rotateSpeedFn = []
-                {
-                    return SandboxEditor::CameraRotateSpeed();
-                };
-                orbitRotateCamera->m_invertYawFn = []
-                {
-                    return SandboxEditor::CameraOrbitYawRotationInverted();
-                };
-
-                auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
-                orbitTranslateCamera->m_translateSpeedFn = []
-                {
-                    return SandboxEditor::CameraTranslateSpeed();
-                };
-                orbitTranslateCamera->m_boostMultiplierFn = []
-                {
-                    return SandboxEditor::CameraBoostMultiplier();
-                };
-
-                auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
-                orbitDollyWheelCamera->m_scrollSpeedFn = []
-                {
-                    return SandboxEditor::CameraScrollSpeed();
-                };
-
-                auto orbitDollyMoveCamera =
-                    AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(AzFramework::CameraOrbitDollyButton);
-                orbitDollyMoveCamera->m_cursorSpeedFn = []
-                {
-                    return SandboxEditor::CameraDollyMotionSpeed();
-                };
-
-                auto orbitPanCamera =
-                    AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
-                orbitPanCamera->m_panSpeedFn = []
-                {
-                    return SandboxEditor::CameraPanSpeed();
-                };
-                orbitPanCamera->m_panInvertXFn = []
-                {
-                    return SandboxEditor::CameraPanInvertedX();
-                };
-                orbitPanCamera->m_panInvertYFn = []
-                {
-                    return SandboxEditor::CameraPanInvertedY();
-                };
-
-                orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
-                orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
-                orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
-                orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
-                orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
-
-                cameras.AddCamera(firstPersonRotateCamera);
-                cameras.AddCamera(firstPersonPanCamera);
-                cameras.AddCamera(firstPersonTranslateCamera);
-                cameras.AddCamera(firstPersonWheelCamera);
-                cameras.AddCamera(orbitCamera);
-            });
-
-        m_renderViewport->GetControllerList()->Add(controller);
+        m_renderViewport->GetControllerList()->Add(CreateModularViewportCameraController(AzFramework::ViewportId(id)));
     }
     else
     {
