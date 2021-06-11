@@ -11,7 +11,6 @@
 #
 
 set(FILES
-    Resources/ProjectManager.rc
     Source/Application.h
     Source/Application.cpp
     Source/ScreenDefs.h

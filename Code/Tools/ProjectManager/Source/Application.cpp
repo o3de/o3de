@@ -42,15 +42,17 @@ namespace O3DE::ProjectManager
         QCoreApplication::setApplicationName(applicationName);
         QCoreApplication::setApplicationVersion("1.0");
 
-        // Use the LogComponent for non-dev logging to user/log/O3DE.log
+        // Use the LogComponent for non-dev logging log
         RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
 
-        AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
-        // DevWriteStorage is where the event log is written during development
-        m_settingsRegistry.get()->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
+        // set the log alias to .o3de/Logs instead of the default user/logs
+        AZ::IO::FixedMaxPath path = AZ::Utils::GetO3deLogsDirectory();
 
-        // The event log will be saved in eventlogger/EventLogO3DE.azsl
-        m_settingsRegistry.get()->Set(AZ::SettingsRegistryMergeUtils::BuildTargetNameKey, applicationName);
+        // DevWriteStorage is where the event log is written during development
+        m_settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage, path.LexicallyNormal().Native());
+
+        // Save event logs to .o3de/Logs/eventlogger/EventLogO3DE.azsl
+        m_settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::BuildTargetNameKey, applicationName);
 
         Start(AzFramework::Application::Descriptor());
 
@@ -82,7 +84,7 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        const AZ::CommandLine *commandLine = GetCommandLine();
+        const AZ::CommandLine* commandLine = GetCommandLine();
         AZ_Assert(commandLine, "Failed to get command line");
 
         ProjectManagerScreen startScreen = ProjectManagerScreen::Projects;
@@ -111,6 +113,13 @@ namespace O3DE::ProjectManager
     {
         if (!m_entity)
         {
+            // override the log alias to the O3de Logs directory instead of the default project user/Logs folder
+            AZ::IO::FixedMaxPath path = AZ::Utils::GetO3deLogsDirectory();
+            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ_Assert(fileIO, "Failed to get FileIOBase instance");
+
+            fileIO->SetAlias("@log@", path.LexicallyNormal().Native().c_str());
+
             // this entity exists because we need a home for LogComponent
             // and cannot use the system entity because we need to be able to call SetLogFileBaseName 
             // so the log will be named O3DE.log
@@ -158,8 +167,6 @@ namespace O3DE::ProjectManager
 
         // set stylesheet after creating the main window or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:ProjectManager.qss"));
-
-        qApp->setWindowIcon(QIcon("style:o3de_editor.ico"));
 
         // the decoration wrapper is intended to remember window positioning and sizing 
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
