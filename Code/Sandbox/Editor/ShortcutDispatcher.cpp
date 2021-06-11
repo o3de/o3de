@@ -167,15 +167,14 @@ bool ShortcutDispatcher::IsAContainerForB(QWidget* a, QWidget* b)
 
 bool ShortcutDispatcher::FindCandidateActionAndFire(QShortcutEvent* shortcutEvent)
 {
+    QObject* focused = qApp->focusObject();
+
     for (size_t i = 0; i < m_allActions.size(); i++)
     {
-        QObject* focused = qApp->focusObject();
-
         if (shortcutEvent->key() == m_allActions[i].second->shortcut())
         {
             //Here we are going through the shortcuts and looking at the
             //parents of each shortcut to compare it with the current focused widget.
-
             QObject* registered = m_allActions[i].second->parent();
 
             if (m_allActions[i].second->isEnabled())
