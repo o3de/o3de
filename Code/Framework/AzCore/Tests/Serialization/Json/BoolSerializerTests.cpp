@@ -63,6 +63,18 @@ namespace JsonSerializationTests
         : public BaseJsonSerializerFixture
     {
     public:
+        struct BoolPointerWrapper
+        {
+            AZ_TYPE_INFO(BoolPointerWrapper, "{2E67C069-BB0F-4F00-A704-E964F5FE5ED2}");
+
+            bool* m_value{ nullptr };
+
+            ~BoolPointerWrapper()
+            {
+                azfree(m_value);
+            }
+        };
+
         void SetUp() override
         {
             BaseJsonSerializerFixture::SetUp();
@@ -73,6 +85,12 @@ namespace JsonSerializationTests
         {
             m_boolSerializer.reset();
             BaseJsonSerializerFixture::TearDown();
+        }
+
+        void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
+        {
+            serializeContext->Class<BoolPointerWrapper>()
+                ->Field("Value", &BoolPointerWrapper::m_value);
         }
 
         void Load(rapidjson::Value& testVal, bool expectedBool, AZ::JsonSerializationResult::Outcomes expectedOutcome)
@@ -241,5 +259,25 @@ namespace JsonSerializationTests
         Load(m_jsonValue.SetDouble(0.0001), true, AZ::JsonSerializationResult::Outcomes::Success);
         Load(m_jsonValue.SetDouble(-1.0f), true, AZ::JsonSerializationResult::Outcomes::Success);
         Load(m_jsonValue.SetDouble(2.0), true, AZ::JsonSerializationResult::Outcomes::Success);
+    }
+
+    TEST_F(JsonBoolSerializerTests, Load_LoadDefaultToPointer_ValueIsIsInitialized)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        BoolPointerWrapper instance;
+
+        this->m_jsonDocument->Parse(R"({ "Value": {}})");
+        ASSERT_FALSE(this->m_jsonDocument->HasParseError());
+
+        AZ::JsonDeserializerSettings settings;
+        settings.m_serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
+        settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
+        ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
+
+        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        ASSERT_NE(nullptr, instance.m_value);
+        EXPECT_FALSE(*instance.m_value);
     }
 } // namespace JsonSerializationTests

@@ -147,6 +147,18 @@ namespace JsonSerializationTests
         : public BaseJsonSerializerFixture
     {
     public:
+        struct IntegerPointerWrapper
+        {
+            AZ_TYPE_INFO(IntegerPointerWrapper, "{F6B3BEF1-59A4-4E45-BF02-DDA868C38A28}");
+
+            typename SerializerInfo<SerializerType>::DataType* m_value{ nullptr };
+
+            ~IntegerPointerWrapper()
+            {
+                azfree(m_value);
+            }
+        };
+
         AZStd::unique_ptr<SerializerType> m_serializer;
         
         void SetUp() override
@@ -159,6 +171,12 @@ namespace JsonSerializationTests
         {
             m_serializer.reset();
             BaseJsonSerializerFixture::TearDown();
+        }
+
+        void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
+        {
+            serializeContext->Class<IntegerPointerWrapper>()
+                ->Field("Value", &IntegerPointerWrapper::m_value);
         }
 
         template<typename T, typename AZStd::enable_if_t<AZStd::is_floating_point<T>::value, int> = 0>
@@ -485,6 +503,26 @@ namespace JsonSerializationTests
             testValue, *this->m_jsonDeserializationContext);
         EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
         EXPECT_EQ(typename SerializerInfo<TypeParam>::DataType(), convertedValue);
+    }
+
+    TYPED_TEST(TypedJsonIntSerializerTests, Load_LoadDefaultToPointer_ValueIsIsInitialized)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        IntegerPointerWrapper instance;
+
+        this->m_jsonDocument->Parse(R"({ "Value": {}})");
+        ASSERT_FALSE(this->m_jsonDocument->HasParseError());
+        
+        AZ::JsonDeserializerSettings settings;
+        settings.m_serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
+        settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
+        ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
+
+        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        ASSERT_NE(nullptr, instance.m_value);
+        EXPECT_EQ(0, *instance.m_value);
     }
 
     TYPED_TEST(TypedJsonIntSerializerTests, Load_MaxInt8Value_ConvertIfFitsOrUnsupported)     { this->template TestMaxValue<int8_t>(); }

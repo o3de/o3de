@@ -71,6 +71,20 @@ namespace JsonSerializationTests
         : public BaseJsonSerializerFixture
     {
     public:
+        struct DoublePointerWrapper
+        {
+            AZ_TYPE_INFO(DoublePointerWrapper, "{C2FD9E0B-2641-4D24-A3D9-A29FD1A21A81}");
+
+            double* m_double{ nullptr };
+            float* m_float{ nullptr };
+
+            ~DoublePointerWrapper()
+            {
+                azfree(m_float);
+                azfree(m_double);
+            }
+        };
+
         void SetUp() override
         {
             BaseJsonSerializerFixture::SetUp();
@@ -83,6 +97,13 @@ namespace JsonSerializationTests
             m_floatSerializer.reset();
             m_doubleSerializer.reset();
             BaseJsonSerializerFixture::TearDown();
+        }
+
+        void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
+        {
+            serializeContext->Class<DoublePointerWrapper>()
+                ->Field("Double", &DoublePointerWrapper::m_double)
+                ->Field("Float", &DoublePointerWrapper::m_float);
         }
 
         void TestSerializers(rapidjson::Value& testVal, double expectedValue, AZ::JsonSerializationResult::Outcomes expectedOutcome)
@@ -274,5 +295,33 @@ namespace JsonSerializationTests
         ResultCode result = m_floatSerializer->Load(&value, azrtti_typeid<float>(), testVal, *m_jsonDeserializationContext);
         EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
         EXPECT_EQ(42.0f, value);
+    }
+
+    // Pointers
+
+    TEST_F(JsonDoubleSerializerTests, Load_LoadDefaultToPointer_ValuesArIsInitialized)
+    {
+        using namespace AZ::JsonSerializationResult;
+
+        DoublePointerWrapper instance;
+
+        this->m_jsonDocument->Parse(R"(
+            {
+                "Double": {},
+                "Float": {}
+            })");
+        ASSERT_FALSE(this->m_jsonDocument->HasParseError());
+
+        AZ::JsonDeserializerSettings settings;
+        settings.m_serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
+        settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
+        ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
+
+        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
+        EXPECT_EQ(Processing::Completed, result.GetProcessing());
+        ASSERT_NE(nullptr, instance.m_double);
+        ASSERT_NE(nullptr, instance.m_float);
+        EXPECT_DOUBLE_EQ(0.0, *instance.m_double);
+        EXPECT_FLOAT_EQ(0.0f, *instance.m_float);
     }
 } // namespace JsonSerializationTests

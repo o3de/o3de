@@ -30,8 +30,8 @@ namespace AZ
 
             if (text && textLength > 0)
             {
-                static constexpr const char trueString[] = "true";
-                static constexpr const char falseString[] = "false";
+                static constexpr const char* trueString = "true";
+                static constexpr const char* falseString = "false";
                 // remove null terminator for string length counts
                 // rapidjson stringlength doesn't include it in length calculations, but sizeof() will
                 static constexpr size_t trueStringLength = sizeof(trueString) - 1;
@@ -82,12 +82,18 @@ namespace AZ
 
         bool* valAsBool = reinterpret_cast<bool*>(outputValue);
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *valAsBool = false;
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Boolean value set to default of 'false'.");
+        }
+
         switch (inputValue.GetType())
         {
         case rapidjson::kArrayType:
-        // fallthrough
+            [[fallthrough]];
         case rapidjson::kObjectType:
-        // fallthrough
+            [[fallthrough]];
         case rapidjson::kNullType:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                 "Unsupported type. Booleans can't be read from arrays, objects or null.");
@@ -96,7 +102,7 @@ namespace AZ
             return SerializerInternal::TextToValue(valAsBool, inputValue.GetString(), inputValue.GetStringLength(), context);
 
         case rapidjson::kFalseType:
-        // fallthrough
+            [[fallthrough]];
         case rapidjson::kTrueType:
             *valAsBool = inputValue.GetBool();
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Success, "Successfully read boolean.");
@@ -144,5 +150,10 @@ namespace AZ
         }
         
         return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "Default boolean used.");
+    }
+
+    auto JsonBoolSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::ManualDefault;
     }
 } // namespace AZ
