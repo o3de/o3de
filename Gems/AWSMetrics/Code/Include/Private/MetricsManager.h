@@ -128,19 +128,16 @@ namespace AWSMetrics
 
         void SubmitLocalMetricsAsync();
 
-        ////////////////////////////////////////////
-        // These data are protected by m_metricsMutex.
-        AZStd::recursive_mutex m_metricsMutex;
-        AZStd::chrono::system_clock::time_point m_lastSendMetricsTime;
-        MetricsQueue m_metricsQueue;
-        ////////////////////////////////////////////
+        AZStd::mutex m_metricsMutex; //!< Mutex to protect the metrics queue
+        MetricsQueue m_metricsQueue; //!< Queue fo buffering the metrics events
 
-        AZStd::mutex m_metricsFileMutex; //!< Local metrics file is protected by m_metricsFileMutex
+        AZStd::mutex m_metricsFileMutex; //!< Mutext to protect the local metrics file
 
         AZStd::atomic<int> m_sendMetricsId;//!< Request ID for sending metrics
 
-        AZStd::thread m_monitorThread; //!< Thread to monitor the metrics queue
+        AZStd::thread m_monitorThread; //!< Thread to monitor and consume the metrics queue
         AZStd::atomic<bool> m_monitorTerminated;
+        AZStd::binary_semaphore m_waitEvent;
 
         // Client Configurations.
         AZStd::unique_ptr<ClientConfiguration> m_clientConfiguration;

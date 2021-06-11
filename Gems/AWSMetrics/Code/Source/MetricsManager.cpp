@@ -58,11 +58,7 @@ namespace AWSMetrics
             // The background thread has been started.
             return;
         }
-
         m_monitorTerminated = false;
-
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
-        m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
 
         // Start a separate thread to monitor and consume the metrics queue.
         // Avoid using the job system since the worker is long-running over multiple frames
@@ -71,30 +67,13 @@ namespace AWSMetrics
 
     void MetricsManager::MonitorMetricsQueue()
     {
+        // Continue to loop until the monitor is terminated.
         while (!m_monitorTerminated)
         {
-            AZStd::unique_lock<AZStd::recursive_mutex> metricsMutexlock(m_metricsMutex);
-            AZStd::chrono::duration timeDuration = AZStd::chrono::system_clock::now() - m_lastSendMetricsTime;
-            if (timeDuration < AZStd::chrono::seconds(m_clientConfiguration->GetQueueFlushPeriodInSeconds()))
-            {
-                metricsMutexlock.unlock();
-
-                // Wake up periodically to check whether the time limit has been hit or the background thread has been required to shut down.
-                // The sleep call is used to reduce the CPU usage. Setting the sleep time low will increate the frequency on checking the
-                // system time while setting it high will block the shutdown process since the main thread needs to wait for this sleep to complete.
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
-            }
-            else if (m_metricsQueue.GetNumMetrics() > 0)
-            {
-                metricsMutexlock.unlock();
-
-                // Flush the metrics queue when the time period hits the limit
-                FlushMetricsAsync();
-            }
-            else
-            {
-                metricsMutexlock.unlock();
-            }
+            // The thread will wake up either when the metrics event queue is full (try_acquire_for call returns true),
+            // or the flush period limit is hit (try_acquire_for call returns false).
+            m_waitEvent.try_acquire_for(AZStd::chrono::seconds(m_clientConfiguration->GetQueueFlushPeriodInSeconds()));
+            FlushMetricsAsync();
         }
     }
 
@@ -128,13 +107,13 @@ namespace AWSMetrics
             return false;
         }
 
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
+        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_metricsQueue.AddMetrics(metricsEvent);
 
         if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
         {
             // Flush the metrics queue when the accumulated metrics size hits the limit
-            FlushMetricsAsync();
+            m_waitEvent.release();
         }
 
         return true;
@@ -318,7 +297,7 @@ namespace AWSMetrics
         }
 
         // Push failed events to the front of the queue and reserve the order.
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
+        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_metricsQueue.PushMetricsToFront(metricsEventsForRetry);
 
         // Filter metrics events by priority since the queue might be full.
@@ -370,10 +349,7 @@ namespace AWSMetrics
 
     void MetricsManager::FlushMetricsAsync()
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
-
-        m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
-
+        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         if (m_metricsQueue.GetNumMetrics() == 0)
         {
             return;
@@ -393,9 +369,9 @@ namespace AWSMetrics
             return;
         }
 
-        // Terminate the consumer thread
+        // Terminate the monitor thread
         m_monitorTerminated = true;
-        FlushMetricsAsync();
+        m_waitEvent.release();
 
         if (m_monitorThread.joinable())
         {
@@ -405,7 +381,7 @@ namespace AWSMetrics
 
     AZ::s64 MetricsManager::GetNumBufferedMetrics()
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
+        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         return m_metricsQueue.GetNumMetrics();
     }
 
@@ -456,13 +432,13 @@ namespace AWSMetrics
             int numOfflineRecords = offlineRecords.GetNumMetrics();
             for (int index = 0; index < numOfflineRecords; ++index)
             {
-                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_metricsMutex);
+                AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
                 m_metricsQueue.AddMetrics(offlineRecords[index]);
 
                 if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
                 {
                     // Flush the metrics queue when the accumulated metrics size hits the limit
-                    FlushMetricsAsync();
+                    m_waitEvent.release();
                 }
             }
 
