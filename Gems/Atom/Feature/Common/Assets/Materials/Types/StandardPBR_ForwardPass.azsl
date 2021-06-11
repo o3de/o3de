@@ -295,6 +295,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
         lightingOutput.m_specularColor.rgb = baseColor * (1.0 - lightingOutput.m_diffuseColor.w); 
     }
+    else
+    {
+        lightingOutput.m_diffuseColor.w = -1; // Disable subsurface scattering
+    }
 
     return lightingOutput;
 }
@@ -341,4 +345,3 @@ ForwardPassOutput StandardPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
 #endif
     return OUT;
 }
-

@@ -401,13 +401,6 @@ def get_templates_for_generic_creation():  # temporary until we have a better wa
     return list(filter(filter_project_and_gem_templates_out, get_all_templates()))
 
 
-def get_all_restricted() -> list:
-    engine_restricted = get_engine_restricted()
-    restricted_data = get_restricted()
-    restricted_data.extend(engine_restricted)
-    return restricted_data
-
-
 def find_engine_data(json_data: dict,
                      engine_path: str or pathlib.Path = None) -> dict or None:
     if not engine_path:

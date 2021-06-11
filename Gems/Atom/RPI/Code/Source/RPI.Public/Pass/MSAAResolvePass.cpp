@@ -38,7 +38,7 @@ namespace AZ
         {
         }
 
-        void MSAAResolvePass::BuildAttachmentsInternal()
+        void MSAAResolvePass::BuildInternal()
         {
             AZ_Assert(GetOutputCount() != 0, "MSAAResolvePass %s has no outputs to render to.", GetPathName().GetCStr());
         }

@@ -36,7 +36,7 @@ namespace AzToolsFramework
         SliceConverterEditorEntityContextComponent() : EditorEntityContextComponent() {}
 
         // Simple API to selectively disable this logic *only* when performing slice to prefab conversion.
-        static void DisableOnContextEntityLogic()
+        static inline void DisableOnContextEntityLogic()
         {
             m_enableOnContextEntityLogic = false;
         }

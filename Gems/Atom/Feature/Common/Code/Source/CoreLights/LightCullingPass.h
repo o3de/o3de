@@ -50,7 +50,7 @@ namespace AZ
 
             // Pass behavior overrides...
             void ResetInternal()override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
@@ -96,7 +96,6 @@ namespace AZ
 
             AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 
-            bool m_initialized = false;
             Data::Instance<RPI::Buffer> m_lightList;
 
             uint32_t m_tileDataIndex = -1;
