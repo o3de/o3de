@@ -32,6 +32,8 @@ TEST_DEFAULT_PROJECT_DATA = {
 }
 
 def get_project_json_data(project_name, project_path) -> str:
+    if project_path == '':
+        return None
     return TEST_DEFAULT_PROJECT_DATA
 
 def save_o3de_manifest(new_proj_data, project_path):
@@ -43,9 +45,9 @@ def save_o3de_manifest(new_proj_data, project_path):
     pytest.param(pathlib.PurePath('E:/TestProject'),
     'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
     'B', 'D E F', 0),
-    pytest.param(pathlib.PurePath(None),
+    pytest.param('',
     'test', 'editing by pytest', 'Unit Test', 'pyTest project', 'pytest.bmp', 'A B C',
-    'B', 'D E F', 1),
+    'B', 'D E F', 1)
     ]
 )
 
