@@ -45,7 +45,7 @@ namespace SandboxEditor
     }
 
     template<typename T>
-    T GetRegistry(const AZStd::string_view setting, T&& default)
+    AZStd::remove_cvref_t<T> GetRegistry(const AZStd::string_view setting, T&& default)
     {
         T value = AZStd::forward<T>(default);
         if (auto* registry = AZ::SettingsRegistry::Get())

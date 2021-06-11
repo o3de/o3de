@@ -111,7 +111,7 @@ namespace AzFramework
     AZ_CONSOLEFREEFUNC(ReloadCameraKeyBindingsConsole, AZ::ConsoleFunctorFlags::Null, "Reload keybindings for the modern camera system");
 
     //! return -1.0f if inverted, 1.0f otherwise
-    static float Invert(const bool invert)
+    constexpr static float Invert(const bool invert)
     {
         constexpr float Dir[] = { 1.0f, -1.0f };
         return Dir[aznumeric_cast<int>(invert)];
@@ -287,17 +287,17 @@ namespace AzFramework
     RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
-        m_rotateSpeedFn = []
+        m_rotateSpeedFn = []() constexpr
         {
             return 0.005f;
         };
 
-        m_invertPitchFn = []
+        m_invertPitchFn = []() constexpr
         {
             return false;
         };
 
-        m_invertYawFn = []
+        m_invertYawFn = []() constexpr
         {
             return false;
         };
@@ -371,17 +371,17 @@ namespace AzFramework
         : m_panAxesFn(AZStd::move(panAxesFn))
         , m_panChannelId(panChannelId)
     {
-        m_panSpeedFn = []
+        m_panSpeedFn = []() constexpr
         {
             return 0.01f;
         };
 
-        m_invertPanXFn = []
+        m_invertPanXFn = []() constexpr
         {
             return true;
         };
 
-        m_invertPanYFn = []
+        m_invertPanYFn = []() constexpr
         {
             return true;
         };
@@ -466,12 +466,12 @@ namespace AzFramework
     TranslateCameraInput::TranslateCameraInput(TranslationAxesFn translationAxesFn)
         : m_translationAxesFn(AZStd::move(translationAxesFn))
     {
-        m_translateSpeedFn = []
+        m_translateSpeedFn = []() constexpr
         {
             return 10.0f;
         };
 
-        m_boostMultiplierFn = []
+        m_boostMultiplierFn = []() constexpr
         {
             return 3.0f;
         };
@@ -663,7 +663,7 @@ namespace AzFramework
 
     OrbitDollyScrollCameraInput::OrbitDollyScrollCameraInput()
     {
-        m_scrollSpeedFn = []
+        m_scrollSpeedFn = []() constexpr
         {
             return 0.03f;
         };
@@ -695,7 +695,7 @@ namespace AzFramework
     OrbitDollyCursorMoveCameraInput::OrbitDollyCursorMoveCameraInput(const InputChannelId dollyChannelId)
         : m_dollyChannelId(dollyChannelId)
     {
-        m_cursorSpeedFn = []
+        m_cursorSpeedFn = []() constexpr
         {
             return 0.01f;
         };
@@ -735,7 +735,7 @@ namespace AzFramework
 
     ScrollTranslationCameraInput::ScrollTranslationCameraInput()
     {
-        m_scrollSpeedFn = []
+        m_scrollSpeedFn = []() constexpr
         {
             return 0.02f;
         };
