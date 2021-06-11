@@ -101,6 +101,7 @@ namespace AZ
             m_passFactory.Init(&m_passLibrary);
             m_rootPass = CreatePass<ParentPass>(Name{"Root"});
             m_rootPass->m_flags.m_partOfHierarchy = true;
+            m_rootPass->m_flags.m_createChildren = false;
 
             // Here you can specify the name of a pass you would like to break into during execution
             // If you enable AZ_RPI_ENABLE_PASS_DEBUGGING, then any pass matching the specified name will debug
