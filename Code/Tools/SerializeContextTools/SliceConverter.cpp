@@ -177,9 +177,10 @@ namespace AZ
 
                 AZ::Entity* rootEntity = reinterpret_cast<AZ::Entity*>(classPtr);
                 bool convertResult = ConvertSliceToPrefab(context, outputPath, isDryRun, rootEntity);
-                // Clear out the references to any nested slices so that the nested assets get unloaded correctly at the end of
-                // the conversion.  
-                ClearSliceAssetReferences(rootEntity);
+
+                // Delete the root entity pointer.  Otherwise, it will leak itself along with all of the slice asset references held
+                // within it.
+                delete rootEntity;
                 return convertResult;
             };
 
@@ -229,8 +230,12 @@ namespace AZ
                 return false;
             }
 
-            // Get all of the entities from the slice.
+            // Get all of the entities from the slice.  We're taking ownership of them, so we also remove them from the slice component
+            // without deleting them.
+            constexpr bool deleteEntities = false;
+            constexpr bool removeEmptyInstances = true;
             SliceComponent::EntityList sliceEntities = sliceComponent->GetNewEntities();
+            sliceComponent->RemoveAllEntities(deleteEntities, removeEmptyInstances);
             AZ_Printf("Convert-Slice", "  Slice contains %zu entities.\n", sliceEntities.size());
 
             // Create the Prefab with the entities from the slice.
@@ -619,6 +624,7 @@ namespace AZ
                 SetParentEntity(containerEntity->get(), topLevelInstance->GetContainerEntityId(), onlySetIfInvalid);
             }
 
+
             // Add the nested instance itself to the top-level prefab.  To do this, we need to add it to our top-level instance,
             // create a patch out of it, and patch the top-level prefab template.
 
@@ -748,17 +754,6 @@ namespace AZ
                 &AzFramework::AssetSystem::AssetSystemRequests::WaitUntilAssetProcessorDisconnected, AZStd::chrono::seconds(30));
 
             AZ_Error("Convert-Slice", disconnected, "Asset Processor failed to disconnect successfully.");
-        }
-
-        void SliceConverter::ClearSliceAssetReferences(AZ::Entity* rootEntity)
-        {
-            SliceComponent* sliceComponent = AZ::EntityUtils::FindFirstDerivedComponent<SliceComponent>(rootEntity);
-            // Make a copy of the slice list and remove all of them from the loaded component.
-            AZ::SliceComponent::SliceList slices = sliceComponent->GetSlices();
-            for (auto& slice : slices)
-            {
-                sliceComponent->RemoveSlice(&slice);
-            }
         }
 
         void SliceConverter::UpdateSliceEntityInstanceMappings(

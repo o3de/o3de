@@ -58,7 +58,6 @@ namespace AZ
             void SetParentEntity(const AZ::Entity& entity, const AZ::EntityId& parentId, bool onlySetIfInvalid);
             void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
             bool SavePrefab(AZ::IO::PathView outputPath, AzToolsFramework::Prefab::TemplateId templateId);
-            void ClearSliceAssetReferences(AZ::Entity* rootEntity);
             void UpdateSliceEntityInstanceMappings(
                 const AZ::SliceComponent::EntityIdToEntityIdMap& sliceEntityIdMap,
                 const AZStd::string& currentInstanceAlias);
