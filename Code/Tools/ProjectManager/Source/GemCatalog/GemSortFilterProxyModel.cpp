@@ -38,7 +38,7 @@ namespace O3DE::ProjectManager
         }
 
         // Gem status
-        if (m_gemStatusFilter == GemStatus::NoFilter)
+        if (m_gemStatusFilter != GemStatus::NoFilter)
         {
             bool supportsAnyFilteredGemStatus = false;
             for (int statusInt = GemStatus::Unselected; statusInt <= GemStatus::Selected; ++statusInt)
