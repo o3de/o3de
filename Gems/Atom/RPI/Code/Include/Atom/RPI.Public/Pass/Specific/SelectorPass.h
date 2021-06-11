@@ -49,7 +49,7 @@ namespace AZ
             SelectorPass(const PassDescriptor& descriptor);
 
             // Pass behavior overrides
-            void BuildAttachmentsInternal() final;
+            void BuildInternal() final;
 
             // the input slot index each output slot connect to
             AZStd::vector<uint32_t> m_connections;

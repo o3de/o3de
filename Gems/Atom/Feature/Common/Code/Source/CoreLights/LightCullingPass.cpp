@@ -163,7 +163,6 @@ namespace AZ
 
         void LightCullingPass::ResetInternal()
         {
-            m_initialized = false;
             m_tileDataIndex = -1;
             m_constantDataIndex.Reset();
 
@@ -260,7 +259,7 @@ namespace AZ
             return gridPixelSize;
         }
 
-        void LightCullingPass::BuildAttachmentsInternal()
+        void LightCullingPass::BuildInternal()
         {
             m_tileDataIndex = FindInputBinding(AZ::Name("TileLightData"));
             CreateLightList();

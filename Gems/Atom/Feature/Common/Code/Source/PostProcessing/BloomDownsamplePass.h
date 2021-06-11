@@ -37,7 +37,7 @@ namespace AZ
             BloomDownsamplePass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behaviour Overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void BuildOutAttachmentBinding();

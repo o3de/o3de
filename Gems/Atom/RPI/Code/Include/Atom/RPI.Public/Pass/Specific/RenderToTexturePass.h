@@ -47,7 +47,7 @@ namespace AZ
 
         protected:
             // Pass behavior overrides
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Function to be called when output size changed
