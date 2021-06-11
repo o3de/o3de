@@ -1357,9 +1357,9 @@ namespace AZ
             return table[(uint32_t)mask];
         }
     
-        uint32_t ConvertColorWriteMask(uint8_t writeMask)
+        uint8_t ConvertColorWriteMask(uint8_t writeMask)
         {            
-            uint32_t dflags = 0;
+            uint8_t dflags = 0;
             if(writeMask == 0)
             {
                 return dflags;

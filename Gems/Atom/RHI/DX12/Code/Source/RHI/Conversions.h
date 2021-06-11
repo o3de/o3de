@@ -165,6 +165,6 @@ namespace AZ
             D3D12_SHADER_VISIBILITY shaderVisibility,
             D3D12_STATIC_SAMPLER_DESC& staticSamplerDesc);
     
-        uint32_t ConvertColorWriteMask(uint8_t writeMask);
+        uint8_t ConvertColorWriteMask(uint8_t writeMask);
     }
 }
