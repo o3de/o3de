@@ -28,6 +28,10 @@ ly_add_target(
             AZ::AzToolsFramework
 )
 
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET AssetBuilder APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+endif()
+
 # Aggregates all combined AssetBuilders into a single LY_ASSET_BUILDERS #define
 get_property(asset_builders GLOBAL PROPERTY LY_ASSET_BUILDERS)
 string (REPLACE ";" "," asset_builders "${asset_builders}")

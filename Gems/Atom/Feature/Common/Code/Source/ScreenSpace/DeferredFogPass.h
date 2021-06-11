@@ -43,13 +43,11 @@ namespace AZ
         {
             AZ_RPI_PASS(DeferredFogPass);
 
-
         public:
             AZ_RTTI(DeferredFogPass, "{0406C8AB-E95D-43A7-AF53-BDEE22D36746}", RPI::FullscreenTrianglePass);
             AZ_CLASS_ALLOCATOR(DeferredFogPass, SystemAllocator, 0);
             ~DeferredFogPass() = default;
 
-            void Init() override;
 
             static RPI::Ptr<DeferredFogPass> Create(const RPI::PassDescriptor& descriptor);
 
@@ -57,11 +55,15 @@ namespace AZ
 
             virtual bool IsEnabled() const override;
 
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
-            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-
         protected:
             DeferredFogPass(const RPI::PassDescriptor& descriptor);
+
+            // Pass behavior overrides...
+            void InitializeInternal() override;
+
+            // Scope producer functions...
+            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
+            void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             //! Set the binding indices of all members of the SRG
             void SetSrgBindIndices();

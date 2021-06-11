@@ -913,14 +913,6 @@ void MainWindow::InitActions()
 		.SetParent(this);
 
     // Display actions
-    am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
-        .SetShortcut(tr("F3"))
-        .SetToolTip(tr("Wireframe (F3)"))
-        .SetCheckable(true)
-        .SetStatusTip(tr("Render in Wireframe Mode."))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe)
-        .SetParent(this);
-
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera)
         .SetParent(this);

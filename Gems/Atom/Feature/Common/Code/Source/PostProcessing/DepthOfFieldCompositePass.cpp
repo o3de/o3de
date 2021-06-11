@@ -40,9 +40,9 @@ namespace AZ
         {
         }
 
-        void DepthOfFieldCompositePass::Init()
+        void DepthOfFieldCompositePass::InitializeInternal()
         {
-            FullscreenTrianglePass::Init();
+            FullscreenTrianglePass::InitializeInternal();
 
             m_backBlendFactorDivision2Index.Reset();
             m_backBlendFactorDivision4Index.Reset();

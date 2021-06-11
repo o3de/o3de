@@ -1265,7 +1265,7 @@ void EditorViewportWidget::SetViewportId(int id)
                         AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
                         AzFramework::RenderGeometry::IntersectorBus::EventResult(
                             renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
-                            &AzFramework::RenderGeometry::IntersectorInterface::RayIntersect, ray);
+                            &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, ray);
 
                         // attempt a ray intersection with any visible mesh and return the intersection position if successful
                         if (renderGeometryIntersectionResult)
@@ -2657,6 +2657,18 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
             // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
             cameraPos = LYVec3ToAZVec3(m_viewTM.GetTranslation());
         }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
+{
+    if (m_pPrimaryViewport == this)
+    {
+        cameraState = GetCameraState();
 
         return true;
     }

@@ -9,12 +9,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
-    ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+include(${pal_dir}/platform_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-    include(${pal_dir}/platform_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
+if(PAL_TRAIT_AZTESTRUNNER_SUPPORTED)
+    
     ly_add_target(
         NAME AzTestRunner ${PAL_TRAIT_AZTESTRUNNER_LAUNCHER_TYPE}
         NAMESPACE AZ
@@ -32,19 +32,23 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
     )
+    
+    if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    
+        ly_add_target(
+            NAME AzTestRunner.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAMESPACE AZ
+            FILES_CMAKE
+                aztestrunner_test_files.cmake
+            BUILD_DEPENDENCIES
+                PRIVATE
+                    AZ::AzTest
+        )
 
-    ly_add_target(
-        NAME AzTestRunner.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE AZ
-        FILES_CMAKE
-            aztestrunner_test_files.cmake
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-    )
+        ly_add_googletest(
+            NAME AZ::AzTestRunner.Tests
+        )
 
-    ly_add_googletest(
-        NAME AZ::AzTestRunner.Tests
-    )
+    endif()
 
 endif()
