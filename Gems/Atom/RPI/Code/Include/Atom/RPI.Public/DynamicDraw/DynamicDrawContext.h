@@ -138,6 +138,12 @@ namespace AZ
             //! Without per draw viewport, the viewport setup in pass is usually used. 
             void UnsetViewport();
 
+            //! Set stencil reference for following draws which are added to this DynamicDrawContext
+            void SetStencilReference(uint8_t stencilRef);
+
+            //! Get the current stencil reference.
+            uint8_t GetStencilReference() const;
+
             //! Draw Indexed primitives with vertex and index data and per draw srg
             //! The per draw srg need to be provided if it's required by shader. 
             void DrawIndexed(void* vertexData, uint32_t vertexCount, void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg = nullptr);
@@ -204,9 +210,12 @@ namespace AZ
             bool m_useScissor = false;
             RHI::Scissor m_scissor;
 
-            // current scissor
+            // current viewport
             bool m_useViewport = false;
             RHI::Viewport m_viewport;
+
+            // Current stencil reference value
+            uint8_t m_stencilRef = 0;
 
             // Cached RHI pipeline states for different combination of render states 
             AZStd::unordered_map<HashValue64, const RHI::PipelineState*> m_cachedRhiPipelineStates;
