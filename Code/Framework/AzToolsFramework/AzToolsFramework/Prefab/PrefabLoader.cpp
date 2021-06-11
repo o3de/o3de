@@ -363,7 +363,6 @@ namespace AzToolsFramework
                 );
                 return false;
             }
-            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
             return true;
         }
 
