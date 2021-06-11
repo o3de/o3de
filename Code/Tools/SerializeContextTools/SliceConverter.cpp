@@ -278,6 +278,12 @@ namespace AZ
                 }
             }
 
+            // Save off a mapping of the slice's metadata entity ID as well, even though we never converted the entity itself.
+            // This will help us better detect entity ID mapping errors for nested slice instances.
+            AZ::Entity* metadataEntity = sliceComponent->GetMetadataEntity();
+            constexpr bool isMetadataEntity = true;
+            m_aliasIdMapper.emplace(metadataEntity->GetId(), SliceEntityMappingInfo(templateId, "MetadataEntity", isMetadataEntity));
+
             // Update the prefab template with the fixed-up data in our prefab instance.
             AzToolsFramework::Prefab::PrefabDom prefabDom;
             bool storeResult = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*sourceInstance, prefabDom);
@@ -407,6 +413,21 @@ namespace AZ
                     "Convert-Slice", "  Attaching %zu instances of nested slice '%s'.\n", instances.size(),
                     nestedPrefabPath.Native().c_str());
 
+                // Before processing any further, save off all the known entity IDs from all the instances and how they map back to
+                // the base nested prefab that they've come from (i.e. this one).  As we proceed up the chain of nesting, this will
+                // build out a hierarchical list of owning instances for each entity that we can trace upwards to know where to add
+                // the entity into our nested prefab instance.
+                // This step needs to occur *before* converting the instances themselves, because while converting instances, they
+                // might have entity ID references that point to other instances.  By having the full instance entity ID map in place
+                // before conversion, we'll be able to fix them up appropriately.
+
+                for (auto& instance : instances)
+                {
+                    AZStd::string instanceAlias = GetInstanceAlias(instance);
+                    UpdateSliceEntityInstanceMappings(instance.GetEntityIdToBaseMap(), instanceAlias);
+                }
+
+                // Now that we have all the entity ID mappings, convert all the instances.
                 for (auto& instance : instances)
                 {
                     bool instanceConvertResult = ConvertSliceInstance(instance, sliceAsset, nestedTemplate, sourceInstance);
@@ -419,6 +440,28 @@ namespace AZ
 
             return true;
         }
+
+        AZStd::string SliceConverter::GetInstanceAlias(const AZ::SliceComponent::SliceInstance& instance)
+        {
+            // When creating the new instance, we would like to have deterministic instance aliases.  Prefabs that depend on this one
+            // will have patches that reference the alias, so if we reconvert this slice a second time, we would like it to produce
+            // the same results.  To get a deterministic and unique alias, we rely on the slice instance.  The slice instance contains
+            // a map of slice entity IDs to unique instance entity IDs.  We'll just consistently use the first entry in the map as the
+            // unique instance ID.
+            AZStd::string instanceAlias;
+            auto entityIdMap = instance.GetEntityIdMap();
+            if (!entityIdMap.empty())
+            {
+                instanceAlias = AZStd::string::format("Instance_%s", entityIdMap.begin()->second.ToString().c_str());
+            }
+            else
+            {
+                AZ_Error("Convert-Slice", false, "  Couldn't create deterministic instance alias.");
+                instanceAlias = AZStd::string::format("Instance_%s", AZ::Entity::MakeId().ToString().c_str());
+            }
+            return instanceAlias;
+        }
+
 
         bool SliceConverter::ConvertSliceInstance(
             AZ::SliceComponent::SliceInstance& instance,
@@ -443,27 +486,7 @@ namespace AZ
             auto instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
             auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
 
-            // When creating the new instance, we would like to have deterministic instance aliases.  Prefabs that depend on this one
-            // will have patches that reference the alias, so if we reconvert this slice a second time, we would like it to produce
-            // the same results.  To get a deterministic and unique alias, we rely on the slice instance.  The slice instance contains
-            // a map of slice entity IDs to unique instance entity IDs.  We'll just consistently use the first entry in the map as the
-            // unique instance ID.
-            AZStd::string instanceAlias;
-            auto entityIdMap = instance.GetEntityIdMap();
-            if (!entityIdMap.empty())
-            {
-                instanceAlias = AZStd::string::format("Instance_%s", entityIdMap.begin()->second.ToString().c_str());
-            }
-            else
-            {
-                instanceAlias = AZStd::string::format("Instance_%s", AZ::Entity::MakeId().ToString().c_str());
-            }
-
-            // Before processing any further, save off all the known entity IDs from this instance and how they map back to the base
-            // nested prefab that they've come from (i.e. this one).  As we proceed up the chain of nesting, this will build out a
-            // hierarchical list of owning instances for each entity that we can trace upwards to know where to add the entity into
-            // our nested prefab instance.
-            UpdateSliceEntityInstanceMappings(instance.GetEntityIdToBaseMap(), instanceAlias);
+            AZStd::string instanceAlias = GetInstanceAlias(instance);
 
             // Create a new unmodified prefab Instance for the nested slice instance.
             auto nestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
@@ -624,6 +647,9 @@ namespace AZ
                 SetParentEntity(containerEntity->get(), topLevelInstance->GetContainerEntityId(), onlySetIfInvalid);
             }
 
+            // After doing all of the above, run through entity references in any of the patched entities, and fix up the entity IDs to
+            // match the new ones in our prefabs.
+            RemapIdReferences(m_aliasIdMapper, topLevelInstance, nestedInstance.get(), instantiated, dependentSlice->GetSerializeContext());
 
             // Add the nested instance itself to the top-level prefab.  To do this, we need to add it to our top-level instance,
             // create a patch out of it, and patch the top-level prefab template.
@@ -784,9 +810,108 @@ namespace AZ
                         AZ_Assert(oldId == newId, "The same entity instance ID has unexpectedly appeared twice in the same nested prefab.");
                     }
                 }
+                else
+                {
+                    AZ_Warning("Convert-Slice", false, "  Couldn't find an entity ID conversion for %s.", oldId.ToString().c_str());
+                }
             }
         }
 
+        void SliceConverter::RemapIdReferences(
+            const AZStd::unordered_map<AZ::EntityId, SliceEntityMappingInfo>& idMapper,
+            AzToolsFramework::Prefab::Instance* topLevelInstance,
+            AzToolsFramework::Prefab::Instance* nestedInstance,
+            SliceComponent::InstantiatedContainer* instantiatedEntities,
+            SerializeContext* context)
+        {
+            // Given a set of instantiated entities, run through all of them, look for entity references, and replace the entity IDs with
+            // new ones that match up with our prefabs.
+
+            IdUtils::Remapper<EntityId>::ReplaceIdsAndIdRefs(
+                instantiatedEntities,
+                [idMapper, &topLevelInstance, &nestedInstance](
+                    const EntityId& sourceId, bool isEntityId, [[maybe_unused]] const AZStd::function<EntityId()>& idGenerator) -> EntityId
+                {
+                    EntityId newId = sourceId;
+
+                    // Only convert valid entity references.  Actual entity IDs have already been taken care of elsewhere, so ignore them.
+                    if (!isEntityId && sourceId.IsValid())
+                    {
+                        auto entityEntry = idMapper.find(sourceId);
+
+                        // Since we've already remapped transform hierarchies to include container entities, it's possible that our entity
+                        // reference is pointing to a container, which means it won't be in our slice mapping table.  In that case, just
+                        // return it as-is.
+                        if (entityEntry == idMapper.end())
+                        {
+                            return sourceId;
+                        }
+
+                        // We've got a slice->prefab mapping entry, so now we need to use it.
+                        auto& mappingStruct = entityEntry->second;
+
+                        if (mappingStruct.m_nestedInstanceAliases.empty())
+                        {
+                            // If we don't have a chain of nested instance aliases, then this entity reference is either within the
+                            // current nested instance or it's pointing to an entity in the top-level instance.  We'll try them both
+                            // to look for a match.
+
+                            EntityId prefabId = nestedInstance->GetEntityId(mappingStruct.m_entityAlias);
+                            if (!prefabId.IsValid())
+                            {
+                                prefabId = topLevelInstance->GetEntityId(mappingStruct.m_entityAlias);
+                            }
+
+                            if (prefabId.IsValid())
+                            {
+                                newId = prefabId;
+                            }
+                            else
+                            {
+                                AZ_Error("Convert-Slice", false, "  Couldn't find source ID %s", sourceId.ToString().c_str());
+                            }
+                        }
+                        else
+                        {
+                            // We *do* have a chain of nested instance aliases.  This chain could either be relative to the nested instance
+                            // or the top-level instance.  We can tell which one it is by which one can find the first nested instance
+                            // alias.
+
+                            AzToolsFramework::Prefab::Instance* entityInstance = nestedInstance;
+                            auto it = mappingStruct.m_nestedInstanceAliases.rbegin();
+                            if (!entityInstance->FindNestedInstance(*it).has_value())
+                            {
+                                entityInstance = topLevelInstance;
+                            }
+
+                            // Now that we've got a starting point, iterate through the chain of nested instance aliases to find the
+                            // correct instance to get the entity ID for.  We have to go from slice IDs -> entity aliases -> entity IDs
+                            // because prefab instance creation can change some of our entity IDs along the way.
+                            for (; it != mappingStruct.m_nestedInstanceAliases.rend(); it++)
+                            {
+                                auto foundInstance = entityInstance->FindNestedInstance(*it);
+                                if (foundInstance.has_value())
+                                {
+                                    entityInstance = &(foundInstance->get());
+                                }
+                                else
+                                {
+                                    AZ_Assert(false, "Couldn't find nested instance %s", it->c_str());
+                                }
+                            }
+
+                            EntityId prefabId = entityInstance->GetEntityId(mappingStruct.m_entityAlias);
+                            if (prefabId.IsValid())
+                            {
+                                newId = prefabId;
+                            }
+                        }
+                    }
+
+                    return newId;
+                },
+                context);
+        }
 
     } // namespace SerializeContextTools
 } // namespace AZ
