@@ -545,10 +545,13 @@ void RCcontrollerUnitTests::RunRCControllerTests()
     rcJob.SetCheckExclusiveLock(true);
     rcJob.Start();
 
+
+#if defined(AZ_PLATFORM_WINDOWS)
+    // on windows, opening a file for reading locks it
+    // but on other platforms, this is not the case.
     // we only expect work to begin when we can gain an exclusive lock on this file.
     UNIT_TEST_EXPECT_FALSE(UnitTestUtils::BlockUntil(beginWork, 5000));
 
-#if defined(AZ_PLATFORM_WINDOWS)
     // Once we release the file, it should process normally
     lockFileTest.close();
 #else

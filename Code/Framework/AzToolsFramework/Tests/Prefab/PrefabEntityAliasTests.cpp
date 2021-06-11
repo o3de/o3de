@@ -242,6 +242,7 @@ namespace UnitTest
 
         // Patch the nested prefab to reference an entity in its parent
         ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, newEntity->GetId()));
+        m_instanceUpdateExecutorInterface->AddTemplateInstancesToQueue(rootInstance->GetTemplateId());
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
         // Using the aliases we saved grab the updated entities so we can verify the entity reference is still preserved

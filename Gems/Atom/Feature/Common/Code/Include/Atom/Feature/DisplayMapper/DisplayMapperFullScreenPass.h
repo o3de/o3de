@@ -41,14 +41,11 @@ namespace AZ
             void SetInputReferencePassName(const Name& passName);
             void SetInputReferenceAttachmentName(const Name& attachmentName);
 
-            // Pass behavior overrides
-            virtual void BuildAttachmentsInternal() override;
-
         protected:
             explicit DisplayMapperFullScreenPass(const RPI::PassDescriptor& descriptor);
 
-            // FullscreenTrianglePass behavior overrides
-            virtual void Init();
+            // Pass behavior overrides...
+            virtual void BuildInternal() override;
 
         private:
             Name m_inputReferencePassName = Name{ "Parent" };

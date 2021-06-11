@@ -1232,10 +1232,12 @@ def create_from_template(destination_path: str,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    sanitized_cpp_name = utils.sanitize_identifier_for_cpp(destination_name)
     # dst name is Name
     replacements.append(("${Name}", destination_name))
     replacements.append(("${NameUpper}", destination_name.upper()))
     replacements.append(("${NameLower}", destination_name.lower()))
+    replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     if _instantiate_template(template_json_data,
                              destination_name,
@@ -1536,10 +1538,12 @@ def create_project(project_path: str,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    sanitized_cpp_name = utils.sanitize_identifier_for_cpp(project_name)
     # project name
     replacements.append(("${Name}", project_name))
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
+    replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
 
     # module id is a uuid with { and -
     if module_id:
@@ -1890,6 +1894,10 @@ def create_gem(gem_path: str,
     # gem name is now the last component of the gem_path
     gem_name = os.path.basename(gem_path)
 
+    if not utils.validate_identifier(gem_name):
+        logger.error(f'Gem name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {gem_name}')
+        return 1
+
     # gem name cannot be the same as a restricted platform name
     if gem_name in restricted_platforms:
         logger.error(f'Gem path cannot be a restricted name. {gem_name}')
@@ -1927,10 +1935,13 @@ def create_gem(gem_path: str,
         with_this = replace.pop(0)
         replacements.append((replace_this, with_this))
 
+    sanitized_cpp_name = utils.sanitize_identifier_for_cpp(gem_name)
     # gem name
     replacements.append(("${Name}", gem_name))
     replacements.append(("${NameUpper}", gem_name.upper()))
     replacements.append(("${NameLower}", gem_name.lower()))
+    replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    
 
     # module id is a uuid with { and -
     if module_id:

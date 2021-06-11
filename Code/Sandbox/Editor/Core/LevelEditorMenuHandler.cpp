@@ -473,18 +473,8 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
     // editMenu->addAction(ID_EDIT_PASTE);
     // editMenu.AddSeparator();
 
-    bool isPrefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
-    {
-        // Duplicate
-        editMenu.AddAction(ID_EDIT_CLONE);
-    }
+    // Duplicate
+    editMenu.AddAction(ID_EDIT_CLONE);
 
     // Delete
     editMenu.AddAction(ID_EDIT_DELETE);
@@ -912,6 +902,12 @@ QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
         action = new QAction(menuText, this);
         action->setObjectName(view->m_name);
         action->setCheckable(true);
+
+        if (view->m_options.showOnToolsToolbar)
+        {
+            action->setIcon(QIcon(view->m_options.toolbarIcon));
+        }
+
         m_actionManager->AddAction(view->m_id, action);
 
         if (!view->m_options.shortcut.isEmpty())
@@ -940,6 +936,11 @@ QAction* LevelEditorMenuHandler::CreateViewPaneMenuItem(
     }
 
     menu->addAction(action);
+
+    if (view->m_options.showOnToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 
     return action;
 }
@@ -1291,7 +1292,7 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
     }
 }
 
-void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action)
+void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
     auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
     if (menuWrapper.isNull())
@@ -1300,6 +1301,11 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
         return;
     }
     menuWrapper.Get()->addAction(action);
+
+    if (addToToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 }
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()

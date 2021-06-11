@@ -23,6 +23,7 @@
 #include <AzFramework/Viewport/DisplayContextRequestBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/UI/Layer/LayerUiHandler.h>
@@ -97,7 +98,7 @@ class SandboxIntegrationManager
     : private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
     , private AzToolsFramework::EditorRequests::Bus::Handler
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
-    , private AzToolsFramework::EditorEvents::Bus::Handler
+    , private AzToolsFramework::EditorContextMenuBus::Handler
     , private AzToolsFramework::EditorWindowRequests::Bus::Handler
     , private AzFramework::AssetCatalogEventBus::Handler
     , private AzFramework::DisplayContextRequestBus::Handler
@@ -184,8 +185,9 @@ private:
     void OnEntityPickModeStopped() override;
 
     //////////////////////////////////////////////////////////////////////////
-    // AzToolsFramework::EditorEvents::Bus::Handler overrides
+    // AzToolsFramework::EditorContextMenu::Bus::Handler overrides
     void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+    int GetMenuPosition() const;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////

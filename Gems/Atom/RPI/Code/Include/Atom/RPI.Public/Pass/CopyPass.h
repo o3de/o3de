@@ -49,7 +49,7 @@ namespace AZ
             void CopyImageToBuffer(const RHI::FrameGraphCompileContext& context);
 
             // Pass behavior overrides
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;

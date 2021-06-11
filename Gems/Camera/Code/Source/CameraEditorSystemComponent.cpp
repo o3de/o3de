@@ -61,6 +61,7 @@ namespace Camera
 
     void CameraEditorSystemComponent::Activate()
     {
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         Camera::EditorCameraSystemRequestBus::Handler::BusConnect();
         Camera::CameraViewRegistrationRequestsBus::Handler::BusConnect();
@@ -71,6 +72,7 @@ namespace Camera
         Camera::CameraViewRegistrationRequestsBus::Handler::BusDisconnect();
         Camera::EditorCameraSystemRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     }
 
     void CameraEditorSystemComponent::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2&, int flags)

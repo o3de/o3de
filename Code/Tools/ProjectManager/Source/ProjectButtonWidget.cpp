@@ -151,7 +151,6 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ReadySetup()
     {
-        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         connect(m_projectImageLabel->GetBuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
 
         QMenu* menu = new QMenu(this);
