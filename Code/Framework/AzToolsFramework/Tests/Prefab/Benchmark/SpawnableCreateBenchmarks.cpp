@@ -37,17 +37,18 @@ namespace Benchmark
             AzFramework::Spawnable spawnable;
             AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(spawnable, prefabDom);
             
-            ResetPrefabSystem();
+            
             state.ResumeTiming();
         }
 
         state.SetComplexityN(numSpawnables);
     }
+    /*
     BENCHMARK_REGISTER_F(BM_SpawnableCreate, CreateSpawnable_SingleEntityInstance)
         ->RangeMultiplier(10)
         ->Range(100, 10000)
         ->Unit(benchmark::kMillisecond)
-        ->Complexity();
+        ->Complexity();*/
 }
 
 #endif
