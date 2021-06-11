@@ -234,6 +234,14 @@ function(ly_delayed_generate_static_modules_inl)
                     list(APPEND all_server_gem_dependencies ${server_gem_load_dependencies} ${server_gem_dependency})
                 endforeach()
                 foreach(server_gem_dependency ${all_server_gem_dependencies})
+                    # Skip interface libraries
+                    if(TARGET ${server_gem_dependency})
+                        get_target_property(target_type ${server_gem_dependency} TYPE)
+                        if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                            continue()
+                        endif()
+                    endif()
+
                     # Replace "." with "_"
                     string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
 
