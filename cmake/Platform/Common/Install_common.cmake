@@ -42,8 +42,22 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
             string(GENEX_STRIP ${include_directory} include_genex_expr)
             if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
                 unset(current_public_headers)
+
+                #message(STATUS "Processing: ${include_directory}")
+                set(relative_part "${target_source_dir}")
+                string(FIND ${include_directory} ${target_source_dir} substr_index REVERSE)
+                if(NOT substr_index EQUAL -1)
+                    string(SUBSTRING ${include_directory} ${substr_index} -1 relative_part)
+                endif()
+
+                cmake_path(NORMAL_PATH relative_part)
+                cmake_path(APPEND include_location "${relative_part}" ".." OUTPUT_VARIABLE destination_dir)
+                cmake_path(NORMAL_PATH destination_dir)
+                cmake_path(NORMAL_PATH include_directory)
+                #message(STATUS "    Install: ${include_directory}  TO  Destination: ${destination_dir}")
+
                 install(DIRECTORY ${include_directory}
-                    DESTINATION ${include_location}/${target_source_dir}
+                    DESTINATION ${destination_dir}
                     COMPONENT ${install_component}
                     FILES_MATCHING
                         PATTERN *.h
