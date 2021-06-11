@@ -28,7 +28,7 @@ namespace O3DE::ProjectManager
         : public AzFramework::Application
     {
     public:
-        explicit Application(int* argc, char*** argv);
+        using AzFramework::Application::Application;
         virtual ~Application();
 
         bool Init();

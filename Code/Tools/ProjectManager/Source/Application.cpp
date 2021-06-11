@@ -27,11 +27,6 @@
 
 namespace O3DE::ProjectManager
 {
-    Application::Application(int* argc, char*** argv)
-        : AzFramework::Application(argc, argv)
-    {
-    }
-
     Application::~Application()
     {
         TearDown();
