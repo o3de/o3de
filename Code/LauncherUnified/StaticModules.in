@@ -27,7 +27,7 @@ namespace AZ
 
 ${extern_module_declarations}
 
-extern "C" void CreateStaticModules([[maybe_unused]] AZStd::vector<AZ::Module*>& modulesOut)
+extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut)
 {
 ${module_invocations}
 }
