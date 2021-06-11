@@ -153,6 +153,8 @@ namespace LyShineEditor
             opt.isPreview = true;
             opt.paneRect = QRect(x, y, (int)editorWidth, (int)editorHeight);
             opt.isDeletable = true; // we're in a plugin; make sure we can be deleted
+            opt.showOnToolsToolbar = true;
+            opt.toolbarIcon = ":/Menu/ui_editor.svg";
             // opt.canHaveMultipleInstances = true; // uncomment this when CUiAnimViewSequenceManager::CanvasUnloading supports multiple canvases
             AzToolsFramework::RegisterViewPane<EditorWindow>(LyViewPane::UiEditor, LyViewPane::CategoryTools, opt);
 

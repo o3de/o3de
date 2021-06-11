@@ -37,10 +37,13 @@ class ThreadManager(object):
         else:
             raise AssertionError(error_messages.SINGLETON_OBJECT_ERROR_MESSAGE.format("ThreadManager"))
 
-    def setup(self, thread_count: int = 1) -> None:
-        # Based on prototype use case, we just need 1 thread
-        logger.info(f"Setting up thread pool with MaxThreadCount={thread_count} ...")
-        self._thread_pool.setMaxThreadCount(thread_count)
+    def setup(self, setup_error: bool, thread_count: int = 1) -> None:
+        if setup_error:
+            logger.debug("Skip thread pool creation, as there is major setup error.")
+        else:
+            # Based on prototype use case, we just need 1 thread
+            logger.debug(f"Setting up thread pool with MaxThreadCount={thread_count} ...")
+            self._thread_pool.setMaxThreadCount(thread_count)
 
     """Reserves a thread and uses it to run runnable worker, unless this thread will make
     the current thread count exceed max thread count. In that case, runnable is added to a run queue instead."""

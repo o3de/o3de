@@ -106,7 +106,7 @@ void FileWatcherUnitTestRunner::StartTest()
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Waiting for remaining notifications: %d \n", outstandingFiles.count());
         }
 
-        if (outstandingFiles.count() > 0)
+         if (outstandingFiles.count() > 0)
         {
 #if defined(AZ_ENABLE_TRACING)
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Timed out waiting for file changes: %d / %d  missed\n", outstandingFiles.count(), maxFiles);
@@ -226,7 +226,9 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(fileAddCalled);
         UNIT_TEST_EXPECT_TRUE(fileRemoveCalled);
 
-        UNIT_TEST_EXPECT_TRUE(fileModifiedCalled); // modified should be called on the folder that the file lives in
+#if defined(AZ_PLATFORM_WINDOWS)
+        UNIT_TEST_EXPECT_TRUE(fileModifiedCalled); // modified should be called on the folder that the file lives in (Only on Windows)
+#endif // AZ_PLATFORM_WINDOWS
 
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileRemoveName).toLower() == QDir::toNativeSeparators(originalName).toLower());
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileAddName).toLower() == QDir::toNativeSeparators(newName1).toLower());
@@ -249,7 +251,10 @@ void FileWatcherUnitTestRunner::StartTest()
         // the new1 was "removed" and the new2 was "added"
         UNIT_TEST_EXPECT_TRUE(fileAddCalled);
         UNIT_TEST_EXPECT_TRUE(fileRemoveCalled);
-        UNIT_TEST_EXPECT_TRUE(fileModifiedCalled); // modified should be called on the folder that the file lives in
+#if defined(AZ_PLATFORM_WINDOWS)
+        UNIT_TEST_EXPECT_TRUE(fileModifiedCalled); // modified should be called on the folder that the file lives in (Only on Windows)
+#endif // AZ_PLATFORM_WINDOWS
+
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileRemoveName).toLower() == QDir::toNativeSeparators(newName1).toLower());
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileAddName).toLower() == QDir::toNativeSeparators(newName2).toLower());
 
@@ -270,11 +275,15 @@ void FileWatcherUnitTestRunner::StartTest()
         // the new1 was "removed" and the new2 was "added"
         UNIT_TEST_EXPECT_TRUE(fileAddCalled);
         UNIT_TEST_EXPECT_TRUE(fileRemoveCalled);
-        UNIT_TEST_EXPECT_TRUE(fileModifiedCalled); // modified should be called on the folder that the file lives in
+#if defined(AZ_PLATFORM_WINDOWS)
+        UNIT_TEST_EXPECT_TRUE(fileModifiedCalled); // modified should be called on the folder that the file lives in (Only on Windows)
+#endif // AZ_PLATFORM_WINDOWS
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileRemoveName).toLower() == QDir::toNativeSeparators(newName2).toLower());
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileAddName).toLower() == QDir::toNativeSeparators(newName3).toLower());
 
-        // final test... make sure that renaming a DIRECTORY works too
+#if !defined(AZ_PLATFORM_LINUX)
+        // final test... make sure that renaming a DIRECTORY works too. 
+        // Note that linux does not get any callbacks if just the directory is renamed (from inotify)
         QDir renamer;
         fileAddCalled = false;
         fileRemoveCalled = false;
@@ -297,7 +306,7 @@ void FileWatcherUnitTestRunner::StartTest()
 
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileRemoveName).toLower() == QDir::toNativeSeparators(tempDirPath.absoluteFilePath("dir3")).toLower());
         UNIT_TEST_EXPECT_TRUE(QDir::toNativeSeparators(fileAddName).toLower() == QDir::toNativeSeparators(tempDirPath.absoluteFilePath("dir4")).toLower());
-
+#endif // AZ_PLATFORM_LINUX
 
         QObject::disconnect(connectionRemove);
         QObject::disconnect(connectionAdd);

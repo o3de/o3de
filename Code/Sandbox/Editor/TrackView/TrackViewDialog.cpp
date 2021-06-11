@@ -116,6 +116,8 @@ void CTrackViewDialog::RegisterViewClass()
     AzToolsFramework::ViewPaneOptions opts;
     opts.shortcut = QKeySequence(Qt::Key_T);
     opts.isDisabledInSimMode = true;
+    opts.showOnToolsToolbar = true;
+    opts.toolbarIcon = ":/Menu/trackview_editor.svg";
 
     AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
     GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);

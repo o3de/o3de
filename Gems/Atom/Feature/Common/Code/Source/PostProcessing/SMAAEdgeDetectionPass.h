@@ -45,7 +45,9 @@ namespace AZ
 
         private:
             SMAAEdgeDetectionPass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
+
+            // Pass behavior overrides
+            void InitializeInternal() override;
 
             // SMAABasePass functions...
             void UpdateSRG() override;

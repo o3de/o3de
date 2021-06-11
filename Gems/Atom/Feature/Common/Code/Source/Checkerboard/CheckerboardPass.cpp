@@ -50,7 +50,7 @@ namespace AZ
             Base::FrameBeginInternal(params);
         }
 
-        void CheckerboardPass::BuildAttachmentsInternal()
+        void CheckerboardPass::BuildInternal()
         {
             Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
 
@@ -101,7 +101,7 @@ namespace AZ
             // reset frame offset to 0 since attachments are rebuilt
             m_frameOffset = 0;
 
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
 

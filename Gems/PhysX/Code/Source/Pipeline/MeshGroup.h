@@ -15,6 +15,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
@@ -23,6 +24,11 @@
 namespace AZ
 {
     class ReflectContext;
+
+    namespace SceneAPI::Containers
+    {
+        class SceneGraph;
+    }
 }
 
 namespace PhysX
@@ -172,7 +178,7 @@ namespace PhysX
             AZ_CLASS_ALLOCATOR_DECL
 
             MeshGroup();
-            ~MeshGroup() override = default;
+            ~MeshGroup() override;
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -185,6 +191,11 @@ namespace PhysX
             bool GetExportAsTriMesh() const;
             bool GetExportAsPrimitive() const;
             bool GetDecomposeMeshes() const;
+            const AZStd::vector<AZStd::string>& GetPhysicsMaterials() const;
+            const AZStd::vector<AZStd::string>& GetMaterialSlots() const;
+
+            void SetSceneGraph(const AZ::SceneAPI::Containers::SceneGraph* graph);
+            void UpdateMaterialSlots();
 
             AZ::SceneAPI::Containers::RuleContainer& GetRuleContainer() override;
             const AZ::SceneAPI::Containers::RuleContainer& GetRuleContainerConst() const override;
@@ -207,7 +218,16 @@ namespace PhysX
         protected:
             static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
+            AZ::u32 OnNodeSelectionChanged();
+            AZ::u32 OnExportMethodChanged();
+            AZ::u32 OnDecomposeMeshesChanged();
+
             bool GetDecomposeMeshesVisibility() const;
+
+            AZStd::string GetMaterialSlotLabel(int index) const;
+            AZStd::vector<AZStd::string> GetPhysicsMaterialNames() const;
+
+            void OnMaterialLibraryChanged(const AZ::Data::AssetId& materialLibraryAssetId);
 
             AZ::Uuid m_id{};
             AZStd::string m_name{};
@@ -219,6 +239,12 @@ namespace PhysX
             PrimitiveAssetParams m_primitiveAssetParams{};
             ConvexDecompositionParams m_convexDecompositionParams{};
             AZ::SceneAPI::Containers::RuleContainer m_rules{};
+            AZStd::vector<AZStd::string> m_materialSlots;
+            AZStd::vector<AZStd::string> m_physicsMaterials;
+
+            const AZ::SceneAPI::Containers::SceneGraph* m_graph = nullptr;
+            
+            AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_materialLibraryChangedHandler;
         };
     }
 }

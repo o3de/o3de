@@ -151,6 +151,7 @@ namespace AZ
                 m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
                 m_openMaterialEditorAction->setCheckable(false);
                 m_openMaterialEditorAction->setChecked(false);
+                m_openMaterialEditorAction->setIcon(QIcon(":/Menu/material_editor.svg"));
                 QObject::connect(
                     m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
                     {
@@ -158,7 +159,7 @@ namespace AZ
                     }
                 );
 
-                AzToolsFramework::EditorMenuRequestBus::Broadcast(&AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction);
+                AzToolsFramework::EditorMenuRequestBus::Broadcast(&AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
             }
         }
 

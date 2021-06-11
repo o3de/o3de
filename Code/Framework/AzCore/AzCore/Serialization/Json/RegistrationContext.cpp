@@ -33,34 +33,31 @@ namespace AZ
         , m_serializerIter(serializerMapIter)
     {}
 
-    JsonRegistrationContext::SerializerBuilder* JsonRegistrationContext::SerializerBuilder::HandlesTypeId(const Uuid& uuid)
+    JsonRegistrationContext::SerializerBuilder* JsonRegistrationContext::SerializerBuilder::HandlesTypeId(
+        const Uuid& uuid, bool overwriteExisting)
     {
         if (!m_context->IsRemovingReflection())
         {
             auto serializer = m_serializerIter->second.get();
             if (uuid.IsNull())
             {
-                AZ_Error("Serialization", false,
-                    "Could not register Json serializer %s. Its Uuid is null.",
-                    serializer->RTTI_GetTypeName()
-                    );
+                AZ_Assert(false, "Could not register Json serializer %s. Its Uuid is null.", serializer->RTTI_GetTypeName());
                 return this;
             }
 
-            auto serializerIter = m_context->m_handledTypesMap.find(uuid);
-
-            if (serializerIter == m_context->m_handledTypesMap.end())
+            if (!overwriteExisting)
             {
-                m_context->m_handledTypesMap.emplace(uuid, serializer);
-                return this;
+                auto emplaceResult = m_context->m_handledTypesMap.try_emplace(uuid, serializer);
+                AZ_Assert(
+                    emplaceResult.second,
+                    "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
+                    serializer->RTTI_GetTypeName(), emplaceResult.first->second->RTTI_GetTypeName(),
+                    uuid.ToString<AZStd::string>().c_str());
             }
-
-            AZ_Error("Serialization", false,
-                "Couldn't register Json serializer %s. Another serializer (%s) has already been registered for the same Uuid (%s).",
-                serializer->RTTI_GetTypeName(),
-                serializerIter->second->RTTI_GetTypeName(),
-                serializerIter->first.ToString<OSString>().c_str()
-                );
+            else
+            {
+                m_context->m_handledTypesMap.insert_or_assign(uuid, serializer);
+            }
         }
         else
         {

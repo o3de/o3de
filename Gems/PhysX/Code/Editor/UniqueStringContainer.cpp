@@ -23,7 +23,7 @@ namespace PhysX
         StringGroups::iterator stringGroupsIter = m_stringGroups.find(stringGroupId);
         if (stringGroupsIter == m_stringGroups.end())
         {
-            m_stringGroups.emplace(stringGroupId, AZStd::unordered_set<AZStd::string>());
+            m_stringGroups.emplace(stringGroupId, StringSet());
         }
         m_stringGroups[stringGroupId].insert(stringIn);
     }
@@ -31,7 +31,7 @@ namespace PhysX
     AZStd::string UniqueStringContainer::GetUniqueString(AZ::Crc32 stringGroupId
         , const AZStd::string& stringIn
         , AZ::u64 maxStringLength
-        , const AZStd::unordered_set<AZStd::string>& forbiddenStrings) const
+        , const StringSet& forbiddenStrings) const
     {
         StringGroups::const_iterator stringGroupsIter = m_stringGroups.find(stringGroupId);
 
@@ -45,7 +45,7 @@ namespace PhysX
         }
 
         AZStd::string stringOut;
-        const AZStd::unordered_set<AZStd::string>& stringGroup = (stringGroupsIter == m_stringGroups.end())? AZStd::unordered_set<AZStd::string>():stringGroupsIter->second;
+        const StringSet& stringGroup = (stringGroupsIter == m_stringGroups.end())? StringSet():stringGroupsIter->second;
 
         // Attempts to append a post-fix value, e.g. "_1" etc., to the original string so it is unique.
         // A unique post-fix index can be found by iterating total number of invalid string plus 1.
@@ -86,8 +86,8 @@ namespace PhysX
             return true;
         }
 
-        const AZStd::unordered_set<AZStd::string>& stringGroup = stringGroupsIter->second;
-        return stringGroup.find(stringIn) == stringGroup.end();
+        const StringSet& stringSet = stringGroupsIter->second;
+        return stringSet.find(stringIn) == stringSet.end();
     }
 
     void UniqueStringContainer::RemoveString(AZ::Crc32 stringGroupId
