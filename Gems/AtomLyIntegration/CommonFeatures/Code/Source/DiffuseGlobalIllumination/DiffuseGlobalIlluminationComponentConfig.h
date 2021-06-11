@@ -29,7 +29,7 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
-            DiffuseGlobalIlluminationQualityLevel m_qualityLevel;
+            DiffuseGlobalIlluminationQualityLevel m_qualityLevel = DiffuseGlobalIlluminationQualityLevel::Low;
         };
     }
 }

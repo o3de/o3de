@@ -60,7 +60,7 @@ namespace AZ
 
         void DiffuseGlobalIlluminationFeatureProcessor::UpdatePasses()
         {
-            float sizeMultiplier = 0.0f;
+            float sizeMultiplier = 0.25f;
             switch (m_qualityLevel)
             {
             case DiffuseGlobalIlluminationQualityLevel::Low:
