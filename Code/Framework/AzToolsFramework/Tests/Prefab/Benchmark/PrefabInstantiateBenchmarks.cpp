@@ -41,6 +41,10 @@ namespace Benchmark
             {
                 newInstances[instanceCounter] = m_prefabSystemComponent->InstantiatePrefab(templateToInstantiateId);
             }
+            
+            state.PauseTiming();
+            ResetPrefabSystem();
+            state.ResumeTiming();
         }
 
         state.SetComplexityN(numInstances);
