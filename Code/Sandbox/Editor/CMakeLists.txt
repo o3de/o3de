@@ -13,8 +13,6 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
 ly_add_target(
     NAME EditorCore SHARED
     NAMESPACE Legacy
@@ -161,7 +159,7 @@ ly_add_source_properties(
 # Editor
 ################################################################################
 ly_add_target(
-    NAME Editor ${PAL_TRAIT_BUILD_EDITOR_APPLICATION_TYPE} # Mac Editor is a bare executable on Atom until we can fix packaging of the shader compilers. DO NOT MERGE BACK TO MAINLINE
+    NAME Editor APPLICATION
     NAMESPACE Legacy
     AUTORCC
     FILES_CMAKE

@@ -833,13 +833,6 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, []() { SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled()); });
 
     // Display actions
-    am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
-        .SetShortcut(tr("F3"))
-        .SetToolTip(tr("Wireframe (F3)"))
-        .SetCheckable(true)
-        .SetStatusTip(tr("Render in Wireframe Mode."))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe);
-
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera);
     am->AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA, tr("Sequence Camera")).SetCheckable(true)

@@ -48,11 +48,11 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialUvNameMap>();
 
                 serializeContext->Class<MaterialTypeAsset, AZ::Data::AssetData>()
-                    ->Version(3)
+                    ->Version(4) // ATOM-15472
                     ->Field("ShaderCollection", &MaterialTypeAsset::m_shaderCollection)
                     ->Field("MaterialFunctors", &MaterialTypeAsset::m_materialFunctors)
-                    ->Field("MaterialSrgAsset", &MaterialTypeAsset::m_materialSrgAsset)
-                    ->Field("ObjectSrgAsset", &MaterialTypeAsset::m_objectSrgAsset)
+                    ->Field("MaterialSrgShaderIndex", &MaterialTypeAsset::m_materialSrgShaderIndex)
+                    ->Field("ObjectSrgShaderIndex", &MaterialTypeAsset::m_objectSrgShaderIndex)
                     ->Field("MaterialPropertiesLayout", &MaterialTypeAsset::m_materialPropertiesLayout)
                     ->Field("DefaultPropertyValues", &MaterialTypeAsset::m_propertyValues)
                     ->Field("UvNameMap", &MaterialTypeAsset::m_uvNameMap)
@@ -77,14 +77,76 @@ namespace AZ
             return m_materialFunctors;
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& MaterialTypeAsset::GetMaterialSrgAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetSrgLayout(
+            uint32_t shaderIndex, const SupervariantIndex& supervariantIndex, uint32_t srgBindingSlot) const
         {
-            return m_materialSrgAsset;
+            const bool validShaderIndex = (m_shaderCollection.size() > shaderIndex);
+            if (!validShaderIndex)
+            {
+                return RHI::NullSrgLayout;
+            }
+            const auto& shaderAsset = m_shaderCollection[shaderIndex].GetShaderAsset();
+            return shaderAsset->FindShaderResourceGroupLayout(srgBindingSlot, supervariantIndex);
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& MaterialTypeAsset::GetObjectSrgAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetSrgLayout(
+            uint32_t shaderIndex, const AZ::Name& supervariantName, uint32_t srgBindingSlot) const
         {
-            return m_objectSrgAsset;
+            const bool validShaderIndex = (m_shaderCollection.size() > shaderIndex);
+            if (!validShaderIndex)
+            {
+                return RHI::NullSrgLayout;
+            }
+            const auto& shaderAsset = m_shaderCollection[shaderIndex].GetShaderAsset();
+            auto supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
+            return shaderAsset->FindShaderResourceGroupLayout(srgBindingSlot, supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetMaterialSrgLayout(
+            const SupervariantIndex& supervariantIndex) const
+        {
+            return GetSrgLayout(m_materialSrgShaderIndex, supervariantIndex, RPI::SrgBindingSlot::Material);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetMaterialSrgLayout(const AZ::Name& supervariantName) const
+        {
+            return GetSrgLayout(m_materialSrgShaderIndex, supervariantName, RPI::SrgBindingSlot::Material);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetMaterialSrgLayout() const
+        {
+            return GetMaterialSrgLayout(DefaultSupervariantIndex);
+        }
+
+        const Data::Asset<ShaderAsset>& MaterialTypeAsset::GetShaderAssetForMaterialSrg() const
+        {
+            AZ_Assert(m_shaderCollection.size() > m_materialSrgShaderIndex, "shaderIndex %u is invalid because there are only %zu shaders in the collection", m_materialSrgShaderIndex,
+                m_shaderCollection.size());
+            return m_shaderCollection[m_materialSrgShaderIndex].GetShaderAsset();
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(
+            const SupervariantIndex& supervariantIndex) const
+        {
+            return GetSrgLayout(m_objectSrgShaderIndex, supervariantIndex, RPI::SrgBindingSlot::Object);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout(const AZ::Name& supervariantName) const
+        {
+            return GetSrgLayout(m_objectSrgShaderIndex, supervariantName, RPI::SrgBindingSlot::Object);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialTypeAsset::GetObjectSrgLayout() const
+        {
+            return GetObjectSrgLayout(DefaultSupervariantIndex);
+        }
+
+        const Data::Asset<ShaderAsset>& MaterialTypeAsset::GetShaderAssetForObjectSrg() const
+        {
+            AZ_Assert(m_shaderCollection.size() > m_objectSrgShaderIndex,
+                "shaderIndex %u is invalid because there are only %zu shaders in the collection", m_objectSrgShaderIndex,
+                m_shaderCollection.size());
+            return m_shaderCollection[m_objectSrgShaderIndex].GetShaderAsset();
         }
 
         const MaterialPropertiesLayout* MaterialTypeAsset::GetMaterialPropertiesLayout() const
@@ -109,13 +171,10 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
-            Data::AssetBus::MultiHandler::BusConnect(m_materialSrgAsset.GetId());
-            Data::AssetBus::MultiHandler::BusConnect(m_objectSrgAsset.GetId());
             for (const auto& shaderItem : m_shaderCollection)
             {
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
-
             return true;
         }
 
@@ -135,8 +194,6 @@ namespace AZ
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
-            TryReplaceAsset(m_materialSrgAsset, asset);
-            TryReplaceAsset(m_objectSrgAsset, asset);
             for (auto& shaderItem : m_shaderCollection)
             {
                 TryReplaceAsset(shaderItem.m_shaderAsset, asset);

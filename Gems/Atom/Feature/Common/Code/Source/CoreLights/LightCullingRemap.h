@@ -55,7 +55,7 @@ namespace AZ
 
             // Pass behavior overrides...
             void ResetInternal()override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             // RHI::ScopeProducer overrides...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;

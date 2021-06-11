@@ -50,7 +50,9 @@ namespace AZ
 
         private:
             explicit AcesOutputTransformPass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
+
+            // Pass behavior overrides
+            void InitializeInternal() override;
 
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;

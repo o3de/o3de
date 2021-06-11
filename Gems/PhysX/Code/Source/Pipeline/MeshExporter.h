@@ -26,6 +26,7 @@ namespace AZ
         namespace Containers
         {
             class Scene;
+            class SceneGraph;
         }
 
         namespace DataTypes
@@ -57,5 +58,34 @@ namespace PhysX
         private:
             AZ::SceneAPI::Events::ProcessingResult ExportMeshObject(AZ::SceneAPI::Events::ExportEventContext& context, const AZStd::shared_ptr<const AZ::SceneAPI::DataTypes::IMeshData>& meshToExport, const AZStd::string& nodePath, const Pipeline::MeshGroup& pxMeshGroup) const;
         };
-    }
-}
+
+        namespace Utils
+        {
+            //! A struct to store the materials of the mesh nodes selected in a mesh group.
+            struct AssetMaterialsData
+            {
+                //! Material names coming from FBX.
+                AZStd::vector<AZStd::string> m_fbxMaterialNames;
+
+                //! Look-up table for fbxMaterialNames.
+                AZStd::unordered_map<AZStd::string, size_t> m_materialIndexByName;
+
+                //! Map of mesh nodes to their list of material indices associated to each face.
+                AZStd::unordered_map<AZStd::string, AZStd::vector<AZ::u16>> m_nodesToPerFaceMaterialIndices;
+            };
+
+            //! Returns the list of materials assigned to the triangles
+            //! of the mesh nodes selected in a mesh group.
+            AZStd::optional<AssetMaterialsData> GatherMaterialsFromMeshGroup(
+                const MeshGroup& meshGroup,
+                const AZ::SceneAPI::Containers::SceneGraph& sceneGraph);
+
+            //! Function to update a list of materials and physics materials from a new list.
+            //! All those new materials not found in the previous list will fallback to default physics material.
+            bool UpdateAssetPhysicsMaterials(
+                const AZStd::vector<AZStd::string>& newMaterials,
+                AZStd::vector<AZStd::string>& materials,
+                AZStd::vector<AZStd::string>& physicsMaterials);
+        } // namespace Utils
+    } // namespace Pipeline
+} // namespace PhysX

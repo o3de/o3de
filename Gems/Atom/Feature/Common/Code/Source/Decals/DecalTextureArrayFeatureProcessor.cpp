@@ -72,7 +72,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_decals";
             desc.m_elementCountSrgName = "m_decalCount";
             desc.m_elementSize = sizeof(DecalData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_decalBufferHandler = GpuBufferHandler(desc);
 
@@ -329,7 +329,7 @@ namespace AZ
         {
             for (int i = 0; i < NumTextureArrays; ++i)
             {
-                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
                 const AZStd::string baseName = "m_decalTextureArray" + AZStd::to_string(i);
 
                 m_decalTextureArrayIndices[i] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));

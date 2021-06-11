@@ -93,7 +93,7 @@ namespace PhysX
         }
     }
 
-    void ConfigStringLineEditCtrl::SetForbiddenStrings(const AZStd::unordered_set<AZStd::string>& forbiddenStrings)
+    void ConfigStringLineEditCtrl::SetForbiddenStrings(const UniqueStringContainer::StringSet& forbiddenStrings)
     {
         m_forbiddenStrings = forbiddenStrings;
     }
@@ -122,7 +122,7 @@ namespace PhysX
 
     void ConfigStringLineEditValidator::OnEditStart(AZ::Crc32 stringGroupId
         , const AZStd::string& stringToEdit
-        , const AZStd::unordered_set<AZStd::string>& forbiddenStrings
+        , const UniqueStringContainer::StringSet& forbiddenStrings
         , int stringMaxLength
         , bool removeEditedString)
     {
@@ -219,6 +219,14 @@ namespace PhysX
                 GUI->setMaxLen(maxLen);
             }
         }
+        else if (attrib == AZ::Edit::Attributes::ReadOnly)
+        {
+            bool isReadOnly = false;
+            if (attrValue->Read<AZ::Crc32>(isReadOnly))
+            {
+                GUI->setEnabled(!isReadOnly);
+            }
+        }
         else if (attrib == Physics::MaterialConfiguration::s_stringGroup)
         {
             AZ::Crc32 uniqueGroup;
@@ -229,23 +237,23 @@ namespace PhysX
         }
         else if (attrib == Physics::MaterialConfiguration::s_forbiddenStringSet)
         {
-            AZStd::unordered_set<AZStd::string> forbiddenStringsUnorderedSet;
+            UniqueStringContainer::StringSet forbiddenStringsUnorderedSet;
             AZStd::set<AZStd::string> forbiddenStringsSet;
             AZStd::vector<AZStd::string> forbiddenStringsVector;
 
-            if (attrValue->Read<AZStd::unordered_set<AZStd::string>>(forbiddenStringsUnorderedSet))
+            if (attrValue->Read<UniqueStringContainer::StringSet>(forbiddenStringsUnorderedSet))
             {
                 GUI->SetForbiddenStrings(forbiddenStringsUnorderedSet);
             }
             else if (attrValue->Read<AZStd::set<AZStd::string>>(forbiddenStringsSet))
             {
-                forbiddenStringsUnorderedSet = AZStd::unordered_set<AZStd::string>(forbiddenStringsSet.begin()
+                forbiddenStringsUnorderedSet = UniqueStringContainer::StringSet(forbiddenStringsSet.begin()
                     , forbiddenStringsSet.end());
                 GUI->SetForbiddenStrings(forbiddenStringsUnorderedSet);
             }
             else if (attrValue->Read<AZStd::vector<AZStd::string>>(forbiddenStringsVector))
             {
-                forbiddenStringsUnorderedSet = AZStd::unordered_set<AZStd::string>(forbiddenStringsVector.begin()
+                forbiddenStringsUnorderedSet = UniqueStringContainer::StringSet(forbiddenStringsVector.begin()
                     , forbiddenStringsVector.end());
                 GUI->SetForbiddenStrings(forbiddenStringsUnorderedSet);
             }

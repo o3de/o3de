@@ -2727,6 +2727,18 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     return false;
 }
 
+bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
+{
+    if (m_pPrimaryViewport == this)
+    {
+        cameraState = GetCameraState();
+
+        return true;
+    }
+
+    return false;
+}
+
 void EditorViewportWidget::OnStartPlayInEditor()
 {
     if (m_viewEntityId.IsValid())

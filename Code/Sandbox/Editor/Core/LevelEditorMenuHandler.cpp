@@ -1287,7 +1287,7 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
     }
 }
 
-void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action)
+void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
     auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
     if (menuWrapper.isNull())
@@ -1296,6 +1296,11 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
         return;
     }
     menuWrapper.Get()->addAction(action);
+
+    if (addToToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 }
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()

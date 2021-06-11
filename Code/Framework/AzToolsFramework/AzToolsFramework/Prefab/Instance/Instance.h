@@ -87,7 +87,15 @@ namespace AzToolsFramework
             bool AddEntity(AZ::Entity& entity, EntityAlias entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const AZ::EntityId& entityId);
             void DetachEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
-            void DetachNestedEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+
+            /**
+            * Detaches all entities in the instance hierarchy.
+            * Includes all direct entities, all nested entities, and all container entities.
+            * Note that without container entities the hierarchy that remains cannot be used further without restoring new ones.
+            * @param callback A user provided callback that can be used to capture ownership and manipulate the detached entities.
+            */
+            void DetachAllEntitiesInHierarchy(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback);
+
             void RemoveNestedEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
 
             void Reset();

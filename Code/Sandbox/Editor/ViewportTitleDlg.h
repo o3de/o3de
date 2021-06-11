@@ -115,10 +115,10 @@ protected:
     float m_prevMoveSpeed;
 
     // Speed combobox/lineEdit settings
-    double m_minSpeed = 0.1;
+    double m_minSpeed = 0.01;
     double m_maxSpeed = 100.0;
-    double m_speedStep = 0.1;
-    int m_numDecimals = 1;
+    double m_speedStep = 0.01;
+    int m_numDecimals = 3;
 
     // Speed presets
     float m_speedPresetValues[3] = { 0.1f, 1.0f, 10.0f };
@@ -143,7 +143,6 @@ protected:
     void SetFullViewportInfo();
     void SetCompactViewportInfo();
 
-    void OnBnClickedSyncplayer();
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
     void OnBnClickedEnableVR();
@@ -174,7 +173,6 @@ protected:
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
     QAction* m_debugHelpersAction = nullptr;
-    QAction* m_syncPlayerToCameraAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
     QAction* m_enableVRAction = nullptr;
     QAction* m_enableGridSnappingAction = nullptr;

@@ -42,7 +42,7 @@ namespace AZ
         protected:
             // Pass behavior overrides
             void CreateChildPassesInternal() final;
-            void BuildAttachmentsInternal() final;
+            void BuildInternal() final;
             void FrameBeginInternal(FramePrepareParams params) final;
 
         private:

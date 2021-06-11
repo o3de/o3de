@@ -13,7 +13,7 @@
 #pragma once
 
 #include <QWidget>
-#include <Qtimer>
+#include <QTimer>
 
 namespace Ui
 {

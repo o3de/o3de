@@ -184,6 +184,7 @@ public:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override { return m_viewEntityId; }
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
+    bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
     // AzToolsFramework::EditorEntityContextNotificationBus (handler moved to cpp to resolve link issues in unity builds)
     virtual void OnStartPlayInEditor();

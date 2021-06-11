@@ -25,7 +25,7 @@ struct VSOutputBlendingWeightCalculation
     float4 m_offset[3] : TEXCOORD2;
 };
 
-ShaderResourceGroup PassSrg : SRG_PerDraw
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
     Texture2D<float4> m_areaTexture;

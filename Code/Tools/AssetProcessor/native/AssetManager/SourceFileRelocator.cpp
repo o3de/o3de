@@ -190,44 +190,55 @@ Please note that only those seed files will get updated that are active for your
     void SourceFileRelocator::HandleMetaDataFiles(QStringList pathMatches, QHash<QString, int>& sourceIndexMap, const ScanFolderInfo* scanFolderInfo, SourceFileRelocationContainer& metadataFiles, bool excludeMetaDataFiles) const
     {
         QSet<QString> metaDataFileEntries;
-        for (QString file : pathMatches)
+
+        // Remove all the metadata files
+        if (excludeMetaDataFiles)
+        {
+            pathMatches.erase(AZStd::remove_if(pathMatches.begin(), pathMatches.end(), [this](const QString& file)
+                {
+                    for (int idx = 0; idx < m_platformConfig->MetaDataFileTypesCount(); idx++)
+                    {
+                        const auto& [metadataType, extension] = m_platformConfig->GetMetaDataFileTypeAt(idx);
+                        if (file.endsWith("." + metadataType, Qt::CaseInsensitive))
+                        {
+                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Metadata file %s will be ignored because --excludeMetadataFiles was specified in the command line.\n",
+                                file.toUtf8().constData());
+                            return true;
+                        }
+                    }
+                    return false;
+                }),
+                pathMatches.end());
+        }
+
+        for (const QString& file : pathMatches)
         {
             for (int idx = 0; idx < m_platformConfig->MetaDataFileTypesCount(); idx++)
             {
-                QPair<QString, QString> metaInfo = m_platformConfig->GetMetaDataFileTypeAt(idx);
-                if (file.endsWith("." + metaInfo.first, Qt::CaseInsensitive))
+                const auto& [metadataType, extension] = m_platformConfig->GetMetaDataFileTypeAt(idx);
+                if (file.endsWith("." + metadataType, Qt::CaseInsensitive))
                 {
-                    //it is a metadata file
-                    if (excludeMetaDataFiles)
+                    const QString normalizedFilePath = AssetUtilities::NormalizeFilePath(file);
+                    if (!metaDataFileEntries.contains(normalizedFilePath))
                     {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Metadata file %s will be ignored because --excludeMetadataFiles was specified in the command line.\n",
-                            file.toUtf8().constData());
-                        break; // don't check it against other metafile entries, we've already ascertained its a metafile.
-                    }
-                    else
-                    {
-                        QString normalizedFilePath = AssetUtilities::NormalizeFilePath(file);
-                        if (metaDataFileEntries.find(normalizedFilePath) == metaDataFileEntries.end())
-                        {
-                            SourceFileRelocationInfo metaDataFile(file.toUtf8().data(), scanFolderInfo);
-                            metaDataFile.m_isMetaDataFile = true;
-                            metadataFiles.emplace_back(metaDataFile);
-                            metaDataFileEntries.insert(normalizedFilePath);
-                        }
+                        SourceFileRelocationInfo metaDataFile(file.toUtf8().data(), scanFolderInfo);
+                        metaDataFile.m_isMetaDataFile = true;
+                        metadataFiles.emplace_back(metaDataFile);
+                        metaDataFileEntries.insert(normalizedFilePath);
                     }
                 }
-                else if (!excludeMetaDataFiles && (file.endsWith("." + metaInfo.second, Qt::CaseInsensitive) || metaInfo.second.isEmpty()))
+                else if (!excludeMetaDataFiles && (file.endsWith("." + extension, Qt::CaseInsensitive) || extension.isEmpty()))
                 {
                     // if we are here it implies that a metadata file might exists for this source file,
                     // add metadata file only if it exists and is not added already
                     AZStd::string metadataFilePath(file.toUtf8().data());
-                    if (metaInfo.second.isEmpty())
+                    if (extension.isEmpty())
                     {
-                        metadataFilePath.append(AZStd::string::format(".%s", metaInfo.first.toUtf8().data()));
+                        metadataFilePath.append(AZStd::string::format(".%s", metadataType.toUtf8().data()));
                     }
                     else
                     {
-                        AZ::StringFunc::Path::ReplaceExtension(metadataFilePath, metaInfo.first.toUtf8().data());
+                        AZ::StringFunc::Path::ReplaceExtension(metadataFilePath, metadataType.toUtf8().data());
                     };
 
                     // The metadata file can have a different case than the source file,
