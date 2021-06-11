@@ -98,7 +98,7 @@ private:
 
     // EditorMenuRequestBus
     void AddEditMenuAction(QAction* action) override;
-    void AddMenuAction(AZStd::string_view categoryId, QAction* action) override;
+    void AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar) override;
     void RestoreEditMenuToDefault() override;
 
     MainWindow* m_mainWindow;

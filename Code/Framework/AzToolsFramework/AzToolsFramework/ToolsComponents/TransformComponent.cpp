@@ -1206,7 +1206,7 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                         DataElement(AZ::Edit::UIHandlers::Default, &EditorTransform::m_rotate, "Rotate", "Local Rotation (Relative to parent) in degrees.")->
-                            Attribute(AZ::Edit::Attributes::Step, 0.1f)->
+                            Attribute(AZ::Edit::Attributes::Step, 1.0f)->
                             Attribute(AZ::Edit::Attributes::Suffix, " deg")->
                             Attribute(AZ::Edit::Attributes::ReadOnly, &EditorTransform::m_locked)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->

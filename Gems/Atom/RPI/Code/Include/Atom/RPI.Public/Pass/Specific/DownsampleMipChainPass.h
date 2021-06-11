@@ -46,7 +46,7 @@ namespace AZ
             // Pass Behaviour Overrides...
 
             void ResetInternal() override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:

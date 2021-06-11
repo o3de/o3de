@@ -1697,7 +1697,10 @@ namespace AssetProcessor
 
                 if(productFileInfo.absoluteDir().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot).empty())
                 {
-                    productFileInfo.absoluteDir().rmdir(".");
+                    const QDir productDir = productFileInfo.absoluteDir();
+                    QDir parentDir = productDir;
+                    parentDir.cdUp();
+                    successfullyRemoved &= parentDir.rmdir(productDir.dirName());
                 }
 
                 if (successfullyRemoved)

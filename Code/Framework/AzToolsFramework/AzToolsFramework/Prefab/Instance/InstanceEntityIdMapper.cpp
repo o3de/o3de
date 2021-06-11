@@ -154,7 +154,7 @@ namespace AzToolsFramework
             InstanceOptionalReference owningInstanceReference = m_storingInstance->m_instanceEntityMapper->FindOwningInstance(entityId);
 
             // Start with an empty alias to build out our reference path
-            // If we can't resolve this id we'll return a random new alias instead of a reference path
+            // If we can't resolve this id we'll return a new alias based on the entity ID instead of a reference path
             AliasPath relativeEntityAliasPath;
             if (!owningInstanceReference)
             {
@@ -162,7 +162,7 @@ namespace AzToolsFramework
                     "Prefab - EntityIdMapper: Entity with Id %s has no registered owning instance",
                     entityId.ToString().c_str());
 
-                return Instance::GenerateEntityAlias();
+                return AZStd::string::format("Entity_%s", entityId.ToString().c_str());
             }
 
             Instance* owningInstance = &(owningInstanceReference->get());

@@ -320,8 +320,14 @@ namespace AZ
                 {
                     if (m_state == ReadbackState::Reading)
                     {
-                        CopyBufferData(readbackBufferCurrentIndex);
-                        m_state = ReadbackState::Success;
+                        if (CopyBufferData(readbackBufferCurrentIndex))
+                        {
+                            m_state = ReadbackState::Success;
+                        }
+                        else
+                        {
+                            m_state = ReadbackState::Failed;
+                        }
                     }
                     if (m_callback)
                     {
@@ -498,13 +504,13 @@ namespace AZ
             return result;
         }
 
-        void AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex)
+        bool AttachmentReadback::CopyBufferData(uint32_t readbackBufferIndex)
         {
             Data::Instance<Buffer> readbackBufferCurrent = m_readbackBufferArray[readbackBufferIndex];
 
             if (!readbackBufferCurrent)
             {
-                return;
+                return false;
             }
 
             auto bufferSize = readbackBufferCurrent->GetBufferSize();
@@ -537,6 +543,7 @@ namespace AZ
             }
 
             m_isReadbackComplete[readbackBufferIndex] = true;
+            return true;
         }
     }   // namespace RPI
 }   // namespace AZ

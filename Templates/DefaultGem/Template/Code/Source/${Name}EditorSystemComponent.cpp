@@ -15,24 +15,40 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <${Name}EditorSystemComponent.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    void ${Name}EditorSystemComponent::Reflect(AZ::ReflectContext* context)
+    void ${SanitizedCppName}EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<${Name}EditorSystemComponent, AZ::Component>()->Version(1);
+            serializeContext->Class<${SanitizedCppName}EditorSystemComponent, AZ::Component>()->Version(1);
         }
     }
 
-    void ${Name}EditorSystemComponent::Activate()
+    ${SanitizedCppName}EditorSystemComponent::${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == nullptr)
+        {
+            ${SanitizedCppName}Interface::Register(this);
+        }
+    }
+
+    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == this)
+        {
+            ${SanitizedCppName}Interface::Unregister(this);
+        }
+    }
+
+    void ${SanitizedCppName}EditorSystemComponent::Activate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
-    void ${Name}EditorSystemComponent::Deactivate()
+    void ${SanitizedCppName}EditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
 
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}

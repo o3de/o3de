@@ -14,7 +14,7 @@
 
 #include <AzTest/AzTest.h>
 
-class ${Name}EditorTest
+class ${SanitizedCppName}EditorTest
     : public ::testing::Test
 {
 protected:
@@ -29,7 +29,7 @@ protected:
     }
 };
 
-TEST_F(${Name}EditorTest, SanityTest)
+TEST_F(${SanitizedCppName}EditorTest, SanityTest)
 {
     ASSERT_TRUE(true);
 }

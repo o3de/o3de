@@ -44,7 +44,7 @@ namespace AZ
             m_skinnedMeshFeatureProcessor = skinnedMeshFeatureProcessor;
         }
 
-        void MorphTargetComputePass::BuildAttachmentsInternal()
+        void MorphTargetComputePass::BuildInternal()
         {
             // The same buffer that skinning writes to is used to manage the computed vertex deltas that are passed from the
             // morph target pass to the skinning pass. This simplifies things by only requiring one class to manage the memory

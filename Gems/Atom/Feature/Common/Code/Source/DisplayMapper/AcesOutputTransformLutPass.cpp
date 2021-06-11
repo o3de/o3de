@@ -42,9 +42,9 @@ namespace AZ
             ReleaseLutImage();
         }
 
-        void AcesOutputTransformLutPass::Init()
+        void AcesOutputTransformLutPass::InitializeInternal()
         {
-            DisplayMapperFullScreenPass::Init();
+            DisplayMapperFullScreenPass::InitializeInternal();
 
             AZ_Assert(m_shaderResourceGroup != nullptr, "AcesOutputTransformLutPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 
