@@ -154,11 +154,6 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
-    m_syncPlayerToCameraAction = new QAction("Sync camera to player", cameraMenu);
-    m_syncPlayerToCameraAction->setCheckable(true);
-    connect(m_syncPlayerToCameraAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedSyncplayer);
-    cameraMenu->addAction(m_syncPlayerToCameraAction);
-
     cameraMenu->addSeparator();
 
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
@@ -238,47 +233,35 @@ void CViewportTitleDlg::SetupOverflowMenu()
     overFlowMenu->addAction(m_enableGridSnappingAction);
 
     m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
-    auto gridSizeContainer = new QWidget(overFlowMenu);
-    auto gridSizeLabel = new QLabel(tr("Grid Size"), overFlowMenu);
-
     m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
     m_gridSpinBox->setMinimum(1e-2f);
+    m_gridSpinBox->setToolTip(tr("Grid size"));
 
     QObject::connect(
         m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
 
-    QHBoxLayout* gridSizeLayout = new QHBoxLayout;
-    gridSizeLayout->addWidget(gridSizeLabel);
-    gridSizeLayout->addWidget(m_gridSpinBox);
-    gridSizeContainer->setLayout(gridSizeLayout);
-    m_gridSizeActionWidget->setDefaultWidget(gridSizeContainer);
+    m_gridSizeActionWidget->setDefaultWidget(m_gridSpinBox);
     overFlowMenu->addAction(m_gridSizeActionWidget);
 
     overFlowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
+    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
     connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
     m_enableAngleSnappingAction->setCheckable(true);
     overFlowMenu->addAction(m_enableAngleSnappingAction);
 
     m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
-    auto angleSizeContainer = new QWidget(overFlowMenu);
-    auto angleSizeLabel = new QLabel(tr("Angle Snapping"), overFlowMenu);
-
     m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
     m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
     m_angleSpinBox->setMinimum(1e-2f);
+    m_angleSpinBox->setToolTip(tr("Angle Snapping"));
 
     QObject::connect(
         m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
         &CViewportTitleDlg::OnAngleSpinBoxChanged);
 
-    QHBoxLayout* angleSizeLayout = new QHBoxLayout;
-    angleSizeLayout->addWidget(angleSizeLabel);
-    angleSizeLayout->addWidget(m_angleSpinBox);
-    angleSizeContainer->setLayout(angleSizeLayout);
-    m_angleSizeActionWidget->setDefaultWidget(angleSizeContainer);
+    m_angleSizeActionWidget->setDefaultWidget(m_angleSpinBox);
     overFlowMenu->addAction(m_angleSizeActionWidget);
 
     m_ui->m_overflowBtn->setMenu(overFlowMenu);
@@ -848,14 +831,6 @@ bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
     }
 
     return QWidget::eventFilter(object, event) || consumeEvent;
-}
-
-void CViewportTitleDlg::OnBnClickedSyncplayer()
-{
-    emit ActionTriggered(ID_GAME_SYNCPLAYER);
-
-    bool bSyncPlayer = GetIEditor()->GetGameEngine()->IsSyncPlayerPosition();
-    m_syncPlayerToCameraAction->setChecked(!bSyncPlayer);
 }
 
 void CViewportTitleDlg::OnBnClickedGotoPosition()

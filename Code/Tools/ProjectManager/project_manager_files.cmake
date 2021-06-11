@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Resources/ProjectManager.rc
     Resources/ProjectManager.qrc
     Resources/ProjectManager.qss
     Source/main.cpp

@@ -593,6 +593,8 @@ void CGameEngine::SwitchToInGame()
                                                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                                                     AzFramework::SystemCursorState::ConstrainedAndHidden);
     }
+
+    Log("Entered game mode");
 }
 
 void CGameEngine::SwitchToInEditor()
@@ -647,6 +649,8 @@ void CGameEngine::SwitchToInEditor()
     AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
                                                     &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
                                                     AzFramework::SystemCursorState::UnconstrainedAndVisible);
+
+    Log("Exited game mode");
 }
 
 void CGameEngine::HandleQuitRequest(IConsoleCmdArgs* /*args*/)

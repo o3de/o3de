@@ -167,7 +167,7 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-    AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
@@ -384,7 +384,7 @@ void SandboxIntegrationManager::Teardown()
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -589,6 +589,11 @@ void SandboxIntegrationManager::OnSaveLevel()
     m_unsavedEntities.clear();
 }
 
+int SandboxIntegrationManager::GetMenuPosition() const
+{
+    return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+}
+
 void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags)
 {
     if (!IsLevelDocumentOpen())
@@ -661,13 +666,6 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         AzToolsFramework::SetupAddToLayerMenu(menu, flattenedSelection, [this] { return ContextMenu_NewLayer(); });
 
         SetupSliceContextMenu(menu);
-    }
-    else
-    {
-        menu->addSeparator();
-
-        // Allow handlers to append menu items to the context menu
-        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, menu);
     }
 
     action = menu->addAction(QObject::tr("Duplicate"));

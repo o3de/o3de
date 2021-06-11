@@ -15,20 +15,30 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Interface/Interface.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Requests
+    class ${SanitizedCppName}Requests
+    {
+    public:
+        AZ_RTTI(${SanitizedCppName}Requests, "${Random_Uuid}");
+        virtual ~${SanitizedCppName}Requests() = default;
+        // Put your public methods here
+    };
+    
+    class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
-
-        // Put your public methods here
     };
-    using ${Name}RequestBus = AZ::EBus<${Name}Requests>;
-} // namespace ${Name}
+
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests, ${SanitizedCppName}BusTraits>;
+    using ${SanitizedCppName}Interface = AZ::Interface<${SanitizedCppName}Requests>;
+
+} // namespace ${SanitizedCppName}

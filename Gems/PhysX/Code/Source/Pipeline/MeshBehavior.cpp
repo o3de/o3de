@@ -97,6 +97,10 @@ namespace PhysX
                     nodeSelectionList.AddSelectedNode(graph.GetNodeName(nodeIndex).GetPath());
                 }
             }
+
+            // Update list of materials slots after the group's node selection list has been gathered
+            group->SetSceneGraph(&graph);
+            group->UpdateMaterialSlots();
         }
 
         AZ::SceneAPI::Events::ProcessingResult MeshBehavior::UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
@@ -129,6 +133,8 @@ namespace PhysX
             //      in the same way again. To guarantee the same uuid, generate a stable one instead.
             group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, MeshGroup::TYPEINFO_Uuid()));
 
+            group->SetSceneGraph(&scene.GetGraph());
+
             EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
             scene.GetManifest().AddEntry(AZStd::move(group));
 
@@ -149,10 +155,15 @@ namespace PhysX
                 }
 
                 AZ::SceneAPI::Utilities::SceneGraphSelector::UpdateNodeSelection(scene.GetGraph(), group.GetSceneNodeSelectionList());
+
+                // Update list of materials slots after the group's node selection list has been updated
+                group.SetSceneGraph(&scene.GetGraph());
+                group.UpdateMaterialSlots();
+
                 updated = true;
             }
 
             return updated ? AZ::SceneAPI::Events::ProcessingResult::Success : AZ::SceneAPI::Events::ProcessingResult::Ignored;
         }
-    } // namespace SceneAPI
-} // namespace AZ
+    } // namespace Pipeline
+} // namespace PhysX

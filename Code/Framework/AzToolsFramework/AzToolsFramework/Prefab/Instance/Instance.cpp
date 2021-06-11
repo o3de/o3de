@@ -187,13 +187,14 @@ namespace AzToolsFramework
             return removedEntity;
         }
 
-        void Instance::DetachNestedEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback)
+        void Instance::DetachAllEntitiesInHierarchy(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback)
         {
+            callback(AZStd::move(DetachContainerEntity()));
             DetachEntities(callback);
 
             for (const auto& [instanceAlias, instance] : m_nestedInstances)
             {
-                instance->DetachNestedEntities(callback);
+                instance->DetachAllEntitiesInHierarchy(callback);
             }
         }
 
