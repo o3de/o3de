@@ -105,7 +105,7 @@ If you have the Git credential manager core or other credential helpers installe
 
 1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
-    - CMake can be installed to any location, as long as it's available in the system path, otherwise it can be installed to: `<3rdParty Path>\CMake\3.19.1`
+    - CMake can be installed to any location, as long as it's available in the system path
     - WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
     
 1.  Navigate into the repo folder, then download the python runtime with this command
