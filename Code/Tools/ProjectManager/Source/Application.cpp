@@ -86,9 +86,9 @@ namespace O3DE::ProjectManager
         AZ_Assert(commandLine, "Failed to get command line");
 
         ProjectManagerScreen startScreen = ProjectManagerScreen::Projects;
-        if(commandLine->HasSwitch("screen"))
+        if (size_t screenSwitchCount = commandLine->GetNumSwitchValues("screen"); screenSwitchCount > 0)
         {
-            QString screenOption = commandLine->GetSwitchValue("screen", 0).c_str();
+            QString screenOption = commandLine->GetSwitchValue("screen", screenSwitchCount - 1).c_str();
             ProjectManagerScreen screen = ProjectUtils::GetProjectManagerScreen(screenOption);
             if (screen != ProjectManagerScreen::Invalid)
             {
@@ -97,9 +97,9 @@ namespace O3DE::ProjectManager
         }
 
         AZ::IO::FixedMaxPath projectPath;
-        if (commandLine->HasSwitch("project-path"))
+        if (size_t projectSwitchCount = commandLine->GetNumSwitchValues("project-path"); projectSwitchCount > 0)
         {
-            projectPath = commandLine->GetSwitchValue("project-path", 0).c_str();
+            projectPath = commandLine->GetSwitchValue("project-path", projectSwitchCount - 1).c_str();
         }
 
         m_mainWindow.reset(new ProjectManagerWindow(nullptr, projectPath, startScreen));
