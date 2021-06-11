@@ -320,7 +320,7 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
 
     install(FILES "${target_install_source_dir}/CMakeLists.txt"
-        DESTINATION ${target_install_source_dir}
+        DESTINATION ${target_source_dir}
         COMPONENT ${install_component}
     )
 
