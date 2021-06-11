@@ -36,6 +36,23 @@ def validate_identifier(identifier: str) -> bool:
     return True
 
 
+def sanitize_identifier_for_cpp(identifier: str) -> str:
+    """
+    Convert the provided identifier to a valid C++ identifier
+    :param identifier: the name which needs to to sanitized
+    :return: str: sanitized identifier
+    """
+    if not identifier:
+        return ''
+    
+    sanitized_identifier = list(identifier)
+    for index, character in enumerate(sanitized_identifier):
+        if not (character.isalnum() or character == '_'):
+            sanitized_identifier[index] = '_'
+            
+    return "".join(sanitized_identifier)
+
+
 def validate_uuid4(uuid_string: str) -> bool:
     """
     Determine if the uuid supplied is valid.

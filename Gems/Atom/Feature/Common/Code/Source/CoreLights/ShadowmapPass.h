@@ -58,7 +58,7 @@ namespace AZ
             explicit ShadowmapPass(const RPI::PassDescriptor& descriptor);
 
             // RHI::Pass overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             uint16_t m_arraySlice = 0;
             bool m_clearEnabled = true;

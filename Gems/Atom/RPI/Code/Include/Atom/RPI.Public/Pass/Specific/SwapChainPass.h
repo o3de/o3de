@@ -64,7 +64,7 @@ namespace AZ
         protected:
             // Pass behavior overrides
             void CreateChildPassesInternal() override final;
-            void BuildAttachmentsInternal() override final;
+            void BuildInternal() override final;
             void FrameBeginInternal(FramePrepareParams params) override final;
             
             // WindowNotificationBus::Handler overrides ...

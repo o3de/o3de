@@ -167,37 +167,36 @@ namespace AZ
             AZ_Assert(setOk, "LightCullingTilePreparePass::SetConstantData() - could not set constant data");
         }
 
-        void LightCullingTilePreparePass::BuildAttachmentsInternal()
+        void LightCullingTilePreparePass::BuildInternal()
         {
             ChooseShaderVariant();
         }
 
-        void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
+        void LightCullingTilePreparePass::OnShaderReloaded()
         {
             LoadShader();
-            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
+            AZ_Assert(GetPassState() != RPI::PassState::Rendering, "LightCullingTilePreparePass: Trying to reload shader during rendering");
+            if (GetPassState() == RPI::PassState::Idle)
             {
                 ChooseShaderVariant();
             }
         }
+
+        void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
+        {
+            OnShaderReloaded();
+        }
+
         void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
         {
-            LoadShader();
-            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
-            {
-                ChooseShaderVariant();
-            }
+            OnShaderReloaded();
         }
 
         void LightCullingTilePreparePass::OnShaderVariantReinitialized(
              const AZ::RPI::Shader&,  const AZ::RPI::ShaderVariantId&,
              AZ::RPI::ShaderVariantStableId)
         {
-            LoadShader();
-            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
-            {
-                ChooseShaderVariant();
-            }
+            OnShaderReloaded();
         }
 
     }   // namespace Render

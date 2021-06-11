@@ -17,21 +17,21 @@
 
 #include <${Name}SystemComponent.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Module
+    class ${SanitizedCppName}Module
         : public AZ::Module
     {
     public:
-        AZ_RTTI(${Name}Module, "${ModuleClassId}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(${Name}Module, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}Module, "${ModuleClassId}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator, 0);
 
-        ${Name}Module()
+        ${SanitizedCppName}Module()
             : AZ::Module()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             m_descriptors.insert(m_descriptors.end(), {
-                ${Name}SystemComponent::CreateDescriptor(),
+                ${SanitizedCppName}SystemComponent::CreateDescriptor(),
             });
         }
 
@@ -41,10 +41,10 @@ namespace ${Name}
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {
-                azrtti_typeid<${Name}SystemComponent>(),
+                azrtti_typeid<${SanitizedCppName}SystemComponent>(),
             };
         }
     };
-}// namespace ${Name}
+}// namespace ${SanitizedCppName}
 
-AZ_DECLARE_MODULE_CLASS(Gem_${Name}, ${Name}::${Name}Module)
+AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}Module)

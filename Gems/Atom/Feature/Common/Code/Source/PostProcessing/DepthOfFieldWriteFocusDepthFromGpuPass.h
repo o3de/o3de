@@ -51,7 +51,7 @@ namespace AZ
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
 
             // Pass overrides
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
         };
     }   // namespace Render
 }   // namespace AZ

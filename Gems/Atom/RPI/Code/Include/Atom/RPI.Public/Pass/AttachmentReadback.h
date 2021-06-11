@@ -99,7 +99,7 @@ namespace AZ
             void DecomposeExecute(const RHI::FrameGraphExecuteContext& context);
 
             // copy data from the read back buffer (m_readbackBuffer) to the data buffer (m_dataBuffer)
-            void CopyBufferData(uint32_t readbackBufferIndex);
+            bool CopyBufferData(uint32_t readbackBufferIndex);
 
             // Get read back data in a structure
             ReadbackResult GetReadbackResult() const;
