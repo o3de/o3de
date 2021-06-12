@@ -38,10 +38,25 @@ namespace O3DE::ProjectManager
         }
 
         // Gem status
-        const GemStatus sourceGemStatus = static_cast<GemStatus>(GemModel::IsAdded(sourceIndex));
-        if (sourceGemStatus != GemStatus::NoFilter && m_gemStatusFilter != sourceGemStatus)
+        if (m_gemStatusFilter != GemStatus::NoFilter)
         {
-            return false;
+            bool supportsAnyFilteredGemStatus = false;
+            for (int statusInt = GemStatus::Unselected; statusInt <= GemStatus::Selected; ++statusInt)
+            {
+                const GemStatus filteredGemStatus = static_cast<GemStatus>(statusInt);
+                if (m_gemStatusFilter == filteredGemStatus)
+                {
+                    if (static_cast<GemStatus>(GemModel::IsAdded(sourceIndex)) == filteredGemStatus)
+                    {
+                        supportsAnyFilteredGemStatus = true;
+                        break;
+                    }
+                }
+            }
+            if (!supportsAnyFilteredGemStatus)
+            {
+                return false;
+            }
         }
 
         // Gem origins
