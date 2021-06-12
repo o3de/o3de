@@ -73,6 +73,10 @@ namespace AZ
                 
                 m_metalView.metalLayer.drawableSize = CGSizeMake(descriptor.m_dimensions.m_imageWidth, descriptor.m_dimensions.m_imageHeight);
             }
+            else
+            {
+                AddSubView();
+            }
 
             m_drawables.resize(descriptor.m_dimensions.m_imageCount);
 
@@ -83,6 +87,20 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        void SwapChain::AddSubView()
+        {
+            NativeViewType* superView = reinterpret_cast<NativeViewType*>(m_nativeWindow);
+            
+            CGFloat screenScale = Platform::GetScreenScale();
+            CGRect screenBounds = [superView bounds];
+            m_metalView = [[RHIMetalView alloc] initWithFrame: screenBounds
+                                                       scale: screenScale
+                                                      device: m_mtlDevice];
+            
+            [m_metalView retain];
+            [superView addSubview: m_metalView];
+        }
+    
         void SwapChain::ShutdownInternal()
         {
             if (m_viewController)
@@ -161,16 +179,7 @@ namespace AZ
                 }
                 else
                 {
-                    NativeViewType* superView = reinterpret_cast<NativeViewType*>(m_nativeWindow);
-                    
-                    CGFloat screenScale = Platform::GetScreenScale();
-                    CGRect screenBounds = [superView bounds];
-                    m_metalView = [[RHIMetalView alloc] initWithFrame: screenBounds
-                                                               scale: screenScale
-                                                              device: m_mtlDevice];
-                    
-                    [m_metalView retain];
-                    [superView addSubview: m_metalView];
+                    AddSubView();
                 }
             }
             return RHI::ResultCode::Success;

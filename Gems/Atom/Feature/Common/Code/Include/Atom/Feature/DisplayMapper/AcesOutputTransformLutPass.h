@@ -48,7 +48,9 @@ namespace AZ
             void SetShaperParams(const ShaperParams& shaperParams);
         private:
             explicit AcesOutputTransformLutPass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
+
+            // Pass behavior overrides...
+            void InitializeInternal() override;
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;

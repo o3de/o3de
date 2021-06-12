@@ -44,9 +44,9 @@ namespace AZ
         {
         }
 
-        void AcesOutputTransformPass::Init()
+        void AcesOutputTransformPass::InitializeInternal()
         {
-            DisplayMapperFullScreenPass::Init();
+            DisplayMapperFullScreenPass::InitializeInternal();
 
             AZ_Assert(m_shaderResourceGroup != nullptr, "AcesOutputTransformPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 

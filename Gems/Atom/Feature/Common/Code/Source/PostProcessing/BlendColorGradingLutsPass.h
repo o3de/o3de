@@ -56,7 +56,7 @@ namespace AZ
             explicit BlendColorGradingLutsPass(const RPI::PassDescriptor& descriptor);
 
             // Pass behavior overrides...
-            void FrameBeginInternal(FramePrepareParams params) override;
+            void InitializeInternal() override;
 
             // Scope producer functions...
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
@@ -65,8 +65,6 @@ namespace AZ
 
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
-
-            void Init();
 
             void AcquireLutImage();
             void ReleaseLutImage();

@@ -50,7 +50,7 @@ namespace AZ
         {
         }
         
-        void RenderToTexturePass::BuildAttachmentsInternal()
+        void RenderToTexturePass::BuildInternal()
         {
             m_outputAttachment = aznew PassAttachment();
             m_outputAttachment->m_name = "RenderTarget";
@@ -73,7 +73,7 @@ namespace AZ
 
             m_attachmentBindings.push_back(outputBinding);
             
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
         void RenderToTexturePass::FrameBeginInternal(FramePrepareParams params)
@@ -100,7 +100,7 @@ namespace AZ
             m_passData.m_width = width;
             m_passData.m_height = height;
             OnUpdateOutputSize();
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
         void RenderToTexturePass::OnUpdateOutputSize()

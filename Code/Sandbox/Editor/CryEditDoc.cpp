@@ -1139,7 +1139,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         const QString oldLevelPattern = QDir(oldLevelFolder).absoluteFilePath("*.*");
         const QString oldLevelName = Path::GetFile(GetLevelPathName());
         const QString oldLevelXml = Path::ReplaceExtension(oldLevelName, "xml");
-        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), 0, true);
+        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskAndInZips);
         if (findHandle)
         {
             do

@@ -12,6 +12,7 @@
 #include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
+#include <Atom/RHI.Reflect/Bits.h>
 #include <RHI/Conversions.h>
 #include <RHI/Conversions_Platform.h>
 #include <RHI/Image.h>
@@ -456,8 +457,35 @@ namespace AZ
 
         MTLColorWriteMask ConvertColorWriteMask(AZ::u8 writeMask)
         {
-            //todo::Based on the mask set the correct writemask
-            return MTLColorWriteMaskAll;
+            MTLColorWriteMask colorMask = MTLColorWriteMaskNone;
+            if(writeMask == 0)
+            {
+                return colorMask;
+            }
+            
+            if(RHI::CheckBitsAll(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAll)))
+            {
+                return MTLColorWriteMaskAll;
+            }
+                        
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskRed)))
+            {
+                colorMask |= MTLColorWriteMaskRed;
+            }
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskGreen)))
+            {
+                colorMask |= MTLColorWriteMaskGreen;
+            }
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskBlue)))
+            {
+                colorMask |= MTLColorWriteMaskBlue;
+            }
+            if (RHI::CheckBitsAny(writeMask, static_cast<uint8_t>(RHI::WriteChannelMask::ColorWriteMaskAlpha)))
+            {
+                colorMask |= MTLColorWriteMaskAlpha;
+            }
+            
+            return colorMask;
         }
         
         MTLVertexFormat ConvertVertexFormat(RHI::Format format)
