@@ -165,6 +165,12 @@ namespace AzFramework
             return false;
         }
 
+        // prepend the executableString to the commandLine quoted
+        if (!executableString.empty())
+        {
+            commandLine = AZStd::string::format(R"("%s" %s)", executableString.c_str(), commandLine.c_str());
+        }
+
         // double quote any commandline args
         pos = 0;
         while(pos != AZStd::string::npos)
@@ -175,14 +181,6 @@ namespace AzFramework
                 commandLine.insert(pos, "\\\"");
                 pos += 3;
             }
-        }
-
-        // prepend the executableString to the commandLine quoted
-        if (!executableString.empty())
-        {
-            AZ::StringFunc::Prepend(commandLine, "\" ");
-            AZ::StringFunc::Prepend(commandLine, executableString.c_str());
-            AZ::StringFunc::Prepend(commandLine, "\"");
         }
 
         AZStd::to_wstring(processExecutableString, executableString);

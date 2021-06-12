@@ -257,9 +257,9 @@ namespace AZ
                 return false;
             }
 
+
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_processExecutableString = executableAbsolutePath;
-            processLaunchInfo.m_commandlineParameters = parameters;
+            processLaunchInfo.m_commandlineParameters = AZStd::string::format("\"%s\" %s", executableAbsolutePath.c_str(), parameters.c_str());
             processLaunchInfo.m_showWindow = true;
             processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
@@ -271,7 +271,7 @@ namespace AZ
                 AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
                 AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString().c_str());
             }
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s %s' ...", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.GetCommandLineParametersAsString().c_str());
+            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
             AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
             if (!watcher)

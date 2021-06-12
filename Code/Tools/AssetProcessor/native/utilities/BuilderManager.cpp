@@ -195,7 +195,7 @@ namespace AssetProcessor
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
 
         AZStd::vector<AZStd::string> params;
-        params.emplace_back(AZStd::string::format(R"(-task="%s")", task));
+        params.emplace_back(AZStd::string::format("-task=%s", task));
         params.emplace_back(AZStd::string::format(R"(-id="%s")", builderGuid.c_str()));
         params.emplace_back(AZStd::string::format(R"(-project-name="%s")", gameName.toUtf8().constData()));
         params.emplace_back(AZStd::string::format(R"(-project-cache-path="%s")", projectCacheRoot.absolutePath().toUtf8().constData()));
@@ -221,11 +221,11 @@ namespace AssetProcessor
     {
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
         processLaunchInfo.m_processExecutableString = fullExePath;
-        processLaunchInfo.m_commandlineParameters = AZStd::vector<AZStd::string>(params);
+        processLaunchInfo.m_commandlineParameters = params;
         processLaunchInfo.m_showWindow = false;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_IDLE;
 
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s\n", processLaunchInfo.GetCommandLineParametersAsString().c_str());
+        AZ_TracePrintf(AssetProcessor::DebugChannel, "Executing AssetBuilder with parameters: %s %s\n", processLaunchInfo.m_processExecutableString.c_str(), processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
         auto processWatcher = AZStd::unique_ptr<AzFramework::ProcessWatcher>(AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT));
 
