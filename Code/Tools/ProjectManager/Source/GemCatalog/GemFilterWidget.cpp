@@ -228,26 +228,21 @@ namespace O3DE::ProjectManager
         QVector<QString> elementNames;
         QVector<int> elementCounts;
         const int numGems = m_gemModel->rowCount();
-        for (int statusInt = GemSortFilterProxyModel::GemStatus::Unselected; statusInt <= GemSortFilterProxyModel::GemStatus::Selected;
-             ++statusInt)
+        int selectedGemCount = 0;
+        for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
         {
-            const GemSortFilterProxyModel::GemStatus gemStatusToBeCounted = static_cast<GemSortFilterProxyModel::GemStatus>(statusInt);
-
-            int gemStatusCount = 0;
-            for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
+            // Is the given gem selected or not?
+            if (m_gemModel->IsAdded(m_gemModel->index(gemIndex, 0)))
             {
-                const bool gemStatus = m_gemModel->IsAdded(m_gemModel->index(gemIndex, 0));
-
-                // Is the given gem selected or not?
-                if (gemStatusToBeCounted == static_cast<GemSortFilterProxyModel::GemStatus>(gemStatus))
-                {
-                    gemStatusCount++;
-                }
+               ++selectedGemCount;
             }
-
-            elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(gemStatusToBeCounted));
-            elementCounts.push_back(gemStatusCount);
         }
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Unselected));
+        elementCounts.push_back(numGems - selectedGemCount);
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Selected));
+        elementCounts.push_back(selectedGemCount);
 
         bool wasCollapsed = false;
         if (m_statusFilter)
@@ -285,30 +280,30 @@ namespace O3DE::ProjectManager
                 button, &QAbstractButton::toggled, this,
                 [=](bool checked)
                 {
-                    GemSortFilterProxyModel::GemStatus gemStatuses = m_filterProxyModel->GetGemStatus();
+                    GemSortFilterProxyModel::GemStatus filterStatus = m_filterProxyModel->GetGemStatus();
                     if (checked)
                     {
-                        if (gemStatuses == GemSortFilterProxyModel::GemStatus::NoFilter)
+                        if (filterStatus == GemSortFilterProxyModel::GemStatus::NoFilter)
                         {
-                            gemStatuses = static_cast<GemSortFilterProxyModel::GemStatus>(gemStatus);
+                            filterStatus = gemStatus;
                         }
                         else
                         {
-                            gemStatuses = GemSortFilterProxyModel::GemStatus::NoFilter;
+                            filterStatus = GemSortFilterProxyModel::GemStatus::NoFilter;
                         }
                     }
                     else
                     {
-                        if (gemStatuses != static_cast<GemSortFilterProxyModel::GemStatus>(gemStatus))
+                        if (filterStatus != gemStatus)
                         {
-                            gemStatuses = static_cast<GemSortFilterProxyModel::GemStatus>(!gemStatus);
+                            filterStatus = static_cast<GemSortFilterProxyModel::GemStatus>(!gemStatus);
                         }
                         else
                         {
-                            gemStatuses = GemSortFilterProxyModel::GemStatus::NoFilter;
+                            filterStatus = GemSortFilterProxyModel::GemStatus::NoFilter;
                         }
                     }
-                    m_filterProxyModel->SetGemStatus(gemStatuses);
+                    m_filterProxyModel->SetGemStatus(filterStatus);
                 });
         }
     }
