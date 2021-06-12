@@ -255,7 +255,6 @@ namespace AZ
             {
                 return AZStd::make_pair(animation, anim);
             }
-
             Events::ProcessingResult AssImpAnimationImporter::ImportAnimation(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "Animation");
@@ -447,24 +446,41 @@ namespace AZ
                     
                     return combinedAnimationResult.GetResult();
                 }
+
+                AZStd::unordered_set<AZStd::string> boneList;
+
+                for (int i = 0; i < scene->mNumMeshes; ++i)
+                {
+                    auto mesh = scene->mMeshes[i];
+
+                    for (auto boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    {
+                        auto bone = mesh->mBones[boneIndex];
+
+                        boneList.insert(bone->mName.C_Str());
+                    }
+                }
+
                 decltype(boneAnimations) parentFillerAnimations;
 
                 // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
                 for (auto&& anim : boneAnimations)
                 {
-                    const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
-                    const aiNode* parent = node->mParent;
+                    //const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
+                    //const aiNode* parent = node->mParent;
 
-                    while (parent && parent != scene->mRootNode)
+                    //while (parent && parent != scene->mRootNode)
+                    for (auto boneName : boneList)
                     {
-                        if (!IsPivotNode(parent->mName))
+                        if (!IsPivotNode(aiString(boneName.c_str())))
                         {
-                            if (boneAnimations.find(parent->mName.C_Str()) == boneAnimations.end() &&
-                                parentFillerAnimations.find(parent->mName.C_Str()) == parentFillerAnimations.end())
+                            if (boneAnimations.find(boneName) == boneAnimations.end() &&
+                                parentFillerAnimations.find(boneName) == parentFillerAnimations.end())
                             {
                                 // Create 1 key for each type that just copies the current transform
                                 ConsolidatedNodeAnim emptyAnimation;
-                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(parent);
+                                auto node = scene->mRootNode->FindNode(boneName.c_str());
+                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
 
                                 aiVector3D position, scale;
                                 aiQuaternion rotation;
@@ -483,11 +499,11 @@ namespace AZ
                                 emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
                                 
                                 parentFillerAnimations.insert(
-                                    AZStd::make_pair(parent->mName.C_Str(), AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
+                                    AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                             }
                         }
 
-                        parent = parent->mParent;
+                        //parent = parent->mParent;
                     }
                 }
 
