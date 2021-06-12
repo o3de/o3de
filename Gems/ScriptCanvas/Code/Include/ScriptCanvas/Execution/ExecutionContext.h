@@ -20,6 +20,7 @@ namespace ScriptCanvas
     class VariableData;
 
     struct RuntimeData;
+    struct RuntimeDataOverrides;
 
     namespace Execution
     {

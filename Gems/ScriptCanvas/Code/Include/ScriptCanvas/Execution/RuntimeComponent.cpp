@@ -29,9 +29,17 @@
 
 namespace RuntimeComponentCpp
 {
-    enum Version
+    enum class RuntimeDataOverridesVersion : unsigned int
+    {
+        Initial = 0,
+
+        Current,
+    };
+
+    enum class RuntimeComponentVersion : unsigned int
     {
         ForceAssetPreloads = 5,
+        AddRuntimeDataOverrides,
 
         // add description above
         Current,
@@ -48,6 +56,19 @@ namespace ScriptCanvas
     DatumValue CreateDatumValue(ScriptCanvasId /*scriptCanvasId*/, const GraphVariable& variable)
     {
         return DatumValue::Create(GraphVariable((*variable.GetDatum()), variable.GetVariableId()));
+    }
+
+    void RuntimeDataOverrides::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<RuntimeDataOverrides>()
+                ->Version(static_cast<unsigned int>(RuntimeComponentCpp::RuntimeDataOverridesVersion::Current))
+                ->Field("variables", &RuntimeDataOverrides::m_variables)
+                ->Field("entityIds", &RuntimeDataOverrides::m_entityIds)
+                ->Field("dependencies", &RuntimeDataOverrides::m_dependencies)
+                ;
+        }
     }
 
     RuntimeComponent::RuntimeComponent(AZ::Data::Asset<RuntimeAsset> runtimeAsset)
@@ -98,6 +119,16 @@ namespace ScriptCanvas
     AZ::EntityId RuntimeComponent::GetScriptCanvasId() const
     {
         return m_scriptCanvasId;
+    }
+
+    const RuntimeDataOverrides& RuntimeComponent::GetRuntimeDataOverrides() const
+    {
+        return m_runtimeOverrides;
+    }
+
+    void RuntimeComponent::SetRuntimeDataOverrides(const RuntimeDataOverrides& overrideData)
+    {
+        m_runtimeOverrides = overrideData;
     }
 
     const VariableData& RuntimeComponent::GetVariableOverrides() const
@@ -153,12 +184,15 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Reflect(AZ::ReflectContext* context)
     {
+        RuntimeDataOverrides::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeComponent, AZ::Component>()
-                ->Version(RuntimeComponentCpp::Version::Current, &RuntimeComponent::VersionConverter)
+                ->Version(static_cast<unsigned int>(RuntimeComponentCpp::RuntimeComponentVersion::Current), &RuntimeComponent::VersionConverter)
                 ->Field("m_runtimeAsset", &RuntimeComponent::m_runtimeAsset)
                 ->Field("m_variableOverrides", &RuntimeComponent::m_variableOverrides)
+                ->Field("runtimeOverrides", &RuntimeComponent::m_variableOverrides)
                 ;
         }
     }

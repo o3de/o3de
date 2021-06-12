@@ -22,12 +22,22 @@
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
-#include "RuntimeComponent.h"
-
-
 namespace ScriptCanvas
 {
     using VariableIdMap = AZStd::unordered_map<VariableId, VariableId>;
+
+    // #functions2_prefabs build this at parser time
+    struct RuntimeDataOverrides
+    {
+        AZ_TYPE_INFO(RuntimeDataOverrides, "{CE3C0AE6-4EBA-43B2-B2D5-7AC24A194E63}");
+        AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        AZStd::vector<AZStd::pair<size_t, AZStd::any>> m_variables;
+        AZStd::vector<AZStd::pair<size_t, AZ::EntityId>> m_entityIds;
+        AZStd::vector<RuntimeDataOverrides> m_dependencies;
+    };
 
     //! Runtime Component responsible for loading an executing the compiled ScriptCanvas graph from a runtime
     //! asset.
@@ -61,6 +71,10 @@ namespace ScriptCanvas
         ExecutionMode GetExecutionMode() const;
 
         AZ::EntityId GetScriptCanvasId() const;
+
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
+
+        void SetRuntimeDataOverrides(const RuntimeDataOverrides& overrideData);
 
         const VariableData& GetVariableOverrides() const;
 
@@ -102,12 +116,8 @@ namespace ScriptCanvas
         AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
         ExecutionStatePtr m_executionState;
         AZ::EntityId m_scriptCanvasId;
-                
-        //! Per instance variable data overrides for the runtime asset
-        //! This is serialized when building this component from the EditorScriptCanvasComponent
-        // \todo remove the names from this data, and make it more lightweight
-        // it only needs variable id and value
-        // move the other information to the runtime system component
+        RuntimeDataOverrides m_runtimeOverrides;
+
         VariableData m_variableOverrides;
     };
 }

@@ -46,7 +46,7 @@ namespace ScriptCanvas
             Cpp = 1 << 1,
             Hpp = 1 << 2,
         };
-        
+
         // information required at runtime begin execution of the compiled graph from the host 
         struct RuntimeInputs
         {
@@ -56,12 +56,18 @@ namespace ScriptCanvas
             static void Reflect(AZ::ReflectContext* reflectContext);
 
             Grammar::ExecutionStateSelection m_executionSelection = Grammar::ExecutionStateSelection::InterpretedPure;
+
             AZStd::vector<Nodeable*> m_nodeables;
+            // #functions2_prefabs cut the variable ID on next working submission
             AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
+
             // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
+            // #functions2_prefabs cut the variable ID on next working submission
             AZStd::vector<AZStd::pair<VariableId, Data::EntityIDType>> m_entityIds;
+
             // Statics required for internal, local values that need non-code constructible initialization,
             // when the system can't pass in the input from C++.
+            // #functions2_prefabs cut the variable ID on next working submission
             AZStd::vector<AZStd::pair<VariableId, AZStd::any>> m_staticVariables;
 
             RuntimeInputs() = default;

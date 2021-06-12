@@ -39,16 +39,16 @@ namespace ScriptCanvas
 
         switch (selection)
         {
-        case Grammar::InterpretedPure:
+        case Grammar::ExecutionStateSelection::InterpretedPure:
             return AZStd::make_shared<ExecutionStateInterpretedPure>(config);
             
-        case Grammar::InterpretedPureOnGraphStart:
+        case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
             return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config);
 
-        case Grammar::InterpretedObject:
+        case Grammar::ExecutionStateSelection::InterpretedObject:
             return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config);
 
-        case Grammar::InterpretedObjectOnGraphStart:
+        case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
             return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config);
             
         default:

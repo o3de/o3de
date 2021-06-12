@@ -34,7 +34,6 @@
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 
 namespace ScriptCanvasEditor
@@ -88,10 +87,11 @@ namespace ScriptCanvasEditor
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorScriptCanvasComponent, EditorComponentBase>()
-                ->Version(8, &EditorScriptCanvasComponentVersionConverter)
+                ->Version(9, &EditorScriptCanvasComponentVersionConverter)
                 ->Field("m_name", &EditorScriptCanvasComponent::m_name)
                 ->Field("m_assetHolder", &EditorScriptCanvasComponent::m_scriptCanvasAssetHolder)
                 ->Field("m_variableData", &EditorScriptCanvasComponent::m_editableData)
+                ->Field("runtimeDataOverrides", &EditorScriptCanvasComponent::m_runtimeDataOverrides)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -238,81 +238,51 @@ namespace ScriptCanvasEditor
 
         EditorComponentBase::Deactivate();
 
-        //EditorScriptCanvasAssetNotificationBus::Handler::BusDisconnect();
         EditorScriptCanvasComponentRequestBus::Handler::BusDisconnect();
         EditorContextMenuRequestBus::Handler::BusDisconnect();
     }
 
-    //=========================================================================
-    void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    void EditorScriptCanvasComponent::BuildGameEntityData()
     {
-        AZ::Data::AssetId editorAssetId = m_scriptCanvasAssetHolder.GetAssetId();
+        // #functions2_prefabs make recursive
 
-        if (!editorAssetId.IsValid())
-        {
-            return;
-        }
+        // this will be loaded at the time of this call
+        // AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+        // AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset(runtimeAssetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+// 
+//         ScriptCanvas::VariableData varData;
+// 
+//         for (const auto& varConfig : m_editableData.GetVariables())
+//         {
+//             if (varConfig.m_graphVariable.GetDatum()->Empty())
+//             {
+//                 AZ_Error("ScriptCanvas", false, "Data loss detected for GraphVariable ('%s') on Entity ('%s' - '%s') Graph ('%s')"
+//                     , varConfig.m_graphVariable.GetVariableName().data()
+//                     , gameEntity->GetName().c_str()
+//                     , GetEntityId().ToString().c_str()
+//                     , GetName().c_str());
+//             }
+//             else
+//             {
+//                 varData.AddVariable(varConfig.m_graphVariable.GetVariableName(), varConfig.m_graphVariable);
+//             }
+//         }
 
-        AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset(runtimeAssetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
-
-        /*
-
-        This defense against creating useless runtime components is pending changes the slice update system.
-        It also would require better abilities to check asset integrity when building assets that depend
-        on ScriptCanvas assets.
-
-        AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, runtimeAssetId);
-
-        if (assetInfo.m_assetType == AZ::Data::s_invalidAssetType)
-        {
-            AZ_Warning("ScriptCanvas", false, "No ScriptCanvas Runtime Asset information for Entity ('%s' - '%s') Graph ('%s'), asset may be in error or deleted"
-                , gameEntity->GetName().c_str()
-                , GetEntityId().ToString().c_str()
-                , GetName().c_str());
-            return;
-        }
-
-        AzFramework::AssetSystem::AssetStatus statusResult = AzFramework::AssetSystem::AssetStatus_Unknown;
-        AzFramework::AssetSystemRequestBus::BroadcastResult(statusResult, &AzFramework::AssetSystem::AssetSystemRequests::GetAssetStatusById, runtimeAssetId);
-
-        if (statusResult != AzFramework::AssetSystem::AssetStatus_Compiled)
-        {
-            AZ_Warning("ScriptCanvas", false, "No ScriptCanvas Runtime Asset for Entity ('%s' - '%s') Graph ('%s'), compilation may have failed or not completed"
-                , gameEntity->GetName().c_str()
-                , GetEntityId().ToString().c_str()
-                , GetName().c_str());
-            return;
-        }
-        */
-
-        // #functions2 dependency-ctor-args make recursive
-        auto executionComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>(runtimeAsset);
-        ScriptCanvas::VariableData varData;
-
-        for (const auto& varConfig : m_editableData.GetVariables())
-        {
-            if (varConfig.m_graphVariable.GetDatum()->Empty())
-            {
-                AZ_Error("ScriptCanvas", false, "Data loss detected for GraphVariable ('%s') on Entity ('%s' - '%s') Graph ('%s')"
-                    , varConfig.m_graphVariable.GetVariableName().data()
-                    , gameEntity->GetName().c_str()
-                    , GetEntityId().ToString().c_str()
-                    , GetName().c_str());
-            }
-            else
-            {
-                varData.AddVariable(varConfig.m_graphVariable.GetVariableName(), varConfig.m_graphVariable);
-            }
-        }
-
-        executionComponent->SetVariableOverrides(varData);
     }
 
+    void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
+    {
+        if (m_runtimeDataIsValid)
+        {
+            AZ::Data::AssetId editorAssetId = m_scriptCanvasAssetHolder.GetAssetId();
+            AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset(runtimeAssetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>(runtimeAsset);
+            runtimeComponent->SetRuntimeDataOverrides(m_runtimeDataOverrides);
+        }
+    }
     void EditorScriptCanvasComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
-        // If we removed out asset due to the catalog removing. Just set it back.
         if (m_removedCatalogId == assetId)
         {
             if (!m_scriptCanvasAssetHolder.GetAssetId().IsValid())
@@ -322,12 +292,9 @@ namespace ScriptCanvasEditor
             }
         }
     }
-
     void EditorScriptCanvasComponent::OnCatalogAssetRemoved(const AZ::Data::AssetId& removedAssetId, const AZ::Data::AssetInfo& /*assetInfo*/)
     {
         AZ::Data::AssetId assetId = m_scriptCanvasAssetHolder.GetAssetId();
-
-        // If the Asset gets removed from disk while the Editor is loaded clear out the asset reference.
         if (assetId == removedAssetId)
         {
             m_removedCatalogId = assetId;
@@ -360,8 +327,6 @@ namespace ScriptCanvasEditor
             }
         }
 
-        AzToolsFramework::ScopedUndoBatch undo("Update Entity With New SC Graph");
-        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 
@@ -479,48 +444,40 @@ namespace ScriptCanvasEditor
         }
     }
 
-    /*! Start Variable Block Implementation */
-    void EditorScriptCanvasComponent::AddVariable(AZStd::string_view varName, const ScriptCanvas::GraphVariable& graphVariable)
-    {
-        // We only add component properties to the component
-        if (!graphVariable.IsComponentProperty())
-        {
-            return;
-        }
-
-        const auto& variableId = graphVariable.GetVariableId();
-        ScriptCanvas::EditableVariableConfiguration* originalVarNameValuePair = m_editableData.FindVariable(variableId);
-        if (!originalVarNameValuePair)
-        {
-            m_editableData.AddVariable(varName, graphVariable);
-            originalVarNameValuePair = m_editableData.FindVariable(variableId);
-        }
-
-        if (!originalVarNameValuePair)
-        {
-            AZ_Error("Script Canvas", false, "Unable to find variable with id %s and name %s on the ScriptCanvas Component. There is an issue in AddVariable",
-                variableId.ToString().data(), varName.data());
-            return;
-        }
-
-        // Update the variable name as it may have changed
-        originalVarNameValuePair->m_graphVariable.SetVariableName(varName);
-        originalVarNameValuePair->m_graphVariable.SetExposureCategory(graphVariable.GetExposureCategory());
-        originalVarNameValuePair->m_graphVariable.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
-        originalVarNameValuePair->m_graphVariable.SetAllowSignalOnChange(false);
-    }
-
     void EditorScriptCanvasComponent::AddNewVariables(const ScriptCanvas::VariableData& graphVarData)
     {
-        for (auto&& variablePair : graphVarData.GetVariables())
+        for (auto& variablePair : graphVarData.GetVariables())
         {
-            AddVariable(variablePair.second.GetVariableName(), variablePair.second);
-        }
-    }
+            AZStd::string_view varName = variablePair.second.GetVariableName();
+            const ScriptCanvas::GraphVariable& graphVariable = variablePair.second;
 
-    void EditorScriptCanvasComponent::RemoveVariable(const ScriptCanvas::VariableId& varId)
-    {
-        m_editableData.RemoveVariable(varId);
+            // We only add component properties to the component
+            if (!graphVariable.IsComponentProperty())
+            {
+                continue;
+            }
+
+            const auto& variableId = graphVariable.GetVariableId();
+            ScriptCanvas::EditableVariableConfiguration* originalVarNameValuePair = m_editableData.FindVariable(variableId);
+            if (!originalVarNameValuePair)
+            {
+                m_editableData.AddVariable(varName, graphVariable);
+                originalVarNameValuePair = m_editableData.FindVariable(variableId);
+            }
+
+            if (!originalVarNameValuePair)
+            {
+                AZ_Error("Script Canvas", false, "Unable to find variable with id %s and name %s on the ScriptCanvas Component. There is an issue in AddVariable",
+                    variableId.ToString().data(), varName.data());
+                continue;
+            }
+
+            // Update the variable name as it may have changed
+            originalVarNameValuePair->m_graphVariable.SetVariableName(varName);
+            originalVarNameValuePair->m_graphVariable.SetExposureCategory(graphVariable.GetExposureCategory());
+            originalVarNameValuePair->m_graphVariable.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
+            originalVarNameValuePair->m_graphVariable.SetAllowSignalOnChange(false);
+        }
     }
 
     void EditorScriptCanvasComponent::RemoveOldVariables(const ScriptCanvas::VariableData& graphVarData)
@@ -541,35 +498,8 @@ namespace ScriptCanvasEditor
 
         for (const auto& oldVariableId : oldVariableIds)
         {
-            RemoveVariable(oldVariableId);
+            m_editableData.RemoveVariable(oldVariableId);
         }
-    }
-
-    bool EditorScriptCanvasComponent::UpdateVariable(const ScriptCanvas::GraphVariable& graphDatum, ScriptCanvas::GraphVariable& updateDatum, ScriptCanvas::GraphVariable& originalDatum)
-    {
-        // If the editable datum is the different than the original datum, then the "variable value" has been overridden on this component
-
-        // Variable values only propagate from the Script Canvas graph to this component if the original "variable value" has not been overridden
-        // by the editable "variable value" on this component and the "variable value" on the graph is different than the variable value on this component
-        auto isNotOverridden = (*updateDatum.GetDatum()) == (*originalDatum.GetDatum());
-        auto scGraphIsModified = (*originalDatum.GetDatum()) != (*graphDatum.GetDatum());
-
-        if (isNotOverridden && scGraphIsModified)
-        {
-            ScriptCanvas::ModifiableDatumView originalDatumView;
-            originalDatum.ConfigureDatumView(originalDatumView);
-
-            originalDatumView.AssignToDatum((*graphDatum.GetDatum()));
-
-
-            ScriptCanvas::ModifiableDatumView updatedDatumView;
-            updateDatum.ConfigureDatumView(updatedDatumView);
-
-            updatedDatumView.AssignToDatum((*graphDatum.GetDatum()));
-
-            return true;
-        }
-        return false;
     }
 
     void EditorScriptCanvasComponent::LoadVariables(const ScriptCanvasMemoryAsset::pointer memoryAsset)
