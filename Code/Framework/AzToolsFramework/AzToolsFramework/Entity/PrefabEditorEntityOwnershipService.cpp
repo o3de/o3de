@@ -252,13 +252,20 @@ namespace AzToolsFramework
         }
 
         AZStd::string out;
-        if (m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
+
+        if (!m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
         {
-            const size_t bytesToWrite = out.size();
-            const size_t bytesWritten = stream.Write(bytesToWrite, out.data());
-            return bytesWritten == bytesToWrite;
+            return false;
         }
-        return false;
+
+        const size_t bytesToWrite = out.size();
+        const size_t bytesWritten = stream.Write(bytesToWrite, out.data());
+        if(bytesWritten != bytesToWrite)
+        {
+            return false;
+        }
+        m_prefabSystemComponent->SetTemplateDirtyFlag(templateId, false);
+        return true;
     }
 
     void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename)

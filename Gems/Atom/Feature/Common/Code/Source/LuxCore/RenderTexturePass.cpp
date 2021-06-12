@@ -38,13 +38,13 @@ namespace AZ
             m_attachmentSize = image->GetRHIImage()->GetDescriptor().m_size;
             m_attachmentFormat = format;
             m_shaderResourceGroup->SetImage(m_textureIndex, image);
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
-        void RenderTexturePass::BuildAttachmentsInternal()
+        void RenderTexturePass::BuildInternal()
         {
             UpdataAttachment();
-            FullscreenTrianglePass::BuildAttachmentsInternal();
+            FullscreenTrianglePass::BuildInternal();
         }
 
         void RenderTexturePass::FrameBeginInternal(FramePrepareParams params)

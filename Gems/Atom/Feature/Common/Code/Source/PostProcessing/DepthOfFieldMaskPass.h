@@ -37,11 +37,11 @@ namespace AZ
 
         protected:
             // Pass behavior overrides...
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
             DepthOfFieldMaskPass(const RPI::PassDescriptor& descriptor);
-            virtual void Init() override;
 
             // SRG binding indices...
             RHI::ShaderInputNameIndex m_blendFactorIndex = "m_blendFactor";

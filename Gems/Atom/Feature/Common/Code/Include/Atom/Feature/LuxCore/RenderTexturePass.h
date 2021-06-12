@@ -46,7 +46,7 @@ namespace AZ
 
         private:
 
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void UpdataAttachment();

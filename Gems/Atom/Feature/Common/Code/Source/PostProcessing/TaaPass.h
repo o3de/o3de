@@ -63,7 +63,7 @@ namespace AZ::Render
         // Pass behavior overrides...
         void FrameBeginInternal(FramePrepareParams params) override;
         void ResetInternal() override;
-        void BuildAttachmentsInternal() override;
+        void BuildInternal() override;
 
         void UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment);
 
