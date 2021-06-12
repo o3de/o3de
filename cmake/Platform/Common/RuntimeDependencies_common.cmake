@@ -247,23 +247,23 @@ function(ly_delayed_generate_runtime_dependencies)
         endif()
 
         unset(runtime_dependencies)
-        set(runtime_commands ${LY_RUNTIME_DEPENDENCIES_HEADER})
+        unset(LY_COPY_COMMANDS)
 
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
             ly_get_runtime_dependency_command(runtime_command ${runtime_dependency})
-            string(APPEND runtime_commands ${runtime_command})
+            string(APPEND LY_COPY_COMMANDS ${runtime_command})
         endforeach()
 
-        string(APPEND runtime_commands ${LY_RUNTIME_DEPENDENCIES_FOOTER})
-        
         # Generate the output file
         set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
-        string(CONFIGURE "${runtime_commands}" generated_commands @ONLY)
+        file(READ ${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
+        string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)
+        string(CONFIGURE "${template_file}" configured_template_file @ONLY)
         file(GENERATE
             OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
-            CONTENT "${generated_commands}"
+            CONTENT "${configured_template_file}"
         )
 
     endforeach()
