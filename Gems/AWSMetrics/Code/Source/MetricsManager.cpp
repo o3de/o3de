@@ -29,7 +29,7 @@ namespace AWSMetrics
     MetricsManager::MetricsManager()
         : m_clientConfiguration(AZStd::make_unique<ClientConfiguration>())
         , m_clientIdProvider(IdentityProvider::CreateIdentityProvider())
-        , m_consumerTerminated(true)
+        , m_monitorTerminated(true)
         , m_sendMetricsId(0)
     {
     }
@@ -53,31 +53,27 @@ namespace AWSMetrics
 
     void MetricsManager::StartMetrics()
     {
-        if (!m_consumerTerminated)
+        if (!m_monitorTerminated)
         {
             // The background thread has been started.
             return;
         }
-
-        m_consumerTerminated = false;
-
-        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
-        m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
+        m_monitorTerminated = false;
 
         // Start a separate thread to monitor and consume the metrics queue.
         // Avoid using the job system since the worker is long-running over multiple frames
-        m_consumerThread = AZStd::thread(AZStd::bind(&MetricsManager::MonitorMetricsQueue, this));
+        m_monitorThread = AZStd::thread(AZStd::bind(&MetricsManager::MonitorMetricsQueue, this));
     }
 
     void MetricsManager::MonitorMetricsQueue()
     {
-        while (!m_consumerTerminated)
+        // Continue to loop until the monitor is terminated.
+        while (!m_monitorTerminated)
         {
-            if (ShouldSendMetrics())
-            {
-                // Flush the metrics queue when the accumulated metrics size or time period hits the limit
-                FlushMetricsAsync();
-            }
+            // The thread will wake up either when the metrics event queue is full (try_acquire_for call returns true),
+            // or the flush period limit is hit (try_acquire_for call returns false).
+            m_waitEvent.try_acquire_for(AZStd::chrono::seconds(m_clientConfiguration->GetQueueFlushPeriodInSeconds()));
+            FlushMetricsAsync();
         }
     }
 
@@ -113,6 +109,12 @@ namespace AWSMetrics
 
         AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_metricsQueue.AddMetrics(metricsEvent);
+
+        if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+        {
+            // Flush the metrics queue when the accumulated metrics size hits the limit
+            m_waitEvent.release();
+        }
 
         return true;
     }
@@ -348,9 +350,6 @@ namespace AWSMetrics
     void MetricsManager::FlushMetricsAsync()
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
-
-        m_lastSendMetricsTime = AZStd::chrono::system_clock::now();
-
         if (m_metricsQueue.GetNumMetrics() == 0)
         {
             return;
@@ -363,34 +362,20 @@ namespace AWSMetrics
         SendMetricsAsync(metricsToFlush);
     }
 
-    bool MetricsManager::ShouldSendMetrics()
-    {
-        AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
-
-        auto secondsSinceLastFlush = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_lastSendMetricsTime);
-        if (secondsSinceLastFlush >= AZStd::chrono::seconds(m_clientConfiguration->GetQueueFlushPeriodInSeconds()) ||
-            m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     void MetricsManager::ShutdownMetrics()
     {
-        if (m_consumerTerminated)
+        if (m_monitorTerminated)
         {
             return;
         }
 
-        // Terminate the consumer thread
-        m_consumerTerminated = true;
-        FlushMetricsAsync();
+        // Terminate the monitor thread
+        m_monitorTerminated = true;
+        m_waitEvent.release();
 
-        if (m_consumerThread.joinable())
+        if (m_monitorThread.joinable())
         {
-            m_consumerThread.join();
+            m_monitorThread.join();
         }
     }
 
@@ -449,6 +434,12 @@ namespace AWSMetrics
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
                 m_metricsQueue.AddMetrics(offlineRecords[index]);
+
+                if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+                {
+                    // Flush the metrics queue when the accumulated metrics size hits the limit
+                    m_waitEvent.release();
+                }
             }
 
             // Remove the local metrics file after reading all its content.
