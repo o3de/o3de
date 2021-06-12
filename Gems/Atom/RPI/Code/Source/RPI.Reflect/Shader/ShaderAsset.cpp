@@ -381,7 +381,7 @@ namespace AZ
         // AssetBus overrides...
         void ShaderAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("ShaderAsset::OnAssetReloaded %s", asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
             AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId,
@@ -396,7 +396,7 @@ namespace AZ
         /// ShaderVariantFinderNotificationBus overrides
         void ShaderAsset::OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> shaderVariantTreeAsset, bool isError)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("ShaderAsset::OnShaderVariantTreeAssetReady %s", shaderVariantTreeAsset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnShaderVariantTreeAssetReady %s", this, shaderVariantTreeAsset.GetHint().c_str());
 
             AZStd::unique_lock<decltype(m_variantTreeMutex)> lock(m_variantTreeMutex);
             if (isError)

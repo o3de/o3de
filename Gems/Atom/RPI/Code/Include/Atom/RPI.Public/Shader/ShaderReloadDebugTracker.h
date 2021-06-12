@@ -57,6 +57,20 @@ namespace AZ
                 }
 #endif
             }
+            
+            //! Prints a generic message at the appropriate indent level.
+            template<typename ... Args>
+            static void Printf([[maybe_unused]] const char* format, [[maybe_unused]] Args... args)
+            {
+#ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
+                if (IsEnabled())
+                {
+                    const AZStd::string message = AZStd::string::format(format, args...);
+
+                    AZ_TracePrintf("ShaderReloadDebug", "%*s %s \n", s_indent, "", message.c_str());
+                }
+#endif
+            }
 
             //! Use this utility to call BeginSection(), and automatically call EndSection() when the object goes out of scope.
             class ScopedSection final
