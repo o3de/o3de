@@ -14,10 +14,10 @@
 
 namespace UnitTest
 {
-    class CustomManipulatorManager
-        : public AzToolsFramework::ManipulatorManager
+    class CustomManipulatorManager : public AzToolsFramework::ManipulatorManager
     {
         using ManagerBase = AzToolsFramework::ManipulatorManager;
+
     public:
         using ManagerBase::ManagerBase;
 
@@ -27,17 +27,17 @@ namespace UnitTest
         }
     };
 
-    class AzManipulatorTestFrameworkCustomManagerTestFixture
-        : public LinearManipulatorTestFixture
+    class AzManipulatorTestFrameworkCustomManagerTestFixture : public LinearManipulatorTestFixture
     {
     protected:
         AzManipulatorTestFrameworkCustomManagerTestFixture()
-            : LinearManipulatorTestFixture(AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId"))) {}
+            : LinearManipulatorTestFixture(AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId")))
+        {
+        }
 
         void SetUpEditorFixtureImpl() override
         {
-            m_manipulatorManager =
-                AZStd::make_shared<CustomManipulatorManager>(m_manipulatorManagerId);
+            m_manipulatorManager = AZStd::make_shared<CustomManipulatorManager>(m_manipulatorManagerId);
 
             LinearManipulatorTestFixture::SetUpEditorFixtureImpl();
         }
@@ -115,9 +115,9 @@ namespace UnitTest
 
         m_linearManipulator->InstallMouseMoveCallback(
             [&movementAlongAxis](const AzToolsFramework::LinearManipulator::Action& action)
-        {
-            movementAlongAxis = action.m_current.m_localPositionOffset;
-        });
+            {
+                movementAlongAxis = action.m_current.m_localPositionOffset;
+            });
 
         // consume the mouse down event
         m_manipulatorManager->ConsumeViewportMousePress(m_interaction);
@@ -141,4 +141,3 @@ namespace UnitTest
         EXPECT_EQ(movementAlongAxis, expectedPositionAfterMovementAlongAxis);
     }
 } // namespace UnitTest
-

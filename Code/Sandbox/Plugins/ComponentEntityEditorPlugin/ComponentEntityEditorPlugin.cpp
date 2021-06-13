@@ -179,11 +179,11 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
             LyViewPane::EntityOutliner,
             LyViewPane::CategoryTools,
             outlinerOptions);
-    }
 
-    AzToolsFramework::ViewPaneOptions options;
-    options.preferedDockingArea = Qt::NoDockWidgetArea;
-    RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
+        AzToolsFramework::ViewPaneOptions options;
+        options.preferedDockingArea = Qt::NoDockWidgetArea;
+        RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
+    }
 
     RegisterModuleResourceSelectors(GetIEditor()->GetResourceSelectorHost());
 

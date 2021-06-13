@@ -21,6 +21,8 @@
 // Qt
 #include <QInputDialog>
 
+#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
+
 // CryCommon
 #include <CryCommon/SFunctor.h>
 
@@ -35,15 +37,19 @@
 #include "Objects/SelectionGroup.h"
 #include "UsedResources.h"
 #include "Include/IObjectManager.h"
+#include "ActionManager.h"
+#include "MainWindow.h"
+#include "GameEngine.h"
+#include "MathConversion.h"
+#include "EditorViewportSettings.h"
 
-#include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
-
+#include <AzCore/std/algorithm.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #endif //!defined(Q_MOC_RUN)
-
 
 // CViewportTitleDlg dialog
 
@@ -103,7 +109,9 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     layout->addWidget(container);
     container->setObjectName("ViewportTitleDlgContainer");
 
-    m_pViewPane = NULL;
+    m_prevMoveSpeed = 0;
+
+    m_pViewPane = nullptr;
     GetIEditor()->RegisterNotifyListener(this);
     GetISystem()->GetISystemEventDispatcher()->RegisterListener(this);
 
@@ -111,20 +119,175 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
-    OnInitDialog();
+    // audio request setup
+    m_oMuteAudioRequest.pData = &m_oMuteAudioRequestData;
+    m_oUnmuteAudioRequest.pData = &m_oUnmuteAudioRequestData;
 
-    connect(m_ui->m_fovLabel, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpFOVMenu);
-    connect(m_ui->m_fovStaticCtrl, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpFOVMenu);
-    connect(m_ui->m_ratioStaticCtrl, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpAspectMenu);
-    connect(m_ui->m_ratioLabel, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpAspectMenu);
-    connect(m_ui->m_sizeStaticCtrl, &QWidget::customContextMenuRequested, this, &CViewportTitleDlg::PopUpResolutionMenu);
+    SetupCameraDropdownMenu();
+    SetupResolutionDropdownMenu();
+    SetupViewportInformationMenu();
+    SetupOverflowMenu();
+
+    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+
+    connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
+
+    AZ::VR::VREventBus::Handler::BusConnect();
+
+    OnInitDialog();
 }
 
 CViewportTitleDlg::~CViewportTitleDlg()
 {
+    AZ::VR::VREventBus::Handler::BusDisconnect();
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 }
+
+void CViewportTitleDlg::SetupCameraDropdownMenu()
+{
+    // Setup the camera dropdown menu
+    QMenu* cameraMenu = new QMenu(this);
+    cameraMenu->addMenu(GetFovMenu());
+    m_ui->m_cameraMenu->setMenu(cameraMenu);
+    m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
+    QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
+    connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
+    cameraMenu->addAction(gotoPositionAction);
+    m_syncPlayerToCameraAction = new QAction("Sync camera to player", cameraMenu);
+    m_syncPlayerToCameraAction->setCheckable(true);
+    connect(m_syncPlayerToCameraAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedSyncplayer);
+    cameraMenu->addAction(m_syncPlayerToCameraAction);
+
+    cameraMenu->addSeparator();
+
+    auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
+    auto cameraSpeedContainer = new QWidget(cameraMenu);
+    auto cameraSpeedLabel = new QLabel(tr("Camera Speed"), cameraMenu);
+    m_cameraSpeed = new QComboBox(cameraMenu);
+    m_cameraSpeed->setEditable(true);
+    m_cameraSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, m_cameraSpeed));
+
+    QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
+    cameraSpeedLayout->addWidget(cameraSpeedLabel);
+    cameraSpeedLayout->addWidget(m_cameraSpeed);
+    cameraSpeedContainer->setLayout(cameraSpeedLayout);
+    cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
+
+    // Save off the move speed here since setting up the combo box can cause it to update values in the background.
+    float cameraMoveSpeed = gSettings.cameraMoveSpeed;
+
+    // Populate the presets in the ComboBox
+    for (float presetValue : m_speedPresetValues)
+    {
+        m_cameraSpeed->addItem(QString().setNum(presetValue, 'f', m_numDecimals), presetValue);
+    }
+
+    auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
+
+    SetSpeedComboBox(cameraMoveSpeed);
+    m_cameraSpeed->setInsertPolicy(QComboBox::NoInsert);
+    connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
+    connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
+
+    cameraMenu->addAction(cameraSpeedActionWidget);
+}
+
+void CViewportTitleDlg::SetupResolutionDropdownMenu()
+{
+    // Setup the resolution dropdown menu
+    QMenu* resolutionMenu = new QMenu(this);
+    resolutionMenu->addMenu(GetAspectMenu());
+    resolutionMenu->addMenu(GetResolutionMenu());
+    m_ui->m_resolutionMenu->setMenu(resolutionMenu);
+    m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
+}
+
+void CViewportTitleDlg::SetupViewportInformationMenu()
+{
+    // Setup the debug information button
+    m_ui->m_debugInformationMenu->setMenu(GetViewportInformationMenu());
+    connect(m_ui->m_debugInformationMenu, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
+    m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
+
+}
+
+void CViewportTitleDlg::SetupOverflowMenu()
+{
+    // Setup the overflow menu
+    QMenu* overFlowMenu = new QMenu(this);
+    m_debugHelpersAction = new QAction("Debug Helpers", overFlowMenu);
+    m_debugHelpersAction->setCheckable(true);
+    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+    connect(m_debugHelpersAction, &QAction::triggered, this, &CViewportTitleDlg::OnToggleHelpers);
+    overFlowMenu->addAction(m_debugHelpersAction);
+
+    m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
+    connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
+    overFlowMenu->addAction(m_audioMuteAction);
+
+    m_enableVRAction = new QAction("Enable VR Preview", overFlowMenu);
+    connect(m_enableVRAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedEnableVR);
+    overFlowMenu->addAction(m_enableVRAction);
+
+    overFlowMenu->addSeparator();
+
+    m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
+    connect(m_enableGridSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnGridSnappingToggled);
+    m_enableGridSnappingAction->setCheckable(true);
+    overFlowMenu->addAction(m_enableGridSnappingAction);
+
+    m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
+    auto gridSizeContainer = new QWidget(overFlowMenu);
+    auto gridSizeLabel = new QLabel(tr("Grid Size"), overFlowMenu);
+
+    m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
+    m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
+    m_gridSpinBox->setMinimum(1e-2f);
+
+    QObject::connect(
+        m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
+
+    QHBoxLayout* gridSizeLayout = new QHBoxLayout;
+    gridSizeLayout->addWidget(gridSizeLabel);
+    gridSizeLayout->addWidget(m_gridSpinBox);
+    gridSizeContainer->setLayout(gridSizeLayout);
+    m_gridSizeActionWidget->setDefaultWidget(gridSizeContainer);
+    overFlowMenu->addAction(m_gridSizeActionWidget);
+
+    overFlowMenu->addSeparator();
+
+    m_enableAngleSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
+    connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
+    m_enableAngleSnappingAction->setCheckable(true);
+    overFlowMenu->addAction(m_enableAngleSnappingAction);
+
+    m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
+    auto angleSizeContainer = new QWidget(overFlowMenu);
+    auto angleSizeLabel = new QLabel(tr("Angle Snapping"), overFlowMenu);
+
+    m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
+    m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
+    m_angleSpinBox->setMinimum(1e-2f);
+
+    QObject::connect(
+        m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
+        &CViewportTitleDlg::OnAngleSpinBoxChanged);
+
+    QHBoxLayout* angleSizeLayout = new QHBoxLayout;
+    angleSizeLayout->addWidget(angleSizeLabel);
+    angleSizeLayout->addWidget(m_angleSpinBox);
+    angleSizeContainer->setLayout(angleSizeLayout);
+    m_angleSizeActionWidget->setDefaultWidget(angleSizeContainer);
+    overFlowMenu->addAction(m_angleSizeActionWidget);
+
+    m_ui->m_overflowBtn->setMenu(overFlowMenu);
+    m_ui->m_overflowBtn->setPopupMode(QToolButton::InstantPopup);
+    connect(overFlowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
+
+    UpdateMuteActionText();
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
@@ -140,21 +303,27 @@ void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
 void CViewportTitleDlg::OnInitDialog()
 {
     m_ui->m_titleBtn->setText(m_title);
-    m_ui->m_sizeStaticCtrl->setText(QString());
-
-    m_ui->m_toggleHelpersBtn->setChecked(GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
-
 
     // Add a child parented to us that listens for r_displayInfo changes.
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
     UpdateDisplayInfo();
 
-    connect(m_ui->m_toggleHelpersBtn, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
-    connect(m_ui->m_toggleDisplayInfoBtn, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
+    // This is here just in case this class hasn't been created before
+    // a VR headset was initialized
+    m_enableVRAction->setEnabled(false);
+    if (AZ::VR::HMDDeviceRequestBus::GetTotalNumOfEventHandlers() != 0)
+    {
+        m_enableVRAction->setEnabled(true);
+    }
 
-    m_ui->m_toggleHelpersBtn->setProperty("class", "big");
-    m_ui->m_toggleDisplayInfoBtn->setProperty("class", "big");
+    AZ::VR::VREventBus::Handler::BusConnect();
+
+    QFontMetrics metrics({});
+    int width = metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier;
+
+    m_cameraSpeed->setFixedWidth(width);
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -177,6 +346,80 @@ void CViewportTitleDlg::OnMaximize()
 void CViewportTitleDlg::OnToggleHelpers()
 {
     Helpers::ToggleHelpers();
+    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+}
+
+void CViewportTitleDlg::SetNoViewportInfo()
+{
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
+}
+
+void CViewportTitleDlg::SetNormalViewportInfo()
+{
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo);
+}
+
+void CViewportTitleDlg::SetFullViewportInfo()
+{
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::FullInfo);
+}
+
+void CViewportTitleDlg::SetCompactViewportInfo()
+{
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+void CViewportTitleDlg::UpdateDisplayInfo()
+{
+    if (m_viewportInformationMenu == nullptr)
+    {
+        // Nothing to update, just return;
+        return;
+    }
+
+    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
+    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
+        state,
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState
+    );
+
+    m_noInformationAction->setChecked(false);
+    m_normalInformationAction->setChecked(false);
+    m_fullInformationAction->setChecked(false);
+    m_compactInformationAction->setChecked(false);
+
+    switch (state)
+    {
+        case AZ::AtomBridge::ViewportInfoDisplayState::NormalInfo:
+            {
+                m_normalInformationAction->setChecked(true);
+                break;
+            }
+        case AZ::AtomBridge::ViewportInfoDisplayState::FullInfo:
+            {
+                m_fullInformationAction->setChecked(true);
+                break;
+            }
+        case AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo:
+            {
+                m_compactInformationAction->setChecked(true);
+                break;
+            }
+        case AZ::AtomBridge::ViewportInfoDisplayState::NoInfo:
+        default:
+            {
+                m_noInformationAction->setChecked(true);
+                break;
+            }
+    }
+
+    m_ui->m_debugInformationMenu->setChecked(state != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -184,27 +427,12 @@ void CViewportTitleDlg::OnToggleDisplayInfo()
 {
     AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-        state,
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState
-    );
+        state, &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState);
     state = aznumeric_cast<AZ::AtomBridge::ViewportInfoDisplayState>(
-        (aznumeric_cast<int>(state)+1) % aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid));
+        (aznumeric_cast<int>(state) + 1) % aznumeric_cast<int>(AZ::AtomBridge::ViewportInfoDisplayState::Invalid));
     // SetDisplayState will fire OnViewportInfoDisplayStateChanged and notify us, no need to call UpdateDisplayInfo.
     AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Broadcast(
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState,
-        state
-    );
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::UpdateDisplayInfo()
-{
-    AZ::AtomBridge::ViewportInfoDisplayState state = AZ::AtomBridge::ViewportInfoDisplayState::NoInfo;
-    AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::BroadcastResult(
-        state,
-        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::GetDisplayState
-    );
-    m_ui->m_toggleDisplayInfoBtn->setChecked(state != AZ::AtomBridge::ViewportInfoDisplayState::NoInfo);
+        &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, state);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -277,7 +505,7 @@ void CViewportTitleDlg::CreateFOVMenu()
 {
     if (!m_fovMenu)
     {
-        m_fovMenu = new QMenu(this);
+        m_fovMenu = new QMenu("FOV", this);
     }
 
     m_fovMenu->clear();
@@ -290,17 +518,6 @@ void CViewportTitleDlg::CreateFOVMenu()
 
     QAction* action = m_fovMenu->addAction(tr("Custom..."));
     connect(action, &QAction::triggered, this, &CViewportTitleDlg::OnMenuFOVCustom);
-}
-
-void CViewportTitleDlg::PopUpFOVMenu()
-{
-    if (m_pViewPane == NULL)
-    {
-        return;
-    }
-
-    CreateFOVMenu();
-    m_fovMenu->exec(QCursor::pos());
 }
 
 QMenu* const CViewportTitleDlg::GetFovMenu()
@@ -379,9 +596,9 @@ void CViewportTitleDlg::OnMenuAspectRatioCustom()
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::CreateAspectMenu()
 {
-    if (!m_aspectMenu)
+    if (m_aspectMenu == nullptr)
     {
-        m_aspectMenu = new QMenu(this);
+        m_aspectMenu = new QMenu("Aspect Ratio");
     }
 
     m_aspectMenu->clear();
@@ -396,21 +613,46 @@ void CViewportTitleDlg::CreateAspectMenu()
     connect(customAction, &QAction::triggered, this, &CViewportTitleDlg::OnMenuAspectRatioCustom);
 }
 
-void CViewportTitleDlg::PopUpAspectMenu()
-{
-    if (!m_pViewPane)
-    {
-        return;
-    }
-
-    CreateAspectMenu();
-    m_aspectMenu->exec(QCursor::pos());
-}
-
 QMenu* const CViewportTitleDlg::GetAspectMenu()
 {
     CreateAspectMenu();
     return m_aspectMenu;
+}
+
+QMenu* const CViewportTitleDlg::GetViewportInformationMenu()
+{
+    CreateViewportInformationMenu();
+    return m_viewportInformationMenu;
+}
+
+void CViewportTitleDlg::CreateViewportInformationMenu()
+{
+    if (m_viewportInformationMenu == nullptr)
+    {
+        m_viewportInformationMenu = new QMenu("Viewport Information");
+
+        m_noInformationAction = new QAction(tr("None"), m_viewportInformationMenu);
+        m_noInformationAction->setCheckable(true);
+        connect(m_noInformationAction, &QAction::triggered, this, &CViewportTitleDlg::SetNoViewportInfo);
+        m_viewportInformationMenu->addAction(m_noInformationAction);
+
+        m_normalInformationAction = new QAction(tr("Normal"), m_viewportInformationMenu);
+        m_normalInformationAction->setCheckable(true);
+        connect(m_normalInformationAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalViewportInfo);
+        m_viewportInformationMenu->addAction(m_normalInformationAction);
+
+        m_fullInformationAction = new QAction(tr("Full"), m_viewportInformationMenu);
+        m_fullInformationAction->setCheckable(true);
+        connect(m_fullInformationAction, &QAction::triggered, this, &CViewportTitleDlg::SetFullViewportInfo);
+        m_viewportInformationMenu->addAction(m_fullInformationAction);
+
+        m_compactInformationAction = new QAction(tr("Compact"), m_viewportInformationMenu);
+        m_compactInformationAction->setCheckable(true);
+        connect(m_compactInformationAction, &QAction::triggered, this, &CViewportTitleDlg::SetCompactViewportInfo);
+        m_viewportInformationMenu->addAction(m_compactInformationAction);
+
+        UpdateDisplayInfo();
+    }
 }
 
 void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets)
@@ -479,7 +721,7 @@ void CViewportTitleDlg::CreateResolutionMenu()
 {
     if (!m_resolutionMenu)
     {
-        m_resolutionMenu = new QMenu(this);
+        m_resolutionMenu = new QMenu("Resolution");
     }
 
     m_resolutionMenu->clear();
@@ -494,17 +736,6 @@ void CViewportTitleDlg::CreateResolutionMenu()
     connect(action, &QAction::triggered, this, &CViewportTitleDlg::OnMenuResolutionCustom);
 }
 
-void CViewportTitleDlg::PopUpResolutionMenu()
-{
-    if (!m_pViewPane)
-    {
-        return;
-    }
-
-    CreateResolutionMenu();
-    m_resolutionMenu->exec(QCursor::pos());
-}
-
 QMenu* const CViewportTitleDlg::GetResolutionMenu()
 {
     CreateResolutionMenu();
@@ -514,14 +745,14 @@ QMenu* const CViewportTitleDlg::GetResolutionMenu()
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnViewportSizeChanged(int width, int height)
 {
-    m_ui->m_sizeStaticCtrl->setText(QString::fromLatin1("%1 x %2").arg(width).arg(height));
+    m_resolutionMenu->setTitle(QString::fromLatin1("Resolution:  %1 x %2").arg(width).arg(height));
 
     if (width != 0 && height != 0)
     {
         // Calculate greatest common divider of width & height
         int whGCD = gcd(width, height);
 
-        m_ui->m_ratioStaticCtrl->setText(QString::fromLatin1("%1:%2").arg(width / whGCD).arg(height / whGCD));
+        m_aspectMenu->setTitle(QString::fromLatin1("Ratio:  %1:%2").arg(width / whGCD).arg(height / whGCD));
     }
 }
 
@@ -529,9 +760,9 @@ void CViewportTitleDlg::OnViewportSizeChanged(int width, int height)
 void CViewportTitleDlg::OnViewportFOVChanged(float fov)
 {
     const float degFOV = RAD2DEG(fov);
-    if (m_ui &&  m_ui->m_fovStaticCtrl)
+    if (m_fovMenu)
     {
-        m_ui->m_fovStaticCtrl->setText(QString::fromLatin1("%1%2").arg(qRound(degFOV)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
+        m_fovMenu->setTitle(QString::fromLatin1("FOV:  %1%2").arg(qRound(degFOV)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
     }
 }
 
@@ -541,7 +772,11 @@ void CViewportTitleDlg::OnEditorNotifyEvent(EEditorNotifyEvent event)
     switch (event)
     {
     case eNotify_OnDisplayRenderUpdate:
-        m_ui->m_toggleHelpersBtn->setChecked(GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
+        m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+        break;
+    case eNotify_OnBeginGameMode:
+    case eNotify_OnEndGameMode:
+        UpdateMuteActionText();
         break;
     }
 }
@@ -615,6 +850,132 @@ bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
     return QWidget::eventFilter(object, event) || consumeEvent;
 }
 
+void CViewportTitleDlg::OnBnClickedSyncplayer()
+{
+    emit ActionTriggered(ID_GAME_SYNCPLAYER);
+
+    bool bSyncPlayer = GetIEditor()->GetGameEngine()->IsSyncPlayerPosition();
+    m_syncPlayerToCameraAction->setChecked(!bSyncPlayer);
+}
+
+void CViewportTitleDlg::OnBnClickedGotoPosition()
+{
+    emit ActionTriggered(ID_DISPLAY_GOTOPOSITION);
+}
+
+void CViewportTitleDlg::OnBnClickedMuteAudio()
+{
+    gSettings.bMuteAudio = !gSettings.bMuteAudio;
+
+    Audio::AudioSystemRequestBus::Broadcast(
+        &Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+
+    UpdateMuteActionText();
+}
+
+void CViewportTitleDlg::UpdateMuteActionText()
+{
+    m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+}
+
+void CViewportTitleDlg::OnHMDInitialized()
+{
+    m_enableVRAction->setEnabled(true);
+}
+
+void CViewportTitleDlg::OnHMDShutdown()
+{
+    m_enableVRAction->setEnabled(false);
+}
+
+void CViewportTitleDlg::OnBnClickedEnableVR()
+{
+    gSettings.bEnableGameModeVR = !gSettings.bEnableGameModeVR;
+
+    m_enableVRAction->setText(gSettings.bEnableGameModeVR ? tr("Disable VR Preview") : tr("Enable VR Preview"));
+}
+
+inline double Round(double fVal, double fStep)
+{
+    if (fStep > 0.f)
+    {
+        fVal = int_round(fVal / fStep) * fStep;
+    }
+    return fVal;
+}
+
+void CViewportTitleDlg::SetSpeedComboBox(double value)
+{
+    value = AZStd::clamp(Round(value, m_speedStep), m_minSpeed, m_maxSpeed);
+
+    int index = m_cameraSpeed->findData(value);
+    if (index != -1)
+    {
+        m_cameraSpeed->setCurrentIndex(index);
+    }
+    else
+    {
+        m_cameraSpeed->lineEdit()->setText(QString().setNum(value, 'f', m_numDecimals));
+    }
+}
+
+void CViewportTitleDlg::OnSpeedComboBoxEnter()
+{
+    m_cameraSpeed->clearFocus();
+}
+
+void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
+{
+    gSettings.cameraMoveSpeed = aznumeric_cast<float>(Round(text.toDouble(), m_speedStep));
+}
+
+void CViewportTitleDlg::CheckForCameraSpeedUpdate()
+{
+    if (gSettings.cameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    {
+        m_prevMoveSpeed = gSettings.cameraMoveSpeed;
+        SetSpeedComboBox(gSettings.cameraMoveSpeed);
+    }
+}
+
+void CViewportTitleDlg::OnGridSnappingToggled()
+{
+    m_gridSizeActionWidget->setEnabled(m_enableGridSnappingAction->isChecked());
+    MainWindow::instance()->GetActionManager()->GetAction(ID_SNAP_TO_GRID)->trigger();
+}
+
+void CViewportTitleDlg::OnAngleSnappingToggled()
+{
+    m_angleSizeActionWidget->setEnabled(m_enableAngleSnappingAction->isChecked());
+    MainWindow::instance()->GetActionManager()->GetAction(ID_SNAPANGLE)->trigger();
+}
+
+void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
+{
+    SandboxEditor::SetGridSnappingSize(value);
+}
+
+void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
+{
+    SandboxEditor::SetAngleSnappingSize(value);
+}
+
+void CViewportTitleDlg::UpdateOverFlowMenuState()
+{
+    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(ID_SNAP_TO_GRID)->isChecked();
+    {
+        QSignalBlocker signalBlocker(m_enableGridSnappingAction);
+        m_enableGridSnappingAction->setChecked(gridSnappingActive);
+    }
+    m_gridSizeActionWidget->setEnabled(gridSnappingActive);
+
+    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(ID_SNAPANGLE)->isChecked();
+    {
+        QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
+        m_enableAngleSnappingAction->setChecked(angleSnappingActive);
+    }
+    m_angleSizeActionWidget->setEnabled(angleSnappingActive);
+}
 
 namespace
 {

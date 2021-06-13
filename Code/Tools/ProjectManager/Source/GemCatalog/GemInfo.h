@@ -61,6 +61,8 @@ namespace O3DE::ProjectManager
 
         bool IsValid() const;
 
+        bool operator<(const GemInfo& gemInfo) const;
+
         QString m_path;
         QString m_name = "Unknown Gem Name";
         QString m_displayName = "Unknown Gem Name";

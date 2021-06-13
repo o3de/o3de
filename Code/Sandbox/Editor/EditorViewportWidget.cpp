@@ -463,16 +463,20 @@ void EditorViewportWidget::Update()
         m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
     }
 
-    AZ::Matrix4x4 clipMatrix;
-    AZ::MakePerspectiveFovMatrixRH(
-        clipMatrix,
-        m_Camera.GetFov(),
-        aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
-        m_Camera.GetNearPlane(),
-        m_Camera.GetFarPlane(),
-        true
-    );
-    m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
+    // Don't override the game mode FOV
+    if (!GetIEditor()->IsInGameMode())
+    {
+        AZ::Matrix4x4 clipMatrix;
+        AZ::MakePerspectiveFovMatrixRH(
+            clipMatrix,
+            GetFOV(),
+            aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
+            m_Camera.GetNearPlane(),
+            m_Camera.GetFarPlane(),
+            true
+        );
+        m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
+    }
     m_updatingCameraPosition = false;
 
 
@@ -870,6 +874,13 @@ void EditorViewportWidget::OnBeginPrepareRender()
         int w = m_rcClient.width();
         int h = m_rcClient.height();
 
+        // Don't bother doing an FOV calculation if we don't have a valid viewport
+        // This prevents frustum calculation bugs with a null viewport
+        if (w <= 1 || h <= 1)
+        {
+            return;
+        }
+
         float fov = gSettings.viewports.fDefaultFov;
 
         // match viewport fov to default / selected title menu fov
@@ -1222,7 +1233,7 @@ void EditorViewportWidget::SetViewportId(int id)
 
         auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
         controller->SetCameraListBuilderCallback(
-            [](AzFramework::Cameras& cameras)
+            [id](AzFramework::Cameras& cameras)
             {
                 auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
                 auto firstPersonPanCamera =
@@ -1232,17 +1243,17 @@ void EditorViewportWidget::SetViewportId(int id)
 
                 auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>();
                 orbitCamera->SetLookAtFn(
-                    [](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
+                    [id](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
                     {
-                        AZStd::optional<AZ::Transform> manipulatorTransform;
-                        AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-                            manipulatorTransform, AzToolsFramework::GetEntityContextId(),
-                            &AzToolsFramework::EditorTransformComponentSelectionRequestBus::Events::GetManipulatorTransform);
+                        AZStd::optional<AZ::Vector3> lookAtAfterInterpolation;
+                        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+                            lookAtAfterInterpolation, id,
+                            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
 
-                        // initially attempt to use manipulator transform if one exists (there is a selection)
-                        if (manipulatorTransform)
+                        // initially attempt to use the last set look at point after an interpolation has finished
+                        if (lookAtAfterInterpolation.has_value())
                         {
-                            return manipulatorTransform->GetTranslation();
+                            return *lookAtAfterInterpolation;
                         }
 
                         const float RayDistance = 1000.0f;
@@ -1782,9 +1793,6 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
                 cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection));
             }
         }
-
-        using namespace AzToolsFramework;
-        ComponentEntityObjectRequestBus::Event(cameraObject, &ComponentEntityObjectRequestBus::Events::UpdatePreemptiveUndoCache);
     }
     else if (m_viewEntityId.IsValid())
     {
@@ -2879,9 +2887,12 @@ void EditorViewportWidget::UpdateCameraFromViewportContext()
     AZ::Matrix3x4 matrix;
     matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
     auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
+
+    m_updatingCameraPosition = true;
     SetViewTM(m);
     SetFOV(cameraState.m_fovOrZoom);
     m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+    m_updatingCameraPosition = false;
 }
 
 void EditorViewportWidget::SetAsActiveViewport()

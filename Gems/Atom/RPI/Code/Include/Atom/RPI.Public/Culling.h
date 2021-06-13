@@ -31,7 +31,6 @@
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 
 #include <Atom/RPI.Public/View.h>
-
 #include <Atom/RHI/DrawList.h>
 
 #include <AtomCore/std/parallel/concurrency_checker.h>
@@ -96,6 +95,9 @@ namespace AZ
                 LodOverride m_lodOverride = NoLodOverride;
             };
             LodData m_lodData;
+
+            //! Flag indicating if the object is visible, i.e., was not culled out in the last frame
+            bool m_isVisible = true;
 
             void SetDebugName([[maybe_unused]] const AZ::Name& debugName)
             {
@@ -213,6 +215,21 @@ namespace AZ
             void Activate(const class Scene* parentScene);
             void Deactivate();
 
+            struct OcclusionPlane
+            {
+                // World space corners of the occluson plane
+                Vector3 m_cornerBL;
+                Vector3 m_cornerTL;
+                Vector3 m_cornerTR;
+                Vector3 m_cornerBR;
+
+                Aabb m_aabb;
+            };
+            using OcclusionPlaneVector = AZStd::vector<OcclusionPlane>;
+
+            //! Sets a list of occlusion planes to be used during the culling process.
+            void SetOcclusionPlanes(const OcclusionPlaneVector& occlusionPlanes) { m_occlusionPlanes = occlusionPlanes; }
+
             //! Notifies the CullingScene that culling will begin for this frame.
             void BeginCulling(const AZStd::vector<ViewPtr>& views);
 
@@ -251,12 +268,9 @@ namespace AZ
 
             const Scene* m_parentScene = nullptr;
             AzFramework::IVisibilityScene* m_visScene = nullptr;
-
             CullingDebugContext m_debugCtx;
-
             AZStd::concurrency_checker m_cullDataConcurrencyCheck;
-
-            AZStd::mutex m_mutex;
+            OcclusionPlaneVector m_occlusionPlanes;
         };
         
 

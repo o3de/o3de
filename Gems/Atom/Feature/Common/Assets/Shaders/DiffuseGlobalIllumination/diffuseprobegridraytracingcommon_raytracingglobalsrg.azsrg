@@ -44,8 +44,14 @@
                                             "field": "element",
                                             "typeName": "ShaderResourceGroupLayout",
                                             "typeId": "{1F92C651-9B83-4379-AB5C-5201F1B2C278}",
-                                            "version": 6,
+                                            "version": 7,
                                             "Objects": [
+                                                {
+                                                    "field": "m_name",
+                                                    "typeName": "Name",
+                                                    "typeId": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                                                    "value": ""
+                                                },
                                                 {
                                                     "field": "m_staticSamplers",
                                                     "typeName": "AZStd::vector",
@@ -3338,8 +3344,14 @@
                                             "field": "element",
                                             "typeName": "ShaderResourceGroupLayout",
                                             "typeId": "{1F92C651-9B83-4379-AB5C-5201F1B2C278}",
-                                            "version": 6,
+                                            "version": 7,
                                             "Objects": [
+                                                {
+                                                    "field": "m_name",
+                                                    "typeName": "Name",
+                                                    "typeId": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                                                    "value": ""
+                                                },
                                                 {
                                                     "field": "m_staticSamplers",
                                                     "typeName": "AZStd::vector",
@@ -6632,8 +6644,14 @@
                                             "field": "element",
                                             "typeName": "ShaderResourceGroupLayout",
                                             "typeId": "{1F92C651-9B83-4379-AB5C-5201F1B2C278}",
-                                            "version": 6,
+                                            "version": 7,
                                             "Objects": [
+                                                {
+                                                    "field": "m_name",
+                                                    "typeName": "Name",
+                                                    "typeId": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                                                    "value": ""
+                                                },
                                                 {
                                                     "field": "m_staticSamplers",
                                                     "typeName": "AZStd::vector",

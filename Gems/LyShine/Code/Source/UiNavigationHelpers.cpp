@@ -151,6 +151,8 @@ namespace UiNavigationHelpers
         }
 
         UiTransformInterface::Rect parentRect;
+        parentRect.Set(0.0f, 0.0f, 0.0f, 0.0f);
+
         AZ::Matrix4x4 parentTransformFromViewport;
         if (parentElement.IsValid() && !isCurElementDescendantOfParentElement)
         {

@@ -324,11 +324,11 @@ void CAnimComponentNode::ConvertBetweenWorldAndLocalRotation(Quat& rotation, ETr
 {
     AZ::Quaternion rot(rotation.v.x, rotation.v.y, rotation.v.z, rotation.w);
     AZ::Transform rotTransform = AZ::Transform::CreateFromQuaternion(rot);
-    rotTransform.ExtractScale();
+    rotTransform.ExtractUniformScale();
 
     AZ::Transform parentTransform = AZ::Transform::Identity();
     GetParentWorldTransform(parentTransform);
-    parentTransform.ExtractScale();
+    parentTransform.ExtractUniformScale();
     if (conversionDirection == eTransformConverstionDirection_toLocalSpace)
     {
         parentTransform.Invert();
@@ -344,7 +344,7 @@ void CAnimComponentNode::ConvertBetweenWorldAndLocalRotation(Quat& rotation, ETr
 void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransformSpaceConversionDirection conversionDirection) const
 {
     AZ::Transform parentTransform = AZ::Transform::Identity();
-    AZ::Transform scaleTransform = AZ::Transform::CreateScale(AZ::Vector3(scale.x, scale.y, scale.z));
+    AZ::Transform scaleTransform = AZ::Transform::CreateUniformScale(AZ::Vector3(scale.x, scale.y, scale.z).GetMaxElement());
 
     GetParentWorldTransform(parentTransform);
     if (conversionDirection == eTransformConverstionDirection_toLocalSpace)
@@ -353,8 +353,8 @@ void CAnimComponentNode::ConvertBetweenWorldAndLocalScale(Vec3& scale, ETransfor
     }
     scaleTransform = parentTransform * scaleTransform;
 
-    AZ::Vector3 vScale = scaleTransform.GetScale();
-    scale.Set(vScale.GetX(), vScale.GetY(), vScale.GetZ());
+    const float uniformScale = scaleTransform.GetUniformScale();
+    scale.Set(uniformScale, uniformScale, uniformScale);
 }
 
 //////////////////////////////////////////////////////////////////////////

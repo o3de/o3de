@@ -64,11 +64,13 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include/Public
         BUILD_DEPENDENCIES
             PRIVATE
+                AZ::AzQtComponents
                 3rdParty::Qt::Core
                 3rdParty::Qt::Widgets
-                AZ::AzQtComponents
+                Gem::AWSCore.Static
             PUBLIC
                 AZ::AzToolsFramework
+                3rdParty::AWSNativeSDK::AWSCore
     )
 
     ly_add_target(
@@ -79,14 +81,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include/Private
-        COMPILE_DEFINITIONS
-            PRIVATE
-                AWSCORE_EDITOR
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                Gem::AWSCore.Static
                 Gem::AWSCore.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
     )
 
     ly_add_target(
