@@ -85,7 +85,7 @@ namespace AZ
                     //__debugbreak();
                 }
 
-                aiMatrix4x4 combinedTransform;
+                //aiMatrix4x4 combinedTransform;
                 DataTypes::MatrixType finalMat;
 
                 if (isBone)
@@ -171,7 +171,7 @@ namespace AZ
                 }
                 else
                 {
-                    combinedTransform = GetConcatenatedLocalTransform(currentNode);
+                    finalMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(currentNode));
                 }
 
                 //DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
