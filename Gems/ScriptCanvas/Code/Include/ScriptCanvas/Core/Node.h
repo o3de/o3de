@@ -715,6 +715,8 @@ namespace ScriptCanvas
 
         virtual PropertyFields GetPropertyFields() const;
 
+        virtual Grammar::MultipleFunctionCallFromSingleSlotInfo GetMultipleFunctionCallFromSingleSlotInfo(const Slot& slot) const;
+
         virtual VariableId GetVariableIdRead(const Slot*) const;
 
         virtual VariableId GetVariableIdWritten(const Slot*) const;

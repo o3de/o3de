@@ -12,10 +12,13 @@
 set(FILES
     Include/AtomBridge/AtomBridgeBus.h
     Include/AtomBridge/FlyCameraInputBus.h
+    Include/AtomBridge/PerViewportDynamicDrawInterface.h
     Source/AtomBridgeSystemComponent.cpp
     Source/AtomBridgeSystemComponent.h
-    Source/FlyCameraInputComponent.cpp
-    Source/FlyCameraInputComponent.h
     Source/AtomDebugDisplayViewportInterface.cpp
     Source/AtomDebugDisplayViewportInterface.h
+    Source/FlyCameraInputComponent.cpp
+    Source/FlyCameraInputComponent.h
+    Source/PerViewportDynamicDrawManager.cpp
+    Source/PerViewportDynamicDrawManager.h
 )

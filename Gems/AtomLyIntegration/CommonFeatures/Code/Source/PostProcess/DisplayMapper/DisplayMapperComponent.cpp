@@ -39,6 +39,5 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
             }
         }
-
     } // namespace Render
 } // namespace AZ

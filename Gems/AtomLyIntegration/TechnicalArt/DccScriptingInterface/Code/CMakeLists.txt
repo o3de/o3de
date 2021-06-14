@@ -9,6 +9,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    return()
+endif()
+
 ly_add_target(
     NAME DccScriptingInterface.Static STATIC
     NAMESPACE Gem
@@ -38,3 +42,9 @@ ly_add_target(
         PRIVATE
             Gem::DccScriptingInterface.Static
 )
+
+# Any 'tool' type applications should use Gem::DccScriptingInterface.Editor:
+ly_create_alias(NAME DccScriptingInterface.Tools    NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
+# Add an empty 'builders' alias to allow the DccScriptInterface root gem path to be added to the generated
+# cmake_dependencies.<project>.assetprocessor.setreg to allow the asset scan folder for it to be added
+ly_create_alias(NAME DccScriptingInterface.Builders NAMESPACE Gem)

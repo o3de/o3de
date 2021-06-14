@@ -20,10 +20,12 @@ namespace CommandSystem
     SelectionList::SelectionList()
     {
         EMotionFX::ActorNotificationBus::Handler::BusConnect();
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusConnect();
     }
 
     SelectionList::~SelectionList()
     {
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusDisconnect();
         EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
     }
 
@@ -377,5 +379,10 @@ namespace CommandSystem
         }
 
         RemoveActor(actor);
+    }
+
+    void SelectionList::OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance)
+    {
+        RemoveActorInstance(actorInstance);
     }
 } // namespace CommandSystem

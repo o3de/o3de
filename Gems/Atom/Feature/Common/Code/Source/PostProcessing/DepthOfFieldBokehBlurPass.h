@@ -39,11 +39,11 @@ namespace AZ
 
         protected:
             // Behaviour functions override...
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
             DepthOfFieldBokehBlurPass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
 

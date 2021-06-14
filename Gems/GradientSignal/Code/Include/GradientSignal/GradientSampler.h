@@ -103,12 +103,12 @@ namespace GradientSignal
         //apply transform if set
         if (m_enableTransform && GradientSamplerUtil::AreTransformParamsSet(*this))
         {
-            const AZ::Transform transform =
-                AZ::Transform::CreateTranslation(m_translate) *
-                AZ::ConvertEulerDegreesToTransform(m_rotate) *
-                AZ::Transform::CreateScale(m_scale);
+            AZ::Matrix3x4 matrix3x4;
+            matrix3x4.SetFromEulerDegrees(m_rotate);
+            matrix3x4.MultiplyByScale(m_scale);
+            matrix3x4.SetTranslation(m_translate);
 
-            sampleParamsTransformed.m_position = transform.TransformPoint(sampleParamsTransformed.m_position);
+            sampleParamsTransformed.m_position = matrix3x4 * sampleParamsTransformed.m_position;
         }
 
         float output = 0.0f;

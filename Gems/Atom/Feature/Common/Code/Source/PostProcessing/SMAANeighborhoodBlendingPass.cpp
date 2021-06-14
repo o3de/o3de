@@ -47,9 +47,9 @@ namespace AZ
         {
         }
 
-        void SMAANeighborhoodBlendingPass::Init()
+        void SMAANeighborhoodBlendingPass::InitializeInternal()
         {
-            SMAABasePass::Init();
+            SMAABasePass::InitializeInternal();
             m_renderTargetMetricsShaderInputIndex.Reset();
         }
 

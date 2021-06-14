@@ -98,6 +98,7 @@ namespace AtomToolsFramework
         AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
         AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
+        float DeviceScalingFactor() override;
 
         //! Set interface for providing viewport specific settings (e.g. snapping properties).
         void SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings);

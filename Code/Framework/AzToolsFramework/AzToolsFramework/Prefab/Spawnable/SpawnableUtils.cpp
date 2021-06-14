@@ -24,17 +24,6 @@
 
 namespace AzToolsFramework::Prefab::SpawnableUtils
 {
-
-    AzFramework::Spawnable CreateSpawnable(const PrefabDom& prefabDom)
-    {
-        AzFramework::Spawnable spawnable;
-        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
-        [[maybe_unused]] bool result = CreateSpawnable(spawnable, prefabDom, referencedAssets);
-        AZ_Assert(result,
-            "Failed to Load Prefab Instance from given Prefab DOM while Spawnable creation.");
-        return spawnable;
-    }
-
     bool CreateSpawnable(AzFramework::Spawnable& spawnable, const PrefabDom& prefabDom)
     {
         AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> referencedAssets;
@@ -49,11 +38,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                                                                               // going to be used to create clones of the entities.
         {
             AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
-            if (instance.HasContainerEntity())
-            {
-                entities.emplace_back(AZStd::move(instance.DetachContainerEntity()));
-            }
-            instance.DetachNestedEntities(
+            instance.DetachAllEntitiesInHierarchy(
                 [&entities](AZStd::unique_ptr<AZ::Entity> entity)
                 {
                     entities.emplace_back(AZStd::move(entity));

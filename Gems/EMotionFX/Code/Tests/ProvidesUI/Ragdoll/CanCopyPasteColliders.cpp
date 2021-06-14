@@ -54,14 +54,11 @@ namespace EMotionFX
                                    [[maybe_unused]] const AZ::Vector3& axis,
                                    [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
                                 { return AZStd::make_unique<D6JointLimitConfiguration>(); });
-            EXPECT_CALL(m_physicsInterface, GetDefaultMaterialLibrary)
-                .WillRepeatedly(testing::ReturnRef(m_materialLibraryAsset));
         }
 
     private:
         Physics::MockPhysicsSystem m_physicsSystem;
         Physics::MockPhysicsInterface m_physicsInterface;
-        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset;
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS

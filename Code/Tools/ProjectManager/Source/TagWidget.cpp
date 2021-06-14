@@ -18,9 +18,9 @@ namespace O3DE::ProjectManager
     TagWidget::TagWidget(const QString& text, QWidget* parent)
         : QLabel(text, parent)
     {
-        setFixedHeight(35);
+        setFixedHeight(24);
         setMargin(5);
-        setStyleSheet("font-size: 12pt; background-color: #333333; border-radius: 4px;");
+        setStyleSheet("font-size: 12px; background-color: #333333; border-radius: 3px;");
     }
 
     TagContainerWidget::TagContainerWidget(QWidget* parent)
@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
     void TagContainerWidget::Update(const QStringList& tags)
     {
         QWidget* parentWidget = qobject_cast<QWidget*>(parent());
-        int width = 250;
+        int width = 200;
         if (parentWidget)
         {
             width = parentWidget->width();

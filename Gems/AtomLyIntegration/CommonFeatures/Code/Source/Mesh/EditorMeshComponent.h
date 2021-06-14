@@ -18,6 +18,7 @@
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <Mesh/MeshComponent.h>
+#include <Mesh/EditorMeshStats.h>
 
 namespace AZ
 {
@@ -35,14 +36,13 @@ namespace AZ
             , private MeshComponentNotificationBus::Handler
         {
         public:
-
             using BaseClass = EditorRenderComponentAdapter<MeshComponentController, MeshComponent, MeshComponentConfig>;
             AZ_EDITOR_COMPONENT(AZ::Render::EditorMeshComponent, EditorMeshComponentTypeId, BaseClass);
 
             static void Reflect(AZ::ReflectContext* context);
 
             EditorMeshComponent() = default;
-            EditorMeshComponent(const MeshComponentConfig& config);
+            explicit EditorMeshComponent(const MeshComponentConfig& config);
 
             // AZ::Component overrides ...
             void Activate() override;
@@ -72,6 +72,9 @@ namespace AZ
 
             // Flag used for button placement
             bool m_addMaterialComponentFlag = false;
+
+            // Stats for current mesh asset
+            EditorMeshStats m_stats;
         };
     } // namespace Render
 } // namespace AZ

@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/TextureAtlas_precompiled.cpp
     Source/TextureAtlas_precompiled.h
     Include/TextureAtlas/TextureAtlasBus.h
     Include/TextureAtlas/TextureAtlasNotificationBus.h

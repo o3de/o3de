@@ -164,6 +164,34 @@ namespace ScriptCanvas
             virtual void PostParseExecutionTreeBody(AbstractCodeModel& /*model*/, ExecutionTreePtr /*execution*/) {}
         };
 
+        // for now, no return values supported
+        struct MultipleFunctionCallFromSingleSlotEntry
+        {
+            AZ_TYPE_INFO(MultipleFunctionCallFromSingleSlotEntry, "{360A23A3-C490-4047-B71E-64E290E441D3}");
+            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotEntry, AZ::SystemAllocator, 0);
+
+            bool isVariadic = false;
+            AZStd::string functionName;
+            LexicalScope lexicalScope;
+            size_t numArguments = 0; // stride in case isVariadic == true
+            size_t startingIndex = 0; // the index of the slot order
+        };
+
+        // for now, no return values supported
+        struct MultipleFunctionCallFromSingleSlotInfo
+        {
+            AZ_TYPE_INFO(MultipleFunctionCallFromSingleSlotInfo, "{DF51F08A-8B28-4851-9888-9AB7CC0B90D2}");
+            AZ_CLASS_ALLOCATOR(MultipleFunctionCallFromSingleSlotInfo, AZ::SystemAllocator, 0);
+
+            // this could likely be implemented, but needs care to duplicate input that the execution-slot created
+            // bool errorOnReusedSlot = false;
+
+            bool errorOnUnusedSlot = false;
+
+            // calls are executed in the order they arrive in the vector
+            AZStd::vector<MultipleFunctionCallFromSingleSlotEntry> functionCalls;
+        };
+
         struct NodeableParse
             : public AZStd::enable_shared_from_this<NodeableParse>
         {

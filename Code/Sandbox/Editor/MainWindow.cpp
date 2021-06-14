@@ -297,68 +297,6 @@ namespace
     }
 }
 
-class SnapToWidget
-    : public QWidget
-{
-public:
-    typedef AZStd::function<void(double)> SetValueCallback;
-    typedef AZStd::function<double()> GetValueCallback;
-
-    SnapToWidget(QAction* defaultAction, SetValueCallback setValueCallback, GetValueCallback getValueCallback)
-        : m_setValueCallback(setValueCallback)
-        , m_getValueCallback(getValueCallback)
-    {
-        QHBoxLayout* layout = new QHBoxLayout();
-        setLayout(layout);
-
-        m_toolButton = new QToolButton();
-        m_toolButton->setAutoRaise(true);
-        m_toolButton->setCheckable(false);
-        m_toolButton->setDefaultAction(defaultAction);
-
-        m_spinBox = new AzQtComponents::DoubleSpinBox();
-
-        layout->addWidget(m_toolButton);
-        layout->addWidget(m_spinBox);
-
-        m_spinBox->setEnabled(defaultAction->isChecked());
-        m_spinBox->setMinimum(1e-2f);
-
-        {
-            QSignalBlocker signalBlocker(m_spinBox);
-            m_spinBox->setValue(m_getValueCallback());
-        }
-
-        QObject::connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &SnapToWidget::OnValueChanged);
-        QObject::connect(defaultAction, &QAction::changed, this, &SnapToWidget::OnActionChanged);
-    }
-
-    void SetIcon(QIcon icon)
-    {
-        m_toolButton->setIcon(icon);
-    }
-
-protected:
-
-    void OnValueChanged(double value)
-    {
-        m_setValueCallback(value);
-    }
-
-    void OnActionChanged()
-    {
-        m_spinBox->setEnabled(m_toolButton->isChecked());
-    }
-
-private:
-
-    QToolButton* m_toolButton = nullptr;
-    AzQtComponents::DoubleSpinBox* m_spinBox = nullptr;
-
-    SetValueCallback m_setValueCallback;
-    GetValueCallback m_getValueCallback;
-};
-
 /////////////////////////////////////////////////////////////////////////////
 // MainWindow
 /////////////////////////////////////////////////////////////////////////////
@@ -532,9 +470,11 @@ void MainWindow::Initialize()
 
     InitToolActionHandlers();
 
+    // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
+    InitToolBars();
+
     m_levelEditorMenuHandler->Initialize();
 
-    InitToolBars();
     InitStatusBar();
 
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
@@ -748,6 +688,9 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
+    am->AddAction(ID_FILE_PROJECT_MANAGER_SETTINGS, tr("Edit Project Settings..."));
+    am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."));
+    am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."));
     am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec);
     am->AddAction(ID_GAME_PC_ENABLEHIGHSPEC, tr("High")).SetCheckable(true)
@@ -890,13 +833,6 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, []() { SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled()); });
 
     // Display actions
-    am->AddAction(ID_WIREFRAME, tr("&Wireframe"))
-        .SetShortcut(tr("F3"))
-        .SetToolTip(tr("Wireframe (F3)"))
-        .SetCheckable(true)
-        .SetStatusTip(tr("Render in Wireframe Mode."))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateWireframe);
-
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSwitchToDefaultCamera);
     am->AddAction(ID_SWITCHCAMERA_SEQUENCECAMERA, tr("Sequence Camera")).SetCheckable(true)
@@ -906,12 +842,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_SWITCHCAMERA_NEXT, tr("Cycle Camera"))
         .SetShortcut(tr("Ctrl+`"))
         .SetToolTip(tr("Cycle Camera (Ctrl+`)"));
-    am->AddAction(ID_CHANGEMOVESPEED_INCREASE, tr("Increase"))
-        .SetStatusTip(tr("Increase Flycam Movement Speed"));
-    am->AddAction(ID_CHANGEMOVESPEED_DECREASE, tr("Decrease"))
-        .SetStatusTip(tr("Decrease Flycam Movement Speed"));
-    am->AddAction(ID_CHANGEMOVESPEED_CHANGESTEP, tr("Change Step"))
-        .SetStatusTip(tr("Change Flycam Movement Step"));
     am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."));
     am->AddAction(ID_MODIFY_GOTO_SELECTION, tr("Center on Selection"))
         .SetShortcut(tr("Z"))
@@ -1269,36 +1199,6 @@ UndoRedoToolButton::UndoRedoToolButton(QWidget* parent)
 void UndoRedoToolButton::Update(int count)
 {
     setEnabled(count > 0);
-}
-
-QWidget* MainWindow::CreateSnapToGridWidget()
-{
-    SnapToWidget::SetValueCallback setCallback = [](double snapStep)
-    {
-        SandboxEditor::SetGridSnappingSize(snapStep);
-    };
-
-    SnapToWidget::GetValueCallback getCallback = []()
-    {
-        return SandboxEditor::GridSnappingSize();
-    };
-
-    return new SnapToWidget(m_actionManager->GetAction(ID_SNAP_TO_GRID), setCallback, getCallback);
-}
-
-QWidget* MainWindow::CreateSnapToAngleWidget()
-{
-    SnapToWidget::SetValueCallback setCallback = [](double snapAngle)
-    {
-        SandboxEditor::SetAngleSnappingSize(snapAngle);
-    };
-
-    SnapToWidget::GetValueCallback getCallback = []()
-    {
-        return SandboxEditor::AngleSnappingSize();
-    };
-
-    return new SnapToWidget(m_actionManager->GetAction(ID_SNAPANGLE), setCallback, getCallback);
 }
 
 bool MainWindow::IsPreview() const
@@ -2012,12 +1912,6 @@ QWidget* MainWindow::CreateToolbarWidget(int actionId)
         break;
     case ID_TOOLBAR_WIDGET_REDO:
         w = CreateUndoRedoButton(ID_REDO);
-        break;
-    case ID_TOOLBAR_WIDGET_SNAP_GRID:
-        w = CreateSnapToGridWidget();
-        break;
-    case ID_TOOLBAR_WIDGET_SNAP_ANGLE:
-        w = CreateSnapToAngleWidget();
         break;
     case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
         w = CreateSpacerRightWidget();

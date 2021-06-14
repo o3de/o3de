@@ -21,22 +21,6 @@ namespace AzFramework
     {
     }
 
-    Spawnable::Spawnable(Spawnable&& other)
-        : m_entities(AZStd::move(other.m_entities))
-    {
-    }
-
-
-    Spawnable& Spawnable::operator=(Spawnable&& other)
-    {
-        if (this != &other)
-        {
-            m_entities = AZStd::move(other.m_entities);
-        }
-
-        return *this;
-    }
-
     const Spawnable::EntityList& Spawnable::GetEntities() const
     {
         return m_entities;

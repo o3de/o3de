@@ -445,10 +445,10 @@ namespace AssetProcessor
             bool isExcludedDependency = dependencyPathSearch.starts_with(ExcludedDependenciesSymbol);
             dependencyPathSearch = isExcludedDependency ? dependencyPathSearch.substr(1) : dependencyPathSearch;
             bool isExactDependency = !AzFramework::StringFunc::Replace(dependencyPathSearch, '*', '%');
-            SanitizeForDatabase(dependencyPathSearch);
 
             if (cleanedupDependency.m_dependencyType == AssetBuilderSDK::ProductPathDependencyType::ProductFile)
             {
+                SanitizeForDatabase(dependencyPathSearch);
                 AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer productInfoContainer;
                 QString productNameWithPlatform = QString("%1%2%3").arg(platform.c_str(), AZ_CORRECT_DATABASE_SEPARATOR_STRING, dependencyPathSearch.c_str());
 
@@ -508,6 +508,10 @@ namespace AssetProcessor
             }
             else
             {
+                // For source assets, the casing of the input path must be maintained. Just fix up the path separators.
+                AZStd::replace(dependencyPathSearch.begin(), dependencyPathSearch.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
+                AzFramework::StringFunc::Replace(dependencyPathSearch, AZ_DOUBLE_CORRECT_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR_STRING);
+
                 // See if path matches any source files
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sourceInfoContainer;
 

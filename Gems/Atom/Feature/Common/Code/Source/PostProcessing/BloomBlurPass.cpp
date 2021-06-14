@@ -252,10 +252,10 @@ namespace AZ
             }
         }
 
-        void BloomBlurPass::BuildAttachmentsInternal()
+        void BloomBlurPass::BuildInternal()
         {
             BuildChildPasses();
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void BloomBlurPass::FrameBeginInternal(FramePrepareParams params)

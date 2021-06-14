@@ -26,6 +26,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -172,7 +173,7 @@ namespace AzToolsFramework
 
         const int autoExpandDelayMilliseconds = 2500;
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::EditKeyPressed);
+        SetDefaultTreeViewEditTriggers();
         m_gui->m_objectTree->setAutoExpandDelay(autoExpandDelayMilliseconds);
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setDropIndicatorShown(true);
@@ -544,8 +545,7 @@ namespace AzToolsFramework
         QMenu* contextMenu = new QMenu(this);
 
         // Populate global context menu.
-        EBUS_EVENT(EditorEvents::Bus,
-            PopulateEditorGlobalContextMenu,
+        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
             contextMenu,
             AZ::Vector2::CreateZero(),
             EditorEvents::eECMF_HIDE_ENTITY_CREATION | EditorEvents::eECMF_USE_VIEWPORT_CENTER);
@@ -850,6 +850,11 @@ namespace AzToolsFramework
         addAction(m_actionGoToEntitiesInViewport);
     }
 
+    void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
+    {
+        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
+    }
+
     void EntityOutlinerWidget::OnEntityPickModeStarted()
     {
         m_gui->m_objectTree->setDragEnabled(false);
@@ -862,7 +867,7 @@ namespace AzToolsFramework
     {
         m_gui->m_objectTree->setDragEnabled(true);
         m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-        m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
+        SetDefaultTreeViewEditTriggers();
         m_inObjectPickMode = false;
     }
 

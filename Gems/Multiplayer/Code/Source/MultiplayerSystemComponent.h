@@ -25,7 +25,14 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Threading/ThreadSafeDeque.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Session/SessionNotifications.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+
+namespace AzFramework
+{
+    struct SessionConfig;
+}
 
 namespace AzNetworking
 {
@@ -38,6 +45,8 @@ namespace Multiplayer
     class MultiplayerSystemComponent final
         : public AZ::Component
         , public AZ::TickBus::Handler
+        , public AzFramework::SessionNotificationBus::Handler
+        , public AzFramework::ISessionHandlingClientRequests
         , public AzNetworking::IConnectionListener
         , public IMultiplayer
     {
@@ -56,6 +65,13 @@ namespace Multiplayer
         //! @{
         void Activate() override;
         void Deactivate() override;
+        //! @}
+
+        //! AzFramework::SessionNotificationBus::Handler overrides.
+        //! @{
+        bool OnSessionHealthCheck() override;
+        bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
+        bool OnDestroySessionBegin() override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
@@ -82,10 +98,17 @@ namespace Multiplayer
         void OnDisconnect(AzNetworking::IConnection* connection, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint) override;
         //! @}
 
+        //! ISessionHandlingClientRequests interface
+        //! @{
+        bool RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& sessionConnectionConfig) override;
+        void RequestPlayerLeaveSession() override;
+        //! @}
+
         //! IMultiplayer interface
         //! @{
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
+        void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
@@ -102,9 +125,11 @@ namespace Multiplayer
 
     private:
 
+        void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
-
+        NetworkEntityHandle SpawnDefaultPlayerPrefab();
+        
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
@@ -119,9 +144,13 @@ namespace Multiplayer
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connAcquiredEvent;
+        ClientDisconnectedEvent m_clientDisconnectedEvent;
 
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
         HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
+
+        double m_serverSendAccumulator = 0.0;
+        float m_renderBlendFactor = 0.0f;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

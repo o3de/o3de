@@ -61,7 +61,7 @@ namespace AZ
 
             // Pass overrides
             void CreateChildPassesInternal() override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 

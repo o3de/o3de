@@ -89,9 +89,6 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_CHANGEMOVESPEED_INCREASE                32928
-#define ID_CHANGEMOVESPEED_DECREASE                32929
-#define ID_CHANGEMOVESPEED_CHANGESTEP              32930
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
@@ -313,6 +310,9 @@
 #define ID_CREATE_LEVEL_FG_MODULE_FROM_SELECTION                    35077
 #define ID_GRAPHVIEW_ADD_BLACK_BOX                                  35078
 #define ID_GRAPHVIEW_UNGROUP                                        35079
+#define ID_FILE_PROJECT_MANAGER_NEW                                 35080
+#define ID_FILE_PROJECT_MANAGER_OPEN                                35081
+#define ID_FILE_PROJECT_MANAGER_SETTINGS                            35082
 #define ID_TV_TRACKS_TOOLBAR_BASE                                   35083               // range between ID_TV_TRACKS_TOOLBAR_BASE to ID_TV_TRACKS_TOOLBAR_LAST reserved
 #define ID_TV_TRACKS_TOOLBAR_LAST                                   35183               // for up to 100 "Add Tracks..." dynamically added Track View Track buttons
 #define ID_OPEN_TERRAIN_EDITOR          36007
@@ -366,3 +366,4 @@
 #define ID_TOOLBAR_WIDGET_SPACER_RIGHT       50013
 #define ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL  50014
 #define ID_TOOLBAR_WIDGET_LAST               50020
+#define ID_VIEWPORTUI_VISIBLE                50040

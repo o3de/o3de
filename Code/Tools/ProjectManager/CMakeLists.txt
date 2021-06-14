@@ -25,7 +25,6 @@ ly_add_target(
     OUTPUT_NAME o3de
     NAMESPACE AZ
     AUTOMOC
-    AUTOUIC
     AUTORCC
     FILES_CMAKE
         project_manager_files.cmake
@@ -37,11 +36,8 @@ ly_add_target(
         PRIVATE
             PY_PACKAGE="${python_package_name}" 
     INCLUDE_DIRECTORIES
-        PUBLIC
-            .
         PRIVATE
             Source
-
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

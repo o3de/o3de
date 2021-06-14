@@ -24,13 +24,13 @@
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
-                "Platform es3": {
+                "Platform android": {
                     "tags": "android,mobile,renderer,vulkan"
                 },
                 "Platform ios": {
                     "tags": "mobile,renderer,metal"
                 },
-                "Platform osx_gl": {
+                "Platform mac": {
                     "tags": "tools,renderer,metal,null"
                 },
                 // this is an example of a headless platform that has no renderer.   
@@ -43,9 +43,9 @@
                 // To enable any additional platform, just uncomment the appropriate line below.
                 "Platforms": {
                     //"pc": "enabled",
-                    //"es3": "enabled",
+                    //"android": "enabled",
                     //"ios": "enabled",
-                    //"osx_gl": "enabled",
+                    //"mac": "enabled",
                     //"server": "enabled"
                 },
                 // ---- The number of worker jobs, 0 means use the number of Logical Cores
@@ -95,11 +95,11 @@
                 //  "exclude": "(comma seperated platform tags or identifiers)"
                 // }
                 // For example if you want to include a scan folder only for platforms that have the platform tags tools and renderer 
-                // but omit it for platform osx_gl, you will have a scanfolder rule like
+                // but omit it for platform mac, you will have a scanfolder rule like
                 // "ScanFolder (unique identifier)": {
                 // "watch": "@ROOT@/foo",
                 // "include": "tools, renderer",
-                // "exclude": "osx_gl"
+                // "exclude": "mac"
                 // }
 
                 "ScanFolder Game": {
@@ -471,17 +471,11 @@
                     "params": "copy",
                     "productAssetType": "{F3BE5CAB-85B7-44B7-9495-863863F6B267}"
                 },
-                // Precompiled shader srg
-                "RC azsrg": {
-                    "glob": "*.azsrg",
-                    "params": "copy",
-                    "productAssetType": "{F8C9F4AE-3F6A-45AD-B4FB-0CA415FCC2E1}"
-                },
                 // Precompiled shader variant
                 "RC azshadervariant": {
                     "glob": "*.azshadervariant",
                     "params": "copy",
-                    "productAssetType": "{9F4D654B-4439-4C61-8DCD-F1C7C5560768}"
+                    "productAssetType": "{51BED815-36D8-410E-90F0-1FA9FF765FBA}"
                 }
             }
         }

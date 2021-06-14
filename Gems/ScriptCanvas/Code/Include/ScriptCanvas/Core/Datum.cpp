@@ -1476,9 +1476,11 @@ namespace ScriptCanvas
 
     const void* Datum::GetValueAddress() const
     {
-        return m_type.GetType() != Data::eType::BehaviorContextObject 
-             ? AZStd::any_cast<void>(&m_storage) 
-             : (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage))->Get();
+        return !m_storage.empty()
+            ? m_type.GetType() != Data::eType::BehaviorContextObject 
+                 ?  AZStd::any_cast<void>(&m_storage) 
+                 : (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage))->Get()
+            : nullptr;
     }
 
     bool Datum::Initialize(const Data::Type& type, eOriginality originality, const void* source, const AZ::Uuid& sourceTypeID)
@@ -2527,15 +2529,15 @@ namespace ScriptCanvas
     {
         Data::TransformType copy(source);
         AZ::Vector3 pos = copy.GetTranslation();
-        AZ::Vector3 scale = copy.ExtractScale();
+        float scale = copy.ExtractUniformScale();
         AZ::Vector3 rotation = AZ::ConvertTransformToEulerDegrees(copy);
         return AZStd::string::format
              ( "(Position: X: %f, Y: %f, Z: %f,"
                " Rotation: X: %f, Y: %f, Z: %f,"
-               " Scale: X: %f, Y: %f, Z: %f)"
+               " Scale: %f)"
              , static_cast<float>(pos.GetX()), static_cast<float>(pos.GetY()), static_cast<float>(pos.GetZ())
              , static_cast<float>(rotation.GetX()), static_cast<float>(rotation.GetY()), static_cast<float>(rotation.GetZ())
-             , static_cast<float>(scale.GetX()), static_cast<float>(scale.GetY()), static_cast<float>(scale.GetZ()));
+             , scale);
     }
 
     AZStd::string Datum::ToStringVector2(const AZ::Vector2& source) const

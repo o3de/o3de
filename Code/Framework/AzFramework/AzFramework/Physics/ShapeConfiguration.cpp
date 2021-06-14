@@ -166,7 +166,7 @@ namespace Physics
                 ->RegisterGenericType<AZStd::shared_ptr<PhysicsAssetShapeConfiguration>>();
 
             serializeContext->Class<PhysicsAssetShapeConfiguration, ShapeConfiguration>()
-                ->Version(1)
+                ->Version(3)
                 ->Field("PhysicsAsset", &PhysicsAssetShapeConfiguration::m_asset)
                 ->Field("AssetScale", &PhysicsAssetShapeConfiguration::m_assetScale)
                 ->Field("UseMaterialsFromAsset", &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset)
@@ -182,7 +182,7 @@ namespace Physics
                     ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_assetScale, "Asset Scale", "The scale of the asset shape")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset, "Physics Materials from Mesh", "Auto-set physics materials using Mesh's material surfaces names")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicsAssetShapeConfiguration::m_useMaterialsFromAsset, "Physics materials from asset", "Auto-set physics materials using asset's physics material names")
                     ;
             }
         }
