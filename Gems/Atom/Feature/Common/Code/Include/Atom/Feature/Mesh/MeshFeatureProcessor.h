@@ -75,6 +75,7 @@ namespace AZ
             void SelectMotionVectorShader(Data::Instance<RPI::Material> material);
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
+            void SetVisible(bool isVisible);
 
             using DrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
 

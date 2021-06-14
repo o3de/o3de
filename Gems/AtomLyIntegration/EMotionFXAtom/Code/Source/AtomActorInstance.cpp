@@ -240,6 +240,18 @@ namespace AZ
             return SkinningMethod::LinearSkinning;
         }
 
+        void AtomActorInstance::SetIsVisible(bool isVisible)
+        {
+            if (m_isVisible != isVisible)
+            {
+                if (m_meshFeatureProcessor && m_meshHandle)
+                {
+                    m_meshFeatureProcessor->SetVisible(*m_meshHandle, isVisible);
+                }
+                m_isVisible = isVisible;
+            }
+        }
+
         AtomActor* AtomActorInstance::GetRenderActor() const
         {
             EMotionFX::Integration::ActorAsset* actorAsset = m_actorAsset.Get();

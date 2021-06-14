@@ -408,7 +408,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_visible = visible;
+                meshHandle->SetVisible(visible);
             }
         }
 
@@ -1199,6 +1199,12 @@ namespace AZ
             }
 
             return false;
+        }
+
+        void MeshDataInstance::SetVisible(bool isVisible)
+        {
+            m_visible = isVisible;
+            m_cullable.m_isHidden = !isVisible;
         }
     } // namespace Render
 } // namespace AZ

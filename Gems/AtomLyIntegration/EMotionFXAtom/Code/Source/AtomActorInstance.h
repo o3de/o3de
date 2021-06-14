@@ -87,7 +87,6 @@ namespace AZ
                 EMotionFX::Integration::SkinningMethod skinningMethod);
             ~AtomActorInstance() override;
 
-            // AtomActorInstanceRequestBusTEMP::Handler interface implementation
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
             void UpdateBounds() override;
@@ -95,6 +94,7 @@ namespace AZ
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
             SkinningMethod GetAtomSkinningMethod() const;
+            void SetIsVisible(bool isVisible) override;
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
