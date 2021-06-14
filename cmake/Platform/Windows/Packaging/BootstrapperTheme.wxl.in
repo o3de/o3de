@@ -14,8 +14,7 @@
     <String Id="InstallMessage">
 Setup will install [WixBundleName] on your computer. Click install to continue, options to set the install directory or Close to exit.
     </String>
-    <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;license terms&lt;/a&gt;.</String>
-    <String Id="InstallAcceptCheckbox">I &amp;agree to the license terms and conditions</String>
+    <String Id="InstallEulaAcceptance">By installing, you agree to the @WIX_THEME_EULA_ACCEPTANCE_TEXT@</String>
     <String Id="InstallOptionsButton">&amp;Options</String>
     <String Id="InstallInstallButton">&amp;Install</String>
     <String Id="InstallCloseButton">&amp;Close</String>
