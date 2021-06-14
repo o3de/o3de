@@ -1,5 +1,6 @@
 .idea/
 .vscode/
+.vs/
 __pycache__
 AssetProcessorTemp/**
 [Bb]uild/**
