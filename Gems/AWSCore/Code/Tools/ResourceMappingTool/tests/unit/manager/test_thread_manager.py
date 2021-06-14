@@ -45,8 +45,14 @@ class TestThreadManager(TestCase):
     def test_setup_thread_pool_setup_with_expected_configuration(self) -> None:
         mocked_thread_pool: MagicMock = TestThreadManager._mock_thread_pool.return_value
 
-        TestThreadManager._expected_thread_manager.setup()
+        TestThreadManager._expected_thread_manager.setup(False)
         mocked_thread_pool.setMaxThreadCount.assert_called_once_with(1)
+
+    def test_setup_thread_pool_skip_setup(self) -> None:
+        mocked_thread_pool: MagicMock = TestThreadManager._mock_thread_pool.return_value
+
+        TestThreadManager._expected_thread_manager.setup(True)
+        mocked_thread_pool.setMaxThreadCount.asset_not_called()
 
     def test_start_thread_pool_start_expected_worker(self) -> None:
         mocked_thread_pool: MagicMock = TestThreadManager._mock_thread_pool.return_value

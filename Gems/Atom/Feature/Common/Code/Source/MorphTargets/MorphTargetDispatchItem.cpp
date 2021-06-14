@@ -103,19 +103,14 @@ namespace AZ
 
         bool MorphTargetDispatchItem::InitPerInstanceSRG()
         {
-            auto perInstanceSrgAsset = m_morphTargetShader->FindShaderResourceGroupAsset(AZ::Name{ "MorphTargetInstanceSrg" });
-            if (!perInstanceSrgAsset.GetId().IsValid())
+            auto perInstanceSrgLayout = m_morphTargetShader->FindShaderResourceGroupLayout(AZ::Name{ "MorphTargetInstanceSrg" });
+            if (!perInstanceSrgLayout)
             {
-                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group asset");
-                return false;
-            }
-            else if (!perInstanceSrgAsset.IsReady())
-            {
-                AZ_Error("MorphTargetDispatchItem", false, "Shader resource group asset is not loaded");
+                AZ_Error("MorphTargetDispatchItem", false, "Failed to get shader resource group layout");
                 return false;
             }
 
-            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(m_morphTargetShader->GetAsset(), m_morphTargetShader->GetSupervariantIndex(), perInstanceSrgLayout->GetName());
             if (!m_instanceSrg)
             {
                 AZ_Error("MorphTargetDispatchItem", false, "Failed to create shader resource group for morph target");

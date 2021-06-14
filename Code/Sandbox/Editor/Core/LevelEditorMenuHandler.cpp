@@ -717,7 +717,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
         });
 #endif
 
-    viewportViewsMenuWrapper.AddAction(ID_WIREFRAME);
     viewportViewsMenuWrapper.AddSeparator();
 
     if (CViewManager::IsMultiViewportEnabled())
@@ -758,11 +757,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     rememberLocationMenu.AddAction(ID_TAG_LOC12);
 
     viewportViewsMenuWrapper.AddSeparator();
-
-    auto changeMoveSpeedMenu = viewportViewsMenuWrapper.AddMenu(tr("Change Move Speed"));
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_INCREASE);
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_DECREASE);
-    changeMoveSpeedMenu.AddAction(ID_CHANGEMOVESPEED_CHANGESTEP);
 
     auto switchCameraMenu = viewportViewsMenuWrapper.AddMenu(tr("Switch Camera"));
     switchCameraMenu.AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA);
@@ -1292,7 +1286,7 @@ void LevelEditorMenuHandler::AddEditMenuAction(QAction* action)
     }
 }
 
-void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action)
+void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar)
 {
     auto menuWrapper = m_actionManager->FindMenu(categoryId.data());
     if (menuWrapper.isNull())
@@ -1301,6 +1295,11 @@ void LevelEditorMenuHandler::AddMenuAction(AZStd::string_view categoryId, QActio
         return;
     }
     menuWrapper.Get()->addAction(action);
+
+    if (addToToolsToolbar)
+    {
+        m_mainWindow->GetToolbarManager()->AddButtonToEditToolbar(action);
+    }
 }
 
 void LevelEditorMenuHandler::RestoreEditMenuToDefault()

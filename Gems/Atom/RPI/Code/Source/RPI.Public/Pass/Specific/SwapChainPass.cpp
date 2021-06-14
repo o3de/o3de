@@ -26,8 +26,6 @@ namespace AZ
             , m_windowContext(windowContext)
             , m_childTemplateName(childTemplateName)
         {
-            m_flags.m_alreadyCreated = false;
-
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             // Create child pass
@@ -44,8 +42,6 @@ namespace AZ
 
             m_childPass = passSystem->CreatePassFromRequest(&childRequest);
             AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (project_path)");
-            
-            CreateChildPasses();
 
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
         }
@@ -112,7 +108,7 @@ namespace AZ
             AddChild(m_childPass);
         }
 
-        void SwapChainPass::BuildAttachmentsInternal()
+        void SwapChainPass::BuildInternal()
         {
             if (m_windowContext->GetSwapChain() == nullptr)
             {
@@ -124,7 +120,7 @@ namespace AZ
 
             SetupSwapChainAttachment();
 
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
@@ -154,7 +150,7 @@ namespace AZ
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
         void SwapChainPass::ReadbackSwapChain(AZStd::shared_ptr<AttachmentReadback> readback)

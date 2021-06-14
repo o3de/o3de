@@ -63,13 +63,13 @@ namespace AZ
             AZ_TRACE_METHOD();
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
-            
-            // Cache off pointers to some key data structures from the material type...
 
-            auto& srgAsset = m_materialAsset->GetMaterialSrgAsset();
-            if (srgAsset)
+            // Cache off pointers to some key data structures from the material type...
+            auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
+            if (srgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(m_materialAsset->GetMaterialSrgAsset());
+                auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, DefaultSupervariantIndex, srgLayout->GetName());
 
                 if (m_shaderResourceGroup)
                 {

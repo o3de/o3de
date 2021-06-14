@@ -89,9 +89,6 @@
 #define ID_EXPORT_INDOORS                          32915
 #define ID_VIEW_CYCLE2DVIEWPORT                    32916
 #define ID_SNAPANGLE                               32917
-#define ID_CHANGEMOVESPEED_INCREASE                32928
-#define ID_CHANGEMOVESPEED_DECREASE                32929
-#define ID_CHANGEMOVESPEED_CHANGESTEP              32930
 #define ID_PHYSICS_GETPHYSICSSTATE                 32937
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941

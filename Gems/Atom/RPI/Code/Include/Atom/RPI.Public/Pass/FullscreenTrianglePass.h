@@ -44,14 +44,11 @@ namespace AZ
             //! Creates a FullscreenTrianglePass
             static Ptr<FullscreenTrianglePass> Create(const PassDescriptor& descriptor);
 
-            // Clears the initialized flag so that the next time PrepareFrameInternal is called, it will update the pipeline state
-            void Invalidate();
-
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
-            virtual void Init();
 
             // Pass behavior overrides...
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             RHI::Viewport m_viewportState;
