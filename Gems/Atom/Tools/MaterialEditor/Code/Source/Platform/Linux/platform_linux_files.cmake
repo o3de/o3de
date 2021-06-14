@@ -10,4 +10,7 @@
 #
 
 set(FILES
+    MaterialEditor_Traits_Platform.h
+    MaterialEditor_Traits_Linux.h
+    MaterialEditor_Linux.cpp
 )

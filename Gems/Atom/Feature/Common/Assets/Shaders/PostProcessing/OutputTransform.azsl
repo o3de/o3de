@@ -17,7 +17,7 @@
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
 #include <Atom/Features/PostProcessing/Aces.azsli>
 
-ShaderResourceGroup PassSrg : SRG_PerDraw
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
     Texture2D<float4> m_framebuffer;
     Sampler LinearSampler

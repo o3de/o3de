@@ -209,7 +209,11 @@ namespace AZ::SerializeContextTools
         return result;
     }
 
-    bool Utilities::InspectSerializedFile(const char* filePath, SerializeContext* sc, const ObjectStream::ClassReadyCB& classCallback)
+    bool Utilities::InspectSerializedFile(
+        const char* filePath,
+        SerializeContext* sc,
+        const ObjectStream::ClassReadyCB& classCallback,
+        Data::AssetFilterCB assetFilterCallback)
     {
         if (!AZ::IO::FileIOBase::GetInstance()->Exists(filePath))
         {
@@ -248,9 +252,9 @@ namespace AZ::SerializeContextTools
         AZ::IO::MemoryStream stream(data.data(), fileLength);
 
         ObjectStream::FilterDescriptor filter;
-        // Never load dependencies. That's another file that would need to be processed
+        // By default, never load dependencies. That's another file that would need to be processed
         // separately from this one.
-        filter.m_assetCB = AZ::Data::AssetFilterNoAssetLoading;
+        filter.m_assetCB = assetFilterCallback;
         if (!ObjectStream::LoadBlocking(&stream, *sc, classCallback, filter))
         {
             AZ_Printf("Verify", "Failed to deserialize '%s'\n", filePath);

@@ -18,6 +18,7 @@
 #include <Integration/System/SystemCommon.h>
 #include <Integration/System/SystemComponent.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/MorphSetup.h>
 #include <EMotionFX/Source/MorphSetupInstance.h>
 #include <EMotionFX/Source/MorphTargetStandard.h>
@@ -27,6 +28,8 @@
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
 
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -57,6 +60,8 @@ namespace AZ
                 Activate();
                 AzFramework::BoundsRequestBus::Handler::BusConnect(m_entityId);
             }
+
+            m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
         }
 
         AtomActorInstance::~AtomActorInstance()
@@ -96,7 +101,119 @@ namespace AZ
             AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
 
-        AZ::Aabb AtomActorInstance:: GetWorldBounds()
+        void AtomActorInstance::DebugDraw(const DebugOptions& debugOptions)
+        {
+            if (m_auxGeomFeatureProcessor)
+            {
+                if (RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue())
+                {
+                    if (debugOptions.m_drawAABB)
+                    {
+                        const MCore::AABB emfxAabb = m_actorInstance->GetAABB();
+                        const AZ::Aabb azAabb = AZ::Aabb::CreateFromMinMax(emfxAabb.GetMin(), emfxAabb.GetMax());
+                        auxGeom->DrawAabb(azAabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+                    }
+
+                    if (debugOptions.m_drawSkeleton)
+                    {
+                        RenderSkeleton(auxGeom.get());
+                    }
+
+                    if (debugOptions.m_emfxDebugDraw)
+                    {
+                        RenderEMFXDebugDraw(auxGeom.get());
+                    }
+                }
+            }
+        }
+
+        void AtomActorInstance::RenderSkeleton(RPI::AuxGeomDraw* auxGeom)
+        {
+            AZ_Assert(m_actorInstance, "Valid actor instance required.");
+            const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
+            const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
+            const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+
+            const AZ::u32 transformCount = transformData->GetNumTransforms();
+            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
+            const AZ::u32 numJoints = skeleton->GetNumNodes();
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(numJoints * 2);
+
+            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            {
+                const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
+                if (!joint->GetSkeletalLODStatus(lodLevel))
+                {
+                    continue;
+                }
+
+                const AZ::u32 parentIndex = joint->GetParentIndex();
+                if (parentIndex == InvalidIndex32)
+                {
+                    continue;
+                }
+
+                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                m_auxVertices.emplace_back(parentPos);
+
+                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                m_auxVertices.emplace_back(bonePos);
+            }
+
+            const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_colors = &skeletonColor;
+            lineArgs.m_colorCount = 1;
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
+
+        void AtomActorInstance::RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom)
+        {
+            EMotionFX::DebugDraw& debugDraw = EMotionFX::GetDebugDraw();
+            debugDraw.Lock();
+            EMotionFX::DebugDraw::ActorInstanceData* actorInstanceData = debugDraw.GetActorInstanceData(m_actorInstance);
+            actorInstanceData->Lock();
+            const AZStd::vector<EMotionFX::DebugDraw::Line>& lines = actorInstanceData->GetLines();
+            if (lines.empty())
+            {
+                actorInstanceData->Unlock();
+                debugDraw.Unlock();
+                return;
+            }
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(lines.size() * 2);
+            m_auxColors.clear();
+            m_auxColors.reserve(m_auxVertices.size());
+
+            for (const EMotionFX::DebugDraw::Line& line : actorInstanceData->GetLines())
+            {
+                m_auxVertices.emplace_back(line.m_start);
+                m_auxColors.emplace_back(line.m_startColor);
+                m_auxVertices.emplace_back(line.m_end);
+                m_auxColors.emplace_back(line.m_endColor);
+            }
+
+            AZ_Assert(m_auxVertices.size() == m_auxColors.size(),
+                "Number of vertices and number of colors need to match.");
+            actorInstanceData->Unlock();
+            debugDraw.Unlock();
+
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_colors = m_auxColors.data();
+            lineArgs.m_colorCount = m_auxColors.size();
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
+
+        AZ::Aabb AtomActorInstance::GetWorldBounds()
         {
             return m_worldAABB;
         }

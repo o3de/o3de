@@ -8,7 +8,7 @@
             "Name": "ReferenceImage"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
                 "Name": "ReferenceImage"
             },
@@ -16,7 +16,7 @@
                 "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
                 "Name": "ReferenceImage"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{C659D222-F56B-4B61-A2F8-C1FA547F3C39}",
                 "Name": "ReferenceImage"
             },

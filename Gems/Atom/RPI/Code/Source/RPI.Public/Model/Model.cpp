@@ -130,7 +130,7 @@ namespace AZ
             return m_modelAsset;
         }
 
-        bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
+        bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             
@@ -140,8 +140,9 @@ namespace AZ
                 return false;
             }
             
-            float firstHit;
-            const int result = Intersect::IntersectRayAABB2(rayStart, dir.GetReciprocal(), GetModelAsset()->GetAabb(), firstHit, distance);
+            float start;
+            float end;
+            const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), GetModelAsset()->GetAabb(), start, end);
             if (Intersect::ISECT_RAY_AABB_NONE != result)
             {
                 if (ModelAsset* modelAssetPtr = m_modelAsset.Get())
@@ -150,7 +151,7 @@ namespace AZ
                     AZ::Debug::Timer timer;
                     timer.Stamp();
 #endif
-                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(rayStart, dir, distance, normal);
+                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(rayStart, rayDir, distanceNormalized, normal);
 #if defined(AZ_RPI_PROFILE_RAYCASTING_AGAINST_MODELS)
                     if (hit)
                     {
@@ -164,7 +165,13 @@ namespace AZ
             return false;
         }
 
-        bool Model::RayIntersection(const AZ::Transform& modelTransform, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distanceFactor, AZ::Vector3& normal) const
+        bool Model::RayIntersection(
+            const AZ::Transform& modelTransform,
+            const AZ::Vector3& nonUniformScale,
+            const AZ::Vector3& rayStart,
+            const AZ::Vector3& rayDir,
+            float& distanceNormalized,
+            AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
@@ -172,12 +179,13 @@ namespace AZ
             const AZ::Transform inverseTM = modelTransform.GetInverse();
             const AZ::Vector3 raySrcLocal = inverseTM.TransformPoint(rayStart) / clampedScale;
 
-            // Instead of just rotating 'dir' we need it to be scaled too, so that 'distanceFactor' will be in the target units rather than object local units.
-            const AZ::Vector3 rayDest = rayStart + dir;
+            // Instead of just rotating 'rayDir' we need it to be scaled too, so that 'distanceNormalized' will be in the target units rather
+            // than object local units.
+            const AZ::Vector3 rayDest = rayStart + rayDir;
             const AZ::Vector3 rayDestLocal = inverseTM.TransformPoint(rayDest) / clampedScale;
             const AZ::Vector3 rayDirLocal = rayDestLocal - raySrcLocal;
 
-            bool result = LocalRayIntersection(raySrcLocal, rayDirLocal, distanceFactor, normal);
+            const bool result = LocalRayIntersection(raySrcLocal, rayDirLocal, distanceNormalized, normal);
             normal = (normal * clampedScale).GetNormalized();
             return result;
         }

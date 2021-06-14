@@ -82,16 +82,28 @@ namespace AZ
             Data::AssetBus::MultiHandler::BusConnect(m_visualizationMaterialAsset.GetId());
 
             // reflection render Srgs
-            m_stencilSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_stencilSrgAsset);
+            m_stencilSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_stencilShader->GetAsset(),
+                m_reflectionRenderData->m_stencilShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_stencilSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_stencilSrg.get(), "Failed to create stencil shader resource group");
 
-            m_blendWeightSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_blendWeightSrgAsset);
+            m_blendWeightSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_blendWeightShader->GetAsset(),
+                m_reflectionRenderData->m_blendWeightShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_blendWeightSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_blendWeightSrg.get(), "Failed to create blend weight shader resource group");
 
-            m_renderOuterSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_renderOuterSrgAsset);
+            m_renderOuterSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_renderOuterShader->GetAsset(),
+                m_reflectionRenderData->m_renderOuterShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_renderOuterSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderOuterSrg.get(), "Failed to create render outer reflection shader resource group");
 
-            m_renderInnerSrg = RPI::ShaderResourceGroup::Create(m_reflectionRenderData->m_renderInnerSrgAsset);
+            m_renderInnerSrg = RPI::ShaderResourceGroup::Create(
+                m_reflectionRenderData->m_renderInnerShader->GetAsset(),
+                m_reflectionRenderData->m_renderInnerShader->GetSupervariantIndex(),
+                m_reflectionRenderData->m_renderInnerSrgLayout->GetName());
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderInnerSrg.get(), "Failed to create render inner reflection shader resource group");
 
             // setup culling
@@ -209,7 +221,7 @@ namespace AZ
         void ReflectionProbe::SetTransform(const AZ::Transform& transform)
         {
             // retrieve previous scale and revert the scale on the inner/outer extents
-            AZ::Vector3 previousScale = m_transform.GetScale();
+            float previousScale = m_transform.GetUniformScale();
             m_outerExtents /= previousScale;
             m_innerExtents /= previousScale;
 
@@ -218,12 +230,12 @@ namespace AZ
 
             // avoid scaling the visualization sphere
             AZ::Transform visualizationTransform = m_transform;
-            visualizationTransform.ExtractScale();
+            visualizationTransform.ExtractUniformScale();
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, visualizationTransform);
 
             // update the inner/outer extents with the new scale
-            m_outerExtents *= m_transform.GetScale();
-            m_innerExtents *= m_transform.GetScale();
+            m_outerExtents *= m_transform.GetUniformScale();
+            m_innerExtents *= m_transform.GetUniformScale();
 
             m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
             m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
@@ -232,14 +244,14 @@ namespace AZ
 
         void ReflectionProbe::SetOuterExtents(const AZ::Vector3& outerExtents)
         {
-            m_outerExtents = outerExtents * m_transform.GetScale();
+            m_outerExtents = outerExtents * m_transform.GetUniformScale();
             m_outerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_outerExtents / 2.0f);
             m_updateSrg = true;
         }
 
         void ReflectionProbe::SetInnerExtents(const AZ::Vector3& innerExtents)
         {
-            m_innerExtents = innerExtents * m_transform.GetScale();
+            m_innerExtents = innerExtents * m_transform.GetUniformScale();
             m_innerAabbWs = Aabb::CreateCenterHalfExtents(m_transform.GetTranslation(), m_innerExtents / 2.0f);
             m_updateSrg = true;
         }

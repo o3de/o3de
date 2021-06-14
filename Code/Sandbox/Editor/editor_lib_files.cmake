@@ -424,10 +424,6 @@ set(FILES
     GotoPositionDlg.cpp
     GotoPositionDlg.h
     GotoPositionDlg.ui
-    InfoBar.cpp
-    InfoBar.qrc
-    InfoBar.h
-    InfoBar.ui
     LayoutConfigDialog.cpp
     LayoutConfigDialog.h
     LayoutConfigDialog.ui
@@ -586,6 +582,8 @@ set(FILES
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
     EditorPreferencesPageExperimentalLighting.cpp
+    EditorPreferencesPageAWS.h
+    EditorPreferencesPageAWS.cpp
     EditorPreferencesDialog.h
     EditorPreferencesDialog.cpp
     EditorPreferencesDialog.ui
@@ -819,6 +817,8 @@ set(FILES
     EditorViewportWidget.h
     EditorViewportSettings.cpp
     EditorViewportSettings.h
+    EditorViewportCamera.cpp
+    EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp

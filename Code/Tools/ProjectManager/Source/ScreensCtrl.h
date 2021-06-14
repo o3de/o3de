@@ -13,10 +13,13 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
+#include <ProjectInfo.h>
 
 #include <QStackedWidget>
 #include <QStack>
 #endif
+
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
 
 namespace O3DE::ProjectManager
 {
@@ -37,6 +40,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void NotifyCurrentProject(const QString& projectPath);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
 
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);
@@ -46,11 +50,15 @@ namespace O3DE::ProjectManager
         void ResetAllScreens();
         void DeleteScreen(ProjectManagerScreen screen);
         void DeleteAllScreens();
+        void TabChanged(int index);
 
     private:
+        int GetScreenTabIndex(ProjectManagerScreen screen);
+
         QStackedWidget* m_screenStack;
         QHash<ProjectManagerScreen, ScreenWidget*> m_screenMap;
         QStack<ProjectManagerScreen> m_screenVisitOrder;
+        QTabWidget* m_tabWidget;
     };
 
 } // namespace O3DE::ProjectManager

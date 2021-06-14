@@ -49,7 +49,7 @@ QMenu::right-arrow
 
 QMenu::icon
 {
-    right: 8px;
+    right: 20px;
 }
 
 QMenu::indicator:checked

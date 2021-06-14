@@ -11,49 +11,48 @@
  */
 
 #include <AzFramework/Viewport/ViewportScreen.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 #include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
-#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 namespace UnitTest
 {
-    class AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture
-        : public ToolsApplicationFixture
+    class AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture : public ToolsApplicationFixture
     {
     protected:
         struct State
         {
             State(AZStd::unique_ptr<AzManipulatorTestFramework::ManipulatorViewportInteraction> viewportManipulatorInteraction)
                 : m_viewportManipulatorInteraction(viewportManipulatorInteraction.release())
-                , m_actionDispatcher(AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(*m_viewportManipulatorInteraction))
-                , m_linearManipulator(
-                    AzManipulatorTestFramework::CreateLinearManipulator(
-                        m_viewportManipulatorInteraction->GetManipulatorManager().GetId(),
-                        /*position=*/AZ::Vector3(0.0f, 50.0f, 0.0f),
-                        /*radius=*/m_boundsRadius))
+                , m_actionDispatcher(
+                      AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(*m_viewportManipulatorInteraction))
+                , m_linearManipulator(AzManipulatorTestFramework::CreateLinearManipulator(
+                      m_viewportManipulatorInteraction->GetManipulatorManager().GetId(),
+                      /*position=*/AZ::Vector3(0.0f, 50.0f, 0.0f),
+                      /*radius=*/m_boundsRadius))
             {
                 // default sanity check call backs
                 m_linearManipulator->InstallLeftMouseDownCallback(
                     [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
-                {
-                    m_receivedLeftMouseDown = true;
-                });
+                    {
+                        m_receivedLeftMouseDown = true;
+                    });
 
                 m_linearManipulator->InstallMouseMoveCallback(
                     [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
-                {
-                    m_receivedMouseMove = true;
-                });
+                    {
+                        m_receivedMouseMove = true;
+                    });
 
                 m_linearManipulator->InstallLeftMouseUpCallback(
                     [this]([[maybe_unused]] const AzToolsFramework::LinearManipulator::Action& action)
-                {
-                    m_receivedLeftMouseUp = true;
-                });
+                    {
+                        m_receivedLeftMouseUp = true;
+                    });
             }
 
             ~State() = default;
@@ -79,13 +78,12 @@ namespace UnitTest
     protected:
         void SetUpEditorFixtureImpl() override
         {
-            m_directState = AZStd::make_unique<State>(
-                AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>());
-            m_busState = AZStd::make_unique<State>(
-                AZStd::make_unique<AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction>());
+            m_directState =
+                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>());
+            m_busState =
+                AZStd::make_unique<State>(AZStd::make_unique<AzManipulatorTestFramework::IndirectCallManipulatorViewportInteraction>());
             m_cameraState =
-                AzFramework::CreateIdentityDefaultCamera(
-                    AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
+                AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzManipulatorTestFramework::DefaultViewportSize);
         }
 
         void TearDownEditorFixtureImpl() override
@@ -105,8 +103,7 @@ namespace UnitTest
     {
         // given a left mouse down ray in world space
         // consume the mouse down and up events
-        state.m_actionDispatcher
-            ->CameraState(m_cameraState)
+        state.m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(AzManipulatorTestFramework::GetCameraStateViewportCenter(m_cameraState))
             ->MouseLButtonDown()
             ->Trace("Expecting left mouse button down")
@@ -126,31 +123,27 @@ namespace UnitTest
             ->ExpectTrue(state.m_receivedLeftMouseUp)
             ->ExpectTrue(state.m_receivedMouseMove)
             ->ExpectFalse(state.m_linearManipulator->PerformingAction())
-            ->ExpectManipulatorNotBeingInteracted()
-            ;
+            ->ExpectManipulatorNotBeingInteracted();
     }
 
     void AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture::ConsumeViewportMouseMoveHover(State& state)
     {
         // given a left mouse down ray in world space
         // consume the mouse move event
-        state.m_actionDispatcher
-            ->CameraState(m_cameraState)
+        state.m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(AzManipulatorTestFramework::GetCameraStateViewportCenter(m_cameraState))
             ->ExpectFalse(state.m_linearManipulator->PerformingAction())
             ->ExpectManipulatorNotBeingInteracted()
             ->ExpectFalse(state.m_receivedLeftMouseDown)
             ->ExpectFalse(state.m_receivedMouseMove)
-            ->ExpectFalse(state.m_receivedLeftMouseUp)
-            ;
+            ->ExpectFalse(state.m_receivedLeftMouseUp);
     }
 
     void AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture::ConsumeViewportMouseMoveActive(State& state)
     {
         // given a left mouse down ray in world space
         // consume the mouse move event
-        state.m_actionDispatcher
-            ->CameraState(m_cameraState)
+        state.m_actionDispatcher->CameraState(m_cameraState)
             ->MouseLButtonDown()
             ->MousePosition(AzManipulatorTestFramework::GetCameraStateViewportCenter(m_cameraState))
             ->ExpectTrue(state.m_linearManipulator->PerformingAction())
@@ -158,8 +151,7 @@ namespace UnitTest
             ->MouseLButtonUp()
             ->ExpectTrue(state.m_receivedLeftMouseDown)
             ->ExpectTrue(state.m_receivedMouseMove)
-            ->ExpectTrue(state.m_receivedLeftMouseUp)
-            ;
+            ->ExpectTrue(state.m_receivedLeftMouseUp);
     }
 
     void AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture::MoveManipulatorAlongAxis(State& state)
@@ -176,8 +168,7 @@ namespace UnitTest
         // adjusted final world position taking into account the manipulator position relative to the camera
         const auto finalPositionWorldAdjusted = finalPositionWorld - (vectorToInitialPositionWorld * scaledRadiusBound);
         // calculate the position in screen space of the initial position of the manipulator
-        const auto initialPositionScreen =
-            AzFramework::WorldToScreen(initialPositionWorld, m_cameraState);
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialPositionWorld, m_cameraState);
         // calculate the position in screen space of the final position of the manipulator
         const auto finalPositionScreen = AzFramework::WorldToScreen(finalPositionWorldAdjusted, m_cameraState);
 
@@ -185,12 +176,11 @@ namespace UnitTest
 
         state.m_linearManipulator->InstallMouseMoveCallback(
             [&movementAlongAxis](const AzToolsFramework::LinearManipulator::Action& action)
-        {
-            movementAlongAxis = action.LocalPosition();
-        });
+            {
+                movementAlongAxis = action.LocalPosition();
+            });
 
-        state.m_actionDispatcher
-            ->CameraState(m_cameraState)
+        state.m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(initialPositionScreen)
             ->MouseLButtonDown()
             ->ExpectTrue(state.m_linearManipulator->PerformingAction())
@@ -199,8 +189,7 @@ namespace UnitTest
             ->MouseLButtonUp()
             ->ExpectTrue(state.m_receivedLeftMouseDown)
             ->ExpectTrue(state.m_receivedLeftMouseUp)
-            ->ExpectTrue(movementAlongAxis.IsClose(finalPositionWorld, 0.01f))
-            ;
+            ->ExpectTrue(movementAlongAxis.IsClose(finalPositionWorld, 0.01f));
     }
 
     TEST_F(AzManipulatorTestFrameworkWorldSpaceBuilderTestFixture, ConsumeViewportLeftMouseClick)

@@ -36,10 +36,10 @@ DEFAULT_TIMEOUT_HOURS = 8
 DEFAULT_TIMEOUT_SECONDS = 300
 
 ASSET_PROCESSOR_PLATFORM_MAP = {
-    'android': 'es3',
+    'android': 'android',
     'ios': 'ios',
     'linux': 'linux',  # Not fully implemented, see SPEC-2501
-    'mac': 'osx_gl',
+    'mac': 'mac',
     'windows': 'pc',
 }
 
@@ -597,9 +597,10 @@ class AssetProcessor(object):
         run_result = subprocess.run(command, close_fds=True, timeout=timeout, capture_output=capture_output)
         output_list = None
         if capture_output:
-            output_list = run_result.stdout.splitlines()
             if decode:
-                output_list = [line.decode('utf-8') for line in output_list]
+                output_list = run_result.stdout.decode('utf-8').splitlines()
+            else:
+                output_list = run_result.stdout.splitlines()
 
         if run_result.returncode != 0:
             errorMessage = f"{command} returned error code: {run_result.returncode}"

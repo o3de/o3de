@@ -18,19 +18,19 @@
 
 #include "${Name}SystemComponent.h"
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    void ${Name}SystemComponent::Reflect(AZ::ReflectContext* context)
+    void ${SanitizedCppName}SystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<${Name}SystemComponent, AZ::Component>()
+            serialize->Class<${SanitizedCppName}SystemComponent, AZ::Component>()
                 ->Version(0)
                 ;
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<${Name}SystemComponent>("${Name}", "[Description of functionality provided by this System Component]")
+                ec->Class<${SanitizedCppName}SystemComponent>("${SanitizedCppName}", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -39,37 +39,53 @@ namespace ${Name}
         }
     }
 
-    void ${Name}SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+    void ${SanitizedCppName}SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("${Name}Service"));
+        provided.push_back(AZ_CRC("${SanitizedCppName}Service"));
     }
 
-    void ${Name}SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    void ${SanitizedCppName}SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("${Name}Service"));
+        incompatible.push_back(AZ_CRC("${SanitizedCppName}Service"));
     }
 
-    void ${Name}SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ${SanitizedCppName}SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         AZ_UNUSED(required);
     }
 
-    void ${Name}SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ${SanitizedCppName}SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         AZ_UNUSED(dependent);
     }
+    
+    ${SanitizedCppName}SystemComponent::${SanitizedCppName}SystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == nullptr)
+        {
+            ${SanitizedCppName}Interface::Register(this);
+        }
+    }
 
-    void ${Name}SystemComponent::Init()
+    ${SanitizedCppName}SystemComponent::~${SanitizedCppName}SystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == this)
+        {
+            ${SanitizedCppName}Interface::Unregister(this);
+        }
+    }
+
+    void ${SanitizedCppName}SystemComponent::Init()
     {
     }
 
-    void ${Name}SystemComponent::Activate()
+    void ${SanitizedCppName}SystemComponent::Activate()
     {
-        ${Name}RequestBus::Handler::BusConnect();
+        ${SanitizedCppName}RequestBus::Handler::BusConnect();
     }
 
-    void ${Name}SystemComponent::Deactivate()
+    void ${SanitizedCppName}SystemComponent::Deactivate()
     {
-        ${Name}RequestBus::Handler::BusDisconnect();
+        ${SanitizedCppName}RequestBus::Handler::BusDisconnect();
     }
 }

@@ -137,8 +137,8 @@ private: // -------------------------------------------------------------------
     void LogStringToConsole(const char* szString, ELogType logType, bool bAdd) {}
 #endif // !defined(EXCLUDE_NORMAL_LOG)
 
-    AZ::IO::HandleType OpenLogFile(const char* filename, const char* mode);
-    void CloseLogFile(bool force = false);
+    bool OpenLogFile(const char* filename, int mode);
+    void CloseLogFile();
 
     // will format the message into m_szTemp
     void FormatMessage(const char* szCommand, ...) PRINTF_PARAMS(2, 3);
@@ -152,15 +152,11 @@ private: // -------------------------------------------------------------------
     virtual const char* GetAssetScopeString();
 #endif
 
-    ISystem*               m_pSystem;                                                       //
-    float                       m_fLastLoadingUpdateTime;                           // for non-frequent streamingEngine update
-    //char                      m_szTemp[MAX_TEMP_LENGTH_SIZE];             //
-    char                        m_szFilename[MAX_FILENAME_SIZE];            // can be with path
-    mutable char        m_sBackupFilename[MAX_FILENAME_SIZE];   // can be with path
-    AZ::IO::HandleType m_logFileHandle;
-    CryStackStringT<char, 32> m_LogMode;                                                        //mode m_pLogFile has been opened with
-    AZ::IO::HandleType m_errFileHandle;
-    int                         m_nErrCount;
+    ISystem* m_pSystem;                                                       //
+    float m_fLastLoadingUpdateTime;                           // for non-frequent streamingEngine update
+    char m_szFilename[MAX_FILENAME_SIZE];            // can be with path
+    mutable char m_sBackupFilename[MAX_FILENAME_SIZE];   // can be with path
+    AZ::IO::SystemFile m_logFileHandle;
 
     bool m_backupLogs;
 

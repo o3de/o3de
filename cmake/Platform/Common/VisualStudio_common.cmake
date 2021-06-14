@@ -10,5 +10,5 @@
 #
 
 if(CMAKE_GENERATOR MATCHES "Visual Studio 16")
-    configure_file("${CMAKE_CURRENT_LIST_DIR}/Directory.Build.props" "${CMAKE_CURRENT_BINARY_DIR}/Directory.Build.props" COPYONLY)
+    configure_file("${CMAKE_CURRENT_LIST_DIR}/Directory.Build.props" "${CMAKE_BINARY_DIR}/Directory.Build.props" COPYONLY)
 endif()

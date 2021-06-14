@@ -419,7 +419,7 @@ static inline bool MatchesWildcardsIgnoreCaseExt_Tpl(const TS& str, const TS& wi
     const typename TS::value_type* savedStrBegin = 0;
     const typename TS::value_type* savedStrEnd = 0;
     const typename TS::value_type* savedWild = 0;
-    size_t savedWildCount;
+    size_t savedWildCount = 0;
 
     const typename TS::value_type* pStr = str.c_str();
     const typename TS::value_type* pWild = wildcards.c_str();

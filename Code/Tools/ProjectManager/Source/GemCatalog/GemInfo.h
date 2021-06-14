@@ -61,10 +61,11 @@ namespace O3DE::ProjectManager
 
         bool IsValid() const;
 
+        bool operator<(const GemInfo& gemInfo) const;
+
         QString m_path;
         QString m_name = "Unknown Gem Name";
         QString m_displayName = "Unknown Gem Name";
-        AZ::Uuid m_uuid;
         QString m_creator = "Unknown Creator";
         GemOrigin m_gemOrigin = Local;
         bool m_isAdded = false; //! Is the gem currently added and enabled in the project?

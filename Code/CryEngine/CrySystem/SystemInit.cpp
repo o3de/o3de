@@ -634,7 +634,7 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
     IConsole* pConsole = GetIConsole();
 
     ICVar* pOldVar = pConsole->GetCVar (szVarName);
-    int nDefault;
+    int nDefault = 0;
     if (pOldVar)
     {
         nDefault = pOldVar->GetIVal();
@@ -864,11 +864,6 @@ bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
 
     EBUS_EVENT(UiSystemBus, InitializeSystem);
 
-    if (!m_env.pLyShine)
-    {
-        AZ_Error(AZ_TRACE_SYSTEM_WINDOW, false, "LYShine System did not initialize correctly. Please check that the LyShine gem is enabled for this project in *_dependencies.cmake.");
-        return false;
-    }
     return true;
 }
 
@@ -1213,7 +1208,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         {
             assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             AZ_Warning(AZ_TRACE_SYSTEM_WINDOW, false, R"(A valid asset platform is missing in "%s/assets" key in the SettingsRegistry.)""\n"
-                R"(This typically done by setting he "assets" field in the bootstrap.cfg for within a .setreg file)""\n"
+                R"(This typically done by setting the "assets" field within a .setreg file)""\n"
                 R"(A fallback of %s will be used.)",
                 AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey,
                 assetPlatform.c_str());
@@ -2022,8 +2017,8 @@ void CSystem::CreateSystemVars()
     REGISTER_CVAR2("sys_streaming_in_blocks", &g_cvars.sys_streaming_in_blocks, 1, VF_NULL,
         "Streaming of large files happens in blocks");
 
-#if (defined(WIN32) || defined(WIN64)) && !defined(_RELEASE)
-    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 3, 0, "Use or not use floating point exceptions.");
+#if (defined(WIN32) || defined(WIN64)) && defined(_DEBUG)
+    REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 2, 0, "Use or not use floating point exceptions.");
 #else // Float exceptions by default disabled for console builds.
     REGISTER_CVAR2("sys_float_exceptions", &g_cvars.sys_float_exceptions, 0, 0, "Use or not use floating point exceptions.");
 #endif

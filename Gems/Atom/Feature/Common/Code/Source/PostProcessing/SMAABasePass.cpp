@@ -43,9 +43,9 @@ namespace AZ
         {
         }
 
-        void SMAABasePass::Init()
+        void SMAABasePass::InitializeInternal()
         {
-            FullscreenTrianglePass::Init();
+            FullscreenTrianglePass::InitializeInternal();
 
             AZ_Assert(m_shaderResourceGroup != nullptr, "SMAABasePass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 

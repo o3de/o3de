@@ -118,10 +118,10 @@ void CVarMenu::AddUniqueCVarsItem(QString displayName,
                         // Otherwise we could have just used the action's currently checked
                         // state and updated the CVar's value only
                         bool cVarOn = (cVar->GetFVal() == availableCVar.m_onValue);
-                        bool checked = !cVarOn;
-                        SetCVar(cVar, checked ? availableCVar.m_onValue : availableCVar.m_offValue);
-                        action->setChecked(checked);
-                        if (checked)
+                        bool cVarChecked = !cVarOn;
+                        SetCVar(cVar, cVarChecked ? availableCVar.m_onValue : availableCVar.m_offValue);
+                        action->setChecked(cVarChecked);
+                        if (cVarChecked)
                         {
                             // Set the rest of the CVars in the group to their off values
                             SetCVarsToOffValue(availableCVars, availableCVar);
@@ -132,9 +132,9 @@ void CVarMenu::AddUniqueCVarsItem(QString displayName,
 
         // Initialize the action's checked state based on its associated CVar's current value
         ICVar* cVar = gEnv->pConsole->GetCVar(availableCVar.m_cVarName.toUtf8().data());
-        bool checked = (cVar && cVar->GetFVal() == availableCVar.m_onValue);
-        action->setChecked(checked);
-        if (checked)
+        bool cVarChecked = (cVar && cVar->GetFVal() == availableCVar.m_onValue);
+        action->setChecked(cVarChecked);
+        if (cVarChecked)
         {
             // Set the rest of the CVars in the group to their off values
             SetCVarsToOffValue(availableCVars, availableCVar);

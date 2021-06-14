@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Resources/ProjectManager.rc
     Resources/ProjectManager.qrc
     Resources/ProjectManager.qss
     Source/main.cpp
@@ -21,8 +22,6 @@ set(FILES
     Source/ScreenWidget.h
     Source/EngineInfo.h
     Source/EngineInfo.cpp
-    Source/FirstTimeUseScreen.h
-    Source/FirstTimeUseScreen.cpp
     Source/FormLineEditWidget.h
     Source/FormLineEditWidget.cpp
     Source/FormBrowseEditWidget.h
@@ -33,31 +32,39 @@ set(FILES
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
-    Source/ProjectManagerWindow.ui
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
     Source/ProjectInfo.h
     Source/ProjectInfo.cpp
+    Source/ProjectUtils.h
+    Source/ProjectUtils.cpp
+    Source/ProjectBuilder.h
+    Source/ProjectBuilder.cpp
+    Source/UpdateProjectSettingsScreen.h
+    Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h
     Source/NewProjectSettingsScreen.cpp
     Source/CreateProjectCtrl.h
     Source/CreateProjectCtrl.cpp
     Source/UpdateProjectCtrl.h
     Source/UpdateProjectCtrl.cpp
-    Source/ProjectsHomeScreen.h
-    Source/ProjectsHomeScreen.cpp
+    Source/ProjectsScreen.h
+    Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
-    Source/ProjectSettingsScreen.ui
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/ProjectButtonWidget.h
     Source/ProjectButtonWidget.cpp
+    Source/ScreenHeaderWidget.h
+    Source/ScreenHeaderWidget.cpp
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
+    Source/TemplateButtonWidget.h
+    Source/TemplateButtonWidget.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

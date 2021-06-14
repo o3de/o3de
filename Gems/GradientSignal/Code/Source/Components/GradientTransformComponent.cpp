@@ -493,7 +493,7 @@ namespace GradientSignal
 
         if (!m_configuration.m_advancedMode || !m_configuration.m_overrideScale)
         {
-            m_configuration.m_scale = shapeTransform.GetScale();
+            m_configuration.m_scale = AZ::Vector3(shapeTransform.GetUniformScale());
         }
 
         //rebuild bounds from parameters

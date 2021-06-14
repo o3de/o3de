@@ -172,7 +172,7 @@ namespace PhysX
         ASSERT_EQ(hit.m_material, rigidBody->GetShape(0).get()->GetMaterial().get());
 
         const AZStd::string& typeName = hit.m_material->GetSurfaceTypeName();
-        ASSERT_EQ(typeName, AZStd::string("Default"));
+        ASSERT_EQ(typeName, Physics::DefaultPhysicsMaterialLabel);
     }
 
     TEST_F(PhysXSceneQueryFixture, RayCast_AgainstStaticObject_ReturnsHit)

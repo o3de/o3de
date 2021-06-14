@@ -37,7 +37,7 @@ namespace AZ
 
             void SetFeatureProcessor(SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor);
         private:
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;

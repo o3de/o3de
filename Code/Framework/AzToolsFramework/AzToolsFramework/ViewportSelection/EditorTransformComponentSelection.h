@@ -22,6 +22,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -106,26 +107,33 @@ namespace AzToolsFramework
         World, //!< World space (space aligned to world axes - identity).
     };
 
+    //! Grouping of viewport ui related state for controlling the current reference space of the Editor.
     struct SpaceCluster
     {
-        ViewportUi::ClusterId m_spaceClusterId;
-        ViewportUi::ButtonId m_localButtonId;
-        ViewportUi::ButtonId m_parentButtonId;
-        ViewportUi::ButtonId m_worldButtonId;
-        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler;
-        ReferenceFrame m_currentSpace = ReferenceFrame::Parent;
-        bool m_spaceLock = false;
+        SpaceCluster() = default;
+        // disable copying and moving (implicit)
+        SpaceCluster(const SpaceCluster&) = delete;
+        SpaceCluster& operator=(const SpaceCluster&) = delete;
+
+        ViewportUi::ClusterId m_spaceClusterId; //!< The id identifying the reference space cluster.
+        ViewportUi::ButtonId m_localButtonId; //!< Local reference space button id.
+        ViewportUi::ButtonId m_parentButtonId; //!< Parent reference space button id.
+        ViewportUi::ButtonId m_worldButtonId; //!< World reference space button id.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler; //!< Callback for when a space cluster button is pressed.
+        AZStd::optional<ReferenceFrame> m_spaceLock; //!< Locked reference frame to use if set.
     };
 
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
@@ -233,8 +241,12 @@ namespace AzToolsFramework
         void UndoRedoEntityManipulatorCommand(
             AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
 
+        // EditorContextMenuBus...
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2 & point, int flags) override;
+        int GetMenuPosition() const override;
+        AZStd::string GetMenuIdentifier() const override;
+
         // EditorEventsBus ...
-        void PopulateEditorGlobalContextMenu(QMenu *menu, const AZ::Vector2& point, int flags) override;
         void OnEscape() override;
 
         // ToolsApplicationNotificationBus ...
@@ -258,12 +270,22 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
+        // EditorEntityContextNotificationBus overrides ...
+        void OnStartPlayInEditor() override;
+        void OnStopPlayInEditor() override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
+
+        //! Responsible for keeping the space cluster in sync with the current reference frame.
+        void UpdateSpaceCluster(ReferenceFrame referenceFrame);
+
+        //! Hides/Shows all viewportUi toolbars.
+        void SetAllViewportUiVisible(bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
         AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
@@ -297,9 +319,8 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
-
-        SpaceCluster m_spaceCluster;
-        void UpdateSpaceCluster(ReferenceFrame referenceFrame);
+        SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
+        bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
     };
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by

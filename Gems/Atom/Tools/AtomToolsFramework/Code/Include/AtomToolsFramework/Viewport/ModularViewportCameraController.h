@@ -27,14 +27,20 @@ namespace AtomToolsFramework
     {
     public:
         using CameraListBuilder = AZStd::function<void(AzFramework::Cameras&)>;
+        using CameraPropsBuilder = AZStd::function<void(AzFramework::CameraProps&)>;
 
         //! Sets the camera list builder callback used to populate new ModernViewportCameraControllerInstances
         void SetCameraListBuilderCallback(const CameraListBuilder& builder);
+        //! Sets the camera props builder callback used to populate new ModernViewportCameraControllerInstances
+        void SetCameraPropsBuilderCallback(const CameraPropsBuilder& builder);
         //! Sets up a camera list based on this controller's CameraListBuilderCallback
         void SetupCameras(AzFramework::Cameras& cameras);
+        //! Sets up properties shared across all cameras
+        void SetupCameraProperies(AzFramework::CameraProps& cameraProps);
 
     private:
         CameraListBuilder m_cameraListBuilder;
+        CameraPropsBuilder m_cameraPropsBuilder;
     };
 
     class ModernViewportCameraControllerInstance final
@@ -51,7 +57,8 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
         // ModularViewportCameraControllerRequestBus overrides ...
-        void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+        void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) override;
+        AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const override;
 
     private:
         // AzFramework::ViewportDebugDisplayEventBus overrides ...
@@ -66,11 +73,14 @@ namespace AtomToolsFramework
         AzFramework::Camera m_camera;
         AzFramework::Camera m_targetCamera;
         AzFramework::CameraSystem m_cameraSystem;
+        AzFramework::CameraProps m_cameraProps;
 
         AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
         AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity();
         float m_animationT = 0.0f;
         CameraMode m_cameraMode = CameraMode::Control;
+        AZStd::optional<AZ::Vector3> m_lookAtAfterInterpolation; //!< The look at point after an interpolation has finished.
+                                                                 //!< Will be cleared when the view changes (camera looks away).
         bool m_updatingTransform = false;
 
         AZ::RPI::ViewportContext::MatrixChangedEvent::Handler m_cameraViewMatrixChangeHandler;
