@@ -22,6 +22,7 @@
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDir>
 #include <QMessageBox>
 
@@ -34,7 +35,7 @@ namespace O3DE::ProjectManager
 
     bool Application::Init(bool interactive)
     {
-        constexpr char* applicationName{ "O3DE" };
+        constexpr char applicationName[] = "O3DE";
 
         QApplication::setOrganizationName(applicationName);
         QApplication::setOrganizationDomain("o3de.org");
