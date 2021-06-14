@@ -9,7 +9,3 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
-
-#pragma once
-
-#include <ProjectManager_Test_Traits_ios.h>

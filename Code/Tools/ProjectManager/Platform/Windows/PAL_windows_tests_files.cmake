@@ -11,5 +11,5 @@
 
 set(FILES
     ProjectManager_Test_Traits_Platform.h
-    ProjectManager_Test_Traits_windows.h
+    ProjectManager_Test_Traits_Windows.h
 )

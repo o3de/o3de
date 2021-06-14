@@ -12,4 +12,4 @@
 
 #pragma once
 
-#include <ProjectManager_Test_Traits_mac.h>
+#include <ProjectManager_Test_Traits_Mac.h>

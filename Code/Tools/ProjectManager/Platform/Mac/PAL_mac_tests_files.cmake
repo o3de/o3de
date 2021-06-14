@@ -11,5 +11,5 @@
 
 set(FILES
     ProjectManager_Test_Traits_Platform.h
-    ProjectManager_Test_Traits_mac.h
+    ProjectManager_Test_Traits_Mac.h
 )
