@@ -60,7 +60,10 @@ namespace EMotionFX
                 float                                 m_updateTimeFrequency = 0.f;
                 AZ::u32                               m_updateItemFrequency = 1;
 
+                // Set the bounding box configuration of the given actor instance to the parameters given by `this'. The actor instance must not be null (this is not checked).
                 void Set(ActorInstance* inst) const;
+
+                // Set the bounding box configuration, then update the bounds of the actor instance
                 void SetAndUpdate(ActorInstance* inst) const;
 
                 static void Reflect(AZ::ReflectContext* context);

@@ -58,8 +58,7 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // Set the bounding box configuration of the given actor instance to the parameters given by `this'. The actor instance must not be null (this is not checked).
-        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance*) const
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actor) const
         {
             if (m_autoUpdateBounds)
             {
