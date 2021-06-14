@@ -2566,6 +2566,9 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_snappingCluster.m_snappingClusterId, m_snappingCluster.m_snappingHandler);
+
+        // hide initially
+        SetViewportUiClusterVisible(m_snappingCluster.m_snappingClusterId, false);
     }
 
     void EditorTransformComponentSelection::CreateSpaceSelectionCluster()
@@ -3251,7 +3254,7 @@ namespace AzToolsFramework
             m_didSetSelectedEntities = false;
         }
 
-        // show/hide cluster
+        SetViewportUiClusterVisible(m_snappingCluster.m_snappingClusterId, !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
     }
