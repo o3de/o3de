@@ -21,8 +21,6 @@
 
 namespace O3DE::ProjectManager
 {
-    QT_FORWARD_DECLARE_CLASS(GemItemDelegate)
-
     class GemListView
         : public QListView
     {
@@ -31,7 +29,5 @@ namespace O3DE::ProjectManager
     public:
         explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
         ~GemListView() = default;
-
-    private:
     };
 } // namespace O3DE::ProjectManager

@@ -14,7 +14,6 @@
 #include <PythonBindingsInterface.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
-#include <GemCatalog/GemItemDelegate.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -64,7 +63,6 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(filterWidget);
         hLayout->addLayout(middleVLayout);
         hLayout->addWidget(m_gemInspector);
-
     }
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath, bool isNewProject)
