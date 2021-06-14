@@ -19,7 +19,7 @@ namespace EMotionFX
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<D6JointLimitConfiguration, AzPhysics::ApiJointConfiguration>()
+            serializeContext->Class<D6JointLimitConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
                 ->Field("SwingLimitY", &D6JointLimitConfiguration::m_swingLimitY)
                 ->Field("SwingLimitZ", &D6JointLimitConfiguration::m_swingLimitZ)

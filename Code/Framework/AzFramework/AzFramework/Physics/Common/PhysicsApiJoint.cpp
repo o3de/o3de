@@ -20,16 +20,16 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ApiJoint, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(Joint, AZ::SystemAllocator, 0);
 
-    void ApiJoint::Reflect(AZ::ReflectContext* context)
+    void Joint::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azdynamic_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AzPhysics::ApiJoint>()
+            serializeContext->Class<AzPhysics::Joint>()
                 ->Version(1)
-                ->Field("SceneOwner", &ApiJoint::m_sceneOwner)
-                ->Field("JointHandle", &ApiJoint::m_jointHandle)
+                ->Field("SceneOwner", &Joint::m_sceneOwner)
+                ->Field("JointHandle", &Joint::m_jointHandle)
                 ;
         }
     }

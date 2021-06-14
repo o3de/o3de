@@ -38,7 +38,7 @@ namespace Physics
         RagdollNodeConfiguration();
         RagdollNodeConfiguration(const RagdollNodeConfiguration& settings) = default;
 
-        AZStd::shared_ptr<AzPhysics::ApiJointConfiguration> m_jointConfig;
+        AZStd::shared_ptr<AzPhysics::JointConfiguration> m_jointConfig;
     };
 
     class RagdollConfiguration
@@ -74,7 +74,7 @@ namespace Physics
         virtual AzPhysics::RigidBody& GetRigidBody() = 0;
         virtual ~RagdollNode() = default;
 
-        virtual AzPhysics::ApiJoint* GetJoint() = 0;
+        virtual AzPhysics::Joint* GetJoint() = 0;
         virtual bool IsSimulating() const = 0;
     };
 

@@ -38,7 +38,7 @@ namespace PhysX {
         PxJointActorData PxJointActorData::InvalidPxJointActorData;
 
         PxJointActorData CalculateActorData(
-            const AzPhysics::ApiJointConfiguration& configuration,
+            const AzPhysics::JointConfiguration& configuration,
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle)
@@ -122,7 +122,7 @@ namespace PhysX {
             return nullptr;
         }
 
-        void InitializeGenericProperties(const ApiJointGenericProperties& properties, physx::PxJoint* nativeJoint) 
+        void InitializeGenericProperties(const JointGenericProperties& properties, physx::PxJoint* nativeJoint) 
         {
             if (!nativeJoint)
             {
@@ -131,15 +131,15 @@ namespace PhysX {
             PHYSX_SCENE_WRITE_LOCK(nativeJoint->getScene());
             nativeJoint->setConstraintFlag(
                 physx::PxConstraintFlag::eCOLLISION_ENABLED,
-                properties.IsFlagSet(ApiJointGenericProperties::GenericApiJointFlag::SelfCollide));
+                properties.IsFlagSet(JointGenericProperties::GenericJointFlag::SelfCollide));
 
-            if (properties.IsFlagSet(ApiJointGenericProperties::GenericApiJointFlag::Breakable))
+            if (properties.IsFlagSet(JointGenericProperties::GenericJointFlag::Breakable))
             {
                 nativeJoint->setBreakForce(properties.m_forceMax, properties.m_torqueMax);
             }
         }
 
-        void InitializeSphericalLimitProperties(const ApiJointLimitProperties& properties, physx::PxSphericalJoint* nativeJoint)
+        void InitializeSphericalLimitProperties(const JointLimitProperties& properties, physx::PxSphericalJoint* nativeJoint)
         {
             if (!nativeJoint)
             {
@@ -169,7 +169,7 @@ namespace PhysX {
             nativeJoint->setSphericalJointFlag(physx::PxSphericalJointFlag::eLIMIT_ENABLED, true);
         }
 
-        void InitializeRevoluteLimitProperties(const ApiJointLimitProperties& properties, physx::PxRevoluteJoint* nativeJoint)
+        void InitializeRevoluteLimitProperties(const JointLimitProperties& properties, physx::PxRevoluteJoint* nativeJoint)
         {
             if (!nativeJoint)
             {
@@ -200,7 +200,7 @@ namespace PhysX {
         namespace PxJointFactories
         {   
             PxJointUniquePtr CreatePxD6Joint(
-                const PhysX::D6ApiJointLimitConfiguration& configuration,
+                const PhysX::D6JointLimitConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
@@ -241,7 +241,7 @@ namespace PhysX {
             }
 
             PxJointUniquePtr CreatePxFixedJoint(
-                const PhysX::FixedApiJointConfiguration& configuration,
+                const PhysX::FixedJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
@@ -270,7 +270,7 @@ namespace PhysX {
             }
 
             PxJointUniquePtr CreatePxBallJoint(
-                const PhysX::BallApiJointConfiguration& configuration,
+                const PhysX::BallJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
@@ -300,7 +300,7 @@ namespace PhysX {
             }
 
             PxJointUniquePtr CreatePxHingeJoint(
-                const PhysX::HingeApiJointConfiguration& configuration,
+                const PhysX::HingeJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 

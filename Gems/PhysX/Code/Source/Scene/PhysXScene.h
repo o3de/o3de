@@ -53,10 +53,10 @@ namespace PhysX
         void RemoveSimulatedBodies(AzPhysics::SimulatedBodyHandleList& bodyHandles) override;
         void EnableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
         void DisableSimulationOfBody(AzPhysics::SimulatedBodyHandle bodyHandle) override;
-        AzPhysics::ApiJointHandle AddJoint(const AzPhysics::ApiJointConfiguration* jointConfig, 
+        AzPhysics::JointHandle AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
             AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) override;
-        AzPhysics::ApiJoint* GetApiJointFromHandle(AzPhysics::ApiJointHandle jointHandle) override;
-        void RemoveJoint(AzPhysics::ApiJointHandle jointHandle) override;
+        AzPhysics::Joint* GetJointFromHandle(AzPhysics::JointHandle jointHandle) override;
+        void RemoveJoint(AzPhysics::JointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(const AzPhysics::SceneQueryRequest* request) override;
         AzPhysics::SceneQueryHitsList QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests) override;
         [[nodiscard]] bool QuerySceneAsync(AzPhysics::SceneQuery::AsyncRequestId requestId,
@@ -99,9 +99,9 @@ namespace PhysX
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
 
-        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::ApiJoint*>> m_joints;
-        AZStd::vector<AzPhysics::ApiJoint*> m_deferredDeletionsJoints;
-        AZStd::queue<AzPhysics::ApiJointIndex> m_freeJointSlots;
+        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::Joint*>> m_joints;
+        AZStd::vector<AzPhysics::Joint*> m_deferredDeletionsJoints;
+        AZStd::queue<AzPhysics::JointIndex> m_freeJointSlots;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsSystemConfigChanged;
 

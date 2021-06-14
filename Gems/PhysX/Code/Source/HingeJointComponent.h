@@ -27,8 +27,8 @@ namespace PhysX
         HingeJointComponent() = default;
         HingeJointComponent(
             const JointComponentConfiguration& configuration, 
-            const ApiJointGenericProperties& genericProperties,
-            const ApiJointLimitProperties& limitProperties);
+            const JointGenericProperties& genericProperties,
+            const JointLimitProperties& limitProperties);
         ~HingeJointComponent() = default;
 
     protected:

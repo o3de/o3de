@@ -42,7 +42,7 @@ namespace PhysX
         DestroyPhysicsBody();
     }
 
-    void RagdollNode::SetJoint(AzPhysics::ApiJoint* joint)
+    void RagdollNode::SetJoint(AzPhysics::Joint* joint)
     {
         if (m_joint)
         {
@@ -58,7 +58,7 @@ namespace PhysX
         return *m_rigidBody;
     }
 
-    AzPhysics::ApiJoint* RagdollNode::GetJoint()
+    AzPhysics::Joint* RagdollNode::GetJoint()
     {
         return m_joint;
     }

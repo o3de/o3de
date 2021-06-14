@@ -16,7 +16,7 @@
 
 namespace AzPhysics
 {
-    struct ApiJointConfiguration;
+    struct JointConfiguration;
 }
 
 namespace PhysX
@@ -30,7 +30,7 @@ namespace PhysX
         const AZStd::vector<AZ::TypeId> GetSupportedJointTypeIds() const override;
         AZStd::optional<const AZ::TypeId> GetSupportedJointTypeId(AzPhysics::JointType typeEnum) const override;
 
-        AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> ComputeInitialJointLimitConfiguration(
+        AZStd::unique_ptr<AzPhysics::JointConfiguration> ComputeInitialJointLimitConfiguration(
             const AZ::TypeId& jointLimitTypeId,
             const AZ::Quaternion& parentWorldRotation,
             const AZ::Quaternion& childWorldRotation,
@@ -38,7 +38,7 @@ namespace PhysX
             const AZStd::vector<AZ::Quaternion>& exampleLocalRotations) override;
 
         void GenerateJointLimitVisualizationData(
-            const AzPhysics::ApiJointConfiguration& configuration,
+            const AzPhysics::JointConfiguration& configuration,
             const AZ::Quaternion& parentRotation,
             const AZ::Quaternion& childRotation,
             float scale,

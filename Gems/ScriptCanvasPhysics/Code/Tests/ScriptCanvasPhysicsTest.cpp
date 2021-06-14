@@ -102,7 +102,7 @@ namespace ScriptCanvasPhysicsTests
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
         void RemoveJoint(
             [[maybe_unused]]AzPhysics::SceneHandle sceneHandle,
-            [[maybe_unused]] AzPhysics::ApiJointHandle jointHandle) override {}
+            [[maybe_unused]] AzPhysics::JointHandle jointHandle) override {}
         void SuppressCollisionEvents(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA,
@@ -151,10 +151,10 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle));
         MOCK_METHOD2(GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& bodyHandles));
-        MOCK_METHOD4(AddJoint, AzPhysics::ApiJointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::ApiJointConfiguration* jointConfig,
+        MOCK_METHOD4(AddJoint, AzPhysics::JointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig,
             AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody));
         MOCK_METHOD2(
-            GetApiJointFromHandle, AzPhysics::ApiJoint*(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle));
+            GetJointFromHandle, AzPhysics::Joint*(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle));
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));

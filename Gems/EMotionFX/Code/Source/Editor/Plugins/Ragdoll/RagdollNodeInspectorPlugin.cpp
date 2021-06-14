@@ -514,7 +514,7 @@ namespace EMotionFX
 
             if (renderJointLimits && jointSelected)
             {
-                const AZStd::shared_ptr<AzPhysics::ApiJointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
+                const AZStd::shared_ptr<AzPhysics::JointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
                 if (jointLimitConfig)
                 {
                     const Node* ragdollParentNode = physicsSetup->FindRagdollParentNode(joint);
@@ -529,7 +529,7 @@ namespace EMotionFX
     }
 
     void RagdollNodeInspectorPlugin::RenderJointLimit(
-        const AzPhysics::ApiJointConfiguration& configuration,
+        const AzPhysics::JointConfiguration& configuration,
         const ActorInstance* actorInstance,
         const Node* node,
         const Node* parentNode,
@@ -577,7 +577,7 @@ namespace EMotionFX
     }
 
     void RagdollNodeInspectorPlugin::RenderJointFrame(
-        const AzPhysics::ApiJointConfiguration& configuration,
+        const AzPhysics::JointConfiguration& configuration,
         const ActorInstance* actorInstance,
         const Node* node,
         const Node* parentNode,

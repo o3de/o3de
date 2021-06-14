@@ -62,7 +62,7 @@ namespace PhysX
 
     JointComponent::JointComponent(
         const JointComponentConfiguration& configuration, 
-        const ApiJointGenericProperties& genericProperties)
+        const JointGenericProperties& genericProperties)
         : m_configuration(configuration)
         , m_genericProperties(genericProperties)
     {
@@ -70,8 +70,8 @@ namespace PhysX
 
     JointComponent::JointComponent(
         const JointComponentConfiguration& configuration, 
-        const ApiJointGenericProperties& genericProperties,
-        const ApiJointLimitProperties& limitProperties)
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
         : m_configuration(configuration)
         , m_genericProperties(genericProperties)
         , m_limits(limitProperties)

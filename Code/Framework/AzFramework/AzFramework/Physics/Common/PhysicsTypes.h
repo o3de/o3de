@@ -51,10 +51,10 @@ namespace AzPhysics
 
     using SceneIndex = AZ::s8;
     using SimulatedBodyIndex = AZ::s32;
-    using ApiJointIndex = AZ::s32;
+    using JointIndex = AZ::s32;
     static_assert(std::is_signed<SceneIndex>::value
         && std::is_signed<SimulatedBodyIndex>::value
-        && std::is_signed<ApiJointIndex>::value, "SceneIndex, SimulatedBodyIndex and ApiJointIndex must be signed integers.");
+        && std::is_signed<JointIndex>::value, "SceneIndex, SimulatedBodyIndex and JointIndex must be signed integers.");
     
 
     //! A handle to a Scene within the physics simulation.
@@ -72,9 +72,9 @@ namespace AzPhysics
     using SimulatedBodyHandleList = AZStd::vector<SimulatedBodyHandle>;
 
     //! A handle to a Joint within a physics scene.
-    //! A ApiJointHandle is a tuple of a Crc of the scene's name and the index in the ApiJoint list.
-    using ApiJointHandle = AZStd::tuple<AZ::Crc32, ApiJointIndex>;
-    static constexpr ApiJointHandle InvalidApiJointHandle = { AZ::Crc32(), -1 };
+    //! A JointHandle is a tuple of a Crc of the scene's name and the index in the Joint list.
+    using JointHandle = AZStd::tuple<AZ::Crc32, JointIndex>;
+    static constexpr JointHandle InvalidJointHandle = { AZ::Crc32(), -1 };
 
     //! Helper used for pairing the ShapeConfiguration and ColliderConfiguration together which is used when creating a Simulated Body.
     using ShapeColliderPair = AZStd::pair<

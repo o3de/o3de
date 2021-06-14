@@ -37,15 +37,15 @@ namespace PhysX
 
     BallJointComponent::BallJointComponent(
         const JointComponentConfiguration& configuration, 
-        const ApiJointGenericProperties& genericProperties,
-        const ApiJointLimitProperties& limitProperties)
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
         : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
     void BallJointComponent::InitNativeJoint()
     {
-        if (m_jointHandle != AzPhysics::InvalidApiJointHandle)
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
         {
             return;
         }
@@ -60,7 +60,7 @@ namespace PhysX
         AZ::Transform parentLocal = PxMathConvert(leadFollowerInfo.m_leadLocal);
         AZ::Transform childLocal = PxMathConvert(leadFollowerInfo.m_followerLocal);
 
-        BallApiJointConfiguration configuration;
+        BallJointConfiguration configuration;
 
         configuration.m_parentLocalPosition = parentLocal.GetTranslation();
         configuration.m_parentLocalRotation = parentLocal.GetRotation();

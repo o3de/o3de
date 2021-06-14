@@ -137,7 +137,7 @@ namespace EMotionFX
         Physics::RagdollNodeConfiguration* ragdollNodeConfig = GetRagdollNodeConfig();
         if (ragdollNodeConfig)
         {
-            AzPhysics::ApiJointConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointConfig.get();
+            AzPhysics::JointConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointConfig.get();
             if (jointLimitConfig)
             {
                 const AZ::TypeId& jointTypeId = jointLimitConfig->RTTI_GetType();

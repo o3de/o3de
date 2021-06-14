@@ -145,8 +145,8 @@ namespace PhysX
         }
     }
 
-    AzPhysics::ApiJointHandle PhysXSceneInterface::AddJoint(
-        AzPhysics::SceneHandle sceneHandle, const AzPhysics::ApiJointConfiguration* jointConfig, 
+    AzPhysics::JointHandle PhysXSceneInterface::AddJoint(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig, 
         AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
@@ -154,20 +154,20 @@ namespace PhysX
             return scene->AddJoint(jointConfig, parentBody, childBody);
         }
 
-        return AzPhysics::InvalidApiJointHandle;
+        return AzPhysics::InvalidJointHandle;
     }
 
-    AzPhysics::ApiJoint* PhysXSceneInterface::GetApiJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) 
+    AzPhysics::Joint* PhysXSceneInterface::GetJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) 
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {
-            return scene->GetApiJointFromHandle(jointHandle);
+            return scene->GetJointFromHandle(jointHandle);
         }
 
         return nullptr;
     }
 
-    void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle jointHandle) 
+    void PhysXSceneInterface::RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) 
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
         {

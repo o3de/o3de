@@ -68,7 +68,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
-        ApiJointLimitProperties ToGameTimeConfig() const;
+        JointLimitProperties ToGameTimeConfig() const;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitPositive = 45.0f;
@@ -87,7 +87,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         bool IsLimited() const;
-        ApiJointLimitProperties ToGameTimeConfig() const;
+        JointLimitProperties ToGameTimeConfig() const;
 
         EditorJointLimitConfig m_standardLimitConfig;
         float m_limitY = 45.0f;
@@ -105,7 +105,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         void SetLeadEntityId(AZ::EntityId leadEntityId);
-        ApiJointGenericProperties ToGenericProperties() const;
+        JointGenericProperties ToGenericProperties() const;
         JointComponentConfiguration ToGameTimeConfig() const;
 
         bool m_breakable = false;

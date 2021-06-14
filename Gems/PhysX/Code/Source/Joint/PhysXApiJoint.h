@@ -18,19 +18,19 @@
 
 namespace PhysX
 {
-    class PhysXApiJoint
-        : public AzPhysics::ApiJoint
+    class PhysXJoint
+        : public AzPhysics::Joint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXApiJoint, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysXApiJoint, "{DBE1D185-E318-407D-A5A1-AC1DE7F4A62D}", AzPhysics::ApiJoint);
+        AZ_CLASS_ALLOCATOR(PhysXJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXJoint, "{DBE1D185-E318-407D-A5A1-AC1DE7F4A62D}", AzPhysics::Joint);
 
-        PhysXApiJoint(
+        PhysXJoint(
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle);
 
-        virtual ~PhysXApiJoint() = default;
+        virtual ~PhysXJoint() = default;
 
         AzPhysics::SimulatedBodyHandle GetParentBodyHandle() const override;
         AzPhysics::SimulatedBodyHandle GetChildBodyHandle() const override;
@@ -49,13 +49,13 @@ namespace PhysX
     };
 
     class PhysXD6Joint
-        : public PhysXApiJoint
+        : public PhysXJoint
     {
     public:
         AZ_CLASS_ALLOCATOR(PhysXD6Joint, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysXD6Joint, "{144B2FAF-A3EE-4FE1-9328-2C44FE1E3676}", PhysX::PhysXApiJoint);
+        AZ_RTTI(PhysXD6Joint, "{144B2FAF-A3EE-4FE1-9328-2C44FE1E3676}", PhysX::PhysXJoint);
 
-        PhysXD6Joint(const D6ApiJointLimitConfiguration& configuration,
+        PhysXD6Joint(const D6JointLimitConfiguration& configuration,
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle);
@@ -74,52 +74,52 @@ namespace PhysX
     };
 
     //! A fixed joint locks 2 bodies relative to one another on all axes of freedom.
-    class PhysXFixedApiJoint : public PhysXApiJoint
+    class PhysXFixedJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXFixedApiJoint, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysXFixedApiJoint, "{B821D6D8-7B41-479D-9325-F9BC9754C5F8}", PhysX::PhysXApiJoint);
+        AZ_CLASS_ALLOCATOR(PhysXFixedJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXFixedJoint, "{B821D6D8-7B41-479D-9325-F9BC9754C5F8}", PhysX::PhysXJoint);
 
-        PhysXFixedApiJoint(const FixedApiJointConfiguration& configuration,
+        PhysXFixedJoint(const FixedJointConfiguration& configuration,
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle);
 
-        virtual ~PhysXFixedApiJoint() = default;
+        virtual ~PhysXFixedJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
     };
 
     //! A ball joint locks 2 bodies relative to one another except about the y and z axes of the joint between them.
-    class PhysXBallApiJoint : public PhysXApiJoint
+    class PhysXBallJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXBallApiJoint, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysXBallApiJoint, "{9494CE43-3AE2-40AB-ADF7-FDC5F8B0F15A}", PhysX::PhysXApiJoint);
+        AZ_CLASS_ALLOCATOR(PhysXBallJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXBallJoint, "{9494CE43-3AE2-40AB-ADF7-FDC5F8B0F15A}", PhysX::PhysXJoint);
 
-        PhysXBallApiJoint(const BallApiJointConfiguration& configuration,
+        PhysXBallJoint(const BallJointConfiguration& configuration,
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle);
 
-        virtual ~PhysXBallApiJoint() = default;
+        virtual ~PhysXBallJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
     };
 
     //! A hinge joint locks 2 bodies relative to one another except about the x-axis of the joint between them.
-    class PhysXHingeApiJoint : public PhysXApiJoint
+    class PhysXHingeJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXHingeApiJoint, AZ::SystemAllocator, 0);
-        AZ_RTTI(PhysXHingeApiJoint, "{9C5B955C-6C80-45FA-855D-DDA449C85313}", PhysX::PhysXApiJoint);
+        AZ_CLASS_ALLOCATOR(PhysXHingeJoint, AZ::SystemAllocator, 0);
+        AZ_RTTI(PhysXHingeJoint, "{9C5B955C-6C80-45FA-855D-DDA449C85313}", PhysX::PhysXJoint);
 
-        PhysXHingeApiJoint(const HingeApiJointConfiguration& configuration,
+        PhysXHingeJoint(const HingeJointConfiguration& configuration,
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle);
 
-        virtual ~PhysXHingeApiJoint() = default;
+        virtual ~PhysXHingeJoint() = default;
 
         AZ::Crc32 GetNativeType() const override;
     };

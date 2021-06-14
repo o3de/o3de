@@ -40,8 +40,8 @@ namespace PhysX
         const AZ::Vector3& position, 
         const AZ::Vector3& initialLinearVelocity,
         AZStd::shared_ptr<JointComponentConfiguration> jointConfig = nullptr,
-        AZStd::shared_ptr<ApiJointGenericProperties> jointGenericProperties = nullptr,
-        AZStd::shared_ptr<ApiJointLimitProperties> jointLimitProperties = nullptr)
+        AZStd::shared_ptr<JointGenericProperties> jointGenericProperties = nullptr,
+        AZStd::shared_ptr<JointLimitProperties> jointLimitProperties = nullptr)
     {
         const char* entityName = "testEntity";
         auto entity = AZStd::make_unique<AZ::Entity>(entityName);
@@ -70,8 +70,8 @@ namespace PhysX
         {
             jointConfig->m_followerEntity = entity->GetId();
 
-            ApiJointGenericProperties defaultJointGenericProperties;
-            ApiJointLimitProperties defaultJointLimitProperties;
+            JointGenericProperties defaultJointGenericProperties;
+            JointLimitProperties defaultJointLimitProperties;
             entity->CreateComponent<JointComponentType>(
                     *jointConfig,
                     (jointGenericProperties)? *jointGenericProperties : defaultJointGenericProperties,
@@ -158,7 +158,7 @@ namespace PhysX
         jointConfig->m_leadEntity = leadEntity->GetId();
         jointConfig->m_localTransformFromFollower = jointLocalTransform;
 
-        auto jointLimits = AZStd::make_shared <ApiJointLimitProperties>();
+        auto jointLimits = AZStd::make_shared <JointLimitProperties>();
         jointLimits->m_isLimited = false;
 
         auto followerEntity = AddBodyColliderEntity<HingeJointComponent>(m_testSceneHandle,
@@ -200,7 +200,7 @@ namespace PhysX
         jointConfig->m_leadEntity = leadEntity->GetId();
         jointConfig->m_localTransformFromFollower = jointLocalTransform;
 
-        auto jointLimits = AZStd::make_shared <ApiJointLimitProperties>();
+        auto jointLimits = AZStd::make_shared <JointLimitProperties>();
         jointLimits->m_isLimited = false;
 
         auto followerEntity = AddBodyColliderEntity<BallJointComponent>(m_testSceneHandle,
@@ -215,7 +215,7 @@ namespace PhysX
         EXPECT_TRUE(followerEndPosition.GetZ() > followerPosition.GetZ());
     }
 
-    template<class ApiJointConfigurationType>
+    template<class JointConfigurationType>
     class PhysXJointsApiTest : public PhysX::GenericPhysicsInterfaceTest
     {
     public:
@@ -256,29 +256,29 @@ namespace PhysX
             PhysX::GenericPhysicsInterfaceTest::TearDown();
         }
 
-        AzPhysics::SimulatedBodyHandle m_parentBodyHandle = AzPhysics::InvalidApiJointHandle;
-        AzPhysics::SimulatedBodyHandle m_childBodyHandle = AzPhysics::InvalidApiJointHandle;
+        AzPhysics::SimulatedBodyHandle m_parentBodyHandle = AzPhysics::InvalidJointHandle;
+        AzPhysics::SimulatedBodyHandle m_childBodyHandle = AzPhysics::InvalidJointHandle;
         AZ::Vector3 m_childInitialPos;
     };
 
-    using ApiJointTypes = testing::Types<
-        D6ApiJointLimitConfiguration, 
-        FixedApiJointConfiguration, 
-        BallApiJointConfiguration, 
-        HingeApiJointConfiguration>;
-    TYPED_TEST_CASE(PhysXJointsApiTest, ApiJointTypes);
+    using JointTypes = testing::Types<
+        D6JointLimitConfiguration, 
+        FixedJointConfiguration, 
+        BallJointConfiguration, 
+        HingeJointConfiguration>;
+    TYPED_TEST_CASE(PhysXJointsApiTest, JointTypes);
 
     TYPED_TEST(PhysXJointsApiTest, Joint_ChildFollowsParent)
     {
         TypeParam jointConfiguration;
-        AzPhysics::ApiJointHandle jointHandle = AzPhysics::InvalidApiJointHandle;
+        AzPhysics::JointHandle jointHandle = AzPhysics::InvalidJointHandle;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             jointHandle = sceneInterface->AddJoint(m_testSceneHandle, &jointConfiguration, m_parentBodyHandle, m_childBodyHandle);    
         }
 
-        EXPECT_NE(jointHandle, AzPhysics::InvalidApiJointHandle);
+        EXPECT_NE(jointHandle, AzPhysics::InvalidJointHandle);
 
         // run physics to trigger the the move of parent body
         TestUtils::UpdateScene(m_testSceneHandle, AzPhysics::SystemConfiguration::DefaultFixedTimestep, 1);

@@ -145,9 +145,9 @@ namespace PhysX
         return m_standardLimitConfig.m_isLimited;
     }
 
-    ApiJointLimitProperties EditorJointLimitPairConfig::ToGameTimeConfig() const
+    JointLimitProperties EditorJointLimitPairConfig::ToGameTimeConfig() const
     {
-        return ApiJointLimitProperties(m_standardLimitConfig.m_damping
+        return JointLimitProperties(m_standardLimitConfig.m_damping
             , m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
             , m_limitPositive, m_limitNegative
@@ -194,9 +194,9 @@ namespace PhysX
         return m_standardLimitConfig.m_isLimited;
     }
 
-    ApiJointLimitProperties EditorJointLimitConeConfig::ToGameTimeConfig() const
+    JointLimitProperties EditorJointLimitConeConfig::ToGameTimeConfig() const
     {
-        return ApiJointLimitProperties(m_standardLimitConfig.m_damping
+        return JointLimitProperties(m_standardLimitConfig.m_damping
             , m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
             , m_limitY
@@ -276,19 +276,19 @@ namespace PhysX
             , AzToolsFramework::Refresh_AttributesAndValues);
     }
 
-    ApiJointGenericProperties EditorJointConfig::ToGenericProperties() const
+    JointGenericProperties EditorJointConfig::ToGenericProperties() const
     {
-        ApiJointGenericProperties::GenericApiJointFlag flags = ApiJointGenericProperties::GenericApiJointFlag::None;
+        JointGenericProperties::GenericJointFlag flags = JointGenericProperties::GenericJointFlag::None;
         if (m_breakable)
         {
-            flags |= ApiJointGenericProperties::GenericApiJointFlag::Breakable;
+            flags |= JointGenericProperties::GenericJointFlag::Breakable;
         }
         if (m_selfCollide)
         {
-            flags |= ApiJointGenericProperties::GenericApiJointFlag::SelfCollide;
+            flags |= JointGenericProperties::GenericJointFlag::SelfCollide;
         }
 
-        return ApiJointGenericProperties(flags, m_forceMax, m_torqueMax);
+        return JointGenericProperties(flags, m_forceMax, m_torqueMax);
     }
 
     JointComponentConfiguration EditorJointConfig::ToGameTimeConfig() const

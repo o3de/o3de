@@ -38,15 +38,15 @@ namespace PhysX
 
     HingeJointComponent::HingeJointComponent(
         const JointComponentConfiguration& configuration, 
-        const ApiJointGenericProperties& genericProperties,
-        const ApiJointLimitProperties& limitProperties)
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
         : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
     void HingeJointComponent::InitNativeJoint()
     {
-        if (m_jointHandle != AzPhysics::InvalidApiJointHandle)
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
         {
             return;
         }
@@ -61,7 +61,7 @@ namespace PhysX
         AZ::Transform parentLocal = PxMathConvert(leadFollowerInfo.m_leadLocal);
         AZ::Transform childLocal = PxMathConvert(leadFollowerInfo.m_followerLocal);
 
-        HingeApiJointConfiguration configuration;
+        HingeJointConfiguration configuration;
 
         configuration.m_parentLocalPosition = parentLocal.GetTranslation();
         configuration.m_parentLocalRotation = parentLocal.GetRotation();

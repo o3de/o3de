@@ -75,7 +75,7 @@ namespace Physics
 
         MOCK_METHOD5(
             ComputeInitialJointLimitConfiguration,
-            AZStd::unique_ptr<AzPhysics::ApiJointConfiguration>(
+            AZStd::unique_ptr<AzPhysics::JointConfiguration>(
                 const AZ::TypeId& jointLimitTypeId,
                 const AZ::Quaternion& parentWorldRotation,
                 const AZ::Quaternion& childWorldRotation,
@@ -85,7 +85,7 @@ namespace Physics
         MOCK_METHOD10(
             GenerateJointLimitVisualizationData,
             void(
-                const AzPhysics::ApiJointConfiguration& configuration,
+                const AzPhysics::JointConfiguration& configuration,
                 const AZ::Quaternion& parentRotation,
                 const AZ::Quaternion& childRotation,
                 float scale,
@@ -124,7 +124,7 @@ namespace Physics
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
         void RemoveJoint(
             [[maybe_unused]]AzPhysics::SceneHandle sceneHandle,
-            [[maybe_unused]] AzPhysics::ApiJointHandle jointHandle) override {}
+            [[maybe_unused]] AzPhysics::JointHandle jointHandle) override {}
         void SuppressCollisionEvents(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA,
@@ -173,9 +173,9 @@ namespace Physics
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle));
         MOCK_METHOD2(GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& bodyHandles));
-        MOCK_METHOD4(AddJoint, AzPhysics::ApiJointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::ApiJointConfiguration* jointConfig,
+        MOCK_METHOD4(AddJoint, AzPhysics::JointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig,
             AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody));
-        MOCK_METHOD2(GetApiJointFromHandle, AzPhysics::ApiJoint* (AzPhysics::SceneHandle sceneHandle, AzPhysics::ApiJointHandle bodyHandle));
+        MOCK_METHOD2(GetJointFromHandle, AzPhysics::Joint* (AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle bodyHandle));
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));

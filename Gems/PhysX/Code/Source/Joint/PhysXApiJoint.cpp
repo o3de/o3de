@@ -20,17 +20,17 @@
 
 namespace PhysX
 {
-    AzPhysics::SimulatedBodyHandle PhysXApiJoint::GetParentBodyHandle() const
+    AzPhysics::SimulatedBodyHandle PhysXJoint::GetParentBodyHandle() const
     {
         return m_parentBodyHandle;
     }
 
-    AzPhysics::SimulatedBodyHandle PhysXApiJoint::GetChildBodyHandle() const
+    AzPhysics::SimulatedBodyHandle PhysXJoint::GetChildBodyHandle() const
     {
         return m_childBodyHandle;
     }
 
-    PhysXApiJoint::PhysXApiJoint(
+    PhysXJoint::PhysXJoint(
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
@@ -41,7 +41,7 @@ namespace PhysX
 
     }
 
-    bool PhysXApiJoint::SetPxActors()
+    bool PhysXJoint::SetPxActors()
     {
         physx::PxRigidActor* parentActor = Utils::GetPxRigidActor(m_sceneHandle, m_parentBodyHandle);
         physx::PxRigidActor* childActor = Utils::GetPxRigidActor(m_sceneHandle, m_childBodyHandle);
@@ -55,7 +55,7 @@ namespace PhysX
         return true;
     }
 
-    void PhysXApiJoint::SetParentBody(AzPhysics::SimulatedBodyHandle parentBodyHandle)
+    void PhysXJoint::SetParentBody(AzPhysics::SimulatedBodyHandle parentBodyHandle)
     {
         auto* parentBody = Utils::GetSimulatedBodyFromHandle(m_sceneHandle, parentBodyHandle);
         auto* childBody = Utils::GetSimulatedBodyFromHandle(m_sceneHandle, m_childBodyHandle);
@@ -72,7 +72,7 @@ namespace PhysX
         }
     }
 
-    void PhysXApiJoint::SetChildBody(AzPhysics::SimulatedBodyHandle childBodyHandle)
+    void PhysXJoint::SetChildBody(AzPhysics::SimulatedBodyHandle childBodyHandle)
     {
         auto* parentBody = Utils::GetSimulatedBodyFromHandle(m_sceneHandle, m_parentBodyHandle);
         auto* childBody = Utils::GetSimulatedBodyFromHandle(m_sceneHandle, childBodyHandle);
@@ -89,43 +89,43 @@ namespace PhysX
         }
     }
 
-    void* PhysXApiJoint::GetNativePointer() const
+    void* PhysXJoint::GetNativePointer() const
     {
         return m_pxJoint.get();
     }
 
-    PhysXD6Joint::PhysXD6Joint(const D6ApiJointLimitConfiguration& configuration,
+    PhysXD6Joint::PhysXD6Joint(const D6JointLimitConfiguration& configuration,
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
-        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+        : PhysXJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
         m_pxJoint = Utils::PxJointFactories::CreatePxD6Joint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
-    PhysXFixedApiJoint::PhysXFixedApiJoint(const FixedApiJointConfiguration& configuration,
+    PhysXFixedJoint::PhysXFixedJoint(const FixedJointConfiguration& configuration,
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
-        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+        : PhysXJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
         m_pxJoint = Utils::PxJointFactories::CreatePxFixedJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
-    PhysXBallApiJoint::PhysXBallApiJoint(const BallApiJointConfiguration& configuration,
+    PhysXBallJoint::PhysXBallJoint(const BallJointConfiguration& configuration,
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
-        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+        : PhysXJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
         m_pxJoint = Utils::PxJointFactories::CreatePxBallJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
-    PhysXHingeApiJoint::PhysXHingeApiJoint(const HingeApiJointConfiguration& configuration,
+    PhysXHingeJoint::PhysXHingeJoint(const HingeJointConfiguration& configuration,
         AzPhysics::SceneHandle sceneHandle,
         AzPhysics::SimulatedBodyHandle parentBodyHandle,
         AzPhysics::SimulatedBodyHandle childBodyHandle)
-        : PhysXApiJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+        : PhysXJoint(sceneHandle, parentBodyHandle, childBodyHandle)
     {
         m_pxJoint = Utils::PxJointFactories::CreatePxHingeJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
@@ -135,17 +135,17 @@ namespace PhysX
         return NativeTypeIdentifiers::D6Joint;
     }
 
-    AZ::Crc32 PhysXFixedApiJoint::GetNativeType() const
+    AZ::Crc32 PhysXFixedJoint::GetNativeType() const
     {
         return NativeTypeIdentifiers::FixedJoint;
     }
 
-    AZ::Crc32 PhysXBallApiJoint::GetNativeType() const
+    AZ::Crc32 PhysXBallJoint::GetNativeType() const
     {
         return NativeTypeIdentifiers::BallJoint;
     }
 
-    AZ::Crc32 PhysXHingeApiJoint::GetNativeType() const
+    AZ::Crc32 PhysXHingeJoint::GetNativeType() const
     {
         return NativeTypeIdentifiers::HingeJoint;
     }

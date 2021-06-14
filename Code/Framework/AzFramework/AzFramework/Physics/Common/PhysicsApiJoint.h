@@ -29,25 +29,25 @@ namespace AZ
 
 namespace AzPhysics
 {
-    struct ApiJointConfiguration;
+    struct JointConfiguration;
 
     //! Base class for all Joints in Physics.
-    struct ApiJoint
+    struct Joint
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(AzPhysics::ApiJoint, "{1EEC9382-3434-4866-9B18-E93F151A6F59}");
+        AZ_RTTI(AzPhysics::Joint, "{1EEC9382-3434-4866-9B18-E93F151A6F59}");
         static void Reflect(AZ::ReflectContext* context);
 
-        virtual ~ApiJoint() = default;
+        virtual ~Joint() = default;
 
         //! The current Scene the joint is contained.
         SceneHandle m_sceneOwner = AzPhysics::InvalidSceneHandle;
 
         //! The handle to this joint.
-        ApiJointHandle m_jointHandle = AzPhysics::InvalidApiJointHandle;
+        JointHandle m_jointHandle = AzPhysics::InvalidJointHandle;
 
         //! Helper functions for setting user data.
-        //! @param userData Can be a pointer to any type as internally will be cast to a void*. Object lifetime not managed by the ApiJoint.
+        //! @param userData Can be a pointer to any type as internally will be cast to a void*. Object lifetime not managed by the Joint.
         template<typename T>
         void SetUserData(T* userData)
         {
@@ -82,8 +82,8 @@ namespace AzPhysics
         void* m_customUserData = nullptr;
     };
 
-    //! Alias for a list of non owning weak pointers to ApiJoint objects.
-    using ApiJointList = AZStd::vector<ApiJoint*>;
+    //! Alias for a list of non owning weak pointers to Joint objects.
+    using JointList = AZStd::vector<Joint*>;
 
     //! Interface to access Joint utilities and helper functions
     class JointHelpersInterface
@@ -110,7 +110,7 @@ namespace AzPhysics
         //! @param exampleLocalRotations A vector (which may be empty) containing example valid rotations in the local space
         //! of the child world body relative to the parent world body, which may optionally be used to help estimate the extents
         //! of the joint limit.
-        virtual AZStd::unique_ptr<ApiJointConfiguration> ComputeInitialJointLimitConfiguration(
+        virtual AZStd::unique_ptr<JointConfiguration> ComputeInitialJointLimitConfiguration(
             const AZ::TypeId& jointLimitTypeId,
             const AZ::Quaternion& parentWorldRotation,
             const AZ::Quaternion& childWorldRotation,
@@ -129,7 +129,7 @@ namespace AzPhysics
         /// @param[out] lineBufferOut Used to define lines to be displayed.
         /// @param[out] lineValidityBufferOut Whether each line in the line buffer is part of a valid or violated limit.
         virtual void GenerateJointLimitVisualizationData(
-            const ApiJointConfiguration& configuration,
+            const JointConfiguration& configuration,
             const AZ::Quaternion& parentRotation,
             const AZ::Quaternion& childRotation,
             float scale,

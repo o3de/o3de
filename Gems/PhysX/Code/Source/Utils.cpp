@@ -1394,12 +1394,12 @@ namespace PhysX
 
             ForceRegionBusBehaviorHandler::Reflect(context);
 
-            D6ApiJointLimitConfiguration::Reflect(context);
-            ApiJointGenericProperties::Reflect(context);
-            ApiJointLimitProperties::Reflect(context);
-            FixedApiJointConfiguration::Reflect(context);
-            BallApiJointConfiguration::Reflect(context);
-            HingeApiJointConfiguration::Reflect(context);
+            D6JointLimitConfiguration::Reflect(context);
+            JointGenericProperties::Reflect(context);
+            JointLimitProperties::Reflect(context);
+            FixedJointConfiguration::Reflect(context);
+            BallJointConfiguration::Reflect(context);
+            HingeJointConfiguration::Reflect(context);
         }
 
         void ForceRegionBusBehaviorHandler::Reflect(AZ::ReflectContext* context)

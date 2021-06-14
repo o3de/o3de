@@ -783,7 +783,7 @@ namespace PhysXDebug
                     Physics::RagdollNode* ragdollNode = actorData->GetRagdollNode();
                     if (ragdollNode)
                     {
-                        AzPhysics::ApiJoint* joint = ragdollNode->GetJoint();
+                        AzPhysics::Joint* joint = ragdollNode->GetJoint();
                         physx::PxJoint* pxJoint = static_cast<physx::PxJoint*>(joint->GetNativePointer());
                         physx::PxTransform jointPose = actor1->getGlobalPose() * pxJoint->getLocalPose(physx::PxJointActorIndex::eACTOR1);
                         if (!m_culling.m_enabled || m_cullingBox.contains(jointPose.p))

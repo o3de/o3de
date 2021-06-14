@@ -18,7 +18,7 @@
 
 namespace PhysX
 {
-    ApiJointGenericProperties::ApiJointGenericProperties(GenericApiJointFlag flags, float forceMax, float torqueMax)
+    JointGenericProperties::JointGenericProperties(GenericJointFlag flags, float forceMax, float torqueMax)
         : m_flags(flags)
         , m_forceMax(forceMax)
         , m_torqueMax(torqueMax)
@@ -26,7 +26,7 @@ namespace PhysX
 
     }
 
-    ApiJointLimitProperties::ApiJointLimitProperties(
+    JointLimitProperties::JointLimitProperties(
         bool isLimited, bool isSoftLimit, 
         float damping, float limitFirst, float limitSecond, float stiffness, float tolerance)
         : m_isLimited(isLimited)
@@ -40,45 +40,45 @@ namespace PhysX
 
     }
 
-    bool ApiJointGenericProperties::IsFlagSet(GenericApiJointFlag flag) const
+    bool JointGenericProperties::IsFlagSet(GenericJointFlag flag) const
     {
         return static_cast<bool>(m_flags & flag);
     }
 
-    void D6ApiJointLimitConfiguration::Reflect(AZ::ReflectContext* context)
+    void D6JointLimitConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<D6ApiJointLimitConfiguration, AzPhysics::ApiJointConfiguration>()
+            serializeContext->Class<D6JointLimitConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
-                ->Field("SwingLimitY", &D6ApiJointLimitConfiguration::m_swingLimitY)
-                ->Field("SwingLimitZ", &D6ApiJointLimitConfiguration::m_swingLimitZ)
-                ->Field("TwistLowerLimit", &D6ApiJointLimitConfiguration::m_twistLimitLower)
-                ->Field("TwistUpperLimit", &D6ApiJointLimitConfiguration::m_twistLimitUpper)
+                ->Field("SwingLimitY", &D6JointLimitConfiguration::m_swingLimitY)
+                ->Field("SwingLimitZ", &D6JointLimitConfiguration::m_swingLimitZ)
+                ->Field("TwistLowerLimit", &D6JointLimitConfiguration::m_twistLimitLower)
+                ->Field("TwistUpperLimit", &D6JointLimitConfiguration::m_twistLimitUpper)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<D6ApiJointLimitConfiguration>(
+                editContext->Class<D6JointLimitConfiguration>(
                     "PhysX D6 Joint Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6ApiJointLimitConfiguration::m_swingLimitY, "Swing limit Y",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitY, "Swing limit Y",
                         "Maximum angle from the Y axis of the joint frame")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6ApiJointLimitConfiguration::m_swingLimitZ, "Swing limit Z",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_swingLimitZ, "Swing limit Z",
                         "Maximum angle from the Z axis of the joint frame")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, JointConstants::MinSwingLimitDegrees)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6ApiJointLimitConfiguration::m_twistLimitLower, "Twist lower limit",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitLower, "Twist lower limit",
                         "Lower limit for rotation about the X axis of the joint frame")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, 180.0f)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6ApiJointLimitConfiguration::m_twistLimitUpper, "Twist upper limit",
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &D6JointLimitConfiguration::m_twistLimitUpper, "Twist upper limit",
                         "Upper limit for rotation about the X axis of the joint frame")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
                     ->Attribute(AZ::Edit::Attributes::Min, -180.0f)
@@ -88,67 +88,67 @@ namespace PhysX
         }
     }
 
-    void ApiJointGenericProperties::Reflect(AZ::ReflectContext* context)
+    void JointGenericProperties::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ApiJointGenericProperties>()
+            serializeContext->Class<JointGenericProperties>()
                 ->Version(1)
-                ->Field("Maximum Force", &ApiJointGenericProperties::m_forceMax)
-                ->Field("Maximum Torque", &ApiJointGenericProperties::m_torqueMax)
-                ->Field("Flags", &ApiJointGenericProperties::m_flags)
+                ->Field("Maximum Force", &JointGenericProperties::m_forceMax)
+                ->Field("Maximum Torque", &JointGenericProperties::m_torqueMax)
+                ->Field("Flags", &JointGenericProperties::m_flags)
                 ;
         }
     }
 
-    void ApiJointLimitProperties::Reflect(AZ::ReflectContext* context)
+    void JointLimitProperties::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ApiJointLimitProperties>()
+            serializeContext->Class<JointLimitProperties>()
                 ->Version(1)
-                ->Field("First Limit", &ApiJointLimitProperties::m_limitFirst)
-                ->Field("Second Limit", &ApiJointLimitProperties::m_limitSecond)
-                ->Field("Tolerance", &ApiJointLimitProperties::m_tolerance)
-                ->Field("Is Limited", &ApiJointLimitProperties::m_isLimited)
-                ->Field("Is Soft Limit", &ApiJointLimitProperties::m_isSoftLimit)
-                ->Field("Damping", &ApiJointLimitProperties::m_damping)
-                ->Field("Spring", &ApiJointLimitProperties::m_stiffness)
+                ->Field("First Limit", &JointLimitProperties::m_limitFirst)
+                ->Field("Second Limit", &JointLimitProperties::m_limitSecond)
+                ->Field("Tolerance", &JointLimitProperties::m_tolerance)
+                ->Field("Is Limited", &JointLimitProperties::m_isLimited)
+                ->Field("Is Soft Limit", &JointLimitProperties::m_isSoftLimit)
+                ->Field("Damping", &JointLimitProperties::m_damping)
+                ->Field("Spring", &JointLimitProperties::m_stiffness)
                 ;
         }
     }
 
-    void FixedApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    void FixedJointConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<FixedApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+            serializeContext->Class<FixedJointConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
-                ->Field("Generic Properties", &FixedApiJointConfiguration::m_genericProperties)
+                ->Field("Generic Properties", &FixedJointConfiguration::m_genericProperties)
                 ;
         }
     }
 
-    void BallApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    void BallJointConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<BallApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+            serializeContext->Class<BallJointConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
-                ->Field("Generic Properties", &BallApiJointConfiguration::m_genericProperties)
-                ->Field("Limit Properties", &BallApiJointConfiguration::m_limitProperties)
+                ->Field("Generic Properties", &BallJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &BallJointConfiguration::m_limitProperties)
                 ;
         }
     }
     
-    void HingeApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    void HingeJointConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<HingeApiJointConfiguration, AzPhysics::ApiJointConfiguration>()
+            serializeContext->Class<HingeJointConfiguration, AzPhysics::JointConfiguration>()
                 ->Version(1)
-                ->Field("Generic Properties", &HingeApiJointConfiguration::m_genericProperties)
-                ->Field("Limit Properties", &HingeApiJointConfiguration::m_limitProperties)
+                ->Field("Generic Properties", &HingeJointConfiguration::m_genericProperties)
+                ->Field("Limit Properties", &HingeJointConfiguration::m_limitProperties)
                 ;
         }
     }

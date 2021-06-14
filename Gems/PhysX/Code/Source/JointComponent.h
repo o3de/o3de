@@ -56,11 +56,11 @@ namespace PhysX
         JointComponent() = default;
         JointComponent(
             const JointComponentConfiguration& configuration, 
-            const ApiJointGenericProperties& genericProperties);
+            const JointGenericProperties& genericProperties);
         JointComponent(
             const JointComponentConfiguration& configuration, 
-            const ApiJointGenericProperties& genericProperties,
-            const ApiJointLimitProperties& limitProperties);
+            const JointGenericProperties& genericProperties,
+            const JointLimitProperties& limitProperties);
 
     protected:
         /// Struct to provide subclasses with native pointers during joint initialization.
@@ -100,9 +100,9 @@ namespace PhysX
 
 
         JointComponentConfiguration m_configuration;
-        ApiJointGenericProperties m_genericProperties;
-        ApiJointLimitProperties m_limits;
-        AzPhysics::ApiJointHandle m_jointHandle = AzPhysics::InvalidApiJointHandle;
+        JointGenericProperties m_genericProperties;
+        JointLimitProperties m_limits;
+        AzPhysics::JointHandle m_jointHandle = AzPhysics::InvalidJointHandle;
         AzPhysics::SceneHandle m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
     };
 } // namespace PhysX

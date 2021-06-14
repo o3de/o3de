@@ -39,22 +39,22 @@ namespace PhysX
 
         namespace PxJointFactories
         {
-            PxJointUniquePtr CreatePxD6Joint(const PhysX::D6ApiJointLimitConfiguration& configuration,
+            PxJointUniquePtr CreatePxD6Joint(const PhysX::D6JointLimitConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
 
-            PxJointUniquePtr CreatePxFixedJoint(const PhysX::FixedApiJointConfiguration& configuration,
+            PxJointUniquePtr CreatePxFixedJoint(const PhysX::FixedJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
 
-            PxJointUniquePtr CreatePxBallJoint(const PhysX::BallApiJointConfiguration& configuration,
+            PxJointUniquePtr CreatePxBallJoint(const PhysX::BallJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
                 
-            PxJointUniquePtr CreatePxHingeJoint(const PhysX::HingeApiJointConfiguration& configuration,
+            PxJointUniquePtr CreatePxHingeJoint(const PhysX::HingeJointConfiguration& configuration,
                 AzPhysics::SceneHandle sceneHandle,
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);

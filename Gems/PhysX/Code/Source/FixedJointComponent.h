@@ -27,11 +27,11 @@ namespace PhysX
         FixedJointComponent() = default;
         FixedJointComponent(
             const JointComponentConfiguration& configuration, 
-            const ApiJointGenericProperties& genericProperties);
+            const JointGenericProperties& genericProperties);
         FixedJointComponent(
             const JointComponentConfiguration& configuration, 
-            const ApiJointGenericProperties& genericProperties,
-            const ApiJointLimitProperties& limitProperties);
+            const JointGenericProperties& genericProperties,
+            const JointLimitProperties& limitProperties);
         ~FixedJointComponent() = default;
 
     protected:

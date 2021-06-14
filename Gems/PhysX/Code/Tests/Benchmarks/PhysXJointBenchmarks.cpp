@@ -102,7 +102,7 @@ namespace PhysX::Benchmarks
         {
             AzPhysics::RigidBody* m_parent;
             AzPhysics::SimulatedBody* m_child;
-            AzPhysics::ApiJointHandle m_jointHandle;
+            AzPhysics::JointHandle m_jointHandle;
         };
         //! Structure to hold the upper and lower twist limits
         //! used with Utils::CreateJoints GenerateTwistLimitsFuncPtr
@@ -171,7 +171,7 @@ namespace PhysX::Benchmarks
                 AzPhysics::SimulatedBodyHandle staticRigidBodyHandle = scene->AddSimulatedBody(&staticRigidBodyConfig);
                 newJoint.m_child = scene->GetSimulatedBodyFromHandle(staticRigidBodyHandle);
 
-                PhysX::D6ApiJointLimitConfiguration config;
+                PhysX::D6JointLimitConfiguration config;
 
                 TwistLimits limits(JointConstants::CreateJointDefaults::UpperLimit, JointConstants::CreateJointDefaults::LowerLimit);
                 if (twistLimitsGenerator)
@@ -374,8 +374,8 @@ namespace PhysX::Benchmarks
         snakeRigidBodies = Utils::GetRigidBodiesFromHandles(m_defaultScene, snakeRigidBodyHandles);
 
         //build the snake
-        AZStd::vector<AzPhysics::ApiJointHandle> jointHandles;
-        PhysX::D6ApiJointLimitConfiguration config;
+        AZStd::vector<AzPhysics::JointHandle> jointHandles;
+        PhysX::D6JointLimitConfiguration config;
         config.m_twistLimitUpper = JointConstants::CreateJointDefaults::UpperLimit;
         config.m_twistLimitLower = JointConstants::CreateJointDefaults::LowerLimit;
         config.m_swingLimitY = 1.0f;

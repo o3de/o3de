@@ -17,20 +17,20 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ApiJointConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointConfiguration, AZ::SystemAllocator, 0);
 
-    void ApiJointConfiguration::Reflect(AZ::ReflectContext* context)
+    void JointConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ApiJointConfiguration>()
+            serializeContext->Class<JointConfiguration>()
                 ->Version(1)
-                ->Field("Name", &ApiJointConfiguration::m_debugName)
-                ->Field("ParentLocalRotation", &ApiJointConfiguration::m_parentLocalRotation)
-                ->Field("ParentLocalPosition", &ApiJointConfiguration::m_parentLocalPosition)
-                ->Field("ChildLocalRotation", &ApiJointConfiguration::m_childLocalRotation)
-                ->Field("ChildLocalPosition", &ApiJointConfiguration::m_childLocalPosition)
-                ->Field("StartSimulationEnabled", &ApiJointConfiguration::m_startSimulationEnabled)
+                ->Field("Name", &JointConfiguration::m_debugName)
+                ->Field("ParentLocalRotation", &JointConfiguration::m_parentLocalRotation)
+                ->Field("ParentLocalPosition", &JointConfiguration::m_parentLocalPosition)
+                ->Field("ChildLocalRotation", &JointConfiguration::m_childLocalRotation)
+                ->Field("ChildLocalPosition", &JointConfiguration::m_childLocalPosition)
+                ->Field("StartSimulationEnabled", &JointConfiguration::m_startSimulationEnabled)
                 ;
         }
     }

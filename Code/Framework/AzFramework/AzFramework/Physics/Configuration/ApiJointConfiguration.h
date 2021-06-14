@@ -26,14 +26,14 @@ namespace AZ
 namespace AzPhysics
 {
     //! Base Class of all Physics Joints that will be simulated.
-    struct ApiJointConfiguration
+    struct JointConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(AzPhysics::ApiJointConfiguration, "{DF91D39A-4901-48C4-9159-93FD2ACA5252}");
+        AZ_RTTI(AzPhysics::JointConfiguration, "{DF91D39A-4901-48C4-9159-93FD2ACA5252}");
         static void Reflect(AZ::ReflectContext* context);
 
-        ApiJointConfiguration() = default;
-        virtual ~ApiJointConfiguration() = default;
+        JointConfiguration() = default;
+        virtual ~JointConfiguration() = default;
 
         // Entity/object association.
         void* m_customUserData = nullptr;

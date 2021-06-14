@@ -262,18 +262,18 @@ namespace PhysX
                             physx::PxTransform parentTM(parentOffset);
                             physx::PxTransform childTM(physx::PxIdentity);
 
-                            AZStd::shared_ptr<AzPhysics::ApiJointConfiguration> jointConfig = configuration.m_nodes[nodeIndex].m_jointConfig;
+                            AZStd::shared_ptr<AzPhysics::JointConfiguration> jointConfig = configuration.m_nodes[nodeIndex].m_jointConfig;
                             if (!jointConfig)
                             {
-                                jointConfig = AZStd::make_shared<D6ApiJointLimitConfiguration>();
+                                jointConfig = AZStd::make_shared<D6JointLimitConfiguration>();
                             }
                             
-                            AzPhysics::ApiJointHandle jointHandle = sceneInterface->AddJoint(
+                            AzPhysics::JointHandle jointHandle = sceneInterface->AddJoint(
                                 sceneHandle, jointConfig.get(), 
                                 ragdoll->GetNode(parentIndex)->GetRigidBody().m_bodyHandle,
                                 ragdoll->GetNode(nodeIndex)->GetRigidBody().m_bodyHandle);
 
-                            AzPhysics::ApiJoint* joint = sceneInterface->GetApiJointFromHandle(sceneHandle, jointHandle);
+                            AzPhysics::Joint* joint = sceneInterface->GetJointFromHandle(sceneHandle, jointHandle);
 
                             if (!joint)
                             {

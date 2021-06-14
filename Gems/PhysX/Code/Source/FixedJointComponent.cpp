@@ -38,22 +38,22 @@ namespace PhysX
 
     FixedJointComponent::FixedJointComponent(
         const JointComponentConfiguration& configuration, 
-        const ApiJointGenericProperties& genericProperties)
+        const JointGenericProperties& genericProperties)
         : JointComponent(configuration, genericProperties)
     {
     }
 
     FixedJointComponent::FixedJointComponent(
         const JointComponentConfiguration& configuration, 
-        const ApiJointGenericProperties& genericProperties,
-        const ApiJointLimitProperties& limitProperties)
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
         : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
     void FixedJointComponent::InitNativeJoint()
     {
-        if (m_jointHandle != AzPhysics::InvalidApiJointHandle)
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
         {
             return;
         }
@@ -68,7 +68,7 @@ namespace PhysX
         AZ::Transform parentLocal = PxMathConvert(leadFollowerInfo.m_leadLocal);
         AZ::Transform childLocal = PxMathConvert(leadFollowerInfo.m_followerLocal);
 
-        FixedApiJointConfiguration configuration;
+        FixedJointConfiguration configuration;
 
         configuration.m_parentLocalPosition = parentLocal.GetTranslation();
         configuration.m_parentLocalRotation = parentLocal.GetRotation();
