@@ -107,6 +107,7 @@ namespace LyShineEditor
     void LyShineEditorSystemComponent::Activate()
     {
         AzToolsFramework::EditorEventsBus::Handler::BusConnect();
+        LyShine::LyShineRequestBus::Handler::BusConnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,6 +120,7 @@ namespace LyShineEditor
 
             CUiAnimViewSequenceManager::Destroy();
         }
+        LyShine::LyShineRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
     }
 
@@ -151,6 +153,8 @@ namespace LyShineEditor
             opt.isPreview = true;
             opt.paneRect = QRect(x, y, (int)editorWidth, (int)editorHeight);
             opt.isDeletable = true; // we're in a plugin; make sure we can be deleted
+            opt.showOnToolsToolbar = true;
+            opt.toolbarIcon = ":/Menu/ui_editor.svg";
             // opt.canHaveMultipleInstances = true; // uncomment this when CUiAnimViewSequenceManager::CanvasUnloading supports multiple canvases
             AzToolsFramework::RegisterViewPane<EditorWindow>(LyViewPane::UiEditor, LyViewPane::CategoryTools, opt);
 
@@ -190,5 +194,18 @@ namespace LyShineEditor
             return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/Sprite_16.png");
         }
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineEditorSystemComponent::EditUICanvas([[maybe_unused]] const AZStd::string_view& canvasPath)
+    {
+        AzToolsFramework::OpenViewPane(LyViewPane::UiEditor);
+        AZStd::string stringPath = canvasPath;
+
+        if (!stringPath.empty())
+        {
+            QString absoluteName = stringPath.c_str();
+            UiEditorDLLBus::Broadcast(&UiEditorDLLInterface::OpenSourceCanvasFile, absoluteName);
+        }
     }
 }

@@ -37,11 +37,11 @@ namespace AZ
 
         protected:
             // Pass behavior overrides...
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:
             DepthOfFieldCompositePass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
             void InitializeShaderVariant();
             void UpdateCurrentShaderVariant();
 

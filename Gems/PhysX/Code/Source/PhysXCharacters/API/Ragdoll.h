@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
@@ -84,5 +85,6 @@ namespace PhysX
         bool m_queuedDisableSimulation = false;
 
         AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
+        static AZStd::mutex m_sceneEventMutex;
     };
 } // namespace PhysX

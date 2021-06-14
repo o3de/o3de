@@ -74,7 +74,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), MaxPrefabFileSize);
+            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), AZStd::numeric_limits<size_t>::max());
             if (!readResult.IsSuccess())
             {
                 AZ_Error(

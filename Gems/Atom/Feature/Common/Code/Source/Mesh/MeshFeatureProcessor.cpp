@@ -775,6 +775,12 @@ namespace AZ
                     material = materialAssignment.m_materialInstance;
                 }
 
+                if (!material)
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "No material provided for mesh. Skipping.");
+                    continue;
+                }
+
                 // retrieve vertex/index buffers
                 RPI::ModelLod::StreamBufferViewList streamBufferViews;
                 [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(

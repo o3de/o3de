@@ -1106,7 +1106,7 @@ namespace AZ
                     {
                         for (EsmShadowmapsPass* pass : it.second)
                         {
-                            pass->QueueForBuildAttachments();
+                            pass->QueueForBuildAndInitialization();
                         }
                     }
                 }

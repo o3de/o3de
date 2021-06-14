@@ -16,7 +16,10 @@
 
 ShaderResourceGroup MorphTargetPassSrg : SRG_PerPass
 {
-    RWBuffer<int> m_accumulatedDeltas;    
+    //Since we do Interlocked atomic operations on this buffer it can not be RWBuffer due to broken MetalSL generation.
+    //It stems from the fact that typed buffers gets converted to textures and that breaks with atomic operations.
+    //In future we can handle this under the hood via our metal shader pipeline
+    RWStructuredBuffer<int> m_accumulatedDeltas;    
 }
 
 // This class represents the data that is passed to the morph target compute shader of an individual delta

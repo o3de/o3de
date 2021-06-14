@@ -108,7 +108,7 @@ namespace AZ::Render
         Base::ResetInternal();
     }
 
-    void TaaPass::BuildAttachmentsInternal()
+    void TaaPass::BuildInternal()
     {
         m_accumulationAttachments[0] = FindAttachment(Name("Accumulation1"));
         m_accumulationAttachments[1] = FindAttachment(Name("Accumulation2"));
@@ -143,7 +143,7 @@ namespace AZ::Render
             m_outputColorBinding->SetAttachment(m_accumulationAttachments[1]);
         }
 
-        Base::BuildAttachmentsInternal();
+        Base::BuildInternal();
     }
 
     void TaaPass::UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment)

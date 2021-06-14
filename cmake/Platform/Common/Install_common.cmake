@@ -162,7 +162,18 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
         elseif(target_type STREQUAL MODULE_LIBRARY)
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         elseif(target_type STREQUAL SHARED_LIBRARY)
-            string(APPEND target_file_contents "set_property(TARGET ${TARGET_NAME} PROPERTY IMPORTED_IMPLIB_$<CONFIG> \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\")\n")
+            string(APPEND target_file_contents 
+"set_property(TARGET ${TARGET_NAME} 
+    APPEND_STRING PROPERTY IMPORTED_IMPLIB
+        $<$<CONFIG:$<CONFIG>$<ANGLE-R>:\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"$<ANGLE-R>
+)
+")
+            string(APPEND target_file_contents 
+"set_property(TARGET ${TARGET_NAME} 
+    PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>> 
+        \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"
+)
+")
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             set(target_location "\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>")
@@ -363,7 +374,7 @@ function(ly_setup_cmake_install)
         string(APPEND builtinpackages "ly_associate_package(PACKAGE_NAME ${package_name} TARGETS ${targets} PACKAGE_HASH ${package_hash})\n")
     endforeach()
 
-    ly_get_absolute_pal_filename(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${pal_builtin_file}
         CONTENT ${builtinpackages}
     )

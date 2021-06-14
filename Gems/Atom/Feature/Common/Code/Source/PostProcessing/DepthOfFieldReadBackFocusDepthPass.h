@@ -43,6 +43,7 @@ namespace AZ
 
         protected:
             // Pass behavior overrides...
+            void CreateChildPassesInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
         private:

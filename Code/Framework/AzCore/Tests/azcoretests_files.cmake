@@ -128,6 +128,7 @@ set(FILES
     Serialization/Json/TransformSerializerTests.cpp
     Serialization/Json/TupleSerializerTests.cpp
     Serialization/Json/UnorderedSetSerializerTests.cpp
+    Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
     Math/AabbTests.cpp
     Math/ColorTests.cpp
