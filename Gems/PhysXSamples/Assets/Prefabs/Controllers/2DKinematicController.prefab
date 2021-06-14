@@ -326,6 +326,19 @@
                             "assetHint": "scriptcanvas/controllers/topdown_kinematic_2d_controller.scriptcanvas"
                         }
                     }
+                },
+                "Component_[14867533293201743111]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 14867533293201743111,
+                    "m_name": "OnCollision",
+                    "m_assetHolder": {
+                        "m_asset": {
+                            "assetId": {
+                                "guid": "{AD2CECD2-B449-55C7-8462-A22D4272EF16}"
+                            },
+                            "assetHint": "scriptcanvas/featurescripts/oncollision.scriptcanvas"
+                        }
+                    }
                 }
             },
             "IsDependencyReady": true
