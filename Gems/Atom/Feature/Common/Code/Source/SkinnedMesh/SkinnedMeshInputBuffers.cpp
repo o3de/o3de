@@ -629,6 +629,11 @@ namespace AZ
 
                 Data::Asset<RPI::ModelLodAsset> lodAsset;
                 modelLodCreator.End(lodAsset);
+                if (!lodAsset.IsReady())
+                {
+                    // [GFX TODO] During mesh reload sometimes the modelLodCreator reported errors and result in the lodAsset not ready.
+                    return nullptr;
+                }
                 modelCreator.AddLodAsset(AZStd::move(lodAsset));
 
                 lodIndex++;
