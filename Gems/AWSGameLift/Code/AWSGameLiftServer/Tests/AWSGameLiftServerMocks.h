@@ -47,6 +47,7 @@ namespace UnitTest
         MOCK_METHOD0(InitSDK, Server::InitSDKOutcome());
         MOCK_METHOD1(ProcessReady, GenericOutcome(const Server::ProcessParameters& processParameters));
         MOCK_METHOD0(ProcessEnding, GenericOutcome());
+        MOCK_METHOD1(RemovePlayerSession, GenericOutcome(const AZStd::string& playerSessionId));
         MOCK_METHOD0(GetTerminationTime, AZStd::string());
 
         GenericOutcome ProcessReadyMock(const Server::ProcessParameters& processParameters)
@@ -79,6 +80,11 @@ namespace UnitTest
         ~AWSGameLiftServerManagerMock()
         {
             m_gameLiftServerSDKWrapperMockPtr = nullptr;
+        }
+
+        bool AddConnectedTestPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
+        {
+            return AddConnectedPlayer(playerConnectionConfig);
         }
 
         NiceMock<GameLiftServerSDKWrapperMock>* m_gameLiftServerSDKWrapperMockPtr;

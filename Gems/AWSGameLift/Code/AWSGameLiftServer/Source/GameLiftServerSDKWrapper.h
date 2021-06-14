@@ -55,5 +55,10 @@ namespace AWSGameLift
         //! Returns the time that a server process is scheduled to be shut down.
         //! @return Timestamp using the UTC ISO8601 format.
         virtual AZStd::string GetTerminationTime();
+
+        //! Notifies the GameLift service that a player with the specified player session ID has disconnected from the server process.
+        //! @param playerSessionId Unique ID issued by the Amazon GameLift service in response to a call to the AWS SDK Amazon GameLift API action CreatePlayerSession.
+        //! @return Returns a generic outcome consisting of success or failure with an error message.
+        virtual Aws::GameLift::GenericOutcome RemovePlayerSession(const AZStd::string& playerSessionId);
     };
 } // namespace AWSGameLift

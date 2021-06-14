@@ -66,6 +66,8 @@ namespace AWSGameLift
             "Failed to validate player session connection with id %s. ErrorMessage: %s";
         static constexpr const char AWSGameLiftServerInvalidConnectionConfigErrorMessage[] =
             "Invalid player connection config, player connection id: %d, player session id: %s";
+        static constexpr const char AWSGameLiftServerRemovePlayerSessionErrorMessage[] =
+            "Failed to notify GameLift that the player with the player session id %s has disconnected from the server process. ErrorMessage: %s";
 
         AWSGameLiftServerManager();
         virtual ~AWSGameLiftServerManager();
@@ -89,11 +91,11 @@ namespace AWSGameLift
     protected:
         void SetGameLiftServerSDKWrapper(AZStd::unique_ptr<GameLiftServerSDKWrapper> gameLiftServerSDKWrapper);
 
-    private:
-        //! Add connected player session id
+        //! Add connected player session id.
         bool AddConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig);
 
-        //! Build session config by using AWS GameLift Server GameSession Model
+    private:
+        //! Build session config by using AWS GameLift Server GameSession Model.
         AzFramework::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
 
         //! Callback function that the GameLift service invokes to activate a new game session.
@@ -109,8 +111,11 @@ namespace AWSGameLift
         //! @return Whether the server process is healthy.
         bool OnHealthCheck();
 
-        //! Remove connected player session id
-        bool RemoveConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig);
+        //! Remove connected player session id.
+        //! @param playerConnectionId Connection id of the player to remove.
+        //! @param outPlayerSessionId Session id of the removed player. Empty if the player cannot be removed.
+        //! @return Whether the player is removed successfully.
+        bool RemoveConnectedPlayer(uint32_t playerConnectionId, AZStd::string& outPlayerSessionId);
 
         AZStd::unique_ptr<GameLiftServerSDKWrapper> m_gameLiftServerSDKWrapper;
         bool m_serverSDKInitialized;

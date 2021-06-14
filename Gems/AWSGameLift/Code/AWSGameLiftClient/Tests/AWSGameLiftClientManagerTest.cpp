@@ -652,3 +652,33 @@ TEST_F(AWSGameLiftClientManagerTest, SearchSessionsAsync_CallWithValidRequestAnd
 
     m_gameliftClientManager->SearchSessionsAsync(request);
 }
+
+TEST_F(AWSGameLiftClientManagerTest, LeaveSession_CallWithInterfaceNotRegistered_GetExpectedError)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->LeaveSession();
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, LeaveSession_CallWithInterfaceRegistered_LeaveSessionRequestSent)
+{
+    SessionHandlingClientRequestsMock handlerMock;
+    EXPECT_CALL(handlerMock, RequestPlayerLeaveSession).Times(1);
+
+    m_gameliftClientManager->LeaveSession();
+}
+
+TEST_F(AWSGameLiftClientManagerTest, LeaveSessionAsync_CallWithInterfaceNotRegistered_GetExpectedError)
+{
+    AZ_TEST_START_TRACE_SUPPRESSION;
+    m_gameliftClientManager->LeaveSessionAsync();
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
+}
+
+TEST_F(AWSGameLiftClientManagerTest, LeaveSessionAsync_CallWithInterfaceRegistered_LeaveSessionAsyncRequestSent)
+{
+    SessionHandlingClientRequestsMock handlerMock;
+    EXPECT_CALL(handlerMock, RequestPlayerLeaveSession).Times(1);
+
+    m_gameliftClientManager->LeaveSessionAsync();
+}

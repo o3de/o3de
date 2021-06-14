@@ -23,6 +23,7 @@
 #include <AWSGameLiftClientManager.h>
 #include <Activity/AWSGameLiftCreateSessionActivity.h>
 #include <Activity/AWSGameLiftJoinSessionActivity.h>
+#include <Activity/AWSGameLiftLeaveSessionActivity.h>
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
@@ -247,12 +248,25 @@ namespace AWSGameLift
 
     void AWSGameLiftClientManager::LeaveSession()
     {
-        // TODO: Add implementation for leave session
+        AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting to leave the current session...");
+
+        AWSGameLift::LeaveSessionActivity::LeaveSession();
     }
 
     void AWSGameLiftClientManager::LeaveSessionAsync()
     {
-        // TODO: Add implementation for leave session
+        AZ::JobContext* jobContext = nullptr;
+        AWSCore::AWSCoreRequestBus::BroadcastResult(jobContext, &AWSCore::AWSCoreRequests::GetDefaultJobContext);
+        AZ::Job* leaveSessionJob = AZ::CreateJobFunction(
+            []()
+            {
+                AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting to leave the current session asynchronously...");
+
+                AWSGameLift::LeaveSessionActivity::LeaveSession();
+            },
+            true, jobContext);
+
+        leaveSessionJob->Start();
     }
 
     AzFramework::SearchSessionsResponse AWSGameLiftClientManager::SearchSessions(

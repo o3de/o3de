@@ -323,4 +323,99 @@ namespace UnitTest
         }
         EXPECT_TRUE(trueCount == 1);
     }
+
+    TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithInvalidConnectionConfig_GetExpectedErrorLog)
+    {
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), RemovePlayerSession(testing::_)).Times(0);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->HandlePlayerLeaveSession(AzFramework::PlayerConnectionConfig());
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithNonExistentPlayerConnectionId_GetExpectedErrorLog)
+    {
+        AzFramework::PlayerConnectionConfig connectionConfig;
+        connectionConfig.m_playerConnectionId = 123;
+        connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
+        auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
+        EXPECT_TRUE(result);
+
+        AzFramework::PlayerConnectionConfig connectionConfig1;
+        connectionConfig1.m_playerConnectionId = 456;
+        connectionConfig1.m_playerSessionId = "dummyPlayerSessionId";
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), RemovePlayerSession(testing::_)).Times(0);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->HandlePlayerLeaveSession(connectionConfig1);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithValidConnectionConfigButErrorOutcome_GetExpectedErrorLog)
+    {
+        AzFramework::PlayerConnectionConfig connectionConfig;
+        connectionConfig.m_playerConnectionId = 123;
+        connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
+        auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
+        EXPECT_TRUE(result);
+
+        Aws::GameLift::GameLiftError error;
+        GenericOutcome errorOutcome(error);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), RemovePlayerSession(testing::_))
+            .Times(1)
+            .WillOnce(Return(errorOutcome));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        m_serverManager->HandlePlayerLeaveSession(connectionConfig);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+
+    TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithValidConnectionConfigAndSuccessOutcome_RemovePlayerSessionNotificationSent)
+    {
+        AzFramework::PlayerConnectionConfig connectionConfig;
+        connectionConfig.m_playerConnectionId = 123;
+        connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
+        auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
+        EXPECT_TRUE(result);
+
+        GenericOutcome successOutcome(nullptr);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), RemovePlayerSession(testing::_))
+            .Times(1)
+            .WillOnce(Return(successOutcome));
+
+        m_serverManager->HandlePlayerLeaveSession(connectionConfig);
+    }
+
+    TEST_F(GameLiftServerManagerTest, HandlePlayerLeaveSession_CallWithMultithread_OnlyOneNotificationIsSent)
+    {
+        AzFramework::PlayerConnectionConfig connectionConfig;
+        connectionConfig.m_playerConnectionId = 123;
+        connectionConfig.m_playerSessionId = "dummyPlayerSessionId";
+        auto result = m_serverManager->AddConnectedTestPlayer(connectionConfig);
+        EXPECT_TRUE(result);
+
+        int testThreadNumber = 5;
+        GenericOutcome successOutcome(nullptr);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), RemovePlayerSession(testing::_))
+            .Times(1)
+            .WillOnce(Return(successOutcome));
+
+        AZStd::vector<AZStd::thread> testThreadPool;
+        AZStd::atomic<int> trueCount = 0;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        for (int index = 0; index < testThreadNumber; index++)
+        {
+            testThreadPool.emplace_back(AZStd::thread(
+                [&]()
+                {
+                    m_serverManager->HandlePlayerLeaveSession(connectionConfig);
+                }));
+        }
+        for (auto& testThread : testThreadPool)
+        {
+            testThread.join();
+        }
+        AZ_TEST_STOP_TRACE_SUPPRESSION(testThreadNumber - 1); // The player is only disconnected once.
+    }
 } // namespace UnitTest

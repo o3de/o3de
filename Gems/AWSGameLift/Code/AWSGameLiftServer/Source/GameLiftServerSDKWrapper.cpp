@@ -64,4 +64,9 @@ namespace AWSGameLift
 
         return AZStd::string(buffer);
     }
+
+    Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::RemovePlayerSession(const AZStd::string& playerSessionId)
+    {
+        return Aws::GameLift::Server::RemovePlayerSession(playerSessionId.c_str());
+    }
 } // namespace AWSGameLift

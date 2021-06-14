@@ -18,6 +18,8 @@ set(FILES
     Source/Activity/AWSGameLiftCreateSessionActivity.h
     Source/Activity/AWSGameLiftJoinSessionActivity.cpp
     Source/Activity/AWSGameLiftJoinSessionActivity.h
+    Source/Activity/AWSGameLiftLeaveSessionActivity.cpp
+    Source/Activity/AWSGameLiftLeaveSessionActivity.h
     Source/Activity/AWSGameLiftSearchSessionsActivity.cpp
     Source/Activity/AWSGameLiftSearchSessionsActivity.h
     Source/AWSGameLiftClientManager.cpp
