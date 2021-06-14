@@ -40,7 +40,7 @@ class Cdk:
         :param workspace: ly_test_tools workspace fixture.
         """
         self._cdk_env = os.environ.copy()
-        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project + uuid.uuid4().hex[-4:0]
+        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project  # + uuid.uuid4().hex[-4:0]
         self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = session.region_name
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
         self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
@@ -153,7 +153,7 @@ class Cdk:
         """
 
         logger.info(f'CDK Path {self._cdk_path}')
-        destroy_cdk_application_cmd = ['cdk', 'destroy', '-f']
+        destroy_cdk_application_cmd = ['cdk', 'destroy', '--all', '-f']
 
         try:
             process_utils.check_output(
@@ -234,7 +234,7 @@ def cdk(
     def teardown():
         if destroy_stacks_on_teardown:
             cdk_obj.destroy()
-            cdk_obj.remove_bootstrap_stack()
+            # cdk_obj.remove_bootstrap_stack()
 
     request.addfinalizer(teardown)
 

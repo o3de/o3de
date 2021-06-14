@@ -148,7 +148,7 @@ class TestAWSMetrics_Windows(object):
                 'AWS/Lambda',
                 'Invocations',
                 [{'Name': 'FunctionName',
-                  'Value': f'{stack_name}-AnalyticsLambda'}],
+                  'Value': f'{stack_name}-AnalyticsLambdaName'}],
                 start_time)
             logger.info('Operational health metrics sent to CloudWatch.')
 
