@@ -115,12 +115,12 @@ namespace AzToolsFramework
         SpaceCluster(const SpaceCluster&) = delete;
         SpaceCluster& operator=(const SpaceCluster&) = delete;
 
-        ViewportUi::ClusterId m_spaceClusterId; //!< The id identifying the reference space cluster.
+        ViewportUi::ClusterId m_clusterId; //!< The id identifying the reference space cluster.
         ViewportUi::ButtonId m_localButtonId; //!< Local reference space button id.
         ViewportUi::ButtonId m_parentButtonId; //!< Parent reference space button id.
         ViewportUi::ButtonId m_worldButtonId; //!< World reference space button id.
-        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler; //!< Callback for when a space cluster button is pressed.
         AZStd::optional<ReferenceFrame> m_spaceLock; //!< Locked reference frame to use if set.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
     };
 
     //! Grouping of viewport ui related state for aligning transforms to a grid.
@@ -131,7 +131,7 @@ namespace AzToolsFramework
         SnappingCluster(const SnappingCluster&) = delete;
         SnappingCluster& operator=(const SnappingCluster&) = delete;
 
-        ViewportUi::ClusterId m_snappingClusterId; //!< The cluster id for all snapping buttons.
+        ViewportUi::ClusterId m_clusterId; //!< The cluster id for all snapping buttons.
         ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
         AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.
     };

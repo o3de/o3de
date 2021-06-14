@@ -144,7 +144,7 @@ namespace AzToolsFramework
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
-    static const char* const SpaceClusterSnapToWorldTooltip = "Snap selected entities to world space";
+    static const char* const SpaceClusterSnapToWorldTooltip = "Snap selected entities to the world space grid";
 
     static const AZ::Color s_fadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
     static const AZ::Color s_fadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
@@ -506,7 +506,8 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::SetAllViewportUiVisible(const bool visible)
     {
         SetViewportUiClusterVisible(m_transformModeClusterId, visible);
-        SetViewportUiClusterVisible(m_spaceCluster.m_spaceClusterId, visible);
+        SetViewportUiClusterVisible(m_spaceCluster.m_clusterId, visible);
+        SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, visible);
         m_viewportUiVisible = visible;
     }
 
@@ -527,8 +528,8 @@ namespace AzToolsFramework
         };
 
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
-            m_spaceCluster.m_spaceClusterId, buttonIdFromFrameFn(referenceFrame));
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_spaceCluster.m_clusterId,
+            buttonIdFromFrameFn(referenceFrame));
     }
 
     namespace ETCS
@@ -1053,8 +1054,8 @@ namespace AzToolsFramework
         DestroyManipulators(m_entityIdManipulators);
 
         DestroyCluster(m_transformModeClusterId);
-        DestroyCluster(m_spaceCluster.m_spaceClusterId);
-        DestroyCluster(m_snappingCluster.m_snappingClusterId);
+        DestroyCluster(m_spaceCluster.m_clusterId);
+        DestroyCluster(m_snappingCluster.m_clusterId);
 
         UnregisterActions();
 
@@ -2523,15 +2524,15 @@ namespace AzToolsFramework
     {
         // create the cluster for switching spaces/reference frames
         ViewportUi::ViewportUiRequestBus::EventResult(
-            m_snappingCluster.m_snappingClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            m_snappingCluster.m_clusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopRight);
 
-        m_snappingCluster.m_snapToWorldButtonId = RegisterClusterButton(m_snappingCluster.m_snappingClusterId, "Grid");
+        m_snappingCluster.m_snapToWorldButtonId = RegisterClusterButton(m_snappingCluster.m_clusterId, "Grid");
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_snappingCluster.m_snappingClusterId, m_snappingCluster.m_snapToWorldButtonId, SpaceClusterSnapToWorldTooltip);
+            m_snappingCluster.m_clusterId, m_snappingCluster.m_snapToWorldButtonId, SpaceClusterSnapToWorldTooltip);
 
         auto onButtonClicked = [this](const ViewportUi::ButtonId buttonId)
         {
@@ -2565,34 +2566,34 @@ namespace AzToolsFramework
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
-            m_snappingCluster.m_snappingClusterId, m_snappingCluster.m_snappingHandler);
+            m_snappingCluster.m_clusterId, m_snappingCluster.m_snappingHandler);
 
         // hide initially
-        SetViewportUiClusterVisible(m_snappingCluster.m_snappingClusterId, false);
+        SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, false);
     }
 
     void EditorTransformComponentSelection::CreateSpaceSelectionCluster()
     {
         // create the cluster for switching spaces/reference frames
         ViewportUi::ViewportUiRequestBus::EventResult(
-            m_spaceCluster.m_spaceClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            m_spaceCluster.m_clusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopRight);
 
         // create and register the buttons (strings correspond to icons even if the values appear different)
-        m_spaceCluster.m_worldButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "World");
-        m_spaceCluster.m_parentButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "Parent");
-        m_spaceCluster.m_localButtonId = RegisterClusterButton(m_spaceCluster.m_spaceClusterId, "Local");
+        m_spaceCluster.m_worldButtonId = RegisterClusterButton(m_spaceCluster.m_clusterId, "World");
+        m_spaceCluster.m_parentButtonId = RegisterClusterButton(m_spaceCluster.m_clusterId, "Parent");
+        m_spaceCluster.m_localButtonId = RegisterClusterButton(m_spaceCluster.m_clusterId, "Local");
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_worldButtonId, SpaceClusterWorldTooltip);
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
+            m_spaceCluster.m_worldButtonId, SpaceClusterWorldTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_parentButtonId, SpaceClusterParentTooltip);
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
+            m_spaceCluster.m_parentButtonId, SpaceClusterParentTooltip);
         ViewportUi::ViewportUiRequestBus::Event(
-            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_localButtonId, SpaceClusterLocalTooltip);
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_spaceCluster.m_clusterId,
+            m_spaceCluster.m_localButtonId, SpaceClusterLocalTooltip);
 
         auto onButtonClicked = [this](ViewportUi::ButtonId buttonId)
         {
@@ -2634,14 +2635,14 @@ namespace AzToolsFramework
             }
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonLocked,
-                m_spaceCluster.m_spaceClusterId, buttonId, m_spaceCluster.m_spaceLock.has_value());
+                m_spaceCluster.m_clusterId, buttonId, m_spaceCluster.m_spaceLock.has_value());
         };
 
-        m_spaceCluster.m_spaceSelectionHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
+        m_spaceCluster.m_spaceHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
 
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
-            m_spaceCluster.m_spaceClusterId, m_spaceCluster.m_spaceSelectionHandler);
+            m_spaceCluster.m_clusterId, m_spaceCluster.m_spaceHandler);
     }
 
     EditorTransformComponentSelectionRequests::Mode EditorTransformComponentSelection::GetTransformMode()
@@ -3254,7 +3255,7 @@ namespace AzToolsFramework
             m_didSetSelectedEntities = false;
         }
 
-        SetViewportUiClusterVisible(m_snappingCluster.m_snappingClusterId, !m_selectedEntityIds.empty());
+        SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
     }
