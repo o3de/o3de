@@ -35,6 +35,7 @@ function(ly_copy source_file target_directory)
         set(local_plugin_dirs ${plugin_dirs})
         list(APPEND local_plugin_dirs "${target_directory}")
         set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+        return()
 
     elseif("${source_file}" MATCHES "qt/plugins" AND "${target_directory}" MATCHES "\\.app/Contents/MacOS")
 
