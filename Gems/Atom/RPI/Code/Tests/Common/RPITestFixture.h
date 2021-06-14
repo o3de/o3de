@@ -14,7 +14,6 @@
 
 #include <Atom/RPI.Public/RPISystem.h>
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 
@@ -48,7 +47,7 @@ namespace UnitTest
 
         //! Performs processing that would normally be done by the frame scheduler, 
         //! which has to happen in order to recompile the same SRG instance multiple times.
-        void ProcessQueuedSrgCompilations(AZ::Data::Asset<AZ::RPI::ShaderResourceGroupAsset> srgAsset);
+        void ProcessQueuedSrgCompilations(AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset, const AZ::Name& srgName);
 
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override;
 

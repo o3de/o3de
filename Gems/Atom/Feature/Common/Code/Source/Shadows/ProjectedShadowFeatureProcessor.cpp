@@ -38,7 +38,7 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::Activate()
     {
-        const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+        const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
         GpuBufferHandler::Descriptor desc;
 

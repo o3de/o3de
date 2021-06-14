@@ -53,7 +53,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_capsuleLights";
             desc.m_elementCountSrgName = "m_capsuleLightCount";
             desc.m_elementSize = sizeof(CapsuleLightData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
         }

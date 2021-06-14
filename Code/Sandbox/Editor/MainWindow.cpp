@@ -925,20 +925,8 @@ void MainWindow::InitActions()
         .SetParent(this);
     am->AddAction(ID_SWITCHCAMERA_NEXT, tr("Cycle Camera"))
         .SetShortcut(tr("Ctrl+`"))
-        .SetToolTip(tr("Cycle Camera (Ctrl+`)"))
-        .SetParent(this);
-    am->AddAction(ID_CHANGEMOVESPEED_INCREASE, tr("Increase"))
-        .SetStatusTip(tr("Increase Flycam Movement Speed"))
-        .SetParent(this);
-    am->AddAction(ID_CHANGEMOVESPEED_DECREASE, tr("Decrease"))
-        .SetStatusTip(tr("Decrease Flycam Movement Speed"))
-        .SetParent(this);
-    am->AddAction(ID_CHANGEMOVESPEED_CHANGESTEP, tr("Change Step"))
-        .SetStatusTip(tr("Change Flycam Movement Step"))
-        .SetParent(this);
-
-    am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."))
-        .SetParent(this);
+        .SetToolTip(tr("Cycle Camera (Ctrl+`)"));
+    am->AddAction(ID_DISPLAY_GOTOPOSITION, tr("Go to Position..."));
     am->AddAction(ID_MODIFY_GOTO_SELECTION, tr("Center on Selection"))
         .SetShortcut(tr("Z"))
         .SetToolTip(tr("Center on Selection (Z)"))

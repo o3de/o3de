@@ -87,10 +87,10 @@ namespace AZ
             }
 
             // Load Pass SRG...
-            const Data::Asset<ShaderResourceGroupAsset>& passSrgAsset = m_shader->FindShaderResourceGroupAsset(SrgBindingSlot::Pass);
-            if (passSrgAsset)
+            const auto passSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
+            if (passSrgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(passSrgAsset);
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
 
                 AZ_Assert(m_shaderResourceGroup, "[ComputePass '%s']: Failed to create SRG from shader asset '%s'",
                     GetPathName().GetCStr(),
@@ -100,10 +100,10 @@ namespace AZ
             }
 
             // Load Draw SRG...
-            const Data::Asset<ShaderResourceGroupAsset>& drawSrgAsset = m_shader->FindShaderResourceGroupAsset(SrgBindingSlot::Draw);
-            if (drawSrgAsset)
+            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
+            if (drawSrgLayout)
             {
-                m_drawSrg = ShaderResourceGroup::Create(drawSrgAsset);
+                m_drawSrg = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
             }
 
             RHI::DispatchDirect dispatchArgs;

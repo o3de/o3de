@@ -441,9 +441,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
@@ -3704,38 +3701,6 @@ void CCryEditApp::OnDisplayGotoPosition()
 {
     GotoPositionDialog dialog;
     dialog.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedIncrease()
-{
-    gSettings.cameraMoveSpeed += m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedDecrease()
-{
-    gSettings.cameraMoveSpeed -= m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedChangestep()
-{
-    bool ok = false;
-    int fractionalDigitCount = 5;
-    float step = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Change Move Increase/Decrease Step"), QStringLiteral(""), m_moveSpeedStep, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), fractionalDigitCount, &ok));
-    if (ok)
-    {
-        m_moveSpeedStep = step;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

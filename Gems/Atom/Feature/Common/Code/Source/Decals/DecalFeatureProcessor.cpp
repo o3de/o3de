@@ -55,7 +55,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_decals";
             desc.m_elementCountSrgName = "m_decalCount";
             desc.m_elementSize = sizeof(DecalData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_decalBufferHandler = GpuBufferHandler(desc);
 
@@ -332,7 +332,7 @@ namespace AZ
 
         void DecalFeatureProcessor::CacheShaderIndices()
         {
-            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             m_baseColorMapsIndex = viewSrgLayout->FindShaderInputImageIndex(m_baseColorMapShaderName);
             AZ_Warning("DecalFeatureProcessor", m_baseColorMapsIndex.IsValid(), "Unable to find baseColorMaps in decal shader.");
 
