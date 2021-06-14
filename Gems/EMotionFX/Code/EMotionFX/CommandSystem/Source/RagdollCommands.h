@@ -46,7 +46,7 @@ namespace EMotionFX
             AZStd::string& outResult);
 
         static AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> CreateJointLimitByType(
-            const Skeleton* skeleton, const Node* node);
+            AzPhysics::JointType jointType, const Skeleton* skeleton, const Node* node);
 
         static void AddJointsToRagdoll(AZ::u32 actorId, const AZStd::vector<AZStd::string>& jointNames,
             MCore::CommandGroup* commandGroup = nullptr, bool executeInsideCommand = false, bool addDefaultCollider = true);

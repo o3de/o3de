@@ -18,7 +18,6 @@
 
 #include <BoxColliderComponent.h>
 #include <RigidBodyComponent.h>
-#include <Joint.h>
 #include <JointComponent.h>
 #include <BallJointComponent.h>
 #include <FixedJointComponent.h>

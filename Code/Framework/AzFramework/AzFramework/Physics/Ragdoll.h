@@ -17,7 +17,6 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsApiJoint.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>

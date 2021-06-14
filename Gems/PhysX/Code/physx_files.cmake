@@ -75,8 +75,6 @@ set(FILES
     Source/Shape.cpp
     Source/Material.cpp
     Source/Material.h
-    Source/Joint.cpp
-    Source/Joint.h
     Source/ForceRegionForces.cpp
     Source/ForceRegionForces.h
     Source/ForceRegion.cpp

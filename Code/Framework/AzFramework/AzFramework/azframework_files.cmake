@@ -263,8 +263,6 @@ set(FILES
     Physics/Ragdoll.h
     Physics/Utils.h
     Physics/Utils.cpp
-    Physics/Joint.h
-    Physics/Joint.cpp
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h

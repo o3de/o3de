@@ -15,7 +15,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SystemBus.h>

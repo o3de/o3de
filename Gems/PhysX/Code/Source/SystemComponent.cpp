@@ -20,7 +20,6 @@
 #include <Source/Utils.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
-#include <Source/Joint.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Pipeline/HeightFieldAssetHandler.h>
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
@@ -93,7 +92,6 @@ namespace PhysX
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        D6JointLimitConfiguration::Reflect(context);
         Pipeline::MeshAssetData::Reflect(context);
 
         PhysX::ReflectionUtils::ReflectPhysXOnlyApi(context);

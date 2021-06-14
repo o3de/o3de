@@ -18,7 +18,6 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
 
-#include <Source/Joint.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace AzPhysics
@@ -31,8 +30,8 @@ namespace PhysX
     class JointComponentConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(GenericJointConfiguration, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(GenericJointConfiguration, "{1454F33F-AA6E-424B-A70C-9E463FBDEA19}");
+        AZ_CLASS_ALLOCATOR(JointComponentConfiguration, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(JointComponentConfiguration, "{1454F33F-AA6E-424B-A70C-9E463FBDEA19}");
         static void Reflect(AZ::ReflectContext* context);
 
         JointComponentConfiguration() = default;

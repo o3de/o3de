@@ -71,7 +71,7 @@ namespace EMotionFX
         newNodeConfig.m_debugName = jointName;
 
         // Create joint limit on default.
-        newNodeConfig.m_jointConfig = CommandRagdollHelpers::CreateJointLimitByType(skeleton, joint);
+        newNodeConfig.m_jointConfig = CommandRagdollHelpers::CreateJointLimitByType(AzPhysics::JointType::D6Joint, skeleton, joint);
 
         if (index)
         {
@@ -87,7 +87,7 @@ namespace EMotionFX
     }
 
     AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> CommandRagdollHelpers::CreateJointLimitByType(
-        const Skeleton* skeleton, const Node* node)
+        AzPhysics::JointType jointType, const Skeleton* skeleton, const Node* node)
     {
         const Pose* bindPose = skeleton->GetBindPose();
         const Transform& nodeBindTransform = bindPose->GetModelSpaceTransform(node->GetNodeIndex());
@@ -102,11 +102,11 @@ namespace EMotionFX
 
         if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
         {
-            if (AZStd::optional<const AZ::TypeId> d6jointTypeId = jointHelpers->GetSupportedJointTypeId(AzPhysics::JointTypes::D6Joint);
-                d6jointTypeId.has_value())
+            if (AZStd::optional<const AZ::TypeId> jointTypeId = jointHelpers->GetSupportedJointTypeId(jointType);
+                jointTypeId.has_value())
             {
                 AZStd::unique_ptr<AzPhysics::ApiJointConfiguration> jointLimitConfig = jointHelpers->ComputeInitialJointLimitConfiguration(
-                    *d6jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
+                    *jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
 
                 AZ_Assert(jointLimitConfig, "Could not create joint limit configuration.");
                 return jointLimitConfig;

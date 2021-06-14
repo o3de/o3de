@@ -71,7 +71,7 @@ namespace Physics
     {
     public:
         MOCK_CONST_METHOD0(GetSupportedJointTypeIds, const AZStd::vector<AZ::TypeId>());
-        MOCK_CONST_METHOD1(GetSupportedJointTypeId, AZStd::optional<const AZ::TypeId>(AzPhysics::JointTypes typeEnum));
+        MOCK_CONST_METHOD1(GetSupportedJointTypeId, AZStd::optional<const AZ::TypeId>(AzPhysics::JointType typeEnum));
 
         MOCK_METHOD5(
             ComputeInitialJointLimitConfiguration,

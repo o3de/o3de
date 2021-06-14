@@ -40,7 +40,6 @@
 #include <Source/Shape.h>
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
-#include <Source/Joint.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
@@ -1394,9 +1393,6 @@ namespace PhysX
             Debug::DebugConfiguration::Reflect(context);
 
             ForceRegionBusBehaviorHandler::Reflect(context);
-
-            GenericJointConfiguration::Reflect(context);
-            GenericJointLimitsConfiguration::Reflect(context);
 
             D6ApiJointLimitConfiguration::Reflect(context);
             ApiJointGenericProperties::Reflect(context);

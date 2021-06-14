@@ -26,23 +26,15 @@ namespace AZ
 namespace AzPhysics
 {
     struct SimulatedBody;
-    struct RigidBodyConfiguration;
-    struct RigidBody;
 }
 
 namespace Physics
 {
-    class WorldBody;
     class Shape;
     class Material;
-    class MaterialSelection;
     class MaterialConfiguration;
     class ColliderConfiguration;
     class ShapeConfiguration;
-    class JointLimitConfiguration;
-    class Joint;
-    class CharacterConfiguration;
-    class Character;
 
     /// Represents a debug vertex (position & color).
     struct DebugDrawVertex

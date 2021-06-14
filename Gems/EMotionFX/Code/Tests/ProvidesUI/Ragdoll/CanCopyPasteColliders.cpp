@@ -50,9 +50,9 @@ namespace EMotionFX
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
                 .WillRepeatedly(
-                    [](AzPhysics::JointTypes jointType) -> AZStd::optional<const AZ::TypeId>
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
                     {
-                        if (jointType == AzPhysics::JointTypes::D6Joint)
+                        if (jointType == AzPhysics::JointType::D6Joint)
                         {
                             return azrtti_typeid<D6JointLimitConfiguration>();
                         }

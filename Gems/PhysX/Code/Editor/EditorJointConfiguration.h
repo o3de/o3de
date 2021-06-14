@@ -15,7 +15,6 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <Source/Joint.h>
 #include <Source/JointComponent.h>
 
 namespace PhysX

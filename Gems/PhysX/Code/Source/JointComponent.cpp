@@ -18,7 +18,6 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
-#include <Source/Joint.h>
 #include <Source/JointComponent.h>
 #include <Source/Utils.h>
 #include <AzFramework/Physics/PhysicsSystem.h>

@@ -22,7 +22,6 @@
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>
-#include <Source/Joint.h>
 
 namespace PhysX
 {

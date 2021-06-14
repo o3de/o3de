@@ -121,7 +121,6 @@ namespace Physics
             MaterialConfiguration::Reflect(context);
             MaterialLibraryAsset::Reflect(context);
             MaterialInfoReflectionWrapper::Reflect(context);
-            JointLimitConfiguration::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
             AzPhysics::ApiJointConfiguration::Reflect(context);

@@ -17,7 +17,6 @@
 #include <AzCore/Math/MathUtils.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/Joint/PhysXApiJointUtils.h>
-#include <Source/Joint.h>
 
 namespace PhysX
 {
@@ -180,11 +179,14 @@ namespace PhysX
         const float twistLimitLower = joint->getTwistLimit().lower;
         const float twistLimitUpper = joint->getTwistLimit().upper;
 
-        JointUtils::AppendD6SwingConeToLineBuffer(parentLocalRotation, swingAngleY, swingAngleZ, swingLimitY, swingLimitZ,
+        Utils::Joints::AppendD6SwingConeToLineBuffer(
+            parentLocalRotation, swingAngleY, swingAngleZ, swingLimitY, swingLimitZ,
             scale, angularSubdivisionsClamped, radialSubdivisionsClamped, lineBufferOut, lineValidityBufferOut);
-        JointUtils::AppendD6TwistArcToLineBuffer(parentLocalRotation, twistAngle, twistLimitLower, twistLimitUpper,
+        Utils::Joints::AppendD6TwistArcToLineBuffer(
+            parentLocalRotation, twistAngle, twistLimitLower, twistLimitUpper,
             scale, angularSubdivisionsClamped, radialSubdivisionsClamped, lineBufferOut, lineValidityBufferOut);
-        JointUtils::AppendD6CurrentTwistToLineBuffer(parentLocalRotation, twistAngle, twistLimitLower, twistLimitUpper,
+        Utils::Joints::AppendD6CurrentTwistToLineBuffer(
+            parentLocalRotation, twistAngle, twistLimitLower, twistLimitUpper,
             scale, lineBufferOut, lineValidityBufferOut);
 
         // draw the X-axis of the child joint frame

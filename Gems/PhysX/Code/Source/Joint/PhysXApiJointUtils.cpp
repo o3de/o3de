@@ -329,5 +329,135 @@ namespace PhysX {
                 return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
             }
         } // namespace PxJointFactories
+
+        namespace Joints
+        {
+            bool IsD6SwingValid(float swingAngleY, float swingAngleZ, float swingLimitY, float swingLimitZ)
+            {
+                const float epsilon = AZ::Constants::FloatEpsilon;
+                const float yFactor = AZStd::tan(0.25f * swingAngleY) / AZStd::GetMax(epsilon, AZStd::tan(0.25f * swingLimitY));
+                const float zFactor = AZStd::tan(0.25f * swingAngleZ) / AZStd::GetMax(epsilon, AZStd::tan(0.25f * swingLimitZ));
+
+                return (yFactor * yFactor + zFactor * zFactor <= 1.0f + epsilon);
+            }
+
+            void AppendD6SwingConeToLineBuffer(
+                const AZ::Quaternion& parentLocalRotation,
+                float swingAngleY,
+                float swingAngleZ,
+                float swingLimitY,
+                float swingLimitZ,
+                float scale,
+                AZ::u32 angularSubdivisions,
+                AZ::u32 radialSubdivisions,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut)
+            {
+                const AZ::u32 numLinesSwingCone = angularSubdivisions * (1u + radialSubdivisions);
+                lineBufferOut.reserve(lineBufferOut.size() + 2u * numLinesSwingCone);
+                lineValidityBufferOut.reserve(lineValidityBufferOut.size() + numLinesSwingCone);
+
+                // the orientation quat for a radial line in the cone can be represented in terms of sin and cos half angles
+                // these expressions can be efficiently calculated using tan quarter angles as follows:
+                // writing t = tan(x / 4)
+                // sin(x / 2) = 2 * t / (1 + t * t)
+                // cos(x / 2) = (1 - t * t) / (1 + t * t)
+                const float tanQuarterSwingZ = AZStd::tan(0.25f * swingLimitZ);
+                const float tanQuarterSwingY = AZStd::tan(0.25f * swingLimitY);
+
+                AZ::Vector3 previousRadialVector = AZ::Vector3::CreateZero();
+                for (AZ::u32 angularIndex = 0; angularIndex <= angularSubdivisions; angularIndex++)
+                {
+                    const float angle = AZ::Constants::TwoPi / angularSubdivisions * angularIndex;
+                    // the axis about which to rotate the x-axis to get the radial vector for this segment of the cone
+                    const AZ::Vector3 rotationAxis(0, -tanQuarterSwingY * sinf(angle), tanQuarterSwingZ * cosf(angle));
+                    const float normalizationFactor = rotationAxis.GetLengthSq();
+                    const AZ::Quaternion radialVectorRotation = 1.0f / (1.0f + normalizationFactor) *
+                        AZ::Quaternion::CreateFromVector3AndValue(2.0f * rotationAxis, 1.0f - normalizationFactor);
+                    const AZ::Vector3 radialVector =
+                        (parentLocalRotation * radialVectorRotation).TransformVector(AZ::Vector3::CreateAxisX(scale));
+
+                    if (angularIndex > 0)
+                    {
+                        for (AZ::u32 radialIndex = 1; radialIndex <= radialSubdivisions; radialIndex++)
+                        {
+                            float radiusFraction = 1.0f / radialSubdivisions * radialIndex;
+                            lineBufferOut.push_back(radiusFraction * radialVector);
+                            lineBufferOut.push_back(radiusFraction * previousRadialVector);
+                        }
+                    }
+
+                    if (angularIndex < angularSubdivisions)
+                    {
+                        lineBufferOut.push_back(AZ::Vector3::CreateZero());
+                        lineBufferOut.push_back(radialVector);
+                    }
+
+                    previousRadialVector = radialVector;
+                }
+
+                const bool swingValid = IsD6SwingValid(swingAngleY, swingAngleZ, swingLimitY, swingLimitZ);
+                lineValidityBufferOut.insert(lineValidityBufferOut.end(), numLinesSwingCone, swingValid);
+            }
+
+            void AppendD6TwistArcToLineBuffer(
+                const AZ::Quaternion& parentLocalRotation,
+                float twistAngle,
+                float twistLimitLower,
+                float twistLimitUpper,
+                float scale,
+                AZ::u32 angularSubdivisions,
+                AZ::u32 radialSubdivisions,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut)
+            {
+                const AZ::u32 numLinesTwistArc = angularSubdivisions * (1u + radialSubdivisions) + 1u;
+                lineBufferOut.reserve(lineBufferOut.size() + 2u * numLinesTwistArc);
+
+                AZ::Vector3 previousRadialVector = AZ::Vector3::CreateZero();
+                const float twistRange = twistLimitUpper - twistLimitLower;
+
+                for (AZ::u32 angularIndex = 0; angularIndex <= angularSubdivisions; angularIndex++)
+                {
+                    const float angle = twistLimitLower + twistRange / angularSubdivisions * angularIndex;
+                    const AZ::Vector3 radialVector =
+                        parentLocalRotation.TransformVector(scale * AZ::Vector3(0.0f, cosf(angle), sinf(angle)));
+
+                    if (angularIndex > 0)
+                    {
+                        for (AZ::u32 radialIndex = 1; radialIndex <= radialSubdivisions; radialIndex++)
+                        {
+                            const float radiusFraction = 1.0f / radialSubdivisions * radialIndex;
+                            lineBufferOut.push_back(radiusFraction * radialVector);
+                            lineBufferOut.push_back(radiusFraction * previousRadialVector);
+                        }
+                    }
+
+                    lineBufferOut.push_back(AZ::Vector3::CreateZero());
+                    lineBufferOut.push_back(radialVector);
+
+                    previousRadialVector = radialVector;
+                }
+
+                const bool twistValid = (twistAngle >= twistLimitLower && twistAngle <= twistLimitUpper);
+                lineValidityBufferOut.insert(lineValidityBufferOut.end(), numLinesTwistArc, twistValid);
+            }
+
+            void AppendD6CurrentTwistToLineBuffer(
+                const AZ::Quaternion& parentLocalRotation,
+                float twistAngle,
+                [[maybe_unused]] float twistLimitLower,
+                [[maybe_unused]] float twistLimitUpper,
+                float scale,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut)
+            {
+                const AZ::Vector3 twistVector =
+                    parentLocalRotation.TransformVector(1.25f * scale * AZ::Vector3(0.0f, cosf(twistAngle), sinf(twistAngle)));
+                lineBufferOut.push_back(AZ::Vector3::CreateZero());
+                lineBufferOut.push_back(twistVector);
+                lineValidityBufferOut.push_back(true);
+            }
+        } // namespace Joints
     } // namespace Utils
 } // namespace PhysX

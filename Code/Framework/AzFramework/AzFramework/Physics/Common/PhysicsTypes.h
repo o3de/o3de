@@ -82,6 +82,16 @@ namespace AzPhysics
         AZStd::shared_ptr<Physics::ShapeConfiguration>>;
     using ShapeColliderPairList = AZStd::vector<ShapeColliderPair>;
 
+    //! Joint types are used to request for AZ::TypeId with the JointHelpersInterface::GetSupportedJointTypeId.
+    //! If the Physics backend supports this joint type JointHelpersInterface::GetSupportedJointTypeId will return a AZ::TypeId.
+    enum class JointType
+    {
+        D6Joint,
+        FixedJoint,
+        BallJoint,
+        HingeJoint
+    };
+
     //! Flags used to specifying which properties of a body to compute.
     enum class MassComputeFlags : AZ::u8
     {

@@ -59,6 +59,43 @@ namespace PhysX
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle);
         } // namespace PxActorFactories
+
+        namespace Joints
+        {
+            bool IsD6SwingValid(float swingAngleY, float swingAngleZ, float swingLimitY, float swingLimitZ);
+
+            void AppendD6SwingConeToLineBuffer(
+                const AZ::Quaternion& parentLocalRotation,
+                float swingAngleY,
+                float swingAngleZ,
+                float swingLimitY,
+                float swingLimitZ,
+                float scale,
+                AZ::u32 angularSubdivisions,
+                AZ::u32 radialSubdivisions,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut);
+
+            void AppendD6TwistArcToLineBuffer(
+                const AZ::Quaternion& parentLocalRotation,
+                float twistAngle,
+                float twistLimitLower,
+                float twistLimitUpper,
+                float scale,
+                AZ::u32 angularSubdivisions,
+                AZ::u32 radialSubdivisions,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut);
+
+            void AppendD6CurrentTwistToLineBuffer(
+                const AZ::Quaternion& parentLocalRotation,
+                float twistAngle,
+                float twistLimitLower,
+                float twistLimitUpper,
+                float scale,
+                AZStd::vector<AZ::Vector3>& lineBufferOut,
+                AZStd::vector<bool>& lineValidityBufferOut);
+        } // namespace Joints
     } // namespace Utils
 } // namespace PhysX
 
