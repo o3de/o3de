@@ -400,8 +400,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
 
-    ON_COMMAND(ID_WIREFRAME, OnWireframe)
-
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
     ON_COMMAND(IDC_SELECTION, OnDummyCommand)
@@ -3464,31 +3462,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #ifdef WIN32 // no such thing on macOS
     SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 #endif
-}
-
-void CCryEditApp::OnWireframe()
-{
-    int             nWireframe(R_SOLID_MODE);
-    ICVar*      r_wireframe(gEnv->pConsole->GetCVar("r_wireframe"));
-
-    if (r_wireframe)
-    {
-        nWireframe = r_wireframe->GetIVal();
-    }
-
-    if (nWireframe != R_WIREFRAME_MODE)
-    {
-        nWireframe = R_WIREFRAME_MODE;
-    }
-    else
-    {
-        nWireframe = R_SOLID_MODE;
-    }
-
-    if (r_wireframe)
-    {
-        r_wireframe->Set(nWireframe);
-    }
 }
 
 void CCryEditApp::OnUpdateWireframe(QAction* action)
