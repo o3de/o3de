@@ -34,7 +34,7 @@ namespace O3DE::ProjectManager
 
     bool Application::Init(bool interactive)
     {
-        constexpr char applicationName[] = "O3DE";
+        constexpr const char* applicationName { "O3DE" };
 
         QApplication::setOrganizationName(applicationName);
         QApplication::setOrganizationDomain("o3de.org");
