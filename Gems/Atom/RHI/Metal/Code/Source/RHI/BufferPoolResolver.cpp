@@ -42,7 +42,6 @@ namespace AZ
                 uploadRequest.m_attachmentBuffer = buffer;
                 uploadRequest.m_byteOffset = buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
-                uploadRequest.m_byteSize = request.m_byteCount;
 
                 return stagingBuffer->GetMemoryView().GetCpuAddress();
             }
@@ -72,7 +71,7 @@ namespace AZ
                 copyDescriptor.m_sourceOffset = stagingBuffer->GetMemoryView().GetOffset();
                 copyDescriptor.m_destinationBuffer = destBuffer;
                 copyDescriptor.m_destinationOffset = static_cast<uint32_t>(packet.m_byteOffset);
-                copyDescriptor.m_size = static_cast<uint32_t>(packet.m_byteSize);
+                copyDescriptor.m_size = stagingBuffer->GetMemoryView().GetSize();
 
                 commandList.Submit(RHI::CopyItem(copyDescriptor));
                 device.QueueForRelease(stagingBuffer->GetMemoryView());
