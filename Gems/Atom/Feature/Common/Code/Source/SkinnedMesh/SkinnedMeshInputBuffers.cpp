@@ -631,7 +631,7 @@ namespace AZ
                 modelLodCreator.End(lodAsset);
                 if (!lodAsset.IsReady())
                 {
-                    // [GFX TODO] During mesh reload sometimes the modelLodCreator reported errors and result in the lodAsset not ready.
+                    // [GFX TODO] During mesh reload the modelLodCreator could report errors and result in the lodAsset not ready.
                     return nullptr;
                 }
                 modelCreator.AddLodAsset(AZStd::move(lodAsset));
