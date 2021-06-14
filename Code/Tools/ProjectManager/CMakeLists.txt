@@ -83,6 +83,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
+                Platform/${PAL_PLATFORM_NAME}
         BUILD_DEPENDENCIES
             PRIVATE
                 3rdParty::Qt::Core
