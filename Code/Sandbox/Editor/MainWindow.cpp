@@ -720,11 +720,11 @@ void MainWindow::InitActions()
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"))
         .SetParent(this);
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"))
-		.SetParent(this);
+        .SetParent(this);
     am->AddAction(ID_FILE_PROJECT_MANAGER_NEW, tr("New Project..."))
-		.SetParent(this);
+        .SetParent(this);
     am->AddAction(ID_FILE_PROJECT_MANAGER_OPEN, tr("Open Project..."))
-		.SetParent(this);
+        .SetParent(this);
     am->AddAction(ID_GAME_PC_ENABLEVERYHIGHSPEC, tr("Very High"))
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateGameSpec)
@@ -898,7 +898,7 @@ void MainWindow::InitActions()
             action->setChecked(SandboxEditor::GridSnappingEnabled());
         })
         .Connect(&QAction::triggered, []() { SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled()); })
-		.SetParent(this);
+        .SetParent(this);
 
     am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
@@ -910,7 +910,7 @@ void MainWindow::InitActions()
             action->setChecked(SandboxEditor::AngleSnappingEnabled());
         })
         .Connect(&QAction::triggered, []() { SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled()); })
-		.SetParent(this);
+        .SetParent(this);
 
     // Display actions
     am->AddAction(ID_SWITCHCAMERA_DEFAULTCAMERA, tr("Default Camera")).SetCheckable(true)
