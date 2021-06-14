@@ -170,7 +170,14 @@ namespace AzFramework
         Activation m_activation = Activation::Idle;
     };
 
-    Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, float deltaTime);
+    //! Properties to use to configure behavior across all types of camera.
+    struct CameraProps
+    {
+        AZStd::function<float()> m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()> m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
+    };
+
+    Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, float deltaTime);
 
     class Cameras
     {
@@ -225,6 +232,10 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
+        AZStd::function<float()> m_rotateSpeedFn;
+        AZStd::function<bool()> m_invertPitchFn;
+        AZStd::function<bool()> m_invertYawFn;
+
     private:
         InputChannelId m_rotateChannelId;
         ClickDetector m_clickDetector;
@@ -266,6 +277,10 @@ namespace AzFramework
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        AZStd::function<float()> m_panSpeedFn;
+        AZStd::function<bool()> m_invertPanXFn;
+        AZStd::function<bool()> m_invertPanYFn;
 
     private:
         PanAxesFn m_panAxesFn;
@@ -309,6 +324,9 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
+
+        AZStd::function<float()> m_translateSpeedFn;
+        AZStd::function<float()> m_boostMultiplierFn;
 
     private:
         enum class TranslationType
@@ -375,9 +393,13 @@ namespace AzFramework
     class OrbitDollyScrollCameraInput : public CameraInput
     {
     public:
+        OrbitDollyScrollCameraInput();
+
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        AZStd::function<float()> m_scrollSpeedFn;
     };
 
     class OrbitDollyCursorMoveCameraInput : public CameraInput
@@ -389,6 +411,8 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
+        AZStd::function<float()> m_cursorSpeedFn;
+
     private:
         InputChannelId m_dollyChannelId;
     };
@@ -396,9 +420,13 @@ namespace AzFramework
     class ScrollTranslationCameraInput : public CameraInput
     {
     public:
+        ScrollTranslationCameraInput();
+
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        AZStd::function<float()> m_scrollSpeedFn;
     };
 
     class OrbitCameraInput : public CameraInput
