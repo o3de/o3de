@@ -25,7 +25,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         : QGridLayout(parent)
     {
         // set margins and spacing for internal contents
-        setContentsMargins(0, 0, 0, 0);
+        // +20 to avoid overlapping with ImGui
+        setContentsMargins(ViewportUiOverlayMargin, ViewportUiOverlayMargin + 20, ViewportUiOverlayMargin, ViewportUiOverlayMargin);
         setSpacing(ViewportUiDisplayLayoutSpacing);
 
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment

@@ -24,8 +24,6 @@
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    // margin for the Viewport UI Overlay in pixels
-    const static int ViewportUiOverlayMargin = 5;
     const static int HighlightBorderSize = 5;
     const static int TopHighlightBorderSize = 25;
     const static char* HighlightBorderColor = "#44B2F8";
@@ -379,7 +377,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_fullScreenLayout.setSpacing(0);
         m_fullScreenLayout.setContentsMargins(0, 0, 0, 0);
         m_fullScreenLayout.addLayout(&m_uiOverlayLayout, 0, 0, 1, 1);
-        m_uiOverlayLayout.setMargin(ViewportUiOverlayMargin);
 
         // format the label which will appear on top of the highlight border
         AZStd::string styleSheet = AZStd::string::format(

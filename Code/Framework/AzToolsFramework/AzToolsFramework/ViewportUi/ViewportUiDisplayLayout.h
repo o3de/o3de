@@ -19,6 +19,9 @@
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
+    // margin for the Viewport UI Overlay in pixels
+    const static int ViewportUiOverlayMargin = 5;
+
     //! QGridLayout implementation that uses a grid of QVBox/QHBoxLayouts internally to stack widgets.
     class ViewportUiDisplayLayout : public QGridLayout
     {
