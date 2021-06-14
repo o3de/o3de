@@ -260,24 +260,4 @@ namespace JsonSerializationTests
         Load(m_jsonValue.SetDouble(-1.0f), true, AZ::JsonSerializationResult::Outcomes::Success);
         Load(m_jsonValue.SetDouble(2.0), true, AZ::JsonSerializationResult::Outcomes::Success);
     }
-
-    TEST_F(JsonBoolSerializerTests, Load_LoadDefaultToPointer_ValueIsIsInitialized)
-    {
-        using namespace AZ::JsonSerializationResult;
-
-        BoolPointerWrapper instance;
-
-        this->m_jsonDocument->Parse(R"({ "Value": {}})");
-        ASSERT_FALSE(this->m_jsonDocument->HasParseError());
-
-        AZ::JsonDeserializerSettings settings;
-        settings.m_serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
-        settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
-        ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
-
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
-        EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        ASSERT_NE(nullptr, instance.m_value);
-        EXPECT_FALSE(*instance.m_value);
-    }
 } // namespace JsonSerializationTests

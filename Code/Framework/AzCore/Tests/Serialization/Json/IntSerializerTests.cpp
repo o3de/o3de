@@ -505,26 +505,6 @@ namespace JsonSerializationTests
         EXPECT_EQ(typename SerializerInfo<TypeParam>::DataType(), convertedValue);
     }
 
-    TYPED_TEST(TypedJsonIntSerializerTests, Load_LoadDefaultToPointer_ValueIsIsInitialized)
-    {
-        using namespace AZ::JsonSerializationResult;
-
-        IntegerPointerWrapper instance;
-
-        this->m_jsonDocument->Parse(R"({ "Value": {}})");
-        ASSERT_FALSE(this->m_jsonDocument->HasParseError());
-        
-        AZ::JsonDeserializerSettings settings;
-        settings.m_serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
-        settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
-        ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
-
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
-        EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        ASSERT_NE(nullptr, instance.m_value);
-        EXPECT_EQ(0, *instance.m_value);
-    }
-
     TYPED_TEST(TypedJsonIntSerializerTests, Load_MaxInt8Value_ConvertIfFitsOrUnsupported)     { this->template TestMaxValue<int8_t>(); }
     TYPED_TEST(TypedJsonIntSerializerTests, Load_MaxShortValue_ConvertIfFitsOrUnsupported)    { this->template TestMaxValue<short>(); }
     TYPED_TEST(TypedJsonIntSerializerTests, Load_MaxIntValue_ConvertIfFitsOrUnsupported)      { this->template TestMaxValue<int>(); }

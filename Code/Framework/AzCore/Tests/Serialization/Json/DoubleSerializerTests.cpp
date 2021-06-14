@@ -32,7 +32,7 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<FloatingPointType> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<FloatingPointType>(-2.0f);
+            return AZStd::make_shared<FloatingPointType>(0.0f);
         }
 
         AZStd::shared_ptr<FloatingPointType> CreateFullySetInstance() override
@@ -295,33 +295,5 @@ namespace JsonSerializationTests
         ResultCode result = m_floatSerializer->Load(&value, azrtti_typeid<float>(), testVal, *m_jsonDeserializationContext);
         EXPECT_EQ(Outcomes::Unsupported, result.GetOutcome());
         EXPECT_EQ(42.0f, value);
-    }
-
-    // Pointers
-
-    TEST_F(JsonDoubleSerializerTests, Load_LoadDefaultToPointer_ValuesArIsInitialized)
-    {
-        using namespace AZ::JsonSerializationResult;
-
-        DoublePointerWrapper instance;
-
-        this->m_jsonDocument->Parse(R"(
-            {
-                "Double": {},
-                "Float": {}
-            })");
-        ASSERT_FALSE(this->m_jsonDocument->HasParseError());
-
-        AZ::JsonDeserializerSettings settings;
-        settings.m_serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
-        settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
-        ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
-
-        EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
-        EXPECT_EQ(Processing::Completed, result.GetProcessing());
-        ASSERT_NE(nullptr, instance.m_double);
-        ASSERT_NE(nullptr, instance.m_float);
-        EXPECT_DOUBLE_EQ(0.0, *instance.m_double);
-        EXPECT_FLOAT_EQ(0.0f, *instance.m_float);
     }
 } // namespace JsonSerializationTests
