@@ -17,6 +17,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -142,6 +143,7 @@ namespace AzToolsFramework
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
+    static const char* const SpaceClusterSnapToWorldTooltip = "Snap selected entities to world space";
 
     static const AZ::Color s_fadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
     static const AZ::Color s_fadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
@@ -1037,6 +1039,8 @@ namespace AzToolsFramework
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
+        CreateSnappingCluster();
+
         RegisterActions();
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
@@ -1049,6 +1053,7 @@ namespace AzToolsFramework
 
         DestroyCluster(m_transformModeClusterId);
         DestroyCluster(m_spaceCluster.m_spaceClusterId);
+        DestroyCluster(m_snappingCluster.m_snappingClusterId);
 
         UnregisterActions();
 
@@ -2513,6 +2518,48 @@ namespace AzToolsFramework
             m_transformModeSelectionHandler);
     }
 
+    void EditorTransformComponentSelection::CreateSnappingCluster()
+    {
+        // create the cluster for switching spaces/reference frames
+        ViewportUi::ViewportUiRequestBus::EventResult(
+            m_snappingCluster.m_snappingClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
+            ViewportUi::Alignment::TopRight);
+
+        m_snappingCluster.m_snapToWorldButtonId = RegisterClusterButton(m_snappingCluster.m_snappingClusterId, "SnapToWorld");
+
+        // set button tooltips
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
+            m_snappingCluster.m_snappingClusterId, m_snappingCluster.m_snapToWorldButtonId, SpaceClusterSnapToWorldTooltip);
+
+        auto onButtonClicked = [this](const ViewportUi::ButtonId buttonId)
+        {
+            const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
+            if (buttonId == m_snappingCluster.m_snapToWorldButtonId)
+            {
+                for (const AZ::EntityId entityId : m_selectedEntityIds)
+                {
+                    const AZ::Vector3 entityTranslation = GetWorldTranslation(entityId);
+                    const AZ::Vector3 offset = AZStd::accumulate(
+                        snapAxes.cbegin(), snapAxes.cend(), AZ::Vector3::CreateZero(),
+                        [&entityTranslation](AZ::Vector3 acc, const AZ::Vector3& snapAxis)
+                        {
+                            acc += CalculateSnappedOffset(entityTranslation, snapAxis, 1.0f);
+                            return acc;
+                        });
+
+                    SetWorldTranslation(entityId, entityTranslation + offset);
+                }
+            }
+        };
+
+        m_snappingCluster.m_snappingHandler = AZ::Event<ViewportUi::ButtonId>::Handler(onButtonClicked);
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
+            m_snappingCluster.m_snappingClusterId, m_snappingCluster.m_snappingHandler);
+    }
+
     void EditorTransformComponentSelection::CreateSpaceSelectionCluster()
     {
         // create the cluster for switching spaces/reference frames
@@ -3145,15 +3192,16 @@ namespace AzToolsFramework
         return "Transform Component";
     }
 
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(
+        QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
     {
-         QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
-         QObject::connect(
-             action, &QAction::triggered, action,
-             [this]()
-             {
-                 ToggleCenterPivotSelection();
-             });
+        QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
+        QObject::connect(
+            action, &QAction::triggered, action,
+            [this]()
+            {
+                ToggleCenterPivotSelection();
+            });
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()

@@ -1043,6 +1043,11 @@ namespace AzToolsFramework
         AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTM, transform);
     }
 
+    void SetWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& translation)
+    {
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTranslation, translation);
+    }
+
     void SelectEntity(const AZ::EntityId entity)
     {
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(

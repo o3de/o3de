@@ -123,6 +123,19 @@ namespace AzToolsFramework
         AZStd::optional<ReferenceFrame> m_spaceLock; //!< Locked reference frame to use if set.
     };
 
+    //! Grouping of viewport ui related state for aligning transforms to a grid.
+    struct SnappingCluster
+    {
+        SnappingCluster() = default;
+        // disable copying and moving (implicit)
+        SnappingCluster(const SnappingCluster&) = delete;
+        SnappingCluster& operator=(const SnappingCluster&) = delete;
+
+        ViewportUi::ClusterId m_snappingClusterId; //!< The cluster id for all snapping buttons.
+        ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.
+    };
+
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
@@ -180,6 +193,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
         void ClearManipulatorOrientationOverride();
@@ -320,6 +334,7 @@ namespace AzToolsFramework
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
+        SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
     };
 
