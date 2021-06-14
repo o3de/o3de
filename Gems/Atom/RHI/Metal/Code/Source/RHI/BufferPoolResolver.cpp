@@ -40,7 +40,7 @@ namespace AZ
                 buffer->m_pendingResolves++;
 
                 uploadRequest.m_attachmentBuffer = buffer;
-                uploadRequest.m_byteOffset = request.m_byteOffset;;//buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
+                uploadRequest.m_byteOffset = buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
                 uploadRequest.m_byteSize = request.m_byteCount;
 
@@ -65,11 +65,11 @@ namespace AZ
                 AZ_Assert(destBuffer, "Attachment Buffer is null.");
 
                 //Inform the GPU that the CPU has modified the staging buffer.
-                //Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
+                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
                 
                 RHI::CopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
-                copyDescriptor.m_sourceOffset = 0;//stagingBuffer->GetMemoryView().GetOffset();
+                copyDescriptor.m_sourceOffset = stagingBuffer->GetMemoryView().GetOffset();
                 copyDescriptor.m_destinationBuffer = destBuffer;
                 copyDescriptor.m_destinationOffset = static_cast<uint32_t>(packet.m_byteOffset);
                 copyDescriptor.m_size = static_cast<uint32_t>(packet.m_byteSize);

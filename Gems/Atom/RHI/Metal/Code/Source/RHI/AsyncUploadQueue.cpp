@@ -89,7 +89,9 @@ namespace AZ
             const MemoryView& destMemoryView = destBuffer.GetMemoryView();
             MTLStorageMode mtlStorageMode = destBuffer.GetMemoryView().GetStorageMode();
             RHI::BufferPool& bufferPool = static_cast<RHI::BufferPool&>(*destBuffer.GetPool());
-            /*
+            
+            // No need to use staging buffers since it's host memory.
+            // We just map, copy and then unmap.
             if(mtlStorageMode == MTLStorageModeShared || mtlStorageMode == GetCPUGPUMemoryMode())
             {
                 RHI::BufferMapRequest mapRequest;
@@ -106,7 +108,7 @@ namespace AZ
                 }
                 return m_uploadFence.GetPendingValue();
             }
-            */
+            
             Fence* fenceToSignal = nullptr;
             uint64_t fenceToSignalValue = 0;
             size_t byteCount = uploadRequest.m_byteCount;
