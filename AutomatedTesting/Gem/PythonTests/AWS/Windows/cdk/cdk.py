@@ -54,16 +54,20 @@ class Cdk:
         self._session = session
 
         output = process_utils.check_output(
-            'npm update -g aws-cdk',
+            'npm install -g aws-cdk',
             cwd=self._cdk_path,
             env=self._cdk_env,
             shell=True)
+
+        logger.info(f'Updating CDK: {output}')
 
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',
             cwd=self._cdk_path,
             env=self._cdk_env,
             shell=True)
+
+        logger.info(f'Installing cdk python dependencies: {output}')
 
     def bootstrap(self) -> None:
         """
