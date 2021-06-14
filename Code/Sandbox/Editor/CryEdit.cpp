@@ -376,6 +376,11 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
+    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
+        auto fs = gEnv->pConsole->GetCVar("ed_previewGameInFullscreen_once");
+        fs->Set(1);
+        OnViewSwitchToGame();
+    });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)

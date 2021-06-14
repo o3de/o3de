@@ -947,6 +947,12 @@ void SEditorSettings::PostInitApply()
     REGISTER_CVAR2_CB("ed_keepEditorActive", &keepEditorActive, 0, VF_NULL, "Keep the editor active, even if no focus is set", KeepEditorActiveChanged);
     REGISTER_CVAR2("g_TemporaryLevelName", &g_TemporaryLevelName, "temp_level", VF_NULL, "Temporary level named used for experimental levels.");
 
+    REGISTER_INT("ed_previewGameInFullscreen", 0, VF_DEV_ONLY, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen. 0 = no, 1 = yes");
+    gEnv->pConsole->GetCVar("ed_previewGameInFullscreen")->SetLimits(0, 1);
+
+    REGISTER_INT("ed_previewGameInFullscreen_once", 0, VF_DEV_ONLY | VF_INVISIBLE, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once. 0 = no, 1 = yes");
+    gEnv->pConsole->GetCVar("ed_previewGameInFullscreen_once")->SetLimits(0, 1);
+
     CCryEditApp::instance()->KeepEditorActive(keepEditorActive > 0);
 }
 

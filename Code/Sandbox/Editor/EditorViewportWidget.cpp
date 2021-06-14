@@ -82,6 +82,8 @@
 #include "AnimationContext.h"
 #include "Objects/SelectionGroup.h"
 #include "Core/QtEditorApplication.h"
+#include "MainWindow.h"
+#include "LayoutWnd.h"
 
 // ComponentEntityEditorPlugin
 #include <Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h>
@@ -694,6 +696,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 }
             }
             SetCurrentCursor(STD_CURSOR_GAME);
+
+            if (ShouldPreviewFullscreen())
+            {
+                StartFullscreenPreview();
+            }
         }
 
         if (m_renderViewport)
@@ -711,6 +718,11 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             m_bInMoveMode = false;
             m_bInOrbitMode = false;
             m_bInZoomMode = false;
+
+            if (m_inFullscreenPreview)
+            {
+                StopFullscreenPreview();
+            }
 
             RestoreViewportAfterGameMode();
         }
@@ -1368,11 +1380,30 @@ void EditorViewportWidget::SetViewportId(int id)
 {
     CViewport::SetViewportId(id);
 
+    // First delete any existing layout
+    // This also deletes any existing render viewport widget (since it will be added to the layout
+    if (QLayout* l = layout())
+    {
+        QLayoutItem* item;
+        while ((item = l->takeAt(0)) != 0)
+        {
+            if (QWidget* w = item->widget())
+            {
+                delete w;
+            }
+            l->removeItem(item);
+            delete item;
+        }
+        delete l;
+    }
+
     // Now that we have an ID, we can initialize our viewport.
     m_renderViewport = new AtomToolsFramework::RenderViewportWidget(this, false);
     if (!m_renderViewport->InitializeViewportContext(id))
     {
         AZ_Warning("EditorViewportWidget", false, "Failed to initialize RenderViewportWidget's ViewportContext");
+        delete m_renderViewport;
+        m_renderViewport = nullptr;
         return;
     }
     auto viewportContext = m_renderViewport->GetViewportContext();
@@ -3025,6 +3056,119 @@ bool EditorViewportSettings::AngleSnappingEnabled() const
 float EditorViewportSettings::AngleStep() const
 {
     return SandboxEditor::AngleSnappingSize();
+}
+
+bool EditorViewportWidget::ShouldPreviewFullscreen()
+{
+    CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
+    if (!layout)
+    {
+        AZ_Assert(false, "CRenderViewport: No View Manager layout");
+        return false;
+    }
+
+    // Doesn't work with split layout (TODO: figure out why and make it work)
+    if (layout->GetLayout() != EViewLayout::ET_Layout0) { return false; }
+
+    // Not supported in VR
+    if (gSettings.bEnableGameModeVR) { return false; }
+
+    // If level not loaded, don't preview in fullscreen (preview shouldn't work at all without a level, but it does)
+    if (auto ge = GetIEditor()->GetGameEngine())
+    {
+        if (!ge->IsLevelLoaded()) { return false; }
+    }
+
+    // Check 'ed_previewGameInFullscreen_once' and 'ed_previewGameInFullscreen' cvars
+    if (gEnv->pConsole)
+    {
+        if (auto v = gEnv->pConsole->GetCVar("ed_previewGameInFullscreen_once"))
+        {
+            if (v->GetIVal() != 0)
+            {
+                v->Set(0);
+                return true;
+            }
+        }
+
+        {
+            auto v = gEnv->pConsole->GetCVar("ed_previewGameInFullscreen");
+            return v && v->GetIVal() != 0; //  if it doesn't exist, assume its value is 0
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void EditorViewportWidget::StartFullscreenPreview()
+{
+    AZ_Assert(!m_inFullscreenPreview, AZ_FUNCTION_SIGNATURE " - called when already in full screen preview");
+    m_inFullscreenPreview = true;
+
+    QScreen* screen = QGuiApplication::primaryScreen();
+    QRect  screenGeometry = screen->geometry();
+
+    // Unparent this and show it, which turns it into a free floating window
+    // Also set style to frameless and disable resizing by user
+    setParent(nullptr);
+    setWindowFlag(Qt::FramelessWindowHint, true);
+    setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, true);
+    setFixedSize(screenGeometry.size());
+    move(QPoint(screenGeometry.x(), screenGeometry.y()));
+    showMaximized();
+
+    // Hide the main window
+    MainWindow::instance()->hide();
+}
+
+void EditorViewportWidget::StopFullscreenPreview()
+{
+    AZ_Assert(m_inFullscreenPreview, AZ_FUNCTION_SIGNATURE " - called when not in full screen preview");
+    m_inFullscreenPreview = false;
+
+    // Unset frameless window flags
+    setWindowFlag(Qt::FramelessWindowHint, false);
+    setWindowFlag(Qt::MSWindowsFixedSizeDialogHint, false);
+
+    // Unset fixed size (note that 50x50 is the minimum set in the constructor)
+    setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    setMinimumSize(50, 50);
+
+    // Attach this viewport to the primary view pane (whose index is 0).
+    if (CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout())
+    {
+        if (CLayoutViewPane* viewPane = layout->GetViewPaneByIndex(0))
+        {
+            // Force-reattach this viewport to its view pane by first detaching
+            viewPane->DetachViewport();
+            viewPane->AttachViewport(this);
+
+            // Set the main widget of the layout, which causes this widgets size to be bound to the layout
+            // and the viewport title bar to be displayed
+            layout->SetMainWidget(viewPane);
+        }
+        else
+        {
+            AZ_Assert(false, "CRenderViewport: No view pane with ID 0 (primary view pane)");
+        }
+    }
+    else
+    {
+        AZ_Assert(false, "CRenderViewport: No View Manager layout");
+    }
+
+    // Set this as the selected viewport
+    GetIEditor()->GetViewManager()->SelectViewport(this);
+
+    // Show this widget (setting flags may hide it)
+    showNormal();
+
+    // Show the main window
+    MainWindow::instance()->show();
 }
 
 #include <moc_EditorViewportWidget.cpp>
