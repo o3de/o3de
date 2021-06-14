@@ -372,7 +372,6 @@ private:
     friend struct PythonTestOutputHandler;
 
     void OpenProjectManager(const AZStd::string& screen);
-    void OnWireframe();
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 

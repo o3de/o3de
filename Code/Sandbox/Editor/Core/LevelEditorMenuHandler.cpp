@@ -717,7 +717,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
         });
 #endif
 
-    viewportViewsMenuWrapper.AddAction(ID_WIREFRAME);
     viewportViewsMenuWrapper.AddSeparator();
 
     if (CViewManager::IsMultiViewportEnabled())
