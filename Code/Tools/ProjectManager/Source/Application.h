@@ -13,6 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzFramework/Application/Application.h>
+#include <QCoreApplication>
 #include <PythonBindings.h>
 #include <ProjectManagerWindow.h>
 #endif

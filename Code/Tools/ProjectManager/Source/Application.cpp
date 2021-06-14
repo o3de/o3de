@@ -22,7 +22,6 @@
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 
 #include <QApplication>
-#include <QCoreApplication>
 #include <QDir>
 #include <QMessageBox>
 
