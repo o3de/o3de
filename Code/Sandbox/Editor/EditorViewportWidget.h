@@ -385,7 +385,7 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
-    bool ShouldPreviewFullscreen();
+    bool ShouldPreviewFullscreen() const;
     void StartFullscreenPreview();
     void StopFullscreenPreview();
 

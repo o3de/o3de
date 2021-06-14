@@ -1381,20 +1381,21 @@ void EditorViewportWidget::SetViewportId(int id)
     CViewport::SetViewportId(id);
 
     // First delete any existing layout
-    // This also deletes any existing render viewport widget (since it will be added to the layout
-    if (QLayout* l = layout())
+    // This also deletes any existing render viewport widget (since it will be added to the layout)
+    // Below is the typical method of clearing a QLayout, see e.g. https://doc.qt.io/qt-5/qlayout.html#takeAt
+    if (QLayout* thisLayout = layout())
     {
         QLayoutItem* item;
-        while ((item = l->takeAt(0)) != 0)
+        while ((item = thisLayout->takeAt(0)) != nullptr)
         {
-            if (QWidget* w = item->widget())
+            if (QWidget* widget = item->widget())
             {
-                delete w;
+                delete widget;
             }
-            l->removeItem(item);
+            thisLayout->removeItem(item);
             delete item;
         }
-        delete l;
+        delete thisLayout;
     }
 
     // Now that we have an ID, we can initialize our viewport.
@@ -3058,7 +3059,7 @@ float EditorViewportSettings::AngleStep() const
     return SandboxEditor::AngleSnappingSize();
 }
 
-bool EditorViewportWidget::ShouldPreviewFullscreen()
+bool EditorViewportWidget::ShouldPreviewFullscreen() const
 {
     CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
     if (!layout)
@@ -3067,16 +3068,25 @@ bool EditorViewportWidget::ShouldPreviewFullscreen()
         return false;
     }
 
-    // Doesn't work with split layout (TODO: figure out why and make it work)
-    if (layout->GetLayout() != EViewLayout::ET_Layout0) { return false; }
+    // Doesn't work with split layout
+    if (layout->GetLayout() != EViewLayout::ET_Layout0)
+    {
+        return false;
+    }
 
     // Not supported in VR
-    if (gSettings.bEnableGameModeVR) { return false; }
+    if (gSettings.bEnableGameModeVR)
+    {
+        return false;
+    }
 
     // If level not loaded, don't preview in fullscreen (preview shouldn't work at all without a level, but it does)
     if (auto ge = GetIEditor()->GetGameEngine())
     {
-        if (!ge->IsLevelLoaded()) { return false; }
+        if (!ge->IsLevelLoaded())
+        {
+            return false;
+        }
     }
 
     // Check 'ed_previewGameInFullscreen_once' and 'ed_previewGameInFullscreen' cvars
@@ -3106,11 +3116,11 @@ bool EditorViewportWidget::ShouldPreviewFullscreen()
 
 void EditorViewportWidget::StartFullscreenPreview()
 {
-    AZ_Assert(!m_inFullscreenPreview, AZ_FUNCTION_SIGNATURE " - called when already in full screen preview");
+    AZ_Assert(!m_inFullscreenPreview, "EditorViewportWidget::StartFullscreenPreview called when already in full screen preview");
     m_inFullscreenPreview = true;
 
-    QScreen* screen = QGuiApplication::primaryScreen();
-    QRect  screenGeometry = screen->geometry();
+    const QScreen* screen = QGuiApplication::primaryScreen();
+    const QRect screenGeometry = screen->geometry();
 
     // Unparent this and show it, which turns it into a free floating window
     // Also set style to frameless and disable resizing by user
@@ -3121,13 +3131,13 @@ void EditorViewportWidget::StartFullscreenPreview()
     move(QPoint(screenGeometry.x(), screenGeometry.y()));
     showMaximized();
 
-    // Hide the main window
+    // This must be done after unparenting this widget above
     MainWindow::instance()->hide();
 }
 
 void EditorViewportWidget::StopFullscreenPreview()
 {
-    AZ_Assert(m_inFullscreenPreview, AZ_FUNCTION_SIGNATURE " - called when not in full screen preview");
+    AZ_Assert(m_inFullscreenPreview, "EditorViewportWidget::StartFullscreenPreview called when not in full screen preview");
     m_inFullscreenPreview = false;
 
     // Unset frameless window flags
