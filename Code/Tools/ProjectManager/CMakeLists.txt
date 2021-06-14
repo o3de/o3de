@@ -79,6 +79,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         AUTORCC
         FILES_CMAKE
             project_manager_tests_files.cmake
+            Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
