@@ -54,12 +54,6 @@ class Cdk:
         self._session = session
 
         output = process_utils.check_output(
-            'which cdk',
-            cwd=self._cdk_path,
-            env=self._cdk_env,
-            shell=True)
-
-        output = process_utils.check_output(
             'cdk --version',
             cwd=self._cdk_path,
             env=self._cdk_env,
