@@ -73,9 +73,7 @@ namespace EMotionFX
                         )
                         ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static bounds (source-asset bounds)")
                         ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
-                        ->EnumAttribute(ActorInstance::BOUNDS_NODEOBBFAST_BASED, "Bone local min-max-based")
                         ->EnumAttribute(ActorInstance::BOUNDS_NODEOBB_BASED, "Bone local bounding box-based")
-                        ->EnumAttribute(ActorInstance::BOUNDS_COLLISIONMESH_BASED, "Collision mesh vertex position-based (EXPENSIVE)")
                         ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Render mesh vertex position-based (VERY EXPENSIVE)")
 
                         ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
@@ -88,7 +86,7 @@ namespace EMotionFX
                                       "Update frequency",
                                       "How often to update bounds automatically"
                         )
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " seconds")
+                        ->Attribute(AZ::Edit::Attributes::Suffix, " Hz")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds)
@@ -951,4 +949,3 @@ namespace EMotionFX
         }
     } //namespace Integration
 } // namespace EMotionFX
-

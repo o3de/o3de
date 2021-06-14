@@ -58,7 +58,8 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actor) const
+        // Set the bounding box configuration of the given actor instance to the parameters given by `this'. The actor instance must not be null (this is not checked).
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance*) const
         {
             if (m_autoUpdateBounds)
             {
@@ -74,7 +75,7 @@ namespace EMotionFX
         void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actor) const
         {
             Set(actor);
-            auto freq = actor->GetBoundsUpdateEnabled() ? actor->GetBoundsUpdateItemFrequency() : 1;
+            const AZ::u32 freq = actor->GetBoundsUpdateEnabled() ? actor->GetBoundsUpdateItemFrequency() : 1;
             actor->UpdateBounds(0, actor->GetBoundsUpdateType(), freq);
         }
 
@@ -92,7 +93,10 @@ namespace EMotionFX
                             static AZ::Crc32 m_boundsType_nameCrc(m_boundsType_name);
 
                             int m_boundsType_as_int;
-                            if (!node.GetChildData(m_boundsType_nameCrc, m_boundsType_as_int)) return false;
+                            if (!node.GetChildData(m_boundsType_nameCrc, m_boundsType_as_int))
+                            {
+                                return false;
+                            }
                             if (!node.RemoveElementByName(m_boundsType_nameCrc)) return false;
                             if (node.AddElementWithData(sc, m_boundsType_name, (AZ::u8)m_boundsType_as_int) == -1) return false;
                         }

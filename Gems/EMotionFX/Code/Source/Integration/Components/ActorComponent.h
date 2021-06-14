@@ -88,7 +88,7 @@ namespace EMotionFX
                 // default, joints level update (beside the root joint) on
                 // actor are disabled when the actor is out of view. 
                 bool m_forceUpdateJointsOOV = false;
-				BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
+                BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
                 static void Reflect(AZ::ReflectContext* context);
             };
