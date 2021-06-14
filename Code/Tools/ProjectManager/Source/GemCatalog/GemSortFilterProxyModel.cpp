@@ -40,20 +40,8 @@ namespace O3DE::ProjectManager
         // Gem status
         if (m_gemStatusFilter != GemStatus::NoFilter)
         {
-            bool supportsAnyFilteredGemStatus = false;
-            for (int statusInt = GemStatus::Unselected; statusInt <= GemStatus::Selected; ++statusInt)
-            {
-                const GemStatus filteredGemStatus = static_cast<GemStatus>(statusInt);
-                if (m_gemStatusFilter == filteredGemStatus)
-                {
-                    if (static_cast<GemStatus>(GemModel::IsAdded(sourceIndex)) == filteredGemStatus)
-                    {
-                        supportsAnyFilteredGemStatus = true;
-                        break;
-                    }
-                }
-            }
-            if (!supportsAnyFilteredGemStatus)
+            const GemStatus sourceGemStatus = static_cast<GemStatus>(GemModel::IsAdded(sourceIndex));
+            if (m_gemStatusFilter != sourceGemStatus)
             {
                 return false;
             }
