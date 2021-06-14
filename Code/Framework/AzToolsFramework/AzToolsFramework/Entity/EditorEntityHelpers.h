@@ -199,9 +199,6 @@ namespace AzToolsFramework
     /// Wrap EBus SetWorldTM call.
     void SetWorldTransform(AZ::EntityId entityId, const AZ::Transform& transform);
 
-    /// Wrap EBus SetWorldTranslation call.
-    void SetWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& translation);
-
     /// Wrap EBus SetSelectedEntities call (overload for one entity).
     void SelectEntity(AZ::EntityId entity);
 

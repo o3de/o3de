@@ -128,6 +128,7 @@ namespace AzToolsFramework
     static const char* const s_dittoTranslationIndividualUndoRedoDesc = "Ditto translation individual";
     static const char* const s_dittoScaleIndividualWorldUndoRedoDesc = "Ditto scale individual world";
     static const char* const s_dittoScaleIndividualLocalUndoRedoDesc = "Ditto scale individual local";
+    static const char* const s_snapToWorldGridUndoRedoDesc = "Snap to world grid";
     static const char* const s_showAllEntitiesUndoRedoDesc = s_showAllTitle;
     static const char* const s_lockSelectionUndoRedoDesc = s_lockSelectionTitle;
     static const char* const s_hideSelectionUndoRedoDesc = s_hideSelectionTitle;
@@ -2525,7 +2526,7 @@ namespace AzToolsFramework
             m_snappingCluster.m_snappingClusterId, ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
             ViewportUi::Alignment::TopRight);
 
-        m_snappingCluster.m_snapToWorldButtonId = RegisterClusterButton(m_snappingCluster.m_snappingClusterId, "SnapToWorld");
+        m_snappingCluster.m_snapToWorldButtonId = RegisterClusterButton(m_snappingCluster.m_snappingClusterId, "Grid");
 
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
@@ -2537,18 +2538,25 @@ namespace AzToolsFramework
             const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
             if (buttonId == m_snappingCluster.m_snapToWorldButtonId)
             {
+                float gridSize = 1.0f;
+                ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+                    gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
+
+                ScopedUndoBatch undoBatch(s_snapToWorldGridUndoRedoDesc);
                 for (const AZ::EntityId entityId : m_selectedEntityIds)
                 {
+                    ScopedUndoBatch::MarkEntityDirty(entityId);
+
                     const AZ::Vector3 entityTranslation = GetWorldTranslation(entityId);
                     const AZ::Vector3 offset = AZStd::accumulate(
                         snapAxes.cbegin(), snapAxes.cend(), AZ::Vector3::CreateZero(),
-                        [&entityTranslation](AZ::Vector3 acc, const AZ::Vector3& snapAxis)
+                        [&entityTranslation, gridSize](AZ::Vector3 acc, const AZ::Vector3& snapAxis)
                         {
-                            acc += CalculateSnappedOffset(entityTranslation, snapAxis, 1.0f);
+                            acc += CalculateSnappedOffset(entityTranslation, snapAxis, gridSize);
                             return acc;
                         });
 
-                    SetWorldTranslation(entityId, entityTranslation + offset);
+                    SetEntityWorldTranslation(entityId, entityTranslation + offset);
                 }
             }
         };
@@ -3242,6 +3250,8 @@ namespace AzToolsFramework
             // clear if we instigated the selection change after selection changes
             m_didSetSelectedEntities = false;
         }
+
+        // show/hide cluster
 
         RegenerateManipulators();
     }
