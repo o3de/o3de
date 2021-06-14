@@ -54,6 +54,13 @@ class Cdk:
         self._session = session
 
         output = process_utils.check_output(
+            'npm install -g npm',
+            cwd=self._cdk_path,
+            env=self._cdk_env,
+            shell=True)
+        logger.info(f'Updating npm: {output}')
+
+        output = process_utils.check_output(
             'npm install -g aws-cdk',
             cwd=self._cdk_path,
             env=self._cdk_env,
