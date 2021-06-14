@@ -1273,11 +1273,24 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
 
-    // avoid a loop
+    // block signals on the switch to game actions before setting the checked state, as
+    // setting the checked state triggers the action, which will re-enter this function
+    // and result in an infinite loop
     AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME), m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN) };
-    for (auto action : actions) action->blockSignals(true);
-    for (auto action : actions) action->setChecked(inGameMode);
-    for (auto action : actions) action->blockSignals(false);
+    for (auto action : actions)
+    {
+        action->blockSignals(true);
+    }
+
+    for (auto action : actions)
+    {
+        action->setChecked(inGameMode);
+    }
+
+    for (auto action : actions)
+    {
+        action->blockSignals(false);
+    }
 }
 
 void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
