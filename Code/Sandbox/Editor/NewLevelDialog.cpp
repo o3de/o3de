@@ -17,7 +17,10 @@
 
 // Qt
 #include <QtWidgets/QPushButton>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QTimer>
+#include <QToolButton>
 
 // Editor
 #include "NewTerrainDialog.h"  
@@ -34,7 +37,6 @@ static const char kNewLevelDialog_LevelsFolder[] = "Levels";
 
 CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
     : QDialog(pParent)
-    , m_ilevelFolders(0)
     , m_bUpdate(false)
     , ui(new Ui::CNewLevelDialog)
     , m_initialized(false)
@@ -43,31 +45,80 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
 
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     setWindowTitle(tr("New Level"));
-    setMaximumSize(QSize(430, 280));
+    setMaximumSize(QSize(430, 180));
     adjustSize();
 
-    // Default level folder is root (Levels/)
-    m_ilevelFolders = 0;
-
     m_bIsResize = false;
+
+    
+    ui->TITLE->setText(tr("Assign a name and location to the new level."));
+    ui->STATIC1->setText(tr("Location:"));
+    ui->STATIC2->setText(tr("Name:"));
 
     // Level name only supports ASCII characters
     QRegExp rx("[_a-zA-Z0-9-]+");
     QValidator* validator = new QRegExpValidator(rx, this);
     ui->LEVEL->setValidator(validator);
 
-    connect(ui->LEVEL_FOLDERS, SIGNAL(activated(int)), this, SLOT(OnCbnSelendokLevelFolders()));
+    ui->LEVEL_FOLDERS->setClearButtonEnabled(true);
+    QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(ui->LEVEL_FOLDERS->lineEdit());
+    assert(clearButton);
+    connect(clearButton, &QToolButton::clicked, this, &CNewLevelDialog::OnClearButtonClicked);
+
+    connect(ui->LEVEL_FOLDERS->lineEdit(), &QLineEdit::textEdited, this, &CNewLevelDialog::OnLevelNameChange);
+    connect(ui->LEVEL_FOLDERS, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &CNewLevelDialog::PopupAssetPicker);
+
     connect(ui->LEVEL, &QLineEdit::textChanged, this, &CNewLevelDialog::OnLevelNameChange);
 
+    disconnect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect( ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),this, SLOT(buttonClicked(QAbstractButton*)));
+
+    m_levelFolders = GetLevelsFolder();
+    m_level = "";
     // First of all, keyboard focus is related to widget tab order, and the default tab order is based on the order in which 
     // widgets are constructed. Therefore, creating more widgets changes the keyboard focus. That is why setFocus() is called last.
     // Secondly, using singleShot() allows setFocus() slot of the QLineEdit instance to be invoked right after the event system
     // is ready to do so. Therefore, it is better to use singleShot() than directly call setFocus().
-    QTimer::singleShot(0, ui->LEVEL, SLOT(setFocus()));
+    QTimer::singleShot(0, ui->LEVEL, SLOT(onStartup()));
+
+    ReloadLevelFolder();
 }
 
 CNewLevelDialog::~CNewLevelDialog()
 {
+}
+
+void CNewLevelDialog::buttonClicked(QAbstractButton* button)
+{
+    QDialogButtonBox::StandardButton stdButton = ui->buttonBox->standardButton(button);
+    switch (stdButton)
+    {
+    case QDialogButtonBox::Ok:
+        if (!ValidateLevel())
+        {
+            QDir projectDir = QDir(Path::GetEditingGameDataFolder().c_str());
+            QMessageBox::warning(this,
+            QStringLiteral("Error creating level."),
+                QString("The level must be created in a subdirectory of the %1 folder in the current project. (%2/%3)")
+                    .arg(kNewLevelDialog_LevelsFolder)
+                    .arg(projectDir.absolutePath())
+                    .arg(kNewLevelDialog_LevelsFolder),
+            QMessageBox::Ok);
+        }
+        else
+        {
+            done(Accepted);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+void CNewLevelDialog::onStartup()
+{
+    UpdateData(false);
+    setFocus();
 }
 
 void CNewLevelDialog::UpdateData(bool fromUi)
@@ -75,14 +126,12 @@ void CNewLevelDialog::UpdateData(bool fromUi)
     if (fromUi)
     {
         m_level = ui->LEVEL->text();
-        m_levelFolders = ui->LEVEL_FOLDERS->currentText();
-        m_ilevelFolders = ui->LEVEL_FOLDERS->currentIndex();
+        m_levelFolders = ui->LEVEL_FOLDERS->text();
     }
     else
     {
         ui->LEVEL->setText(m_level);
-        ui->LEVEL_FOLDERS->setCurrentText(m_levelFolders);
-        ui->LEVEL_FOLDERS->setCurrentIndex(m_ilevelFolders);
+        ui->LEVEL_FOLDERS->lineEdit()->setText(m_levelFolders);
     }
 }
 
@@ -90,7 +139,7 @@ void CNewLevelDialog::UpdateData(bool fromUi)
 
 void CNewLevelDialog::OnInitDialog()
 {
-    ReloadLevelFolders();
+    ReloadLevelFolder();
 
     // Disable OK until some text is entered
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))
@@ -104,28 +153,19 @@ void CNewLevelDialog::OnInitDialog()
 
 
 //////////////////////////////////////////////////////////////////////////
-void CNewLevelDialog::ReloadLevelFolders()
+void CNewLevelDialog::ReloadLevelFolder()
 {
-    QString levelsFolder = QString(Path::GetEditingGameDataFolder().c_str()) + "/" + kNewLevelDialog_LevelsFolder;
-
     m_itemFolders.clear();
-    ui->LEVEL_FOLDERS->clear();
-    ui->LEVEL_FOLDERS->addItem(QString(kNewLevelDialog_LevelsFolder) + '/');
-    ReloadLevelFoldersRec(levelsFolder);
+    ui->LEVEL_FOLDERS->lineEdit()->clear();
+    ui->LEVEL_FOLDERS->setText(QString(kNewLevelDialog_LevelsFolder) + '/');
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CNewLevelDialog::ReloadLevelFoldersRec(const QString& currentFolder)
+QString CNewLevelDialog::GetLevelsFolder() const
 {
-    QDir dir(currentFolder);
+    QDir projectDir = QDir(Path::GetEditingGameDataFolder().c_str());
+    QDir projectLevelsDir = QDir(QStringLiteral("%1/%2").arg(projectDir.absolutePath()).arg(kNewLevelDialog_LevelsFolder));
 
-    QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-
-    foreach(const QFileInfo &fi, infoList)
-    {
-        m_itemFolders.push_back(fi.baseName());
-        ui->LEVEL_FOLDERS->addItem(QString(kNewLevelDialog_LevelsFolder) + '/' + fi.baseName());
-    }
+    return projectLevelsDir.absolutePath();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -133,23 +173,43 @@ QString CNewLevelDialog::GetLevel() const
 {
     QString output = m_level;
 
-    if (m_itemFolders.size() > 0 && m_ilevelFolders > 0)
+    QDir projectLevelsDir = QDir(GetLevelsFolder());
+
+    if (!m_levelFolders.isEmpty())
     {
-        output = m_itemFolders[m_ilevelFolders - 1] + "/" + m_level;
+        output = m_levelFolders + "/" + m_level;
     }
 
-    return output;
+    QString relativePath = projectLevelsDir.relativeFilePath(output);
+
+    return relativePath;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CNewLevelDialog::OnCbnSelendokLevelFolders()
+bool CNewLevelDialog::ValidateLevel()
 {
-    UpdateData();
+    // Check that the selected folder is in or below the project/LEVELS folder.
+    QDir projectLevelsDir = QDir(GetLevelsFolder());
+    QString selectedFolder = ui->LEVEL_FOLDERS->text();
+    QString absolutePath = QDir::cleanPath(projectLevelsDir.absoluteFilePath(selectedFolder));
+
+    if (absolutePath == GetLevelsFolder())
+    {
+        return true;
+    }
+
+    QString relativePath = projectLevelsDir.relativeFilePath(selectedFolder);
+
+    if (relativePath.startsWith(".."))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void CNewLevelDialog::OnLevelNameChange()
 {
-    m_level = ui->LEVEL->text();
+    UpdateData(true);
 
     // QRegExpValidator means the string will always be valid as long as it's not empty:
     const bool valid = !m_level.isEmpty();
@@ -158,6 +218,24 @@ void CNewLevelDialog::OnLevelNameChange()
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))
     {
         button->setEnabled(valid);
+    }
+}
+
+void CNewLevelDialog::OnClearButtonClicked()
+{
+    ui->LEVEL_FOLDERS->lineEdit()->setText(GetLevelsFolder());
+    UpdateData(true);
+
+}
+
+void CNewLevelDialog::PopupAssetPicker()
+{
+    QString newPath = QFileDialog::getExistingDirectory(nullptr, QObject::tr("Choose Destination Folder"), GetLevelsFolder());
+
+    if (!newPath.isEmpty())
+    {
+        ui->LEVEL_FOLDERS->setText(newPath);
+        OnLevelNameChange();
     }
 }
 
