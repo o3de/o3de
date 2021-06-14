@@ -14,6 +14,7 @@ import pytest
 import boto3
 import uuid
 import logging
+import subprocess
 
 import ly_test_tools.environment.process_utils as process_utils
 from typing import List
@@ -150,12 +151,20 @@ class Cdk:
         """
         Destroys the cdk application.
         """
+
+        logger.info(f'CDK Path {self._cdk_path}')
         destroy_cdk_application_cmd = ['cdk', 'destroy', '-f']
-        process_utils.check_output(
-            destroy_cdk_application_cmd,
-            cwd=self._cdk_path,
-            env=self._cdk_env,
-            shell=True)
+
+        try:
+            process_utils.check_output(
+                destroy_cdk_application_cmd,
+                cwd=self._cdk_path,
+                env=self._cdk_env,
+                shell=True)
+
+        except subprocess.CalledProcessError as e:
+            logger.error(e.output)
+            raise e
 
         self._stacks = []
         self._cdk_path = ''
@@ -216,6 +225,7 @@ def cdk(
     """
 
     cdk_path = f'{workspace.paths.engine_root()}/Gems/{feature_name}/cdk'
+    logger.info(f'CDK Path {cdk_path}')
     cdk_obj = Cdk(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session())
 
     if bootstrap_required:
