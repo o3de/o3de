@@ -205,10 +205,9 @@ namespace AZ
             // ray tracing acceleration structure (TLAS)
             RHI::Ptr<RHI::RayTracingTlas> m_tlas;
 
-            // ray tracing scene Srg
+            // RayTracingScene and RayTracingMaterial asset and Srgs
+            Data::Asset<RPI::ShaderAsset> m_rayTracingSrgAsset;
             Data::Instance<RPI::ShaderResourceGroup> m_rayTracingSceneSrg;
-
-            // ray tracing material Srg
             Data::Instance<RPI::ShaderResourceGroup> m_rayTracingMaterialSrg;
 
             // current revision number of ray tracing data

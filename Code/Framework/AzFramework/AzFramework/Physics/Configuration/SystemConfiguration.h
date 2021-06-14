@@ -46,7 +46,7 @@ namespace AzPhysics
         //! Each Physics Scene uses this as a base and will override as needed.
         CollisionConfiguration m_collisionConfig;
 
-        Physics::MaterialConfiguration m_defaultMaterialConfiguration; //!< Default material parameters for the project.
+        Physics::DefaultMaterialConfiguration m_defaultMaterialConfiguration; //!< Default material parameters for the project.
         AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset = AZ::Data::AssetLoadBehavior::NoLoad; //!< Material Library exposed by the system component SystemBus API.
 
         //! Controls whether the Physics System will self register to the TickBus and call StartSimulation / FinishSimulation on each Scene.

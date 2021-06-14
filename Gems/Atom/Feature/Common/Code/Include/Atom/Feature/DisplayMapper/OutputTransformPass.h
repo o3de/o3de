@@ -49,7 +49,9 @@ namespace AZ
 
         protected:
             explicit OutputTransformPass(const RPI::PassDescriptor& descriptor);
-            void Init() override;
+
+            // Pass behavior overrides
+            void InitializeInternal() override;
 
         private:
             // Scope producer functions...

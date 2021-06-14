@@ -10,6 +10,7 @@
 *
 */
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -128,7 +129,7 @@ namespace AZ
         }
 
 
-        void RenderPass::OnBuildAttachmentsFinishedInternal()
+        void RenderPass::InitializeInternal()
         {
             if (m_shaderResourceGroup != nullptr)
             {
@@ -165,7 +166,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error("Pass System", false, "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }

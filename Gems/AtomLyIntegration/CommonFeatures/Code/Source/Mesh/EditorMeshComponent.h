@@ -18,6 +18,7 @@
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <Mesh/MeshComponent.h>
+#include <Mesh/EditorMeshStats.h>
 
 namespace AZ
 {
@@ -71,6 +72,9 @@ namespace AZ
 
             // Flag used for button placement
             bool m_addMaterialComponentFlag = false;
+
+            // Stats for current mesh asset
+            EditorMeshStats m_stats;
         };
     } // namespace Render
 } // namespace AZ

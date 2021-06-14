@@ -13,6 +13,7 @@
 #include "EditorContextMenu.h"
 
 #include "AzToolsFramework/Viewport/ViewportMessages.h"
+#include "Editor/EditorContextMenuBus.h"
 
 namespace AzToolsFramework
 {
@@ -55,8 +56,7 @@ namespace AzToolsFramework
 
                 // Populate global context menu.
                 const int contextMenuFlag = 0;
-                EditorEvents::Bus::BroadcastReverse(
-                    &EditorEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
+                AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
                     AzFramework::Vector2FromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates),
                     contextMenuFlag);
 

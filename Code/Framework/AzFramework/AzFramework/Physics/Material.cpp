@@ -83,14 +83,12 @@ namespace Physics
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                AZStd::unordered_set<AZStd::string> forbiddenSurfaceTypeNames;
-                forbiddenSurfaceTypeNames.insert("Default");
                 editContext->Class<Physics::MaterialConfiguration>("", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Physics Material")
-                    ->DataElement(MaterialConfiguration::s_configLineEdit, &MaterialConfiguration::m_surfaceType, "Surface type", "Game surface type") // Uses ConfigStringLineEditCtrl in PhysX gem.
+                    ->DataElement(MaterialConfiguration::s_configLineEdit, &MaterialConfiguration::m_surfaceType, "Name", "Name of the physics material") // Uses ConfigStringLineEditCtrl in PhysX gem.
                         ->Attribute(AZ::Edit::Attributes::MaxLength, 64)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &MaterialConfiguration::IsNameReadOnly)
                         ->Attribute(MaterialConfiguration::s_stringGroup, AZ_CRC("LineEditGroupSurfaceType", 0x6670659e))
-                        ->Attribute(MaterialConfiguration::s_forbiddenStringSet, forbiddenSurfaceTypeNames)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_staticFriction, "Static friction", "Friction coefficient when object is still")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialConfiguration::m_dynamicFriction, "Dynamic friction", "Friction coefficient when object is moving")
@@ -178,6 +176,23 @@ namespace Physics
 
     //////////////////////////////////////////////////////////////////////////
 
+    DefaultMaterialConfiguration::DefaultMaterialConfiguration()
+    {
+        m_surfaceType = Physics::DefaultPhysicsMaterialLabel;
+    }
+
+    void DefaultMaterialConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<Physics::DefaultMaterialConfiguration, Physics::MaterialConfiguration>()
+                ->Version(1)
+                ;
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+
     void MaterialLibraryAsset::Reflect(AZ::ReflectContext * context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -212,7 +227,7 @@ namespace Physics
         if (serializeContext)
         {
             serializeContext->Class<Physics::MaterialInfoReflectionWrapper>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("DefaultMaterial", &MaterialInfoReflectionWrapper::m_defaultMaterialConfiguration)
                 ->Field("Asset", &MaterialInfoReflectionWrapper::m_materialLibraryAsset)
                 ;
@@ -300,7 +315,7 @@ namespace Physics
     {
         auto foundMaterialConfiguration = AZStd::find_if(m_materialLibrary.begin(), m_materialLibrary.end(), [&materialName](const auto& data)
         {
-            return data.m_configuration.m_surfaceType == materialName;
+            return AZ::StringFunc::Equal(data.m_configuration.m_surfaceType, materialName, false/*bCaseSensitive*/);
         });
 
         if (foundMaterialConfiguration != m_materialLibrary.end())
@@ -372,20 +387,28 @@ namespace Physics
             serializeContext->Class<Physics::MaterialSelection>()
                 ->Version(3, &ClassConverters::MaterialSelectionConverter)
                 ->EventHandler<MaterialSelectionEventHandler>()
+                ->Field("EditContextMaterialLibrary", &MaterialSelection::m_editContextMaterialLibrary)
                 ->Field("MaterialIds", &MaterialSelection::m_materialIdsAssignedToSlots)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<Physics::MaterialSelection>("Physics Material", "Select physics material library and which materials to use for the object")
+                editContext->Class<Physics::MaterialSelection>("Physics Materials", "Select which physics materials to use for each element of this object")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_materialIdsAssignedToSlots, "Mesh Surfaces", "Specify which Physics Material to use for each element of this object")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_editContextMaterialLibrary, "Library", "Physics material library from PhysX Configuration")
+                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                        ->Attribute(AZ_CRC_CE("BrowseButtonEnabled"), false)
+                        ->Attribute(AZ_CRC_CE("EditButton"), "")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
+                        ->Attribute(AZ::Edit::Attributes::DefaultAsset, &MaterialSelection::GetMaterialLibraryId)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialSelection::m_materialIdsAssignedToSlots, "", "")
                         ->ElementAttribute(Attributes::MaterialLibraryAssetId, &MaterialSelection::GetMaterialLibraryId)
                         ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &MaterialSelection::GetMaterialSlotLabel)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->ElementAttribute(AZ::Edit::Attributes::ReadOnly, &MaterialSelection::AreMaterialSlotsReadOnly)
                         ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }

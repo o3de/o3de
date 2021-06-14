@@ -109,15 +109,16 @@ namespace AZ
             // --- Pass Behaviour Overrides ---
 
             void ResetInternal() override;
-            void BuildAttachmentsInternal() override;
-            void OnBuildAttachmentsFinishedInternal() override;
+            void BuildInternal() override;
+            void OnInitializationFinishedInternal() override;
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 
             // Finds the pass in m_children and removes it
             void RemoveChild(Ptr<Pass> pass);
 
-            // Orphans all children from clearing m_children.
+            // Orphans all children by clearing m_children.
             void RemoveChildren();
 
         private:

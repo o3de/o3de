@@ -165,6 +165,7 @@ namespace ScriptCanvasPhysics
             request.m_start = worldSpaceTransform.GetTranslation();
             request.m_direction = worldSpaceTransform.TransformVector(direction.GetNormalized());
             request.m_distance = distance;
+            request.m_reportMultipleHits = true;
             request.m_filterCallback = [ignore](const AzPhysics::SimulatedBody* body, [[maybe_unused]] const Physics::Shape* shape)
             {
                 return body->GetEntityId() != ignore ? AzPhysics::SceneQuery::QueryHitType::Touch : AzPhysics::SceneQuery::QueryHitType::None;

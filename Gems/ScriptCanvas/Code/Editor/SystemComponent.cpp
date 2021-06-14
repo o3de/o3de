@@ -66,6 +66,7 @@ namespace ScriptCanvasEditor
     SystemComponent::~SystemComponent()
     {
         AzToolsFramework::UnregisterViewPane(LyViewPane::ScriptCanvas);
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSeedManagerRequests::Bus::Handler::BusDisconnect();
@@ -119,6 +120,7 @@ namespace ScriptCanvasEditor
     void SystemComponent::Init()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     void SystemComponent::Activate()
@@ -165,6 +167,8 @@ namespace ScriptCanvasEditor
         options.canHaveMultipleInstances = false;
         options.isPreview = true;
         options.showInMenu = true;
+        options.showOnToolsToolbar = true;
+        options.toolbarIcon = ":/Menu/script_canvas_editor.svg";
 
         AzToolsFramework::RegisterViewPane<ScriptCanvasEditor::MainWindow>(LyViewPane::ScriptCanvas, LyViewPane::CategoryTools, options);
     }

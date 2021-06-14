@@ -410,7 +410,7 @@ namespace PhysX
         }
 
         // Set the slots from the mesh asset
-        materialSelection.SetMaterialSlots(meshAsset->m_assetData.m_surfaceNames);
+        materialSelection.SetMaterialSlots(meshAsset->m_assetData.m_materialNames);
 
         if (!assetConfiguration.m_useMaterialsFromAsset)
         {
@@ -419,12 +419,14 @@ namespace PhysX
         }
 
         // Update material IDs in the selection for each slot
-        const AZStd::vector<AZStd::string>& meshMaterialNames = meshAsset->m_assetData.m_materialNames;
-        for (size_t slotIndex = 0; slotIndex < meshMaterialNames.size(); ++slotIndex)
+        const AZStd::vector<AZStd::string>& physicsMaterialNames = meshAsset->m_assetData.m_physicsMaterialNames;
+        for (size_t slotIndex = 0; slotIndex < physicsMaterialNames.size(); ++slotIndex)
         {
-            const AZStd::string& physicsMaterialNameFromPhysicsAsset = meshMaterialNames[slotIndex];
-            if (physicsMaterialNameFromPhysicsAsset == DefaultPhysicsMaterialNameFromPhysicsAsset)
+            const AZStd::string& physicsMaterialNameFromPhysicsAsset = physicsMaterialNames[slotIndex];
+            if (physicsMaterialNameFromPhysicsAsset.empty() ||
+                physicsMaterialNameFromPhysicsAsset == Physics::DefaultPhysicsMaterialLabel)
             {
+                materialSelection.SetMaterialId(Physics::MaterialId(), slotIndex);
                 continue;
             }
 
@@ -436,9 +438,10 @@ namespace PhysX
             else
             {
                 AZ_Warning("PhysX", false,
-                    "UpdateMaterialSelectionFromPhysicsAsset: Physics material '%s' not found in the material library. Mesh surface '%s' will use the default material.",
+                    "UpdateMaterialSelectionFromPhysicsAsset: Physics material '%s' not found in the material library. Mesh material '%s' will use the default physics material.",
                     physicsMaterialNameFromPhysicsAsset.c_str(),
-                    meshAsset->m_assetData.m_surfaceNames[slotIndex].c_str());
+                    meshAsset->m_assetData.m_materialNames[slotIndex].c_str());
+                materialSelection.SetMaterialId(Physics::MaterialId(), slotIndex);
             }
         }
     }
@@ -516,7 +519,7 @@ namespace PhysX
 
         auto it = AZStd::find_if(m_materials.begin(), m_materials.end(), [&materialName](const auto& data)
             {
-                return data.second->GetSurfaceTypeName() == materialName;
+                return AZ::StringFunc::Equal(data.second->GetSurfaceTypeName(), materialName, false/*bCaseSensitive*/);
             });
         if (it != m_materials.end())
         {

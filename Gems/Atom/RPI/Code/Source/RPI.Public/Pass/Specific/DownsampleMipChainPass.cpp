@@ -181,12 +181,12 @@ namespace AZ
 
         // Pass behavior functions...
 
-        void DownsampleMipChainPass::BuildAttachmentsInternal()
+        void DownsampleMipChainPass::BuildInternal()
         {
             GetInputInfo();
             BuildChildPasses();
             UpdateChildren();
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void DownsampleMipChainPass::FrameBeginInternal(FramePrepareParams params)

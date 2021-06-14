@@ -40,7 +40,7 @@ namespace AZ
         ParentPass::ParentPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            CreateChildPasses();
+            m_flags.m_createChildren = true;
         }
 
         ParentPass::~ParentPass()
@@ -59,7 +59,7 @@ namespace AZ
             child->m_parent = this;
             child->OnHierarchyChange();
 
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
 
             // Notify pipeline
             if (m_pipeline)
@@ -248,25 +248,18 @@ namespace AZ
 
         void ParentPass::CreateChildPasses()
         {
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyCreated)
+            // The already created flag prevents this function from executing multiple times a frame
+            if (!m_flags.m_createChildren || m_flags.m_alreadyCreatedChildren)
             {
                 return;
             }
-            m_flags.m_alreadyCreated = true;
+            m_flags.m_alreadyCreatedChildren = true;
+
             RemoveChildren();
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
 
-            for (Ptr<Pass>& child : m_children)
-            {
-                ParentPass* asParent = child->AsParent();
-                if (asParent != nullptr)
-                {
-                    asParent->CreateChildPasses();
-                }
-            }
+            m_flags.m_createChildren = false;
         }
 
         void ParentPass::ResetInternal()
@@ -277,19 +270,29 @@ namespace AZ
             }
         }
 
-        void ParentPass::BuildAttachmentsInternal()
+        void ParentPass::BuildInternal()
         {
+            CreateChildPasses();
+
             for (const Ptr<Pass>& child : m_children)
             {
-                child->BuildAttachments();
+                child->Build();
             }
         }
 
-        void ParentPass::OnBuildAttachmentsFinishedInternal()
+        void ParentPass::OnInitializationFinishedInternal()
         {
             for (const Ptr<Pass>& child : m_children)
             {
-                child->OnBuildAttachmentsFinished();
+                child->OnInitializationFinished();
+            }
+        }
+
+        void ParentPass::InitializeInternal()
+        {
+            for (const Ptr<Pass>& child : m_children)
+            {
+                child->Initialize();
             }
         }
 

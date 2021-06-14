@@ -151,7 +151,7 @@ void UiRenderer::CacheShaderData(const AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext>
     static const char worldToProjIndexName[] = "m_worldToProj";
     static const char isClampIndexName[] = "m_isClamp";
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
     m_uiShaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
     AZ_Error(LogName, m_uiShaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
         textureIndexName);

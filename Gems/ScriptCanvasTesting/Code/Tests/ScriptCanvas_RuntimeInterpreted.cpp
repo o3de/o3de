@@ -90,6 +90,11 @@ public:
     }
 };
 
+TEST_F(ScriptCanvasTestFixture, UseBehaviorContextClassConstant)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseBehaviorContextClassConstant");
+}
+
 TEST_F(ScriptCanvasTestFixture, ParseFunctionIfBranchWithConnectedInput)
 {
     RunUnitTestGraph("LY_SC_UnitTest_ParseFunctionIfBranchWithConnectedInput");

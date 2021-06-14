@@ -77,8 +77,9 @@ namespace AZ
             ScenePtr GetScene(const SceneId& sceneId) const override;
             ScenePtr GetDefaultScene() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
-            Data::Asset<ShaderResourceGroupAsset> GetSceneSrgAsset() const override;
-            Data::Asset<ShaderResourceGroupAsset> GetViewSrgAsset() const override;
+            Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const override;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> GetViewSrgLayout() const override;
             void SimulationTick() override;
             void RenderTick() override;
             void SetSimulationJobPolicy(RHI::JobPolicy jobPolicy) override;
@@ -130,8 +131,11 @@ namespace AZ
 
             RPISystemDescriptor m_descriptor;
 
-            Data::Asset<ShaderResourceGroupAsset> m_sceneSrgAsset;
-            Data::Asset<ShaderResourceGroupAsset> m_viewSrgAsset;
+            // Reference to the shader asset that is used
+            // to get the layout for SceneSrg (@m_sceneSrgLayout) and ViewSrg (@m_viewSrgLayout).
+            Data::Asset<ShaderAsset> m_commonShaderAssetForSrgs;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_sceneSrgLayout;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_viewSrgLayout;
 
             bool m_systemAssetsInitialized = false;
 
