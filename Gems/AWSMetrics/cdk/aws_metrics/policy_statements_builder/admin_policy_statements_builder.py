@@ -161,9 +161,9 @@ class AdminPolicyStatementsBuilder(UserPolicyStatementsBuilder):
             [
                 core.Fn.sub(
                     body='arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
-                         '/aws/lambda/${AnalyticsLambdaName}:log-stream:*',
+                         '/aws/lambda/${AnalyticsProcessingLambdaName}:log-stream:*',
                     variables={
-                        'AnalyticsLambdaName': component.analytics_processing_lambda_name
+                        'AnalyticsProcessingLambdaName': component.analytics_processing_lambda_name
                     }
                 )
             ]

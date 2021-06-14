@@ -39,7 +39,8 @@ class Cdk:
         :param workspace: ly_test_tools workspace fixture.
         """
         self._cdk_env = os.environ.copy()
-        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project  # + uuid.uuid4().hex[-4:0]
+        unique_id = uuid.uuid4().hex[-4:]
+        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project[:4] + unique_id if len(project) > 4  else project + unique_id
         self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = session.region_name
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
         self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
@@ -54,18 +55,20 @@ class Cdk:
         self._session = session
 
         output = process_utils.check_output(
-            'cdk --version',
+            'npm uninstall -g aws-cdk',
             cwd=self._cdk_path,
             env=self._cdk_env,
             shell=True)
+
+        logger.info(f'Uninstalling CDK: {output}')
 
         output = process_utils.check_output(
-            'npm install -g --force aws-cdk',
+            'npm install -g aws-cdk',
             cwd=self._cdk_path,
             env=self._cdk_env,
             shell=True)
 
-        logger.info(f'Updating CDK: {output}')
+        logger.info(f'Installing CDK: {output}')
 
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',
