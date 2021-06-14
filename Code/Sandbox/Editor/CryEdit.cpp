@@ -53,6 +53,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
@@ -356,6 +357,8 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
     for (int i = idStart; i <= idEnd; ++i) \
         ON_COMMAND(i, method);
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
+
 void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
@@ -377,8 +380,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
     MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
-        auto fs = gEnv->pConsole->GetCVar("ed_previewGameInFullscreen_once");
-        fs->Set(1);
+        ed_previewGameInFullscreen_once = true;
         OnViewSwitchToGame();
     });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
