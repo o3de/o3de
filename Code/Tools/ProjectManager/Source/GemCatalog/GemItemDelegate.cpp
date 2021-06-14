@@ -147,7 +147,6 @@ namespace O3DE::ProjectManager
             {
                 const bool isAdded = GemModel::IsAdded(modelIndex);
                 GemModel::SetIsAdded(*model, modelIndex, !isAdded);
-                emit GemSelectionChanged();
                 return true;
             }
         }

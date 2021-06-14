@@ -32,9 +32,6 @@ namespace O3DE::ProjectManager
         explicit GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
         ~GemListView() = default;
 
-        const GemItemDelegate* GetGemItemDelegate() const;
-
     private:
-        GemItemDelegate* m_gemItemDelegate;
     };
 } // namespace O3DE::ProjectManager

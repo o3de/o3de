@@ -27,12 +27,6 @@ namespace O3DE::ProjectManager
 
         setModel(model);
         setSelectionModel(selectionModel);
-        m_gemItemDelegate = new GemItemDelegate(model, this);
-        setItemDelegate(m_gemItemDelegate);
-    }
-
-    const GemItemDelegate* GemListView::GetGemItemDelegate() const
-    {
-        return m_gemItemDelegate;
+        setItemDelegate(new GemItemDelegate(model, this));
     }
 } // namespace O3DE::ProjectManager

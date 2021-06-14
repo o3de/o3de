@@ -84,8 +84,7 @@ namespace O3DE::ProjectManager
 
         m_headerWidget->ReinitForProject();
 
-        connect(m_gemListView->GetGemItemDelegate(), &GemItemDelegate::GemSelectionChanged,
-            m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+        connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{

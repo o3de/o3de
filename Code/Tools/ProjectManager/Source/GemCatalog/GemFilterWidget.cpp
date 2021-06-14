@@ -227,22 +227,14 @@ namespace O3DE::ProjectManager
     {
         QVector<QString> elementNames;
         QVector<int> elementCounts;
-        const int numGems = m_gemModel->rowCount();
-        int selectedGemCount = 0;
-        for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
-        {
-            // Is the given gem selected or not?
-            if (m_gemModel->IsAdded(m_gemModel->index(gemIndex, 0)))
-            {
-               ++selectedGemCount;
-            }
-        }
+        const int totalGems = m_gemModel->rowCount();
+        const int selectedGemTotal = m_gemModel->TotalAddedGems();
 
         elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Unselected));
-        elementCounts.push_back(numGems - selectedGemCount);
+        elementCounts.push_back(totalGems - selectedGemTotal);
 
         elementNames.push_back(GemSortFilterProxyModel::GetGemStatusString(GemSortFilterProxyModel::GemStatus::Selected));
-        elementCounts.push_back(selectedGemCount);
+        elementCounts.push_back(selectedGemTotal);
 
         bool wasCollapsed = false;
         if (m_statusFilter)
