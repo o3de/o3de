@@ -306,8 +306,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     AZStd::unordered_set<AZStd::string> pakList;
 
-    bool allowFileSystem = true;
-    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), 0, allowFileSystem);
+    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
     if (handle)
     {
@@ -320,7 +319,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
             {
                 if (AZ::StringFunc::Equal(handle.m_filename.data(), LevelPakName))
                 {
-                    // level folder contain pak files like 'level.pak' 
+                    // level folder contain pak files like 'level.pak'
                     // which we only want to load during level loading.
                     continue;
                 }
@@ -351,7 +350,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
     PopulateLevels(search, folder, pPak, modFolder, false);
     // Load levels outside of the bundles to maintain backward compatibility.
     PopulateLevels(search, folder, pPak, modFolder, true);
-      
+
 }
 
 void CLevelSystem::PopulateLevels(
@@ -360,7 +359,7 @@ void CLevelSystem::PopulateLevels(
     {
         // allow this find first to actually touch the file system
         // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
-        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), 0, fromFileSystemOnly);
+        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
         if (handle)
         {
@@ -973,7 +972,7 @@ void CLevelSystem::UnloadLevel()
     m_lastLevelName.clear();
 
     SAFE_RELEASE(m_pCurrentLevel);
-    
+
     // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
     // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
     EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);

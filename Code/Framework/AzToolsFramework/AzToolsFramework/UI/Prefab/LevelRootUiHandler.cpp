@@ -58,8 +58,17 @@ namespace AzToolsFramework
 
         if (!path.empty())
         {
-            infoString =
-                QObject::tr("<span style=\"font-style: italic; font-weight: 400;\">(%1)</span>").arg(path.Filename().Native().data());
+            QString saveFlag = "";
+            auto dirtyOutcome = m_prefabPublicInterface->HasUnsavedChanges(path);
+
+            if (dirtyOutcome.IsSuccess() && dirtyOutcome.GetValue() == true)
+            {
+                saveFlag = "*";
+            }
+
+            infoString = QObject::tr("<span style=\"font-style: italic; font-weight: 400;\">(%1%2)</span>")
+                             .arg(path.Filename().Native().data())
+                             .arg(saveFlag);
         }
 
         return infoString;

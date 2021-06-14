@@ -37,7 +37,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_sceneLuminance;    
     
     // This should be of size NUM_HISTOGRAM_BINS. 
-    Buffer<uint> m_histogram;    
+    StructuredBuffer<uint> m_histogram;
     
     Sampler LinearSampler 
     {

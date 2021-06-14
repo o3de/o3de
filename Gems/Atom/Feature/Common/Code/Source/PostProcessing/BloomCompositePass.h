@@ -44,7 +44,7 @@ namespace AZ
             BloomCompositePass(const RPI::PassDescriptor& descriptor);
 
             // Pass behaviour overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void GetAttachmentInfo();

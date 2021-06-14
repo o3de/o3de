@@ -544,6 +544,8 @@ set(FILES
     Serialization/Json/TupleSerializer.cpp
     Serialization/Json/UnorderedSetSerializer.h
     Serialization/Json/UnorderedSetSerializer.cpp
+    Serialization/Json/UnsupportedTypesSerializer.h
+    Serialization/Json/UnsupportedTypesSerializer.cpp
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h

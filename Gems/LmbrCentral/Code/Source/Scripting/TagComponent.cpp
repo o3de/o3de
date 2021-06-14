@@ -86,7 +86,6 @@ namespace LmbrCentral
         {
             behaviorContext->Class<TagComponentBehaviorHelper>("Tag Helper")
                 ->Method("Get Entities by Tag", &TagComponentBehaviorHelper::FindTaggedEntities)
-                ->Attribute(AZ::Script::Attributes::Ignore, 0)
                 ->Attribute(AZ::Script::Attributes::Category, "Gameplay/Tag")
                 ->Attribute(AZ::ScriptCanvasAttributes::FloatingFunction, 0)
                 ;

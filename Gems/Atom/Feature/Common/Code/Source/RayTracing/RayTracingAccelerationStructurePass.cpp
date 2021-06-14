@@ -42,7 +42,7 @@ namespace AZ
             }
         }
 
-        void RayTracingAccelerationStructurePass::BuildAttachmentsInternal()
+        void RayTracingAccelerationStructurePass::BuildInternal()
         {
             SetScopeId(RHI::ScopeId(GetPathName()));
         }
