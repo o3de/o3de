@@ -69,6 +69,8 @@ public: // static member functions
 
 protected: // member functions
 
+    void LaunchUIEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&);
+
     // AZ::Component
     void Activate() override;
     void Deactivate() override;

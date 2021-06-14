@@ -33,9 +33,9 @@ namespace AZ
         {
         }
 
-        void DepthOfFieldMaskPass::Init()
+        void DepthOfFieldMaskPass::InitializeInternal()
         {
-            FullscreenTrianglePass::Init();
+            FullscreenTrianglePass::InitializeInternal();
 
             m_blendFactorIndex.Reset();
             m_inputResolutionInverseIndex.Reset();

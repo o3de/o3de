@@ -916,9 +916,6 @@ namespace AzToolsFramework
             eECMF_USE_VIEWPORT_CENTER = 0x2,
         };
 
-        /// Populate global edit-time context menu.
-        virtual void PopulateEditorGlobalContextMenu(QMenu * /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/) {}
-
         /// Populate slice portion of edit-time context menu
         virtual void PopulateEditorGlobalContextMenu_SliceSection(QMenu * /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/) {}
 

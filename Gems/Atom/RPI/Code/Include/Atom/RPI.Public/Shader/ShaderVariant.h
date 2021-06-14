@@ -33,12 +33,6 @@ namespace AZ
             //! this does not fill the InputStreamLayout or OutputAttachmentLayout as that also requires 
             //! information from the mesh data and pass system and must be done as a separate step).
             void ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const;
-            
-            //! Returns the ShaderInputContract which describes which inputs the shader requires
-            const ShaderInputContract& GetInputContract() const;
-
-            //! Returns the ShaderOutputContract which describes which outputs the shader requires
-            const ShaderOutputContract& GetOutputContract() const;
 
             const ShaderVariantId& GetShaderVariantId() const { return m_shaderVariantAsset->GetShaderVariantId(); }
 
@@ -47,9 +41,10 @@ namespace AZ
             //! If the shader variant is not fully baked, the ShaderVariantKeyFallbackValue must be correctly set when drawing.
             bool IsFullyBaked() const { return m_shaderVariantAsset->IsFullyBaked(); }
 
-            //! Return the timestamp when the associated ShaderAsset was built.
+            //! Return the timestamp when this asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZStd::sys_time_t GetShaderAssetBuildTimestamp() const { return m_shaderVariantAsset->GetShaderAssetBuildTimestamp(); }
+            //! This timestamp must be >= than the ShaderAsset timestamp.
+            AZStd::sys_time_t GetBuildTimestamp() const { return m_shaderVariantAsset->GetBuildTimestamp(); }
 
             bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }
 
@@ -59,7 +54,8 @@ namespace AZ
             // Called by Shader. Initializes runtime data from asset data. Returns whether the call succeeded.
             bool Init(
                 const ShaderAsset& shaderAsset,
-                Data::Asset<ShaderVariantAsset> shaderVariantAsset);
+                Data::Asset<ShaderVariantAsset> shaderVariantAsset,
+                SupervariantIndex supervariantIndex);
 
             // Cached state from the asset to avoid an indirection.
             RHI::PipelineStateType m_pipelineStateType = RHI::PipelineStateType::Count;
@@ -68,6 +64,8 @@ namespace AZ
             RHI::ConstPtr<RHI::PipelineLayoutDescriptor> m_pipelineLayoutDescriptor;
             
             Data::Asset<ShaderVariantAsset> m_shaderVariantAsset;
+
+            const RHI::RenderStates* m_renderStates = nullptr; // Cached from ShaderAsset.
         };
     }
 }

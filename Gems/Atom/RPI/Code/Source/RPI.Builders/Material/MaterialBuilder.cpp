@@ -19,7 +19,6 @@
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>

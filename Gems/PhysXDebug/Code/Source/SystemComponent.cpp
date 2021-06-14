@@ -42,7 +42,7 @@ namespace PhysXDebug
     const float SystemComponent::m_maxCullingBoxSize = 150.0f;
     namespace Internal
     {
-        const AZ::Crc32 VewportId = 0; // was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
+        const AZ::Crc32 VewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
     }
 
     bool UseEditorPhysicsScene()
@@ -565,9 +565,9 @@ namespace PhysXDebug
     static void physx_CullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         const int argumentCount = arguments.size();
-        if (argumentCount == 2)
+        if (argumentCount == 1)
         {
-            float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[1]).c_str(), nullptr, 10);
+            float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[0]).c_str(), nullptr, 10);
             PhysXDebug::PhysXDebugRequestBus::Broadcast(&PhysXDebug::PhysXDebugRequestBus::Events::SetCullingBoxSize, newCullingBoxSize);
         }
         else
@@ -584,9 +584,9 @@ namespace PhysXDebug
 
         const int argumentCount = arguments.size();
 
-        if (argumentCount == 2)
+        if (argumentCount == 1)
         {
-            const auto userPreference = static_cast<DebugCVarValues>(strtol(AZ::CVarFixedString(arguments[1]).c_str(), nullptr, 10));
+            const auto userPreference = static_cast<DebugCVarValues>(strtol(AZ::CVarFixedString(arguments[0]).c_str(), nullptr, 10));
 
             switch (userPreference)
             {

@@ -47,7 +47,8 @@ namespace AZ
             virtual void OnShaderReinitialized(const Shader& shader) { AZ_UNUSED(shader); }
 
             //! Called when a particular shader variant is reinitialized.
-            virtual void OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId) { AZ_UNUSED(shader); AZ_UNUSED(shaderVariantId); AZ_UNUSED(shaderVariantStableId); }
+            virtual void OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId)
+            { AZ_UNUSED(shader); AZ_UNUSED(shaderVariantId); AZ_UNUSED(shaderVariantStableId) }
         };
 
         typedef EBus<ShaderReloadNotifications> ShaderReloadNotificationBus;

@@ -43,10 +43,16 @@ set(FILES
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
     Source/Decals/DecalComponentController.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponent.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponent.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponentController.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponentController.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.cpp
     Source/Grid/GridComponent.h
     Source/Grid/GridComponent.cpp
     Source/Grid/GridComponentConfig.cpp
@@ -66,6 +72,10 @@ set(FILES
     Source/Mesh/MeshComponent.cpp
     Source/Mesh/MeshComponentController.h
     Source/Mesh/MeshComponentController.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponent.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponent.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponentController.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponentController.cpp
     Source/PostProcess/PostFxLayerComponent.cpp
     Source/PostProcess/PostFxLayerComponent.h
     Source/PostProcess/PostFxLayerComponentConfig.cpp

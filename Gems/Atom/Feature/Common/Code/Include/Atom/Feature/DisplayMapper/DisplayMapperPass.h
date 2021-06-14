@@ -76,7 +76,8 @@ namespace AZ
             DisplayMapperPass(const RPI::PassDescriptor& descriptor);
 
             // Pass behavior overrides
-            void BuildAttachmentsInternal() final;
+            void BuildInternal() final;
+            void InitializeInternal() final;
             void FrameBeginInternal(FramePrepareParams params) final;
             void FrameEndInternal() final;
             void CreateChildPassesInternal() final;

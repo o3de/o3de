@@ -213,7 +213,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> convertedInstance(aznew Instance());
         ASSERT_TRUE(AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*convertedInstance, m_prefabDom));
 
-        convertedInstance->DetachNestedEntities(
+        convertedInstance->DetachAllEntitiesInHierarchy(
             [this](AZStd::unique_ptr<AZ::Entity> entity)
             {
                 m_runtimeEntities.emplace_back(entity.release());

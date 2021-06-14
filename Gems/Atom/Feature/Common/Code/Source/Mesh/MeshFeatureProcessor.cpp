@@ -639,15 +639,15 @@ namespace AZ
                     continue;
                 }
 
-                auto& objectSrgAsset = material->GetAsset()->GetObjectSrgAsset();
+                auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
 
-                if (!objectSrgAsset)
+                if (!objectSrgLayout)
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "No per-object ShaderResourceGroup found.");
                     continue;
                 }
 
-                if (m_shaderResourceGroup && m_shaderResourceGroup->GetAsset() != objectSrgAsset)
+                if (m_shaderResourceGroup && m_shaderResourceGroup->GetLayout()->GetHash() != objectSrgLayout->GetHash())
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "All materials on a model must use the same per-object ShaderResourceGroup. Skipping.");
                     continue;
@@ -657,7 +657,8 @@ namespace AZ
                 // in shaderResourceGroupInOut. All of the Model's draw packets will use this same instance.
                 if (!m_shaderResourceGroup)
                 {
-                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(objectSrgAsset);
+                    auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, RPI::DefaultSupervariantIndex, objectSrgLayout->GetName());
                     if (!m_shaderResourceGroup)
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
@@ -773,6 +774,12 @@ namespace AZ
                 if (materialAssignment.m_materialInstance.get())
                 {
                     material = materialAssignment.m_materialInstance;
+                }
+
+                if (!material)
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "No material provided for mesh. Skipping.");
+                    continue;
                 }
 
                 // retrieve vertex/index buffers

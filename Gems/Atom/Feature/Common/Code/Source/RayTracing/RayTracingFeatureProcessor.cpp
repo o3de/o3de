@@ -65,19 +65,22 @@ namespace AZ
             // create the TLAS object
             m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
 
-            // load the RayTracingSceneSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
+            // load the RayTracingSrg asset asset
+            m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
+            if (!m_rayTracingSrgAsset.IsReady())
+            {
+                AZ_Assert(false, "Failed to load RayTracingSrg asset");
+                return;
+            }
 
-            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
+            // create the RayTracingSceneSrg
+            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, RPI::DefaultSupervariantIndex, Name("RayTracingSceneSrg"));
+            AZ_Assert(m_rayTracingSceneSrg, "Failed to create RayTracingSceneSrg");
 
-            // load the RayTracingMaterialSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingMaterialSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingmaterialsrg_raytracingmaterialsrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingMaterialSrgAsset.IsReady(), "Failed to load RayTracingMaterialSrg asset");
-
-            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(rayTracingMaterialSrgAsset);
+            // create the RayTracingMaterialSrg
+            const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
+            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, RPI::DefaultSupervariantIndex, Name("RayTracingMaterialSrg"));
+            AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
         void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)
@@ -210,12 +213,10 @@ namespace AZ
 
                 if (m_meshInfoBuffer == nullptr)
                 {
-                    AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-
                     // allocate the MeshInfo structured buffer
                     RPI::CommonBufferDescriptor desc;
                     desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = AZStd::string::format("RayTracingMeshInfo_%s", uuidString.c_str());
+                    desc.m_bufferName = "RayTracingMeshInfo";
                     desc.m_byteCount = newMeshByteCount;
                     desc.m_elementSize = sizeof(MeshInfo);
                     m_meshInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
@@ -283,12 +284,10 @@ namespace AZ
 
                 if (m_materialInfoBuffer == nullptr)
                 {
-                    AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-
                     // allocate the MaterialInfo structured buffer
                     RPI::CommonBufferDescriptor desc;
                     desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
-                    desc.m_bufferName = AZStd::string::format("RayTracingMaterialInfo_%s", uuidString.c_str());
+                    desc.m_bufferName = "RayTracingMaterialInfo";
                     desc.m_byteCount = newMaterialByteCount;
                     desc.m_elementSize = sizeof(MaterialInfo);
                     m_materialInfoBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);

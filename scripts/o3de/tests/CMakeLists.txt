@@ -34,3 +34,17 @@ ly_add_pytest(
     TEST_SUITE smoke
     EXCLUDE_TEST_RUN_TARGET_FROM_IDE
 )
+
+ly_add_pytest(
+    NAME o3de_manifest
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_manifest.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
+    NAME o3de_project_properties
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_project_properties.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)

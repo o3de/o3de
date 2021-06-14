@@ -356,7 +356,8 @@
     <file>img/UI20/toolbar/Load.svg</file>
 	<file>img/UI20/toolbar/Local.svg</file>
     <file>img/UI20/toolbar/Locked.svg</file>
-    <file>img/UI20/toolbar/LUA.svg</file>
+    <file>img/UI20/toolbar/Locked_Status.svg</file>
+	<file>img/UI20/toolbar/LUA.svg</file>
     <file>img/UI20/toolbar/Material.svg</file>
     <file>img/UI20/toolbar/Measure.svg</file>
     <file>img/UI20/toolbar/Move.svg</file>

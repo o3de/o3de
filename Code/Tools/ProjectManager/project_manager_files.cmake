@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Resources/ProjectManager.rc
     Resources/ProjectManager.qrc
     Resources/ProjectManager.qss
     Source/main.cpp
@@ -38,6 +39,8 @@ set(FILES
     Source/ProjectInfo.cpp
     Source/ProjectUtils.h
     Source/ProjectUtils.cpp
+    Source/ProjectBuilder.h
+    Source/ProjectBuilder.cpp
     Source/UpdateProjectSettingsScreen.h
     Source/UpdateProjectSettingsScreen.cpp
     Source/NewProjectSettingsScreen.h
@@ -60,6 +63,8 @@ set(FILES
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
+    Source/TemplateButtonWidget.h
+    Source/TemplateButtonWidget.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h

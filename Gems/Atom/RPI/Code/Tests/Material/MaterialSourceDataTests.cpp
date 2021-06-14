@@ -13,6 +13,7 @@
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -20,7 +21,6 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -39,7 +39,7 @@ namespace UnitTest
         : public RPITestFixture
     {
     protected:
-        Data::Asset<ShaderResourceGroupAsset> m_testMaterialSrgAsset;
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testMaterialSrgLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<MaterialTypeAsset> m_testMaterialTypeAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
@@ -63,9 +63,9 @@ namespace UnitTest
             AZ::Utils::GetExecutableDirectory(rootPath, AZ_MAX_PATH_LEN);
             localFileIO->SetAlias("@exefolder@", rootPath);
 
-            m_testMaterialSrgAsset = CreateCommonTestMaterialSrgAsset();
+            m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
-            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset);
+            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout);
 
             MaterialTypeAssetCreator materialTypeCreator;
             materialTypeCreator.Begin(Uuid::CreateRandom());
@@ -85,7 +85,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_testMaterialTypeAsset.Reset();
-            m_testMaterialSrgAsset.Reset();
+            m_testMaterialSrgLayout = nullptr;
             m_testShaderAsset.Reset();
             m_testImageAsset.Reset();
 

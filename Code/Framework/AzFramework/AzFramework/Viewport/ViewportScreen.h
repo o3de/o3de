@@ -42,7 +42,7 @@ namespace AzFramework
         const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection,
         const AZ::Vector2& viewportSize);
 
-    //! Unprojects a position in screen space to world space.
+    //! Unprojects a position in screen space pixel coordinates to world space.
     //! Note: The position returned will be on the near clip plane of the camera in world space.
     AZ::Vector3 ScreenToWorld(const ScreenPoint& screenPosition, const CameraState& cameraState);
 
@@ -51,6 +51,12 @@ namespace AzFramework
     AZ::Vector3 ScreenToWorld(
         const ScreenPoint& screenPosition, const AZ::Matrix4x4& inverseCameraView,
         const AZ::Matrix4x4& inverseCameraProjection, const AZ::Vector2& viewportSize);
+
+    //! Unprojects a position in screen space normalized device coordinates to world space.
+    //! Note: The position returned will be on the near clip plane of the camera in world space.
+    AZ::Vector3 ScreenNDCToWorld(
+        const AZ::Vector2& ndcPosition, const AZ::Matrix4x4& inverseCameraView,
+        const AZ::Matrix4x4& inverseCameraProjection);
 
     //! Returns the camera projection for the current camera state.
     AZ::Matrix4x4 CameraProjection(const CameraState& cameraState);

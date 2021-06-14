@@ -16,6 +16,7 @@ import logging
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools._internal.pytest_plugin as internal_plugin
 import editor_python_test_tools.hydra_test_utils as hydra
 from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
 
@@ -46,6 +47,11 @@ class TestDynamicSliceInstanceSpawner(object):
     @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
     def test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(self, request, editor, level, workspace, project,
                                                                   launcher_platform):
+
+        # Skip test if running against Debug build
+        if "debug" in internal_plugin.build_directory:
+            pytest.skip("Does not execute against debug builds.")
+
         # Ensure temp level does not already exist
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
