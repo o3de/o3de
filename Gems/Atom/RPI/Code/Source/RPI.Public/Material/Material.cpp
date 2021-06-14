@@ -261,7 +261,7 @@ namespace AZ
         {
             // TODO: I think we should make Shader handle OnShaderAssetReinitialized and treat it just like the shader reloaded.
 
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderAssetReinitialized %s", shaderAsset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
