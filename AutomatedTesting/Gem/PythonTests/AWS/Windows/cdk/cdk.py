@@ -23,7 +23,6 @@ BOOTSTRAP_STACK_NAME = 'CDKToolkit'
 BOOTSTRAP_STAGING_BUCKET_LOGIC_ID = 'StagingBucket'
 
 logger = logging.getLogger(__name__)
-logging.getLogger('boto').setLevel(logging.CRITICAL)
 
 class Cdk:
     """
@@ -53,6 +52,12 @@ class Cdk:
         self._cdk_path = cdk_path
 
         self._session = session
+
+        output = process_utils.check_output(
+            'npm update -g aws-cdk',
+            cwd=self._cdk_path,
+            env=self._cdk_env,
+            shell=True)
 
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',
