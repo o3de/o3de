@@ -607,8 +607,9 @@ namespace AZ
             }
             else if (source.Size() > target.Size())
             {
+                // Loop backwards through the removals so that each removal has a valid index when processing in order.
                 rapidjson::SizeType sourceCount = source.Size();
-                for (rapidjson::SizeType i = count; i < sourceCount; ++i)
+                for (rapidjson::SizeType i = sourceCount - 1; i >= count; --i)
                 {
                     ScopedStackedString entryName(element, i);
                     patch.PushBack(CreatePatchInternal_Remove(allocator, element), allocator);
