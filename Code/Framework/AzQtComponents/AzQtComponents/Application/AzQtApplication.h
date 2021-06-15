@@ -14,41 +14,13 @@
 #pragma once
 
 #include <QApplication>
-#include <QTimer>
-#include <QMainWindow>
 
 #include <AzFramework/Application/Application.h>
-
-#include <AzQtComponents/Components/GlobalEventFilter.h>
-#include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/O3DEStylesheet.h>
-#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzQtComponents/AzQtComponentsAPI.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-
-
-#include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/FancyDocking.h>
-#include <AzQtComponents/Components/Widgets/TabWidget.h>
-
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Logging/LogFile.h>
-#include <AzFramework/CommandLine/CommandLine.h>
-#include <AzFramework/API/ApplicationAPI.h>
+#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
+#include <AzCore/Debug/TraceMessageBus.h>
 
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/UserSettings/UserSettingsProvider.h>
-#include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/IO/SystemFile.h>
-#include <AzCore/Interface/Interface.h>
-#include <AzFramework/Archive/IArchive.h>
-#include <AzFramework/Archive/ArchiveFileIO.h>
-#include <AzCore/NativeUI/NativeUIRequests.h>
-#include <AzCore/NativeUI/NativeUISystemComponent.h>
 
 namespace AzQtComponents
 {
@@ -58,13 +30,22 @@ namespace AzQtComponents
     public:       
         AzQtApplication(int& argc, char** argv);
         ~AzQtApplication();
-        
+       
+
     private:
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         class Impl;
         AZStd::unique_ptr<Impl> m_impl;
         AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
+
+    class LogMessage
+    {
+    public:
+        AZStd::string window;
+        AZStd::string message;
+    };
 } // namespace AzQtComponents
+
 
 

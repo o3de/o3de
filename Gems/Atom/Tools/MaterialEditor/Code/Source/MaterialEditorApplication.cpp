@@ -88,7 +88,7 @@ namespace MaterialEditor
     {
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
         MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void MaterialEditorApplication::CreateReflectionManager()
@@ -281,24 +281,6 @@ namespace MaterialEditor
         }
     }
 
-    bool MaterialEditorApplication::OnOutput(const char* window, const char* message)
-    {
-        // Suppress spam from the Source Control system
-        if (0 == strncmp(window, AzToolsFramework::SCC_WINDOW, AZ_ARRAY_SIZE(AzToolsFramework::SCC_WINDOW)))
-        {
-            return true;
-        }
-
-        if (m_logFile)
-        {
-            m_logFile->AppendLog(AzFramework::LogFile::SEV_NORMAL, window, message);
-        }
-        else
-        {
-            m_startupLogSink.push_back({ window, message });
-        }
-        return false;
-    }
 
     void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {

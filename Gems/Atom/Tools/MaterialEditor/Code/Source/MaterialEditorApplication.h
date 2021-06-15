@@ -96,11 +96,6 @@ namespace MaterialEditor
         void SaveSettings() override;
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Debug::TraceMessageBus::Handler overrides...
-        bool OnOutput(const char* window, const char* message) override;
-        //////////////////////////////////////////////////////////////////////////
-
         void CompileCriticalAssets();
 
         void ProcessCommandLine(const AZ::CommandLine& commandLine);
@@ -121,8 +116,6 @@ namespace MaterialEditor
             AZStd::string message;
         };
 
-        AZStd::vector<LogMessage> m_startupLogSink;
-        AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
 
         //! Local user settings are used to store material browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;

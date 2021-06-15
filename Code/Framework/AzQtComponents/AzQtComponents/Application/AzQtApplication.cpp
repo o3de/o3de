@@ -28,15 +28,12 @@ namespace AzQtComponents
          }
          AzQtApplication* m_app;
 
-         bool OnOutput(const char* window, const char* message) override;         
+         //////////////////////////////////////////////////////////////////////////
+         // AZ::Debug::TraceMessageBus::Handler overrides...
+         bool OnOutput(const char* window, const char* message) override;
+         //////////////////////////////////////////////////////////////////////////      
 
      protected:  
-         struct LogMessage
-         {
-             AZStd::string window;
-             AZStd::string message;
-         };
-
          AZStd::vector<LogMessage> m_startupLogSink;
          AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
 
@@ -58,8 +55,8 @@ namespace AzQtComponents
 
          QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
  
-    // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
-         // on Windows 10
+         // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
+             // on Windows 10
          
          QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
          QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
@@ -69,7 +66,6 @@ namespace AzQtComponents
          
 
          m_impl->AZ::Debug::TraceMessageBus::Handler::BusConnect();
-
     }
 
     AzQtApplication::~AzQtApplication()
