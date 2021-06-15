@@ -10,5 +10,13 @@
 #
 
 set(FILES 
-    Tests/Editor/AWSCoreEditorTest.cpp
+    ../../AWSCoreEditorSystemComponentTest.cpp
+    ../../Attribution/AWSCoreAttributionManagerTest.cpp
+    ../../Attribution/AWSCoreAttributionMetricTest.cpp
+    ../../Attribution/AWSCoreAttributionSystemComponentTest.cpp
+    ../../Attribution/AWSAttributionServiceApiTest.cpp
+    ../../UI/AWSCoreEditorMenuTest.cpp
+    ../../UI/AWSCoreEditorUIFixture.h
+    ../../UI/AWSCoreResourceMappingToolActionTest.cpp
+    ../../AWSCoreEditorManagerTest.cpp
 )
