@@ -29,17 +29,18 @@ namespace Benchmark
             {},
             m_pathString));
 
+        // Create a vector to store spawnables so that they don't get destroyed immediately after construction.
         AZStd::vector<AZStd::unique_ptr<AzFramework::Spawnable>> spawnables;
         spawnables.resize(numSpawnables);
 
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
         for (auto _ : state)
         {
-            for (int instanceCounter = 0; instanceCounter < numSpawnables; ++instanceCounter)
+            for (int spwanableCounter = 0; spwanableCounter < numSpawnables; ++spwanableCounter)
             {
                 AZStd::unique_ptr<AzFramework::Spawnable> spawnable = AZStd::make_unique<AzFramework::Spawnable>();
                 AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(*spawnable, prefabDom);
-                spawnables[instanceCounter] = AZStd::move(spawnable);
+                spawnables[spwanableCounter] = AZStd::move(spawnable);
             }
         }
 
