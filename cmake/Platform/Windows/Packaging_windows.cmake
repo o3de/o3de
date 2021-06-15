@@ -92,12 +92,12 @@ set(CPACK_WIX_EXTENSIONS
 set(_embed_artifacts "yes")
 
 set(_hyperlink_license "
-        <Hypertext Name=\"EulaHyperlink\" X=\"11\" Y=\"121\" Width=\"-11\" Height=\"51\" TabStop=\"yes\" FontId=\"3\" HideWhenDisabled=\"yes\">#(loc.InstallEulaAcceptance)</Hypertext>
+        <Hypertext Name=\"EulaHyperlink\" X=\"42\" Y=\"202\" Width=\"-42\" Height=\"51\" TabStop=\"yes\" FontId=\"3\" HideWhenDisabled=\"yes\">#(loc.InstallEulaAcceptance)</Hypertext>
 ")
 
 set(_raw_text_license "
-        <Richedit Name=\"EulaRichedit\" X=\"11\" Y=\"80\" Width=\"-11\" Height=\"-70\" TabStop=\"yes\" FontId=\"0\" HexStyle=\"0x800000\" />
-        <Text Name=\"EulaAcceptance\" X=\"11\" Y=\"-41\" Width=\"-11\" Height=\"17\" TabStop=\"yes\" FontId=\"3\" HideWhenDisabled=\"yes\">#(loc.InstallEulaAcceptance)</Text>
+        <Richedit Name=\"EulaRichedit\" X=\"42\" Y=\"202\" Width=\"-42\" Height=\"-70\" TabStop=\"yes\" FontId=\"0\" HexStyle=\"0x800000\" />
+        <Text Name=\"EulaAcceptance\" X=\"42\" Y=\"-42\" Width=\"-42\" Height=\"17\" TabStop=\"yes\" FontId=\"3\" HideWhenDisabled=\"yes\">#(loc.InstallEulaAcceptance)</Text>
 ")
 
 if(LY_INSTALLER_DOWNLOAD_URL)
