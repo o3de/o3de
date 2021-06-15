@@ -1,4 +1,5 @@
 #
+#
 # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 # its licensors.
 #
@@ -10,10 +11,8 @@
 #
 
 set(FILES
-    Resources/ProjectManager.rc
-    Resources/ProjectManager.qrc
-    Resources/ProjectManager.qss
-    Source/main.cpp
+    Source/Application.h
+    Source/Application.cpp
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
