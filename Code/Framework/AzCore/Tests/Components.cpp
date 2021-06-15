@@ -1555,6 +1555,8 @@ namespace UnitTest
         }
     }
 
+    // Temporary disabled. This will be re-enabled in the short term upon completion of SPEC-7384 and
+    // fixed in the long term upon completion of SPEC-4849
     TEST_F(Components, EntityIdGeneration)
     {
         // Generate 1 million ids across 100 threads, and ensure that none collide
