@@ -242,14 +242,15 @@ namespace AzToolsFramework
         AZStd::optional<AZ::Transform> GetManipulatorTransform() override;
         void OverrideManipulatorOrientation(const AZ::Quaternion& orientation) override;
         void OverrideManipulatorTranslation(const AZ::Vector3& translation) override;
-        void CopyTranslationToSelectedEntitiesIndividual(const AZ::Vector3& translation);
-        void CopyTranslationToSelectedEntitiesGroup(const AZ::Vector3& translation);
-        void ResetTranslationForSelectedEntitiesLocal();
-        void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation);
-        void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation);
-        void ResetOrientationForSelectedEntitiesLocal();
-        void CopyScaleToSelectedEntitiesIndividualLocal(float scale);
-        void CopyScaleToSelectedEntitiesIndividualWorld(float scale);
+        void CopyTranslationToSelectedEntitiesIndividual(const AZ::Vector3& translation) override;
+        void CopyTranslationToSelectedEntitiesGroup(const AZ::Vector3& translation) override;
+        void ResetTranslationForSelectedEntitiesLocal() override;
+        void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation) override;
+        void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation) override;
+        void ResetOrientationForSelectedEntitiesLocal() override;
+        void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
+        void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
+        void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus ...
         void UndoRedoEntityManipulatorCommand(

@@ -17,7 +17,6 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/algorithm.h>
-#include <AzCore/std/numeric.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -2534,33 +2533,15 @@ namespace AzToolsFramework
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
             m_snappingCluster.m_clusterId, m_snappingCluster.m_snapToWorldButtonId, SnappingClusterSnapToWorldTooltip);
 
-        auto onButtonClicked = [this](const ViewportUi::ButtonId buttonId)
+        const auto onButtonClicked = [this](const ViewportUi::ButtonId buttonId)
         {
-            const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
             if (buttonId == m_snappingCluster.m_snapToWorldButtonId)
             {
                 float gridSize = 1.0f;
                 ViewportInteraction::ViewportInteractionRequestBus::EventResult(
                     gridSize, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSize);
 
-                ScopedUndoBatch undoBatch(s_snapToWorldGridUndoRedoDesc);
-                for (const AZ::EntityId entityId : m_selectedEntityIds)
-                {
-                    ScopedUndoBatch::MarkEntityDirty(entityId);
-
-                    const AZ::Vector3 entityTranslation = GetWorldTranslation(entityId);
-                    const AZ::Vector3 offset = AZStd::accumulate(
-                        snapAxes.cbegin(), snapAxes.cend(), AZ::Vector3::CreateZero(),
-                        [&entityTranslation, gridSize](AZ::Vector3 acc, const AZ::Vector3& snapAxis)
-                        {
-                            acc += CalculateSnappedOffset(entityTranslation, snapAxis, gridSize);
-                            return acc;
-                        });
-
-                    SetEntityWorldTranslation(entityId, entityTranslation + offset);
-                }
-
-                RefreshManipulators(RefreshType::Translation);
+                SnapSelectedEntitiesToWorldGrid(gridSize);
             }
         };
 
@@ -2645,6 +2626,23 @@ namespace AzToolsFramework
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_spaceCluster.m_clusterId, m_spaceCluster.m_spaceHandler);
+    }
+
+    void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)
+    {
+        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+
+        const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
+
+        ScopedUndoBatch undoBatch(s_snapToWorldGridUndoRedoDesc);
+        for (const AZ::EntityId entityId : m_selectedEntityIds)
+        {
+            ScopedUndoBatch::MarkEntityDirty(entityId);
+            SetEntityWorldTranslation(
+                entityId, CalculateSnappedPosition(GetWorldTranslation(entityId), snapAxes.data(), snapAxes.size(), gridSize));
+        }
+
+        RefreshManipulators(RefreshType::Translation);
     }
 
     EditorTransformComponentSelectionRequests::Mode EditorTransformComponentSelection::GetTransformMode()
