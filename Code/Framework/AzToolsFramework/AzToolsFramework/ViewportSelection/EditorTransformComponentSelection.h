@@ -131,6 +131,10 @@ namespace AzToolsFramework
         SnappingCluster(const SnappingCluster&) = delete;
         SnappingCluster& operator=(const SnappingCluster&) = delete;
 
+        //! Attempt to set the snapping cluster to be visible or not.
+        //! @note: Will only succeed if grid snapping is enabled.
+        void TrySetVisible(bool visible);
+
         ViewportUi::ClusterId m_clusterId; //!< The cluster id for all snapping buttons.
         ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
         AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.

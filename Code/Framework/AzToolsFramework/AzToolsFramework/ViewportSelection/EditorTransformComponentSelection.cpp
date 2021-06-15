@@ -152,8 +152,6 @@ namespace AzToolsFramework
     static const AZ::Color s_pickedOrientationColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
     static const AZ::Color s_selectedEntityAabbColor = AZ::Color(0.6f, 0.6f, 0.6f, 0.4f);
 
-    static const int s_defaultViewportId = 0;
-
     static const float s_pivotSize = 0.075f; // the size of the pivot (box) to render when selected
 
     // data passed to manipulators when processing mouse interactions
@@ -489,6 +487,16 @@ namespace AzToolsFramework
             AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
 
         return buttonId;
+    }
+
+    void SnappingCluster::TrySetVisible(const bool visible)
+    {
+        bool snapping = false;
+        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
+
+        // show/hide snapping viewport ui only if there are entities selected and snapping is enabled
+        SetViewportUiClusterVisible(m_clusterId, visible && snapping);
     }
 
     // return either center or entity pivot
@@ -3255,7 +3263,7 @@ namespace AzToolsFramework
             m_didSetSelectedEntities = false;
         }
 
-        SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, m_viewportUiVisible && !m_selectedEntityIds.empty());
+        m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
     }
