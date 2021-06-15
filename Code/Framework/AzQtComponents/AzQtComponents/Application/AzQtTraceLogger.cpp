@@ -10,33 +10,29 @@
  *
  */
 
-#pragma once
-
-#include <QApplication>
-
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/Logging/LogFile.h>
-#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzQtComponents/Application/AzQtTraceLogger.h>
-
 
 namespace AzQtComponents
 {
-    class AZ_QT_COMPONENTS_API AzQtApplication
-        : public QApplication
+    bool AzQtTraceLogger::OnOutput(const char* window, const char* message)
     {
-    public:       
-        AzQtApplication(int& argc, char** argv);       
-    private:
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-        AZStd::unique_ptr<AzQtTraceLogger> m_impl;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    };
+        // Suppress spam from the Source Control system
+        constexpr char sourceControlWindow[] = "Source Control";
 
-    
+        if (0 == strncmp(window, sourceControlWindow, AZ_ARRAY_SIZE(sourceControlWindow)))
+        {
+            return true;
+        }
+
+        if (m_logFile)
+        {
+            m_logFile->AppendLog(AzFramework::LogFile::SEV_NORMAL, window, message);
+        }
+        else
+        {
+            m_startupLogSink.push_back({ window, message });
+        }
+        return false;
+    }
 } // namespace AzQtComponents
-
-
 
