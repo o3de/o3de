@@ -1381,6 +1381,10 @@ void EditorViewportWidget::SetViewportId(int id)
 {
     CViewport::SetViewportId(id);
 
+    // Clear the cached debugdisplay pointer. we're about to delete that render viewport, and deleting the render
+    // viewport invalidates the debugdisplay.
+    m_debugDisplay = nullptr;
+
     // First delete any existing layout
     // This also deletes any existing render viewport widget (since it will be added to the layout)
     // Below is the typical method of clearing a QLayout, see e.g. https://doc.qt.io/qt-5/qlayout.html#takeAt
