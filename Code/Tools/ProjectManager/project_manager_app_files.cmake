@@ -9,5 +9,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set (PAL_TRAIT_BUILD_EDITOR_APPLICATION_TYPE APPLICATION)
-
+set(FILES
+    Resources/ProjectManager.rc
+    Resources/ProjectManager.qrc
+    Resources/ProjectManager.qss
+    Source/main.cpp
+)

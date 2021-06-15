@@ -32,18 +32,15 @@ IF !ERRORLEVEL!==0 (
 
 cd /D %CMD_DIR%\..
 REM IF you update this logic, update it in scripts/build/Platform/Windows/env_windows.cmd
-REM If cmake is not found on path, try a known location, using LY_CMAKE_PATH as the first fallback
+REM If cmake is not found on path, try a known location at LY_CMAKE_PATH
 where /Q cmake
 IF NOT !ERRORLEVEL!==0 (
     IF "%LY_CMAKE_PATH%"=="" (
-        IF "%LY_3RDPARTY_PATH%"=="" (
-            ECHO ERROR: CMake was not found on the PATH and LY_3RDPARTY_PATH is not defined.
-            ECHO Please ensure CMake is on the path or set LY_3RDPARTY_PATH or LY_CMAKE_PATH.
-            EXIT /b 1
-        )
-        SET LY_CMAKE_PATH=!LY_3RDPARTY_PATH!\CMake\3.19.1\Windows\bin
-        echo CMake was not found on the path, will use known location: !LY_CMAKE_PATH!
+        ECHO ERROR: CMake was not found on the PATH and LY_CMAKE_PATH is not defined.
+        ECHO Please ensure CMake is on the path or set LY_CMAKE_PATH.
+        EXIT /b 1
     )
+
     PATH !LY_CMAKE_PATH!;!PATH!
     where /Q cmake
     if NOT !ERRORLEVEL!==0 (

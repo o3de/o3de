@@ -60,7 +60,7 @@ namespace AZ
             Base::FrameBeginInternal(params);
         }
 
-        void CheckerboardColorResolvePass::BuildAttachmentsInternal()
+        void CheckerboardColorResolvePass::BuildInternal()
         {
             // For each bound attachments they are the inputs from current frame.
             // We use them to get their owner CheckerboardPass then find the render targets from last frame
@@ -99,7 +99,7 @@ namespace AZ
             // reset frame offset to 0 since attachments are rebuilt
             m_frameOffset = 0;
 
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
         void CheckerboardColorResolvePass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -135,7 +135,7 @@ namespace AZ
         void CheckerboardColorResolvePass::FrameEndInternal()
         {
             // For the input slots for current frame, they always get updated when CheckerboardPass updates the render targets
-            // But for the input slots for previous frame, we need to manually update them since they were manually attached in BuildAttachmentsInternal()
+            // But for the input slots for previous frame, we need to manually update them since they were manually attached in BuildInternal()
             //
             // When pass attachment was built, CheckerboardPass creates two resources for each render target.
             // For example, diffuse_0 and diffuse_1 which diffuse_0 is for even frame and diffuse_1 is for odd frame.

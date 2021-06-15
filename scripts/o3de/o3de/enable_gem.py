@@ -64,7 +64,7 @@ def enable_gem_in_project(gem_name: str = None,
 
     # if gem name resolve it into a path
     if gem_name and not gem_path:
-        gem_path = manifest.get_registered(gem_name=gem_name)
+        gem_path = manifest.get_registered(gem_name=gem_name, project_path=project_path)
     if not gem_path:
         logger.error(f'Unable to locate gem path from the registered manifest.json files:'
                      f' {str(pathlib.Path( "~/.o3de/o3de_manifest.json").expanduser())},'
@@ -78,7 +78,7 @@ def enable_gem_in_project(gem_name: str = None,
         return 1
 
     # Read gem.json from the gem path
-    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path)
+    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
     if not gem_json_data:
         logger.error(f'Could not read gem.json content under {gem_path}.')
         return 1

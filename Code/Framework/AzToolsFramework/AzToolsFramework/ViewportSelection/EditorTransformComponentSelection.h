@@ -22,6 +22,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -126,6 +127,7 @@ namespace AzToolsFramework
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
@@ -238,8 +240,12 @@ namespace AzToolsFramework
         void UndoRedoEntityManipulatorCommand(
             AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
 
+        // EditorContextMenuBus...
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2 & point, int flags) override;
+        int GetMenuPosition() const override;
+        AZStd::string GetMenuIdentifier() const override;
+
         // EditorEventsBus ...
-        void PopulateEditorGlobalContextMenu(QMenu *menu, const AZ::Vector2& point, int flags) override;
         void OnEscape() override;
 
         // ToolsApplicationNotificationBus ...

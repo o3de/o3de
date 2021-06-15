@@ -52,7 +52,7 @@ namespace AZ
             return depth;
         }
 
-        void DepthOfFieldCopyFocusDepthToCpuPass::BuildAttachmentsInternal()
+        void DepthOfFieldCopyFocusDepthToCpuPass::BuildInternal()
         {
             SetScopeId(RHI::ScopeId(GetPathName()));
         }

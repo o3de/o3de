@@ -130,7 +130,7 @@ namespace AZ
 
         void MaterialTypeAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("MaterialTypeAsset::OnAssetReloaded %s", asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialTypeAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.

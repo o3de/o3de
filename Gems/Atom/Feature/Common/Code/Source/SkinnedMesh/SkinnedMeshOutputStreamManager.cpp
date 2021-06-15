@@ -67,8 +67,8 @@ namespace AZ
             creator.SetBuffer(nullptr, 0, bufferDescriptor);
 
             RHI::BufferViewDescriptor viewDescriptor;
-            viewDescriptor.m_elementFormat = RHI::Format::R32_FLOAT;
-            viewDescriptor.m_elementSize = RHI::GetFormatSize(viewDescriptor.m_elementFormat);
+            viewDescriptor.m_elementFormat = RHI::Format::Unknown;
+            viewDescriptor.m_elementSize = sizeof(float);
             viewDescriptor.m_elementCount = aznumeric_cast<uint32_t>(m_sizeInBytes) / viewDescriptor.m_elementSize;
             viewDescriptor.m_elementOffset = 0;
             creator.SetBufferViewDescriptor(viewDescriptor);

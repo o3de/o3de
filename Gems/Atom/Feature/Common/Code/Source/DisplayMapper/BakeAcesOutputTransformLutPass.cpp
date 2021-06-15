@@ -38,17 +38,7 @@ namespace AZ
             ReleaseLutImage();
         }
 
-        void BakeAcesOutputTransformLutPass::FrameBeginInternal(FramePrepareParams params)
-        {
-            if (!m_flags.m_initialized)
-            {
-                Init();
-            }
-
-            ComputePass::FrameBeginInternal(params);
-        }
-
-        void BakeAcesOutputTransformLutPass::Init()
+        void BakeAcesOutputTransformLutPass::InitializeInternal()
         {
             AZ_Assert(m_shaderResourceGroup != nullptr, "BakeAcesOutputTransformLutPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 
@@ -67,7 +57,6 @@ namespace AZ
                 m_shaderInputShaperBiasIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperBias" });
                 m_shaderInputShaperScaleIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name{ "m_shaperScale" });
             }
-            m_flags.m_initialized = true;
         }
 
         void BakeAcesOutputTransformLutPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)

@@ -146,6 +146,9 @@ namespace LandscapeCanvas
     {
         AzToolsFramework::ViewPaneOptions options;
         options.paneRect = QRect(100, 100, 1280, 1024);
+        options.showOnToolsToolbar = true;
+        options.toolbarIcon = ":/Menu/landscape_canvas_editor.svg";
+
         AzToolsFramework::RegisterViewPane<LandscapeCanvasEditor::MainWindow>(LyViewPane::LandscapeCanvas, LyViewPane::CategoryTools, options);
     }
 

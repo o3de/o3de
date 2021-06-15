@@ -94,7 +94,7 @@ namespace PhysX
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
         D6JointLimitConfiguration::Reflect(context);
-        Pipeline::MeshAssetData::Reflect(context);
+        Pipeline::MeshAsset::Reflect(context);
 
         PhysX::ReflectionUtils::ReflectPhysXOnlyApi(context);
 

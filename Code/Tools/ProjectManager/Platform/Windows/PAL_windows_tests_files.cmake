@@ -9,5 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set (PAL_TRAIT_BUILD_EDITOR_APPLICATION_TYPE APPLICATION)
-
+set(FILES
+    ProjectManager_Test_Traits_Platform.h
+    ProjectManager_Test_Traits_Windows.h
+)

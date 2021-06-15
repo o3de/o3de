@@ -166,7 +166,7 @@ namespace AzFramework
         {
         public:
             AZ_CLASS_ALLOCATOR(RequestEscalateAsset, AZ::OSAllocator, 0);
-            AZ_RTTI(RequestAssetStatus, "{E95C5422-5F00-478B-A984-C041DE70484F}", BaseAssetProcessorMessage);
+            AZ_RTTI(RequestEscalateAsset, "{E95C5422-5F00-478B-A984-C041DE70484F}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::RequestEscalateAsset", 0x1894d94e);
 

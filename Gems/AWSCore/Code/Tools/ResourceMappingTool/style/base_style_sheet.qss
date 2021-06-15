@@ -368,3 +368,18 @@ QFrame#NotificationFrame
     margin: 4px;
     padding: 4px;
 }
+
+QFrame#ErrorPage
+{
+    background-color: #2d2d2d;
+    border: 1px solid #4A90E2;
+    border-radius: 2px;
+    margin: 0px;
+    padding: 15px;
+}
+
+QFrame#ErrorPage QLabel#NotificationIcon
+{
+    padding-left: 15px;
+    padding-right: 15px;
+}

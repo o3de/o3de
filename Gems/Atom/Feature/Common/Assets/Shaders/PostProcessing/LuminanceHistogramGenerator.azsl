@@ -20,7 +20,11 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4> m_inputTexture;
-    RWBuffer<uint> m_outputTexture;
+    
+    //Since we do Interlocked atomic operations on this buffer it can not be RWBuffer due to broken MetalSL generation.
+    //It stems from the fact that typed buffers gets converted to textures and that breaks with atomic operations.
+    //In future we can handle this under the hood via our metal shader pipeline
+    RWStructuredBuffer<uint> m_outputTexture;
 }
 
 groupshared uint shared_histogramBins[NUM_HISTOGRAM_BINS];
