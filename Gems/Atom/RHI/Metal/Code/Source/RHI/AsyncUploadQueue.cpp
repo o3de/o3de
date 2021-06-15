@@ -85,16 +85,36 @@ namespace AZ
 
         uint64_t AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& uploadRequest)
         {
-            uint64_t queueValue = m_uploadFence.Increment();
+            Buffer& destBuffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
+            const MemoryView& destMemoryView = destBuffer.GetMemoryView();
+            MTLStorageMode mtlStorageMode = destBuffer.GetMemoryView().GetStorageMode();
+            RHI::BufferPool& bufferPool = static_cast<RHI::BufferPool&>(*destBuffer.GetPool());
             
-            const MemoryView& memoryView = static_cast<Buffer&>(*uploadRequest.m_buffer).GetMemoryView();
-            RHI::Ptr<Memory> buffer = memoryView.GetMemory();
-
+            // No need to use staging buffers since it's host memory.
+            // We just map, copy and then unmap.
+            if(mtlStorageMode == MTLStorageModeShared || mtlStorageMode == GetCPUGPUMemoryMode())
+            {
+                RHI::BufferMapRequest mapRequest;
+                mapRequest.m_buffer = uploadRequest.m_buffer;
+                mapRequest.m_byteCount = uploadRequest.m_byteCount;
+                mapRequest.m_byteOffset = uploadRequest.m_byteOffset;
+                RHI::BufferMapResponse mapResponse;
+                bufferPool.MapBuffer(mapRequest, mapResponse);
+                ::memcpy(mapResponse.m_data, uploadRequest.m_sourceData, uploadRequest.m_byteCount);
+                bufferPool.UnmapBuffer(*uploadRequest.m_buffer);
+                if (uploadRequest.m_fenceToSignal)
+                {
+                    uploadRequest.m_fenceToSignal->SignalOnCpu();
+                }
+                return m_uploadFence.GetPendingValue();
+            }
+            
             Fence* fenceToSignal = nullptr;
             uint64_t fenceToSignalValue = 0;
-
             size_t byteCount = uploadRequest.m_byteCount;
-            size_t byteOffset = memoryView.GetOffset() + uploadRequest.m_byteOffset;
+            size_t byteOffset = destMemoryView.GetOffset() + uploadRequest.m_byteOffset;            
+            uint64_t queueValue = m_uploadFence.Increment();
+            
             const uint8_t* sourceData = reinterpret_cast<const uint8_t*>(uploadRequest.m_sourceData);
 
             if (uploadRequest.m_fenceToSignal)
@@ -125,11 +145,11 @@ namespace AZ
                     }
 
                     id<MTLBlitCommandEncoder> blitEncoder = [framePacket->m_mtlCommandBuffer blitCommandEncoder];
-                    [blitEncoder copyFromBuffer:framePacket->m_stagingResource 
-                                 sourceOffset:0 
-                                 toBuffer:buffer->GetGpuAddress<id<MTLBuffer>>()
-                                 destinationOffset:byteOffset + pendingByteOffset 
-                                 size:bytesToCopy];
+                    [blitEncoder copyFromBuffer: framePacket->m_stagingResource
+                                   sourceOffset: 0
+                                       toBuffer: destMemoryView.GetGpuAddress<id<MTLBuffer>>()
+                              destinationOffset: byteOffset + pendingByteOffset
+                                           size: bytesToCopy];
                     [blitEncoder endEncoding];
                     blitEncoder = nil;
 
