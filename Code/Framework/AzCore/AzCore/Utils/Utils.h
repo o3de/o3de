@@ -97,6 +97,9 @@ namespace AZ
         //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
         AZ::IO::FixedMaxPathString GetEngineManifestPath();
 
+        //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
+        AZ::IO::FixedMaxPathString GetO3deLogsDirectory();
+
         //! Retrieves the App root path to use on the current platform
         //! If the optional is not engaged the AppRootPath should be calculated based
         //! on the location of the bootstrap.cfg file

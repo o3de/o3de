@@ -37,6 +37,9 @@ namespace AZ
             //! to store the previous frame image
             Data::Instance<RPI::AttachmentImage>& GetFrameBufferImageAttachment() { return m_frameBufferImageAttachment; }
 
+            //! Returns the number of mip levels in the blur
+            uint32_t GetNumBlurMips() const { return m_numBlurMips; }
+
         private:
             explicit ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor);
 
