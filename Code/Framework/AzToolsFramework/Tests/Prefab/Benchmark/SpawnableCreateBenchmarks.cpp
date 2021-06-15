@@ -31,7 +31,7 @@ namespace Benchmark
 
         // Create a vector to store spawnables so that they don't get destroyed immediately after construction.
         AZStd::vector<AZStd::unique_ptr<AzFramework::Spawnable>> spawnables;
-        spawnables.resize(numSpawnables);
+        spawnables.reserve(numSpawnables);
 
         auto& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
         for (auto _ : state)
