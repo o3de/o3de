@@ -84,12 +84,14 @@ def get_files_to_upload(base_dir, regex, search_subdirectories):
             # ('C:\path\to\base_dir\', ['Subfolder1', 'Subfolder2'], ['file1', 'file2'])
             subdirectory_file_path = subdirectory[0]
             subdirectory_files = subdirectory[2]
-            subdirectory_file_paths = _build_file_paths(subdirectory_file_path, subdirectory_files)
-            files.extend(subdirectory_file_paths)
+            if subdirectory_files:
+                subdirectory_file_paths = _build_file_paths(subdirectory_file_path, subdirectory_files)
+                files.extend(subdirectory_file_paths)
 
     try:
         regex = json.loads(regex)  # strip the surround quotes, if they exist
     except:
+        print(f'WARNING: failed to call json.loads() for regex: "{regex}"')
         pass
     # Get all file names matching the regular expression, those file will be uploaded to S3
     regex_files_to_upload = [x for x in files if re.match(regex, x)]
