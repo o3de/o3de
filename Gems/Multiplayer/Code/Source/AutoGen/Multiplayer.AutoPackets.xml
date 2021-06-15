@@ -9,12 +9,15 @@
 
     <Packet Name="Connect" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
-        <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
 
     <Packet Name="Accept" Desc="Server accept packet">
         <Member Type="Multiplayer::HostId" Name="hostId" Init="Multiplayer::InvalidHostId" />
         <Member Type="Multiplayer::LongNetworkString" Name="map" />
+    </Packet>
+
+    <Packet Name="ValidateSession" Desc="Client validation packet, sends a ticket to the server for session verification">
+        <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
   
     <Packet Name="ReadyForEntityUpdates" Desc="Client confirming it is ready to receive entity updates">

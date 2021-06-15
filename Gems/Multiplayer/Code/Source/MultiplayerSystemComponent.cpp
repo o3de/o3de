@@ -499,6 +499,32 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::HandleRequest
     (
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerPackets::ValidateSession& packet
+    )
+    {
+        // Validate our session with the provider if any
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+        {
+            AzFramework::PlayerConnectionConfig config;
+            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+            config.m_playerSessionId = packet.GetTicket();
+            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
+            {
+                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                return false;
+            }
+
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+        }
+
+        return true;
+    }
+
+    bool MultiplayerSystemComponent::HandleRequest
+    (
         AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
         MultiplayerPackets::ReadyForEntityUpdates& packet
