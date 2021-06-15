@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/wix/2006/localization">
 
     <!-- common -->
-    <String Id="WindowTitle">[WixBundleName] Setup</String>
+    <String Id="WindowTitle">[WixBundleName] Release [WixBundleVersion] Setup</String>
     <String Id="Title">[WixBundleName]</String>
     <String Id="InstallVersion">Version [WixBundleVersion]</String>
     <String Id="ConfirmCancelMessage">Are you sure you want to cancel?</String>
