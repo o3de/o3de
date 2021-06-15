@@ -982,6 +982,17 @@ namespace JsonSerializationTests
                 ])");
     }
 
+    TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveAllArrayEntries_MultipleOperationsInCorrectOrder)
+    {
+        CheckCreatePatch(
+            R"( [ "foo", "hello", "bar" ])", R"( [])",
+            R"( [
+                    { "op": "remove", "path": "/2" },
+                    { "op": "remove", "path": "/1" },
+                    { "op": "remove", "path": "/0" }
+                ])");
+    }
+
     TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveObjectFromArrayInMiddle_OperationToUpdateMember)
     {
         CheckCreatePatch(

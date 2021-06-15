@@ -608,10 +608,11 @@ namespace AZ
             else if (source.Size() > target.Size())
             {
                 // Loop backwards through the removals so that each removal has a valid index when processing in order.
-                rapidjson::SizeType sourceCount = source.Size();
-                for (rapidjson::SizeType i = sourceCount - 1; i >= count; --i)
+                for (rapidjson::SizeType i = source.Size(); i > count; --i)
                 {
-                    ScopedStackedString entryName(element, i);
+                    // (We use "i - 1" here instead of in the loop to ensure we don't wrap around our unsigned numbers in the case
+                    // where count is 0.)
+                    ScopedStackedString entryName(element, i - 1);
                     patch.PushBack(CreatePatchInternal_Remove(allocator, element), allocator);
                     resultCode.Combine(settings.m_reporting("Removed member from array in JSON Patch.",
                         ResultCode(Tasks::CreatePatch, Outcomes::Success), element));
