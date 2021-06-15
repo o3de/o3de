@@ -187,9 +187,9 @@ namespace AssetProcessor
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
 
-        auto projectName = AZ::Utils::GetProjectName();
-        auto projectPath = AZ::Utils::GetProjectPath();
-        auto enginePath = AZ::Utils::GetEnginePath();
+        AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
 
         int portNumber = 0;
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
