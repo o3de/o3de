@@ -119,7 +119,7 @@ namespace AZ
 
         void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("MaterialAsset::OnAssetReloaded %s", asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
             Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
 

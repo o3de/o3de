@@ -37,10 +37,13 @@ namespace O3DE::ProjectManager
             const QVector<QString>& elementNames,
             const QVector<int>& elementCounts,
             bool showAllLessButton = true,
+            bool collapsed = false,
             int defaultShowCount = 4,
             QWidget* parent = nullptr);
 
         QButtonGroup* GetButtonGroup();
+
+        bool IsCollapsed();
 
     private:
         void UpdateCollapseState();
@@ -66,14 +69,18 @@ namespace O3DE::ProjectManager
         explicit GemFilterWidget(GemSortFilterProxyModel* filterProxyModel, QWidget* parent = nullptr);
         ~GemFilterWidget() = default;
 
+    public slots:
+        void ResetGemStatusFilter();
+
     private:
         void AddGemOriginFilter();
         void AddTypeFilter();
         void AddPlatformFilter();
         void AddFeatureFilter();
 
-        QVBoxLayout* m_mainLayout = nullptr;
+        QVBoxLayout* m_filterLayout = nullptr;
         GemModel* m_gemModel = nullptr;
         GemSortFilterProxyModel* m_filterProxyModel = nullptr;
+        FilterCategoryWidget* m_statusFilter = nullptr;
     };
 } // namespace O3DE::ProjectManager
