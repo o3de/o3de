@@ -77,6 +77,7 @@ namespace AZ
             {
                 AZStd::string extension;
                 StringFunc::Path::GetExtension(path.c_str(), extension);
+                AZStd::to_lower(extension.begin(), extension.end());
                 
                 if (!m_settings.m_supportedFileTypeExtensions.contains(extension))
                 {

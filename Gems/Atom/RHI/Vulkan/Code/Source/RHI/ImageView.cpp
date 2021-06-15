@@ -55,7 +55,11 @@ namespace AZ
             const auto& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
 
-             AZ_Assert(image.GetNativeImage() != VK_NULL_HANDLE, "Image has not been initialized.");
+            // this can happen when image has been invalidated/released right before re-compiling the image
+            if (image.GetNativeImage() == VK_NULL_HANDLE)
+            {
+                return RHI::ResultCode::Fail;
+            }
 
             RHI::Format viewFormat = descriptor.m_overrideFormat;
             // If an image is not owner of native image, it is a swapchain image.
