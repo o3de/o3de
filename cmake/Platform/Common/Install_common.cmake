@@ -13,8 +13,8 @@ set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
 ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
 
-file(RELATIVE_PATH runtime_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
+cmake_path(RELATIVE_PATH CMAKE_LIBRARY_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE library_output_directory)
 # Anywhere CMAKE_INSTALL_PREFIX is used, it has to be escaped so it is baked into the cmake_install.cmake script instead
 # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
 # used to generate the solution.
@@ -22,12 +22,33 @@ file(RELATIVE_PATH library_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_LIBRARY_
 set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>")
 
 
+function(ly_get_engine_relative_source_dir absolute_target_source_dir output_source_dir)
+    # Get a relative target source directory to the LY root folder if possible
+    # Otherwise use the final component name
+    cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} is_target_prefix_of_engine_root)
+    if(is_target_prefix_of_engine_root)
+        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
+    else()
+        # In this case the target source directory is outside of the engine root of the target source directory and concatenate the first
+        # is used first 8 characters of the absolute path SHA256 hash to make a unique relative directory
+        # that can be used to install the generated CMakeLists.txt
+        # of a SHA256 hash
+        string(SHA256 target_source_hash ${absolute_target_source_dir})
+        string(SUBSTRING ${target_source_hash} 0 8 target_source_hash)
+        cmake_path(GET absolute_target_source_dir FILENAME target_source_dirname)
+        cmake_path(SET relative_target_source_dir "${target_source_dirname}-${target_source_hash}")
+    endif()
+
+    set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)
+endfunction()
+
 #! ly_setup_target: Setup the data needed to re-create the cmake target commands for a single target
-function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME ALIAS_TARGET_SOURCE_DIR)
+function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_target_source_dir)
     # De-alias target name
     ly_de_alias_target(${ALIAS_TARGET_NAME} TARGET_NAME)
 
-    set(target_source_dir ${ALIAS_TARGET_SOURCE_DIR})
+    # Get the target source directory relative to the LY root folder
+    ly_get_engine_relative_source_dir(${absolute_target_source_dir} relative_target_source_dir)
 
     # get the component ID.  if the property isn't set for the target, it will auto fallback to use CMAKE_INSTALL_DEFAULT_COMPONENT_NAME
     get_property(install_component TARGET ${TARGET_NAME} PROPERTY INSTALL_COMPONENT)
@@ -45,7 +66,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME ALIAS_TARGET
             if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
                 unset(current_public_headers)
                 install(DIRECTORY ${include_directory}
-                    DESTINATION ${include_location}/${target_source_dir}
+                    DESTINATION ${include_location}/${relative_target_source_dir}
                     COMPONENT ${install_component}
                     FILES_MATCHING
                         PATTERN *.h
@@ -57,16 +78,16 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME ALIAS_TARGET
     endif()
 
     # Get the output folders, archive is always the same, but runtime/library can be in subfolders defined per target
-    file(RELATIVE_PATH archive_output_directory ${CMAKE_BINARY_DIR} ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
+    cmake_path(RELATIVE_PATH CMAKE_ARCHIVE_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE archive_output_directory)
 
     get_target_property(target_runtime_output_directory ${TARGET_NAME} RUNTIME_OUTPUT_DIRECTORY)
     if(target_runtime_output_directory)
-        file(RELATIVE_PATH target_runtime_output_subdirectory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${target_runtime_output_directory})
+        cmake_path(RELATIVE_PATH target_runtime_output_directory BASE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_runtime_output_subdirectory)
     endif()
 
     get_target_property(target_library_output_directory ${TARGET_NAME} LIBRARY_OUTPUT_DIRECTORY)
     if(target_library_output_directory)
-        file(RELATIVE_PATH target_library_output_subdirectory ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${target_library_output_directory})
+        cmake_path(RELATIVE_PATH target_library_output_directory BASE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_library_output_subdirectory)
     endif()
 
     install(
@@ -117,8 +138,8 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME ALIAS_TARGET
         foreach(include ${include_directories})
             string(GENEX_STRIP ${include} include_genex_expr)
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                file(RELATIVE_PATH relative_include ${absolute_target_source_dir} ${include})
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${target_source_dir}/${relative_include}\n")
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE relative_include)
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${relative_target_source_dir}/${relative_include}\n")
             endif()
         endforeach()
     endif()
@@ -195,21 +216,10 @@ set_property(TARGET ${TARGET_NAME}
         endif()
     endif()
 
-    if(IS_ABSOLUTE ${target_source_dir})
-        # This normally applies the target_source_dir is outside of the engine root
-        # such as when invoking ly_setup_subdirectory from the project
-        # Therefore the final directory component of the target source directory is used first 8 characters
-        # of a SHA256 hash
-        string(SHA256 target_source_hash ${target_source_dir})
-        string(SUBSTRING ${target_source_hash} 0 8 target_source_hash)
-        get_filename_component(target_source_folder_name ${target_source_dir} NAME)
-        set(target_source_dir "${target_source_folder_name}-${target_source_hash}")
-    endif()
-
-    set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir})
+    set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${relative_target_source_dir})
     file(GENERATE OUTPUT "${target_install_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake" CONTENT "${target_file_contents}")
     install(FILES "${target_install_source_dir}/${NAME_PLACEHOLDER}_$<CONFIG>.cmake"
-        DESTINATION ${target_source_dir}
+        DESTINATION ${relative_target_source_dir}
         COMPONENT ${install_component}
     )
 
@@ -219,17 +229,20 @@ set_property(TARGET ${TARGET_NAME}
     set(${OUTPUT_CONFIGURED_TARGET} ${output_cmakelists_data} PARENT_SCOPE)
 endfunction()
 
+
 #! ly_setup_subdirectories: setups all targets on a per directory basis
 function(ly_setup_subdirectories)
     get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
-    foreach(target IN LISTS all_subdirectories)
-        ly_setup_subdirectory(${target})
+    foreach(target_subdirectory IN LISTS all_subdirectories)
+        ly_setup_subdirectory(${target_subdirectory})
     endforeach()
 endfunction()
 
 
 #! ly_setup_subdirectory: setup all targets in the subdirectory
 function(ly_setup_subdirectory absolute_target_source_dir)
+    # Get the target source directory relative to the LY roo folder
+    ly_get_engine_relative_source_dir(${absolute_target_source_dir} relative_target_source_dir)
 
     # The builtin BUILDSYSTEM_TARGETS property isn't being used here as that returns the de-alised
     # TARGET and we need the alias namespace for recreating the CMakeLists.txt in the install layout
@@ -291,22 +304,8 @@ function(ly_setup_subdirectory absolute_target_source_dir)
 
     file(READ ${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
 
-    # Make a relative path to the target source directory from the LY_ROOT_FOLDER
-    file(RELATIVE_PATH target_source_dir ${LY_ROOT_FOLDER} ${absolute_target_source_dir})
-
-    if(IS_ABSOLUTE ${target_source_dir})
-        # This normally applies the target_source_dir is outside of the engine root
-        # such as when invoking ly_setup_subdirectory from the project
-        # Therefore the final directory component of the target source directory is used first 8 characters
-        # of a SHA256 hash
-        string(SHA256 target_source_hash ${target_source_dir})
-        string(SUBSTRING ${target_source_hash} 0 8 target_source_hash)
-        get_filename_component(target_source_folder_name ${target_source_dir} NAME)
-        set(target_source_dir "${target_source_folder_name}-${target_source_hash}")
-    endif()
-
     # Initialize the target install source directory to path underneath the current binary directory
-    set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${target_source_dir})
+    set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${relative_target_source_dir})
     # Write out all the aggregated ly_add_target function calls and the final ly_create_alias() calls to the target CMakeLists.txt
     file(WRITE ${target_install_source_dir}/CMakeLists.txt
         "${cmake_copyright_comment}"
@@ -320,7 +319,7 @@ function(ly_setup_subdirectory absolute_target_source_dir)
     get_property(install_component DIRECTORY ${absolute_target_source_dir} PROPERTY INSTALL_COMPONENT)
 
     install(FILES "${target_install_source_dir}/CMakeLists.txt"
-        DESTINATION ${target_source_dir}
+        DESTINATION ${relative_target_source_dir}
         COMPONENT ${install_component}
     )
 
@@ -350,7 +349,7 @@ function(ly_setup_cmake_install)
     # Transform the LY_EXTERNAL_SUBDIRS list into a json array
     set(indent "        ")
     foreach(external_subdir ${LY_EXTERNAL_SUBDIRS})
-        file(RELATIVE_PATH engine_rel_external_subdir ${LY_ROOT_FOLDER} ${external_subdir})
+        cmake_path(RELATIVE_PATH external_subdir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE engine_rel_external_subdir)
         list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
     endforeach()
     list(JOIN relative_external_subdirs ",\n${indent}" LY_INSTALL_EXTERNAL_SUBDIRS)
@@ -390,8 +389,8 @@ function(ly_setup_cmake_install)
     # Add to the FIND_PACKAGES_PLACEHOLDER all directories in which ly_add_target were called in
     get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
     foreach(target_subdirectory IN LISTS all_subdirectories)
-        file(RELATIVE_PATH target_source_dir_relative ${LY_ROOT_FOLDER} ${target_subdirectory})
-        string(APPEND FIND_PACKAGES_PLACEHOLDER "    add_subdirectory(${target_source_dir_relative})\n")
+        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_subdirectory)
+        string(APPEND FIND_PACKAGES_PLACEHOLDER "    add_subdirectory(${relative_target_subdirectory})\n")
     endforeach()
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
@@ -452,7 +451,7 @@ endfunction()"
 
         get_target_property(target_runtime_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
         if(target_runtime_output_directory)
-            file(RELATIVE_PATH target_runtime_output_subdirectory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${target_runtime_output_directory})
+            cmake_path(RELATIVE_PATH target_runtime_output_directory BASE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_runtime_output_subdirectory)
         endif()
 
         # Qt
