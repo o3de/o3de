@@ -16,7 +16,7 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <AzCore/Math/Matrix4x4.h>
-#include <Skybox/SkyBoxFogSettings.h>
+#include <SkyBox/SkyBoxFogSettings.h>
 
 namespace AZ
 {
