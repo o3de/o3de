@@ -15,9 +15,6 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
-// The order should match m_pointShadowTransforms in PointLightFeatureProcessor.h/.cpp
-static const float3 PointLightShadowCubemapDirections[6] = {float3(-1,0,0), float3(1,0,0), float3(0,-1,0), float3(0,1,0), float3(0,0,-1), float3(0,0,1)};                  
-
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
     const float3 toPoint = targetPos - lightPos;    
@@ -83,12 +80,13 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         {
             const int shadowCubemapFace = GetPointLightShadowCubemapFace(surface.position, light.m_position);
             const int shadowIndex = UnpackPointLightShadowIndex(light, shadowCubemapFace);
-
+            const float3 lightDir = normalize(light.m_position - surface.position);
+             
             litRatio *= ProjectedShadow::GetVisibility(
                     shadowIndex,
                     light.m_position,
                     surface.position,
-                    PointLightShadowCubemapDirections[shadowCubemapFace],
+                    lightDir,
                     surface.normal);
                         
             // Use backShadowRatio to carry thickness from shadow map for thick mode

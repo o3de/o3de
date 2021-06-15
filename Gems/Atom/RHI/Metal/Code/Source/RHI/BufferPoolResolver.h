@@ -54,7 +54,6 @@ namespace AZ
                 Buffer* m_attachmentBuffer = nullptr;
                 RHI::Ptr<Buffer> m_stagingBuffer;
                 size_t m_byteOffset = 0;
-                size_t m_byteSize = 0;
             };
             
             AZStd::mutex m_uploadPacketsLock;
