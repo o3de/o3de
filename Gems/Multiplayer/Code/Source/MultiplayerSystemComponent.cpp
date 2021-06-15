@@ -456,8 +456,7 @@ namespace Multiplayer
             config.m_playerSessionId = packet.GetTicket();
             if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
             {
-                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
-                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                connection->Disconnect(DisconnectReason::TerminatedByServer, TerminationEndpoint::Local);
                 return false;
             }
 
