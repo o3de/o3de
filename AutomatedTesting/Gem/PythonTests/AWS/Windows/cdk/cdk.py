@@ -214,9 +214,9 @@ class Cdk:
                 key.delete()
 
         # Delete the bootstrap stack.
-        # self._session.client('cloudformation').delete_stack(
-        #     StackName=BOOTSTRAP_STACK_NAME
-        # )
+        self._session.client('cloudformation').delete_stack(
+            StackName=BOOTSTRAP_STACK_NAME
+        )
 
 
 @pytest.fixture(scope='function')
@@ -252,6 +252,8 @@ def cdk(
     def teardown():
         if destroy_stacks_on_teardown:
             cdk_obj.destroy()
+            # Enable after https://github.com/aws/aws-cdk/issues/986 is fixed.
+            # Until then clean the bootstrap bucket manually.
             # cdk_obj.remove_bootstrap_stack()
 
     request.addfinalizer(teardown)
