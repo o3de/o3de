@@ -179,7 +179,10 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusConnect();
         AzFramework::SessionNotificationBus::Handler::BusConnect();
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MPNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
-        m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
+        if (AZ::Interface<AZ::IConsole>::Get())
+        {
+            m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
+        }
         AZ::Interface<IMultiplayer>::Register(this);
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Register(this);
 
@@ -191,6 +194,8 @@ namespace Multiplayer
     {
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
         AZ::Interface<IMultiplayer>::Unregister(this);
+        m_consoleCommandHandler.Disconnect();
+        AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MPNetworkInterfaceName));
         AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
@@ -673,10 +678,13 @@ namespace Multiplayer
         // We avoid this for client server as the host itself is a user
         if (m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {   
-            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr
-                && m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
             {
-                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandleDestroySession();
+                m_shutdownEvent.Signal(m_networkInterface);
+                if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+                {
+                    AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandleDestroySession();
+                }
             }
         }
     }
