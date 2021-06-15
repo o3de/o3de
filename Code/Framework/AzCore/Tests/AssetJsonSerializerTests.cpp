@@ -168,6 +168,10 @@ namespace JsonSerializationTests
         {
             features.EnableJsonType(rapidjson::kObjectType);
             features.m_typeToInject = rapidjson::kNullType;
+            // The type information in the Serialize Context is incomplete so this test will fail.
+            // This is because assets have traditionally been treated as a special case, so there's
+            // information missing in the Json Serialization to deal with these.
+            features.m_enableNewInstanceTests = false;
         }
 
         bool AreEqual(const Asset& lhs, const Asset& rhs) override

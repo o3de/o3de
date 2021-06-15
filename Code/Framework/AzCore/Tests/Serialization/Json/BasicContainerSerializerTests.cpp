@@ -54,6 +54,11 @@ namespace JsonSerializationTests
             return AZStd::make_shared<Container>(Container{ 188, 288, 388 });
         }
 
+        AZStd::shared_ptr<Container> CreateSingleArrayDefaultInstance() override
+        {
+            return AZStd::make_shared<Container>(Container{ 0 });
+        }
+
         AZStd::string_view GetJsonForFullySetInstance() override
         {
             return "[188, 288, 388]";
@@ -120,6 +125,13 @@ namespace JsonSerializationTests
                 &SimplePointerTestDescription::Delete);
         }
 
+        AZStd::shared_ptr<Container> CreateSingleArrayDefaultInstance() override
+        {
+            int* value = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+            *value = 0;
+            return AZStd::shared_ptr<Container>(new Container{ value }, &SimplePointerTestDescription::Delete);
+        }
+
         AZStd::string_view GetJsonForFullySetInstance() override
         {
             return "[188, 288, 388]";
@@ -177,6 +189,13 @@ namespace JsonSerializationTests
 
             auto instance = AZStd::make_shared<Container>();
             *instance = { values[0], values[1], values[2] };
+            return instance;
+        }
+
+        AZStd::shared_ptr<Container> CreateSingleArrayDefaultInstance() override
+        {
+            auto instance = AZStd::make_shared<Container>();
+            *instance = { SimpleClass{} };
             return instance;
         }
 
