@@ -355,6 +355,9 @@ namespace AWSMetrics
 
     TEST_F(MetricsManagerTest, FlushMetrics_NonEmptyQueue_Success)
     {
+        ResetClientConfig(true, (double)TestMetricsEventSizeInBytes * (MaxNumMetricsEvents + 1) / MbToBytes,
+            DefaultFlushPeriodInSeconds, 1);
+
         for (int index = 0; index < MaxNumMetricsEvents; ++index)
         {
             AZStd::vector<MetricsAttribute> metricsAttributes;
@@ -377,7 +380,7 @@ namespace AWSMetrics
     TEST_F(MetricsManagerTest, ResetOfflineRecordingStatus_ResubmitLocalMetrics_Success)
     {
         // Disable offline recording in the config file.
-        ResetClientConfig(false, 0.0, 0, 0);
+        ResetClientConfig(false, (double)TestMetricsEventSizeInBytes * 2 / MbToBytes, 0, 0);
 
         // Enable offline recording after initialize the metric manager.
         m_metricsManager->UpdateOfflineRecordingStatus(true);

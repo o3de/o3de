@@ -42,6 +42,28 @@ namespace AZ
             bool ConvertSliceFiles(Application& application);
 
         private:
+            // When converting slice entities, especially for nested slices, we need to keep track of the original
+            // entity ID, the entity alias it uses in the prefab, and which template and nested instance path it maps to.
+            // As we encounter each instanced entity ID, we can look it up in this structure and use this to determine how to properly
+            // add it to the correct place in the hierarchy.
+            struct SliceEntityMappingInfo
+            {
+                SliceEntityMappingInfo(
+                    AzToolsFramework::Prefab::TemplateId templateId,
+                    AzToolsFramework::Prefab::EntityAlias entityAlias,
+                    bool isMetadataEntity = false)
+                    : m_templateId(templateId)
+                    , m_entityAlias(entityAlias)
+                    , m_isMetadataEntity(isMetadataEntity)
+                {
+                }
+
+                AzToolsFramework::Prefab::TemplateId m_templateId;
+                AzToolsFramework::Prefab::EntityAlias m_entityAlias;
+                AZStd::vector<AzToolsFramework::Prefab::InstanceAlias> m_nestedInstanceAliases;
+                bool m_isMetadataEntity{ false };
+            };
+
             bool ConnectToAssetProcessor();
             void DisconnectFromAssetProcessor();
 
@@ -58,27 +80,17 @@ namespace AZ
             void SetParentEntity(const AZ::Entity& entity, const AZ::EntityId& parentId, bool onlySetIfInvalid);
             void PrintPrefab(AzToolsFramework::Prefab::TemplateId templateId);
             bool SavePrefab(AZ::IO::PathView outputPath, AzToolsFramework::Prefab::TemplateId templateId);
-            void ClearSliceAssetReferences(AZ::Entity* rootEntity);
             void UpdateSliceEntityInstanceMappings(
                 const AZ::SliceComponent::EntityIdToEntityIdMap& sliceEntityIdMap,
                 const AZStd::string& currentInstanceAlias);
+            AZStd::string GetInstanceAlias(const AZ::SliceComponent::SliceInstance& instance);
 
-            // When converting slice entities, especially for nested slices, we need to keep track of the original
-            // entity ID, the entity alias it uses in the prefab, and which template and nested instance path it maps to.
-            // As we encounter each instanced entity ID, we can look it up in this structure and use this to determine how to properly
-            // add it to the correct place in the hierarchy.
-            struct SliceEntityMappingInfo
-            {
-                SliceEntityMappingInfo(AzToolsFramework::Prefab::TemplateId templateId, AzToolsFramework::Prefab::EntityAlias entityAlias)
-                    : m_templateId(templateId)
-                    , m_entityAlias(entityAlias)
-                {
-                }
-
-                AzToolsFramework::Prefab::TemplateId m_templateId;
-                AzToolsFramework::Prefab::EntityAlias m_entityAlias;
-                AZStd::vector<AzToolsFramework::Prefab::InstanceAlias> m_nestedInstanceAliases;
-            };
+            void RemapIdReferences(
+                const AZStd::unordered_map<AZ::EntityId, SliceEntityMappingInfo>& idMapper,
+                AzToolsFramework::Prefab::Instance* topLevelInstance,
+                AzToolsFramework::Prefab::Instance* nestedInstance,
+                SliceComponent::InstantiatedContainer* instantiatedEntities,
+                SerializeContext* context);
 
             // Track all of the entity IDs created and associate them with enough conversion information to know how to place the
             // entities in the correct place in the prefab hierarchy and fix up parent entity ID mappings to work with the nested
