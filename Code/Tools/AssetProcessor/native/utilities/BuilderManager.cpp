@@ -199,7 +199,7 @@ namespace AssetProcessor
         params = AZStd::string::format(
             R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)",
             task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.c_str(), engineRoot.c_str(), portNumber);
+            projectPath.c_str(), enginePath.c_str(), portNumber);
 #else
         params = AZStd::string::format(
             R"(-task=%s -id="%s" -project-name="\"%s\"" -project-cache-path="\"%s\"" -project-path="\"%s\"" -engine-path="\"%s\"" -port %d)",
