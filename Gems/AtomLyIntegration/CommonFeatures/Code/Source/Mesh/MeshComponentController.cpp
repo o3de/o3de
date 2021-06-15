@@ -460,10 +460,10 @@ namespace AZ
 
         Aabb MeshComponentController::GetLocalBounds()
         {
-            const Data::Instance<RPI::Model> model = GetModel();
-            if (model)
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {
-                Aabb aabb = model->GetAabb();
+                Aabb aabb = m_meshFeatureProcessor->GetLocalAabb(m_meshHandle);
+
                 aabb.MultiplyByScale(m_cachedNonUniformScale);
                 return aabb;
             }

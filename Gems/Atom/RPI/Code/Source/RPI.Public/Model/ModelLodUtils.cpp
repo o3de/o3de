@@ -49,7 +49,7 @@ namespace AZ
 
                         With that percentage we can determine which Lod we want to use.
                     */
-                    Aabb modelAabb = model.GetAabb();
+                    Aabb modelAabb = model.GetModelAsset()->GetAabb();
                     modelAabb.Translate(position);
 
                     Vector3 center; 

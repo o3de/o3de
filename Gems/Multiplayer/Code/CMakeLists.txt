@@ -123,6 +123,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::Multiplayer.Builders.Static
+        RUNTIME_DEPENDENCIES
+            Gem::Multiplayer.Editor
     )
 
     ly_add_target(
