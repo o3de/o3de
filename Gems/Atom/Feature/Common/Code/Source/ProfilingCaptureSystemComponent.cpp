@@ -458,9 +458,13 @@ namespace AZ
         bool ProfilingCaptureSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
         {
             // Start the cpu profiling
-            RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            bool wasEnabled = RHI::CpuProfiler::Get()->GetProfilerEnabled();
+            if (!wasEnabled)
+            {
+                RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            }
 
-            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath]()
+            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
@@ -483,7 +487,10 @@ namespace AZ
                 }
 
                 // Disable the profiler again
-                RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                if (!wasEnabled)
+                {
+                    RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                }
 
                 // Notify listeners that the pass' PipelineStatistics queries capture has finished.
                 ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
