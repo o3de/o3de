@@ -42,6 +42,9 @@ namespace AZ
             if (!passes.empty())
             {
                 Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(passes.front());
+
+                // compute the max mip level based on the available mips in the previous frame image, and capping it
+                // to stay within a range that has reasonable data
                 const uint32_t MaxNumRoughnessMips = 8;
                 uint32_t maxMipLevel = AZStd::min(MaxNumRoughnessMips, blurPass->GetNumBlurMips()) - 1;
 
