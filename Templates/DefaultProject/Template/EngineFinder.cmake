@@ -1,3 +1,4 @@
+# {BEGIN_LICENSE}
 #
 # All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 # its licensors.
@@ -8,6 +9,7 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+# {END_LICENSE}
 # This file is copied during engine registration. Edits to this file will be lost next
 # time a registration happens.
 

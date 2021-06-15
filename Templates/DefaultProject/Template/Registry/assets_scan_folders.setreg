@@ -7,8 +7,7 @@
             [
                 "Assets",
                 "ShaderLib",
-                "Shaders",
-                "Registry"
+                "Shaders"
             ]
         }
     }
