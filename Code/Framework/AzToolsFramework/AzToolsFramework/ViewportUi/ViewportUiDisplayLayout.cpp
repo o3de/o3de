@@ -53,7 +53,21 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             // place the widget before the invisible spacer
             // spacer must be last item in layout to not interfere with positioning
-            int index = layoutForAlignment->second->count() - 1;
+            int index = 0;
+            switch (alignment)
+            {
+            case Qt::AlignTop | Qt::AlignLeft:
+            case Qt::AlignBottom | Qt::AlignLeft:
+            case Qt::AlignTop:
+                index = layoutForAlignment->second->count() - 1;
+                layoutForAlignment->second->insertWidget(index, widget);
+                break;
+            case Qt::AlignTop | Qt::AlignRight:
+            case Qt::AlignBottom | Qt::AlignRight:
+            case Qt::AlignBottom:
+                index = layoutForAlignment->second->count();
+                break;
+            }
             layoutForAlignment->second->insertWidget(index, widget);
         }
     }
