@@ -204,7 +204,6 @@ namespace O3DE::ProjectManager
         painter->save();
         const QRect buttonRect = CalcButtonRect(contentRect);
         QPoint circleCenter;
-        QString buttonText;
 
         const bool isAdded = GemModel::IsAdded(modelIndex);
         if (isAdded)
@@ -213,33 +212,14 @@ namespace O3DE::ProjectManager
             painter->setPen(m_buttonEnabledColor);
 
             circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
-            buttonText = "Added";
         }
         else
         {
             circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius, 1);
-            buttonText = "Get";
         }
 
         // Rounded rect
         painter->drawRoundedRect(buttonRect, s_buttonBorderRadius, s_buttonBorderRadius);
-
-        // Text
-        QFont font;
-        QRect textRect = GetTextRect(font, buttonText, s_buttonFontSize);
-        if (isAdded)
-        {
-            textRect = QRect(buttonRect.left(), buttonRect.top(), buttonRect.width() - s_buttonCircleRadius * 2.0, buttonRect.height());
-        }
-        else
-        {
-            textRect = QRect(buttonRect.left() + s_buttonCircleRadius * 2.0, buttonRect.top(), buttonRect.width() - s_buttonCircleRadius * 2.0, buttonRect.height());
-        }
-
-        font.setPixelSize(s_buttonFontSize);
-        painter->setFont(font);
-        painter->setPen(m_textColor);
-        painter->drawText(textRect, Qt::AlignCenter, buttonText);
 
         // Circle
         painter->setBrush(m_textColor);

@@ -71,7 +71,7 @@ namespace AZ
             explicit ProjectedShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
             // RPI::Pass overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const override;
             void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, RPI::PassesByDrawList& outPassesByDrawList, const RPI::PipelineViewTag& viewTag) const override;
 

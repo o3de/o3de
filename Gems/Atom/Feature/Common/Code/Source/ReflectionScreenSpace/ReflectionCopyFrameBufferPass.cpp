@@ -30,7 +30,7 @@ namespace AZ
         {
         }
 
-        void ReflectionCopyFrameBufferPass::BuildAttachmentsInternal()
+        void ReflectionCopyFrameBufferPass::BuildInternal()
         {
             RPI::PassHierarchyFilter passFilter(AZ::Name("ReflectionScreenSpaceBlurPass"));
             const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->FindPasses(passFilter);
@@ -43,7 +43,7 @@ namespace AZ
                 AttachImageToSlot(outputBinding.m_name, frameBufferAttachment);
             }
 
-            FullscreenTrianglePass::BuildAttachmentsInternal();
+            FullscreenTrianglePass::BuildInternal();
         }
     }   // namespace RPI
 }   // namespace AZ
