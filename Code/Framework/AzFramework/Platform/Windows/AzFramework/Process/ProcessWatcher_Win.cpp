@@ -103,7 +103,7 @@ namespace AzFramework
         The lpApplicationName string can specify the full path and file name of the module to execute or it can specify a partial name.
         In the case of a partial name, the function uses the current drive and current directory to complete the specification. The
         function will not use the search path. This parameter must include the file name extension; no default extension is assumed.
-        The lpApplicationName parameter can be NULL. In that case, the module name must be the first white space–delimited token in the
+        The lpApplicationName parameter can be NULL. In that case, the module name must be the first white space delimited token in the
         lpCommandLine string. If you are using a long file name that contains a space, use quoted strings to indicate where the file name
         ends and the arguments begin; otherwise, the file name is ambiguous. For example, consider the string
         "c:\program files\sub dir\program name". This string can be interpreted in a number of ways. The system tries to interpret the
@@ -125,7 +125,7 @@ namespace AzFramework
         module to execute, and the null-terminated string pointed to by lpCommandLine specifies the command line. The new process can use
         GetCommandLine to retrieve the entire command line. Console processes written in C can use the argc and argv arguments to parse the
         command line. Because argv[0] is the module name, C programmers generally repeat the module name as the first token in the command
-        line. If lpApplicationName is NULL, the first white space–delimited token of the command line specifies the module name. If you are
+        line. If lpApplicationName is NULL, the first white space delimited token of the command line specifies the module name. If you are
         using a long file name that contains a space, use quoted strings to indicate where the file name ends and the arguments begin (see
         the explanation for the lpApplicationName parameter). If the file name does not contain an extension, .exe is appended. Therefore,
         if the file name extension is .com, this parameter must include the .com extension. If the file name ends in a period (.) with no
