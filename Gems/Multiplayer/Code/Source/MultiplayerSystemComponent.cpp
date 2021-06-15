@@ -213,6 +213,8 @@ namespace Multiplayer
             reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetProviderTicket(config.m_playerSessionId);
         }
 
+        connection->SendReliablePacket(MultiplayerPackets::ValidateSession(config.m_playerSessionId.c_str()));
+
         return true;
     }
 
@@ -414,22 +416,6 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Connect& packet
     )
     {
-        // Validate our session with the provider if any
-        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
-        {
-            AzFramework::PlayerConnectionConfig config;
-            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
-            config.m_playerSessionId = packet.GetTicket();
-            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
-            {
-                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
-                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
-                return true;
-            }
-
-            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
-        }
-
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
             // Sync our console
@@ -452,6 +438,32 @@ namespace Multiplayer
 
         AZ::CVarFixedString loadLevelString = "LoadLevel " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+        return true;
+    }
+
+    bool MultiplayerSystemComponent::HandleRequest
+    (
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] const IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerPackets::ValidateSession& packet
+    )
+    {
+        // Validate our session with the provider if any
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+        {
+            AzFramework::PlayerConnectionConfig config;
+            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+            config.m_playerSessionId = packet.GetTicket();
+            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
+            {
+                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                return false;
+            }
+
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+        }
+
         return true;
     }
 
@@ -587,12 +599,7 @@ namespace Multiplayer
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
             AZLOG_INFO("New outgoing connection to remote address: %s", connection->GetRemoteAddress().GetString().c_str());
-            AZ::CVarFixedString providerTicket;
-            if (connection->GetUserData() != nullptr)
-            {
-                providerTicket = reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetProviderTicket();
-            }
-            connection->SendReliablePacket(MultiplayerPackets::Connect(0, providerTicket));
+            connection->SendReliablePacket(MultiplayerPackets::Connect(0));
         }
         else
         {
