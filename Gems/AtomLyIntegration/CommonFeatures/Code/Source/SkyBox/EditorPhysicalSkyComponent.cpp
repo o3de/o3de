@@ -68,13 +68,17 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::Min, 1)
                                 ->Attribute(AZ::Edit::Attributes::Max, 10)
                                 ->Attribute(AZ::Edit::Attributes::Step, 1)
+                            ->DataElement(AZ::Edit::UIHandlers::Default, &PhysicalSkyComponentConfig::m_skyBoxFogSettings, "Fog", "Fog settings for rendering on top of physical sky")
+                                ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
             }
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<EditorPhysicalSkyComponent>()->RequestBus("PhysicalSkyRequestBus");
+                behaviorContext->Class<EditorPhysicalSkyComponent>()
+                    ->RequestBus("PhysicalSkyRequestBus")
+                    ->RequestBus("SkyBoxFogRequestBus");
 
                 behaviorContext->ConstantProperty("EditorPhysicalSkyComponentTypeId", BehaviorConstant(Uuid(EditorPhysicalSkyComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")

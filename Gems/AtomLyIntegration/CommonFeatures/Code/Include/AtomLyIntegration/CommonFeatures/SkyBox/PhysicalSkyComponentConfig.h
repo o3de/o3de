@@ -15,6 +15,7 @@
 #include <AzCore/Component/Component.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/SkyBox/SkyboxConstants.h>
+#include <SkyBox/SkyBoxFogSettings.h>
 
 namespace AZ
 {
@@ -35,6 +36,9 @@ namespace AZ
             int m_turbidity = 1;
             float m_sunRadiusFactor = 1.0f;
 
+            bool m_fogEnable = false;
+            SkyBoxFogSettings m_skyBoxFogSettings;
+
             //! Returns characters for a suffix for the light type including a space. " lm" for lumens for example.
             const char* GetIntensitySuffix() const;
 
@@ -45,6 +49,8 @@ namespace AZ
             //! Returns the maximum intensity value allowed depending on the m_intensityMode
             float GetSkyIntensityMax() const;
             float GetSunIntensityMax() const;
+
+            bool IsFogDisable() const { return !m_fogEnable; }
         };
     }
 }

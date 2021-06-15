@@ -89,6 +89,10 @@ namespace AZ
             m_cubemapIndex.Reset();
             m_cubemapRotationMatrixIndex.Reset();
             m_cubemapExposureIndex.Reset();
+            m_fogEnableIndex.Reset();
+            m_fogColorIndex.Reset();
+            m_fogTopHeightIndex.Reset();
+            m_fogBottomHeightIndex.Reset();
 
             if (m_buffer)
             {
@@ -159,6 +163,14 @@ namespace AZ
                              m_sunNeedUpdate = false;
                              m_mapBuffer = false;
                          }
+
+                        m_sceneSrg->SetConstant(m_fogEnableIndex, m_fogSettings.m_enable);
+                        if (m_fogSettings.m_enable)
+                        {
+                            m_sceneSrg->SetConstant(m_fogTopHeightIndex, m_fogSettings.m_topHeight);
+                            m_sceneSrg->SetConstant(m_fogBottomHeightIndex, m_fogSettings.m_bottomHeight);
+                            m_sceneSrg->SetConstant(m_fogColorIndex, m_fogSettings.m_color);
+                        }
 
                         m_sceneSrg->SetConstant(m_physicalSkyIndex, true);
                         break;
@@ -236,6 +248,31 @@ namespace AZ
         void SkyBoxFeatureProcessor::SetSkyboxMode(SkyBoxMode mode)
         {
             m_skyboxMode = mode;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogSettings(const SkyBoxFogSettings& fogSettings)
+        {
+            m_fogSettings = fogSettings;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogEnable(bool enable)
+        {
+            m_fogSettings.m_enable = enable;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogColor(const AZ::Color& color)
+        {
+            m_fogSettings.m_color = color;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogTopHeight(float topHeight)
+        {
+            m_fogSettings.m_topHeight = topHeight;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogBottomHeight(float bottomHeight)
+        {
+            m_fogSettings.m_bottomHeight = bottomHeight;
         }
 
         void SkyBoxFeatureProcessor::SetSunPosition(SunPosition sunPosition)

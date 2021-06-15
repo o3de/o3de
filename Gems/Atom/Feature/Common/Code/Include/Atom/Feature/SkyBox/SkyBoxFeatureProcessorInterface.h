@@ -16,6 +16,7 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <Skybox/SkyBoxFogSettings.h>
 
 namespace AZ
 {
@@ -51,6 +52,7 @@ namespace AZ
             virtual void Enable(bool enable) = 0;
             virtual bool IsEnable() = 0;
             virtual void SetSkyboxMode(SkyBoxMode mode) = 0;
+            virtual void SetFogSettings(const SkyBoxFogSettings& fogSettings) = 0;
 
             // HDRiSkyBox
             virtual void SetCubemap(Data::Instance<RPI::Image> cubemap) = 0;
@@ -64,6 +66,12 @@ namespace AZ
             virtual void SetSkyIntensity(float intensity, PhotometricUnit type) = 0;
             virtual void SetSunIntensity(float intensity, PhotometricUnit type) = 0;
             virtual void SetSunRadiusFactor(float factor) = 0;
+
+            // Fog Settings
+            virtual void SetFogEnable(bool enable) = 0;
+            virtual void SetFogColor(const AZ::Color &color) = 0;
+            virtual void SetFogTopHeight(float topHeight) = 0;
+            virtual void SetFogBottomHeight(float bottomHeight) = 0;
         };
     }
 }
