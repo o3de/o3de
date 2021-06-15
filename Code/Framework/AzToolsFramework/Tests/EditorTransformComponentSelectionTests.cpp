@@ -499,8 +499,8 @@ namespace UnitTest
         m_entityIds.push_back(CreateDefaultEditorEntity("Entity2"));
         m_entityIds.push_back(CreateDefaultEditorEntity("Entity3"));
 
-        const AZStd::vector initialUnsnappedPositions = { AZ::Vector3(1.2f, 3.5f, 6.7f), AZ::Vector3(13.2f, 15.6f, 11.4f),
-                                                          AZ::Vector3(4.2f, 103.2f, 16.6f) };
+        const AZStd::vector<AZ::Vector3> initialUnsnappedPositions = { AZ::Vector3(1.2f, 3.5f, 6.7f), AZ::Vector3(13.2f, 15.6f, 11.4f),
+                                                                       AZ::Vector3(4.2f, 103.2f, 16.6f) };
         AZ::TransformBus::Event(m_entityIds[0], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPositions[0]);
         AZ::TransformBus::Event(m_entityIds[1], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPositions[1]);
         AZ::TransformBus::Event(m_entityIds[2], &AZ::TransformBus::Events::SetWorldTranslation, initialUnsnappedPositions[2]);
@@ -518,8 +518,8 @@ namespace UnitTest
                 return GetWorldTranslation(entityId);
             });
 
-        const AZStd::vector expectedSnappedPositions = { AZ::Vector3(2.0f, 4.0f, 6.0f), AZ::Vector3(14.0f, 16.0f, 12.0f),
-                                                         AZ::Vector3(4.0f, 104.0f, 16.0f) };
+        const AZStd::vector<AZ::Vector3> expectedSnappedPositions = { AZ::Vector3(2.0f, 4.0f, 6.0f), AZ::Vector3(14.0f, 16.0f, 12.0f),
+                                                                      AZ::Vector3(4.0f, 104.0f, 16.0f) };
         EXPECT_THAT(entityPositionsAfterSnap, Pointwise(ContainerIsClose(), expectedSnappedPositions));
     }
 
