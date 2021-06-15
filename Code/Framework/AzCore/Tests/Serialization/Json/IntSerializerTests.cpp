@@ -147,18 +147,6 @@ namespace JsonSerializationTests
         : public BaseJsonSerializerFixture
     {
     public:
-        struct IntegerPointerWrapper
-        {
-            AZ_TYPE_INFO(IntegerPointerWrapper, "{F6B3BEF1-59A4-4E45-BF02-DDA868C38A28}");
-
-            typename SerializerInfo<SerializerType>::DataType* m_value{ nullptr };
-
-            ~IntegerPointerWrapper()
-            {
-                azfree(m_value);
-            }
-        };
-
         AZStd::unique_ptr<SerializerType> m_serializer;
         
         void SetUp() override
@@ -171,12 +159,6 @@ namespace JsonSerializationTests
         {
             m_serializer.reset();
             BaseJsonSerializerFixture::TearDown();
-        }
-
-        void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
-        {
-            serializeContext->Class<IntegerPointerWrapper>()
-                ->Field("Value", &IntegerPointerWrapper::m_value);
         }
 
         template<typename T, typename AZStd::enable_if_t<AZStd::is_floating_point<T>::value, int> = 0>
