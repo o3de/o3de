@@ -265,6 +265,12 @@ namespace AZ
             // Update all bindings on this pass that are connected to bindings on other passes
             void UpdateConnectedBindings();
 
+            // Update input and input/output bindings on this pass that are connected to bindings on other passes
+            void UpdateConnectedInputBindings();
+
+            // Update output bindings on this pass that are connected to bindings on other passes
+            void UpdateConnectedOutputBindings();
+
 
         protected:
             explicit Pass(const PassDescriptor& descriptor);

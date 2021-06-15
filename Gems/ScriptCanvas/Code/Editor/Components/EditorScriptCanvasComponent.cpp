@@ -360,6 +360,8 @@ namespace ScriptCanvasEditor
             }
         }
 
+        AzToolsFramework::ScopedUndoBatch undo("Update Entity With New SC Graph");
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
     }
 

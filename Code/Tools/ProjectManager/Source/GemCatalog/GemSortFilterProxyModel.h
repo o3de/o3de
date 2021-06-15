@@ -29,7 +29,16 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
+        enum GemStatus
+        {
+            NoFilter = -1,
+            Unselected,
+            Selected
+        };
+
         GemSortFilterProxyModel(GemModel* sourceModel, QObject* parent = nullptr);
+
+        static QString GetGemStatusString(GemStatus status);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
@@ -37,6 +46,9 @@ namespace O3DE::ProjectManager
         AzQtComponents::SelectionProxyModel* GetSelectionModel() const { return m_selectionProxyModel; }
 
         void SetSearchString(const QString& searchString) { m_searchString = searchString; InvalidateFilter(); }
+
+        GemStatus GetGemStatus() const { return m_gemStatusFilter; }
+        void SetGemStatus(GemStatus gemStatus) { m_gemStatusFilter = gemStatus; InvalidateFilter(); }
 
         GemInfo::GemOrigins GetGemOrigins() const { return m_gemOriginFilter; }
         void SetGemOrigins(const GemInfo::GemOrigins& gemOrigins) { m_gemOriginFilter = gemOrigins; InvalidateFilter(); }
@@ -61,6 +73,7 @@ namespace O3DE::ProjectManager
         AzQtComponents::SelectionProxyModel* m_selectionProxyModel = nullptr;
 
         QString m_searchString;
+        GemStatus m_gemStatusFilter = GemStatus::NoFilter;
         GemInfo::GemOrigins m_gemOriginFilter = {};
         GemInfo::Platforms m_platformFilter = {};
         GemInfo::Types m_typeFilter = {};

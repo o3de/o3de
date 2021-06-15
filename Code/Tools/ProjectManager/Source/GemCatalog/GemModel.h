@@ -63,6 +63,8 @@ namespace O3DE::ProjectManager
         QVector<QModelIndex> GatherGemsToBeAdded() const;
         QVector<QModelIndex> GatherGemsToBeRemoved() const;
 
+        int TotalAddedGems() const;
+
     private:
         enum UserRole
         {
