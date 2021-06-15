@@ -47,8 +47,13 @@ namespace AzToolsFramework
 
             virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) = 0;
 
-            //! Updates the template links (updating instances) for the given templateId using the providedPatch
-            virtual bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId) = 0;
+            //! Updates the template links (updating instances) for the given template and triggers propagation on its instances.
+            //! @param providedPatch The patch to apply to the template.
+            //! @param templateId The id of the template to update.
+            //! @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshes as part of propagation.
+            //!     Defaults to nullopt, which means that all instances will be refreshed.
+            //! @return True if the template was patched correctly, false if the operation failed.
+            virtual bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) = 0;
 
             virtual void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) = 0;
 

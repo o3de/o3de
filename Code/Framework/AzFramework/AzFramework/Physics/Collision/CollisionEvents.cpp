@@ -37,9 +37,10 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<TriggerEvent>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Method("GetTriggerEntityId", &TriggerEvent::GetTriggerEntityId)
-                ->Method("GetOtherEntityId", &TriggerEvent::GetOtherEntityId)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
+                ->Method("Get Trigger EntityId", &TriggerEvent::GetTriggerEntityId)
+                ->Method("Get Other EntityId", &TriggerEvent::GetOtherEntityId)
                 ;
         }
     }
@@ -104,10 +105,11 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<CollisionEvent>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Property("Contacts", BehaviorValueProperty(&CollisionEvent::m_contacts))
-                ->Method("GetBody1EntityId", &CollisionEvent::GetBody1EntityId)
-                ->Method("GetBody2EntityId", &CollisionEvent::GetBody2EntityId)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
+                ->Property("Contacts", BehaviorValueGetter(&CollisionEvent::m_contacts), nullptr)
+                ->Method("Get Body 1 EntityId", &CollisionEvent::GetBody1EntityId)
+                ->Method("Get Body 2 EntityId", &CollisionEvent::GetBody2EntityId)
                 ;
         }
     }

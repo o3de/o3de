@@ -623,6 +623,20 @@ AmazonToolbar ToolbarManager::GetMiscToolbar() const
     return t;
 }
 
+void ToolbarManager::AddButtonToEditToolbar(QAction* action)
+{
+    QString toolbarName = "EditMode";
+    const AmazonToolbar* toolbar = FindToolbar(toolbarName);
+
+    if (toolbar)
+    {
+        if (toolbar->Toolbar())
+        {
+            toolbar->Toolbar()->addAction(action);
+        }
+    }
+}
+
 const AmazonToolbar* ToolbarManager::FindDefaultToolbar(const QString& toolbarName) const
 {
     for (const AmazonToolbar& toolbar : m_standardToolbars)
