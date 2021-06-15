@@ -46,6 +46,8 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 #   define REMOTE_ASSET_PROCESSOR
 #endif
 
+void CVar_OnViewportPosition(const AZ::Vector2& value);
+
 namespace
 {
     void OnViewportResize(const AZ::Vector2& value);
@@ -60,6 +62,9 @@ namespace
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
         AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
     }
+    
+    AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The default position for the launcher viewport, 0 0 means top left corner of your main desktop");
 
     void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
