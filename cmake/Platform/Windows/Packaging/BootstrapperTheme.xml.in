@@ -9,8 +9,7 @@
     <Font Id="3" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Open Sans</Font>
 
     <!-- top banner -->
-    <Image X="11" Y="11" Width="64" Height="64" ImageFile="logo.png" Visible="yes"/>
-    <Text X="80" Y="11" Width="-11" Height="64" FontId="1" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
+    <Image X="11" Y="11" Width="168" Height="64" ImageFile="logo.png" Visible="yes"/>
 
     <!-- welcome page -->
     <Page Name="Install">
