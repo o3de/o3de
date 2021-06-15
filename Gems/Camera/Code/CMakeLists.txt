@@ -69,12 +69,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     # tools and builders use the above module.
     ly_create_alias(NAME Camera.Tools NAMESPACE    Gem TARGETS Gem::Camera.Editor)
     ly_create_alias(NAME Camera.Builders NAMESPACE Gem TARGETS Gem::Camera.Editor)
+
+    # The DefaultPrefab contains an EditorCameraComponent which makes this gem required
+    ly_enable_gems(GEMS Camera VARIANTS Tools TARGETS Editor)
+    ly_enable_gems(GEMS Camera VARIANTS Builders TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 endif()
 
-
-# The DefaultPrefab contains an EditorCameraComponent which makes this gem required
-ly_enable_gems(GEMS Camera VARIANTS Tools TARGETS Editor)
-ly_enable_gems(GEMS Camera VARIANTS Builders TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 
 # Added dependencies to the Client and Server Launchers
 get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)

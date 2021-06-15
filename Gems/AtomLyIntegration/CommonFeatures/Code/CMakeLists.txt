@@ -63,6 +63,7 @@ ly_add_target(
             Gem::AtomLyIntegration_CommonFeatures.Static
     RUNTIME_DEPENDENCIES
         Gem::Atom_RPI.Private
+        Gem::Atom_Feature_Common
 )
 
 # The AtomLyIntegration_CommonFeatures module is used for Clients and Servers
@@ -119,22 +120,23 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomLyIntegration_CommonFeatures.Editor
             Gem::Atom_RPI.Builders
             Gem::GradientSignal.Builders
-            )
+    )
     ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Tools NAMESPACE Gem
         TARGETS
             Gem::AtomLyIntegration_CommonFeatures.Editor
             Gem::GradientSignal.Tools
-            )
+    )
+
+    # AtomLyIntergration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
+    # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
+    # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
+    # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
+    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Tools
+        TARGETS Editor)
+    ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Builders
+        TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 endif()
 
-# AtomLyIntergration_CommonFeatures gem targets are required as part of the Editor and AssetProcessor
-# due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
-# AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
-# AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Tools
-    TARGETS Editor)
-ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures VARIANTS Builders
-    TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 
 # Added dependencies to the Client and Server Launchers
 get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)

@@ -78,11 +78,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME Maestro.Tools    NAMESPACE Gem TARGETS Gem::Maestro.Editor)
     ly_create_alias(NAME Maestro.Builders NAMESPACE Gem TARGETS Gem::Maestro.Editor)
 
-endif()
+    # Maestro is still used by the CrySystem Level System and SystemInit and TrackView
+    # It is required by the GameLauncher, ServerLauncher and Editor applications
+    ly_enable_gems(GEMS Maestro VARIANTS Tools TARGETS Editor)
 
-# Maestro is still used by the CrySystem Level System and SystemInit and TrackView
-# It is required by the GameLauncher, ServerLauncher and Editor applications
-ly_enable_gems(GEMS Maestro VARIANTS Tools TARGETS Editor)
+endif()
 
 # Loop over each Project name to allow the ${ProjectName}.GameLauncher and ${ProjectName}.ServerLauncher
 # target to add the gem the Clients and Servers variant
