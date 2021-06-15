@@ -12,12 +12,6 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
-add_subdirectory(Tests/TestProcess)
-add_subdirectory(Tests/TestTargetA)
-add_subdirectory(Tests/TestTargetB)
-add_subdirectory(Tests/TestTargetC)
-add_subdirectory(Tests/TestTargetD)
-
 ly_add_target(
     NAME TestImpact.Runtime.Static STATIC
     NAMESPACE AZ
@@ -41,6 +35,12 @@ ly_add_target(
 ################################################################################
 
 # Disabled: SPEC-7246
+#add_subdirectory(Tests/TestProcess)
+#add_subdirectory(Tests/TestTargetA)
+#add_subdirectory(Tests/TestTargetB)
+#add_subdirectory(Tests/TestTargetC)
+#add_subdirectory(Tests/TestTargetD)
+#
 #ly_add_target(
 #    NAME TestImpact.Runtime.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
 #    NAMESPACE AZ
