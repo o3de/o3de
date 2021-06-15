@@ -121,7 +121,8 @@ def _build_file_paths(path_to_files, files_in_path):
 
     for file_in_path in files_in_path:
         complete_file_path = os.path.join(path_to_files, file_in_path)
-        parsed_file_paths.append(complete_file_path)
+        if os.path.isfile(complete_file_path):
+            parsed_file_paths.append(complete_file_path)
 
     return parsed_file_paths
 
