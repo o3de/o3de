@@ -144,7 +144,7 @@ namespace AzToolsFramework
     static const char* const SpaceClusterWorldTooltip = "Toggle world space lock";
     static const char* const SpaceClusterParentTooltip = "Toggle parent space lock";
     static const char* const SpaceClusterLocalTooltip = "Toggle local space lock";
-    static const char* const SpaceClusterSnapToWorldTooltip = "Snap selected entities to the world space grid";
+    static const char* const SnappingClusterSnapToWorldTooltip = "Snap selected entities to the world space grid";
 
     static const AZ::Color s_fadedXAxisColor = AZ::Color(AZ::u8(200), AZ::u8(127), AZ::u8(127), AZ::u8(255));
     static const AZ::Color s_fadedYAxisColor = AZ::Color(AZ::u8(127), AZ::u8(190), AZ::u8(127), AZ::u8(255));
@@ -2532,7 +2532,7 @@ namespace AzToolsFramework
         // set button tooltips
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_snappingCluster.m_clusterId, m_snappingCluster.m_snapToWorldButtonId, SpaceClusterSnapToWorldTooltip);
+            m_snappingCluster.m_clusterId, m_snappingCluster.m_snapToWorldButtonId, SnappingClusterSnapToWorldTooltip);
 
         auto onButtonClicked = [this](const ViewportUi::ButtonId buttonId)
         {
@@ -2559,6 +2559,8 @@ namespace AzToolsFramework
 
                     SetEntityWorldTranslation(entityId, entityTranslation + offset);
                 }
+
+                RefreshManipulators(RefreshType::Translation);
             }
         };
 
@@ -3235,7 +3237,7 @@ namespace AzToolsFramework
     }
 
     void EditorTransformComponentSelection::AfterEntitySelectionChanged(
-        const EntityIdList& /*newlySelectedEntities*/, const EntityIdList& /*newlyDeselectedEntities*/)
+        [[maybe_unused]] const EntityIdList& newlySelectedEntities, [[maybe_unused]] const EntityIdList& newlyDeselectedEntities)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
