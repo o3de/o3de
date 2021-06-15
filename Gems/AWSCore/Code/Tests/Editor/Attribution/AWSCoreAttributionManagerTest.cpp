@@ -32,6 +32,8 @@
 #include <AzCore/Module/ModuleManagerBus.h>
 
 #include <TestFramework/AWSCoreFixture.h>
+#include <QSysInfo>
+#include <QString>
 
 
 using namespace AWSCore;
@@ -405,6 +407,7 @@ namespace AWSAttributionUnitTest
         AZStd::string serializedMetricValue = metric.SerializeToJson();
         ASSERT_TRUE(serializedMetricValue.find("\"o3de_version\":\"1.0.0.0\"") != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find(AZ::GetPlatformName(AZ::g_currentPlatform)) != AZStd::string::npos);
+        ASSERT_TRUE(serializedMetricValue.find(QSysInfo::prettyProductName().toStdString().c_str()) != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find("AWSCore.Editor") != AZStd::string::npos);
         ASSERT_TRUE(serializedMetricValue.find("AWSClientAuth") != AZStd::string::npos);
 
