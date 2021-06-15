@@ -31,7 +31,7 @@ namespace AZ
 
             bool m_enable = false;
             AZ::Color m_color = AZ::Color::CreateOne();
-            float m_topHeight = 0.1;
+            float m_topHeight = 0.01;
             float m_bottomHeight = 0.0;
         };
     }

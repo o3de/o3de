@@ -41,8 +41,14 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisable)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_topHeight, "Fog Top Height", "Height of the fog upwards from the horizon")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisable)
+                                ->Attribute(AZ::Edit::Attributes::Min, 0.0)
+                                ->Attribute(AZ::Edit::Attributes::Max, 0.5)
+                                ->Attribute(AZ::Edit::Attributes::Step, 0.01)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_bottomHeight, "Fog Bottom Height", "Height of the fog downwards from the horizon")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisable)
+                                ->Attribute(AZ::Edit::Attributes::Min, 0.0)
+                                ->Attribute(AZ::Edit::Attributes::Max, 0.3)
+                                ->Attribute(AZ::Edit::Attributes::Step, 0.01)
                         ;
                 }
             }
