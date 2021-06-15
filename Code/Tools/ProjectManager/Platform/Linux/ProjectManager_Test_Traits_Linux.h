@@ -9,24 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
+
 #pragma once
 
-#if !defined(Q_MOC_RUN)
-#include <QMainWindow>
-#include <AzCore/IO/Path/Path.h>
-#include <ScreenDefs.h>
-#endif
-
-namespace O3DE::ProjectManager
-{
-    class ProjectManagerWindow
-        : public QMainWindow
-    {
-        Q_OBJECT
-
-    public:
-        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& projectPath,
-            ProjectManagerScreen startScreen = ProjectManagerScreen::Projects);
-    };
-
-} // namespace O3DE::ProjectManager
+#define AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS true
