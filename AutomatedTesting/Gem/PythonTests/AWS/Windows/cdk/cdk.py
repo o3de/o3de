@@ -54,13 +54,14 @@ class Cdk:
 
         self._session = session
 
+        # uninstall and reinstall cdk in case npm has been updated.
         output = process_utils.check_output(
             'npm uninstall -g aws-cdk',
             cwd=self._cdk_path,
             env=self._cdk_env,
             shell=True)
 
-        logger.info(f'Uninstalling CDK: {output}')
+        logger.info(f'Uninstall CDK output: {output}')
 
         output = process_utils.check_output(
             'npm install -g aws-cdk',
@@ -68,7 +69,7 @@ class Cdk:
             env=self._cdk_env,
             shell=True)
 
-        logger.info(f'Installing CDK: {output}')
+        logger.info(f'Install CDK output: {output}')
 
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',
@@ -214,9 +215,10 @@ class Cdk:
                 key.delete()
 
         # Delete the bootstrap stack.
-        self._session.client('cloudformation').delete_stack(
-            StackName=BOOTSTRAP_STACK_NAME
-        )
+        # Should not need to delete the stack if S3 bucket can be cleaned.
+        # self._session.client('cloudformation').delete_stack(
+        #     StackName=BOOTSTRAP_STACK_NAME
+        # )
 
 
 @pytest.fixture(scope='function')
