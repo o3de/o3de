@@ -10,7 +10,7 @@
  *
  */
 
-#include <Skybox/SkyBoxFogSettings.h>
+#include <SkyBox/SkyBoxFogSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
