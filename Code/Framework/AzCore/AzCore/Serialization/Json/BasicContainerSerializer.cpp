@@ -34,11 +34,16 @@ namespace AZ
         case rapidjson::kArrayType:
             return LoadContainer(outputValue, outputValueTypeId, inputValue, context);
 
-        case rapidjson::kObjectType: // fall through
-        case rapidjson::kNullType: // fall through
-        case rapidjson::kStringType: // fall through
-        case rapidjson::kFalseType: // fall through
-        case rapidjson::kTrueType: // fall through
+        case rapidjson::kObjectType:
+            [[fallthrough]];
+        case rapidjson::kNullType:
+            [[fallthrough]];
+        case rapidjson::kStringType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
+        case rapidjson::kTrueType:
+            [[fallthrough]];
         case rapidjson::kNumberType:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                 "Unsupported type. Basic containers can only be read from an array.");
@@ -169,6 +174,7 @@ namespace AZ
         ContinuationFlags flags = classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
             ? ContinuationFlags::ResolvePointer
             : ContinuationFlags::None;
+        flags |= ContinuationFlags::LoadAsNewInstance;
 
         const size_t capacity = container->IsFixedCapacity() ? container->Capacity(outputValue) : std::numeric_limits<size_t>::max();
 
@@ -247,6 +253,11 @@ namespace AZ
         }
 
         size_t addedCount = container->Size(outputValue) - containerSize;
+        if (addedCount > 0)
+        {
+            // Values were added which means the container is no longer in its default state of being emtpy.
+            retVal.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
+        }
         AZStd::string_view message =
             addedCount >= arraySize ? "Successfully read basic container.":
             addedCount == 0 ? "Unable to read data for basic container." :
