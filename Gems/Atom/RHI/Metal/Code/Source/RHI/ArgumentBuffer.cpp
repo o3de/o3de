@@ -400,15 +400,13 @@ namespace AZ
                     id<MTLResource> mtlconstantBufferResource = m_constantBuffer.GetGpuAddress<id<MTLResource>>();
                     if(RHI::CheckBitsAny(srgResourcesVisInfo.m_constantDataStageMask, RHI::ShaderStageMask::Compute))
                     {
-                        uint16_t arrayIndex = resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArrayLen++;
-                        resourcesToMakeResidentCompute[MTLResourceUsageRead].m_resourceArray[arrayIndex] = mtlconstantBufferResource;
+                        resourcesToMakeResidentCompute[MTLResourceUsageRead].emplace(mtlconstantBufferResource);
                     }
                     else
                     {
                         MTLRenderStages mtlRenderStages = GetRenderStages(srgResourcesVisInfo.m_constantDataStageMask);
-                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);
-                        uint16_t arrayIndex = resourcesToMakeResidentGraphics[key].m_resourceArrayLen++;
-                        resourcesToMakeResidentGraphics[key].m_resourceArray[arrayIndex] = mtlconstantBufferResource;
+                        AZStd::pair <MTLResourceUsage,MTLRenderStages> key = AZStd::make_pair(MTLResourceUsageRead, mtlRenderStages);                        
+                        resourcesToMakeResidentGraphics[key].emplace(mtlconstantBufferResource);
                     }
                 }
             }
@@ -440,16 +438,18 @@ namespace AZ
             //Call UseResource on all resources for Compute stage
             for (const auto& key : resourcesToMakeResidentCompute)
             {
-                [static_cast<id<MTLComputeCommandEncoder>>(commandEncoder) useResources: key.second.m_resourceArray.data()
-                                                                                  count: key.second.m_resourceArrayLen
+                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
+                [static_cast<id<MTLComputeCommandEncoder>>(commandEncoder) useResources: &resourcesToProcessVec[0]
+                                                                                  count: resourcesToProcessVec.size()
                                                                                   usage: key.first];
             }
             
             //Call UseResource on all resources for Vertex and Fragment stages
             for (const auto& key : resourcesToMakeResidentGraphics)
             {
-                [static_cast<id<MTLRenderCommandEncoder>>(commandEncoder) useResources: key.second.m_resourceArray.data()
-                                                                                 count: key.second.m_resourceArrayLen
+                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
+                [static_cast<id<MTLRenderCommandEncoder>>(commandEncoder) useResources: &resourcesToProcessVec[0]
+                                                                                 count: resourcesToProcessVec.size()
                                                                                  usage: key.first.first
                                                                                 stages: key.first.second];
             }
@@ -480,9 +480,9 @@ namespace AZ
                         AZ_Assert(false, "Undefined Resource type");
                     }
                 }
-                uint16_t arrayIndex = resourcesToMakeResidentMap[resourceUsage].m_resourceArrayLen++;
+                
                 id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
-                resourcesToMakeResidentMap[resourceUsage].m_resourceArray[arrayIndex] = mtlResourceToBind;
+                resourcesToMakeResidentMap[resourceUsage].emplace(mtlResourceToBind);
             }
         }
 
@@ -516,9 +516,8 @@ namespace AZ
                 }
                 
                 AZStd::pair <MTLResourceUsage, MTLRenderStages> key = AZStd::make_pair(resourceUsage, mtlRenderStages);
-                uint16_t arrayIndex = resourcesToMakeResidentMap[key].m_resourceArrayLen++;
                 id<MTLResource> mtlResourceToBind = resourceBindingData.m_resourcPtr->GetGpuAddress<id<MTLResource>>();
-                resourcesToMakeResidentMap[key].m_resourceArray[arrayIndex] = mtlResourceToBind;
+                resourcesToMakeResidentMap[key].emplace(mtlResourceToBind);
             }
         }
     }
