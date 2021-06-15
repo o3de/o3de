@@ -172,6 +172,11 @@ namespace AZ
 
             bool PostLoadInit() override;
             void SetReady();
+
+            //! SelectShaderApiData() must be called before most other ShaderAsset functions.
+            bool SelectShaderApiData();
+
+            //! Returns the active ShaderApiDataContainer which was selected in SelectShaderApiData().
             ShaderApiDataContainer& GetCurrentShaderApiData();
             const ShaderApiDataContainer& GetCurrentShaderApiData() const;
 

@@ -332,8 +332,8 @@ namespace AZ
             // We may only endup here when running in a Builder context.
             return m_perAPIShaderData[0];
         }
-
-        bool ShaderAsset::PostLoadInit()
+        
+        bool ShaderAsset::SelectShaderApiData()
         {
             // Use the current RHI that is active to select which shader data to use.
             // We don't assert if the Factory is not available because this method could be called during build time,
@@ -371,6 +371,11 @@ namespace AZ
                 }
             }
 
+            return true;
+        }
+
+        bool ShaderAsset::PostLoadInit()
+        {
             // Once the ShaderAsset is loaded, it is necessary to listen for changes in the Root Variant Asset.
             Data::AssetBus::Handler::BusConnect(GetRootVariant().GetId());
             ShaderVariantFinderNotificationBus::Handler::BusConnect(GetId());
@@ -444,7 +449,19 @@ namespace AZ
         {
             if (Base::LoadAssetData(asset, stream, assetLoadFilterCB) == Data::AssetHandler::LoadResult::LoadComplete)
             {
-                asset.GetAs<ShaderAsset>()->AssetInitBus::Handler::BusConnect();
+                ShaderAsset* shaderAsset = asset.GetAs<ShaderAsset>();
+
+                // The shader API selection must occur immediately ofter loading, on the same thread, rather than
+                // deferring to AssetInitBus::PostLoadInit. Many functions in the ShaderAsset class are invalid
+                // until after SelectShaderApiData() is called and some client code may need to access data in
+                // the ShaderAsset before then.
+                if (!shaderAsset->SelectShaderApiData())
+                {
+                    return Data::AssetHandler::LoadResult::Error;
+                }
+
+                shaderAsset->AssetInitBus::Handler::BusConnect();
+
                 return Data::AssetHandler::LoadResult::LoadComplete;
             }
 
