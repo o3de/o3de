@@ -26,6 +26,7 @@ python upload_to_s3.py --base_dir %WORKSPACE%/path/to/files --file_regex "(.*png
 import os
 import re
 import json
+import time
 import boto3
 from optparse import OptionParser
 
@@ -100,13 +101,18 @@ def get_files_to_upload(base_dir, regex, search_subdirectories):
 
 
 def s3_upload_file(client, file, bucket, key_prefix=None, extra_args=None, max_retry=1):
-    key = file if key_prefix is None else '{}/{}'.format(key_prefix, file)
+    key = file if key_prefix is None else f'{key_prefix}/{file}'
+    error_message = None
+
     for x in range(max_retry):
         try:
             client.upload_file(file, bucket, key, ExtraArgs=extra_args)
             return True
         except Exception as err:
-            print(('Upload failed: Exception while uploading: {}'.format(err)))
+            time.sleep(0.1)  # Sleep for 100 milliseconds between retries.
+            error_message = err
+
+    print(f'Upload failed - Exception while uploading: {error_message}')
     return False
 
 
