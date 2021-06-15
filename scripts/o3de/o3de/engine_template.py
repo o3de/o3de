@@ -82,6 +82,21 @@ restricted_platforms = {
 template_file_name = 'template.json'
 this_script_parent = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 
+def _replace_license_text(source_data: str):
+    while '{BEGIN_LICENSE}' in source_data:
+        start = source_data.find('{BEGIN_LICENSE}')
+        if start != -1:
+            line_start = source_data.rfind('\n', 0, start)
+            if line_start == -1:
+                line_start = 0
+            end = source_data.find('{END_LICENSE}')
+            if end != -1:
+                end = source_data.find('\n', end)
+            if end != -1:
+                source_data = source_data[:line_start] + source_data[end + 1:]
+    return source_data
+
+
 def _transform(s_data: str,
                replacements: list,
                keep_license_text: bool = False) -> str:
@@ -101,25 +116,8 @@ def _transform(s_data: str,
     while '${Random_Uuid}' in t_data:
         t_data = t_data.replace('${Random_Uuid}', str(uuid.uuid4()), 1)
 
-    ##################################################################
-    # For some reason the re.sub call here gets into some kind of infinite
-    # loop and never returns on some files consistently.
-    # Until I figure out why we can use the string replacement method
-    # if not keep_license_text:
-    #    t_data = re.sub(r"^(//|'''|#)\s*{BEGIN_LICENSE}((.|\n)*){END_LICENSE}\n", "", t_data, flags=re.DOTALL)
-
     if not keep_license_text:
-        while '{BEGIN_LICENSE}' in t_data:
-            start = t_data.find('{BEGIN_LICENSE}')
-            if start != -1:
-                line_start = t_data.rfind('\n', 0, start)
-                if line_start == -1:
-                    line_start = 0
-                end = t_data.find('{END_LICENSE}')
-                end = t_data.find('\n', end)
-                if end != -1:
-                    t_data = t_data[:line_start] + t_data[end + 1:]
-    ###################################################################
+        t_data = _replace_license_text(t_data)
     return t_data
 
 
@@ -526,7 +524,7 @@ def create_template(source_path: pathlib.Path,
             t_data = t_data.replace(replacement[0], replacement[1])
 
         if not keep_license_text:
-            t_data = re.sub(r"(//|'''|#)\s*{BEGIN_LICENSE}((.|\n)*){END_LICENSE}\n", "", t_data, flags=re.DOTALL)
+            t_data = _replace_license_text(t_data)
 
         # See if this file has the ModuleClassId
         try:
