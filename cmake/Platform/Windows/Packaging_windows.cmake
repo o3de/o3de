@@ -96,8 +96,8 @@ set(_hyperlink_license "
 ")
 
 set(_raw_text_license "
-        <Richedit Name=\"EulaRichedit\" X=\"42\" Y=\"202\" Width=\"-42\" Height=\"-70\" TabStop=\"yes\" FontId=\"2\" HexStyle=\"0x800000\" />
-        <Text Name=\"EulaAcceptance\" X=\"42\" Y=\"-42\" Width=\"-42\" Height=\"17\" TabStop=\"yes\" FontId=\"1\" HideWhenDisabled=\"yes\">#(loc.InstallEulaAcceptance)</Text>
+        <Richedit Name=\"EulaRichedit\" X=\"42\" Y=\"202\" Width=\"-42\" Height=\"-80\" TabStop=\"yes\" FontId=\"2\" HexStyle=\"0x800000\" />
+        <Text Name=\"EulaAcceptance\" X=\"42\" Y=\"-54\" Width=\"-42\" Height=\"17\" TabStop=\"yes\" FontId=\"1\" HideWhenDisabled=\"yes\">#(loc.InstallEulaAcceptance)</Text>
 ")
 
 if(LY_INSTALLER_DOWNLOAD_URL)
