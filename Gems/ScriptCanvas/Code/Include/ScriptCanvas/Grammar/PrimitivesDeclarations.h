@@ -152,7 +152,7 @@ namespace ScriptCanvas
         };
 
         // default to a pure, interpreted function
-        enum ExecutionStateSelection : AZ::u32
+        enum class ExecutionStateSelection : AZ::u32
         {
             InterpretedPure,
             InterpretedPureOnGraphStart,

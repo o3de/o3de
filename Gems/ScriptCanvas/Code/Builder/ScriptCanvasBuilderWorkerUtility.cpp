@@ -401,7 +401,7 @@ namespace ScriptCanvasBuilder
             ;
     }
 
-    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath)
+    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetFilterCB assetFilterCB)
     {
         AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
 
@@ -432,7 +432,7 @@ namespace ScriptCanvasBuilder
         AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
         asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
 
-        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, AZ::Data::AssetFilterCB{}) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
+        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {
             return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
         }

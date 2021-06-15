@@ -36,6 +36,8 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/PerformanceStatisticsBus.h>
 
+#include <Builder/ScriptCanvasBuilder.h>
+
 namespace ScriptCanvasEditor
 {
     static bool EditorScriptCanvasComponentVersionConverter(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& rootElement)
@@ -244,7 +246,18 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntityData()
     {
-        // #functions2_prefabs make recursive
+        using namespace ScriptCanvasBuilder;
+
+        auto assetTreeOutcome = LoadEditorAssetTree(m_scriptCanvasAssetHolder.GetAssetId(), m_scriptCanvasAssetHolder.GetAssetHint());
+
+        if (!assetTreeOutcome.IsSuccess())
+        {
+            m_runtimeDataIsValid = false;
+        }
+
+        AZStd::string resultString = assetTreeOutcome.GetValue().ToString();
+        AZ_TracePrintf("ScriptCanvas", resultString.c_str());
+        m_runtimeDataIsValid = true;
 
         // this will be loaded at the time of this call
         // AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
@@ -272,6 +285,16 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
+        using namespace ScriptCanvasBuilder;
+
+        auto assetTreeOutcome = LoadEditorAssetTree(m_scriptCanvasAssetHolder.GetAssetId(), m_scriptCanvasAssetHolder.GetAssetHint());
+
+        if (assetTreeOutcome.IsSuccess())
+        {
+            AZStd::string resultString = assetTreeOutcome.GetValue().ToString();
+            AZ_TracePrintf("ScriptCanvas", resultString.c_str());
+        }
+
         if (m_runtimeDataIsValid)
         {
             AZ::Data::AssetId editorAssetId = m_scriptCanvasAssetHolder.GetAssetId();
@@ -508,6 +531,8 @@ namespace ScriptCanvasEditor
 
         AZ::Entity* scriptCanvasEntity = assetData->GetScriptCanvasEntity();
         AZ_Assert(scriptCanvasEntity, "This graph must have a valid entity");
+
+        BuildGameEntityData();
 
         auto variableComponent = scriptCanvasEntity ? AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::GraphVariableManagerComponent>(scriptCanvasEntity) : nullptr;
         if (variableComponent)

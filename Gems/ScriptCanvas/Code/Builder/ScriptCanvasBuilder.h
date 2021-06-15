@@ -12,6 +12,13 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
+
+namespace ScriptCanvasEditor
+{
+    class ScriptCanvasAsset;
+}
+
 namespace ScriptCanvasBuilder
 {
     class EditorAssetTree
@@ -21,11 +28,14 @@ namespace ScriptCanvasBuilder
 
         EditorAssetTree* m_parent = nullptr;
         AZStd::vector<EditorAssetTree> m_dependencies;
-        // #functions2_prefabs 
-        ScriptCanvasEditor::ScriptCanvasAsset m_asset;
-        
+        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_asset;
+
         EditorAssetTree* ModRoot();
+
+        void SetParent(EditorAssetTree& parent);
+
+        AZStd::string ToString(size_t depth = 0) const;
     };
 
-    EditorAssetTree BuildEditorAssetTree(ScriptCanvasEditor::ScriptCanvasAsset asset);
+    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(AZ::Data::AssetId editorAssetId, AZStd::string_view assetHint, EditorAssetTree* parent = nullptr);
 }

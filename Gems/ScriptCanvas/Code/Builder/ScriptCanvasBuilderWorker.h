@@ -135,7 +135,7 @@ namespace ScriptCanvasBuilder
 
     int GetBuilderVersion();
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetFilterCB assetFilterCB = {});
 
     AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>, AZStd::string> LoadEditorFunctionAsset(AZStd::string_view graphPath);
 
