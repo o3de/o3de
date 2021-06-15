@@ -102,6 +102,8 @@ set(_raw_text_license "
 
 if(LY_INSTALLER_DOWNLOAD_URL)
 
+    set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
+
     if(LY_INSTALLER_LICENSE_URL)
         set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_hyperlink_license})
         set(WIX_THEME_EULA_ACCEPTANCE_TEXT "&lt;a href=\"#\"&gt;Terms of Use&lt;/a&gt;")

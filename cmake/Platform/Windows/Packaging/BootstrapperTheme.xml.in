@@ -65,13 +65,14 @@
 
     <!-- final page (failure state) -->
     <Page Name="Failure">
-        <Text Name="FailureHeader" X="38" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureHeader)</Text>
-        <Text Name="FailureInstallHeader" X="38" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureInstallHeader)</Text>
-        <Text Name="FailureUninstallHeader" X="38" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureUninstallHeader)</Text>
-        <Text Name="FailureRepairHeader" X="38" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRepairHeader)</Text>
+        <Image X="38" Y="132" Width="42" Height="42" ImageFile="@WIX_THEME_WARNING_IMAGE@" Visible="yes"/>
+        <Text Name="FailureHeader" X="86" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureHeader)</Text>
+        <Text Name="FailureInstallHeader" X="86" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureInstallHeader)</Text>
+        <Text Name="FailureUninstallHeader" X="86" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureUninstallHeader)</Text>
+        <Text Name="FailureRepairHeader" X="86" Y="142" Width="-42" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRepairHeader)</Text>
 
-        <Hypertext Name="FailureLogFileLink" X="42" Y="202" Width="-42" Height="64" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
-        <Hypertext Name="FailureMessageText" X="64" Y="266" Width="-42" Height="64" FontId="3" TabStop="yes" HideWhenDisabled="yes" />
+        <Hypertext Name="FailureLogFileLink" X="90" Y="202" Width="-42" Height="80" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
+        <Hypertext Name="FailureMessageText" X="135" Y="282" Width="-42" Height="80" FontId="3" TabStop="yes" HideWhenDisabled="yes" />
 
         <Button Name="FailureCloseButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.FailureCloseButton)</Button>
     </Page>
