@@ -77,7 +77,7 @@ namespace AZ
             m_featureProcessorInterface = RPI::Scene::GetFeatureProcessorForEntity<SkyBoxFeatureProcessorInterface>(entityId);
 
             // only activate if there is no other skybox activate
-            if (!m_featureProcessorInterface->IsEnable())
+            if (!m_featureProcessorInterface->IsEnabled())
             {
                 m_featureProcessorInterface->SetSkyboxMode(SkyBoxMode::PhysicalSky);
                 m_featureProcessorInterface->Enable(true);
@@ -240,7 +240,7 @@ namespace AZ
             m_featureProcessorInterface->SetFogEnable(enable);
         }
 
-        bool PhysicalSkyComponentController::IsEnable() const
+        bool PhysicalSkyComponentController::IsEnabled() const
         {
             return m_configuration.m_skyBoxFogSettings.m_enable;
         }

@@ -19,6 +19,7 @@ namespace AZ
 {
     namespace Render
     {
+        // EBus to get and set fog settings rendered with the sky
         class SkyBoxFogRequests
             : public ComponentBus
         {
@@ -29,11 +30,13 @@ namespace AZ
             virtual ~SkyBoxFogRequests() {}
 
             virtual void SetEnable(bool enable) = 0;
-            virtual bool IsEnable() const = 0;
+            virtual bool IsEnabled() const = 0;
             virtual void SetColor(const AZ::Color& color) = 0;
             virtual const AZ::Color& GetColor() const = 0;
+            // Set and Get the height upwards from the horizon
             virtual void SetTopHeight(float topHeight) = 0;
             virtual float GetTopHeight() const = 0;
+            // Set and Get the height downwards from the horizon
             virtual void SetBottomHeight(float bottomHeight) = 0;
             virtual float GetBottomHeight() const = 0;
         };

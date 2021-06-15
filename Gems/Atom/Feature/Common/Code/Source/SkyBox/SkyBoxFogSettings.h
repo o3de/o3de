@@ -27,10 +27,10 @@ namespace AZ
 
             SkyBoxFogSettings() = default;
 
-            bool IsFogDisable() const;
+            bool IsFogDisabled() const;
 
-            bool m_enable = false;
             AZ::Color m_color = AZ::Color::CreateOne();
+            bool m_enable = false;
             float m_topHeight = 0.01;
             float m_bottomHeight = 0.0;
         };

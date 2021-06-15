@@ -225,7 +225,7 @@ namespace AZ
             m_enable = enable;
         }
 
-        bool SkyBoxFeatureProcessor::IsEnable()
+        bool SkyBoxFeatureProcessor::IsEnabled()
         {
             return m_enable;
         }

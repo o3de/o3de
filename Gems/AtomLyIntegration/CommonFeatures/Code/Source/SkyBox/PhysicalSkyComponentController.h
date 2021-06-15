@@ -67,7 +67,7 @@ namespace AZ
 
             // SkyBoxFogRequestBus::Handler overrides ...
             void SetEnable(bool enable) override;
-            bool IsEnable() const override;
+            bool IsEnabled() const override;
             void SetColor(const AZ::Color& color) override;
             const AZ::Color& GetColor() const override;
             void SetTopHeight(float topHeight) override;

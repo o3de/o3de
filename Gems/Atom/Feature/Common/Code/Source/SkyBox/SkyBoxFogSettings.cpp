@@ -38,14 +38,14 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &SkyBoxFogSettings::m_enable, "Enable Fog", "Toggle fog on or off")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &SkyBoxFogSettings::m_color, "Fog Color", "Color of the fog")
-                                ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisable)
+                                ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisabled)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_topHeight, "Fog Top Height", "Height of the fog upwards from the horizon")
-                                ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisable)
+                                ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisabled)
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.0)
                                 ->Attribute(AZ::Edit::Attributes::Max, 0.5)
                                 ->Attribute(AZ::Edit::Attributes::Step, 0.01)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &SkyBoxFogSettings::m_bottomHeight, "Fog Bottom Height", "Height of the fog downwards from the horizon")
-                                ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisable)
+                                ->Attribute(AZ::Edit::Attributes::ReadOnly, &SkyBoxFogSettings::IsFogDisabled)
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.0)
                                 ->Attribute(AZ::Edit::Attributes::Max, 0.3)
                                 ->Attribute(AZ::Edit::Attributes::Step, 0.01)
@@ -60,14 +60,14 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Event("SetEnable", &SkyBoxFogRequestBus::Events::SetEnable)
-                    ->Event("IsEnable", &SkyBoxFogRequestBus::Events::IsEnable)
+                    ->Event("IsEnabled", &SkyBoxFogRequestBus::Events::IsEnabled)
                     ->Event("SetColor", &SkyBoxFogRequestBus::Events::SetColor)
                     ->Event("GetColor", &SkyBoxFogRequestBus::Events::GetColor)
                     ->Event("SetTopHeight", &SkyBoxFogRequestBus::Events::SetTopHeight)
                     ->Event("GetTopHeight", &SkyBoxFogRequestBus::Events::GetTopHeight)
                     ->Event("SetBottomHeight", &SkyBoxFogRequestBus::Events::SetBottomHeight)
                     ->Event("GetBottomHeight", &SkyBoxFogRequestBus::Events::GetBottomHeight)
-                    ->VirtualProperty("Enable", "IsEnable", "SetEnable")
+                    ->VirtualProperty("Enable", "IsEnabled", "SetEnable")
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("TopHeight", "GetTopHeight", "SetTopHeight")
                     ->VirtualProperty("BottomHeight", "GetTopHeight", "SetBottomHeight")
@@ -75,7 +75,7 @@ namespace AZ
             }
         }
 
-        bool SkyBoxFogSettings::IsFogDisable() const
+        bool SkyBoxFogSettings::IsFogDisabled() const
         {
             return !m_enable;
         }

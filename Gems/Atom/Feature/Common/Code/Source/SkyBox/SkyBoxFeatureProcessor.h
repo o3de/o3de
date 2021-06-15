@@ -67,7 +67,7 @@ namespace AZ
 
             // SkyBoxFeatureProcessorInterface overrides ...
             void Enable(bool enable) override;
-            bool IsEnable() override;
+            bool IsEnabled() override;
             void SetSkyboxMode(SkyBoxMode mode) override;
             void SetFogSettings(const SkyBoxFogSettings& fogSettings) override;
             void SetFogEnable(bool enable) override;

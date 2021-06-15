@@ -50,7 +50,7 @@ namespace AZ
             AZ_RTTI(AZ::Render::SkyBoxFeatureProcessorInterface, "{71061869-1190-4451-A337-E9CFF16441B4}"); 
 
             virtual void Enable(bool enable) = 0;
-            virtual bool IsEnable() = 0;
+            virtual bool IsEnabled() = 0;
             virtual void SetSkyboxMode(SkyBoxMode mode) = 0;
             virtual void SetFogSettings(const SkyBoxFogSettings& fogSettings) = 0;
 
