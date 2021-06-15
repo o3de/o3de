@@ -13,6 +13,7 @@
 
     <!-- welcome page -->
     <Page Name="Install">
+        <Text X="38" Y="142" Width="-42" Height="30" FontId="2" DisablePrefix="yes">#(loc.InstallHeader)</Text>
 @WIX_THEME_INSTALL_LICENSE_ELEMENTS@
         <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
         <Button Name="InstallButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>

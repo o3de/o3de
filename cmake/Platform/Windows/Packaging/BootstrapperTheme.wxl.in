@@ -9,7 +9,7 @@
     <String Id="ConfirmCancelMessage">Are you sure you want to cancel?</String>
 
     <!-- welcome page -->
-    <String Id="InstallHeader">Welcome</String>
+    <String Id="InstallHeader">Welcome to @CPACK_PACKAGE_FULL_NAME@!</String>
     <String Id="InstallMessage">
 Setup will install [WixBundleName] on your computer. Click install to continue, options to set the install directory or Close to exit.
     </String>
@@ -32,7 +32,7 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
     <String Id="ModifyCloseButton">&amp;Close</String>
 
     <!-- action progress page -->
-    <String Id="ProgressHeader">Setup Progress</String>
+    <String Id="ProgressHeader">Installing @CPACK_PACKAGE_FULL_NAME@...</String>
     <String Id="ProgressLabel">Processing:</String>
     <String Id="OverallProgressPackageText">Initializing...</String>
     <String Id="ProgressCancelButton">&amp;Cancel</String>
