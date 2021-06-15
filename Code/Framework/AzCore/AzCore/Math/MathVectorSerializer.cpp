@@ -206,7 +206,7 @@ namespace AZ
 
     auto BaseJsonVectorSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 
     

@@ -24,20 +24,24 @@
 namespace AZ
 {
     JsonSerializationResult::ResultCode JsonDeserializer::DeserializerDefaultCheck(BaseJsonSerializer* serializer, void* object,
-        const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context)
+        const Uuid& typeId,const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context)
     {
         using namespace AZ::JsonSerializationResult;
 
         bool isExplicitDefault = IsExplicitDefault(value);
         bool manuallyDefaults = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::ManualDefault) ==
             BaseJsonSerializer::OperationFlags::ManualDefault;
-        return !isExplicitDefault || (isExplicitDefault && manuallyDefaults)
+        bool initializeNewInstance = (serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::InitializeNewInstance) ==
+            BaseJsonSerializer::OperationFlags::InitializeNewInstance;
+
+        return
+            !isExplicitDefault || (isExplicitDefault && manuallyDefaults) || (isExplicitDefault && isNewInstance && initializeNewInstance)
             ? serializer->Load(object, typeId, value, context)
             : context.Report(Tasks::ReadField, Outcomes::DefaultsUsed, "Value has an explicit default.");
     }
 
-    JsonSerializationResult::ResultCode JsonDeserializer::Load(void* object, const Uuid& typeId, const rapidjson::Value& value,
-        JsonDeserializerContext& context)
+    JsonSerializationResult::ResultCode JsonDeserializer::Load(
+        void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context)
     {
         using namespace AZ::JsonSerializationResult;
 
@@ -50,7 +54,7 @@ namespace AZ
         BaseJsonSerializer* serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
         if (serializer)
         {
-            return DeserializerDefaultCheck(serializer, object, typeId, value, context);
+            return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
         }
 
         const SerializeContext::ClassData* classData = context.GetSerializeContext()->FindClassData(typeId);
@@ -72,7 +76,7 @@ namespace AZ
             serializer = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId());
             if (serializer)
             {
-                return DeserializerDefaultCheck(serializer, object, typeId, value, context);
+                return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
             }
         }
 
@@ -133,7 +137,7 @@ namespace AZ
             const SerializeContext::ClassData* resolvedClassData = context.GetSerializeContext()->FindClassData(resolvedTypeId);
             if (resolvedClassData)
             {
-                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, context);
+                status = JsonDeserializer::Load(*objectPtr, resolvedTypeId, value, true, context);
 
                 *objectPtr = resolvedClassData->m_azRtti->Cast(*objectPtr, typeId);
 
@@ -174,7 +178,7 @@ namespace AZ
         }
         else
         {
-            return Load(object, classElement.m_typeId, value, context);
+            return Load(object, classElement.m_typeId, value, false, context);
         }
     }
 

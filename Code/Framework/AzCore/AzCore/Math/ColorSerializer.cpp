@@ -103,7 +103,7 @@ namespace AZ
 
     auto JsonColorSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 
     JsonSerializationResult::Result JsonColorSerializer::LoadObject(Color& output, const rapidjson::Value& inputValue, 

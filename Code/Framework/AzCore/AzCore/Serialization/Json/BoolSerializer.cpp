@@ -154,6 +154,6 @@ namespace AZ
 
     auto JsonBoolSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 } // namespace AZ

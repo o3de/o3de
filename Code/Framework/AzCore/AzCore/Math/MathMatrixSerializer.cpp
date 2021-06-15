@@ -393,7 +393,7 @@ namespace AZ
 
     auto BaseJsonMatrixSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 
 

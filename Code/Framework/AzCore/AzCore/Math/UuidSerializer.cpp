@@ -35,7 +35,7 @@ namespace AZ
 
     auto JsonUuidSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 
     JsonSerializationResult::Result JsonUuidSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,

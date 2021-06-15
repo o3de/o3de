@@ -166,7 +166,7 @@ namespace AZ
 
     auto JsonDoubleSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 
     JsonSerializationResult::Result JsonFloatSerializer::Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
@@ -191,6 +191,6 @@ namespace AZ
 
     auto JsonFloatSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 } // namespace AZ

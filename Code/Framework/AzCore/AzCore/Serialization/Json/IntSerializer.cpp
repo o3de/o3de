@@ -135,7 +135,7 @@ namespace AZ
 
     auto BaseJsonIntegerSerializer::GetOperationsFlags() const -> OperationFlags
     {
-        return OperationFlags::ManualDefault;
+        return OperationFlags::InitializeNewInstance;
     }
 
     JsonSerializationResult::Result JsonCharSerializer::Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
