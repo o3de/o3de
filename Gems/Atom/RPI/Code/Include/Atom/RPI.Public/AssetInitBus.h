@@ -21,6 +21,8 @@ namespace AZ
         //! Bus for post-load initialization of assets.
         //! Assets that need to do post-load initialization should connect to this bus in their asset handler's LoadAssetData() function.
         //! Be sure to disconnect from this bus as soon as initialization is complete, as it will be called every frame.
+        //! (Note this bus is needed rather than utilizing TickBus because TickBus is not protected by a mutex which means it can't be
+        //! connected on an asset load job thread).
         class AssetInitEvents
             : public EBusTraits
         {
