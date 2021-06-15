@@ -34,6 +34,12 @@ namespace O3DE::ProjectManager
         IPythonBindings() = default;
         virtual ~IPythonBindings() = default;
 
+        /**
+         * Get whether Python was started or not.  All Python functionality will fail if Python
+         * failed to start. 
+         * @return true if Python was started successfully, false on failure 
+         */
+        virtual bool PythonStarted() = 0;
 
         // Engine
 

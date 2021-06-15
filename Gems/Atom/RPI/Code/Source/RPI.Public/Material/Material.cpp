@@ -97,6 +97,7 @@ namespace AZ
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             for (auto& shaderItem : m_shaderCollection)
             {
+                ShaderReloadDebugTracker::Printf("(Material has ShaderAsset %p)", shaderItem.GetShaderAsset().Get());
                 ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
 
@@ -226,7 +227,7 @@ namespace AZ
         // AssetBus overrides...
         void Material::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnAssetReloaded %s", asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
             Data::Asset<MaterialAsset> newMaterialAsset = { asset.GetAs<MaterialAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
 
@@ -241,7 +242,7 @@ namespace AZ
         // MaterialReloadNotificationBus overrides...
         void Material::OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnMaterialAssetReinitialized %s", materialAsset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnMaterialAssetReinitialized %s", this, materialAsset.GetHint().c_str());
             OnAssetReloaded(materialAsset);
         }
 
@@ -249,7 +250,7 @@ namespace AZ
         // ShaderReloadNotificationBus overrides...
         void Material::OnShaderReinitialized([[maybe_unused]] const Shader& shader)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderReinitialized %s", shader.GetAsset().GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderReinitialized %s", this, shader.GetAsset().GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
@@ -260,7 +261,7 @@ namespace AZ
         {
             // TODO: I think we should make Shader handle OnShaderAssetReinitialized and treat it just like the shader reloaded.
 
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderAssetReinitialized %s", shaderAsset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
@@ -269,7 +270,7 @@ namespace AZ
 
         void Material::OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& /*shaderVariantId*/, ShaderVariantStableId shaderVariantStableId)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderVariantReinitialized %s variant %u", shader.GetAsset().GetHint().c_str(), shaderVariantStableId.GetIndex());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s variant %u", this, shader.GetAsset().GetHint().c_str(), shaderVariantStableId.GetIndex());
 
             // Note that it would be better to check the shaderVariantId to see if that variant is relevant to this particular material before reinitializing it.
             // There could be hundreds or even thousands of variants for a shader, but only one of those variants will be used by any given material. So we could

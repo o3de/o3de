@@ -23,7 +23,9 @@ namespace AZ
         {
             Low,
             Medium,
-            High
+            High,
+
+            Count
         };
 
         //! This class provides general features and configuration for the diffuse global illumination environment,

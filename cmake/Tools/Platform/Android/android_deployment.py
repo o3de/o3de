@@ -184,11 +184,15 @@ class AndroidDeployment(object):
 
         call_arguments.extend(arg_list)
 
-        output = subprocess.check_output(call_arguments,
-                                         shell=True,
-                                         stderr=subprocess.DEVNULL).decode(common.DEFAULT_TEXT_READ_ENCODING,
-                                                                           common.ENCODING_ERROR_HANDLINGS)
-        return output
+        try:
+            output = subprocess.check_output(call_arguments,
+                                             shell=True,
+                                             stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               common.ENCODING_ERROR_HANDLINGS)
+            return output
+        except subprocess.CalledProcessError as err:
+            raise common.LmbrCmdError(err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                        common.ENCODING_ERROR_HANDLINGS))
 
     def adb_shell(self, command, device_id):
         """
