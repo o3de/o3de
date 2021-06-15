@@ -1,0 +1,14 @@
+{
+    "Amazon":
+    {
+        "${Name}.Assets":
+        {
+            "SourcePaths":
+            [
+                "Assets",
+                "ShaderLib",
+                "Shaders"
+            ]
+        }
+    }
+}
