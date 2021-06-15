@@ -1,0 +1,58 @@
+﻿{
+    "configurations": [
+        {
+            "name": "x64-Debug",
+            "generator": "Ninja",
+            "configurationType": "Debug",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "buildRoot": "C:/repo/build/windows/o3de/msbuild/debug",
+            "installRoot": "C:/repo/install/windows/o3de/msbuild/debug",
+            "cmakeCommandArgs": "-DLY_3RDPARTY_PATH=c:\\repo\\3rdParty",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "variables": [
+                {
+                    "name": "LY_PROJECTS",
+                    "value": "AutomatedTesting",
+                    "type": "STRING"
+                }
+            ]
+        },
+        {
+            "name": "x64-Profile",
+            "generator": "Ninja",
+            "configurationType": "Profile",
+            "buildRoot": "C:/repo/build/windows/o3de/msbuild/profile",
+            "installRoot": "C:/repo/install/windows/o3de/msbuild/profile",
+            "cmakeCommandArgs": "-DLY_3RDPARTY_PATH=c:\\repo\\3rdParty",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "LY_PROJECTS",
+                    "value": "AutomatedTesting",
+                    "type": "STRING"
+                }
+            ]
+        },
+        {
+            "name": "x64-Release",
+            "generator": "Ninja",
+            "configurationType": "Release",
+            "buildRoot": "C:/repo/build/windows/o3de/msbuild/release",
+            "installRoot": "C:/repo/install/windows/o3de/msbuild/release",
+            "cmakeCommandArgs": "-DLY_3RDPARTY_PATH=c:\\repo\\3rdParty",
+            "buildCommandArgs": "",
+            "ctestCommandArgs": "",
+            "inheritEnvironments": [ "msvc_x64_x64" ],
+            "variables": [
+                {
+                    "name": "LY_PROJECTS",
+                    "value": "AutomatedTesting",
+                    "type": "STRING"
+                }
+            ]
+        }
+    ]
+}
