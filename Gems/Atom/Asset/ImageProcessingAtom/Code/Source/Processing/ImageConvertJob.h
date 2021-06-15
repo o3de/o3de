@@ -72,7 +72,6 @@ namespace ImageProcessingAtom
         static const int m_previewProcessStep = 2;
 
         AZStd::unique_ptr<ImageConvertProcess> m_process;
-        bool m_isPreview;
         AZStd::atomic_bool m_isCancelled;
         ImageConvertOutput* m_output;
     };
