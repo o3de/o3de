@@ -14,8 +14,18 @@
 
 #include <SandboxAPI.h>
 
+#include <AzCore/Settings/SettingsRegistry.h>
+
 namespace SandboxEditor
 {
+    struct ViewportCallbackInterface;
+    SANDBOX_API ViewportCallbackInterface* CreateEditorViewportSettingsCallback();
+
+    using GridSnappingChangedEvent = AZ::Event<bool>;
+
+    SANDBOX_API void RegisterGridChangedEvent(
+        ViewportCallbackInterface* viewportCallbackInterface, GridSnappingChangedEvent::Handler& handler);
+
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);
 

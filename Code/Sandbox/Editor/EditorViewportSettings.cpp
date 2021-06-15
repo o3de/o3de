@@ -56,6 +56,36 @@ namespace SandboxEditor
         return value;
     }
 
+    struct ViewportCallbackInterface
+    {
+        GridSnappingChangedEvent m_gridSnappingChanged;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_notifyEventHandler;
+    };
+
+    void RegisterGridChangedEvent(ViewportCallbackInterface* viewportCallbackInterface, GridSnappingChangedEvent::Handler& handler)
+    {
+        handler.Connect(viewportCallbackInterface->m_gridSnappingChanged);
+    }
+
+    ViewportCallbackInterface* CreateEditorViewportSettingsCallback()
+    {
+        ViewportCallbackInterface* viewportCallbackInterface = new ViewportCallbackInterface();
+
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            viewportCallbackInterface->m_notifyEventHandler = registry->RegisterNotifier(
+                [viewportCallbackInterface](AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
+                {
+                    if (path == GridSnappingSetting)
+                    {
+                        viewportCallbackInterface->m_gridSnappingChanged.Signal(GridSnappingEnabled());
+                    }
+                });
+        }
+
+        return viewportCallbackInterface;
+    }
+
     bool GridSnappingEnabled()
     {
         return GetRegistry(GridSnappingSetting, false);

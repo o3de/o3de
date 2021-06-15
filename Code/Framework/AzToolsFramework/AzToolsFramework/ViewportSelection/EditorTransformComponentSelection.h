@@ -151,6 +151,7 @@ namespace AzToolsFramework
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
+        , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -288,6 +289,9 @@ namespace AzToolsFramework
         // EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
+
+        // ViewportSettingsNotificationBus overrides ...
+        void OnGridSnappingEnabled(bool enabled) override;
 
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);

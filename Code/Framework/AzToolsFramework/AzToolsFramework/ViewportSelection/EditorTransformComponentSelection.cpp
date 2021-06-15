@@ -1035,6 +1035,7 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
         EditorContextMenuBus::Handler::BusConnect();
+        ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1058,6 +1059,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
@@ -3715,6 +3717,11 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnStopPlayInEditor()
     {
         SetAllViewportUiVisible(true);
+    }
+
+    void EditorTransformComponentSelection::OnGridSnappingEnabled([[maybe_unused]] const bool enabled)
+    {
+        m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
     }
 
     namespace ETCS

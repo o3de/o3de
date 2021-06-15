@@ -24,6 +24,7 @@
 #include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
+#include "EditorViewportSettings.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -103,6 +104,8 @@ public:
 
 public:
     EditorViewportWidget(const QString& name, QWidget* parent = nullptr);
+
+    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
 
     static const GUID& GetClassID()
     {
