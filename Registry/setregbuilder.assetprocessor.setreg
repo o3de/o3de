@@ -22,9 +22,12 @@
                 // members or entries will be recursively ignored as well.
                 "Excludes":
                 [
-                    "/Amazon/AzCore/Runtime"
+                    "/Amazon/AzCore/Runtime",
+                    "/Amazon/AzCore/Bootstrap/project_path"
                 ]
             }
         }
     }
 }
+
+
