@@ -48,7 +48,7 @@ def verify_gradle(override_gradle_path=None):
 
 
 CMAKE_ARGUMENT_NAME = '--cmake-install-path'
-CMAKE_MIN_VERSION = LooseVersion('3.19.0')
+CMAKE_MIN_VERSION = LooseVersion('3.20.0')
 CMAKE_VERSION_REGEX = re.compile(r'cmake version (\d+.\d+.?\d*)')
 CMAKE_EXECUTABLE = 'cmake'
 

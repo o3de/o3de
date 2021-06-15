@@ -67,7 +67,7 @@ namespace AZ
             desc.m_bufferName = "LuminanceHistogramBuffer";
             desc.m_elementSize = sizeof(uint32_t);
             desc.m_byteCount = NumHistogramBins * sizeof(uint32_t);
-            desc.m_elementFormat = RHI::Format::R32_UINT;
+            desc.m_elementFormat = RHI::Format::Unknown;
             m_histogram = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
             AZ_Assert(m_histogram != nullptr, "Unable to allocate buffer");
         }

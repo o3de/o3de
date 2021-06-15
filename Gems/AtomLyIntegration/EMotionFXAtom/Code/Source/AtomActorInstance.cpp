@@ -464,9 +464,8 @@ namespace AZ
         void AtomActorInstance::Create()
         {
             Destroy();
-
             m_skinnedMeshInputBuffers = GetRenderActor()->FindOrCreateSkinnedMeshInputBuffers();
-            AZ_Error("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to get SkinnedMeshInputBuffers from Actor.");
+            AZ_Warning("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to create SkinnedMeshInputBuffers from Actor. It is likely that this actor doesn't have any meshes");
             if (m_skinnedMeshInputBuffers)
             {
                 m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());

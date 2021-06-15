@@ -12,15 +12,6 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
-IF NOT EXIST "%LY_NINJA_PATH%" (
-    SET LY_NINJA_PATH=%LY_3RDPARTY_PATH%/ninja/1.10.1/Windows
-)
-IF NOT EXIST "%LY_NINJA_PATH%" (
-    ECHO [ci_build] FAIL: LY_NINJA_PATH=%LY_NINJA_PATH%
-    GOTO :error
-)
-PATH %LY_NINJA_PATH%;%PATH%
-
 CALL "%~dp0build_windows.cmd"
 IF NOT %ERRORLEVEL%==0 GOTO :error
 
