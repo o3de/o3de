@@ -89,8 +89,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AWSCore
     )
 
+    # This target is not a real gem module
+    # It is not meant to be loaded by the ModuleManager in C++
     ly_add_target(
-        NAME AWSCore.ResourceMappingTool GEM_MODULE
+        NAME AWSCore.ResourceMappingTool MODULE
         NAMESPACE Gem
         OUTPUT_SUBDIRECTORY AWSCoreEditorQtBin
         FILES_CMAKE
