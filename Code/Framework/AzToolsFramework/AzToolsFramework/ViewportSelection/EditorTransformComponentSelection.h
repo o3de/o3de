@@ -294,7 +294,7 @@ namespace AzToolsFramework
         void OnStopPlayInEditor() override;
 
         // ViewportSettingsNotificationBus overrides ...
-        void OnGridSnappingEnabled(bool enabled) override;
+        void OnGridSnappingChanged(bool enabled) override;
 
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);

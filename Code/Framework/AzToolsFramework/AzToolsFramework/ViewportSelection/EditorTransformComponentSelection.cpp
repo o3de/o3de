@@ -3729,7 +3729,7 @@ namespace AzToolsFramework
         SetAllViewportUiVisible(true);
     }
 
-    void EditorTransformComponentSelection::OnGridSnappingEnabled([[maybe_unused]] const bool enabled)
+    void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
     {
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
     }

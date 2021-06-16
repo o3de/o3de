@@ -1419,7 +1419,7 @@ void EditorViewportWidget::SetViewportId(int id)
         [id](const bool snapping)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
-                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingEnabled, snapping);
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingChanged, snapping);
         });
 
     m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
