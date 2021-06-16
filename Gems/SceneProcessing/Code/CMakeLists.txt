@@ -70,13 +70,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME SceneProcessing.Builders NAMESPACE Gem TARGETS Gem::SceneProcessing.Editor)
     ly_create_alias(NAME SceneProcessing.Tools    NAMESPACE Gem TARGETS Gem::SceneProcessing.Editor)
 
-endif()
-
 # SceneProcessing Gem is only used in Tools and builders and is a requirement for the Editor
 ly_enable_gems(GEMS SceneProcessing VARIANTS Tools
     TARGETS Editor)
 ly_enable_gems(GEMS SceneProcessing VARIANTS Builders
     TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
+endif()
 
 
 ################################################################################
