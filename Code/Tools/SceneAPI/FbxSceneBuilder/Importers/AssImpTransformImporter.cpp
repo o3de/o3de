@@ -62,7 +62,7 @@ namespace AZ
                     }
                 }
             }
-#pragma optimize("", off)
+
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
@@ -79,104 +79,44 @@ namespace AZ
 
                 auto boneIterator = boneLookup.find(currentNode->mName.C_Str());
                 const bool isBone = boneIterator != boneLookup.end();
-
-                if (currentNode->mName.C_Str() == AZStd::string("spine_C0_0_jnt"))
-                {
-                    //__debugbreak();
-                }
-
-                //aiMatrix4x4 combinedTransform;
-                DataTypes::MatrixType finalMat;
+                
+                DataTypes::MatrixType localTransform;
 
                 if (isBone)
                 {
-                    auto parentNode = currentNode->mParent;
+                    AZStd::vector<DataTypes::MatrixType> offsets, inverseOffsets;
+                    auto iteratingNode = currentNode;
 
-                    aiMatrix4x4 offsetMatrix = boneIterator->second->mOffsetMatrix;
-                    aiMatrix4x4 parentOffset {};
-                    aiMatrix4x4 parentTransform{};
-
-                    if (parentNode)
+                    while (iteratingNode && boneLookup.count(iteratingNode->mName.C_Str()))
                     {
-                        parentTransform = parentNode->mTransformation;
-                    }
-
-                    auto azOffset = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(offsetMatrix);
-                    decltype(azOffset) azParentOffset{};
-                    AZStd::vector<DataTypes::MatrixType> transforms, offsets, inverseTransforms, inverseOffsets;
-
-                    auto addTransform = [&](AZStd::string, aiMatrix4x4 mat)
-                    {
-                        auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(mat);
-                        transforms.push_back(azMat);
-                        inverseTransforms.push_back(azMat.GetInverseFull());
-                    };
-                    auto addOffset = [&]([[maybe_unused]] auto name, aiMatrix4x4 mat)
-                    {
-                        auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(mat);
-                        offsets.push_back(azMat);
-                        inverseOffsets.push_back(azMat.GetInverseFull());
-                    };
-
-                    auto curNode = currentNode;
-
-                    while (curNode && boneLookup.count(curNode->mName.C_Str()))
-                    {
-                        AZStd::string name = curNode->mName.C_Str();
+                        AZStd::string name = iteratingNode->mName.C_Str();
 
                         auto range = boneLookup.equal_range(name);
 
-                        for (auto it = range.first; it != range.second; ++it)
+                        if (range.first != range.second)
                         {
-                            addOffset(name, it->second->mOffsetMatrix);
-                            break;
+                            // There can be multiple offsetMatrices for a given bone, we're only interested in grabbing the first one
+                            auto boneFirstOffsetMatrix = range.first->second->mOffsetMatrix;
+                            auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(boneFirstOffsetMatrix);
+                            offsets.push_back(azMat);
+                            inverseOffsets.push_back(azMat.GetInverseFull());
                         }
 
-                        //addOffset(name, boneLookup.at(name)->mOffsetMatrix);
-                        addTransform(name, curNode->mTransformation);
-
-                        curNode = curNode->mParent;
+                        iteratingNode = iteratingNode->mParent;
                     }
-
-                    // Go up the tree to find the root bone.  It's parent will be the scene mRootNode
-                    while (parentNode && parentNode->mParent && parentNode->mParent != scene->mRootNode)
-                    {
-                        parentNode = parentNode->mParent;
-                    }
-
-                    auto parentBoneIterator = boneLookup.find(parentNode->mName.C_Str());
-                    aiMatrix4x4 rootOffsetMatrix{};
-
-                    if (parentBoneIterator != boneLookup.end())
-                    {
-                        rootOffsetMatrix = parentBoneIterator->second->mOffsetMatrix;
-                    }
-
-                    auto inverseOffset = offsetMatrix;
-                    inverseOffset.Inverse();
-
-                    auto parentTransformInverse = parentTransform;
-                    parentTransformInverse.Inverse();
-
-                    //auto azInverse = azOffset.GetInverseFull();
-                    //auto azCombined = azParentOffset * azInverse;
-                    //combinedTransform = parentOffset * inverseOffset;
-
-                    //parentTransform ^-1 * parentParent * azOffsetInverse
-                    //combinedTransform = parentTransformInverse * rootOffsetMatrix * inverseOffset;
-
-                    //azNodeLocal = offsets[1] * inverseOffsets[3] * (offsets[3] * inverseOffsets[0])
-                    finalMat =
-                        offsets.at(AZ::GetMin(offsets.size()-1, (decltype(offsets.size()))1)) * inverseOffsets.at(inverseOffsets.size() - 1) * offsets.at(offsets.size() - 1) * inverseOffsets.at(0);
+                    
+                    localTransform =
+                        offsets.at(AZ::GetMin(offsets.size()-1, static_cast<decltype(offsets.size())>(1)))  // parent bone offset, or if there is no parent, then current node offset
+                        * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
+                        * offsets.at(offsets.size() - 1) // Root bone offset
+                        * inverseOffsets.at(0); // Inverse of current node offset
                 }
                 else
                 {
-                    finalMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(currentNode));
+                    localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(currentNode));
                 }
 
-                //DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
-                DataTypes::MatrixType localTransform = finalMat;
-
+                // Don't bother adding a node with the identity matrix
                 if (localTransform == DataTypes::MatrixType::Identity())
                 {
                     return Events::ProcessingResult::Ignored;

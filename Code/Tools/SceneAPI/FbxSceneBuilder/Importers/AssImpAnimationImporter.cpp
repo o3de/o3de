@@ -463,13 +463,9 @@ namespace AZ
 
                 decltype(boneAnimations) parentFillerAnimations;
 
-                // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
+                // Go through all the animations and make sure we create placeholder animations for any bones missing them
                 for (auto&& anim : boneAnimations)
                 {
-                    //const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
-                    //const aiNode* parent = node->mParent;
-
-                    //while (parent && parent != scene->mRootNode)
                     for (auto boneName : boneList)
                     {
                         if (!IsPivotNode(aiString(boneName.c_str())))
@@ -502,8 +498,6 @@ namespace AZ
                                     AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                             }
                         }
-
-                        //parent = parent->mParent;
                     }
                 }
 

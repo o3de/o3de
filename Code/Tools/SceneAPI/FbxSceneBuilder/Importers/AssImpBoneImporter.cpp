@@ -97,7 +97,7 @@ namespace AZ
                     EnumChildren(scene, child, mainBoneList, boneLookup);
                 }
             }
-#pragma optimize("", off)
+
             Events::ProcessingResult AssImpBoneImporter::ImportBone(AssImpNodeEncounteredContext& context)
             {
                 AZ_TraceContext("Importer", "Bone");
@@ -111,12 +111,7 @@ namespace AZ
                 }
 
                 bool isBone = false;
-
-                //if (NodeParentIsOfType(context.m_scene.GetGraph(), context.m_currentGraphPosition, DataTypes::IBoneData::TYPEINFO_Uuid()))
-                //{
-                //    isBone = true;
-                //}
-                //else
+                
                 {
                     AZStd::unordered_map<AZStd::string, const aiNode*> mainBoneList;
                     AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
@@ -170,25 +165,14 @@ namespace AZ
                 {
                     createdBoneData = AZStd::make_shared<SceneData::GraphData::RootBoneData>();
                 }
-
-                // L_Lower_Eyelid_Jnt_01
-                if (context.m_sourceNode.GetName() == AZStd::string("L_Lower_Eyelid_Jnt_01"))
+                
+                aiMatrix4x4 transform{};
+                const aiNode* iteratingNode = currentNode;
+                
+                while (iteratingNode)
                 {
-                    //__debugbreak();
-                }
-
-                AZStd::vector<DataTypes::MatrixType> transforms;
-                aiMatrix4x4 transform = currentNode->mTransformation;
-                const aiNode* parent = currentNode->mParent;
-
-                auto addTrans = [&](auto mat) { transforms.push_back(AssImpSDKWrapper::AssImpTypeConverter::ToTransform(mat)); };
-                addTrans(transform);
-
-                while (parent)
-                {
-                    addTrans(parent->mTransformation);
-                    transform = parent->mTransformation * transform;
-                    parent = parent->mParent;
+                    transform = iteratingNode->mTransformation * transform;
+                    iteratingNode = iteratingNode->mParent;
                 }
                 
                 SceneAPI::DataTypes::MatrixType globalTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
