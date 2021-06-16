@@ -35,6 +35,9 @@
 
 namespace AWSCore
 {
+
+    static constexpr int IconSize = 16;
+
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
         : QMenu(text)
         , m_resourceMappingToolWatcher(nullptr)
@@ -228,7 +231,7 @@ namespace AWSCore
     void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
     {
         QSize size = menu->sizeHint();
-        size.setWidth(size.width() + m_sizeOfIcon);
+        size.setWidth(size.width() + IconSize);
         menu->setFixedSize(size);
     }
 } // namespace AWSCore

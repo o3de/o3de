@@ -508,8 +508,7 @@ namespace AzQtComponents
                             // First draw as standard to get the correct hover background for the complete control.
                             QProxyStyle::drawControl(element, option, painter, widget);
                             // Now draw the icon as non-hovered so control behaves as designed.
-                            const QStyleOptionMenuItem* opt = qstyleoption_cast<const QStyleOptionMenuItem*>(option);
-                            QStyleOptionMenuItem myOpt = *(const_cast<QStyleOptionMenuItem*>(opt));
+                            QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
                             myOpt.state &= ~QStyle::State_Selected;
                             return QProxyStyle::drawControl(element, &myOpt, painter, widget);
                         }

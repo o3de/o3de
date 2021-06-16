@@ -56,7 +56,5 @@ namespace AWSCore
 
         // To improve experience, use process watcher to keep track of ongoing tool process
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_resourceMappingToolWatcher;
-
-        const int m_sizeOfIcon = 16;
     };
 } // namespace AWSCore
