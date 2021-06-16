@@ -25,8 +25,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         : QGridLayout(parent)
     {
         // set margins and spacing for internal contents
-        // +20 to avoid overlapping with ImGui
-        setContentsMargins(ViewportUiOverlayMargin, ViewportUiOverlayMargin + 20, ViewportUiOverlayMargin, ViewportUiOverlayMargin);
+        setContentsMargins(
+            ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
+            ViewportUiOverlayMargin);
         setSpacing(ViewportUiDisplayLayoutSpacing);
 
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment
@@ -51,21 +52,39 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto layoutForAlignment = m_internalLayouts.find(alignment);
             layoutForAlignment != m_internalLayouts.end())
         {
-            // place the widget before the invisible spacer
-            // spacer must be last item in layout to not interfere with positioning
+            // place the widget before or after the invisible spacer
+            // depending on the layout alignment
             int index = 0;
             switch (alignment)
             {
             case Qt::AlignTop | Qt::AlignLeft:
-            case Qt::AlignBottom | Qt::AlignLeft:
             case Qt::AlignTop:
                 index = layoutForAlignment->second->count() - 1;
-                layoutForAlignment->second->insertWidget(index, widget);
                 break;
-            case Qt::AlignTop | Qt::AlignRight:
             case Qt::AlignBottom | Qt::AlignRight:
             case Qt::AlignBottom:
                 index = layoutForAlignment->second->count();
+                break;
+            // TopRight and BottomLeft are special cases
+            case Qt::AlignTop | Qt::AlignRight:
+                if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count() - 1;
+                }
+                else if (QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count();
+                }
+                break;
+            case Qt::AlignBottom | Qt::AlignLeft:
+                if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count();
+                }
+                else if (QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count() - 1;
+                }
                 break;
             }
             layoutForAlignment->second->insertWidget(index, widget);
