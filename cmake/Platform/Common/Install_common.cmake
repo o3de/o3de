@@ -43,20 +43,16 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
             if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
                 unset(current_public_headers)
 
-                set(relative_part "${target_source_dir}")
-                string(FIND ${include_directory} ${target_source_dir} substr_index REVERSE)
-                if(NOT substr_index EQUAL -1)
-                    string(SUBSTRING ${include_directory} ${substr_index} -1 relative_part)
-                    cmake_path(NORMAL_PATH relative_part)
-                    cmake_path(APPEND include_location "${relative_part}" ".." OUTPUT_VARIABLE destination_dir)
-                else()
-                    cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE rel_target_dir)
-                    cmake_path(APPEND include_location "${relative_part}" "${rel_target_dir}" ".." OUTPUT_VARIABLE destination_dir)
-                endif()
-
-                cmake_path(NORMAL_PATH destination_dir)
                 cmake_path(NORMAL_PATH include_directory)
-                string(REGEX REPLACE "/$" "" include_directory "${include_directory}")
+                cmake_path(IS_PREFIX absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} NORMALIZE include_directory_child_of_o3de_root)
+                if(NOT include_directory_child_of_o3de_root)
+                     message(FATAL_ERROR "Include directory of \"${include_directory}\" is outside of the O3DE root folder of \"${LY_ROOT_FOLDER}\". For the INSTALL step, the O3DE root folder must be a prefix of all include directories")
+                 endif()
+
+                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                 cmake_path(APPEND include_location "${rel_include_dir}" ".." OUTPUT_VARIABLE destination_dir)
+                 cmake_path(NORMAL_PATH destination_dir)
+                 cmake_path(GET destination_dir PARENT_PATH destination_dir)
 
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
