@@ -586,7 +586,7 @@ namespace AZ::Render
         {
             visualizerWindow = new ImGui::ImGuiFrameVisualizerWindow("Frame Visualizer", 1920, 1080);
         }
-        if (visualizerWindow && *draw)
+        if (visualizerWindow)
         {
             if(visualizerWindow->IsFrameNeedCaptured() && m_framesAttachments.size())
             {
