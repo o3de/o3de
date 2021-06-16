@@ -3764,6 +3764,12 @@ namespace ScriptCanvas
                 nextSlot = onceResetSlot;
             }
 
+            if (!nextSlot)
+            {
+                AddError(ID.m_node->GetEntityId(), once, "Once node missing next slot, likely needs replacement");
+                return;
+            }
+
             ParseExecutionTreeBody(nextParse, *nextSlot);
             nextParse->MarkDebugEmptyStatement();
         }

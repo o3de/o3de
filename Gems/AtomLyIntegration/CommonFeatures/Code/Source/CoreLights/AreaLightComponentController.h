@@ -92,6 +92,8 @@ namespace AZ
             void SetFilteringSampleCount(uint32_t count) override;
             PcfMethod GetPcfMethod() const override;
             void SetPcfMethod(PcfMethod method) override;
+            float GetEsmExponent() const override;
+            void SetEsmExponent(float exponent) override;
 
             void HandleDisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,
