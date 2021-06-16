@@ -52,7 +52,7 @@ namespace AZ
                     }
                 }
             }
-            else
+            else if (m_event->m_handle != nullptr)
             {
                 AZLOG_WARN("ScheduledEventHandle event pointer doesn't match to the pointer of handle to the event.");
             }
