@@ -300,7 +300,7 @@ void MainCS(
         // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
         minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
 
-        maskOpaque = DepthSamplesToBinMask2x(opaqueDepthSamples, minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);                        
+        maskOpaque = DepthSamplesToBinMask2x(opaqueDepthSamples, minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
     }
     // Note that Nvidia light culling sample uses the 4x code for 8x msaa, with a note that msaa is obviously very expensive and taking 4x samples should still be accurate enough 
     else if (o_msaaMode == MsaaMode::Msaa4x || o_msaaMode == MsaaMode::Msaa8x)
@@ -319,8 +319,26 @@ void MainCS(
         minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
 
         maskOpaque = DepthSamplesToBinMask4x(opaqueDepthSamples, minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
-    }   
+    }
+    else
+    {
+        float depth = PassSrg::m_depthBuffer.Load(uint3(dispatchThreadID.xy, 0)).x;
+        float2 opaqueDepthSamples = float2(depth, depth);
+
+        // Transparent geometry can't be behind opaque geometry. Just pick the first MSAA sample since we are trying to reduce reading from MSAA buffer
+        minmaxDepth_transparent = DEPTH_MIN(minmaxDepth_transparent, opaqueDepthSamples.x);
+        opaqueDepthSamples = ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects2x(opaqueDepthSamples, minmaxDepth_transparent);
+        float2 minmaxDepth_opaque = ComputeDepthMinMaxFrom2Samples(opaqueDepthSamples);
+        minmaxDepth_both = ExpandMinMax(minmaxDepth_opaque, minmaxDepth_transparent);
+        UpdateMinMaxFromAllThreads(minmaxDepth_both, minmaxDepth_transparent, isPixelOnScreen);
+        minmaxDepth_both = DepthBufferToViewSpace(minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+
+        // if zNear == zFar we want to map z == zNear to 0-bit, so we have to keep zNear without modifications
+        minmaxDepth_both.y = IncrementULP(minmaxDepth_both.y);
+
+        maskOpaque = DepthSamplesToBinMask2x(opaqueDepthSamples, minmaxDepth_both, PassSrg::m_constantData.m_unprojectZ);
+    }
     
     CombineOpaqueMaskWithAllThreads(maskOpaque);
-    WriteTileLightDataToMainMemory(groupIndex, groupID, minmaxDepth_both);   
+    WriteTileLightDataToMainMemory(groupIndex, groupID, minmaxDepth_both);
 }
