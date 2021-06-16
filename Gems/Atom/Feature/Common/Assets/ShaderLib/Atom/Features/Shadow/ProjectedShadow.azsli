@@ -246,7 +246,7 @@ float ProjectedShadow::GetVisibilityEsm()
         const float expDepthInShadowmap = expShadowmap.SampleLevel(
             PassSrg::LinearSampler, 
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
-            /*LOD*/=0).r;
+            /*LOD=*/0).r;
         const float ratio = exp(-EsmExponentialShift * depth) * expDepthInShadowmap;
         // pow() mitigates light bleeding to shadows from near shadow casters.
         return saturate( pow(ratio, 8) );
@@ -286,7 +286,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         const float expDepthInShadowmap = expShadowmap.SampleLevel(
             PassSrg::LinearSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
-            /*LOD*/=0).r;
+            /*LOD=*/0).r;
         float ratio = exp(-EsmExponentialShift * depth) * expDepthInShadowmap;
 
         static const float pcfFallbackThreshold = 1.04;
