@@ -29,11 +29,8 @@ namespace O3DE::ProjectManager
             if (!QDir(path).isEmpty())
             {
                 QMessageBox::StandardButton warningResult = QMessageBox::warning(
-                    parent,
-                    QObject::tr("Overwrite Directory"),
-                    QObject::tr("Directory is not empty! Are you sure you want to overwrite it?"),
-                    QMessageBox::No | QMessageBox::Yes
-                );
+                    parent, QObject::tr("Overwrite Directory"),
+                    QObject::tr("Directory is not empty! Are you sure you want to overwrite it?"), QMessageBox::No | QMessageBox::Yes);
 
                 if (warningResult != QMessageBox::Yes)
                 {
@@ -57,8 +54,7 @@ namespace O3DE::ProjectManager
                 }
 
                 descendent.cdUp();
-            }
-            while (!descendent.isRoot());
+            } while (!descendent.isRoot());
 
             return false;
         }
@@ -163,7 +159,7 @@ namespace O3DE::ProjectManager
             QDir projectDirectory(path);
             if (projectDirectory.exists())
             {
-                // Check if there is an actual project here or just force it
+                // Check if there is an actual project hereor just force it
                 if (force || PythonBindingsInterface::Get()->GetProject(path).IsSuccess())
                 {
                     return projectDirectory.removeRecursively();
@@ -173,12 +169,12 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent)
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool ignoreRegister)
         {
             origPath = QDir::toNativeSeparators(origPath);
             newPath = QDir::toNativeSeparators(newPath);
 
-            if (!WarnDirectoryOverwrite(newPath, parent) || !UnregisterProject(origPath))
+            if (!WarnDirectoryOverwrite(newPath, parent) || (!ignoreRegister && !UnregisterProject(origPath)))
             {
                 return false;
             }
@@ -188,6 +184,7 @@ namespace O3DE::ProjectManager
             {
                 return false;
             }
+            QDir workingDirectory(QDir::currentPath());
             if (!newDirectory.rename(origPath, newPath))
             {
                 // Likely failed because trying to move to another partition, try copying
@@ -199,7 +196,7 @@ namespace O3DE::ProjectManager
                 DeleteProjectFiles(origPath, true);
             }
 
-            if (!RegisterProject(newPath))
+            if (!ignoreRegister && !RegisterProject(newPath))
             {
                 return false;
             }

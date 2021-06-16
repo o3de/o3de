@@ -183,4 +183,9 @@ namespace O3DE::ProjectManager
         return qApp->exec();
     }
 
+    QSharedPointer<QMainWindow> Application::GetMainWindow()
+    {
+        return QSharedPointer(m_mainWindow);
+    }
+
 }
