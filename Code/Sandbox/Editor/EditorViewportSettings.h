@@ -30,6 +30,9 @@ namespace SandboxEditor
         virtual void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
     };
 
+    //! Create an instance of EditorViewportSettingsCallbacks
+    //! Note: EditorViewportSettingsCallbacks is implemented in EditorViewportSettings.cpp - a change
+    //! event will fire when a value in the settings registry (editorpreferences.setreg) is modified.
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
 
     SANDBOX_API bool GridSnappingEnabled();

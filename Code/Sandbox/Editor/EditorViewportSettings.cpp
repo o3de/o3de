@@ -63,7 +63,7 @@ namespace SandboxEditor
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
                 m_notifyEventHandler = registry->RegisterNotifier(
-                    [this](AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
+                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
                     {
                         if (path == GridSnappingSetting)
                         {
