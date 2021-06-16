@@ -57,7 +57,7 @@ namespace AZ
             LoadShader();
         }
 
-        void FullscreenTrianglePass::OnShaderVariantReinitialized(const Shader&, const ShaderVariantId&, ShaderVariantStableId)
+        void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
             LoadShader();
         }

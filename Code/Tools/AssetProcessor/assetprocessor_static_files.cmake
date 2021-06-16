@@ -19,6 +19,7 @@ set(FILES
     native/AssetManager/AssetRequestHandler.cpp
     native/AssetManager/AssetRequestHandler.h
     native/AssetManager/assetScanFolderInfo.h
+    native/AssetManager/assetScanFolderInfo.cpp
     native/AssetManager/assetScanner.cpp
     native/AssetManager/assetScanner.h
     native/AssetManager/assetScannerWorker.cpp

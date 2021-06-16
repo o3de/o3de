@@ -13,7 +13,7 @@ ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${P
 
 include(${pal_dir}/platform_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
-if(PAL_TRAIT_AZTESTRUNNER_SUPPORTED)
+if(PAL_TRAIT_AZTESTRUNNER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
     
     ly_add_target(
         NAME AzTestRunner ${PAL_TRAIT_AZTESTRUNNER_LAUNCHER_TYPE}

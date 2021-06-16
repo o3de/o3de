@@ -65,9 +65,13 @@ namespace AZ
             }
         }
 
-        void SkinnedMeshComputePass::OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId&, RPI::ShaderVariantStableId)
+        void SkinnedMeshComputePass::OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant)
         {
-            OnShaderReinitialized(shader);
+            ComputePass::OnShaderVariantReinitialized(shaderVariant);
+            if (m_skinnedMeshFeatureProcessor)
+            {
+                m_skinnedMeshFeatureProcessor->OnSkinningShaderReinitialized(m_shader);
+            }
         }
     }   // namespace Render
 }   // namespace AZ

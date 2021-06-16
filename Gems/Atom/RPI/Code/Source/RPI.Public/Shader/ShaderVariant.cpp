@@ -9,11 +9,13 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
 namespace AZ
@@ -21,13 +23,24 @@ namespace AZ
     namespace RPI
     {
         bool ShaderVariant::Init(
-            const ShaderAsset& shaderAsset,
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset)
-        {            
-            m_pipelineStateType = shaderAsset.GetPipelineStateType();
-            m_pipelineLayoutDescriptor = shaderAsset.GetPipelineLayoutDescriptor();
+            const Data::Asset<ShaderAsset>& shaderAsset,
+            const Data::Asset<ShaderVariantAsset>& shaderVariantAsset)
+        {
+            Data::AssetBus::MultiHandler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusConnect(shaderAsset.GetId());
+            Data::AssetBus::MultiHandler::BusConnect(shaderVariantAsset.GetId());
+
+            m_shaderAsset = shaderAsset;
+            m_pipelineStateType = shaderAsset->GetPipelineStateType();
+            m_pipelineLayoutDescriptor = shaderAsset->GetPipelineLayoutDescriptor();
             m_shaderVariantAsset = shaderVariantAsset;
+
             return true;
+        }
+
+        ShaderVariant::~ShaderVariant()
+        {
+            Data::AssetBus::MultiHandler::BusDisconnect();
         }
 
         void ShaderVariant::ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const
@@ -78,5 +91,25 @@ namespace AZ
         {
             return m_shaderVariantAsset->GetOutputContract();
         }
+        
+        void ShaderVariant::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderVariant::OnAssetReloaded %s", this, asset.GetHint().c_str());
+
+            if (asset.GetAs<ShaderVariantAsset>())
+            {
+                Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                Init(m_shaderAsset, shaderVariantAsset);
+                ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
+            }
+            
+            if (asset.GetAs<ShaderAsset>())
+            {
+                Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                Init(shaderAsset, m_shaderVariantAsset);
+                ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
+            }
+        }
+
     } // namespace RPI
 } // namespace AZ

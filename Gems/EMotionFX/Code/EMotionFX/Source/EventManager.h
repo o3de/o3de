@@ -286,15 +286,6 @@ namespace EMotionFX
          */
         void OnDeleteActor(Actor* actor);
 
-        /**
-         * The event that gets triggered once an ActorInstance object is being deleted.
-         * You could for example use this event to delete any allocations you have done inside the
-         * custom user data object linked with the ActorInstance object.
-         * You can get and set this data object with the ActorInstance::GetCustomData() and ActorInstance::SetCustomData(...) methods.
-         * @param actorInstance The actorInstance that is being deleted.
-         */
-        void OnDeleteActorInstance(ActorInstance* actorInstance);
-
         void OnSimulatePhysics(float timeDelta);
         void OnCustomEvent(uint32 eventType, void* data);
         void OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color);
@@ -343,7 +334,6 @@ namespace EMotionFX
         void OnCreateMotionInstance(MotionInstance* motionInstance);
         void OnCreateMotionSystem(MotionSystem* motionSystem);
         void OnCreateActor(Actor* actor);
-        void OnCreateActorInstance(ActorInstance* actorInstance);
         void OnPostCreateActor(Actor* actor);
 
         // delete callbacks
