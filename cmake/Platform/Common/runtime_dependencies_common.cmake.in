@@ -9,9 +9,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of "if(NOT ${same_location})"
+
 function(ly_copy source_file target_directory)
     get_filename_component(target_filename "${source_file}" NAME)
-    if(NOT "${source_file}" STREQUAL "${target_directory}/${target_filename}")
+    cmake_path(COMPARE "${source_file}" EQUAL "${target_directory}/${target_filename}" same_location)
+    if(NOT ${same_location})
         if(NOT EXISTS "${target_directory}")
             file(MAKE_DIRECTORY "${target_directory}")
         endif()

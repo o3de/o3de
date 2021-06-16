@@ -65,7 +65,8 @@ function(ly_copy source_file target_directory)
 
     endif()
 
-    if(NOT "${source_file}" STREQUAL "${target_directory}/${target_filename}")
+    cmake_path(COMPARE "${source_file}" EQUAL "${target_directory}/${target_filename}" same_location)
+    if(NOT ${same_location})
         if(NOT EXISTS "${target_directory}")
             file(MAKE_DIRECTORY "${target_directory}")
         endif()
