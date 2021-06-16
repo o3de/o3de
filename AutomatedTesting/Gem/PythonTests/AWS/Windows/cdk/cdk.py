@@ -57,7 +57,7 @@ class Cdk:
         self._session = session
 
         try:
-            cdk_version_cmd = ['cdk', 'version']
+            cdk_version_cmd = ['cdk', 'list']
 
             process_utils.check_call(
                 cdk_version_cmd,
@@ -65,7 +65,7 @@ class Cdk:
                 env=self._cdk_env,
                 shell=True)
         except subprocess.CalledProcessError as cdkVersionError:
-            logger.warning(f'Failed creating Bootstrap stack {BOOTSTRAP_STACK_NAME} not found. '
+            logger.warning(f'Found CDK version issue'
                            f'\nError:{cdkVersionError.stderr}')
 
             try:
