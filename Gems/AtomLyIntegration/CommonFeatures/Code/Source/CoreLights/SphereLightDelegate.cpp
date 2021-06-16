@@ -122,5 +122,14 @@ namespace AZ
             }
         }
 
+        void SphereLightDelegate::SetEsmExponent(float esmExponent)
+        {
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), esmExponent);
+            }
+        }
+
+
     } // namespace Render
 } // namespace AZ

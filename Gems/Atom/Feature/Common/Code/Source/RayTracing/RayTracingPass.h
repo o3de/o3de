@@ -53,7 +53,7 @@ namespace AZ
             // ShaderReloadNotificationBus::Handler overrides
             void OnShaderReinitialized(const RPI::Shader& shader) override;
             void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
-            void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
+            void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
             // load the raytracing shaders and setup pipeline states
             void Init();
