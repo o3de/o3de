@@ -57,15 +57,11 @@ namespace PhysX
             return;
         }
 
-        AZ::Transform parentLocal = PxMathConvert(leadFollowerInfo.m_leadLocal);
-        AZ::Transform childLocal = PxMathConvert(leadFollowerInfo.m_followerLocal);
-
         BallJointConfiguration configuration;
-
-        configuration.m_parentLocalPosition = parentLocal.GetTranslation();
-        configuration.m_parentLocalRotation = parentLocal.GetRotation();
-        configuration.m_childLocalPosition = childLocal.GetTranslation();
-        configuration.m_childLocalRotation = childLocal.GetRotation();
+        configuration.m_parentLocalPosition = leadFollowerInfo.m_leadLocal.GetTranslation();
+        configuration.m_parentLocalRotation = leadFollowerInfo.m_leadLocal.GetRotation();
+        configuration.m_childLocalPosition = leadFollowerInfo.m_followerLocal.GetTranslation();
+        configuration.m_childLocalRotation = leadFollowerInfo.m_followerLocal.GetRotation();
 
         configuration.m_genericProperties = m_genericProperties;
         configuration.m_limitProperties = m_limits;

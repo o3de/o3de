@@ -196,9 +196,9 @@ namespace PhysX
 
     JointLimitProperties EditorJointLimitConeConfig::ToGameTimeConfig() const
     {
-        return JointLimitProperties(m_standardLimitConfig.m_damping
-            , m_standardLimitConfig.m_isLimited
+        return JointLimitProperties(m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
+            , m_standardLimitConfig.m_damping
             , m_limitY
             , m_limitZ
             , m_standardLimitConfig.m_stiffness

@@ -49,6 +49,8 @@ namespace PhysX
 
     void JointComponent::Reflect(AZ::ReflectContext* context)
     {
+        JointComponentConfiguration::Reflect(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JointComponent, AZ::Component>()
@@ -99,18 +101,20 @@ namespace PhysX
         AZ::EntityBus::Handler::BusDisconnect();
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
-            auto* scene = physicsSystem->GetScene(m_jointSceneOwner);
-            scene->RemoveJoint(m_jointHandle);
+            if (auto* scene = physicsSystem->GetScene(m_jointSceneOwner))
+            {
+                scene->RemoveJoint(m_jointHandle);
+                m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
+            }
         }
     }
 
-    physx::PxTransform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor
-        , const physx::PxTransform& jointPose)
+    AZ::Transform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose)
     {
         if (!actor)
         {
             AZ_Error("JointComponent::GetJointLocalPose", false, "Can't get pose for invalid actor pointer.");
-            return physx::PxTransform();
+            return AZ::Transform::CreateIdentity();
         }
 
         PHYSX_SCENE_READ_LOCK(actor->getScene());
@@ -118,7 +122,7 @@ namespace PhysX
         physx::PxTransform actorTranslateInv(-actorPose.p);
         physx::PxTransform actorRotateInv(actorPose.q);
         actorRotateInv = actorRotateInv.getInverse();
-        return actorRotateInv * actorTranslateInv * jointPose;
+        return PxMathConvert(actorRotateInv * actorTranslateInv) * jointPose;
     }
 
     AZ::Transform JointComponent::GetJointTransform(AZ::EntityId entityId
@@ -170,16 +174,15 @@ namespace PhysX
 
         const AZ::Transform jointTransform = GetJointTransform(GetEntityId(), m_configuration);
 
-        physx::PxTransform jointPose = PxMathConvert(jointTransform);
         if (info.m_leadActor)
         {
-            info.m_leadLocal = GetJointLocalPose(info.m_leadActor, jointPose); // joint position & orientation in lead actor's frame.
+            info.m_leadLocal = GetJointLocalPose(info.m_leadActor, jointTransform); // joint position & orientation in lead actor's frame.
         }
         else
         {
-            info.m_leadLocal = jointPose; // lead is null, attaching follower to global position of joint.
+            info.m_leadLocal = jointTransform; // lead is null, attaching follower to global position of joint.
         }
-        info.m_followerLocal = PxMathConvert(m_configuration.m_localTransformFromFollower);// joint position & orientation in follower actor's frame.
+        info.m_followerLocal = m_configuration.m_localTransformFromFollower;// joint position & orientation in follower actor's frame.
     }
 
     void JointComponent::WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message)

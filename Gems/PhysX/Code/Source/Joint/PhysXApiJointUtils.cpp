@@ -30,15 +30,11 @@ namespace PhysX {
             static PxJointActorData InvalidPxJointActorData;
 
             physx::PxRigidActor* parentActor = nullptr;
-            physx::PxTransform parentLocalTransform;
-            
             physx::PxRigidActor* childActor = nullptr;
-            physx::PxTransform childLocalTransform;
         };
         PxJointActorData PxJointActorData::InvalidPxJointActorData;
 
-        PxJointActorData CalculateActorData(
-            const AzPhysics::JointConfiguration& configuration,
+        PxJointActorData GetJointPxActors(
             AzPhysics::SceneHandle sceneHandle,
             AzPhysics::SimulatedBodyHandle parentBodyHandle,
             AzPhysics::SimulatedBodyHandle childBodyHandle)
@@ -61,18 +57,9 @@ namespace PhysX {
                 return PxJointActorData::InvalidPxJointActorData;
             }
 
-            const physx::PxTransform parentWorldTransform = parentActor ? parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
-            const physx::PxTransform childWorldTransform = childActor ? childActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
-            const physx::PxVec3 childOffset = childWorldTransform.p - parentWorldTransform.p;
-            physx::PxTransform parentLocalTransform(PxMathConvert(configuration.m_parentLocalRotation).getNormalized());
-            const physx::PxTransform childLocalTransform(PxMathConvert(configuration.m_childLocalRotation).getNormalized());
-            parentLocalTransform.p = parentWorldTransform.q.rotateInv(childOffset);
-
             return PxJointActorData{
                 parentActor,
-                parentLocalTransform,
-                childActor,
-                childLocalTransform
+                childActor
             };
         }
 
@@ -205,16 +192,24 @@ namespace PhysX {
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
             {
-                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+                PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
                 if (!actorData.parentActor || !actorData.childActor)
                 {
                     return nullptr;
                 }
 
+                const physx::PxTransform parentWorldTransform =
+                    actorData.parentActor ? actorData.parentActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
+                const physx::PxTransform childWorldTransform =
+                    actorData.childActor ? actorData.childActor->getGlobalPose() : physx::PxTransform(physx::PxIdentity);
+                const physx::PxVec3 childOffset = childWorldTransform.p - parentWorldTransform.p;
+                physx::PxTransform parentLocalTransform(PxMathConvert(configuration.m_parentLocalRotation).getNormalized());
+                const physx::PxTransform childLocalTransform(PxMathConvert(configuration.m_childLocalRotation).getNormalized());
+                parentLocalTransform.p = parentWorldTransform.q.rotateInv(childOffset);
+
                 physx::PxD6Joint* joint = PxD6JointCreate(PxGetPhysics(), 
-                    actorData.parentActor, actorData.parentLocalTransform,
-                    actorData.childActor, actorData.childLocalTransform);
+                    actorData.parentActor, parentLocalTransform, actorData.childActor, childLocalTransform);
 
                 joint->setMotion(physx::PxD6Axis::eTWIST, physx::PxD6Motion::eLIMITED);
                 joint->setMotion(physx::PxD6Axis::eSWING1, physx::PxD6Motion::eLIMITED);
@@ -246,7 +241,7 @@ namespace PhysX {
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
             {
-                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+                PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
                 if (!actorData.parentActor || !actorData.childActor)
                 {
@@ -254,12 +249,16 @@ namespace PhysX {
                 }
 
                 physx::PxFixedJoint* joint;
+                const AZ::Transform parentLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    configuration.m_parentLocalRotation, configuration.m_parentLocalPosition);
+                const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    configuration.m_childLocalRotation, configuration.m_childLocalPosition);
 
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
                     joint = physx::PxFixedJointCreate(PxGetPhysics(), 
-                        actorData.parentActor, actorData.parentLocalTransform,
-                        actorData.childActor, actorData.childLocalTransform);
+                        actorData.parentActor, PxMathConvert(parentLocalTM),
+                        actorData.childActor, PxMathConvert(childLocalTM));
                 }
 
                 InitializeGenericProperties(
@@ -275,7 +274,7 @@ namespace PhysX {
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
             {
-                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+                PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
                 if (!actorData.parentActor || !actorData.childActor)
                 {
@@ -283,12 +282,16 @@ namespace PhysX {
                 }
 
                 physx::PxSphericalJoint* joint;
+                const AZ::Transform parentLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    configuration.m_parentLocalRotation, configuration.m_parentLocalPosition);
+                const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    configuration.m_childLocalRotation, configuration.m_childLocalPosition);
 
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
                     joint = physx::PxSphericalJointCreate(PxGetPhysics(), 
-                        actorData.parentActor, actorData.parentLocalTransform,
-                        actorData.childActor, actorData.childLocalTransform);
+                        actorData.parentActor, PxMathConvert(parentLocalTM),
+                        actorData.childActor, PxMathConvert(childLocalTM));
                 }
 
                 InitializeSphericalLimitProperties(configuration.m_limitProperties, joint);
@@ -305,7 +308,7 @@ namespace PhysX {
                 AzPhysics::SimulatedBodyHandle parentBodyHandle,
                 AzPhysics::SimulatedBodyHandle childBodyHandle) 
             {
-                PxJointActorData actorData = CalculateActorData(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+                PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
                 if (!actorData.parentActor || !actorData.childActor)
                 {
@@ -313,12 +316,16 @@ namespace PhysX {
                 }
 
                 physx::PxRevoluteJoint* joint;
+                const AZ::Transform parentLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    configuration.m_parentLocalRotation, configuration.m_parentLocalPosition);
+                const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    configuration.m_childLocalRotation, configuration.m_childLocalPosition);
 
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
                     joint = physx::PxRevoluteJointCreate(PxGetPhysics(), 
-                        actorData.parentActor, actorData.parentLocalTransform,
-                        actorData.childActor, actorData.childLocalTransform);
+                        actorData.parentActor, PxMathConvert(parentLocalTM),
+                        actorData.childActor, PxMathConvert(childLocalTM));
                 }
 
                 InitializeRevoluteLimitProperties(configuration.m_limitProperties, joint);

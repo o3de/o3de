@@ -69,8 +69,8 @@ namespace PhysX
         {
             physx::PxRigidActor* m_leadActor = nullptr;
             physx::PxRigidActor* m_followerActor = nullptr;
-            physx::PxTransform m_leadLocal = physx::PxTransform(physx::PxIdentity);
-            physx::PxTransform m_followerLocal = physx::PxTransform(physx::PxIdentity);
+            AZ::Transform m_leadLocal = AZ::Transform::CreateIdentity();
+            AZ::Transform m_followerLocal = AZ::Transform::CreateIdentity();
             AzPhysics::SimulatedBody* m_leadBody = nullptr;
             AzPhysics::SimulatedBody* m_followerBody = nullptr;
         };
@@ -85,8 +85,7 @@ namespace PhysX
         /// Invoked in JointComponent::OnEntityActivated for specific joint types to instantiate native joint pointer.
         virtual void InitNativeJoint() {};
 
-        physx::PxTransform GetJointLocalPose(const physx::PxRigidActor* actor,
-            const physx::PxTransform& jointPose);
+        AZ::Transform GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose);
 
         AZ::Transform GetJointTransform(AZ::EntityId entityId,
             const JointComponentConfiguration& jointConfig);
