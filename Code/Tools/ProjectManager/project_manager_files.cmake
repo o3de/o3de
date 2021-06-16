@@ -11,9 +11,6 @@
 #
 
 set(FILES
-    Resources/ProjectManager.rc
-    Resources/ProjectManager.qrc
-    Resources/ProjectManager.qss
     Source/main.cpp
     Source/Application.h
     Source/Application.cpp
