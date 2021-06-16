@@ -65,6 +65,7 @@ namespace AZ
         MaterialTypeAsset::~MaterialTypeAsset()
         {
             Data::AssetBus::MultiHandler::BusDisconnect();
+            AssetInitBus::Handler::BusDisconnect();
         }
 
         const ShaderCollection& MaterialTypeAsset::GetShaderCollection() const
@@ -116,6 +117,8 @@ namespace AZ
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
 
+            AssetInitBus::Handler::BusDisconnect();
+
             return true;
         }
 
@@ -127,11 +130,9 @@ namespace AZ
                 assetToReplace = newAsset;
             }
         }
-
-        void MaterialTypeAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        
+        void MaterialTypeAsset::ReinitializeAsset(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialTypeAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
-
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
@@ -146,16 +147,31 @@ namespace AZ
             MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialTypeAssetReinitialized, Data::Asset<MaterialTypeAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
         }
 
+        void MaterialTypeAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialTypeAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
+            ReinitializeAsset(asset);
+        }
+        
+        void MaterialTypeAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            // Regarding why we listen to both OnAssetReloaded and OnAssetReady, see explanation in ShaderAsset::OnAssetReady.
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialTypeAsset::OnAssetReady %s", this, asset.GetHint().c_str());
+            ReinitializeAsset(asset);
+        }
+
         AZ::Data::AssetHandler::LoadResult MaterialTypeAssetHandler::LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
-            Data::AssetHandler::LoadResult baseResult = Base::LoadAssetData(asset, stream, assetLoadFilterCB);
-            bool postLoadResult = asset.GetAs<MaterialTypeAsset>()->PostLoadInit();
-            return ((baseResult == Data::AssetHandler::LoadResult::LoadComplete) && postLoadResult) ?
-                Data::AssetHandler::LoadResult::LoadComplete :
-                Data::AssetHandler::LoadResult::Error;
+            if (Base::LoadAssetData(asset, stream, assetLoadFilterCB) == Data::AssetHandler::LoadResult::LoadComplete)
+            {
+                asset.GetAs<MaterialTypeAsset>()->AssetInitBus::Handler::BusConnect();
+                return Data::AssetHandler::LoadResult::LoadComplete;
+            }
+
+            return Data::AssetHandler::LoadResult::Error;
         }
 
     }

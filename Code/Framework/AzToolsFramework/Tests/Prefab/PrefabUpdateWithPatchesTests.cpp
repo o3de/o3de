@@ -93,7 +93,7 @@ namespace UnitTest
 
         // Retrieve the entity pointer from the component application bus.
         AZ::Entity* wheelEntityUnderAxle = nullptr;
-        axleInstance->GetNestedEntities([&wheelEntityUnderAxle, wheelEntityIdUnderAxle](AZStd::unique_ptr<AZ::Entity>& entity)
+        axleInstance->GetAllEntitiesInHierarchy([&wheelEntityUnderAxle, wheelEntityIdUnderAxle](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 if (entity->GetId() == wheelEntityIdUnderAxle)
                 {

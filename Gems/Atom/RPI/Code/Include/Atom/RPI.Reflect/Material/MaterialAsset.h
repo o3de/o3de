@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AtomCore/std/containers/array_view.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
@@ -38,6 +39,7 @@ namespace AZ
             : public AZ::Data::AssetData
             , public Data::AssetBus::Handler
             , public MaterialReloadNotificationBus::Handler
+            , public AssetInitBus::Handler
         {
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
@@ -90,13 +92,17 @@ namespace AZ
             AZStd::array_view<MaterialPropertyValue> GetPropertyValues() const;
 
         private:
-            bool PostLoadInit();
+            bool PostLoadInit() override;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+
+            //! Replaces the MaterialTypeAsset when a reload occurs
+            void ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset);
 
             // MaterialReloadNotificationBus overrides...
             void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;

@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Include/Atom/RPI.Public/AssetInitBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/Culling.h
     Include/Atom/RPI.Public/FeatureProcessor.h

@@ -49,7 +49,7 @@ class TestViewMenuOptions(EditorTestHelper):
         view_menu_options = [
             ("Center on Selection",),
             ("Show Quick Access Bar",),
-            ("Viewport", "Wireframe"),
+            ("Viewport", "Configure Layout"),
             ("Viewport", "Go to Position"),
             ("Viewport", "Center on Selection"),
             ("Viewport", "Go to Location"),

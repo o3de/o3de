@@ -120,15 +120,10 @@ namespace AZ
             ResourceBindingsMap m_resourceBindings;
             
             static const int MaxEntriesInArgTable = 31;
-            struct MetalResourceArray
-            {
-                AZStd::array<id <MTLResource>, MaxEntriesInArgTable> m_resourceArray;
-                uint16_t m_resourceArrayLen = 0;
-            };
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
-            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, MetalResourceArray>;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
-            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, MetalResourceArray>;
+            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
+            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
+            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
+            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
             
             void CollectResourcesForCompute(id<MTLCommandEncoder> encoder,
                                             const ResourceBindingsSet& resourceBindingData,
