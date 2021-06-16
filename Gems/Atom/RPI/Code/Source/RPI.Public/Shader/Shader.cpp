@@ -21,7 +21,6 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Interface/Interface.h>
-#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 namespace AZ
@@ -55,8 +54,9 @@ namespace AZ
 
         RHI::ResultCode Shader::Init(ShaderAsset& shaderAsset)
         {
+            Data::AssetBus::Handler::BusDisconnect();
+            ShaderReloadNotificationBus::Handler::BusDisconnect();
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
-            ShaderVariantFinderNotificationBus::Handler::BusConnect(shaderAsset.GetId());
 
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
             RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
@@ -100,8 +100,10 @@ namespace AZ
                     AZ_Error("Shader", false, "Failed to acquire a DrawListTag. Entries are full.");
                 }
             }
-
+            
+            ShaderVariantFinderNotificationBus::Handler::BusConnect(m_asset.GetId());
             Data::AssetBus::Handler::BusConnect(m_asset.GetId());
+            ShaderReloadNotificationBus::Handler::BusConnect(m_asset.GetId());
 
             return RHI::ResultCode::Success;
         }
@@ -110,6 +112,7 @@ namespace AZ
         {
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
+            ShaderReloadNotificationBus::Handler::BusDisconnect();
 
             if (m_pipelineLibraryHandle.IsValid())
             {
@@ -139,7 +142,6 @@ namespace AZ
                 Data::Asset<ShaderAsset> newAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
                 AZ_Assert(newAsset, "Reloaded ShaderAsset is null");
 
-                Data::AssetBus::Handler::BusDisconnect();
                 Init(*newAsset.Get());
                 ShaderReloadNotificationBus::Event(asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
             }
@@ -195,6 +197,19 @@ namespace AZ
             ShaderReloadNotificationBus::Event(m_asset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this, shaderVariantId, stableId);
         }
         ///////////////////////////////////////////////////////////////////
+
+
+        ///////////////////////////////////////////////////////////////////
+        // ShaderReloadNotificationBus overrides...
+        void Shader::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
+            
+            Init(*m_asset.Get());
+            ShaderReloadNotificationBus::Event(shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
+        }
+        ///////////////////////////////////////////////////////////////////
+
 
         ConstPtr<RHI::PipelineLibraryData> Shader::LoadPipelineLibrary() const
         {

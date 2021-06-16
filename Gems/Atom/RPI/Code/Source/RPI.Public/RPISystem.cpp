@@ -23,6 +23,7 @@
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -239,6 +240,8 @@ namespace AZ
                 return;
             }
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: SimulationTick");
+
+            AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
             // Update tick time info
             FillTickTimeInfo();

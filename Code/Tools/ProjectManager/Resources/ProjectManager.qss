@@ -7,6 +7,11 @@ QMainWindow {
     margin:0;
 }
 
+#ScreensCtrl {
+    min-width:1200px;
+    min-height:800px;
+}
+
 QPushButton:focus {
     outline: none;
     border:1px solid #1e70eb;

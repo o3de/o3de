@@ -226,12 +226,17 @@ namespace O3DE::ProjectManager
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
         : m_enginePath(enginePath)
     {
-        StartPython();
+        m_pythonStarted = StartPython();
     }
 
     PythonBindings::~PythonBindings()
     {
         StopPython();
+    }
+
+    bool PythonBindings::PythonStarted()
+    {
+        return m_pythonStarted && Py_IsInitialized();
     }
 
     bool PythonBindings::StartPython()
@@ -246,7 +251,7 @@ namespace O3DE::ProjectManager
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
         if (!AZ::IO::SystemFile::Exists(pyBasePath.c_str()))
         {
-            AZ_Assert(false, "Python home path must exist. path:%s", pyBasePath.c_str());
+            AZ_Error("python", false, "Python home path does not exist: %s", pyBasePath.c_str());
             return false;
         }
 
@@ -351,6 +356,11 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<void, AZStd::string> PythonBindings::ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback)
     {
+        if (!Py_IsInitialized())
+        {
+            return AZ::Failure<AZStd::string>("Python is not initialized");
+        }
+
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
         pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;

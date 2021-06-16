@@ -24,9 +24,9 @@
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
-                        "MipLevels": "8",
                         "SharedQueueMask": "Graphics"
-                    }
+                    },
+                    "GenerateFullMipChain": true
                 }
             ],
             "Connections": [
