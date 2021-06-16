@@ -53,6 +53,7 @@ public:
 
     QString GetLevel() const;
     void IsResize(bool bIsResize);
+    bool ValidateLevel();
 
 protected:
     void UpdateData(bool fromUi = true);
@@ -62,15 +63,12 @@ protected:
 
     void showEvent(QShowEvent* event);
 
-    bool ValidateLevel();
-
     QString GetLevelsFolder() const;
 
 protected slots:
     void OnLevelNameChange();
     void OnClearButtonClicked();
     void PopupAssetPicker();
-    void buttonClicked(QAbstractButton* button);
     void onStartup();
 
 public:

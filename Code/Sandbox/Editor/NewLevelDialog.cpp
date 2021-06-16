@@ -33,6 +33,27 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 // Folder in which levels are stored
 static const char kNewLevelDialog_LevelsFolder[] = "Levels";
 
+class LevelFolderValidator : public QValidator
+{
+public:
+    LevelFolderValidator(QObject* parent)
+        : QValidator(parent)
+    {
+        m_parentDialog = qobject_cast<CNewLevelDialog*>(parent);
+    }
+
+    QValidator::State validate([[maybe_unused]] QString& input, [[maybe_unused]] int& pos) const override
+    {
+        if (m_parentDialog->ValidateLevel())
+            return QValidator::Acceptable;
+
+        return QValidator::Intermediate;
+    }
+
+private:
+    CNewLevelDialog* m_parentDialog;
+};
+
 // CNewLevelDialog dialog
 
 CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
@@ -60,6 +81,13 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
     QValidator* validator = new QRegExpValidator(rx, this);
     ui->LEVEL->setValidator(validator);
 
+    validator = new LevelFolderValidator(this);
+    ui->LEVEL_FOLDERS->lineEdit()->setValidator(validator);
+    ui->LEVEL_FOLDERS->setErrorToolTip(
+        QString("The location must be a folder underneath the current project's %1 folder. (%2)")
+            .arg(kNewLevelDialog_LevelsFolder)
+            .arg(GetLevelsFolder()));
+
     ui->LEVEL_FOLDERS->setClearButtonEnabled(true);
     QToolButton* clearButton = AzQtComponents::LineEdit::getClearButton(ui->LEVEL_FOLDERS->lineEdit());
     assert(clearButton);
@@ -69,9 +97,6 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
     connect(ui->LEVEL_FOLDERS, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &CNewLevelDialog::PopupAssetPicker);
 
     connect(ui->LEVEL, &QLineEdit::textChanged, this, &CNewLevelDialog::OnLevelNameChange);
-
-    disconnect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-    connect( ui->buttonBox, SIGNAL(clicked(QAbstractButton*)),this, SLOT(buttonClicked(QAbstractButton*)));
 
     m_levelFolders = GetLevelsFolder();
     m_level = "";
@@ -86,33 +111,6 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
 
 CNewLevelDialog::~CNewLevelDialog()
 {
-}
-
-void CNewLevelDialog::buttonClicked(QAbstractButton* button)
-{
-    QDialogButtonBox::StandardButton stdButton = ui->buttonBox->standardButton(button);
-    switch (stdButton)
-    {
-    case QDialogButtonBox::Ok:
-        if (!ValidateLevel())
-        {
-            QDir projectDir = QDir(Path::GetEditingGameDataFolder().c_str());
-            QMessageBox::warning(this,
-            QStringLiteral("Error creating level."),
-                QString("The level must be created in a subdirectory of the %1 folder in the current project. (%2/%3)")
-                    .arg(kNewLevelDialog_LevelsFolder)
-                    .arg(projectDir.absolutePath())
-                    .arg(kNewLevelDialog_LevelsFolder),
-            QMessageBox::Ok);
-        }
-        else
-        {
-            done(Accepted);
-        }
-        break;
-    default:
-        break;
-    }
 }
 
 void CNewLevelDialog::onStartup()
@@ -189,15 +187,10 @@ bool CNewLevelDialog::ValidateLevel()
 {
     // Check that the selected folder is in or below the project/LEVELS folder.
     QDir projectLevelsDir = QDir(GetLevelsFolder());
+
     QString selectedFolder = ui->LEVEL_FOLDERS->text();
     QString absolutePath = QDir::cleanPath(projectLevelsDir.absoluteFilePath(selectedFolder));
-
-    if (absolutePath == GetLevelsFolder())
-    {
-        return true;
-    }
-
-    QString relativePath = projectLevelsDir.relativeFilePath(selectedFolder);
+    QString relativePath = projectLevelsDir.relativeFilePath(absolutePath);
 
     if (relativePath.startsWith(".."))
     {
@@ -212,7 +205,7 @@ void CNewLevelDialog::OnLevelNameChange()
     UpdateData(true);
 
     // QRegExpValidator means the string will always be valid as long as it's not empty:
-    const bool valid = !m_level.isEmpty();
+    const bool valid = !m_level.isEmpty() && ValidateLevel();
 
     // Use the validity to dynamically change the Ok button's enabled state
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))
