@@ -96,6 +96,11 @@ namespace MaterialEditor
         void SaveSettings() override;
         //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
+        // AZ::Debug::TraceMessageBus::Handler overrides...
+        bool OnOutput(const char* window, const char* message) override;
+        //////////////////////////////////////////////////////////////////////////      
+
         void CompileCriticalAssets();
 
         void ProcessCommandLine(const AZ::CommandLine& commandLine);
