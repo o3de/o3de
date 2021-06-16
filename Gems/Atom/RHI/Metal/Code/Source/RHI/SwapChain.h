@@ -49,6 +49,8 @@ namespace AZ
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             //////////////////////////////////////////////////////////////////////////
             
+            void AddSubView();
+            
             id <MTLCommandBuffer>   m_mtlCommandBuffer;
             RHIMetalView* m_metalView = nullptr;
             NativeViewControllerType* m_viewController = nullptr;

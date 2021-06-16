@@ -37,6 +37,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
+
+    // the max roughness mip level for sampling the previous frame image
+    uint m_maxMipLevel;
 }
 
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
@@ -69,10 +72,6 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float4 positionWS = mul(ViewSrg::m_viewProjectionInverseMatrix, projectedPos);
     positionWS /= positionWS.w;
 
-    //float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
-    //positionVS /= positionVS.w;
-    //float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
-
     // compute ray from camera to surface position
     float3 cameraToPositionWS = normalize(positionWS.xyz - ViewSrg::m_worldPosition);
 
@@ -103,8 +102,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     // compute the roughness mip to use in the previous frame image
     // remap the roughness mip into a lower range to more closely match the material roughness values
     const float MaxRoughness = 0.5f;
-    const float MaxRoughnessMip = 7;
-    float mip = saturate(roughness / MaxRoughness) * MaxRoughnessMip;
+    float mip = saturate(roughness / MaxRoughness) * PassSrg::m_maxMipLevel;
     
     // sample reflection value from the roughness mip
     float4 reflectionColor = float4(PassSrg::m_previousFrame.SampleLevel(PassSrg::LinearSampler, tracePrevUV, mip).rgb, 1.0f);  

@@ -9,8 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-cmake_minimum_required(VERSION 3.0)
-
 ly_add_target(
     NAME AzAutoGen HEADERONLY
     NAMESPACE AZ

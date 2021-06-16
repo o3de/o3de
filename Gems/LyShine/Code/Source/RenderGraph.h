@@ -22,11 +22,10 @@
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
 
+#include "UiRenderer.h"
 #ifndef _RELEASE
 #include "LyShineDebug.h"
 #endif
-
-class UiRenderer;
 
 namespace LyShine
 {
@@ -157,8 +156,8 @@ namespace LyShine
 #endif
 
     private: // functions
-        void SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, int priorBaseState);
-        void SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, int priorBaseState);
+        void SetupBeforeRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState);
+        void SetupAfterRenderingMask(UiRenderer* uiRenderer, bool firstPass, UiRenderer::BaseState priorBaseState);
 
     private: // data
         AZStd::vector<RenderNode*>  m_maskRenderNodes;      //!< The render nodes used to render the mask shape
