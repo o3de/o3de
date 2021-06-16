@@ -19,8 +19,6 @@ namespace AWSGameLift
 {
     void AWSGameLiftCreateSessionRequest::Reflect(AZ::ReflectContext* context)
     {
-        AzFramework::CreateSessionRequest::Reflect(context);
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<AWSGameLiftCreateSessionRequest, AzFramework::CreateSessionRequest>()
@@ -50,11 +48,6 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<AzFramework::CreateSessionRequest>("CreateSessionRequest")
-                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
-                // Expose base type to BehaviorContext, but hide it to be used directly
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ;
             behaviorContext->Class<AWSGameLiftCreateSessionRequest>("AWSGameLiftCreateSessionRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("CreatorId", BehaviorValueProperty(&AWSGameLiftCreateSessionRequest::m_creatorId))

@@ -11,6 +11,7 @@
 
 set(FILES
     Tests/Activity/AWSGameLiftCreateSessionActivityTest.cpp
+    Tests/Activity/AWSGameLiftCreateSessionOnQueueActivityTest.cpp
     Tests/Activity/AWSGameLiftJoinSessionActivityTest.cpp
     Tests/Activity/AWSGameLiftSearchSessionsActivityTest.cpp
     Tests/AWSGameLiftClientFixture.h

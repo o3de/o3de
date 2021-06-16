@@ -16,6 +16,7 @@
 
 #include <AWSGameLiftClientManager.h>
 #include <AWSGameLiftClientSystemComponent.h>
+#include <Request/AWSGameLiftCreateSessionOnQueueRequest.h>
 #include <Request/AWSGameLiftCreateSessionRequest.h>
 #include <Request/AWSGameLiftJoinSessionRequest.h>
 #include <Request/AWSGameLiftSearchSessionsRequest.h>
@@ -31,6 +32,8 @@ namespace AWSGameLift
 
     void AWSGameLiftClientSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ReflectCreateSessionRequest(context);
+        AWSGameLiftCreateSessionOnQueueRequest::Reflect(context);
         AWSGameLiftCreateSessionRequest::Reflect(context);
         AWSGameLiftJoinSessionRequest::Reflect(context);
         AWSGameLiftSearchSessionsRequest::Reflect(context);
@@ -58,14 +61,21 @@ namespace AWSGameLift
         {
             behaviorContext->EBus<AWSGameLiftRequestBus>("AWSGameLiftRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Event("ConfigureGameLiftClient", &AWSGameLiftRequestBus::Events::ConfigureGameLiftClient)
-                ->Event("CreatePlayerId", &AWSGameLiftRequestBus::Events::CreatePlayerId)
+                ->Event("ConfigureGameLiftClient", &AWSGameLiftRequestBus::Events::ConfigureGameLiftClient,
+                    {{{"Region", ""}}})
+                ->Event("CreatePlayerId", &AWSGameLiftRequestBus::Events::CreatePlayerId,
+                    {{{"IncludeBrackets", ""},
+                      {"IncludeDashes", ""}}})
                 ;
             behaviorContext->EBus<AWSGameLiftSessionAsyncRequestBus>("AWSGameLiftSessionAsyncRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Event("CreateSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::CreateSessionAsync)
-                ->Event("JoinSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::JoinSessionAsync)
-                ->Event("SearchSessionsAsync", &AWSGameLiftSessionAsyncRequestBus::Events::SearchSessionsAsync)
+                ->Event("CreateSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::CreateSessionAsync,
+                    {{{"CreateSessionRequest", ""}}})
+                ->Event("JoinSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::JoinSessionAsync,
+                    {{{"JoinSessionRequest", ""}}})
+                ->Event("SearchSessionsAsync", &AWSGameLiftSessionAsyncRequestBus::Events::SearchSessionsAsync,
+                    {{{"SearchSessionsRequest", ""}}})
+                ->Event("LeaveSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::LeaveSessionAsync)
                 ;
             behaviorContext
                 ->EBus<AzFramework::SessionAsyncRequestNotificationBus>("AWSGameLiftSessionAsyncRequestNotificationBus")
@@ -74,9 +84,13 @@ namespace AWSGameLift
                 ;
             behaviorContext->EBus<AWSGameLiftSessionRequestBus>("AWSGameLiftSessionRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Event("CreateSession", &AWSGameLiftSessionRequestBus::Events::CreateSession)
-                ->Event("JoinSession", &AWSGameLiftSessionRequestBus::Events::JoinSession)
-                ->Event("SearchSessions", &AWSGameLiftSessionRequestBus::Events::SearchSessions)
+                ->Event("CreateSession", &AWSGameLiftSessionRequestBus::Events::CreateSession,
+                    {{{"CreateSessionRequest", ""}}})
+                ->Event("JoinSession", &AWSGameLiftSessionRequestBus::Events::JoinSession,
+                    {{{"JoinSessionRequest", ""}}})
+                ->Event("SearchSessions", &AWSGameLiftSessionRequestBus::Events::SearchSessions,
+                    {{{"SearchSessionsRequest", ""}}})
+                ->Event("LeaveSession", &AWSGameLiftSessionRequestBus::Events::LeaveSession)
                 ;
         }
     }
@@ -113,6 +127,19 @@ namespace AWSGameLift
     void AWSGameLiftClientSystemComponent::Deactivate()
     {
         m_gameliftClientManager->DeactivateManager();
+    }
+
+    void AWSGameLiftClientSystemComponent::ReflectCreateSessionRequest(AZ::ReflectContext* context)
+    {
+        AzFramework::CreateSessionRequest::Reflect(context);
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<AzFramework::CreateSessionRequest>("CreateSessionRequest")
+                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
+                // Expose base type to BehaviorContext, but hide it to be used directly
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ;
+        }
     }
 
     void AWSGameLiftClientSystemComponent::SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftClientManager)

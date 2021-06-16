@@ -63,18 +63,8 @@ namespace AWSGameLift
         {
             auto gameliftCreateSessionRequest = azrtti_cast<const AWSGameLiftCreateSessionRequest*>(&createSessionRequest);
 
-            if (gameliftCreateSessionRequest &&
-                gameliftCreateSessionRequest->m_maxPlayer >= 0 &&
-                (!gameliftCreateSessionRequest->m_aliasId.empty() || !gameliftCreateSessionRequest->m_fleetId.empty()))
-            {
-                return true;
-            }
-            else
-            {
-                AZ_Error(AWSGameLiftCreateSessionActivityName, false, AWSGameLiftCreateSessionRequestInvalidErrorMessage);
-
-                return false;
-            }
+            return gameliftCreateSessionRequest && gameliftCreateSessionRequest->m_maxPlayer >= 0 &&
+                (!gameliftCreateSessionRequest->m_aliasId.empty() || !gameliftCreateSessionRequest->m_fleetId.empty());
         }
     } // namespace CreateSessionActivity
 } // namespace AWSGameLift

@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-
 #include <Request/AWSGameLiftSearchSessionsRequest.h>
 
 #include <aws/core/utils/Outcome.h>

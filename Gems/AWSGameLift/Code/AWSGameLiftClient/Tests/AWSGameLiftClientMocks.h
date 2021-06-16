@@ -27,6 +27,8 @@
 #include <aws/gamelift/model/CreatePlayerSessionResult.h>
 #include <aws/gamelift/model/SearchGameSessionsRequest.h>
 #include <aws/gamelift/model/SearchGameSessionsResult.h>
+#include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
+#include <aws/gamelift/model/StartGameSessionPlacementResult.h>
 
 using namespace Aws::GameLift;
 
@@ -42,6 +44,7 @@ public:
     MOCK_CONST_METHOD1(CreateGameSession, Model::CreateGameSessionOutcome(const Model::CreateGameSessionRequest&));
     MOCK_CONST_METHOD1(CreatePlayerSession, Model::CreatePlayerSessionOutcome(const Model::CreatePlayerSessionRequest&));
     MOCK_CONST_METHOD1(SearchGameSessions, Model::SearchGameSessionsOutcome(const Model::SearchGameSessionsRequest&));
+    MOCK_CONST_METHOD1(StartGameSessionPlacement, Model::StartGameSessionPlacementOutcome(const Model::StartGameSessionPlacementRequest&));
 };
 
 class SessionAsyncRequestNotificationsHandlerMock

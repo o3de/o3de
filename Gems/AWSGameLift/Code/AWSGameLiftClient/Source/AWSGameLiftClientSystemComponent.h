@@ -47,6 +47,8 @@ namespace AWSGameLift
         void SetGameLiftClientManager(AZStd::unique_ptr<AWSGameLiftClientManager> gameliftClientManager);
 
     private:
+        static void ReflectCreateSessionRequest(AZ::ReflectContext* context);
+
         AZStd::unique_ptr<AWSGameLiftClientManager> m_gameliftClientManager;
     };
 

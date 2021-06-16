@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
 
 #include <Request/AWSGameLiftJoinSessionRequest.h>

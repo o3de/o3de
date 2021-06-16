@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-
 #include <Request/AWSGameLiftCreateSessionRequest.h>
 
 #include <aws/core/utils/Outcome.h>
@@ -25,8 +23,6 @@ namespace AWSGameLift
     namespace CreateSessionActivity
     {
         static constexpr const char AWSGameLiftCreateSessionActivityName[] = "AWSGameLiftCreateSessionActivity";
-        static constexpr const char AWSGameLiftCreateSessionRequestInvalidErrorMessage[] =
-            "Invalid GameLift CreateSession request.";
 
         // Build AWS GameLift CreateGameSessionRequest by using AWSGameLiftCreateSessionRequest
         Aws::GameLift::Model::CreateGameSessionRequest BuildAWSGameLiftCreateGameSessionRequest(const AWSGameLiftCreateSessionRequest& createSessionRequest);
