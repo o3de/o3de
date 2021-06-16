@@ -200,7 +200,7 @@ namespace JsonSerializationTests
             descriptor->ConfigureFeatures(this->m_features);
             descriptor->Reflect(this->m_serializeContext);
             descriptor->Reflect(this->m_jsonRegistrationContext);
-            this->m_serializeContext->Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
+            this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
             
             this->m_deserializationSettings->m_reporting = &Internal::VerifyCallback;
             this->m_serializationSettings->m_reporting = &Internal::VerifyCallback;
@@ -221,7 +221,7 @@ namespace JsonSerializationTests
             this->m_jsonRegistrationContext->DisableRemoveReflection();
 
             this->m_serializeContext->EnableRemoveReflection();
-            this->m_serializeContext->Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
+            this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
             descriptor->Reflect(this->m_serializeContext);
             this->m_serializeContext->DisableRemoveReflection();
 
@@ -731,13 +731,13 @@ namespace JsonSerializationTests
         if (this->m_features.m_enableNewInstanceTests)
         {
             AZ::SerializeContext* serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid<Type>());
+            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid<typename TypeParam::Type>());
             ASSERT_NE(nullptr, classData);
             // Skip this test if the target type doesn't have a factor to create a new instance with or if the factor explicit
             // prohibits construction.
             if (classData->m_factory && classData->m_factory != AZ::Internal::NullFactory::GetInstance())
             {
-                PointerWrapper instance;
+                typename JsonSerializerConformityTests<TypeParam>::PointerWrapper instance;
                 auto compare = this->m_description.CreateDefaultInstance();
 
                 this->m_jsonDocument->Parse(R"({ "Value": {}})");
@@ -767,7 +767,7 @@ namespace JsonSerializationTests
             if ((serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::InitializeNewInstance) ==
                 BaseJsonSerializer::OperationFlags::InitializeNewInstance)
             {
-                Type instance;
+                typename TypeParam::Type instance;
                 auto compare = this->m_description.CreateDefaultInstance();
                 this->m_jsonDocument->SetObject();
 
@@ -1206,7 +1206,7 @@ namespace JsonSerializationTests
         if (this->m_features.m_enableInitializationTest)
         {
             auto instance = this->m_description.CreateDefaultInstance();
-            Type compare;
+            typename TypeParam::Type compare;
             if (!this->m_description.AreEqual(*instance, compare))
             {
                 auto serializer = this->m_description.CreateSerializer();
