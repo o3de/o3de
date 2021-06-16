@@ -19,7 +19,6 @@
 
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 
 #include <AzCore/std/containers/vector.h>

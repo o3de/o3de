@@ -55,8 +55,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
      protected:
         using EntityList = AZStd::vector<AZ::Entity*>;
-        static EntityList GetEntitiesFromInstance(
-            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance);
+        static void GetEntitiesFromInstance(
+            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities);
 
         static bool ReadComponentAttribute(
             AZ::Component* component,

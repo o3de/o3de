@@ -41,6 +41,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void Update();
         //! Adds a locked overlay to the button's icon.
         void SetButtonLocked(ButtonId buttonId, bool isLocked);
+        //! Updates the button's tooltip to the passed string.
+        void SetButtonTooltip(ButtonId buttonId, const AZStd::string& tooltip);
         //! Returns the widget manager.
         ViewportUiWidgetCallbacks GetWidgetCallbacks();
 

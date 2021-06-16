@@ -718,7 +718,8 @@ namespace EditorPythonBindings
 
             for (int arg = 0; arg < args.size(); arg++)
             {
-                argv[arg + 1] = Py_DecodeLocale(args[arg].data(), nullptr);
+                AZStd::string argString(args[arg]);
+                argv[arg + 1] = Py_DecodeLocale(argString.c_str(), nullptr);
             }
             // Tell Python the command-line args.
             // Note that this has a side effect of adding the script's path to the set of directories checked for "import" commands.

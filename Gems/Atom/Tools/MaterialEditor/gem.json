@@ -1,0 +1,10 @@
+{
+    "gem_name": "MaterialEditor",
+    "display_name": "Atom Material Editor",
+    "summary": "Editor for creating, modifying, and previewing materials",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+    ]
+}

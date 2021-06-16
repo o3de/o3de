@@ -41,9 +41,12 @@ namespace AZ
         protected:
             SMAABasePass(const RPI::PassDescriptor& descriptor);
 
-            void Init() override;
+            // Pass behavior overrides...
+            void InitializeInternal() override;
+
             // An interface to update pass srg.
             virtual void UpdateSRG() = 0;
+
             // An interface to get current shader variation option.
             virtual void GetCurrentShaderOption(AZ::RPI::ShaderOptionGroup& shaderOption) const = 0;
 

@@ -324,7 +324,7 @@ namespace AZ
                     );
 
                     // Gather UV names
-                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetRootVariant()->GetInputContract();
+                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetInputContract();
                     for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
                     {
                         const RHI::ShaderSemantic& semantic = channel.m_semantic;

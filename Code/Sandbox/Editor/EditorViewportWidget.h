@@ -184,6 +184,7 @@ public:
     void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override { return m_viewEntityId; }
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
+    bool GetActiveCameraState(AzFramework::CameraState& cameraState) override;
 
     // AzToolsFramework::EditorEntityContextNotificationBus (handler moved to cpp to resolve link issues in unity builds)
     virtual void OnStartPlayInEditor();
@@ -327,11 +328,6 @@ protected:
 
     void SetViewTM(const Matrix34& tm, bool bMoveOnly);
 
-    virtual float GetCameraMoveSpeed() const;
-    virtual float GetCameraRotateSpeed() const;
-    virtual bool  GetCameraInvertYRotation() const;
-    virtual float GetCameraInvertPan() const;
-
     // Called to render stuff.
     virtual void OnRender();
 
@@ -389,6 +385,11 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
+    bool ShouldPreviewFullscreen() const;
+    void StartFullscreenPreview();
+    void StopFullscreenPreview();
+
+    bool m_inFullscreenPreview = false;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;

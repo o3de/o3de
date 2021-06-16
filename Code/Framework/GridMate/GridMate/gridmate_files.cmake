@@ -100,14 +100,10 @@ set(FILES
     Replica/Tasks/ReplicaPriorityPolicy.h
     Replica/Interest/BitmaskInterestHandler.cpp
     Replica/Interest/BitmaskInterestHandler.h
-    Replica/Interest/ProximityInterestHandler.cpp
-    Replica/Interest/ProximityInterestHandler.h
     Replica/Interest/InterestDefs.h
     Replica/Interest/InterestManager.cpp
     Replica/Interest/InterestManager.h
     Replica/Interest/InterestQueryResult.h
-    Replica/Interest/BvDynamicTree.cpp
-    Replica/Interest/BvDynamicTree.h
     Replica/Interest/RulesHandler.h
     Serialize/Buffer.cpp
     Serialize/Buffer.h

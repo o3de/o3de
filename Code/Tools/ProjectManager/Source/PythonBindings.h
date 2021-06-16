@@ -34,12 +34,14 @@ namespace O3DE::ProjectManager
         ~PythonBindings() override;
 
         // PythonBindings overrides
+        bool PythonStarted() override;
+
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
         bool SetEngineInfo(const EngineInfo& engineInfo) override;
 
         // Gem
-        AZ::Outcome<GemInfo> GetGemInfo(const QString& path) override;
+        AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
@@ -55,20 +57,22 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
 
         // ProjectTemplate
-        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates() override;
+        AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
-        GemInfo GemInfoFromPath(pybind11::handle path);
+        GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
-        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path);
+        ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         bool RegisterThisEngine();
         bool StartPython();
         bool StopPython();
 
+
+        bool m_pythonStarted = false;
 
         AZ::IO::FixedMaxPath m_enginePath;
         pybind11::handle m_engineTemplate;

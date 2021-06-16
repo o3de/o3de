@@ -9,8 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    
+if(NOT LY_MONOLITHIC_GAME)
     ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/AzTest/Platform/${PAL_PLATFORM_NAME})
 
     ly_add_target(
@@ -30,7 +29,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::GoogleBenchmark
                 AZ::AzCore
         PLATFORM_INCLUDE_FILES
-                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+            ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     )
-
 endif()
