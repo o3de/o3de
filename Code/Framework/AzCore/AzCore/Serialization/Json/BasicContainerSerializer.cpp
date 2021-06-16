@@ -255,7 +255,7 @@ namespace AZ
         size_t addedCount = container->Size(outputValue) - containerSize;
         if (addedCount > 0)
         {
-            // Values were added which means the container is no longer in its default state of being emtpy.
+            // Values were added which means the container is no longer in its default state of being empty.
             retVal.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
         }
         AZStd::string_view message =

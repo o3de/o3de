@@ -257,7 +257,7 @@ namespace JsonSerializationTests
         {
             Base::ConfigureFeatures(features);
             // These tests don't work with pointers because there'll be a random value in the pointer
-            // which the Json Serialization try to delete. The POD version of these tests already cover
+            // which the Json Serialization will try to delete. The POD version of these tests already cover
             // these cases.
             features.m_enableNewInstanceTests = false;
         }

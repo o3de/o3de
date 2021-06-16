@@ -170,13 +170,6 @@ namespace AZ
         };
         container->EnumTypes(typeCountCallback);
 
-        rapidjson::SizeType arraySize = isNewInstance ? typeCount : inputValue.Size();
-        if (arraySize < typeCount)
-        {
-            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
-                "Not enough entries in array to load an AZStd::pair or AZStd::tuple from.");
-        }
-
         AZStd::vector<const SerializeContext::ClassElement*> classElements;
         classElements.reserve(typeCount);
         auto typeEnumCallback = [&classElements](const Uuid&, const SerializeContext::ClassElement* genericClassElement)
@@ -214,6 +207,13 @@ namespace AZ
         }
         else
         {
+            if (inputValue.Size() < typeCount)
+            {
+                return context.Report(
+                    JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
+                    "Not enough entries in array to load an AZStd::pair or AZStd::tuple from.");
+            }
+
             rapidjson::SizeType arrayIndex = 0;
             size_t numElementsWritten = 0;
             for (size_t i = 0; i < typeCount; ++i)

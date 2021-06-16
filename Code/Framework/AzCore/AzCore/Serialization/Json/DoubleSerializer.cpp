@@ -73,7 +73,7 @@ namespace AZ
             if (isExplicitDefault)
             {
                 *outputValue = 0.0f;
-                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Double value set to default of 0.0.");
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Floating point value set to default of 0.0.");
             }
 
             switch (inputValue.GetType())
