@@ -56,10 +56,10 @@ namespace AZ
             m_passData = *passData;
         }
 
-        void BloomCompositePass::BuildAttachmentsInternal()
+        void BloomCompositePass::BuildInternal()
         {
             BuildChildPasses();
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void BloomCompositePass::FrameBeginInternal(FramePrepareParams params)

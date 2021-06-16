@@ -95,6 +95,20 @@ namespace JsonSerializationTests
         }
     };
 
+    class SerializerWithOneDuplicatedTypeWithOverride
+        : public JsonSerializerTemplatedMock<SerializerWithOneDuplicatedTypeWithOverride>
+    {
+    public:
+        AZ_RTTI(SerializerWithOneDuplicatedTypeWithOverride, "{4218D591-E578-499B-B578-ACA70C9944AB}", BaseJsonSerializer);
+        ~SerializerWithOneDuplicatedTypeWithOverride() override = default;
+
+        static void Reflect(AZ::JsonRegistrationContext* context)
+        {
+            context->Serializer<SerializerWithOneDuplicatedTypeWithOverride>()
+                ->HandlesType<bool>(true);
+        }
+    };
+
     // Attempts to register the same type twice
     class SerializerWithTwoSameTypes
         : public JsonSerializerTemplatedMock<SerializerWithTwoSameTypes>
@@ -271,11 +285,27 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(1, m_jsonRegistrationContext->GetRegisteredSerializers().size());
         AZ::BaseJsonSerializer* mockSerializer = m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<bool>());
-        EXPECT_NE(mockSerializer, nullptr);
+        ASSERT_NE(mockSerializer, nullptr);
         EXPECT_EQ(AZ::AzTypeInfo<SerializerWithOneType>::Uuid(), mockSerializer->RTTI_GetType());
 
         SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
         SerializerWithOneDuplicatedType::Unreflect(m_jsonRegistrationContext.get());
+    }
+
+    TEST_F(JsonRegistrationContextTests, OverwriteRegisterSameUuidWithMultipleSerializers_Succeeds)
+    {
+        EXPECT_NE(AZ::AzTypeInfo<SerializerWithOneDuplicatedTypeWithOverride>::Uuid(), AZ::AzTypeInfo<SerializerWithOneType>::Uuid());
+
+        SerializerWithOneType::Reflect(m_jsonRegistrationContext.get());
+        SerializerWithOneDuplicatedTypeWithOverride::Reflect(m_jsonRegistrationContext.get());
+        
+        EXPECT_EQ(1, m_jsonRegistrationContext->GetRegisteredSerializers().size());
+        AZ::BaseJsonSerializer* mockSerializer = m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<bool>());
+        ASSERT_NE(mockSerializer, nullptr);
+        EXPECT_EQ(AZ::AzTypeInfo<SerializerWithOneDuplicatedTypeWithOverride>::Uuid(), mockSerializer->RTTI_GetType());
+
+        SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
+        SerializerWithOneDuplicatedTypeWithOverride::Unreflect(m_jsonRegistrationContext.get());
     }
 
     TEST_F(JsonRegistrationContextTests, RegisterSameUuidWithSameSerializers_Fails)

@@ -35,6 +35,7 @@
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -530,8 +531,8 @@ void OutlinerWidget::contextMenuEvent(QContextMenuEvent* event)
     QMenu* contextMenu = new QMenu(this);
 
     // Populate global context menu.
-    EBUS_EVENT(AzToolsFramework::EditorEvents::Bus,
-        PopulateEditorGlobalContextMenu,
+
+    AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
         contextMenu,
         AZ::Vector2::CreateZero(),
         AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION | AzToolsFramework::EditorEvents::eECMF_USE_VIEWPORT_CENTER);

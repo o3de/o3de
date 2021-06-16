@@ -37,10 +37,12 @@
 #include <Atom/RPI.Reflect/Pass/PassName.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+
 namespace AZ
 {
     namespace RPI
     {
+
         // --- Constructors ---
 
         Pass::Pass(const PassDescriptor& descriptor)
@@ -71,7 +73,10 @@ namespace AZ
             }
 
             PassSystemInterface::Get()->RegisterPass(this);
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
+
+            // Skip reset since the pass just got created
+            m_state = PassState::Reset;
         }
 
         Pass::~Pass()
@@ -151,6 +156,8 @@ namespace AZ
         {
             AZ_RPI_PASS_ASSERT(m_parent != nullptr, "Trying to remove pass from parent but pointer to the parent pass is null.");
             m_parent->RemoveChild(Ptr<Pass>(this));
+            m_queueState = PassQueueState::NoQueue;
+            m_state = PassState::Idle;
         }
 
         void Pass::OnOrphan()
@@ -161,6 +168,11 @@ namespace AZ
         }
 
         // --- Getters & Setters ---
+
+        PassState Pass::GetPassState() const
+        {
+            return m_state;
+        }
 
         ParentPass* Pass::GetParent() const
         {
@@ -348,32 +360,6 @@ namespace AZ
             return nullptr;
         }
 
-        // --- Queuing functions with PassSystem ---
-
-        void Pass::QueueForBuildAttachments()
-        {
-            // Don't queue if we're in building phase
-            if (!PassSystemInterface::Get()->IsBuilding())
-            {
-                // m_queuedForBuildAttachment makes sure the pass only be queue for once
-                if (!m_flags.m_queuedForBuildAttachment)
-                {
-                    PassSystemInterface::Get()->QueueForBuildAttachments(this);
-                    m_flags.m_queuedForBuildAttachment = true;
-
-                    // Set these two flags to false since when queue build attachments request, they should all be already be false except one use
-                    // case that the pass system processed all queued requests when active a scene. 
-                    m_flags.m_alreadyPrepared = false;
-                    m_flags.m_alreadyReset = false;
-                }
-            }
-        }
-
-        void Pass::QueueForRemoval([[maybe_unused]] bool needsDeletion)
-        {
-            PassSystemInterface::Get()->QueueForRemoval(this);
-        }
-
         // --- PassTemplate related functions ---
 
         void Pass::CreateBindingsFromTemplate()
@@ -403,7 +389,7 @@ namespace AZ
             PassAttachmentBinding* localBinding = FindAttachmentBinding(slot);
             if (!localBinding)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::AttachBufferToSlot - Pass %s failed to find slot %s.",
+                AZ_RPI_PASS_ERROR(false, "Pass::AttachBufferToSlot - Pass [%s] failed to find slot [%s].",
                     m_path.GetCStr(), slot.GetCStr());
                 return;
             }
@@ -413,7 +399,7 @@ namespace AZ
             // handle the connected bindings
             if (localBinding->m_attachment)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::AttachBufferToSlot - Slot %s already has attachment %s.",
+                AZ_RPI_PASS_ERROR(false, "Pass::AttachBufferToSlot - Slot [%s] already has attachment [%s].",
                     slot.GetCStr(), localBinding->m_attachment->m_name.GetCStr());
                 return;
             }
@@ -435,7 +421,7 @@ namespace AZ
             PassAttachmentBinding* localBinding = FindAttachmentBinding(slot);
             if (!localBinding)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::AttachImageToSlot - Pass %s failed to find slot %s.",
+                AZ_RPI_PASS_ERROR(false, "Pass::AttachImageToSlot - Pass [%s] failed to find slot [%s].",
                     m_path.GetCStr(), slot.GetCStr());
                 return;
             }
@@ -445,7 +431,7 @@ namespace AZ
             // handle the connected bindings
             if (localBinding->m_attachment)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::AttachImageToSlot - Slot %s already has attachment %s.",
+                AZ_RPI_PASS_ERROR(false, "Pass::AttachImageToSlot - Slot [%s] already has attachment [%s].",
                     slot.GetCStr(), localBinding->m_attachment->m_name.GetCStr());
                 return;
             }
@@ -468,7 +454,7 @@ namespace AZ
             PassAttachmentBinding* localBinding = FindAttachmentBinding(connection.m_localSlot);
             if (!localBinding)
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass %s failed to find slot %s.",
+                AZ_RPI_PASS_ERROR(false, "Pass::ProcessConnection - Pass [%s] failed to find slot [%s].",
                     m_path.GetCStr(),
                     connection.m_localSlot.GetCStr());
                 return;
@@ -490,7 +476,7 @@ namespace AZ
             {
                 foundPass = true;
                 const Ptr<PassAttachment> attachment = FindOwnedAttachment(connectedSlotName);
-                AZ_RPI_PASS_ERROR(attachment, "Pass::ProcessConnection - Pass %s doesn't own an attachment named %s.",
+                AZ_RPI_PASS_ERROR(attachment, "Pass::ProcessConnection - Pass [%s] doesn't own an attachment named [%s].",
                     m_path.GetCStr(),
                     connectedSlotName.GetCStr());
                 localBinding->SetAttachment(attachment);
@@ -601,10 +587,10 @@ namespace AZ
 
             if (!outputBinding || !inputBinding)
             {
-                AZ_RPI_PASS_ERROR(inputBinding, "Pass::ProcessFallbackConnection - Pass %s failed to find input slot %s.",
+                AZ_RPI_PASS_ERROR(inputBinding, "Pass::ProcessFallbackConnection - Pass [%s] failed to find input slot [%s].",
                     m_path.GetCStr(), connection.m_inputSlotName.GetCStr());
 
-                AZ_RPI_PASS_ERROR(outputBinding, "Pass::ProcessFallbackConnection - Pass %s failed to find output slot %s.",
+                AZ_RPI_PASS_ERROR(outputBinding, "Pass::ProcessFallbackConnection - Pass [%s] failed to find output slot [%s].",
                     m_path.GetCStr(), connection.m_outputSlotName.GetCStr());
 
                 return;
@@ -614,10 +600,10 @@ namespace AZ
 
             if (!typesAreValid)
             {
-                AZ_RPI_PASS_ERROR(inputBinding->m_slotType == PassSlotType::Input, "Pass::ProcessFallbackConnection - Pass %s specifies fallback connection input %s, which is not an input.",
+                AZ_RPI_PASS_ERROR(inputBinding->m_slotType == PassSlotType::Input, "Pass::ProcessFallbackConnection - Pass [%s] specifies fallback connection input [%s], which is not an input.",
                     m_path.GetCStr(), connection.m_inputSlotName.GetCStr());
 
-                AZ_RPI_PASS_ERROR(outputBinding->m_slotType == PassSlotType::Output, "Pass::ProcessFallbackConnection - Pass %s specifies fallback connection output %s, which is not an output.",
+                AZ_RPI_PASS_ERROR(outputBinding->m_slotType == PassSlotType::Output, "Pass::ProcessFallbackConnection - Pass [%s] specifies fallback connection output [%s], which is not an output.",
                     m_path.GetCStr(), connection.m_inputSlotName.GetCStr());
 
                 return;
@@ -1007,7 +993,7 @@ namespace AZ
         {
             Ptr<PassAttachment> targetAttachment = nullptr;
 
-            if (!m_flags.m_isBuildingAttachments && !IsEnabled() && binding.m_slotType == PassSlotType::Output && binding.m_fallbackBinding)
+            if (m_state != PassState::Building && !IsEnabled() && binding.m_slotType == PassSlotType::Output && binding.m_fallbackBinding)
             {
                 targetAttachment = binding.m_fallbackBinding->m_attachment;
             }
@@ -1028,7 +1014,7 @@ namespace AZ
             // Check whether the template's slot allows this attachment
             if (m_template && !m_template->AttachmentFitsSlot(targetAttachment->m_descriptor, binding.m_name))
             {
-                AZ_RPI_PASS_ERROR(false, "Pass::UpdateConnectedBinding - Attachment %s did not match the filters of input slot %s on pass %s.",
+                AZ_RPI_PASS_ERROR(false, "Pass::UpdateConnectedBinding - Attachment [%s] did not match the filters of input slot [%s] on pass [%s].",
                     targetAttachment->m_name.GetCStr(),
                     binding.m_name.GetCStr(),
                     m_path.GetCStr());
@@ -1050,17 +1036,103 @@ namespace AZ
             }
         }
 
+        void Pass::UpdateConnectedInputBindings()
+        {
+            for (uint8_t idx : m_inputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+            for (uint8_t idx : m_inputOutputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+        }
+
+        void Pass::UpdateConnectedOutputBindings()
+        {
+            for (uint8_t idx : m_outputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+        }
+
+        // --- Queuing functions with PassSystem ---
+
+        void Pass::QueueForBuildAndInitialization()
+        {
+            // Don't queue if we're currently building. Don't queue if we're already queued for Build or Removal
+            if (m_state != PassState::Building &&
+                m_queueState != PassQueueState::QueuedForBuildAndInitialization &&
+                m_queueState != PassQueueState::QueuedForRemoval)
+            {
+                // NOTE: We only queue for Build here, the queue for Initialization happens at the end of Pass::Build
+                // (doing it this way is an optimization to minimize the number of passes queued for initialization,
+                //  as many passes will be initialized by their parent passes and thus don't need to be queued)
+                PassSystemInterface::Get()->QueueForBuild(this);
+
+                m_queueState = PassQueueState::QueuedForBuildAndInitialization;
+
+                // Transition state
+                // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
+                if (m_state != PassState::Rendering)
+                {
+                    m_state = PassState::Queued;
+                }
+            }
+        }
+
+        void Pass::QueueForInitialization()
+        {
+            // Only queue if the pass is not in any queue. Don't queue if we're currently initializing.
+            if (m_queueState == PassQueueState::NoQueue && m_state != PassState::Initializing)
+            {
+                PassSystemInterface::Get()->QueueForInitialization(this);
+                m_queueState = PassQueueState::QueuedForInitialization;
+
+                // Transition state
+                // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
+                // If the state is Built, preserve the state since [Built -> Initializing] is a valid transition
+                // Preserving PassState::Built lets the pass ignore subsequent build calls in the same frame
+                if (m_state != PassState::Rendering && m_state != PassState::Built)
+                {
+                    m_state = PassState::Queued;
+                }
+            }
+        }
+
+        void Pass::QueueForRemoval()
+        {
+            // Skip only if we're already queued for removal, otherwise proceed.
+            // QueuedForRemoval overrides QueuedForBuildAndInitialization and QueuedForInitialization.
+            if (m_queueState != PassQueueState::QueuedForRemoval)
+            {
+                PassSystemInterface::Get()->QueueForRemoval(this);
+                m_queueState = PassQueueState::QueuedForRemoval;
+
+                // Transition state
+                // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
+                if (m_state != PassState::Rendering)
+                {
+                    m_state = PassState::Queued;
+                }
+            }
+        }
+
         // --- Pass behavior functions ---
 
         void Pass::Reset()
         {
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyReset)
+            // Ensure we're in a valid state to reset. This ensures the pass won't be reset multiple times in the same frame.
+            bool execute = (m_state == PassState::Idle);
+            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuildAndInitialization);
+            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
+
+            if (!execute)
             {
                 return;
             }
-            m_flags.m_alreadyReset = true;
+
+            m_state = PassState::Resetting;
 
             // Store references to imported attachments to underlying images and buffers aren't deleted during attachment building
             StoreImportedAttachmentReferences();
@@ -1075,22 +1147,23 @@ namespace AZ
             m_executeBeforePasses.clear();
 
             ResetInternal();
+
+            m_state = PassState::Reset;
         }
 
-        void Pass::BuildAttachments()
+        void Pass::Build(bool calledFromPassSystem)
         {
-            m_flags.m_queuedForBuildAttachment = false;
+            AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyPrepared)
+            // Ensure we're in a valid state to build. This ensures the pass won't be built multiple times in the same frame.
+            bool execute = (m_state == PassState::Reset);
+
+            if (!execute)
             {
                 return;
             }
-            m_flags.m_alreadyPrepared = true;
-            m_flags.m_isBuildingAttachments = true;
 
-            AZ_RPI_BREAK_ON_TARGET_PASS;
+            m_state = PassState::Building;
 
             // Bindings, inputs and attachments
             CreateBindingsFromTemplate();
@@ -1101,7 +1174,7 @@ namespace AZ
             SetupInputsFromTemplate();
 
             // Custom pass behavior
-            BuildAttachmentsInternal();
+            BuildInternal();
 
             // Outputs
             SetupOutputsFromTemplate();
@@ -1112,21 +1185,46 @@ namespace AZ
             UpdateOwnedAttachments();
             UpdateAttachmentUsageIndices();
 
-            m_flags.m_isBuildingAttachments = false;
+            m_state = PassState::Built;
+            m_queueState = PassQueueState::NoQueue;
+
+            // If this pass's Build() wasn't called from the Pass System, then it was called by it's parent pass
+            // In which case we don't need to queue for initialization because the parent will already be queued
+            if (calledFromPassSystem)
+            {
+                // Queue for Initialization
+                QueueForInitialization();
+            }
         }
 
-        void Pass::OnBuildAttachmentsFinished()
+        void Pass::Initialize()
         {
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
-            // These flags are to prevent a pass from being built multiple times.
-            // We reset them after each build phase.
-            m_flags.m_alreadyCreated = false;
-            m_flags.m_alreadyPrepared = false;
-            m_flags.m_alreadyReset = false;
-            m_flags.m_queuedForBuildAttachment = false;
+            // Ensure we're in a valid state to initialize. This ensures the pass won't be initialized multiple times in the same frame.
+            bool execute = (m_state == PassState::Idle || m_state == PassState::Built);
+            execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForInitialization);
+
+            if (!execute)
+            {
+                return;
+            }
+
+            m_state = PassState::Initializing;
+            m_queueState = PassQueueState::NoQueue;
+
+            InitializeInternal();
+
+            m_state = PassState::Initialized;
+        }
+
+        void Pass::OnInitializationFinished()
+        {
+            m_flags.m_alreadyCreatedChildren = false;
             m_importedAttachmentStore.clear();
-            OnBuildAttachmentsFinishedInternal();
+            OnInitializationFinishedInternal();
+
+            m_state = PassState::Idle;
         }
 
         void Pass::Validate(PassValidationResults& validationResults)
@@ -1182,9 +1280,11 @@ namespace AZ
                 UpdateConnectedBindings();
                 return;
             }
-            m_flags.m_isRendering = true;
 
-            UpdateConnectedBindings();
+            AZ_Assert(m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
+            m_state = PassState::Rendering;
+
+            UpdateConnectedInputBindings();
             UpdateOwnedAttachments();
 
             CreateTransientAttachments(params.m_frameGraphBuilder->GetAttachmentDatabase());
@@ -1193,14 +1293,16 @@ namespace AZ
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
             FrameBeginInternal(params);
+
+            UpdateConnectedOutputBindings();
         }
 
         void Pass::FrameEnd()
         {
-            if (m_flags.m_isRendering)
+            if (m_state == PassState::Rendering)
             {
                 FrameEndInternal();
-                m_flags.m_isRendering = false;
+                m_state = (m_queueState == PassQueueState::NoQueue) ? PassState::Idle : PassState::Queued;
             }
         }
 
@@ -1236,6 +1338,13 @@ namespace AZ
         RenderPipeline* Pass::GetRenderPipeline() const
         {
             return m_pipeline;
+        }
+
+        void Pass::ManualPipelineBuildAndInitialize()
+        {
+            Build();
+            Initialize();
+            OnInitializationFinished();
         }
 
         Scene* Pass::GetScene() const

@@ -89,7 +89,7 @@ class TestMenus(object):
         expected_lines = [
             "Center on Selection Action triggered",
             "Show Quick Access Bar Action triggered",
-            "Wireframe Action triggered",
+            "Configure Layout Action triggered",
             "Go to Position Action triggered",
             "Center on Selection Action triggered",
             "Go to Location Action triggered",

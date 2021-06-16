@@ -46,9 +46,9 @@ namespace AZ
         }
 
 
-        void DeferredFogPass::Init()
+        void DeferredFogPass::InitializeInternal()
         {
-            FullscreenTrianglePass::Init();
+            FullscreenTrianglePass::InitializeInternal();
 
             // The following will ensure that in the case of data driven pass, the settings will get
             // updated by the pass enable state.

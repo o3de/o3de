@@ -42,11 +42,11 @@ namespace AZ
                 scene->EnableFeatureProcessor(FeatureProcessorId{ fpId });
             }
 
-            Data::Asset<ShaderResourceGroupAsset> sceneSrgAsset = RPISystemInterface::Get()->GetSceneSrgAsset();
-
-            if (sceneSrgAsset.IsReady())
+            auto sceneSrgLayout = RPISystemInterface::Get()->GetSceneSrgLayout();
+            if (sceneSrgLayout)
             {
-                scene->m_srg = ShaderResourceGroup::Create(sceneSrgAsset);
+                auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
+                scene->m_srg = ShaderResourceGroup::Create(shaderAsset, DefaultSupervariantIndex, sceneSrgLayout->GetName());
             }
             
             return ScenePtr(scene);
@@ -289,9 +289,10 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            PassSystemInterface::Get()->ProcessQueuedChanges();
+            pipeline->BuildPipelineViews();
 
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
-            AZ::RPI::PassSystemInterface::Get()->ProcessQueuedChanges();
             RebuildPipelineStatesLookup();
 
             AZ_Assert(!m_id.IsNull(), "RPI::Scene needs to have a valid uuid.");

@@ -59,7 +59,7 @@ namespace AZ
             m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
             // load Pass Srg asset
-            m_srgAsset = m_shader->FindShaderResourceGroupAsset(RPI::SrgBindingSlot::Pass);
+            m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
 
             // retrieve the number of threads per thread group from the shader
             const auto numThreads = m_shader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, Name{ "numthreads" });
@@ -147,7 +147,7 @@ namespace AZ
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
                 // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
-                diffuseProbeGrid->UpdateClassificationSrg(m_srgAsset);
+                diffuseProbeGrid->UpdateClassificationSrg(m_shader, m_srgLayout);
                 diffuseProbeGrid->GetClassificationSrg()->Compile();
             }
         }

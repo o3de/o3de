@@ -46,7 +46,7 @@ namespace AzFramework
     };
 
     //! ISessionHandlingClientRequests
-    //! The session handling events to invoke multiplayer component handle the work on client side
+    //! Requests made to the client to manage their membership in a session
     class ISessionHandlingClientRequests
     {
     public:
@@ -63,14 +63,14 @@ namespace AzFramework
         virtual void RequestPlayerLeaveSession() = 0;
     };
 
-    //! ISessionHandlingServerRequests
-    //! The session handling events to invoke server provider handle the work on server side
-    class ISessionHandlingServerRequests
+    //! ISessionProviderRequests
+    //! Requests made to the service providing server/fleet management by the server
+    class ISessionHandlingProviderRequests
     {
     public:
-        AZ_RTTI(ISessionHandlingServerRequests, "{4F0C17BA-F470-4242-A8CB-EC7EA805257C}");
-        ISessionHandlingServerRequests() = default;
-        virtual ~ISessionHandlingServerRequests() = default;
+        AZ_RTTI(ISessionHandlingProviderRequests, "{4F0C17BA-F470-4242-A8CB-EC7EA805257C}");
+        ISessionHandlingProviderRequests() = default;
+        virtual ~ISessionHandlingProviderRequests() = default;
 
         // Handle the destroy session process
         virtual void HandleDestroySession() = 0;
@@ -84,9 +84,14 @@ namespace AzFramework
         // @param  playerConnectionConfig The required properties to handle the player leave session process
         virtual void HandlePlayerLeaveSession(const PlayerConnectionConfig& playerConnectionConfig) = 0;
 
-        // Retrieves the file location of a pem-encoded TLS certificate
+        // Retrieves the file location of a pem-encoded TLS certificate for Client to Server communication
         // @return If successful, returns the file location of TLS certificate file; if not successful, returns
         //         empty string.
-        virtual AZStd::string GetSessionCertificate() = 0;
+        virtual AZ::IO::Path GetExternalSessionCertificate() = 0;
+
+        // Retrieves the file location of a pem-encoded TLS certificate for Server to Server communication
+        // @return If successful, returns the file location of TLS certificate file; if not successful, returns
+        //         empty string.
+        virtual AZ::IO::Path GetInternalSessionCertificate() = 0;
     };
 } // namespace AzFramework

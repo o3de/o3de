@@ -25,7 +25,6 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 
@@ -150,9 +149,9 @@ namespace UnitTest
         return AZ::RHI::RHISystemInterface::Get()->GetDevice();
     }
 
-    void RPITestFixture::ProcessQueuedSrgCompilations(Data::Asset<ShaderResourceGroupAsset> srgAsset)
+    void RPITestFixture::ProcessQueuedSrgCompilations(Data::Asset<ShaderAsset> shaderAsset, const AZ::Name& srgName)
     {
-        Data::Instance<ShaderResourceGroupPool> srgPool = ShaderResourceGroupPool::FindOrCreate(srgAsset);
+        Data::Instance<ShaderResourceGroupPool> srgPool = ShaderResourceGroupPool::FindOrCreate(shaderAsset, RPI::DefaultSupervariantIndex, srgName);
         srgPool->GetRHIPool()->CompileGroupsBegin();
         srgPool->GetRHIPool()->CompileGroupsForInterval(RHI::Interval(0, srgPool->GetRHIPool()->GetGroupsToCompileCount()));
         srgPool->GetRHIPool()->CompileGroupsEnd();

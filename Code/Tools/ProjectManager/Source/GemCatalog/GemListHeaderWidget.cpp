@@ -15,6 +15,7 @@
 #include <QStandardItemModel>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QSpacerItem>
 
 namespace O3DE::ProjectManager
 {
@@ -73,6 +74,15 @@ namespace O3DE::ProjectManager
         QLabel* gemSummaryLabel = new QLabel(tr("Gem Summary"));
         gemSummaryLabel->setStyleSheet("font-size: 12px;");
         columnHeaderLayout->addWidget(gemSummaryLabel);
+
+        QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        columnHeaderLayout->addSpacerItem(horizontalSpacer);
+
+        QLabel* gemSelectedLabel = new QLabel(tr("Selected"));
+        gemSelectedLabel->setStyleSheet("font-size: 12px;");
+        columnHeaderLayout->addWidget(gemSelectedLabel);
+
+        columnHeaderLayout->addSpacing(60);
 
         vLayout->addLayout(columnHeaderLayout);
     }

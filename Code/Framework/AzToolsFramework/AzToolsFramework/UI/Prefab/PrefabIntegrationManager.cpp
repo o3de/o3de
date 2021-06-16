@@ -28,6 +28,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 #include <QApplication>
 #include <QFileDialog>
@@ -119,7 +120,7 @@ namespace AzToolsFramework
             return "Prefabs";
         }
 
-        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu) const
+        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
         {
             AzToolsFramework::EntityIdList selectedEntities;
             AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -588,15 +589,6 @@ namespace AzToolsFramework
 
         bool PrefabIntegrationManager::QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath)
         {
-            QWidget* mainWindow = nullptr;
-            EditorRequests::Bus::BroadcastResult(mainWindow, &EditorRequests::Bus::Events::GetMainWindow);
-
-            if (mainWindow == nullptr)
-            {
-                AZ_Assert(false, "Prefab - Could not detect Editor main window to generate the asset picker.");
-                return false;
-            }
-
             AssetSelectionModel selection;
 
             // Note, stringfilter will match every source file CONTAINING ".prefab".
@@ -624,7 +616,7 @@ namespace AzToolsFramework
             selection.SetDisplayFilter(compositeFilterPtr);
             selection.SetSelectionFilter(compositeFilterPtr);
 
-            AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, mainWindow);
+            AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, AzToolsFramework::GetActiveWindow());
 
             if (!selection.IsValid())
             {
@@ -983,12 +975,7 @@ namespace AzToolsFramework
                         includedEntities.c_str(),
                         referencedEntities.c_str());
 
-                    QWidget* mainWindow = nullptr;
-                    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
-                        mainWindow,
-                        &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
-
-                    QMessageBox msgBox(mainWindow);
+                    QMessageBox msgBox(AzToolsFramework::GetActiveWindow());
                     msgBox.setWindowTitle("External Entity References");
                     msgBox.setText("The prefab contains references to external entities that are not selected.");
                     msgBox.setInformativeText("You can move the referenced entities into this prefab or retain the external references.");
