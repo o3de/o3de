@@ -2633,7 +2633,7 @@ namespace AzToolsFramework
         const AZStd::array snapAxes = { AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ() };
 
         ScopedUndoBatch undoBatch(s_snapToWorldGridUndoRedoDesc);
-        for (const AZ::EntityId entityId : m_selectedEntityIds)
+        for (const AZ::EntityId& entityId : m_selectedEntityIds)
         {
             ScopedUndoBatch::MarkEntityDirty(entityId);
             SetEntityWorldTranslation(

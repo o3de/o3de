@@ -513,7 +513,7 @@ namespace UnitTest
         AZStd::vector<AZ::Vector3> entityPositionsAfterSnap;
         AZStd::transform(
             m_entityIds.cbegin(), m_entityIds.cend(), AZStd::back_inserter(entityPositionsAfterSnap),
-            [](const AZ::EntityId entityId)
+            [](const AZ::EntityId& entityId)
             {
                 return GetWorldTranslation(entityId);
             });
