@@ -327,7 +327,7 @@ namespace AzFramework
             break;
         }
 
-        if (m_state != State::Idle)
+        if (m_state != State::Idle && m_shouldDispatchEvents)
         {
             bool hasBeenConsumed = false;
             InputChannelNotificationBus::Broadcast(&InputChannelNotifications::OnInputChannelEvent,
@@ -349,5 +349,23 @@ namespace AzFramework
 
         // Directly return the channel to the 'Idle' state
         m_state = State::Idle;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputChannel::SetUpdateEventsEnabled(bool enabled)
+    {
+        if (m_shouldDispatchEvents != enabled)
+        {
+            m_shouldDispatchEvents = enabled;
+            const InputChannelRequests::BusIdType busId(m_inputChannelId, m_inputDevice.GetInputDeviceId().GetIndex());
+            if (enabled)
+            {
+                InputChannelRequestBus::Handler::BusConnect(busId);
+            }
+            else
+            {
+                InputChannelRequestBus::Handler::BusDisconnect(busId);
+            }
+        }
     }
 } // namespace AzFramework
