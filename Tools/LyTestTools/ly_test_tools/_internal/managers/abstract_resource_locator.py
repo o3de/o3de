@@ -14,7 +14,9 @@ Utility class to resolve Lumberyard directory paths & file mappings.
 import os
 import pathlib
 import warnings
+import json
 from abc import ABCMeta, abstractmethod
+from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
 from ly_test_tools.environment.file_system import find_ancestor_file
@@ -50,11 +52,38 @@ def _find_project_json(engine_root, project):
     Find the project.json file for this project.
     :return: Full path to the project.json file
     """
-    # First check relative to defined build directory, for external projects which configure through SDK settings
-    project_json = find_ancestor_file(target_file_name='project.json',
-                                      start_path=ly_test_tools._internal.pytest_plugin.build_directory)
-    if not project_json:  # check internally for a project bundled with the engine
-        project_json = os.path.join(engine_root, project, 'project.json')
+    project_json = None
+    
+    # Check the o3de_manifest.json and for the "projects" key
+    manifest_json = os.path.join(os.path.expanduser('~'), '.o3de', 'o3de_manifest.json')
+    if os.path.isfile(manifest_json):
+        # Read the o3de_manifest.json 
+        with open(manifest_json, "r") as manifest_file:
+            json_data = json.load(manifest_file)
+            # Look at the "projects" key for registered project paths
+            try:
+                for projects_path in json_data["projects"]:
+                    # Only look at project directories that match our project
+                    if project == os.path.basename(projects_path):
+                        check_project_json = os.path.join(projects_path, 'project.json')
+                        # Check for the project.json file inside of the project directory
+                        if os.path.isfile(check_project_json):
+                            project_json = check_project_json
+            except KeyError:
+                pass  # No projects found in the manifest json
+
+    # Check relative to defined build directory, for external projects which configure through SDK settings
+    if not project_json:
+        project_json = find_ancestor_file(target_file_name='project.json',
+                                          start_path=ly_test_tools._internal.pytest_plugin.build_directory)
+    # Check internally for a project bundled with the engine
+    if not project_json:
+        check_project_json = os.path.join(engine_root, project, 'project.json')
+        if os.path.isfile(check_project_json):
+            project_json = check_project_json
+
+    if not project_json:
+        raise OSError(f"Unable to find the project directory for project: ${project}")
 
     return project_json
 
