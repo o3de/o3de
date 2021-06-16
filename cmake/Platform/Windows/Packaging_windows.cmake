@@ -91,23 +91,35 @@ set(CPACK_WIX_EXTENSIONS
 
 set(_embed_artifacts "yes")
 
+set(_hyperlink_license [[
+        <Hypertext Name="EulaHyperlink" X="42" Y="202" Width="-42" Height="51" TabStop="yes" FontId="1" HideWhenDisabled="yes">#(loc.InstallEulaAcceptance)</Hypertext>
+]])
+
+set(_raw_text_license [[
+        <Richedit Name="EulaRichedit" X="42" Y="202" Width="-42" Height="-84" TabStop="yes" FontId="2" HexStyle="0x800000" />
+        <Text Name="EulaAcceptance" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="1" HideWhenDisabled="yes">#(loc.InstallEulaAcceptance)</Text>
+]])
+
 if(LY_INSTALLER_DOWNLOAD_URL)
 
+    set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
+
     if(LY_INSTALLER_LICENSE_URL)
-        set(WIX_THEME_INSTALL_LICENSE_ELEMENT
-            "<Hypertext Name=\"EulaHyperlink\" X=\"11\" Y=\"121\" Width=\"-11\" Height=\"51\" TabStop=\"yes\" FontId=\"3\" HideWhenDisabled=\"yes\">#(loc.InstallLicenseLinkText)</Hypertext>"
-        )
+        set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_hyperlink_license})
+        set(WIX_THEME_EULA_ACCEPTANCE_TEXT "&lt;a href=\"#\"&gt;Terms of Use&lt;/a&gt;")
     else()
-        set(WIX_THEME_INSTALL_LICENSE_ELEMENT
-            "<Richedit Name=\"EulaRichedit\" X=\"11\" Y=\"80\" Width=\"-11\" Height=\"-70\" TabStop=\"yes\" FontId=\"0\" HexStyle=\"0x800000\" />"
-        )
+        set(WIX_THEME_INSTALL_LICENSE_ELEMENTS ${_raw_text_license})
+        set(WIX_THEME_EULA_ACCEPTANCE_TEXT "Terms of Use above")
     endif()
 
+    # theme ux file
     configure_file(
         "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.xml.in"
         "${CPACK_BINARY_DIR}/BootstrapperTheme.xml"
         @ONLY
     )
+
+    # theme localization file
     configure_file(
         "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.wxl.in"
         "${CPACK_BINARY_DIR}/BootstrapperTheme.wxl"
