@@ -1413,7 +1413,8 @@ void EditorViewportWidget::SetViewportId(int id)
         SetAsActiveViewport();
     }
 
-    auto* editorViewportSettingsCallback = SandboxEditor::CreateEditorViewportSettingsCallback();
+    m_editorViewportSettingsCallbacks = SandboxEditor::CreateEditorViewportSettingsCallbacks();
+
     m_gridSnappingHandler = SandboxEditor::GridSnappingChangedEvent::Handler(
         [id](bool snapping)
         {
@@ -1421,7 +1422,7 @@ void EditorViewportWidget::SetViewportId(int id)
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingEnabled, snapping);
         });
 
-    SandboxEditor::RegisterGridChangedEvent(editorViewportSettingsCallback, m_gridSnappingHandler);
+    m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()

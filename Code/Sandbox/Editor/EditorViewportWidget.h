@@ -105,8 +105,6 @@ public:
 public:
     EditorViewportWidget(const QString& name, QWidget* parent = nullptr);
 
-    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
-
     static const GUID& GetClassID()
     {
         return QtViewport::GetClassID<EditorViewportWidget>();
@@ -568,6 +566,9 @@ private:
     void UpdateScene();
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
+
+    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
+    AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     QSet<int> m_keyDown;
 

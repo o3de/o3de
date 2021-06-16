@@ -15,16 +15,22 @@
 #include <SandboxAPI.h>
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace SandboxEditor
 {
-    struct ViewportCallbackInterface;
-    SANDBOX_API ViewportCallbackInterface* CreateEditorViewportSettingsCallback();
-
     using GridSnappingChangedEvent = AZ::Event<bool>;
 
-    SANDBOX_API void RegisterGridChangedEvent(
-        ViewportCallbackInterface* viewportCallbackInterface, GridSnappingChangedEvent::Handler& handler);
+    //! Set callbacks to listen for editor settings change events.
+    class EditorViewportSettingsCallbacks
+    {
+    public:
+        virtual ~EditorViewportSettingsCallbacks() = default;
+
+        virtual void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) = 0;
+    };
+
+    SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
 
     SANDBOX_API bool GridSnappingEnabled();
     SANDBOX_API void SetGridSnapping(bool enabled);
