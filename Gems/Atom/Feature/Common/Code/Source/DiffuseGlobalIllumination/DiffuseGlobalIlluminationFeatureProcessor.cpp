@@ -43,6 +43,12 @@ namespace AZ
 
         void DiffuseGlobalIlluminationFeatureProcessor::SetQualityLevel(DiffuseGlobalIlluminationQualityLevel qualityLevel)
         {
+            if (qualityLevel >= DiffuseGlobalIlluminationQualityLevel::Count)
+            {
+                AZ_Assert(false, "SetQualityLevel called with invalid quality level [%d]", qualityLevel);
+                return;
+            }
+
             m_qualityLevel = qualityLevel;
 
             UpdatePasses();

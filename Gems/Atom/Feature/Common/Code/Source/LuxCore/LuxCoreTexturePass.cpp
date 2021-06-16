@@ -28,8 +28,6 @@ namespace AZ
         LuxCoreTexturePass::LuxCoreTexturePass(const RPI::PassDescriptor& descriptor)
             : ParentPass(descriptor)
         {
-            m_flags.m_alreadyCreated = false;
-
             RPI::PassSystemInterface* passSystem = RPI::PassSystemInterface::Get();
 
             // Create render target pass
@@ -41,8 +39,6 @@ namespace AZ
 
             // Create readback
             m_readback = AZStd::make_shared<AZ::RPI::AttachmentReadback>(AZ::RHI::ScopeId{ Uuid::CreateRandom().ToString<AZStd::string>() });
-
-            CreateChildPasses();
         }
         
         LuxCoreTexturePass::~LuxCoreTexturePass()
@@ -61,9 +57,9 @@ namespace AZ
             AddChild(m_renderTargetPass);
         }
 
-        void LuxCoreTexturePass::BuildAttachmentsInternal()
+        void LuxCoreTexturePass::BuildInternal()
         {
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void LuxCoreTexturePass::FrameBeginInternal(FramePrepareParams params)

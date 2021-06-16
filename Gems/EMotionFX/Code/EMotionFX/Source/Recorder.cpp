@@ -106,16 +106,12 @@ namespace EMotionFX
         mCurrentPlayTime = 0.0f;
 
         mObjects.SetMemoryCategory(EMFX_MEMCATEGORY_RECORDER);
-
-        GetEMotionFX().GetEventManager()->AddEventHandler(this);
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusConnect();
     }
 
     Recorder::~Recorder()
     {
-        if (EventManager* eventManager = GetEMotionFX().GetEventManager())
-        {
-            eventManager->RemoveEventHandler(this);
-        }
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusDisconnect();
         Clear();
     }
 
@@ -1448,7 +1444,7 @@ namespace EMotionFX
         Unlock();
     }
 
-    void Recorder::OnDeleteActorInstance(ActorInstance* actorInstance)
+    void Recorder::OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance)
     {
         // Actor instances created by actor components do not use the command system and don't call a ClearRecorder command.
         // Thus, these actor instances will have to be removed from the recorder to avoid dangling data.

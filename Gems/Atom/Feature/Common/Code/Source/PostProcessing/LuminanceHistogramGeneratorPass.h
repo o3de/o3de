@@ -42,7 +42,7 @@ namespace AZ
 
         protected:
             LuminanceHistogramGeneratorPass(const RPI::PassDescriptor& descriptor);
-            virtual void BuildAttachmentsInternal() override;
+            virtual void BuildInternal() override;
             void CreateHistogramBuffer();
             void AttachHistogramBuffer();
             AZ::RHI::Size GetColorBufferResolution();

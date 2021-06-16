@@ -73,7 +73,7 @@ namespace AZ
         {
             m_sizes = sizes;
             m_updateChildren = true;
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
 
             m_atlas.Initialize();
             for (const auto& it : m_sizes)
@@ -156,7 +156,7 @@ namespace AZ
             return m_atlas;
         }
 
-        void ProjectedShadowmapsPass::BuildAttachmentsInternal()
+        void ProjectedShadowmapsPass::BuildInternal()
         {
             UpdateChildren();
 
@@ -177,7 +177,7 @@ namespace AZ
             imageDescriptor.m_size = RHI::Size(shadowmapWidth, shadowmapWidth, 1);
             imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
 
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
         void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const

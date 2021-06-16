@@ -34,6 +34,7 @@
 #include "NodeGroup.h"
 #include "Recorder.h"
 #include "TransformData.h"
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 
@@ -153,20 +154,14 @@ namespace EMotionFX
         // register it
         GetActorManager().RegisterActorInstance(this);
 
-        // automatically register the actor instance
-        GetEventManager().OnCreateActorInstance(this);
-
         GetActorManager().GetScheduler()->RecursiveInsertActorInstance(this);
+
+        ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceCreated, this);
     }
 
-    // the destructor
     ActorInstance::~ActorInstance()
     {
-        // trigger the OnDeleteActorInstance event
-        GetEventManager().OnDeleteActorInstance(this);
-
-        // remove it from the recording
-        GetRecorder().RemoveActorInstanceFromRecording(this);
+        ActorInstanceNotificationBus::Broadcast(&ActorInstanceNotificationBus::Events::OnActorInstanceDestroyed, this);
 
         // get rid of the motion system
         if (mMotionSystem)

@@ -48,9 +48,9 @@ namespace AZ
             }
         }
 
-        void LookModificationCompositePass::Init()
+        void LookModificationCompositePass::InitializeInternal()
         {
-            FullscreenTrianglePass::Init();
+            FullscreenTrianglePass::InitializeInternal();
 
             m_shaderColorGradingLutImageIndex.Reset();
             m_shaderColorGradingShaperTypeIndex.Reset();

@@ -132,7 +132,7 @@ namespace AZ
         // AssetBus overrides
         void Shader::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Shader::OnAssetReloaded %s", asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
             if (asset->GetId() == m_asset->GetId())
             {
