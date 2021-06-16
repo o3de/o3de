@@ -4060,17 +4060,10 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 {
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        QString platform = "";
-
-#ifdef WIN64
-        platform = "[x64]";
-#else
-        platform = "[x86]";
-#endif //WIN64
 
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("Open 3D Engine Editor Beta %1 - Build %2").arg(platform).arg(LY_BUILD);
+            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
         }
 
         if (!sPreTitleStr.isEmpty())
