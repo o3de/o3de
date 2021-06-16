@@ -354,9 +354,9 @@ namespace AZ
             Init();
         }
 
-        void RayTracingPass::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
+        void RayTracingPass::OnShaderVariantReinitialized(const RPI::ShaderVariant&)
         {
             Init();
         }
-    }   // namespace RPI
+    }   // namespace Render
 }   // namespace AZ
