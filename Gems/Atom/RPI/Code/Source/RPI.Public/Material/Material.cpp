@@ -268,9 +268,9 @@ namespace AZ
             OnAssetReloaded(m_materialAsset);
         }
 
-        void Material::OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& /*shaderVariantId*/, ShaderVariantStableId shaderVariantStableId)
+        void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s variant %u", this, shader.GetAsset().GetHint().c_str(), shaderVariantStableId.GetIndex());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s", this, shaderVariant.GetShaderVariantAsset().GetHint().c_str());
 
             // Note that it would be better to check the shaderVariantId to see if that variant is relevant to this particular material before reinitializing it.
             // There could be hundreds or even thousands of variants for a shader, but only one of those variants will be used by any given material. So we could

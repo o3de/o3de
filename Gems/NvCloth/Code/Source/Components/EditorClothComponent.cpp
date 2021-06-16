@@ -52,7 +52,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-cloth.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/cloth/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->UIElement(AZ::Edit::UIHandlers::CheckBox, "Simulate in editor",

@@ -218,7 +218,7 @@ namespace AZ
                 return false;
             }
             
-            if (!m_asset->FinalizeAfterLoad())
+            if (!m_asset->SelectShaderApiData())
             {
                 ReportError("Failed to finalize the ShaderAsset.");
                 return false;

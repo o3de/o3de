@@ -56,7 +56,7 @@ namespace AZ
             AZ::Data::Asset<ShaderAsset> SerializeInHelper(const AZ::Data::AssetId& assetId)
             {
                 AZ::Data::Asset<ShaderAsset> asset = Base::SerializeIn(assetId);
-                asset->FinalizeAfterLoad();
+                asset->SelectShaderApiData();
                 asset->SetReady();
                 return asset;
             }

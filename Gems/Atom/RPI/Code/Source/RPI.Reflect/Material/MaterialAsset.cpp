@@ -18,6 +18,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace AZ
 {
@@ -47,6 +48,7 @@ namespace AZ
         {
             MaterialReloadNotificationBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
+            AssetInitBus::Handler::BusDisconnect();
         }
 
         const Data::Asset<MaterialTypeAsset>& MaterialAsset::GetMaterialTypeAsset() const
@@ -97,6 +99,8 @@ namespace AZ
         {
             if (!m_materialTypeAsset.Get())
             {
+                AssetInitBus::Handler::BusDisconnect();
+
                 // Any MaterialAsset with invalid MaterialTypeAsset is not a successfully-loaded asset.
                 return false;
             }
@@ -104,6 +108,8 @@ namespace AZ
             {
                 Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
+                
+                AssetInitBus::Handler::BusDisconnect();
 
                 return true;
             }
@@ -116,11 +122,9 @@ namespace AZ
             // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
             MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
         }
-
-        void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        
+        void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
-
             Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
 
             if (newMaterialTypeAsset)
@@ -135,16 +139,31 @@ namespace AZ
             }
         }
 
+        void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
+            ReinitializeMaterialTypeAsset(asset);
+        }
+
+        void MaterialAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            // Regarding why we listen to both OnAssetReloaded and OnAssetReady, see explanation in ShaderAsset::OnAssetReady.
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReady %s", this, asset.GetHint().c_str());
+            ReinitializeMaterialTypeAsset(asset);
+        }
+
         Data::AssetHandler::LoadResult MaterialAssetHandler::LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
-            Data::AssetHandler::LoadResult baseResult = Base::LoadAssetData(asset, stream, assetLoadFilterCB);
-            bool postLoadResult = asset.GetAs<MaterialAsset>()->PostLoadInit();
-            return ((baseResult == Data::AssetHandler::LoadResult::LoadComplete) && postLoadResult) ?
-                Data::AssetHandler::LoadResult::LoadComplete :
-                Data::AssetHandler::LoadResult::Error;
+            if (Base::LoadAssetData(asset, stream, assetLoadFilterCB) == Data::AssetHandler::LoadResult::LoadComplete)
+            {
+                asset.GetAs<MaterialAsset>()->AssetInitBus::Handler::BusConnect();
+                return Data::AssetHandler::LoadResult::LoadComplete;
+            }
+
+            return Data::AssetHandler::LoadResult::Error;
         }
 
     } // namespace RPI

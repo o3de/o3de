@@ -159,12 +159,23 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::GetNonPrefabEntities(EntityList& entities)
     {
-        m_rootInstance->GetEntities(entities, false);
+        m_rootInstance->GetEntities(
+            [&entities](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
     }
 
     bool PrefabEditorEntityOwnershipService::GetAllEntities(EntityList& entities)
     {
-        m_rootInstance->GetEntities(entities, true);
+        m_rootInstance->GetAllEntitiesInHierarchy(
+            [&entities](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
+
         return true;
     }
 
@@ -551,7 +562,7 @@ namespace AzToolsFramework
                     return;
                 }
 
-                m_rootInstance->GetNestedEntities([this](AZStd::unique_ptr<AZ::Entity>& entity)
+                m_rootInstance->GetAllEntitiesInHierarchy([this](AZStd::unique_ptr<AZ::Entity>& entity)
                     {
                         AZ_Assert(entity, "Invalid entity found in root instance while starting play in editor.");
                         if (entity->GetState() == AZ::Entity::State::Active)
