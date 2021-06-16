@@ -72,8 +72,8 @@ namespace AZ
 
             // ShaderInstanceNotificationBus::Handler overrides
             void OnShaderReinitialized(const RPI::Shader& shader) override;
-            void OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset) override;
-            void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
+            void OnShaderAssetReinitialized(const Data::Asset<RPI::ShaderAsset>& shaderAsset) override;
+            void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
             RHI::DispatchItem m_dispatchItem;
 

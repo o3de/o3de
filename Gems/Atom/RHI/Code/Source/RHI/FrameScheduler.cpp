@@ -181,7 +181,10 @@ namespace AZ
 
             m_compileRequest = compileRequest;
 
-            FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompile");
+                FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompile);
+            }
 
             FrameGraphCompileRequest frameGraphCompileRequest;
             frameGraphCompileRequest.m_frameGraph = m_frameGraph.get();
@@ -193,7 +196,10 @@ namespace AZ
             const MessageOutcome outcome = m_frameGraphCompiler->Compile(frameGraphCompileRequest);
             if (outcome.IsSuccess())
             {
-                FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
+                {
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: Compile: OnFrameCompileEnd");
+                    FrameEventBus::Broadcast(&FrameEventBus::Events::OnFrameCompileEnd, *m_frameGraph);
+                }
 
                 FrameGraphLogger::Log(*m_frameGraph, compileRequest.m_logVerbosity);
 
@@ -400,7 +406,11 @@ namespace AZ
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
-            FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "FrameScheduler: EndFrame: OnFrameEnd");
+                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameEnd);
+            }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
             m_cpuTimingStatistics.m_frameToFrameTime = timeNowTicks - m_lastFrameEndTime;
