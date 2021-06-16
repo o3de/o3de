@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="F:\o3de\o3de\Code\Tools\ProjectManager\build\windows_vs2019\CMakeFiles\8f8edd4150d5fdff9e65fbf5aafcda38\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{3DB105C3-4A18-313F-A83A-8134BD606B8A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

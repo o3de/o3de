@@ -31,12 +31,13 @@ namespace O3DE::ProjectManager
             const QString& displayName,
             const QString& origin,
             const QString& summary,
+            const QString& iconPath,
             const QString& imagePath,
             const QString& backgroundImagePath,
             bool needsBuild);
                     
-        bool operator==(const ProjectInfo& rhs);
-        bool operator!=(const ProjectInfo& rhs);
+        bool operator==(const ProjectInfo& rhs) const;
+        bool operator!=(const ProjectInfo& rhs) const;
 
         bool IsValid() const;
 
@@ -48,6 +49,7 @@ namespace O3DE::ProjectManager
         QString m_displayName;
         QString m_origin;
         QString m_summary;
+        QString m_iconPath;
         QStringList m_userTags;
 
         // Used on projects home screen
@@ -55,7 +57,6 @@ namespace O3DE::ProjectManager
         QString m_backgroundImagePath;
 
         // Used in project creation
-
         bool m_needsBuild = false; //! Does this project need to be built
     };
 } // namespace O3DE::ProjectManager

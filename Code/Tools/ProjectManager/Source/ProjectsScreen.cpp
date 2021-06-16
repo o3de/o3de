@@ -12,6 +12,7 @@
 
 #include <ProjectsScreen.h>
 
+#include <ProjectManagerDefs.h>
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectUtils.h>
@@ -220,7 +221,7 @@ namespace O3DE::ProjectManager
     {
         ProjectButton* projectButton;
 
-        QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
+        QString projectPreviewPath = QDir(project.m_path).filePath(ProjectPreviewImagePath);
         QFileInfo doesPreviewExist(projectPreviewPath);
         if (doesPreviewExist.exists() && doesPreviewExist.isFile())
         {

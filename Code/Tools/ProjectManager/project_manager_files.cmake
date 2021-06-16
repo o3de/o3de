@@ -14,6 +14,7 @@ set(FILES
     Resources/ProjectManager.qrc
     Resources/ProjectManager.qss
     Source/main.cpp
+    Source/ProjectManagerDefs.h
     Source/ScreenDefs.h
     Source/ScreenFactory.h
     Source/ScreenFactory.cpp
@@ -26,6 +27,10 @@ set(FILES
     Source/FormLineEditWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
+    Source/FormFolderBrowseEditWidget.h
+    Source/FormFolderBrowseEditWidget.cpp
+    Source/FormImageBrowseEditWidget.h
+    Source/FormImageBrowseEditWidget.cpp
     Source/PathValidator.h
     Source/PathValidator.cpp
     Source/ProjectManagerWindow.h

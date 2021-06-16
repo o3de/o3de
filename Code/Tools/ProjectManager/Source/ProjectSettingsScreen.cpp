@@ -11,7 +11,7 @@
  */
 
 #include <ProjectSettingsScreen.h>
-#include <FormBrowseEditWidget.h>
+#include <FormFolderBrowseEditWidget.h>
 #include <FormLineEditWidget.h>
 #include <PathValidator.h>
 #include <PythonBindingsInterface.h>
@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
         connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
         m_verticalLayout->addWidget(m_projectName);
 
-        m_projectPath = new FormBrowseEditWidget(tr("Project Location"), "", this);
+        m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
         m_projectPath->lineEdit()->setReadOnly(true);
         connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
         m_verticalLayout->addWidget(m_projectPath);

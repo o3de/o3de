@@ -11,6 +11,7 @@
  */
 
 #include <ProjectButtonWidget.h>
+#include <ProjectManagerDefs.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
@@ -25,7 +26,6 @@
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_projectImageWidth = 210;
     inline constexpr static int s_projectImageHeight = 280;
 
     LabelButton::LabelButton(QWidget* parent)
@@ -118,7 +118,7 @@ namespace O3DE::ProjectManager
         setLayout(vLayout);
 
         m_projectImageLabel = new LabelButton(this);
-        m_projectImageLabel->setFixedSize(s_projectImageWidth, s_projectImageHeight);
+        m_projectImageLabel->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
         m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
