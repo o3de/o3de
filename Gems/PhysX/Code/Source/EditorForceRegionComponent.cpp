@@ -176,7 +176,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/ForceRegion.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/ForceRegion.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/console/lumberyard/physx/force-region")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/physx-force-region/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("PhysXTriggerService", 0x3a117d7b))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport")

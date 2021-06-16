@@ -41,22 +41,20 @@ namespace ${SanitizedCppName}
 
     void ${SanitizedCppName}SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("${SanitizedCppName}Service"));
+        provided.push_back(AZ_CRC_CE("${SanitizedCppName}Service"));
     }
 
     void ${SanitizedCppName}SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("${SanitizedCppName}Service"));
+        incompatible.push_back(AZ_CRC_CE("${SanitizedCppName}Service"));
     }
 
-    void ${SanitizedCppName}SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ${SanitizedCppName}SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        AZ_UNUSED(required);
     }
 
-    void ${SanitizedCppName}SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ${SanitizedCppName}SystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        AZ_UNUSED(dependent);
     }
 
     ${SanitizedCppName}SystemComponent::${SanitizedCppName}SystemComponent()
@@ -91,9 +89,8 @@ namespace ${SanitizedCppName}
         ${SanitizedCppName}RequestBus::Handler::BusDisconnect();
     }
 
-    void ${SanitizedCppName}SystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    void ${SanitizedCppName}SystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-
     }
 
 } // namespace ${SanitizedCppName}

@@ -17,6 +17,7 @@
 #include <AzCore/EBus/Event.h>
 #include <AtomCore/std/containers/array_view.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -52,6 +53,7 @@ namespace AZ
         class MaterialTypeAsset
             : public AZ::Data::AssetData
             , public Data::AssetBus::MultiHandler
+            , public AssetInitBus::Handler
         {
             friend class MaterialTypeAssetCreator;
             friend class MaterialTypeAssetHandler;
@@ -100,13 +102,17 @@ namespace AZ
             MaterialUvNameMap GetUvNameMap() const;
 
         private:
-            bool PostLoadInit();
+            bool PostLoadInit() override;
 
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+
+            //! Replaces the appropriate asset members when a reload occurs
+            void ReinitializeAsset(Data::Asset<Data::AssetData> asset);
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.

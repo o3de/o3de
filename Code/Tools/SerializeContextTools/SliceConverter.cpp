@@ -385,24 +385,36 @@ namespace AZ
                     return false;
                 }
 
-                // Now, convert the nested slice to a prefab.
-                bool nestedSliceResult = ConvertSliceFile(serializeContext, assetPath, isDryRun);
-                if (!nestedSliceResult)
-                {
-                    AZ_Warning("Convert-Slice", nestedSliceResult, "  Nested slice '%s' could not be converted.", assetPath.c_str());
-                    return false;
-                }
+                // Check to see if we've already converted this slice at a higher level of slice nesting, or if this is our first
+                // occurrence and we need to convert it now.
 
-                // Find the prefab template we created for the newly-created nested prefab.
-                // To get the template, we need to take our absolute slice path and turn it into a project-relative prefab path.
+                // First, take our absolute slice path and turn it into a project-relative prefab path.
                 AZ::IO::Path nestedPrefabPath = assetPath;
                 nestedPrefabPath.ReplaceExtension("prefab");
 
                 auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 nestedPrefabPath = prefabLoaderInterface->GenerateRelativePath(nestedPrefabPath);
 
+                // Now, see if we already have a template ID in memory for it.
                 AzToolsFramework::Prefab::TemplateId nestedTemplateId =
                     prefabSystemComponentInterface->GetTemplateIdFromFilePath(nestedPrefabPath);
+
+                // If we don't have a template ID yet, convert the nested slice to a prefab and get the template ID.
+                if (nestedTemplateId == AzToolsFramework::Prefab::InvalidTemplateId)
+                {
+                    bool nestedSliceResult = ConvertSliceFile(serializeContext, assetPath, isDryRun);
+                    if (!nestedSliceResult)
+                    {
+                        AZ_Warning("Convert-Slice", nestedSliceResult, "  Nested slice '%s' could not be converted.", assetPath.c_str());
+                        return false;
+                    }
+
+                    nestedTemplateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(nestedPrefabPath);
+                    AZ_Assert(nestedTemplateId != AzToolsFramework::Prefab::InvalidTemplateId,
+                        "Template ID for %s is invalid", nestedPrefabPath.c_str());
+                }
+
+                // Get the nested prefab template.
                 AzToolsFramework::Prefab::TemplateReference nestedTemplate =
                     prefabSystemComponentInterface->FindTemplate(nestedTemplateId);
 
