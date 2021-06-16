@@ -97,6 +97,9 @@ namespace AZ
         //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
         AZ::IO::FixedMaxPathString GetEngineManifestPath();
 
+        //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
+        AZ::IO::FixedMaxPathString GetO3deLogsDirectory();
+
         //! Retrieves the App root path to use on the current platform
         //! If the optional is not engaged the AppRootPath should be calculated based
         //! on the location of the bootstrap.cfg file
@@ -113,7 +116,8 @@ namespace AZ
         //! Save a string to a file. Otherwise returns a failure with error message.
         AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath);
 
-        //! Read a file into a string. Returns a failure with error message if the content could not be loaded.
+        //! Read a file into a string. Returns a failure with error message if the content could not be loaded or if
+        //! the file size is larger than the max file size provided.
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize = DefaultMaxFileSize);
     }

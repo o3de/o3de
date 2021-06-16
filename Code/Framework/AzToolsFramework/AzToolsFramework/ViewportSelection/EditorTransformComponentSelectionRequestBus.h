@@ -104,6 +104,9 @@ namespace AzToolsFramework
         //! Copy scale to to each individual entity in world (absolute) space.
         virtual void CopyScaleToSelectedEntitiesIndividualWorld(float scale) = 0;
 
+        //! Snap selected entities to be aligned with the world space grid.
+        virtual void SnapSelectedEntitiesToWorldGrid(float gridSize) = 0;
+
     protected:
         ~EditorTransformComponentSelectionRequests() = default;
     };

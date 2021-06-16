@@ -304,6 +304,30 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb)
+        {
+            if (meshHandle.IsValid())
+            {
+                MeshDataInstance& meshData = *meshHandle;
+                meshData.m_aabb = localAabb;
+                meshData.m_cullBoundsNeedsUpdate = true;
+                meshData.m_objectSrgNeedsUpdate = true;
+            }
+        };
+
+        AZ::Aabb MeshFeatureProcessor::GetLocalAabb(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_aabb;
+            }
+            else
+            {
+                AZ_Assert(false, "Invalid mesh handle");
+                return Aabb::CreateNull();
+            }
+        }
+
         Transform MeshFeatureProcessor::GetTransform(const MeshHandle& meshHandle)
         {
             if (meshHandle.IsValid())
@@ -603,6 +627,8 @@ namespace AZ
                 SetRayTracingData();
             }
 
+            m_aabb = model->GetModelAsset()->GetAabb();
+
             m_cullableNeedsRebuild = true;
             m_cullBoundsNeedsUpdate = true;
             m_objectSrgNeedsUpdate = true;
@@ -639,15 +665,15 @@ namespace AZ
                     continue;
                 }
 
-                auto& objectSrgAsset = material->GetAsset()->GetObjectSrgAsset();
+                auto& objectSrgLayout = material->GetAsset()->GetObjectSrgLayout();
 
-                if (!objectSrgAsset)
+                if (!objectSrgLayout)
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "No per-object ShaderResourceGroup found.");
                     continue;
                 }
 
-                if (m_shaderResourceGroup && m_shaderResourceGroup->GetAsset() != objectSrgAsset)
+                if (m_shaderResourceGroup && m_shaderResourceGroup->GetLayout()->GetHash() != objectSrgLayout->GetHash())
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "All materials on a model must use the same per-object ShaderResourceGroup. Skipping.");
                     continue;
@@ -657,7 +683,8 @@ namespace AZ
                 // in shaderResourceGroupInOut. All of the Model's draw packets will use this same instance.
                 if (!m_shaderResourceGroup)
                 {
-                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(objectSrgAsset);
+                    auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
+                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, RPI::DefaultSupervariantIndex, objectSrgLayout->GetName());
                     if (!m_shaderResourceGroup)
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
@@ -773,6 +800,12 @@ namespace AZ
                 if (materialAssignment.m_materialInstance.get())
                 {
                     material = materialAssignment.m_materialInstance;
+                }
+
+                if (!material)
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "No material provided for mesh. Skipping.");
+                    continue;
                 }
 
                 // retrieve vertex/index buffers
@@ -989,7 +1022,7 @@ namespace AZ
             RPI::Cullable::CullData& cullData = m_cullable.m_cullData;
             RPI::Cullable::LodData& lodData = m_cullable.m_lodData;
 
-            const Aabb& localAabb = m_model->GetAabb();
+            const Aabb& localAabb = m_aabb;
             lodData.m_lodSelectionRadius = 0.5f*localAabb.GetExtents().GetMaxElement();
 
             const size_t modelLodCount = m_model->GetLodCount();
@@ -1070,7 +1103,7 @@ namespace AZ
 
             Vector3 center;
             float radius;
-            Aabb localAabb = m_model->GetAabb();
+            Aabb localAabb = m_aabb;
             localAabb.MultiplyByScale(nonUniformScale);
 
             localAabb.GetTransformedAabb(localToWorld).GetAsSphere(center, radius);

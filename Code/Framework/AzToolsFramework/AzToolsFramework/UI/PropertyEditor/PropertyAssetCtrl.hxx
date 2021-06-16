@@ -208,6 +208,8 @@ namespace AzToolsFramework
         void SetEditButtonIcon(const QIcon& icon);
         void SetEditButtonTooltip(QString tooltip);
         void SetBrowseButtonIcon(const QIcon& icon);
+        void SetBrowseButtonEnabled(bool enabled);
+        void SetBrowseButtonVisible(bool visible);
         void SetClearButtonEnabled(bool enable);
         void SetClearButtonVisible(bool visible);
 

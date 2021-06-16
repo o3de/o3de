@@ -1154,13 +1154,13 @@ struct DiskOperationInfo
         return *this;
     }
 
-    DiskOperationInfo& operator - (const DiskOperationInfo& rv)
+    DiskOperationInfo operator - (const DiskOperationInfo& rv)
     {
         DiskOperationInfo res(*this);
         return res -= rv;
     }
 
-    DiskOperationInfo& operator + (const DiskOperationInfo& rv)
+    DiskOperationInfo operator + (const DiskOperationInfo& rv)
     {
         DiskOperationInfo res(*this);
         return res += rv;

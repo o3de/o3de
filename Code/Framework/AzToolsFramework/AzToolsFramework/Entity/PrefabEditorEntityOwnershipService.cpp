@@ -159,12 +159,23 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::GetNonPrefabEntities(EntityList& entities)
     {
-        m_rootInstance->GetEntities(entities, false);
+        m_rootInstance->GetEntities(
+            [&entities](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
     }
 
     bool PrefabEditorEntityOwnershipService::GetAllEntities(EntityList& entities)
     {
-        m_rootInstance->GetEntities(entities, true);
+        m_rootInstance->GetAllEntitiesInHierarchy(
+            [&entities](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                entities.emplace_back(entity.get());
+                return true;
+            });
+
         return true;
     }
 
@@ -185,13 +196,7 @@ namespace AzToolsFramework
     bool PrefabEditorEntityOwnershipService::LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename)
     {
         Reset();
-        // Make loading from stream to behave the same in terms of filesize as regular loading of prefabs
-        // This may need to be revisited in the future for supporting higher sizes along with prefab loading
-        if (stream.GetLength() > Prefab::MaxPrefabFileSize)
-        {
-            AZ_Error("Prefab", false, "'%.*s' prefab content is bigger than the max supported size (%f MB)", AZ_STRING_ARG(filename), Prefab::MaxPrefabFileSize / (1024.f * 1024.f));
-            return false;
-        }
+
         const size_t bufSize = stream.GetLength();
         AZStd::unique_ptr<char[]> buf(new char[bufSize]);
         AZ::IO::SizeType bytes = stream.Read(bufSize, buf.get());
@@ -258,13 +263,20 @@ namespace AzToolsFramework
         }
 
         AZStd::string out;
-        if (m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
+
+        if (!m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
         {
-            const size_t bytesToWrite = out.size();
-            const size_t bytesWritten = stream.Write(bytesToWrite, out.data());
-            return bytesWritten == bytesToWrite;
+            return false;
         }
-        return false;
+
+        const size_t bytesToWrite = out.size();
+        const size_t bytesWritten = stream.Write(bytesToWrite, out.data());
+        if(bytesWritten != bytesToWrite)
+        {
+            return false;
+        }
+        m_prefabSystemComponent->SetTemplateDirtyFlag(templateId, false);
+        return true;
     }
 
     void PrefabEditorEntityOwnershipService::CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename)
@@ -550,7 +562,7 @@ namespace AzToolsFramework
                     return;
                 }
 
-                m_rootInstance->GetNestedEntities([this](AZStd::unique_ptr<AZ::Entity>& entity)
+                m_rootInstance->GetAllEntitiesInHierarchy([this](AZStd::unique_ptr<AZ::Entity>& entity)
                     {
                         AZ_Assert(entity, "Invalid entity found in root instance while starting play in editor.");
                         if (entity->GetState() == AZ::Entity::State::Active)

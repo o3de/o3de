@@ -235,4 +235,19 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
+
+    int GemModel::TotalAddedGems() const
+    {
+        int result = 0;
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (IsAdded(modelIndex))
+            {
+                ++result;
+            }
+        }
+        return result;
+    }
+
 } // namespace O3DE::ProjectManager

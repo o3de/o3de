@@ -123,7 +123,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     static const char textureIndexName[] = "m_texture";
     static const char worldToProjIndexName[] = "m_worldToProj";
     AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
-    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetAsset()->GetLayout();
+    const AZ::RHI::ShaderResourceGroupLayout* layout = drawSrg->GetLayout();
     m_shaderData.m_imageInputIndex = layout->FindShaderInputImageIndex(AZ::Name(textureIndexName));
     AZ_Error("Draw2d", m_shaderData.m_imageInputIndex.IsValid(), "Failed to find shader input constant %s.",
         textureIndexName);

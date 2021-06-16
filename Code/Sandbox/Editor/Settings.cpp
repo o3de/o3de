@@ -26,6 +26,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
@@ -926,6 +927,8 @@ void SEditorSettings::Load()
 }
 
 //////////////////////////////////////////////////////////////////////////
+AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
+
 void SEditorSettings::PostInitApply()
 {
     if (!gEnv || !gEnv->pConsole)

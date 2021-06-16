@@ -22,6 +22,7 @@
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -114,23 +115,38 @@ namespace AzToolsFramework
         SpaceCluster(const SpaceCluster&) = delete;
         SpaceCluster& operator=(const SpaceCluster&) = delete;
 
-        ViewportUi::ClusterId m_spaceClusterId; //!< The id identifying the reference space cluster.
+        ViewportUi::ClusterId m_clusterId; //!< The id identifying the reference space cluster.
         ViewportUi::ButtonId m_localButtonId; //!< Local reference space button id.
         ViewportUi::ButtonId m_parentButtonId; //!< Parent reference space button id.
         ViewportUi::ButtonId m_worldButtonId; //!< World reference space button id.
-        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceSelectionHandler; //!< Callback for when a space cluster button is pressed.
         AZStd::optional<ReferenceFrame> m_spaceLock; //!< Locked reference frame to use if set.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
+    };
+
+    //! Grouping of viewport ui related state for aligning transforms to a grid.
+    struct SnappingCluster
+    {
+        SnappingCluster() = default;
+        // disable copying and moving (implicit)
+        SnappingCluster(const SnappingCluster&) = delete;
+        SnappingCluster& operator=(const SnappingCluster&) = delete;
+
+        ViewportUi::ClusterId m_clusterId; //!< The cluster id for all snapping buttons.
+        ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.
     };
 
     //! Entity selection/interaction handling.
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
         , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
@@ -177,6 +193,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
+        void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
         void ClearManipulatorOrientationOverride();
@@ -225,21 +242,26 @@ namespace AzToolsFramework
         AZStd::optional<AZ::Transform> GetManipulatorTransform() override;
         void OverrideManipulatorOrientation(const AZ::Quaternion& orientation) override;
         void OverrideManipulatorTranslation(const AZ::Vector3& translation) override;
-        void CopyTranslationToSelectedEntitiesIndividual(const AZ::Vector3& translation);
-        void CopyTranslationToSelectedEntitiesGroup(const AZ::Vector3& translation);
-        void ResetTranslationForSelectedEntitiesLocal();
-        void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation);
-        void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation);
-        void ResetOrientationForSelectedEntitiesLocal();
-        void CopyScaleToSelectedEntitiesIndividualLocal(float scale);
-        void CopyScaleToSelectedEntitiesIndividualWorld(float scale);
+        void CopyTranslationToSelectedEntitiesIndividual(const AZ::Vector3& translation) override;
+        void CopyTranslationToSelectedEntitiesGroup(const AZ::Vector3& translation) override;
+        void ResetTranslationForSelectedEntitiesLocal() override;
+        void CopyOrientationToSelectedEntitiesIndividual(const AZ::Quaternion& orientation) override;
+        void CopyOrientationToSelectedEntitiesGroup(const AZ::Quaternion& orientation) override;
+        void ResetOrientationForSelectedEntitiesLocal() override;
+        void CopyScaleToSelectedEntitiesIndividualLocal(float scale) override;
+        void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
+        void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
         // EditorManipulatorCommandUndoRedoRequestBus ...
         void UndoRedoEntityManipulatorCommand(
             AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
 
+        // EditorContextMenuBus...
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2 & point, int flags) override;
+        int GetMenuPosition() const override;
+        AZStd::string GetMenuIdentifier() const override;
+
         // EditorEventsBus ...
-        void PopulateEditorGlobalContextMenu(QMenu *menu, const AZ::Vector2& point, int flags) override;
         void OnEscape() override;
 
         // ToolsApplicationNotificationBus ...
@@ -263,6 +285,10 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
+        // EditorEntityContextNotificationBus overrides ...
+        void OnStartPlayInEditor() override;
+        void OnStopPlayInEditor() override;
+
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
@@ -270,8 +296,11 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
 
-        // Responsible for keeping the space cluster in sync with the current reference frame.
+        //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
+
+        //! Hides/Shows all viewportUi toolbars.
+        void SetAllViewportUiVisible(bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
         AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
@@ -306,6 +335,7 @@ namespace AzToolsFramework
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
+        SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
     };
 

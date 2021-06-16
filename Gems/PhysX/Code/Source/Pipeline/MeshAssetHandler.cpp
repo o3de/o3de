@@ -17,6 +17,7 @@
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -151,10 +152,31 @@ namespace PhysX
 
                 serializeContext->Class<MeshAssetData>()
                     ->Field("ColliderShapes", &MeshAssetData::m_colliderShapes)
-                    ->Field("SurfaceNames", &MeshAssetData::m_surfaceNames)
-                    ->Field("MaterialNames", &MeshAssetData::m_materialNames)
+                    ->Field("SurfaceNames", &MeshAssetData::m_materialNames)
+                    ->Field("MaterialNames", &MeshAssetData::m_physicsMaterialNames)
                     ->Field("MaterialIndexPerShape", &MeshAssetData::m_materialIndexPerShape)
                     ;
+            }
+        }
+
+        void MeshAsset::Reflect(AZ::ReflectContext* context)
+        {
+            MeshAssetData::Reflect(context);
+
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<MeshAsset>()
+                    ->Field("MeshAssetData", &MeshAsset::m_assetData)
+                    ;
+
+                // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
+                //       can open the asset with the preferred asset editor (FBX Settings).
+                if (auto* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MeshAsset>("PhysX Mesh Asset", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ;
+                }
             }
         }
 

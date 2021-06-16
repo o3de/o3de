@@ -67,7 +67,7 @@ struct CryPakMock
     MOCK_METHOD1(PoolMalloc, void*(size_t size));
     MOCK_METHOD1(PoolFree, void(void* p));
     MOCK_METHOD3(PoolAllocMemoryBlock, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> (size_t nSize, const char* sUsage, size_t nAlign));
-    MOCK_METHOD3(FindFirst, AZ::IO::ArchiveFileIterator(AZStd::string_view pDir, uint32_t nFlags, bool bAllOwUseFileSystem));
+    MOCK_METHOD2(FindFirst, AZ::IO::ArchiveFileIterator(AZStd::string_view pDir, AZ::IO::IArchive::EFileSearchType));
     MOCK_METHOD1(FindNext, AZ::IO::ArchiveFileIterator(AZ::IO::ArchiveFileIterator handle));
     MOCK_METHOD1(FindClose, bool(AZ::IO::ArchiveFileIterator));
     MOCK_METHOD1(GetModificationTime, AZ::IO::IArchive::FileTime(AZ::IO::HandleType f));

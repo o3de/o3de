@@ -73,9 +73,6 @@ namespace AzFramework
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
 
-        void AddOnSpawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
-        void AddOnDespawnedHandler(AZ::Event<AZ::Data::Asset<Spawnable>>::Handler& handler) override;
-
         //
         // The following function is thread safe but intended to be run from the main thread.
         //
@@ -199,9 +196,6 @@ namespace AzFramework
 
         Queue m_highPriorityQueue;
         Queue m_regularPriorityQueue;
-
-        AZ::Event<AZ::Data::Asset<Spawnable>> m_onSpawnedEvent;
-        AZ::Event<AZ::Data::Asset<Spawnable>> m_onDespawnedEvent;
 
         AZ::SerializeContext* m_defaultSerializeContext { nullptr };
         //! The threshold used to determine if a request goes in the regular (if bigger than the value) or high priority queue (if smaller

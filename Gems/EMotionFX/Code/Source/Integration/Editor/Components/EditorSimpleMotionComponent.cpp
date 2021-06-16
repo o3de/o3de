@@ -70,7 +70,6 @@ namespace EMotionFX
                     ->Attribute("Hidden", AZ::Edit::Attributes::PropertyHidden)
                     ->VirtualProperty("PreviewInEditor", "GetPreviewInEditor", "SetPreviewInEditor")
                     ->Event("GetAssetDuration", &EditorSimpleMotionComponentRequestBus::Events::GetAssetDuration)
-                    ->Attribute(AZ::Script::Attributes::Ignore, true)
                     ;
 
                 behaviorContext->Class<EditorSimpleMotionComponent>()
