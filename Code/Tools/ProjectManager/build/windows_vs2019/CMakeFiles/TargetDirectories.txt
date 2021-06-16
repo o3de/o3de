@@ -1,2 +1,0 @@
-F:/o3de/o3de/Code/Tools/ProjectManager/build/windows_vs2019/CMakeFiles/ALL_BUILD.dir
-F:/o3de/o3de/Code/Tools/ProjectManager/build/windows_vs2019/CMakeFiles/ZERO_CHECK.dir

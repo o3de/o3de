@@ -58,6 +58,7 @@ namespace O3DE::ProjectManager
     {
         m_projectInfo.m_displayName = m_projectName->lineEdit()->text();
         m_projectInfo.m_path = m_projectPath->lineEdit()->text();
+
         if (m_userChangedPreview)
         {
             m_projectInfo.m_imagePath = m_projectPreview->lineEdit()->text();
