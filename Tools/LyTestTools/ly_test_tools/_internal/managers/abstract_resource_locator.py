@@ -15,12 +15,14 @@ import os
 import pathlib
 import warnings
 import json
+import logging
 from abc import ABCMeta, abstractmethod
 from weakref import KeyedRef
 
 import ly_test_tools._internal.pytest_plugin
 from ly_test_tools.environment.file_system import find_ancestor_file
 
+logger = logging.getLogger(__name__)
 
 def _find_engine_root(initial_path):
     # type: (str) -> str
@@ -72,8 +74,8 @@ def _find_project_json(engine_root, project):
                             if project == project_json_data["project_name"]:
                                 project_json = check_project_json
                                 break
-            except KeyError:
-                pass  # No projects found in the manifest json
+            except KeyError as err:
+                logger.warning(f"Project key could not be found due to error: {err}")
 
     # Check relative to defined build directory, for external projects which configure through SDK settings
     if not project_json:
