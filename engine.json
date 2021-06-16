@@ -91,7 +91,9 @@
         "AutomatedTesting"
     ],
     "templates": [
+        "Templates/AssetGem",
         "Templates/DefaultGem",
-        "Templates/DefaultProject"
+        "Templates/DefaultProject",
+        "Templates/MinimalProject"
     ]
 }
