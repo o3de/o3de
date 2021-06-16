@@ -11,6 +11,8 @@
 
 include(BundleUtilities)
 
+cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of the LY_BUILD_FIXUP_BUNDLE expansion 
+
 set(anything_new FALSE)
 set(plugin_libs)
 set(plugin_dirs)
