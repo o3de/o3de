@@ -36,6 +36,7 @@ class TestAutomationBase:
         
     test_times = {}
     asset_processor = None 
+    tiaf_coverage_dir = os.getenv('tiaf_coverage_dir')
         
     def setup_class(cls):
         cls.test_times = {}
@@ -57,6 +58,10 @@ class TestAutomationBase:
 
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[]):
+        if self.tiaf_coverage_dir != '':
+            extra_cmdline_args.append("--runpythonargs")
+            extra_cmdline_args.append(f"tiaf_coverage_dir {self.tiaf_coverage_dir}")
+
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
