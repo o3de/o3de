@@ -26,7 +26,11 @@
 namespace AtomToolsFramework
 {
     AZ_CVAR(
-        AZ::Color, ed_cameraSystemOrbitPointColor, AZ::Color::CreateFromRgba(255, 255, 255, 255), nullptr, AZ::ConsoleFunctorFlags::Null,
+        AZ::Color,
+        ed_cameraSystemOrbitPointColor,
+        AZ::Color::CreateFromRgba(255, 255, 255, 255),
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "");
     AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
@@ -63,6 +67,11 @@ namespace AtomToolsFramework
         m_cameraListBuilder = builder;
     }
 
+    void ModularViewportCameraController::SetCameraPropsBuilderCallback(const CameraPropsBuilder& builder)
+    {
+        m_cameraPropsBuilder = builder;
+    }
+
     void ModularViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
     {
         if (m_cameraListBuilder)
@@ -71,11 +80,20 @@ namespace AtomToolsFramework
         }
     }
 
+    void ModularViewportCameraController::SetupCameraProperies(AzFramework::CameraProps& cameraProps)
+    {
+        if (m_cameraPropsBuilder)
+        {
+            m_cameraPropsBuilder(cameraProps);
+        }
+    }
+
     ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(
         const AzFramework::ViewportId viewportId, ModularViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModularViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
+        controller->SetupCameraProperies(m_cameraProps);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
@@ -138,7 +156,7 @@ namespace AtomToolsFramework
             if (m_cameraMode == CameraMode::Control)
             {
                 m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
-                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, event.m_deltaTime.count());
+                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_cameraProps, event.m_deltaTime.count());
 
                 // if there has been an interpolation, only clear the look at point if it is no longer
                 // centered in the view (the camera has looked away from it)

@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>

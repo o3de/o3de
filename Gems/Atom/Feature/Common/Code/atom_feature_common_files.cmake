@@ -267,6 +267,8 @@ set(FILES
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.h
     Source/ScreenSpace/DeferredFogSettings.cpp

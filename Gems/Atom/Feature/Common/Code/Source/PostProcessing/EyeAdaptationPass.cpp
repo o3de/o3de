@@ -60,7 +60,7 @@ namespace AZ
             m_buffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         }
 
-        void EyeAdaptationPass::BuildAttachmentsInternal()
+        void EyeAdaptationPass::BuildInternal()
         {
             if (!m_buffer)
             {

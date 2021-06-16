@@ -94,9 +94,9 @@ namespace AZ
             }
         }
 
-        void SMAABlendingWeightCalculationPass::Init()
+        void SMAABlendingWeightCalculationPass::InitializeInternal()
         {
-            SMAABasePass::Init();
+            SMAABasePass::InitializeInternal();
 
             AZ_Assert(m_shaderResourceGroup != nullptr, "SMAABlendingWeightCalculationPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 

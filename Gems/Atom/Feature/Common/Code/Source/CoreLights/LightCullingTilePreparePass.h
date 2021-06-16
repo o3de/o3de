@@ -50,7 +50,7 @@ namespace AZ
             LightCullingTilePreparePass(const RPI::PassDescriptor& descriptor);
 
             // Pass behavior overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             ///////////////////////////////////////////////////////////////////
             // ShaderReloadNotificationBus overrides...
@@ -73,6 +73,7 @@ namespace AZ
             const AZ::RPI::ShaderVariant& CreateShaderVariant();
             void CreatePipelineStateFromShaderVariant(const RPI::ShaderVariant& shaderVariant);
             void SetConstantData();
+            void OnShaderReloaded();
 
             AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
 

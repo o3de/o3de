@@ -507,8 +507,13 @@ namespace AssetUtilities
         return QString::fromUtf8(s_projectName.c_str(), aznumeric_cast<int>(s_projectName.size()));
     }
 
-    QString ComputeProjectPath()
+    QString ComputeProjectPath(bool resetCachedProjectPath/*=false*/)
     {
+        if (resetCachedProjectPath)
+        {
+            // Clear any cached value if reset was requested
+            s_projectPath.clear();
+        }
         if (s_projectPath.empty())
         {
             // Check command-line args first

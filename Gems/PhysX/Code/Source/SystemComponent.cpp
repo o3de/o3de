@@ -92,7 +92,7 @@ namespace PhysX
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        Pipeline::MeshAssetData::Reflect(context);
+        Pipeline::MeshAsset::Reflect(context);
 
         PhysX::ReflectionUtils::ReflectPhysXOnlyApi(context);
 

@@ -37,7 +37,7 @@ namespace AZ
             explicit ReflectionCopyFrameBufferPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
         };
     }   // namespace RPI
 }   // namespace AZ
