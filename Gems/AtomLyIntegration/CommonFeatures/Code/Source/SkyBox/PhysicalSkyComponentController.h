@@ -66,7 +66,7 @@ namespace AZ
             float GetSunIntensity() override;
 
             // SkyBoxFogRequestBus::Handler overrides ...
-            void SetEnable(bool enable) override;
+            void Enable(bool enable) override;
             bool IsEnabled() const override;
             void SetColor(const AZ::Color& color) override;
             const AZ::Color& GetColor() const override;

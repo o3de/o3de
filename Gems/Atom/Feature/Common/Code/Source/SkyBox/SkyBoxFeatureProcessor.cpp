@@ -255,7 +255,7 @@ namespace AZ
             m_fogSettings = fogSettings;
         }
 
-        void SkyBoxFeatureProcessor::SetFogEnable(bool enable)
+        void SkyBoxFeatureProcessor::FogEnable(bool enable)
         {
             m_fogSettings.m_enable = enable;
         }

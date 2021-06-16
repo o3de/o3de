@@ -36,7 +36,6 @@ namespace AZ
             int m_turbidity = 1;
             float m_sunRadiusFactor = 1.0f;
 
-            bool m_fogEnable = false;
             SkyBoxFogSettings m_skyBoxFogSettings;
 
             //! Returns characters for a suffix for the light type including a space. " lm" for lumens for example.
@@ -50,7 +49,7 @@ namespace AZ
             float GetSkyIntensityMax() const;
             float GetSunIntensityMax() const;
 
-            bool IsFogDisable() const { return !m_fogEnable; }
+            bool IsFogDisabled() const { return !m_skyBoxFogSettings.m_enable; }
         };
     }
 }

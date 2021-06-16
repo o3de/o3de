@@ -116,9 +116,9 @@ namespace AZ
             // Run deactivate if this skybox is activate
             if (m_isActive)
             {
-                PhysicalSkyRequestBus::Handler::BusDisconnect(m_entityId);
-                SkyBoxFogRequestBus::Handler::BusDisconnect(m_entityId);
-                TransformNotificationBus::Handler::BusDisconnect(m_entityId);
+                PhysicalSkyRequestBus::Handler::BusDisconnect();
+                SkyBoxFogRequestBus::Handler::BusDisconnect();
+                TransformNotificationBus::Handler::BusDisconnect();
 
                 m_featureProcessorInterface->Enable(false);
                 m_featureProcessorInterface = nullptr;
@@ -234,10 +234,10 @@ namespace AZ
             return SunPosition(atan2(sunPosition.GetZ(), sunPosition.GetX()), asin(sunPosition.GetY()));
         }
 
-        void PhysicalSkyComponentController::SetEnable(bool enable)
+        void PhysicalSkyComponentController::Enable(bool enable)
         {
             m_configuration.m_skyBoxFogSettings.m_enable = enable;
-            m_featureProcessorInterface->SetFogEnable(enable);
+            m_featureProcessorInterface->FogEnable(enable);
         }
 
         bool PhysicalSkyComponentController::IsEnabled() const

@@ -70,7 +70,7 @@ namespace AZ
             bool IsEnabled() override;
             void SetSkyboxMode(SkyBoxMode mode) override;
             void SetFogSettings(const SkyBoxFogSettings& fogSettings) override;
-            void SetFogEnable(bool enable) override;
+            void FogEnable(bool enable) override;
             void SetFogColor(const AZ::Color& color) override;
             void SetFogTopHeight(float topHeight) override;
             void SetFogBottomHeight(float bottomHeight) override;
