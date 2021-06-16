@@ -82,6 +82,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, sv_gamerules, "norules", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "GameRules server works with");
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
+    AZ_CVAR(bool, sv_isTransient, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether a dedicated server shuts down if all existing connections disconnect.");
     AZ_CVAR(AZ::TimeMs, cl_defaultNetworkEntityActivationTimeSliceMs, AZ::TimeMs{ 0 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Max Ms to use to activate entities coming from the network, 0 means instantiate everything");
     AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
     AZ_CVAR(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset, "prefabs/player.network.spawnable", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default spawnable to use when a new player connects");
@@ -923,33 +924,43 @@ namespace Multiplayer
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 
+    void stophost([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
+        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+        networkInterface->StopListening();
+    }
+    AZ_CONSOLEFREEFUNC(stophost, AZ::ConsoleFunctorFlags::DontReplicate, "Closes a multiplayer connection as a host for other clients to connect to");
+
     void connect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+        AzFramework::SessionConnectionConfig config;
 
         if (arguments.size() < 1)
         {
             const AZ::CVarFixedString remoteAddress = cl_serveraddr;
-            const IpAddress ipAddress(remoteAddress.c_str(), cl_serverport, networkInterface->GetType());
-            networkInterface->Connect(ipAddress);
-            return;
+            config.m_ipAddress = remoteAddress;
+            config.m_port = cl_serverport;
         }
-
-        AZ::CVarFixedString remoteAddress{ arguments.front() };
-        const AZStd::size_t portSeparator = remoteAddress.find_first_of(':');
-        if (portSeparator == AZStd::string::npos)
+        else
         {
-            AZLOG_INFO("Remote address %s was malformed", remoteAddress.c_str());
-            return;
+            AZ::CVarFixedString remoteAddress{ arguments.front() };
+            const AZStd::size_t portSeparator = remoteAddress.find_first_of(':');
+            if (portSeparator == AZStd::string::npos)
+            {
+                AZLOG_INFO("Remote address %s was malformed", remoteAddress.c_str());
+                return;
+            }
+            char* mutableAddress = remoteAddress.data();
+            mutableAddress[portSeparator] = '\0';
+            const char* addressStr = mutableAddress;
+            const char* portStr = &(mutableAddress[portSeparator + 1]);
+            int32_t portNumber = atol(portStr);
+            config.m_ipAddress = addressStr;
+            config.m_port = portNumber;
         }
-        char* mutableAddress = remoteAddress.data();
-        mutableAddress[portSeparator] = '\0';
-        const char* addressStr = mutableAddress;
-        const char* portStr = &(mutableAddress[portSeparator + 1]);
-        int32_t portNumber = atol(portStr);
-        const IpAddress ipAddress(addressStr, aznumeric_cast<uint16_t>(portNumber), networkInterface->GetType());
-        networkInterface->Connect(ipAddress);
+        
+        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get()->RequestPlayerJoinSession(config);
     }
     AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");
 
@@ -959,6 +970,7 @@ namespace Multiplayer
         INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
         auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
         networkInterface->GetConnectionSet().VisitConnections(visitor);
+        networkInterface->StopListening();
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
 }
