@@ -26,7 +26,9 @@ set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 # when the platform specific settings are applied below.  additionally, any variable with
 # the "CPACK_" prefix will automatically be cached for use in any phase of cpack namely
 # pre/post build
-set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME}")
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
+set(CPACK_PACKAGE_VENDOR "TBD")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 
@@ -39,7 +41,7 @@ set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
 set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_VENDOR}/${CPACK_PACKAGE_VERSION}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
 
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
