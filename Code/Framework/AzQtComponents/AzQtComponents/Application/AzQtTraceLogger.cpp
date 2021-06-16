@@ -16,14 +16,6 @@ namespace AzQtComponents
 {
     bool AzQtTraceLogger::OnOutput(const char* window, const char* message)
     {
-        // Suppress spam from the Source Control system
-        constexpr char sourceControlWindow[] = "Source Control";
-
-        if (0 == strncmp(window, sourceControlWindow, AZ_ARRAY_SIZE(sourceControlWindow)))
-        {
-            return true;
-        }
-
         if (m_logFile)
         {
             m_logFile->AppendLog(AzFramework::LogFile::SEV_NORMAL, window, message);
