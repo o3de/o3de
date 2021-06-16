@@ -54,8 +54,13 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
-    args = parse_args()
-    tiaf = TestImpact(args.config, args.pipeline, args.dst_commit)
-    return_code = tiaf.run(args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
-    sys.exit(return_code)
-    
+    try:
+        args = parse_args()
+        tiaf = TestImpact(args.config, args.pipeline, args.dst_commit)
+        return_code = tiaf.run(args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
+        # Non-gating will be removed from this script and handled at the job level in SPEC-7413
+        #sys.exit(return_code)
+        sys.exit(0)
+    except:
+        # Non-gating will be removed from this script and handled at the job level in SPEC-7413
+        sys.exit(0)
