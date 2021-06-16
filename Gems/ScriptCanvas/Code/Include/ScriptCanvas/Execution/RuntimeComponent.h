@@ -26,19 +26,6 @@ namespace ScriptCanvas
 {
     using VariableIdMap = AZStd::unordered_map<VariableId, VariableId>;
 
-    // #functions2_prefabs build this at parser time
-    struct RuntimeDataOverrides
-    {
-        AZ_TYPE_INFO(RuntimeDataOverrides, "{CE3C0AE6-4EBA-43B2-B2D5-7AC24A194E63}");
-        AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        AZStd::vector<AZStd::pair<size_t, AZStd::any>> m_variables;
-        AZStd::vector<AZStd::pair<size_t, AZ::EntityId>> m_entityIds;
-        AZStd::vector<RuntimeDataOverrides> m_dependencies;
-    };
-
     //! Runtime Component responsible for loading an executing the compiled ScriptCanvas graph from a runtime
     //! asset.
     //! It contains none of the Graph functionality of Validating Connections, as well as adding

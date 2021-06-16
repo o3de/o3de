@@ -60,6 +60,8 @@ namespace ScriptCanvas
 
     void RuntimeDataOverrides::Reflect(AZ::ReflectContext* context)
     {
+        RuntimeEntityId::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeDataOverrides>()
@@ -184,8 +186,6 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Reflect(AZ::ReflectContext* context)
     {
-        RuntimeDataOverrides::Reflect(context);
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeComponent, AZ::Component>()

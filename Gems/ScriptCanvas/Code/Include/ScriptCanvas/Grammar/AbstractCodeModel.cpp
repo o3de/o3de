@@ -2898,6 +2898,7 @@ namespace ScriptCanvas
                     AddError(nullptr, aznew Internal::ParseError(node.GetEntityId(), circularDependency));
                 }
 
+                // #functions2 make this use an identifier for the node
                 // this part must NOT recurse, the dependency tree should remain a tree and not be flattened
                 m_orderedDependencies.source.MergeWith(dependencies);
             }

@@ -263,7 +263,7 @@ namespace ScriptCanvas
 
         struct Request
         {
-            AZ::Data::AssetId assetId;
+            AZ::Data::AssetId scriptAssetId;
             const Graph* graph = nullptr;
             AZStd::string_view name;
             AZStd::string_view path;

@@ -15,12 +15,12 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Editor/Assets/ScriptCanvasAssetHolder.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Variable/VariableData.h>
 
 namespace ScriptCanvasEditor
 {
@@ -75,7 +75,7 @@ namespace ScriptCanvasEditor
         void CloseGraph();
 
         void SetName(const AZStd::string& name) { m_name = name; }
-        const AZStd::string& GetName() const { return m_name; };
+        const AZStd::string& GetName() const;
         AZ::EntityId GetEditorEntityId() const { return GetEntity() ? GetEntityId() : AZ::EntityId(); }
         AZ::NamedEntityId GetNamedEditorEntityId() const { return GetEntity() ? GetNamedEntityId() : AZ::NamedEntityId(); }
         
@@ -133,10 +133,7 @@ namespace ScriptCanvasEditor
         void OnScriptCanvasAssetReady(const ScriptCanvasMemoryAsset::pointer asset);
         //=====================================================================
 
-        void AddNewVariables(const ScriptCanvas::VariableData& graphVarData);
         void BuildGameEntityData();
-        void RemoveOldVariables(const ScriptCanvas::VariableData& graphVarData);
-        void LoadVariables(const ScriptCanvasMemoryAsset::pointer memoryAsset);
         void ClearVariables();
 
     private:
@@ -144,9 +141,7 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId m_previousAssetId;
         AZStd::string m_name;
         ScriptCanvasAssetHolder m_scriptCanvasAssetHolder;
-        // #functions2_prefabs remove this
-        ScriptCanvas::EditableVariableData m_editableData;
         bool m_runtimeDataIsValid = false;
-        ScriptCanvas::RuntimeDataOverrides m_runtimeDataOverrides;
+        ScriptCanvasBuilder::BuildVariableOverrides m_variableOverrides;
     };
 }

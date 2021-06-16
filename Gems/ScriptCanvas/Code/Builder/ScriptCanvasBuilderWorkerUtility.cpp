@@ -67,6 +67,24 @@ namespace ScriptCanvasBuilder
         }
     }
 
+    AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath)
+    {
+        AZStd::string fileNameOnly;
+        AzFramework::StringFunc::Path::GetFullFileName(graphPath.data(), fileNameOnly);
+
+        ScriptCanvas::Grammar::Request request;
+        request.graph = PrepareSourceGraph(&buildEntity);
+        if (!request.graph)
+        {
+            return AZ::Failure(AZStd::string("build entity did not have source graph components"));
+        }
+
+        request.name = fileNameOnly.empty() ? fileNameOnly : "BuilderGraph";
+        request.addDebugInformation = false;
+
+        return ScriptCanvas::Translation::ParseGraph(request);
+    }
+
     AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath)
     {
         AZStd::string fullPath(rawLuaFilePath);
@@ -77,7 +95,7 @@ namespace ScriptCanvasBuilder
         auto sourceGraph = PrepareSourceGraph(buildEntity);
 
         ScriptCanvas::Grammar::Request request;
-        request.assetId = scriptAssetId;
+        request.scriptAssetId = scriptAssetId;
         request.graph = sourceGraph;
         request.name = fileNameOnly;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
@@ -733,6 +751,6 @@ namespace ScriptCanvasBuilder
     ScriptCanvas::Translation::Result TranslateToLua(ScriptCanvas::Grammar::Request& request)
     {
         request.translationTargetFlags = ScriptCanvas::Translation::TargetFlags::Lua;
-        return ScriptCanvas::Translation::ParseGraph(request);        
+        return ScriptCanvas::Translation::ParseAndTranslateGraph(request);        
     }
 }

@@ -155,8 +155,6 @@ namespace ScriptCanvas
 
             bool IsUserNodeable(VariableConstPtr variable) const;
 
-            bool HasUserNodeableDependenciesInVariables() const;
-
             template<typename T>
             AZStd::vector<Grammar::VariableConstPtr> ToVariableList(const AZStd::vector<AZStd::pair<VariableId, T>>& source) const;
 

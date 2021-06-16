@@ -109,6 +109,7 @@ namespace ScriptCanvas
             const AZStd::sys_time_t m_translationDuration;
 
             Result(AZStd::string invalidSourceInfo);
+            Result(Result&& source);
             Result(Grammar::AbstractCodeModelConstPtr model);
             Result(Grammar::AbstractCodeModelConstPtr model, Translations&& translations, Errors&& errors);
 

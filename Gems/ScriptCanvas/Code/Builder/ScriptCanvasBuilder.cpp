@@ -14,6 +14,7 @@
 #include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 
 namespace ScriptCanvasBuilderCpp
 {
@@ -28,6 +29,39 @@ namespace ScriptCanvasBuilderCpp
 
 namespace ScriptCanvasBuilder
 {
+    EditorAssetTree* EditorAssetTree::ModRoot()
+    {
+        if (!m_parent)
+        {
+            return this;
+        }
+
+        return m_parent->ModRoot();
+    }
+
+    void EditorAssetTree::SetParent(EditorAssetTree& parent)
+    {
+        m_parent = &parent;
+    }
+
+    AZStd::string EditorAssetTree::ToString(size_t depth) const
+    {
+        AZStd::string result;
+        ScriptCanvasBuilderCpp::AppendTabs(result, depth);
+        result += m_asset.GetId().ToString<AZStd::string>();
+        result += m_asset.GetHint();
+        depth += m_dependencies.empty() ? 0 : 1;
+
+        for (const auto& dependency : m_dependencies)
+        {
+            result += "\n";
+            ScriptCanvasBuilderCpp::AppendTabs(result, depth);
+            result += dependency.ToString(depth);
+        }
+
+        return result;
+    }
+
     AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(AZ::Data::AssetId editorAssetId, AZStd::string_view assetHint, EditorAssetTree* parent)
     {
         EditorAssetTree result;
@@ -95,36 +129,48 @@ namespace ScriptCanvasBuilder
         return AZ::Success(result);
     }
 
-    EditorAssetTree* EditorAssetTree::ModRoot()
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const EditorAssetTree& editorAssetTree)
     {
-        if (!m_parent)
+        auto buildEntity = editorAssetTree.m_asset->GetScriptCanvasEntity();
+        if (!buildEntity)
         {
-            return this;
+            return AZ::Failure(AZStd::string("No entity from source asset"));
         }
 
-        return m_parent->ModRoot();
-    }
-
-    void EditorAssetTree::SetParent(EditorAssetTree& parent)
-    {
-        m_parent = &parent;
-    }
-
-    AZStd::string EditorAssetTree::ToString(size_t depth) const
-    {
-        AZStd::string result;
-        ScriptCanvasBuilderCpp::AppendTabs(result, depth);
-        result += m_asset.GetId().ToString<AZStd::string>();
-        result += m_asset.GetHint();
-        depth += m_dependencies.empty() ? 0 : 1;
-
-        for (const auto& dependency : m_dependencies)
+        auto parseOutcome = ScriptCanvasBuilder::ParseGraph(*buildEntity, "");
+        if (!parseOutcome.IsSuccess())
         {
-            result += "\n";
-            ScriptCanvasBuilderCpp::AppendTabs(result, depth);
-            result += dependency.ToString(depth);
+            return AZ::Failure(AZStd::string("graph failed to parse"));
         }
 
-        return result;
+        BuildVariableOverrides result;
+        result.m_source = editorAssetTree.m_asset;
+
+        ScriptCanvas::Grammar::AbstractCodeModelConstPtr model = parseOutcome.GetValue();
+
+        ScriptCanvas::VariableData* variableData = nullptr; // get this from the entity
+        result.PopulateFromParsedResults(model->GetRuntimeInputs(), *variableData);
+        // set all these in build game data
+        // originalVarNameValuePair->m_graphVariable.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
+        // originalVarNameValuePair->m_graphVariable.SetAllowSignalOnChange(false);
+
+        // recurse...
+        for (auto& dependentAsset : editorAssetTree.m_dependencies)
+        {
+            // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
+            auto parseDependentOutcome = ParseEditorAssetTree(dependentAsset);
+            if (!parseDependentOutcome.IsSuccess())
+            {
+                return AZ::Failure(AZStd::string::format
+                    ( "ParseEditorAssetTree failed to parse dependent graph from %s-%s: %s"
+                    , dependentAsset.m_asset.GetId().ToString<AZStd::string>().c_str()
+                    , dependentAsset.m_asset.GetHint().c_str()
+                    , parseDependentOutcome.GetError().c_str()));
+            }
+
+            result.m_dependencies.push_back(parseDependentOutcome.TakeValue());
+        }
+        return AZ::Success(result);
     }
+
 }

@@ -13,6 +13,15 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+
+namespace ScriptCanvas
+{
+    namespace Grammar
+    {
+        struct ParsedRuntimeInputs;
+    }
+}
 
 namespace ScriptCanvasEditor
 {
@@ -21,6 +30,31 @@ namespace ScriptCanvasEditor
 
 namespace ScriptCanvasBuilder
 {
+    class BuildVariableOverrides
+    {
+    public:
+        AZ_TYPE_INFO(BuildVariableOverrides, "{8336D44C-8EDC-4C28-AEB4-3420D5FD5AE2}");
+        AZ_CLASS_ALLOCATOR(BuildVariableOverrides, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        void Clear();
+
+        // use this to perserve old values that may have been overridden on the instance, and are still valid in the parsed graph
+        void CopyValues(const BuildVariableOverrides& source);
+
+        // use this to initialize the new data, and make sure they have a editor graph variable for proper editor display
+        void PopulateFromParsedResults(const ScriptCanvas::Grammar::ParsedRuntimeInputs& inputs, ScriptCanvas::VariableData& variables);
+
+        bool IsEmpty() const;
+
+        // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
+        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_source;
+        AZStd::vector<ScriptCanvas::GraphVariable> m_variables;
+        AZStd::vector<ScriptCanvas::GraphVariable> m_entityIds;
+        AZStd::vector<BuildVariableOverrides> m_dependencies;
+    };
+
     class EditorAssetTree
     {
     public:
@@ -38,4 +72,8 @@ namespace ScriptCanvasBuilder
     };
 
     AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(AZ::Data::AssetId editorAssetId, AZStd::string_view assetHint, EditorAssetTree* parent = nullptr);
+
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const EditorAssetTree& editorAssetTree);
+
+    ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
 }
