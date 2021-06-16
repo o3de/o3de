@@ -88,7 +88,7 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
-      "SCRIPT_PARAMETERS": "--testFailurePolicy abort --testFailurePolicy=continue --suite main --pipeline !PIPELINE_NAME! --destCommit !CHANGE_ID! --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.profile.json\""
+      "SCRIPT_PARAMETERS": "--testFailurePolicy=continue --suite main --pipeline !PIPELINE_NAME! --destCommit !CHANGE_ID! --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.profile.json\""
     }
   },
   "debug_vs2019": {
