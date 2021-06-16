@@ -458,7 +458,7 @@ namespace AZ
         bool ProfilingCaptureSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
         {
             // Start the cpu profiling
-            bool wasEnabled = RHI::CpuProfiler::Get()->GetProfilerEnabled();
+            bool wasEnabled = RHI::CpuProfiler::Get()->IsProfilerEnabled();
             if (!wasEnabled)
             {
                 RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
@@ -485,6 +485,10 @@ namespace AZ
                         saveResult.GetError().c_str());
                     AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
                 }
+                else
+                {                    
+                    AZ_Printf("ProfilingCaptureSystemComponent", "Cpu profiling statistics was saved to file [%s]\n", outputFilePath.c_str());
+                }
 
                 // Disable the profiler again
                 if (!wasEnabled)
@@ -496,6 +500,7 @@ namespace AZ
                 ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
                     saveResult.IsSuccess(),
                     captureInfo);
+                                
             });
 
             // Start the TickBus.

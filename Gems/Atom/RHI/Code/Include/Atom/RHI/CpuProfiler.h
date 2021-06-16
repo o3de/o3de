@@ -89,7 +89,7 @@ namespace AZ
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;
 
-            virtual bool GetProfilerEnabled() const = 0 ;
+            virtual bool IsProfilerEnabled() const = 0 ;
         };
 
     } // namespace RPI

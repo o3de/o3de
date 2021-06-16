@@ -65,6 +65,8 @@ namespace AZ
             int m_captureFrameCount = 1;
 
             AZ::RHI::CpuTimingStatistics m_cpuTimingStatisticsWhenPause;
+
+            AZStd::string m_lastCapturedFilePath;
         };
     } // namespace Render
 }

@@ -12,6 +12,7 @@
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
 #include <AzCore/std/time.h>
 
 namespace AZ
@@ -46,7 +47,7 @@ namespace AZ
             bool captureToFile = false;
             if (ImGui::Begin("Cpu Profiler", &keepDrawing, ImGuiWindowFlags_None))
             {
-                m_paused = !AZ::RHI::CpuProfiler::Get()->GetProfilerEnabled();
+                m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
                 if (ImGui::Button(m_paused?"Resume":"Pause"))
                 {
                     m_paused = !m_paused;
@@ -63,6 +64,16 @@ namespace AZ
                 if (ImGui::Button("Capture"))
                 {
                     captureToFile = true;
+                }
+
+                if (!m_lastCapturedFilePath.empty())
+                {
+                    if (ImGui::Button("Copy File Path"))
+                    {
+                        ImGui::SetClipboardText(m_lastCapturedFilePath.c_str());
+                    }
+                    ImGui::SameLine();
+                    ImGui::Text("Last saved capture: %s", m_lastCapturedFilePath.c_str());
                 }
 
                 const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
@@ -187,7 +198,10 @@ namespace AZ
                 AZStd::to_string(timeString, timeNow);
                 u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
                 AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast( &AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics,
+                char resolvedPath[AZ_MAX_PATH_LEN];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+                m_lastCapturedFilePath = resolvedPath;
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics,
                     frameDataFilePath);
             }
 

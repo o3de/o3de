@@ -186,7 +186,7 @@ namespace AZ
             }
         }
 
-        bool CpuProfilerImpl::GetProfilerEnabled() const
+        bool CpuProfilerImpl::IsProfilerEnabled() const
         {
             return m_enabled;
         }
