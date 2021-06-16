@@ -24,7 +24,8 @@ mock_engine_root = "mock_engine_root"
 mock_dev_path = "mock_dev_path"
 mock_build_directory = 'mock_build_directory'
 mock_project = 'mock_project'
-mock_manifest_json = {'projects': [mock_project]}
+mock_manifest_json_file = {'projects': [mock_project]}
+mock_project_json_file = {'project_name': mock_project}
 mock_project_json = os.path.join(mock_project, 'project.json')
 
 
@@ -54,7 +55,7 @@ class TestFindProjectJson(object):
 
     @mock.patch('os.path.isfile', mock.MagicMock(return_value=True))
     @mock.patch('os.path.basename', mock.MagicMock(return_value=mock_project))
-    @mock.patch('json.load', mock.MagicMock(return_value=mock_manifest_json))
+    @mock.patch('json.load', mock.MagicMock(side_effect=[mock_manifest_json_file, mock_project_json_file]))
     def test_FindProjectJson_ManifestJson_ReturnsProjectJson(self):
         project = abstract_resource_locator._find_project_json(mock_engine_root, mock_project)
 

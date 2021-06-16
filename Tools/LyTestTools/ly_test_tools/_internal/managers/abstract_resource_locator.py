@@ -63,12 +63,15 @@ def _find_project_json(engine_root, project):
             # Look at the "projects" key for registered project paths
             try:
                 for projects_path in json_data["projects"]:
-                    # Only look at project directories that match our project
-                    if project == os.path.basename(projects_path):
-                        check_project_json = os.path.join(projects_path, 'project.json')
-                        # Check for the project.json file inside of the project directory
-                        if os.path.isfile(check_project_json):
-                            project_json = check_project_json
+                    check_project_json = os.path.join(projects_path, 'project.json')
+                    # Check for the project.json file inside of the project directory
+                    if os.path.isfile(check_project_json):
+                        # Check if the "project_name" key matches our project
+                        with open(check_project_json, "r") as project_json_file:
+                            project_json_data = json.load(project_json_file)
+                            if project == project_json_data["project_name"]:
+                                project_json = check_project_json
+                                break
             except KeyError:
                 pass  # No projects found in the manifest json
 
