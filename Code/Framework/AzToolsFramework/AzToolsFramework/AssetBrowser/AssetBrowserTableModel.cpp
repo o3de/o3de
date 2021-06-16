@@ -14,6 +14,7 @@ namespace AzToolsFramework
     {
         AssetBrowserTableModel::AssetBrowserTableModel(QObject* parent /* = nullptr */)
             : QSortFilterProxyModel(parent)
+            , m_numberOfItemsDisplayed(200)
         {
             setDynamicSortFilter(false);
         }
@@ -88,25 +89,40 @@ namespace AzToolsFramework
         int AssetBrowserTableModel::BuildTableModelMap(
             const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
         {
+            static int cont = 0;
             int rows = model ? model->rowCount(parent) : 0;
+
+            if (parent == QModelIndex())
+            {
+                cont = 0;
+            }
+
             for (int i = 0; i < rows; ++i)
             {
-                QModelIndex index = model->index(i, 0, parent);
-                AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
-                //We only wanna see the source assets.
-                if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                if (cont < m_numberOfItemsDisplayed)
                 {
-                    beginInsertRows(parent, row, row);
-                    m_indexMap[row] = index;
-                    endInsertRows();
+                    QModelIndex index = model->index(i, 0, parent);
+                    AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
+                    // We only wanna see the source assets.
+                    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                    {
+                        beginInsertRows(parent, row, row);
+                        m_indexMap[row] = index;
+                        endInsertRows();
 
-                    Q_EMIT dataChanged(index, index);
-                    ++row;
+                        Q_EMIT dataChanged(index, index);
+                        ++row;
+                        ++cont;
+                    }
+
+                    if (model->hasChildren(index) && cont < 10)
+                    {
+                        row = BuildTableModelMap(model, index, row);
+                    }
                 }
-
-                if (model->hasChildren(index))
+                else
                 {
-                    row = BuildTableModelMap(model, index, row);
+                    break;
                 }
             }
             return row;
@@ -134,6 +150,22 @@ namespace AzToolsFramework
                 m_indexMap.clear();
                 endRemoveRows();
             }
+
+            AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome outcome;
+            AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(outcome, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
+                "Settings|MaxDisplayedItemsNumInSearch");
+            //AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
+            //    outcome, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
+            //    "Settings\ExperimentalFeatures|TotalIlluminationEnabled");
+
+            AZStd::any* outcomeValue = &outcome.GetValue<AZStd::any>();
+            //bool trr = false;
+            if (outcomeValue->is<int>() == true)
+            {
+                m_numberOfItemsDisplayed = AZStd::any_cast<int>(*outcomeValue);
+                //trr = AZStd::any_cast<bool>(outcomeValue);
+            }
+
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
         }

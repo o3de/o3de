@@ -42,11 +42,17 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
         ->Field("MaxCount", &AutoBackup::m_maxCount)
         ->Field("RemindTime", &AutoBackup::m_remindTime);
 
+    serialize
+        .Class<AssetBrowserSearch>()
+        ->Version(1)
+        ->Field("Max number of items displayed", &AssetBrowserSearch::m_numOfItemsShown);
+
     serialize.Class<CEditorPreferencesPage_Files>()
         ->Version(1)
         ->Field("Files", &CEditorPreferencesPage_Files::m_files)
         ->Field("Editors", &CEditorPreferencesPage_Files::m_editors)
-        ->Field("AutoBackup", &CEditorPreferencesPage_Files::m_autoBackup);
+        ->Field("AutoBackup", &CEditorPreferencesPage_Files::m_autoBackup)
+        ->Field("Asset Browser Search", &CEditorPreferencesPage_Files::m_assetBrowserSearch);
 
 
     AZ::EditContext* editContext = serialize.GetEditContext();
@@ -79,12 +85,19 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_remindTime, "Remind Time", "Auto Remind Every (Minutes)");
 
+        editContext->Class<AssetBrowserSearch>("Asset Browser Search View", "Asset Browser Search View")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSearch::m_numOfItemsShown, "Maximum number of displayed items",
+                "Maximum number of displayed items displayed in the Search View")
+            ->Attribute(AZ::Edit::Attributes::Min, 200)
+            ->Attribute(AZ::Edit::Attributes::Max, 1000);
+
         editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSearch, "Asset Browser Search", "Asset Browser Search");
     }
 }
 
@@ -123,6 +136,8 @@ void CEditorPreferencesPage_Files::OnApply()
     gSettings.autoBackupTime = m_autoBackup.m_timeInterval;
     gSettings.autoBackupMaxCount = m_autoBackup.m_maxCount;
     gSettings.autoRemindTime = m_autoBackup.m_remindTime;
+
+    gSettings.numberOfItemsShownInSearch = m_assetBrowserSearch.m_numOfItemsShown;
 }
 
 void CEditorPreferencesPage_Files::InitializeSettings()
@@ -147,4 +162,6 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_autoBackup.m_timeInterval = gSettings.autoBackupTime;
     m_autoBackup.m_maxCount = gSettings.autoBackupMaxCount;
     m_autoBackup.m_remindTime = gSettings.autoRemindTime;
+
+    m_assetBrowserSearch.m_numOfItemsShown = gSettings.numberOfItemsShownInSearch;
 }

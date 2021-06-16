@@ -5,18 +5,18 @@
  *
  */
 
-#include <API/EditorAssetSystemAPI.h>
+//#include <API/EditorAssetSystemAPI.h>
 
-#include <AzCore/std/containers/vector.h>
+//#include <AzCore/std/containers/vector.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
+//#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
-#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+//#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+//#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+//#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 
@@ -27,9 +27,9 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-#include <QMouseEvent>
-#include <QPainter>
-#include <QPen>
+//#include <QMouseEvent>
+//#include <QPainter>
+//#include <QPen>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
