@@ -279,7 +279,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::HideViewportUiElement(ViewportUiElementId elementId)
     {
         if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget && UiDisplayEnabled())
+            element.m_widget)
         {
             element.m_widget->setVisible(false);
         }

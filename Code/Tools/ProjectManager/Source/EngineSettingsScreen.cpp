@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
     EngineSettingsScreen::EngineSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        auto* layout = new QVBoxLayout(this);
+        auto* layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignTop);
 
         setObjectName("engineSettingsScreen");

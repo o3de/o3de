@@ -1036,6 +1036,26 @@ namespace AZ
             }
         }
 
+        void Pass::UpdateConnectedInputBindings()
+        {
+            for (uint8_t idx : m_inputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+            for (uint8_t idx : m_inputOutputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+        }
+
+        void Pass::UpdateConnectedOutputBindings()
+        {
+            for (uint8_t idx : m_outputBindingIndices)
+            {
+                UpdateConnectedBinding(m_attachmentBindings[idx]);
+            }
+        }
+
         // --- Queuing functions with PassSystem ---
 
         void Pass::QueueForBuildAndInitialization()
@@ -1264,7 +1284,7 @@ namespace AZ
             AZ_Assert(m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
             m_state = PassState::Rendering;
 
-            UpdateConnectedBindings();
+            UpdateConnectedInputBindings();
             UpdateOwnedAttachments();
 
             CreateTransientAttachments(params.m_frameGraphBuilder->GetAttachmentDatabase());
@@ -1273,6 +1293,8 @@ namespace AZ
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
             FrameBeginInternal(params);
+
+            UpdateConnectedOutputBindings();
         }
 
         void Pass::FrameEnd()

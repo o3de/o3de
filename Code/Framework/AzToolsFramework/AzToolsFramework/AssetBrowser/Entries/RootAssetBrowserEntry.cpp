@@ -286,6 +286,9 @@ namespace AzToolsFramework
             product->m_assetType = productWithUuidDatabaseEntry.second.m_assetType;
             product->m_assetType.ToString(product->m_assetTypeString);
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(product->m_relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, assetId);
+            QString displayPath = QString::fromUtf8(product->m_relativePath.c_str());
+            displayPath.remove(QString(AZ_CORRECT_DATABASE_SEPARATOR + QString::fromUtf8(product->m_name.c_str())));
+            product->m_displayPath = displayPath;
             EntryCache::GetInstance()->m_productAssetIdMap[assetId] = product;
 
             if (needsAdd)

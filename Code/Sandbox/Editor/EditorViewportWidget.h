@@ -385,6 +385,11 @@ protected:
     };
     void ResetToViewSourceType(const ViewSourceType& viewSourType);
 
+    bool ShouldPreviewFullscreen() const;
+    void StartFullscreenPreview();
+    void StopFullscreenPreview();
+
+    bool m_inFullscreenPreview = false;
     bool m_bRenderContextCreated = false;
     bool m_bInRotateMode = false;
     bool m_bInMoveMode = false;

@@ -69,3 +69,14 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     return static_cast<int>(status);
 }
+
+void CVar_OnViewportPosition(const AZ::Vector2& value)
+{
+    if (HWND windowHandle = GetActiveWindow())
+    {
+        SetWindowPos(windowHandle, nullptr,
+            value.GetX(),
+            value.GetY(),
+            0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);
+    }
+}

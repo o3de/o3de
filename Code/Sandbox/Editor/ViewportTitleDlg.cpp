@@ -181,7 +181,8 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
 
     SetSpeedComboBox(cameraMoveSpeed);
-    m_cameraSpeed->setInsertPolicy(QComboBox::NoInsert);
+    m_cameraSpeed->setInsertPolicy(QComboBox::InsertAtBottom);
+    m_cameraSpeed->setDuplicatesEnabled(false);
     connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
     connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 

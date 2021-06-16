@@ -22,6 +22,8 @@
                 <bal:WixStandardBootstrapperApplication
                     LicenseUrl="$(var.CPACK_LICENSE_URL)"
                     LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
+                    ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
+                    LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
                     ShowVersion="yes" />
             </BootstrapperApplicationRef>
         <?else?>
@@ -29,6 +31,8 @@
                 <bal:WixStandardBootstrapperApplication
                     LicenseFile="$(var.CPACK_WIX_LICENSE_RTF)"
                     LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
+                    ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
+                    LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
                     ShowVersion="yes" />
             </BootstrapperApplicationRef>
         <?endif?>
