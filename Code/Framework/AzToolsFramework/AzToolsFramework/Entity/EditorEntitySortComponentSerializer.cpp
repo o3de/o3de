@@ -25,7 +25,8 @@ namespace AzToolsFramework
             namespace JSR = AZ::JsonSerializationResult;
 
             AZ_Assert(
-                azrtti_typeid<EditorEntitySortComponent>() == outputValueTypeId, "Unable to deserialize EditorEntitySortComponent from json because the provided type is %s.",
+                azrtti_typeid<EditorEntitySortComponent>() == outputValueTypeId,
+                "Unable to deserialize EditorEntitySortComponent from json because the provided type is %s.",
                 outputValueTypeId.ToString<AZStd::string>().c_str());
 
             EditorEntitySortComponent* editorEntitySortComponentInstance = reinterpret_cast<EditorEntitySortComponent*>(outputValue);
@@ -42,7 +43,8 @@ namespace AzToolsFramework
 
             {
                 JSR::ResultCode parentEntityIdLoadResult = ContinueLoadingFromJsonObjectField(
-                    &editorEntitySortComponentInstance->m_childEntityOrderArray, azrtti_typeid<decltype(editorEntitySortComponentInstance->m_childEntityOrderArray)>(),
+                    &editorEntitySortComponentInstance->m_childEntityOrderArray,
+                    azrtti_typeid<decltype(editorEntitySortComponentInstance->m_childEntityOrderArray)>(),
                     inputValue, "ChildEntityOrderArray", context);
 
                 result.Combine(parentEntityIdLoadResult);
@@ -83,18 +85,20 @@ namespace AzToolsFramework
             {
                 AZ::ScopedContextPath subPathName(context, "m_childEntityOrderArray");
                 const EntityOrderArray* childEntityOrderArray = &editorEntitySortComponentInstance->m_childEntityOrderArray;
-                const EntityOrderArray* defaultChildEntityOrderArray = editorEntitySortComponentInstance ? &defaultEditorEntitySortComponentInstance->m_childEntityOrderArray : nullptr;
+                const EntityOrderArray* defaultChildEntityOrderArray =
+                    defaultEditorEntitySortComponentInstance ? &defaultEditorEntitySortComponentInstance->m_childEntityOrderArray : nullptr;
 
                 JSR::ResultCode resultParentEntityId = ContinueStoringToJsonObjectField(
-                    outputValue, "ChildEntityOrderArray", childEntityOrderArray, defaultChildEntityOrderArray, azrtti_typeid<decltype(editorEntitySortComponentInstance->m_childEntityOrderArray)>(), context);
+                    outputValue, "ChildEntityOrderArray", childEntityOrderArray, defaultChildEntityOrderArray,
+                    azrtti_typeid<decltype(editorEntitySortComponentInstance->m_childEntityOrderArray)>(), context);
 
                 result.Combine(resultParentEntityId);
             }
 
             return context.Report(
                 result,
-                result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored TransformComponent information."
-                                                                  : "Failed to store TransformComponent information.");
+                result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored EditorEntitySortComponent information."
+                                                                  : "Failed to store EditorEntitySortComponent information.");
         }
 
     } // namespace Components
