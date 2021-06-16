@@ -111,10 +111,10 @@ set(FILES
     Source/Debug/PhysXDebug.h
     Source/Debug/PhysXDebug.cpp
     Source/Debug/Configuration/PhysXDebugConfiguration.cpp
-    Source/Joint/PhysXApiJoint.h
-    Source/Joint/PhysXApiJoint.cpp
-    Source/Joint/PhysXApiJointUtils.h
-    Source/Joint/PhysXApiJointUtils.cpp
+    Source/Joint/PhysXJoint.h
+    Source/Joint/PhysXJoint.cpp
+    Source/Joint/PhysXJointUtils.h
+    Source/Joint/PhysXJointUtils.cpp
     Source/Joint/Configuration/PhysXJointConfiguration.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp

@@ -11,7 +11,7 @@
  */
 
 #include <System/PhysXJointInterface.h>
-#include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 

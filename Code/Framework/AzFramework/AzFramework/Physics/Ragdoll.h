@@ -18,10 +18,10 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
-#include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 namespace Physics
 {

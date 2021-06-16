@@ -10,7 +10,7 @@
 *
 */
 
-#include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>

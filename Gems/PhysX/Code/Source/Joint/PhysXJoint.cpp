@@ -11,12 +11,12 @@
 */
 
 #include <PhysX_precompiled.h>
-#include <Joint/PhysXApiJoint.h>
+#include <Joint/PhysXJoint.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <Source/Joint/PhysXApiJointUtils.h>
+#include <Source/Joint/PhysXJointUtils.h>
 
 namespace PhysX
 {

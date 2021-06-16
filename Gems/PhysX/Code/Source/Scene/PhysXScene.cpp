@@ -32,7 +32,7 @@
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
-#include <Joint/PhysXApiJoint.h>
+#include <Joint/PhysXJoint.h>
 
 namespace PhysX
 {

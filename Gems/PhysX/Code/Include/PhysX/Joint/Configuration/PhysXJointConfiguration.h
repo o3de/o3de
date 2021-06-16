@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 namespace PhysX
 {

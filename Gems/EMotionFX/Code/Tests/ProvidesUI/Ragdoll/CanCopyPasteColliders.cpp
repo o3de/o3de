@@ -16,7 +16,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>

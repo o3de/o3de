@@ -12,7 +12,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 namespace AzPhysics
 {

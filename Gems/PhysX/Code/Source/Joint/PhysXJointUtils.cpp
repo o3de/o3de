@@ -19,7 +19,7 @@
 
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/PhysXLocks.h>
-#include <Source/Joint/PhysXApiJointUtils.h>
+#include <Source/Joint/PhysXJointUtils.h>
 #include <Include/PhysX/NativeTypeIdentifiers.h>
 
 namespace PhysX {

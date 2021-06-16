@@ -16,8 +16,8 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
-#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
-#include <AzFramework/Physics/Configuration/ApiJointConfiguration.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
 namespace AzPhysics

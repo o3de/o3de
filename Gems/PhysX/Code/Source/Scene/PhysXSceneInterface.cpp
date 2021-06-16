@@ -11,7 +11,7 @@
 */
 #include <Scene/PhysXSceneInterface.h>
 
-#include <AzFramework/Physics/Common/PhysicsApiJoint.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/SceneConfiguration.h>
 #include <System/PhysXSystem.h>
