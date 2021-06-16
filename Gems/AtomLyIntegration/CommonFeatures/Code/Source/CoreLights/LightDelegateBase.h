@@ -63,6 +63,7 @@ namespace AZ
             void SetPredictionSampleCount([[maybe_unused]] uint32_t count) override {};
             void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
             void SetPcfMethod([[maybe_unused]] PcfMethod method) override {};
+            void SetEsmExponent([[maybe_unused]] float esmExponent) override{};
 
         protected:
             void InitBase(EntityId entityId);

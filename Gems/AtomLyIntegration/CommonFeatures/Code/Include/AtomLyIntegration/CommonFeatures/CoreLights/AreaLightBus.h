@@ -143,6 +143,13 @@ namespace AZ
 
             //! Sets the type of Pcf (percentage-closer filtering) to use.
             virtual void SetPcfMethod(PcfMethod method) = 0;
+
+            //! Gets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
+            virtual float GetEsmExponent() const = 0;
+
+            //! Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
+            virtual void SetEsmExponent(float exponent) = 0;
+
         };
 
         //! The EBus for requests to for setting and getting light component properties.
