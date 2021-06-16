@@ -9,6 +9,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+function(gp_resolve_item_override context item exepath dirs resolved_item_var resolved_var)
+    # Qt frameworks could resolve the binary to eg qt/lib/QtCore.framework/Headers/QtCore instead of qt/lib/QtCore.framework/Versions/5/QtCore
+    # This is because GetPrerequisites.cmake gp_resolve_item function searches for the first file that matches the "frameworks name"
+    if(${${resolved_var}} AND ${item} MATCHES "/(Qt[^\\.]+\\.framework)/(.*)")
+        set(qt_framework ${CMAKE_MATCH_1})
+        set(qt_framework_subpath ${CMAKE_MATCH_2})
+        string(REGEX REPLACE "(.*)/(Qt[^\\.]+\\.framework)/(.*)" "\\1/\\2/${qt_framework_subpath}" new_resolved_item "${${resolved_item_var}}")
+        set(${resolved_item_var} ${new_resolved_item} PARENT_SCOPE)
+    endif()
+endfunction()
+
 include(BundleUtilities)
 
 cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of the LY_BUILD_FIXUP_BUNDLE expansion 
