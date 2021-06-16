@@ -68,12 +68,8 @@ namespace AZ
 
                 if (!m_lastCapturedFilePath.empty())
                 {
-                    if (ImGui::Button("Copy File Path"))
-                    {
-                        ImGui::SetClipboardText(m_lastCapturedFilePath.c_str());
-                    }
                     ImGui::SameLine();
-                    ImGui::Text("Last saved capture: %s", m_lastCapturedFilePath.c_str());
+                    ImGui::Text(m_lastCapturedFilePath.c_str());
                 }
 
                 const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
