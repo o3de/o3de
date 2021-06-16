@@ -15,6 +15,7 @@ import boto3
 import uuid
 import logging
 import subprocess
+import botocore
 
 import ly_test_tools.environment.process_utils as process_utils
 from typing import List
@@ -23,6 +24,7 @@ BOOTSTRAP_STACK_NAME = 'CDKToolkit'
 BOOTSTRAP_STAGING_BUCKET_LOGIC_ID = 'StagingBucket'
 
 logger = logging.getLogger(__name__)
+
 
 class Cdk:
     """
@@ -40,7 +42,7 @@ class Cdk:
         """
         self._cdk_env = os.environ.copy()
         unique_id = uuid.uuid4().hex[-4:]
-        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project[:4] + unique_id if len(project) > 4  else project + unique_id
+        self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project[:4] + unique_id if len(project) > 4 else project + unique_id
         self._cdk_env['O3DE_AWS_DEPLOY_REGION'] = session.region_name
         self._cdk_env['O3DE_AWS_DEPLOY_ACCOUNT'] = account_id
         self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
@@ -54,22 +56,39 @@ class Cdk:
 
         self._session = session
 
-        # uninstall and reinstall cdk in case npm has been updated.
-        output = process_utils.check_output(
-            'npm uninstall -g aws-cdk',
-            cwd=self._cdk_path,
-            env=self._cdk_env,
-            shell=True)
+        try:
+            cdk_version_cmd = ['cdk', 'version']
 
-        logger.info(f'Uninstall CDK output: {output}')
+            process_utils.check_call(
+                cdk_version_cmd,
+                cwd=self._cdk_path,
+                env=self._cdk_env,
+                shell=True)
+        except subprocess.CalledProcessError as cdkVersionError:
+            logger.warning(f'Failed creating Bootstrap stack {BOOTSTRAP_STACK_NAME} not found. '
+                           f'\nError:{cdkVersionError.stderr}')
 
-        output = process_utils.check_output(
-            'npm install -g aws-cdk',
-            cwd=self._cdk_path,
-            env=self._cdk_env,
-            shell=True)
+            try:
+                logger.info(f'Updating CDK to latest')
+                # uninstall and reinstall cdk in case npm has been updated.
+                output = process_utils.check_output(
+                    'npm uninstall -g aws-cdk',
+                    cwd=self._cdk_path,
+                    env=self._cdk_env,
+                    shell=True)
 
-        logger.info(f'Install CDK output: {output}')
+                logger.info(f'Uninstall CDK output: {output}')
+
+                output = process_utils.check_output(
+                    'npm install -g aws-cdk',
+                    cwd=self._cdk_path,
+                    env=self._cdk_env,
+                    shell=True)
+
+                logger.info(f'Install CDK output: {output}')
+            except subprocess.CalledProcessError as error:
+                logger.warning(f'Failed reinstalling latest CDK on npm'
+                               f'\nError:{error.stderr}')
 
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',
@@ -84,25 +103,17 @@ class Cdk:
         Deploy the bootstrap stack.
         """
         try:
-            # Check if the bootstrap stack exists.
-            response = self._session.client('cloudformation').describe_stacks(
-                StackName=BOOTSTRAP_STACK_NAME
-            )
-            stacks = response.get('Stacks', [])
-            if stacks and len(stacks) is 1:
-                return
+            bootstrap_cmd = ['cdk', 'bootstrap',
+                             f'aws://{self._cdk_env["O3DE_AWS_DEPLOY_ACCOUNT"]}/{self._cdk_env["O3DE_AWS_DEPLOY_REGION"]}']
 
-        except Exception as e:
-            logger.info(f'Creating bootstrap stack {BOOTSTRAP_STACK_NAME}')
-
-        bootstrap_cmd = ['cdk', 'bootstrap',
-                         f'aws://{self._cdk_env["O3DE_AWS_DEPLOY_ACCOUNT"]}/{self._cdk_env["O3DE_AWS_DEPLOY_REGION"]}']
-
-        process_utils.check_call(
-            bootstrap_cmd,
-            cwd=self._cdk_path,
-            env=self._cdk_env,
-            shell=True)
+            process_utils.check_call(
+                bootstrap_cmd,
+                cwd=self._cdk_path,
+                env=self._cdk_env,
+                shell=True)
+        except botocore.exceptions.ClientError as clientError:
+            logger.warning(f'Failed creating Bootstrap stack {BOOTSTRAP_STACK_NAME} not found. '
+                           f'\nError:{clientError["Error"]["Message"]}')
 
     def list(self) -> List[str]:
         """
