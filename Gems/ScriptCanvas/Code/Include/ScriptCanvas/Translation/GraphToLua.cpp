@@ -1268,6 +1268,7 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteConstructionArgs()
         {
+            // #functions2_prefabs separate variables into overrides and non overrides
             AZStd::vector<Grammar::VariableConstPtr> constructionArguments = m_model.CombineVariableLists(m_runtimeInputs.m_nodeables, m_runtimeInputs.m_variables, m_runtimeInputs.m_entityIds);
 
             if (!constructionArguments.empty())

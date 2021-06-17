@@ -63,10 +63,6 @@ namespace ScriptCanvas
 
         void SetRuntimeDataOverrides(const RuntimeDataOverrides& overrideData);
 
-        const VariableData& GetVariableOverrides() const;
-
-        void SetVariableOverrides(const VariableData& overrideData);
-
     protected:
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
@@ -104,7 +100,5 @@ namespace ScriptCanvas
         ExecutionStatePtr m_executionState;
         AZ::EntityId m_scriptCanvasId;
         RuntimeDataOverrides m_runtimeOverrides;
-
-        VariableData m_variableOverrides;
     };
 }

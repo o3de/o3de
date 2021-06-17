@@ -283,7 +283,7 @@ namespace ScriptCanvas
 
                 return AZ::Success(Source
                     ( *request.graph
-                    , request.assetId
+                    , request.scriptAssetId
                     , *graphData
                     , *sourceVariableData
                     , name

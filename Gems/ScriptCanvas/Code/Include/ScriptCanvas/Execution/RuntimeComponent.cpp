@@ -40,7 +40,7 @@ namespace RuntimeComponentCpp
     {
         ForceAssetPreloads = 5,
         AddRuntimeDataOverrides,
-
+        PrefabSupport,
         // add description above
         Current,
     };
@@ -60,13 +60,12 @@ namespace ScriptCanvas
 
     void RuntimeDataOverrides::Reflect(AZ::ReflectContext* context)
     {
-        RuntimeEntityId::Reflect(context);
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeDataOverrides>()
                 ->Version(static_cast<unsigned int>(RuntimeComponentCpp::RuntimeDataOverridesVersion::Current))
                 ->Field("variables", &RuntimeDataOverrides::m_variables)
+                ->Field("variableIndices", &RuntimeDataOverrides::m_variableIndices)
                 ->Field("entityIds", &RuntimeDataOverrides::m_entityIds)
                 ->Field("dependencies", &RuntimeDataOverrides::m_dependencies)
                 ;
@@ -133,11 +132,6 @@ namespace ScriptCanvas
         m_runtimeOverrides = overrideData;
     }
 
-    const VariableData& RuntimeComponent::GetVariableOverrides() const
-    {
-        return m_variableOverrides;
-    }
-
     void RuntimeComponent::Init()
     {
         m_scriptCanvasId = AZ::Entity::MakeId();
@@ -191,15 +185,9 @@ namespace ScriptCanvas
             serializeContext->Class<RuntimeComponent, AZ::Component>()
                 ->Version(static_cast<unsigned int>(RuntimeComponentCpp::RuntimeComponentVersion::Current), &RuntimeComponent::VersionConverter)
                 ->Field("m_runtimeAsset", &RuntimeComponent::m_runtimeAsset)
-                ->Field("m_variableOverrides", &RuntimeComponent::m_variableOverrides)
-                ->Field("runtimeOverrides", &RuntimeComponent::m_variableOverrides)
+                ->Field("runtimeOverrides", &RuntimeComponent::m_runtimeOverrides)
                 ;
         }
-    }
-
-    void RuntimeComponent::SetVariableOverrides(const VariableData& overrideData)
-    {
-        m_variableOverrides = overrideData;
     }
 
     void RuntimeComponent::StopExecution()

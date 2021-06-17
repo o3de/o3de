@@ -251,6 +251,7 @@ namespace ScriptCanvasEditor
         using namespace ScriptCanvasBuilder;
 
         m_runtimeDataIsValid = false;
+
         auto assetTreeOutcome = LoadEditorAssetTree(m_scriptCanvasAssetHolder.GetAssetId(), m_scriptCanvasAssetHolder.GetAssetHint());
         if (!assetTreeOutcome.IsSuccess())
         {
@@ -269,7 +270,7 @@ namespace ScriptCanvasEditor
 
         if (!m_variableOverrides.IsEmpty())
         {
-            parseOutcome.GetValue().CopyValues(m_variableOverrides);
+            parseOutcome.GetValue().CopyPreviousOverriddenValues(m_variableOverrides);
         }
 
         m_variableOverrides = parseOutcome.TakeValue();
@@ -278,26 +279,29 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        using namespace ScriptCanvasBuilder;
-
-        auto assetTreeOutcome = LoadEditorAssetTree(m_scriptCanvasAssetHolder.GetAssetId(), m_scriptCanvasAssetHolder.GetAssetHint());
-
-        if (assetTreeOutcome.IsSuccess())
+        if (!m_runtimeDataIsValid)
         {
-            AZStd::string resultString = assetTreeOutcome.GetValue().ToString();
-            AZ_TracePrintf("ScriptCanvas", resultString.c_str());
+            // this is fine, there could have been no graph set, or set to a graph that failed to compile
+            return;
         }
 
-        if (m_runtimeDataIsValid)
+        // build everything again as a sanity check against dependencies. All of the variable overrides that were valid will be copied over
+        BuildGameEntityData();
+
+        if (!m_runtimeDataIsValid)
         {
-            AZ::Data::AssetId editorAssetId = m_scriptCanvasAssetHolder.GetAssetId();
-            AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset(runtimeAssetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
-            auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>(runtimeAsset);
-            auto runtimeOverrides = ConvertToRuntime(m_variableOverrides);
-            runtimeComponent->SetRuntimeDataOverrides(runtimeOverrides);
+            AZ_Error("ScriptCanvasBuilder", false, "Runtime information did not build for ScriptCanvas Component using asset: %s", m_scriptCanvasAssetHolder.GetAssetId().ToString<AZStd::string>().c_str());
+            return;
         }
+
+        AZ::Data::AssetId editorAssetId = m_scriptCanvasAssetHolder.GetAssetId();
+        AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
+        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset(runtimeAssetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+        auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>(runtimeAsset);
+        auto runtimeOverrides = ConvertToRuntime(m_variableOverrides);
+        runtimeComponent->SetRuntimeDataOverrides(runtimeOverrides);
     }
+
     void EditorScriptCanvasComponent::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
         if (m_removedCatalogId == assetId)

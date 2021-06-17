@@ -2691,7 +2691,7 @@ namespace ScriptCanvas
 
                 case VariableConstructionRequirement::InputVariable:
                 {
-                    auto variableID = variable->m_sourceVariableId.IsValid() ? variable->m_sourceVariableId : VariableId::MakeVariableId();
+                    auto variableID = variable->m_sourceVariableId.IsValid() ? variable->m_sourceVariableId : VariableId::MakeParserGeneratedId();
                     inputVariableIds.push_back(variableID);
                     inputVariablesById.insert({ variableID, variable });
                     // sort revealed a datum copy issue: type is not preserved, workaround below
@@ -2941,7 +2941,7 @@ namespace ScriptCanvas
                 {
                     if (!input->m_sourceVariableId.IsValid() && IsEntityIdThatRequiresRuntimeRemap(input))
                     {
-                        input->m_sourceVariableId = VariableId::MakeVariableId();
+                        input->m_sourceVariableId = VariableId::MakeParserGeneratedId();
                         input->m_source = nullptr;
                         // promote to member variable for at this stage, optimizations on data flow will occur later
                         input->m_isMember = true;

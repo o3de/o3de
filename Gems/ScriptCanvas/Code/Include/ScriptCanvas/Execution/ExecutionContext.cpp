@@ -44,12 +44,12 @@ namespace ScriptCanvas
     {
         ActivationData::ActivationData(const RuntimeComponent& component, ActivationInputArray& storage)
             : entityId(component.GetEntityId())
-            , variableOverrides(component.GetVariableOverrides())
+            , variableOverrides(component.GetRuntimeDataOverrides())
             , runtimeData(component.GetAsset()->GetData())
             , storage(storage)
         {}
 
-        ActivationData::ActivationData(const AZ::EntityId entityId, const VariableData& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage)
+        ActivationData::ActivationData(const AZ::EntityId entityId, const RuntimeDataOverrides& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage)
             : entityId(entityId)
             , variableOverrides(variableOverrides)
             , runtimeData(runtimeData)
@@ -58,6 +58,8 @@ namespace ScriptCanvas
 
         ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
+            // #functions2_prefabs prepare the runtime variables, consider only saving the overriden ones to the runtime
+
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
             rangeOut.inputs = activationData.storage.begin();
@@ -81,8 +83,19 @@ namespace ScriptCanvas
                 auto sourceVariableIter = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
                 auto destVariableIter = rangeOut.inputs + runtimeData.m_activationInputRange.nodeableCount;
 
-                for (auto& idDatumPair : runtimeData.m_input.m_variables)
+                const size_t sentinel = runtimeData.m_input.m_variables.size();
+                for (size_t index = 0; index != sentinel; ++index)
                 {
+                    auto& idDatumPair = runtimeData.m_input.m_variables[index];
+                    if (activationData.variableOverrides.m_variableIndices[index])
+                    {
+                        // it has been overridden
+                    }
+                    else
+                    {
+                        // it has not, just take the source asset copy
+                    }
+
                     ExecutionContextCpp::TypeCopy(*destVariableIter, *sourceVariableIter);
 
                     auto variableOverride = activationData.variableOverrides.FindVariable(idDatumPair.first);

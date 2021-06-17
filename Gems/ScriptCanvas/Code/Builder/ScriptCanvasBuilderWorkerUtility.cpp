@@ -565,7 +565,7 @@ namespace ScriptCanvasBuilder
         request.path = input.fullPath;
         request.name = input.fileNameOnly;
         request.namespacePath = input.namespacePath;
-        request.assetId = input.assetID;
+        request.scriptAssetId = input.assetID;
         request.graph = sourceGraph;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
         request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
