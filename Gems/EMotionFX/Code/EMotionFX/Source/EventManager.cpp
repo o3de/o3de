@@ -305,16 +305,6 @@ namespace EMotionFX
     }
 
 
-    void EventManager::OnDeleteActorInstance(ActorInstance* actorInstance)
-    {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_DELETE_ACTOR_INSTANCE];
-        for (EventHandler* eventHandler : eventHandlers)
-        {
-            eventHandler->OnDeleteActorInstance(actorInstance);
-        }
-    }
-
-
     // draw a debug triangle
     void EventManager::OnDrawTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)
     {
@@ -666,17 +656,6 @@ namespace EMotionFX
         for (EventHandler* eventHandler : eventHandlers)
         {
             eventHandler->OnCreateActor(actor);
-        }
-    }
-
-
-    // create an actor instance
-    void EventManager::OnCreateActorInstance(ActorInstance* actorInstance)
-    {
-        const EventHandlerVector& eventHandlers = m_eventHandlersByEventType[EVENT_TYPE_ON_CREATE_ACTOR_INSTANCE];
-        for (EventHandler* eventHandler : eventHandlers)
-        {
-            eventHandler->OnCreateActorInstance(actorInstance);
         }
     }
 

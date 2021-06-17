@@ -417,7 +417,7 @@ namespace AZ
             AZ::IO::FileIOStream sourceMtlfileStream(inputMetalFile.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary);
             if (!sourceMtlfileStream.IsOpen())
             {
-                AZ_Error(platformName, false, "Failed because the shader file \"%s\" could not be opened", inputMetalFile);
+                AZ_Error(platformName, false, "Failed because the shader file \"%s\" could not be opened", inputMetalFile.c_str());
                 return false;
             }
             

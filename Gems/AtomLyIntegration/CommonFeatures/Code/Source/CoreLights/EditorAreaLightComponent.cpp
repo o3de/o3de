@@ -112,13 +112,13 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::Default, &AreaLightComponentConfig::m_enableShutters, "Enable shutters", "Restrict the light to a specific beam angle depending on shape.")
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::ShuttersMustBeEnabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_innerShutterAngleDegrees, "Inner angle", "The inner angle of the shutters where the light beam begins to be occluded.")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 180.0f)
+                            ->Attribute(Edit::Attributes::Min, 0.5f)
+                            ->Attribute(Edit::Attributes::Max, 90.0f)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShuttersDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_outerShutterAngleDegrees, "Outer angle", "The outer angle of the shutters where the light beam is completely occluded.")
-                            ->Attribute(Edit::Attributes::Min, 0.0f)
-                            ->Attribute(Edit::Attributes::Max, 180.0f)
+                            ->Attribute(Edit::Attributes::Min, 0.5f)
+                            ->Attribute(Edit::Attributes::Max, 90.0f)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShutters)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShuttersDisabled)
 
@@ -179,8 +179,19 @@ namespace AZ
                             ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary search")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled);
-                        ;
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsShadowPcfDisabled) 
+                        ->DataElement(
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_esmExponent, "Esm Exponent",
+                            "Exponent used by Esm shadows. " 
+                            "Larger values increase the sharpness of the border between lit and unlit areas.") 
+                            ->Attribute(Edit::Attributes::Min, 50.0f)
+                            ->Attribute(Edit::Attributes::Max, 5000.0f) 
+                            ->Attribute(AZ::Edit::Attributes::Decimals, 0)
+                            ->Attribute(AZ::Edit::Attributes::SliderCurveMidpoint, 0.05f)
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly) 
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled) 
+                            ;
                 }
             }
 

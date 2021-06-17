@@ -12,6 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 from __future__ import annotations
 import logging
 
+from controller.error_controller import ErrorController
 from controller.import_resources_controller import ImportResourcesController
 from controller.view_edit_controller import ViewEditController
 from model import error_messages
@@ -33,8 +34,9 @@ class ControllerManager(object):
     
     def __init__(self) -> None:
         if ControllerManager.__instance is None:
-            self._view_edit_controller: ViewEditController = ViewEditController()
-            self._import_resources_controller: ImportResourcesController = ImportResourcesController()
+            self._error_controller: ErrorController = None
+            self._view_edit_controller: ViewEditController = None
+            self._import_resources_controller: ImportResourcesController = None
             ControllerManager.__instance = self
         else:
             raise AssertionError(error_messages.SINGLETON_OBJECT_ERROR_MESSAGE.format("ControllerManager"))
@@ -47,9 +49,17 @@ class ControllerManager(object):
     def view_edit_controller(self) -> ViewEditController:
         return self._view_edit_controller
     
-    def setup(self) -> None:
-        logger.info("Setting up ViewEdit and ImportResource controllers ...")
-        self._view_edit_controller.setup()
-        self._import_resources_controller.setup()
-        self._import_resources_controller.add_import_resources_sender.connect(
-            self._view_edit_controller.add_import_resources_receiver)
+    def setup(self, setup_error: bool) -> None:
+        if setup_error:
+            logger.debug("Setting up Error controllers ...")
+            self._error_controller = ErrorController()
+            self._error_controller.setup()
+        else:
+            logger.debug("Setting up ViewEdit and ImportResource controllers ...")
+            self._view_edit_controller = ViewEditController()
+            self._import_resources_controller = ImportResourcesController()
+
+            self._view_edit_controller.setup()
+            self._import_resources_controller.setup()
+            self._import_resources_controller.add_import_resources_sender.connect(
+                self._view_edit_controller.add_import_resources_receiver)

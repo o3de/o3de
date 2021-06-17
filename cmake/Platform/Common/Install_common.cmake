@@ -42,8 +42,20 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
             string(GENEX_STRIP ${include_directory} include_genex_expr)
             if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
                 unset(current_public_headers)
+
+                cmake_path(NORMAL_PATH include_directory)
+                string(REGEX REPLACE "/$" "" include_directory "${include_directory}")
+                cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} NORMALIZE include_directory_child_of_o3de_root)
+                if(NOT include_directory_child_of_o3de_root)
+                    message(FATAL_ERROR "Include directory of \"${include_directory}\" is outside of the O3DE root folder of \"${LY_ROOT_FOLDER}\". For the INSTALL step, the O3DE root folder must be a prefix of all include directories")
+                endif()
+
+                cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                cmake_path(APPEND include_location "${rel_include_dir}" ".." OUTPUT_VARIABLE destination_dir)
+                cmake_path(NORMAL_PATH destination_dir)
+
                 install(DIRECTORY ${include_directory}
-                    DESTINATION ${include_location}/${target_source_dir}
+                    DESTINATION ${destination_dir}
                     COMPONENT ${install_component}
                     FILES_MATCHING
                         PATTERN *.h
@@ -116,7 +128,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
             string(GENEX_STRIP ${include} include_genex_expr)
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
                 file(RELATIVE_PATH relative_include ${absolute_target_source_dir} ${include})
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${target_source_dir}/${relative_include}\n")
+                cmake_path(APPEND include_location "${target_source_dir}" "${relative_include}" OUTPUT_VARIABLE target_include)
+                cmake_path(NORMAL_PATH target_include)
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${target_include}\n")
             endif()
         endforeach()
     endif()
@@ -162,7 +176,18 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME)
         elseif(target_type STREQUAL MODULE_LIBRARY)
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         elseif(target_type STREQUAL SHARED_LIBRARY)
-            string(APPEND target_file_contents "set_property(TARGET ${TARGET_NAME} PROPERTY IMPORTED_IMPLIB_$<CONFIG> \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\")\n")
+            string(APPEND target_file_contents 
+"set_property(TARGET ${TARGET_NAME} 
+    APPEND_STRING PROPERTY IMPORTED_IMPLIB
+        $<$<CONFIG:$<CONFIG>$<ANGLE-R>:\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"$<ANGLE-R>
+)
+")
+            string(APPEND target_file_contents 
+"set_property(TARGET ${TARGET_NAME} 
+    PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>> 
+        \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"
+)
+")
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         else() # STATIC_LIBRARY, OBJECT_LIBRARY, INTERFACE_LIBRARY
             set(target_location "\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>")
@@ -363,7 +388,7 @@ function(ly_setup_cmake_install)
         string(APPEND builtinpackages "ly_associate_package(PACKAGE_NAME ${package_name} TARGETS ${targets} PACKAGE_HASH ${package_hash})\n")
     endforeach()
 
-    ly_get_absolute_pal_filename(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     file(GENERATE OUTPUT ${pal_builtin_file}
         CONTENT ${builtinpackages}
     )

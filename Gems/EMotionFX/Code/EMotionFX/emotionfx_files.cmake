@@ -15,6 +15,7 @@ set(FILES
     Source/ActorBus.h
     Source/ActorInstance.cpp
     Source/ActorInstance.h
+    Source/ActorInstanceBus.h
     Source/ActorManager.cpp
     Source/ActorManager.h
     Source/ActorUpdateScheduler.h

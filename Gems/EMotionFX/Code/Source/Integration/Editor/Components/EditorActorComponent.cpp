@@ -435,18 +435,16 @@ namespace EMotionFX
 
         void EditorActorComponent::LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&)
         {
+            // call to open must be done before LoadCharacter
+            const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
+            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
+
             if (assetId.IsValid())
             {
                 AZ::Data::AssetId animgraphAssetId;
-                animgraphAssetId.SetInvalid();
                 EditorAnimGraphComponentRequestBus::EventResult(animgraphAssetId, GetEntityId(), &EditorAnimGraphComponentRequestBus::Events::GetAnimGraphAssetId);
                 AZ::Data::AssetId motionSetAssetId;
-                motionSetAssetId.SetInvalid();
                 EditorAnimGraphComponentRequestBus::EventResult(motionSetAssetId, GetEntityId(), &EditorAnimGraphComponentRequestBus::Events::GetMotionSetAssetId);
-
-                // call to open must be done before LoadCharacter
-                const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
 
                 EMStudio::MainWindow* mainWindow = EMStudio::GetMainWindow();
                 if (mainWindow)
@@ -461,8 +459,7 @@ namespace EMotionFX
         void EditorActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_actorAsset = asset;
-            Actor* actor = m_actorAsset->GetActor();
-            AZ_Assert(m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
+            AZ_Assert(m_actorAsset.IsReady() && m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
             CheckActorCreation();
         }
@@ -555,6 +552,7 @@ namespace EMotionFX
                 RenderActorInstance::DebugOptions debugOptions;
                 debugOptions.m_drawAABB = m_renderBounds;
                 debugOptions.m_drawSkeleton = m_renderSkeleton;
+                debugOptions.m_emfxDebugDraw = true;
                 m_renderActorInstance->DebugDraw(debugOptions);
             }
         }

@@ -43,9 +43,9 @@ namespace AZ
         {
         }
 
-        void DepthOfFieldBokehBlurPass::Init()
+        void DepthOfFieldBokehBlurPass::InitializeInternal()
         {
-            FullscreenTrianglePass::Init();
+            FullscreenTrianglePass::InitializeInternal();
 
             m_sampleNumberIndex.Reset();
             m_radiusMinIndex.Reset();

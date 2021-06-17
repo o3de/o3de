@@ -74,7 +74,7 @@ namespace AZ
 
         // --- Pass behavior overrides ---
 
-        void CopyPass::BuildAttachmentsInternal()
+        void CopyPass::BuildInternal()
         {
             AZ_Assert(GetInputCount() == 1 && GetOutputCount() == 1,
                 "CopyPass has %d inputs and %d outputs. It should have exactly one of each.",

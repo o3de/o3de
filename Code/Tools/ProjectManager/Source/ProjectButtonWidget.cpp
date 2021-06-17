@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
     {
         setObjectName("labelButton");
 
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(0, 0, 0, 0);
         vLayout->setSpacing(5);
 
@@ -151,7 +151,6 @@ namespace O3DE::ProjectManager
 
     void ProjectButton::ReadySetup()
     {
-        connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         connect(m_projectImageLabel->GetBuildButton(), &QPushButton::clicked, [this](){ emit BuildProject(m_projectInfo); });
 
         QMenu* menu = new QMenu(this);

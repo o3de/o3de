@@ -118,8 +118,7 @@ namespace AZ
         void EditorAttachmentComponent::Activate()
         {
             Base::Activate();
-            m_boneFollower.Activate(GetEntity(), CreateAttachmentConfiguration(),
-                                    false); // Entity's don't animate in Editor
+            m_boneFollower.Activate(GetEntity(), CreateAttachmentConfiguration(), /*targetCanAnimate=*/true);
         }
 
         void EditorAttachmentComponent::Deactivate()

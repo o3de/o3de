@@ -582,19 +582,6 @@ AmazonToolbar ToolbarManager::GetEditModeToolbar() const
 {
     AmazonToolbar t = AmazonToolbar("EditMode", QObject::tr("Edit Mode Toolbar"));
     t.SetMainToolbar(true);
-    t.AddAction(ID_TOOLBAR_WIDGET_UNDO, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_REDO, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_EDITMODE_MOVE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_EDITMODE_ROTATE, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_EDITMODE_SCALE, ORIGINAL_TOOLBAR_VERSION);
-
-    t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_SNAP_GRID, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_TOOLBAR_WIDGET_SNAP_ANGLE, ORIGINAL_TOOLBAR_VERSION);
-
     return t;
 }
 
@@ -634,6 +621,20 @@ AmazonToolbar ToolbarManager::GetMiscToolbar() const
 {
     AmazonToolbar t = AmazonToolbar("Misc", QObject::tr("Misc Toolbar"));
     return t;
+}
+
+void ToolbarManager::AddButtonToEditToolbar(QAction* action)
+{
+    QString toolbarName = "EditMode";
+    const AmazonToolbar* toolbar = FindToolbar(toolbarName);
+
+    if (toolbar)
+    {
+        if (toolbar->Toolbar())
+        {
+            toolbar->Toolbar()->addAction(action);
+        }
+    }
 }
 
 const AmazonToolbar* ToolbarManager::FindDefaultToolbar(const QString& toolbarName) const

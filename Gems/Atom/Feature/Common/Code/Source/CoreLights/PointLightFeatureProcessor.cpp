@@ -312,5 +312,10 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
+        void PointLightFeatureProcessor::SetEsmExponent(LightHandle handle, float esmExponent)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, esmExponent);
+        }
+
     } // namespace Render
 } // namespace AZ

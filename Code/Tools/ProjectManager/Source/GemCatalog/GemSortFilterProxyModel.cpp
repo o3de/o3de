@@ -37,6 +37,16 @@ namespace O3DE::ProjectManager
             return false;
         }
 
+        // Gem status
+        if (m_gemStatusFilter != GemStatus::NoFilter)
+        {
+            const GemStatus sourceGemStatus = static_cast<GemStatus>(GemModel::IsAdded(sourceIndex));
+            if (m_gemStatusFilter != sourceGemStatus)
+            {
+                return false;
+            }
+        }
+
         // Gem origins
         if (m_gemOriginFilter)
         {
@@ -123,6 +133,19 @@ namespace O3DE::ProjectManager
         }
 
         return true;
+    }
+
+    QString GemSortFilterProxyModel::GetGemStatusString(GemStatus status)
+    {
+        switch (status)
+        {
+        case Unselected:
+            return "Unselected";
+        case Selected:
+            return "Selected";
+        default:
+            return "<Unknown Gem Status>";
+        }
     }
 
     void GemSortFilterProxyModel::InvalidateFilter()

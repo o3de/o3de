@@ -16,6 +16,5 @@ set(FILES camera_files.cmake
     Source/CameraComponentController.cpp
     Source/CameraComponentController.h
     Source/CameraViewRegistrationBus.h
-    Source/Camera_precompiled.cpp
     Source/Camera_precompiled.h
 )

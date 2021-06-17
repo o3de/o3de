@@ -15,7 +15,7 @@ from automatedtesting_shared.base import TestAutomationBase
 import ly_test_tools.environment.file_system as file_system
 
 
-@pytest.mark.SUITE_sandbox
+@pytest.mark.SUITE_smoke
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["temp_level"])

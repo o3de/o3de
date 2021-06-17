@@ -13,6 +13,7 @@
 #include "EditorContextMenu.h"
 
 #include "AzToolsFramework/Viewport/ViewportMessages.h"
+#include "Editor/EditorContextMenuBus.h"
 
 namespace AzToolsFramework
 {
@@ -55,14 +56,14 @@ namespace AzToolsFramework
 
                 // Populate global context menu.
                 const int contextMenuFlag = 0;
-                EditorEvents::Bus::BroadcastReverse(
-                    &EditorEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
+                AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, contextMenu.m_menu.data(),
                     AzFramework::Vector2FromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates),
                     contextMenuFlag);
 
                 if (!contextMenu.m_menu->isEmpty())
                 {
-                    contextMenu.m_menu->exec(QCursor::pos());
+                    // Use popup instead of exec; this avoids blocking input event processing while the menu dialog is active
+                    contextMenu.m_menu->popup(QCursor::pos());
                 }
             }
         }

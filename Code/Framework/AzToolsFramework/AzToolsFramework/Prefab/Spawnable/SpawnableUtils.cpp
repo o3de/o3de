@@ -38,11 +38,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                                                                               // going to be used to create clones of the entities.
         {
             AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
-            if (instance.HasContainerEntity())
-            {
-                entities.emplace_back(AZStd::move(instance.DetachContainerEntity()));
-            }
-            instance.DetachNestedEntities(
+            instance.DetachAllEntitiesInHierarchy(
                 [&entities](AZStd::unique_ptr<AZ::Entity> entity)
                 {
                     entities.emplace_back(AZStd::move(entity));
