@@ -466,10 +466,10 @@ namespace ImGui
         }
 
         //!Draw the UI and all the nodes.
-        void Paint(bool* draw)
+        void Paint(bool& draw)
         {
             ImGui::SetNextWindowSize(ImVec2((float)m_windowWidth, (float)m_windowHeight), ImGuiCond_FirstUseEver);
-            if (!ImGui::Begin(m_windowName.c_str(), draw))
+            if (!ImGui::Begin(m_windowName.c_str(), &draw)) 
             {
                 ImGui::End();
                 return;
@@ -580,7 +580,7 @@ static ImGui::ImGuiFrameVisualizerWindow* visualizerWindow = nullptr;
 namespace AZ::Render
 {
     //! Draw the frame graph.
-    inline void ImGuiFrameVisualizer::Draw(bool* draw)
+    inline void ImGuiFrameVisualizer::Draw(bool& draw)
     {
         if (!visualizerWindow)
         {
