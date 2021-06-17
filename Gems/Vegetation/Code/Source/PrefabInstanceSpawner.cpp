@@ -76,7 +76,8 @@ namespace Vegetation
                 ->Constructor()
                 ->Method("GetPrefabAssetPath", &PrefabInstanceSpawner::GetSpawnableAssetPath)
                 ->Method("SetPrefabAssetPath", &PrefabInstanceSpawner::SetSpawnableAssetPath)
-                ;
+                ->Method("GetPrefabAssetId", &PrefabInstanceSpawner::GetSpawnableAssetId)
+                ->Method("SetPrefabAssetId", &PrefabInstanceSpawner::SetSpawnableAssetId);
         }
     }
 
@@ -95,6 +96,13 @@ namespace Vegetation
     {
         UnloadAssets();
 
+        // Note that the spawnable tickets manage and track asset loading as well.  We *could* just rely on that and mark
+        // the spawner as immediately ready for use (i.e. always return "true" in IsLoaded() and IsSpawnable() ), but this
+        // would cause us to wait until the first instance is spawned to load the asset, creating a delay right at the point
+        // that the vegetation is becoming visible.  It would also cause the asset to get auto-unloaded every time all the
+        // instances using it are despawned. By loading it *prior* to marking things as ready, we can ensure that we have the
+        // asset at the point that the first instance is spawned, and that it won't get auto-unloaded every time the instances
+        // are despawned.
         m_spawnableAsset.QueueLoad();
         AZ::Data::AssetBus::MultiHandler::BusConnect(m_spawnableAsset.GetId());
     }
@@ -257,19 +265,7 @@ namespace Vegetation
                 AZ::Data::s_invalidAssetType, false);
             if (assetId.IsValid())
             {
-                AZ::Data::AssetInfo assetInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                    assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-                if (assetInfo.m_assetType == m_spawnableAsset.GetType())
-                {
-                    m_spawnableAsset.Create(assetId, false);
-                    LoadAssets();
-                }
-                else
-                {
-                    AZ_Error("Vegetation", false, "Asset '%s' is of type %s, but expected a Spawnable type.",
-                        assetPath.c_str(), assetInfo.m_assetType.ToString<AZStd::string>().c_str());
-                }
+                SetSpawnableAssetId(assetId);
             }
             else
             {
@@ -278,6 +274,38 @@ namespace Vegetation
         }
         else
         {
+            SetSpawnableAssetId(AZ::Data::AssetId());
+        }
+    }
+
+    AZ::Data::AssetId PrefabInstanceSpawner::GetSpawnableAssetId() const
+    {
+        return m_spawnableAsset.GetId();
+    }
+
+    void PrefabInstanceSpawner::SetSpawnableAssetId(const AZ::Data::AssetId& assetId)
+    {
+        if (assetId.IsValid())
+        {
+            AZ::Data::AssetInfo assetInfo;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+            if (assetInfo.m_assetType == m_spawnableAsset.GetType())
+            {
+                m_spawnableAsset.Create(assetId, false);
+                LoadAssets();
+            }
+            else
+            {
+                AZ_Error(
+                    "Vegetation", false, "Asset '%s' is of type %s, but expected a Spawnable type.",
+                    assetId.ToString<AZStd::string>().c_str(), assetInfo.m_assetType.ToString<AZStd::string>().c_str());
+            }
+        }
+        else
+        {
+            // An invalid asset ID is treated as a valid way to spawn "empty" instances, so don't print an error, just clear out
+            // the asset to that it has an invalid asset reference.  (See also HasEmptyAssetReferences() above)
             m_spawnableAsset = AZ::Data::Asset<AzFramework::Spawnable>();
             LoadAssets();
         }
@@ -300,8 +328,10 @@ namespace Vegetation
             instanceData.m_alignment * instanceData.m_rotation, instanceData.m_position);
         world.MultiplyByUniformScale(instanceData.m_scale);
 
+        // Create a callback for SpawnAllEntities that will set the transform of the root entity to the correct position / rotation / scale
+        // for our spawned instance.
         auto preSpawnCB = [this, world](
-                              [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableEntityContainerView view)
+             [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableEntityContainerView view)
         {
             AZ::Entity* rootEntity = *view.begin();
 
@@ -313,6 +343,9 @@ namespace Vegetation
             }
         };
 
+        // Create the EntitySpawnTicket here.  This pointer is going to get handed off to the vegetation system as opaque instance data,
+        // where it will be tracked and held onto for the lifetime of the vegetation instance.  The vegetation system will pass it back
+        // in to DestroyInstance at the end of the lifetime, so that's the one place where we will delete the ticket pointers.
         AzFramework::EntitySpawnTicket* ticket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
         if (ticket->IsValid())
         {
@@ -351,13 +384,17 @@ namespace Vegetation
 
             // If the spawnable asset instantiated successfully, we should have a record of it.
             auto foundInstance = m_instanceTickets.find(ticket);
-            AZ_Assert(foundInstance != m_instanceTickets.end(), "Couldn't find CreateInstance entry for slice instance");
+            AZ_Assert(foundInstance != m_instanceTickets.end(), "Couldn't find CreateInstance entry for the EntitySpawnTicket.");
             if (foundInstance != m_instanceTickets.end())
             {
+                // The call to DespawnAssetInstance above is technically redundant right now, because when we delete the ticket pointer
+                // below it will automatically despawn everything anyways. However, it's nice to have a single explicit call to despawn,
+                // in case we ever need a place to add logging, or have a callback when despawning is complete, etc.
                 DespawnAssetInstance(ticket);
                 m_instanceTickets.erase(foundInstance);
             }
 
+            // The vegetation system has stopped tracking this instance, so it's now safe to delete the ticket pointer.
             delete ticket;
         }
     }

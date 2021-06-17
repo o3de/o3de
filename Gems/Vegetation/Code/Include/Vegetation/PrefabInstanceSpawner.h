@@ -66,6 +66,9 @@ namespace Vegetation
         AZStd::string GetSpawnableAssetPath() const;
         void SetSpawnableAssetPath(const AZStd::string& assetPath);
 
+        AZ::Data::AssetId GetSpawnableAssetId() const;
+        void SetSpawnableAssetId(const AZ::Data::AssetId& assetId);
+
     private:
         bool DataIsEquivalent(const InstanceSpawner& rhs) const override;
 

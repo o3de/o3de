@@ -27,6 +27,7 @@
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesManager.h>
 #include <Tests/FileIOBaseTestTypes.h>
+#include <Mocks/MockSpawnableEntitiesInterface.h>
 
 #include <Vegetation/PrefabInstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
@@ -56,96 +57,6 @@ namespace UnitTest
         }
     };
 
-    // Mock SpawnableEntitiesDefinition is needed to mock out exactly enough of the spawn interface to allow the PrefabInstanceSpawner
-    // to think it spawned an instance successfully.
-    class MockSpawnableEntitiesDefinition : public AzFramework::SpawnableEntitiesDefinition
-    {
-    public:
-        AZ_RTTI(
-            AzFramework::MockSpawnableEntitiesDefinition,
-            "{2A20FF73-C445-4F32-ABB9-5CF0A5778404}",
-            AzFramework::SpawnableEntitiesDefinition);
-
-        friend class EntitySpawnTicket;
-
-        MockSpawnableEntitiesDefinition()
-        {
-            AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Register(this);
-        }
-
-        virtual ~MockSpawnableEntitiesDefinition()
-        {
-            AZ::Interface<AzFramework::SpawnableEntitiesDefinition>::Unregister(this);
-        }
-
-        void SpawnAllEntities(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void SpawnEntities(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AZStd::vector<size_t> entityIndices,
-            [[maybe_unused]] AzFramework::SpawnEntitiesOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void DespawnAllEntities(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AzFramework::DespawnAllEntitiesOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void ReloadSpawnable(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> spawnable,
-            [[maybe_unused]] AzFramework::ReloadSpawnableOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void ListEntities(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AzFramework::ListEntitiesCallback listCallback,
-            [[maybe_unused]] AzFramework::ListEntitiesOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void ListIndicesAndEntities(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AzFramework::ListIndicesEntitiesCallback listCallback,
-            [[maybe_unused]] AzFramework::ListEntitiesOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void ClaimEntities(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AzFramework::ClaimEntitiesCallback listCallback,
-            [[maybe_unused]] AzFramework::ClaimEntitiesOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-        void Barrier(
-            [[maybe_unused]] AzFramework::EntitySpawnTicket& ticket,
-            [[maybe_unused]] AzFramework::BarrierCallback completionCallback,
-            [[maybe_unused]] AzFramework::BarrierOptionalArgs optionalArgs = {}) override
-        {
-        }
-
-    protected:
-        [[nodiscard]] AZStd::pair<AzFramework::EntitySpawnTicket::Id, void*> CreateTicket(
-            [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable>&& spawnable) override
-        {
-            // The ID and pointer are completely arbitrary, they just need to both be non-zero to look like a valid ticket.
-            return AZStd::make_pair<AzFramework::EntitySpawnTicket::Id, void*>(1, this);
-        }
-
-        void DestroyTicket([[maybe_unused]] void* ticket) override
-        {
-        }
-    };
-
-
     // To test prefab spawning, we need to mock up enough of the asset management system and the spawnable
     // asset handling to pretend like we're loading/unloading spawnables successfully.
     class PrefabInstanceSpawnerTests
@@ -161,6 +72,7 @@ namespace UnitTest
             : UnitTest::SetRestoreFileIOBaseRAII(m_fileIOMock)
         {
             AZ::IO::MockFileIOBase::InstallDefaultReturns(m_fileIOMock);
+            AzFramework::MockSpawnableEntitiesInterface::InstallDefaultReturns(m_spawnableEntitiesInterfaceMock);
         }
 
         void RegisterComponentDescriptors() override
@@ -325,7 +237,7 @@ namespace UnitTest
         AZ::JobManager* m_jobManager{ nullptr };
         AZ::JobContext* m_jobContext{ nullptr };
         ::testing::NiceMock<AZ::IO::MockFileIOBase> m_fileIOMock;
-        MockSpawnableEntitiesDefinition m_spawnableEntitiesInterfaceMock;
+        ::testing::NiceMock<AzFramework::MockSpawnableEntitiesInterface> m_spawnableEntitiesInterfaceMock;
     };
 
     TEST_F(PrefabInstanceSpawnerTests, BasicInitializationTest)
