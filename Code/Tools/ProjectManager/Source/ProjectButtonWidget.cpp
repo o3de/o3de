@@ -26,8 +26,6 @@
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_projectImageHeight = 280;
-
     LabelButton::LabelButton(QWidget* parent)
         : QLabel(parent)
     {
