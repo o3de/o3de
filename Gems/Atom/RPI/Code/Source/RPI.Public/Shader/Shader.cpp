@@ -213,10 +213,15 @@ namespace AZ
         // ShaderReloadNotificationBus overrides...
         void Shader::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
+            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
+            // so we can reduce unnecessary reinitialization in that case.
+            if (shaderAsset.Get() == m_asset.Get())
+            {
+                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Shader::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             
-            Init(*m_asset.Get());
-            ShaderReloadNotificationBus::Event(shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
+                Init(*m_asset.Get());
+                ShaderReloadNotificationBus::Event(shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderReinitialized, *this);
+            }
         }
         ///////////////////////////////////////////////////////////////////
 
