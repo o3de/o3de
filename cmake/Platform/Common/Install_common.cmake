@@ -70,7 +70,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 string(REGEX REPLACE "/$" "" include_directory "${include_directory}")
                 cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} NORMALIZE include_directory_child_of_o3de_root)
                 if(NOT include_directory_child_of_o3de_root)
-                    message(FATAL_ERROR "Include directory of \"${include_directory}\" is outside of the O3DE root folder of \"${LY_ROOT_FOLDER}\". For the INSTALL step, the O3DE root folder must be a prefix of all include directories")
+                    # Include directory is outside of the O3DE root folder ${LY_ROOT_FOLDER}.
+                    # For the INSTALL step, the O3DE root folder must be a prefix of all include directories.
+                    continue()
                 endif()
 
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
