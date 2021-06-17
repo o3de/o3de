@@ -78,13 +78,13 @@ namespace MaterialEditor
         AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
         if (!apiName.IsEmpty())
         {
-            QString title = QString{ "Material Editor (%1)" }.arg(apiName.GetCStr());
+            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
             setWindowTitle(title);
         }
         else
         {
             AZ_Assert(false, "Render API name not found");
-            setWindowTitle("Material Editor");
+            setWindowTitle(QApplication::applicationName());
         }
 
         m_advancedDockManager = new AzQtComponents::FancyDocking(this);
