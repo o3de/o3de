@@ -249,7 +249,7 @@ namespace AzNetworking
                     continue;
                 }
                 decodedPacketData = m_decompressBuffer.GetBuffer();
-                decodedPacketSize = m_decompressBuffer.GetSize();
+                decodedPacketSize = static_cast<int32_t>(m_decompressBuffer.GetSize());
             }
             GetMetrics().m_recvBytesUncompressed += decodedPacketSize;
 
@@ -494,7 +494,7 @@ namespace AzNetworking
         {
             buffer.Resize(buffer.GetCapacity());
 
-            NetworkInputSerializer networkSerializer(buffer.GetBuffer(), buffer.GetCapacity());
+            NetworkInputSerializer networkSerializer(buffer.GetBuffer(), static_cast<uint32_t>(buffer.GetCapacity()));
             ISerializer& serializer = networkSerializer; // To get the default typeinfo parameters in ISerializer
 
             if (!header.SerializePacketFlags(serializer))
@@ -517,7 +517,7 @@ namespace AzNetworking
 
             buffer.Resize(serializer.GetSize());
         }
-        uint32_t packetSize = buffer.GetSize();
+        uint32_t packetSize = static_cast<uint32_t>(buffer.GetSize());
         uint8_t* packetData = buffer.GetBuffer();
 
         // If the packet doesn't fit within our MTU (minus potential SSL encryption overhead), break it up
@@ -549,7 +549,7 @@ namespace AzNetworking
         UdpPacketEncodingBuffer writeBuffer;
         if (m_compressor && shouldCompress)
         {
-            NetworkInputSerializer flagSerializer(writeBuffer.GetBuffer(), writeBuffer.GetCapacity());
+            NetworkInputSerializer flagSerializer(writeBuffer.GetBuffer(), static_cast<uint32_t>(writeBuffer.GetCapacity()));
             ISerializer& serializer = flagSerializer; // To get the default typeinfo parameters in ISerializer
 
             header.SetPacketFlag(PacketFlag::Compressed, true);
@@ -562,7 +562,7 @@ namespace AzNetworking
             AZ_Assert(flagSize == 1, "Flag bitfield should serialize to one byte");
 
             // Compress the packet, make sure to offset by the size of the flag which is now serialized
-            const uint32_t payloadSize = buffer.GetSize() - flagSize;
+            const uint32_t payloadSize = static_cast<uint32_t>(buffer.GetSize() - flagSize);
             uint8_t* payload = buffer.GetBuffer() + flagSize;
             const AZStd::size_t maxSizeNeeded = m_compressor->GetMaxCompressedBufferSize(payloadSize);
             AZStd::size_t compressionMemBytesUsed = 0;
@@ -578,7 +578,7 @@ namespace AzNetworking
             if (compressionMemBytesUsed < payloadSize)
             {
                 writeBuffer.Resize(aznumeric_cast<int32_t>(flagSize + compressionMemBytesUsed));
-                packetSize = writeBuffer.GetSize();
+                packetSize = static_cast<uint32_t>(writeBuffer.GetSize());
                 packetData = writeBuffer.GetBuffer();
                 // Track byte delta caused by compression
                 GetMetrics().m_sendBytesCompressedDelta += (packetSize - compressionMemBytesUsed);

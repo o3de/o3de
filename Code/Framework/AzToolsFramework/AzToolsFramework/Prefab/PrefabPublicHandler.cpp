@@ -1445,7 +1445,7 @@ namespace AzToolsFramework
                 if (&owningInstance->get() == &commonRootEntityOwningInstance)
                 {
                     // If it's the same instance, we can add this entity to the new instance entities.
-                    int priorEntitiesSize = entities.size();
+                    size_t priorEntitiesSize = entities.size();
                     
                     entities.insert(entity);
 
@@ -1624,7 +1624,7 @@ namespace AzToolsFramework
                 entityDomAfter.Parse(newEntityDomString.toUtf8().constData());
 
                 // Add the new Entity DOM to the Entities member of the instance
-                rapidjson::Value aliasName(newEntityAlias.c_str(), newEntityAlias.length(), domToAddDuplicatedEntitiesUnder.GetAllocator());
+                rapidjson::Value aliasName(newEntityAlias.c_str(), static_cast<rapidjson::SizeType>(newEntityAlias.length()), domToAddDuplicatedEntitiesUnder.GetAllocator());
                 entitiesIter->value.AddMember(AZStd::move(aliasName), entityDomAfter, domToAddDuplicatedEntitiesUnder.GetAllocator());
             }
 
@@ -1696,7 +1696,7 @@ namespace AzToolsFramework
                 nestedInstanceDomAfter.Parse(newInstanceDomString.toUtf8().constData());
 
                 // Add the new Instance DOM to the Instances member of the instance
-                rapidjson::Value aliasName(newInstanceAlias.c_str(), newInstanceAlias.length(), domToAddDuplicatedInstancesUnder.GetAllocator());
+                rapidjson::Value aliasName(newInstanceAlias.c_str(), static_cast<rapidjson::SizeType>(newInstanceAlias.length()), domToAddDuplicatedInstancesUnder.GetAllocator());
                 instancesIter->value.AddMember(AZStd::move(aliasName), nestedInstanceDomAfter, domToAddDuplicatedInstancesUnder.GetAllocator());
             }
 
