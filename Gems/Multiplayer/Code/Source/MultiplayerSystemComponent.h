@@ -37,6 +37,7 @@ namespace AzFramework
 namespace AzNetworking
 {
     class INetworkInterface;
+    class IpAddress;
 }
 
 namespace Multiplayer
@@ -112,6 +113,9 @@ namespace Multiplayer
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+        void StartHost(uint16_t port, bool isDedicated = true) override;
+        void Connect(AZStd::string remoteAddress, uint16_t port) override;
+        void Terminate() override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         INetworkTime* GetNetworkTime() override;

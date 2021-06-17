@@ -359,6 +359,21 @@ namespace AzNetworking
         return connection->WasPacketAcked(packetId);
     }
 
+    bool UdpNetworkInterface::StopListening()
+    {
+        if (!m_socket->IsOpen())
+        {
+            AZ_Assert(false, "StopListen cannot be invoked on an already closed network interface");
+            return false;
+        }
+
+        m_port = 0;
+        m_readerThread.UnregisterSocket(m_socket.get());
+        m_allowIncomingConnections = false;
+        m_socket->Close();
+        return true;
+    }
+
     bool UdpNetworkInterface::Disconnect(ConnectionId connectionId, DisconnectReason reason)
     {
         IConnection* connection = m_connectionSet.GetConnection(connectionId);

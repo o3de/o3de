@@ -20,6 +20,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
@@ -143,13 +144,7 @@ namespace Multiplayer
                     console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
                     {
                         // Connect the Editor to the editor server for Multiplayer simulation
-                        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
-                        INetworkInterface* networkInterface =
-                            AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-
-                        const IpAddress ipAddress(remoteAddress.c_str(), remotePort, networkInterface->GetType());
-                        networkInterface->Connect(ipAddress);
-
+                        AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
                         AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
                     }
             }

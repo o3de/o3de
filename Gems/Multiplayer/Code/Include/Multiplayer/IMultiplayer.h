@@ -23,6 +23,7 @@
 namespace AzNetworking
 {
     class INetworkInterface;
+    class IpAddress;
 }
 
 namespace Multiplayer
@@ -65,6 +66,19 @@ namespace Multiplayer
         //! Sets the type of this Multiplayer connection and calls any related callback.
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
+
+        //! Starts hosting a server
+        //! @param port The port to listen for connection on
+        //! @param isDedicated Whether the server is dedicated or client hosted
+        virtual void StartHost(uint16_t port, bool isDedicated = true) = 0;
+
+        //! Connects to the specified IP as a Client
+        //! @param remoteAddress The domain or IP to connect to
+        //! @param port The port to connect to
+        virtual void Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+
+        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
+        virtual void Terminate() = 0;
 
         //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
         //! @param handler The ClientDisconnectedEvent Handler to add
