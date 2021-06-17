@@ -381,7 +381,7 @@
 	<file>img/UI20/toolbar/SketchMode.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
-    <file>img/UI20/toolbar/Translate.svg</file>
+    <file>img/UI20/toolbar/Rotate.svg</file>
     <file>img/UI20/toolbar/undo.svg</file>
     <file>img/UI20/toolbar/Unlocked.svg</file>
     <file>img/UI20/toolbar/Vertex_snapping.svg</file>
