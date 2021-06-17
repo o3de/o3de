@@ -780,7 +780,7 @@ namespace AZ
                                     pipelineStateList.push_back();
                                     pipelineStateList[size].m_multisampleState = rasterPass->GetMultisampleState();
                                     pipelineStateList[size].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
-                                    rasterPass->SetPipelineStateDataIndex(size);
+                                    rasterPass->SetPipelineStateDataIndex(static_cast<AZ::u32>(size));
                                 }
                             }
                         }

@@ -65,7 +65,7 @@ namespace AZ
 
                 AZ::JobCompletion jobCompletion;
                 const int numThreads = 8;
-                const int numPixelsPerThread = buffer->size() / numChannels / numThreads;
+                const int numPixelsPerThread = static_cast<int>(buffer->size() / numChannels / numThreads);
                 for (int i = 0; i < numThreads; ++i)
                 {
                     int startPixel = i * numPixelsPerThread;

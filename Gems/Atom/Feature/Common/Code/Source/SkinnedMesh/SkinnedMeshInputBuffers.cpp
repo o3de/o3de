@@ -446,7 +446,7 @@ namespace AZ
 
                     // Positions start at the beginning of the allocation
                     instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes = allocation->GetVirtualAddress().m_ptr;
-                    uint32_t deltaStreamSizeInBytes = vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes;
+                    uint32_t deltaStreamSizeInBytes = static_cast<uint32_t>(vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes);
 
                     // Followed by normals, tangents, and bitangents
                     instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes = instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes + deltaStreamSizeInBytes;
