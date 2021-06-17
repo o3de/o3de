@@ -334,7 +334,8 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
     )
     
     # Substitute config file template with above vars
-    file(READ "${CONFIG_TEMPLATE_FILE}" config_file)
+    ly_file_read("${CONFIG_TEMPLATE_FILE}" config_file)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CONFIG_TEMPLATE_FILE}")
     string(CONFIGURE ${config_file} config_file)
     
     # Write out entire config contents to a file in the build directory of the test impact framework console target

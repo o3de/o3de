@@ -16,7 +16,7 @@
 include_guard()
 
 # Read the engine name from the project_json file
-file(READ ${CMAKE_CURRENT_LIST_DIR}/project.json project_json)
+ly_file_read(${CMAKE_CURRENT_LIST_DIR}/project.json project_json)
 string(JSON LY_ENGINE_NAME_TO_USE ERROR_VARIABLE json_error GET ${project_json} engine)
 if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine' from 'project.json', error: ${json_error}")
@@ -31,8 +31,8 @@ endif()
 # Read the ~/.o3de/o3de_manifest.json file and look through the 'engines_path' object.
 # Find a key that matches LY_ENGINE_NAME_TO_USE and use that as the engine path.
 if(EXISTS ${manifest_path})
-    file(READ ${manifest_path} manifest_json)
-
+    ly_file_read(${manifest_path} manifest_json)
+    
     string(JSON engines_path_count ERROR_VARIABLE json_error LENGTH ${manifest_json} engines_path)
     if(json_error)
         message(FATAL_ERROR "Unable to read key 'engines_path' from '${manifest_path}', error: ${json_error}")
