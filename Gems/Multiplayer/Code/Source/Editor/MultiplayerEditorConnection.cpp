@@ -16,7 +16,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
