@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Mocks/MockSpawnableEntitiesInterface.h
     Utils/Utils.h
     Utils/Utils.cpp
 )
