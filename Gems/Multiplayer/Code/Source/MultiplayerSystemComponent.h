@@ -146,6 +146,8 @@ namespace Multiplayer
         ConnectionAcquiredEvent m_connAcquiredEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
 
+        AZStd::queue<AZStd::string> m_pendingConnectionTickets;
+
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
         HostFrameId m_lastReplicatedHostFrameId = InvalidHostFrameId;
 
