@@ -68,7 +68,7 @@ namespace JsonSerializationTests
         bool m_enableInitializationTest{ true };
         //! Enable the test that creates a new instance of the provided test type through the factory that's found in
         //! the Serialize Context. This test is automatically disabled for classes that don't have a factory or
-        //! have a null factory.
+        //! have a null factory as well as for classes that have mandatory fields.
         bool m_enableNewInstanceTests{ true };
 
     private:
@@ -728,7 +728,7 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
-        if (this->m_features.m_enableNewInstanceTests)
+        if (this->m_features.m_enableNewInstanceTests && this->m_features.m_mandatoryFields.empty())
         {
             AZ::SerializeContext* serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
             const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid<typename TypeParam::Type>());
@@ -761,7 +761,7 @@ namespace JsonSerializationTests
         using namespace AZ;
         using namespace AZ::JsonSerializationResult;
 
-        if (this->m_features.m_enableNewInstanceTests)
+        if (this->m_features.m_enableNewInstanceTests && this->m_features.m_mandatoryFields.empty())
         {
             auto serializer = this->m_description.CreateSerializer();
             if ((serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::InitializeNewInstance) ==
