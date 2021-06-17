@@ -154,7 +154,7 @@ PSOutput MainPS(VSOutput input)
             }
         } 
 
-        if (SceneSrg::m_fogEnable)
+        if (SceneSrg::m_enableFog)
         {
             if (input.m_cubemapCoord.z >= 0.0 && input.m_cubemapCoord.z <= SceneSrg::m_fogTopHeight)
             {

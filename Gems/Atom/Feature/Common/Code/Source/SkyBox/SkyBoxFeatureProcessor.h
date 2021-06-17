@@ -150,7 +150,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_cubemapIndex = "m_skyboxCubemap";
             RHI::ShaderInputNameIndex m_cubemapRotationMatrixIndex = "m_cubemapRotationMatrix";
             RHI::ShaderInputNameIndex m_cubemapExposureIndex = "m_cubemapExposure";
-            RHI::ShaderInputNameIndex m_fogEnableIndex = "m_fogEnable";
+            RHI::ShaderInputNameIndex m_enableFogIndex = "m_enableFog";
             RHI::ShaderInputNameIndex m_fogColorIndex = "m_fogColor";
             RHI::ShaderInputNameIndex m_fogTopHeightIndex = "m_fogTopHeight";
             RHI::ShaderInputNameIndex m_fogBottomHeightIndex = "m_fogBottomHeight";

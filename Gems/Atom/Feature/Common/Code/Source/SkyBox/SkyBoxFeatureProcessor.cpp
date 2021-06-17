@@ -89,7 +89,7 @@ namespace AZ
             m_cubemapIndex.Reset();
             m_cubemapRotationMatrixIndex.Reset();
             m_cubemapExposureIndex.Reset();
-            m_fogEnableIndex.Reset();
+            m_enableFogIndex.Reset();
             m_fogColorIndex.Reset();
             m_fogTopHeightIndex.Reset();
             m_fogBottomHeightIndex.Reset();
@@ -164,7 +164,7 @@ namespace AZ
                              m_mapBuffer = false;
                          }
 
-                        m_sceneSrg->SetConstant(m_fogEnableIndex, m_fogSettings.m_enable);
+                        m_sceneSrg->SetConstant(m_enableFogIndex, m_fogSettings.m_enable);
                         if (m_fogSettings.m_enable)
                         {
                             m_sceneSrg->SetConstant(m_fogTopHeightIndex, m_fogSettings.m_topHeight);

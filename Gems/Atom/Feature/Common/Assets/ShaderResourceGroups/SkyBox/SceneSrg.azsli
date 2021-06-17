@@ -43,7 +43,7 @@ partial ShaderResourceGroup SceneSrg
     float m_fogTopHeight;
     float m_fogBottomHeight;
     float4 m_fogColor;
-    bool m_fogEnable;
+    bool m_enableFog;
 
     TextureCube m_skyboxCubemap;
     float4x4 m_cubemapRotationMatrix;
