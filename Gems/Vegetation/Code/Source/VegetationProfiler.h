@@ -11,8 +11,6 @@
 */
 #pragma once
 
-#include <platform.h> // Many CryCommon files require that this is included first.
-
 // VEG_PROFILE_ENABLED is defined in the wscript
 // VEG_PROFILE_ENABLED is only defined in the Vegetation gem by default
 #if defined(VEG_PROFILE_ENABLED)

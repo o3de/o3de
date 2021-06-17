@@ -10,8 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
-
 #include <VegetationEditorModule.h>
 
 #include <Editor/EditorAreaBlenderComponent.h>
