@@ -471,6 +471,7 @@ namespace Multiplayer
 
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
         }
+        reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
@@ -729,6 +730,7 @@ namespace Multiplayer
         // Signal to session management that a user has left the server
         if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
+            
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
                 connection->GetConnectionRole() == ConnectionRole::Acceptor)
             {
