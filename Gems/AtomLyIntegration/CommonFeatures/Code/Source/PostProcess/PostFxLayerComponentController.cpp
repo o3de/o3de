@@ -20,8 +20,6 @@
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
-#pragma optimize("", off)
-
 namespace AZ
 {
     namespace Render
