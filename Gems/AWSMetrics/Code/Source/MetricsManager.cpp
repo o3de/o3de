@@ -256,7 +256,7 @@ namespace AWSMetrics
                 }
 
                 m_globalStats.m_numSuccesses++;
-                m_globalStats.m_sendSizeInBytes += static_cast<uint32_t>(metricsEvent.GetSizeInBytes());
+                m_globalStats.m_sendSizeInBytes += static_cast<AZStd::atomic<uint32_t>::value_type>(metricsEvent.GetSizeInBytes());
             }
             else
             {
