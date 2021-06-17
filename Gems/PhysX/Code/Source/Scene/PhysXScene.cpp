@@ -680,7 +680,7 @@ namespace PhysX
             if (m_freeSceneSlots.empty())
             {
                 m_simulatedBodies.emplace_back(newBodyCrc, newBody);
-                index = m_simulatedBodies.size() - 1;
+                index = static_cast<AzPhysics::SimulatedBodyIndex>(m_simulatedBodies.size() - 1);
             }
             else
             {
