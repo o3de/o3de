@@ -11,7 +11,6 @@
 #
 
 set(FILES
-    Source/main.cpp
     Source/Application.h
     Source/Application.cpp
     Source/ProjectManagerDefs.h
