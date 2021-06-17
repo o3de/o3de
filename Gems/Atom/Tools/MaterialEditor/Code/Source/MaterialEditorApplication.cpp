@@ -476,7 +476,7 @@ namespace MaterialEditor
             return;
         }
 
-        WriteStartupLog();
+        m_traceLogger->WriteStartupLog("MaterialEditor.log");
 
         if (!LaunchDiscoveryService())
         {

@@ -24,8 +24,9 @@ namespace AzQtComponents
     {
     public:       
         AzQtApplication(int& argc, char** argv);
+        void static setDpiScaling();
 
-    private:
+    protected:
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::unique_ptr<AzQtTraceLogger> m_traceLogger;
         AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

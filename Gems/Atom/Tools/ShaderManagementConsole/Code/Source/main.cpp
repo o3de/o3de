@@ -15,6 +15,7 @@
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Application/AzQtApplication.h>
 
 #include <QtWidgets/QApplication>
 #include <QtGui/private/qhighdpiscaling_p.h>
@@ -39,7 +40,10 @@ int main(int argc, char** argv)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::PerScreenDpiAware);
 
+    AzQtComponents::AzQtApplication::setDpiScaling();
+
     ShaderManagementConsole::ShaderManagementConsoleApplication app(&argc, &argv);
+
     AZ::IO::FixedMaxPath engineRootPath;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {

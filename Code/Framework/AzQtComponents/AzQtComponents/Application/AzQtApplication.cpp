@@ -34,7 +34,12 @@ namespace AzQtComponents
 
          QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
  
-         // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
+         
+    }
+
+    void AzQtApplication::setDpiScaling()
+    {
+        // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
             // on Windows 10
          
          QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

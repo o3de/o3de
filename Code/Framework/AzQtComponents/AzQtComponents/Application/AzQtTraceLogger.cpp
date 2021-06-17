@@ -40,7 +40,7 @@ namespace AzQtComponents
         return false;
     }
 
-    void AzQtTraceLogger::WriteStartupLog()
+    void AzQtTraceLogger::WriteStartupLog(char name[])
     {
         using namespace AzFramework;
 
@@ -61,7 +61,7 @@ namespace AzQtComponents
         fileIO->CreatePath("@log@");
 
         AZStd::string logPath;
-        StringFunc::Path::Join(logDirectory.c_str(), "MaterialEditor.log", logPath);
+        StringFunc::Path::Join(logDirectory.c_str(), name, logPath);
 
         m_logFile.reset(aznew LogFile(logPath.c_str()));
         if (m_logFile)

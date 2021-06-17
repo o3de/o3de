@@ -23,13 +23,13 @@ namespace AzQtComponents
         AzQtTraceLogger();
         ~AzQtTraceLogger();
 
+        void WriteStartupLog(char name[]);
+
     protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
         bool OnOutput(const char* window, const char* message) override;
         //////////////////////////////////////////////////////////////////////////
-
-        void WriteStartupLog();
 
         struct LogMessage
         {
@@ -40,6 +40,5 @@ namespace AzQtComponents
         AZStd::vector<LogMessage> m_startupLogSink;
         AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
     };
-
 }
 

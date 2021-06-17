@@ -39,6 +39,8 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
+#include <AzQtComponents/Application/AzQtTraceLogger.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFileInfo>
 #include <QObject>
