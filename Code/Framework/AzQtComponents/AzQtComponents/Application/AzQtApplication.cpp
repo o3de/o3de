@@ -13,13 +13,14 @@
 #include <AzQtComponents/Application/AzQtApplication.h>
 
 #include <AzCore/PlatformIncl.h> // This should be the first include to make sure Windows.h is defined with NOMINMAX
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 namespace AzQtComponents
 {
 
     AzQtApplication::AzQtApplication(int& argc, char** argv)
         : QApplication(argc, argv)
-        , m_impl(new AzQtTraceLogger)
+        , m_traceLogger(new AzQtTraceLogger)
     {
          // Use a common Qt settings path for applications that don't register their own application name
          if (QApplication::applicationName().isEmpty())

@@ -14,13 +14,8 @@
 
 #include <QApplication>
 
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/Logging/LogFile.h>
-#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <AzCore/Debug/TraceMessageBus.h>
 #include <AzQtComponents/Application/AzQtTraceLogger.h>
-
+#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 
 namespace AzQtComponents
 {
@@ -28,14 +23,14 @@ namespace AzQtComponents
         : public QApplication
     {
     public:       
-        AzQtApplication(int& argc, char** argv);       
+        AzQtApplication(int& argc, char** argv);
+
     private:
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-        AZStd::unique_ptr<AzQtTraceLogger> m_impl;
+        AZStd::unique_ptr<AzQtTraceLogger> m_traceLogger;
         AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
 
-    
 } // namespace AzQtComponents
 
 

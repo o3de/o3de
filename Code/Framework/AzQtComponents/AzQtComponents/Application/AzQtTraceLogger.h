@@ -20,20 +20,16 @@ namespace AzQtComponents
     class AzQtTraceLogger : private AZ::Debug::TraceMessageBus::Handler
     {
     public:
-        AzQtTraceLogger()
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        }
-        ~AzQtTraceLogger()
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        }
+        AzQtTraceLogger();
+        ~AzQtTraceLogger();
 
     protected:
         //////////////////////////////////////////////////////////////////////////
         // AZ::Debug::TraceMessageBus::Handler overrides...
         bool OnOutput(const char* window, const char* message) override;
         //////////////////////////////////////////////////////////////////////////
+
+        void WriteStartupLog();
 
         struct LogMessage
         {
