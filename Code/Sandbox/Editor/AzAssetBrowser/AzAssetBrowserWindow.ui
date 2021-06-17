@@ -65,6 +65,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="m_viewSwitcherCheckBox">
+           <property name="text">
+            <string>Switch View</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
@@ -107,6 +114,49 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
+           <item>
+            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+             </property>
+             <property name="dragDropOverwriteMode">
+              <bool>false</bool>
+             </property>
+             <property name="dragDropMode">
+              <enum>QAbstractItemView::DragOnly</enum>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+             <property name="horizontalScrollMode">
+              <enum>QAbstractItemView::ScrollPerPixel</enum>
+             </property>
+             <property name="showGrid">
+              <bool>false</bool>
+             </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
+             <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>true</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+            </widget>
+           </item>
            <item>
             <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTreeView" name="m_assetBrowserTreeViewWidget">
              <property name="sizePolicy">
@@ -161,6 +211,11 @@
    <extends>QFrame</extends>
    <header>AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <extends>QTableView</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

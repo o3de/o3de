@@ -25,6 +25,7 @@ set(_ext_flags
 )
 
 set(_addtional_defines
+    -dCPACK_BOOTSTRAP_THEME_FILE=${CPACK_BINARY_DIR}/BootstrapperTheme
     -dCPACK_BOOTSTRAP_UPGRADE_GUID=${CPACK_WIX_BOOTSTRAP_UPGRADE_GUID}
     -dCPACK_DOWNLOAD_SITE=${CPACK_DOWNLOAD_SITE}
     -dCPACK_LOCAL_INSTALLER_DIR=${_cpack_wix_out_dir}

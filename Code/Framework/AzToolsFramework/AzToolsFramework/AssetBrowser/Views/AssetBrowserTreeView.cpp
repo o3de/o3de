@@ -53,6 +53,7 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             header()->hide();
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
@@ -99,8 +100,9 @@ namespace AzToolsFramework
 
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets() const
         {
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
-            for (const auto& index : selectedIndexes())
+            for (const auto& index : selectedIndexes)
             {
                 sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
             }
@@ -172,6 +174,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::OnAssetBrowserComponentReady()
         {
+            hideColumn(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
             if (!m_name.isEmpty())
             {
                 auto crc = AZ::Crc32(m_name.toUtf8().data());
