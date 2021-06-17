@@ -40,6 +40,7 @@ class Cdk:
         :param account_id: AWS account id to use with cdk application.
         :param workspace: ly_test_tools workspace fixture.
         """
+
         self._cdk_env = os.environ.copy()
         unique_id = uuid.uuid4().hex[-4:]
         self._cdk_env['O3DE_AWS_PROJECT_NAME'] = project[:4] + unique_id if len(project) > 4 else project + unique_id
@@ -230,45 +231,3 @@ class Cdk:
         # self._session.client('cloudformation').delete_stack(
         #     StackName=BOOTSTRAP_STACK_NAME
         # )
-
-
-@pytest.fixture(scope='function')
-def cdk(
-        request: pytest.fixture,
-        project: str,
-        feature_name: str,
-        workspace: pytest.fixture,
-        aws_utils: pytest.fixture,
-        bootstrap_required: bool = True,
-        destroy_stacks_on_teardown: bool = True) -> Cdk:
-    """
-    Fixture for setting up a Cdk
-    :param request: _pytest.fixtures.SubRequest class that handles getting
-        a pytest fixture from a pytest function/fixture.
-    :param project: Project name used for cdk project name env variable.
-    :param feature_name: Feature gem name to expect cdk folder in.
-    :param workspace: ly_test_tools workspace fixture.
-    :param aws_utils: aws_utils fixture.
-    :param bootstrap_required: Whether the bootstrap stack needs to be created to
-        provision resources the AWS CDK needs to perform the deployment.
-    :param destroy_stacks_on_teardown: option to control calling destroy ot the end of test.
-    :return Cdk class object.
-    """
-
-    cdk_path = f'{workspace.paths.engine_root()}/Gems/{feature_name}/cdk'
-    logger.info(f'CDK Path {cdk_path}')
-    cdk_obj = Cdk(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session())
-
-    if bootstrap_required:
-        cdk_obj.bootstrap()
-
-    def teardown():
-        if destroy_stacks_on_teardown:
-            cdk_obj.destroy()
-            # Enable after https://github.com/aws/aws-cdk/issues/986 is fixed.
-            # Until then clean the bootstrap bucket manually.
-            # cdk_obj.remove_bootstrap_stack()
-
-    request.addfinalizer(teardown)
-
-    return cdk_obj

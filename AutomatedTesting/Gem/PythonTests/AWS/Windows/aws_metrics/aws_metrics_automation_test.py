@@ -18,11 +18,12 @@ import typing
 from datetime import datetime
 import ly_test_tools.log.log_monitor
 
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
-from AWS.common.aws_utils import aws_utils
-from AWS.common.aws_credentials import aws_credentials
+# fixture imports
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk import cdk
+from AWS.Windows.cdk.cdk_utils import Cdk
+from AWS.common.aws_utils import AwsUtils
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
+from AWS.common.aws_credentials import aws_credentials
 from .aws_metrics_utils import aws_metrics_utils
 
 AWS_METRICS_FEATURE_NAME = 'AWSMetrics'
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup(launcher: ly_test_tools.launchers.Launcher,
-          cdk: cdk,
+          cdk: Cdk,
           asset_processor: asset_processor,
           resource_mappings: resource_mappings,
           context_variable: str = '') -> typing.Tuple[ly_test_tools.log.log_monitor.LogMonitor, str, str]:
@@ -114,7 +115,7 @@ def remove_file(file_path: str) -> None:
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
 @pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
 @pytest.mark.parametrize('region_name', ['us-west-2'])
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
+@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::729543576514:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
 class TestAWSMetrics_Windows(object):
     def test_AWSMetrics_RealTimeAnalytics_MetricsSentToCloudWatch(self,
@@ -122,10 +123,10 @@ class TestAWSMetrics_Windows(object):
                                                                   launcher: ly_test_tools.launchers.Launcher,
                                                                   asset_processor: pytest.fixture,
                                                                   workspace: pytest.fixture,
-                                                                  aws_utils: aws_utils,
+                                                                  aws_utils: pytest.fixture,
                                                                   aws_credentials: aws_credentials,
-                                                                  resource_mappings: resource_mappings,
-                                                                  cdk: cdk,
+                                                                  resource_mappings: pytest.fixture,
+                                                                  cdk: pytest.fixture,
                                                                   aws_metrics_utils: aws_metrics_utils,
                                                                   ):
         """
@@ -165,10 +166,10 @@ class TestAWSMetrics_Windows(object):
     def test_AWSMetrics_UnauthorizedUser_RequestRejected(self,
                                                          level: str,
                                                          launcher: ly_test_tools.launchers.Launcher,
-                                                         cdk: cdk,
+                                                         cdk: pytest.fixture,
                                                          aws_credentials: aws_credentials,
                                                          asset_processor: pytest.fixture,
-                                                         resource_mappings: resource_mappings,
+                                                         resource_mappings: pytest.fixture,
                                                          workspace: pytest.fixture):
         """
         Tests that unauthorized users cannot send metrics events to the AWS backed backend.
@@ -190,11 +191,11 @@ class TestAWSMetrics_Windows(object):
     def test_AWSMetrics_BatchAnalytics_MetricsDeliveredToS3(self,
                                                             level: str,
                                                             launcher: ly_test_tools.launchers.Launcher,
-                                                            cdk: cdk,
+                                                            cdk: pytest.fixture,
                                                             aws_credentials: aws_credentials,
                                                             asset_processor: pytest.fixture,
-                                                            resource_mappings: resource_mappings,
-                                                            aws_utils: aws_utils,
+                                                            resource_mappings: pytest.fixture,
+                                                            aws_utils: pytest.fixture,
                                                             aws_metrics_utils: aws_metrics_utils,
                                                             workspace: pytest.fixture):
         """

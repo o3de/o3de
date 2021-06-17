@@ -12,9 +12,10 @@ import os
 import logging
 import ly_test_tools.log.log_monitor
 
+# fixture imports
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk import cdk
-from AWS.common.aws_utils import aws_utils
+from AWS.Windows.cdk.cdk_utils import Cdk
+from AWS.common.aws_utils import AwsUtils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_PROJECT_NAME = 'AWS-AutomationTest'
