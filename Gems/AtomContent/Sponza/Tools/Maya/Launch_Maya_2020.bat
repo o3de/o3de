@@ -1,3 +1,15 @@
+@echo off
+REM 
+REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+REM its licensors.
+REM
+REM For complete copyright and license terms please see the LICENSE at the root of this
+REM distribution (the "License"). All use of this software is governed by the License,
+REM or, if provided, by the license below or the license accompanying this file. Do not
+REM remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+REM
+
 :: Launches maya wityh a bunch of local hooks for Lumberyard
 :: ToDo: move all of this to a .json data driven boostrapping system
 
@@ -40,15 +52,15 @@ Set MAYA_VP2_DEVICE_OVERRIDE = VirtualDeviceDx11
 
 :: Default to the right version of Maya if we can detect it... and launch
 IF EXIST "%MAYA_LOCATION%\bin\Maya.exe" (
-   start "" "%MAYA_LOCATION%\bin\Maya.exe" %*
+    start "" "%MAYA_LOCATION%\bin\Maya.exe" %*
 ) ELSE (
-   Where maya.exe 2> NUL
-   IF ERRORLEVEL 1 (
-      echo Maya.exe could not be found
-	  pause
-   ) ELSE (
-      start "" Maya.exe %*
-   )
+    Where maya.exe 2> NUL
+    IF ERRORLEVEL 1 (
+        echo Maya.exe could not be found
+            pause
+    ) ELSE (
+        start "" Maya.exe %*
+    )
 )
 
 :: Return to starting directory
