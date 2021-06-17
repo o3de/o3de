@@ -461,7 +461,7 @@ namespace AZ
                     }
                 }
 
-                decltype(boneAnimations) parentFillerAnimations;
+                decltype(boneAnimations) fillerAnimations;
 
                 // Go through all the animations and make sure we create placeholder animations for any bones missing them
                 for (auto&& anim : boneAnimations)
@@ -470,8 +470,8 @@ namespace AZ
                     {
                         if (!IsPivotNode(aiString(boneName.c_str())))
                         {
-                            if (boneAnimations.find(boneName) == boneAnimations.end() &&
-                                parentFillerAnimations.find(boneName) == parentFillerAnimations.end())
+                            if (!boneAnimations.contains(boneName) &&
+                                !fillerAnimations.contains(boneName))
                             {
                                 // Create 1 key for each type that just copies the current transform
                                 ConsolidatedNodeAnim emptyAnimation;
@@ -494,14 +494,14 @@ namespace AZ
                                 emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
                                 emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
                                 
-                                parentFillerAnimations.insert(
+                                fillerAnimations.insert(
                                     AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                             }
                         }
                     }
                 }
 
-                boneAnimations.insert(AZStd::make_move_iterator(parentFillerAnimations.begin()), AZStd::make_move_iterator(parentFillerAnimations.end()));
+                boneAnimations.insert(AZStd::make_move_iterator(fillerAnimations.begin()), AZStd::make_move_iterator(fillerAnimations.end()));
 
                 auto animItr = boneAnimations.equal_range(currentNode->mName.C_Str());
 
