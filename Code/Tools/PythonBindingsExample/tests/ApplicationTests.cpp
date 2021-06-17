@@ -65,7 +65,7 @@ namespace PythonBindingsExample
 
     TEST_F(PythonBindingsExampleTest, Application_Run_Fails)
     {
-        EXPECT_FALSE(s_application->Run());
+        EXPECT_TRUE(s_application->Run());
     }
 
     TEST_F(PythonBindingsExampleTest, Application_RunWithParameters_Works)
