@@ -85,6 +85,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzManipulatorTestFramework.Static
                 AZ::AzTest
                 AZ::AzQtComponents
+        RUNTIME_DEPENDENCIES
+            3rdParty::Qt::Test
     )
     ly_add_googletest(
         NAME AZ::AzToolsFramework.Tests

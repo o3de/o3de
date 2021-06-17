@@ -440,16 +440,7 @@ function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
     install(CODE
-"function(ly_deploy_qt_install target_output)
-    execute_process(COMMAND \"${WINDEPLOYQT_EXECUTABLE}\" --verbose 0 --no-compiler-runtime \"\${target_output}\" ERROR_VARIABLE deploy_error RESULT_VARIABLE deploy_result)
-    if (NOT \${deploy_result} EQUAL 0)
-        if(NOT deploy_error MATCHES \"does not seem to be a Qt executable\" )
-            message(SEND_ERROR \"Deploying qt for \${target_output} returned \${deploy_result}: \${deploy_error}\")
-        endif()
-    endif()
-endfunction()
-
-function(ly_copy source_file target_directory)
+"function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
     )
@@ -468,18 +459,6 @@ endfunction()"
         get_target_property(target_runtime_output_directory ${target} RUNTIME_OUTPUT_DIRECTORY)
         if(target_runtime_output_directory)
             cmake_path(RELATIVE_PATH target_runtime_output_directory BASE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_runtime_output_subdirectory)
-        endif()
-
-        # Qt
-        get_property(has_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${target})
-        if(has_qt_dependency)
-            # Qt deploy needs to be done after the binary is copied to the output, so we do a install(CODE) which effectively
-            # puts it as a postbuild step of the "install" target. Binaries are copied at that point.
-            if(NOT EXISTS ${WINDEPLOYQT_EXECUTABLE})
-                message(FATAL_ERROR "Qt deploy executable not found: ${WINDEPLOYQT_EXECUTABLE}")
-            endif()
-            set(target_output "${install_output_folder}/${target_runtime_output_subdirectory}/$<TARGET_FILE_NAME:${target}>")
-            list(APPEND runtime_commands "ly_deploy_qt_install(\"${target_output}\")\n")
         endif()
 
         # runtime dependencies that need to be copied to the output
