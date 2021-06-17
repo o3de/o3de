@@ -36,6 +36,11 @@ namespace JsonSerializationTests
             return AZStd::make_shared<Set>();
         }
 
+        AZStd::shared_ptr<Set> CreateSingleArrayDefaultInstance() override
+        {
+            return AZStd::make_shared<Set>(Set{ 0 });
+        }
+
         AZStd::shared_ptr<Set> CreateFullySetInstance() override
         {
             return AZStd::make_shared<Set>(Set{42, -88, 342});
@@ -78,6 +83,11 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<MultiSet> CreateDefaultInstance() override
         {
             return AZStd::make_shared<MultiSet>();
+        }
+
+        AZStd::shared_ptr<MultiSet> CreateSingleArrayDefaultInstance() override
+        {
+            return AZStd::make_shared<MultiSet>(MultiSet{ 0 });
         }
 
         AZStd::shared_ptr<MultiSet> CreateFullySetInstance() override

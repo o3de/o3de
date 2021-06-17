@@ -168,6 +168,10 @@ namespace JsonSerializationTests
         {
             features.EnableJsonType(rapidjson::kObjectType);
             features.m_typeToInject = rapidjson::kNullType;
+            // Assets are not fully registered with the Serialize Context for historical reasons. Due to the missing
+            // information the Json Serializer Conformity Tests can't run the subsection of tests that explicitly
+            // require the missing information.
+            features.m_enableNewInstanceTests = false;
         }
 
         bool AreEqual(const Asset& lhs, const Asset& rhs) override

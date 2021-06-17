@@ -1,5 +1,4 @@
 @echo off
-
 REM 
 REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 REM its licensors.
@@ -10,6 +9,11 @@ REM or, if provided, by the license below or the license accompanying this file.
 REM remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
+
+:: Launches maya wityh a bunch of local hooks for Lumberyard
+:: ToDo: move all of this to a .json data driven boostrapping system
+
+@echo off
 
 %~d0
 cd %~dp0
@@ -34,7 +38,7 @@ set MAYA_VERSION=2020
 echo     MAYA_VERSION = %MAYA_VERSION%
 
 :: if a local customEnv.bat exists, run it
-IF EXIST "%~dp0Project_Env.bat" CALL %~dp0Project_Env.bat
+IF EXIST "%~dp0..\..\Project_Env.bat" CALL %~dp0..\..\Project_Env.bat
 
 echo ________________________________
 echo Launching Maya %MAYA_VERSION% for Lumberyard...
@@ -48,15 +52,15 @@ Set MAYA_VP2_DEVICE_OVERRIDE = VirtualDeviceDx11
 
 :: Default to the right version of Maya if we can detect it... and launch
 IF EXIST "%MAYA_LOCATION%\bin\Maya.exe" (
-   start "" "%MAYA_LOCATION%\bin\Maya.exe" %*
+    start "" "%MAYA_LOCATION%\bin\Maya.exe" %*
 ) ELSE (
-   Where maya.exe 2> NUL
-   IF ERRORLEVEL 1 (
-      echo Maya.exe could not be found
-         pause
-   ) ELSE (
-      start "" Maya.exe %*
-   )
+    Where maya.exe 2> NUL
+    IF ERRORLEVEL 1 (
+        echo Maya.exe could not be found
+            pause
+    ) ELSE (
+        start "" Maya.exe %*
+    )
 )
 
 :: Return to starting directory

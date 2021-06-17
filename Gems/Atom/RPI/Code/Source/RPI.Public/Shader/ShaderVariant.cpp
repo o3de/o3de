@@ -91,7 +91,7 @@ namespace AZ
         {
             return m_shaderVariantAsset->GetOutputContract();
         }
-        
+
         void ShaderVariant::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderVariant::OnAssetReloaded %s", this, asset.GetHint().c_str());
@@ -102,7 +102,7 @@ namespace AZ
                 Init(m_shaderAsset, shaderVariantAsset);
                 ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
             }
-            
+
             if (asset.GetAs<ShaderAsset>())
             {
                 Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
