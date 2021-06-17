@@ -27,6 +27,11 @@ namespace AZ
         /**
          * Connect to this EBus to get notifications whenever a shader system class reinitializes itself.
          * The bus address is the AssetId of the ShaderAsset, even when the thing being reinitialized is a ShaderVariant or other shader related class.
+         *
+         * Be careful when using the parameters provided by these functions. The bus ID is an AssetId, and it's possible for the system to have
+         * both *old* versions and *new reloaded* versions of the asset in memory at the same time, and they will have the same AssetId. Therefore
+         * your bus Handlers could receive Reinitialized messages from multiple sources. It may be necessary to check the memory addresses of these
+         * parameters against local members before using this data.
          */
         class ShaderReloadNotifications
             : public EBusTraits

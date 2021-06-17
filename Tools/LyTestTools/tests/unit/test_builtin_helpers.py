@@ -68,6 +68,8 @@ class TestBuiltinHelpers(object):
 
         assert type(under_test) == expected_workspace
 
+    @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json',
+                mock.MagicMock(return_value='mock_project'))
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager',
                 mock.MagicMock(return_value=MockedWorkspaceManager))
     @mock.patch('ly_test_tools.builtin.helpers.MAC', True)

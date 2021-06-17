@@ -79,9 +79,9 @@ float4 Shadow::GetJitterUnitVectorDepthDiffBase(
         return float4(0., 0., 0., 0.);
     }
     const float3 v_M = v_M0 / v_M0_length;
-    const float cosTheta = dot(normalVector, v_M);
+    const float cosTheta = saturate(dot(normalVector, v_M));
     const float sinTheta = sqrt(1 - cosTheta * cosTheta);
-    if (sinTheta == 0.)
+    if (sinTheta < 0.001)
     {
         return float4(0., 0., 0., 0.);
     }
