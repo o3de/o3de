@@ -33,12 +33,13 @@ class Cdk:
     """
 
     def __init__(self, cdk_path: str, project: str, account_id: str,
-                 workspace: pytest.fixture, session: boto3.session.Session):
+                 workspace: pytest.fixture, session: boto3.session.Session, bootstrap_required: bool):
         """
         :param cdk_path: Path where cdk app.py is stored.
         :param project: Project name used for cdk project name env variable.
         :param account_id: AWS account id to use with cdk application.
         :param workspace: ly_test_tools workspace fixture.
+        :param workspace: bootstrap_required deploys bootstrap stack.
         """
 
         self._cdk_env = os.environ.copy()
@@ -98,6 +99,9 @@ class Cdk:
             shell=True)
 
         logger.info(f'Installing cdk python dependencies: {output}')
+
+        if bootstrap_required:
+            self.bootstrap()
 
     def bootstrap(self) -> None:
         """
@@ -198,7 +202,6 @@ class Cdk:
             raise e
 
         self._stacks = []
-        self._cdk_path = ''
 
     def remove_bootstrap_stack(self) -> None:
         """

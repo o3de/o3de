@@ -115,20 +115,20 @@ def remove_file(file_path: str) -> None:
 @pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
 @pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
 @pytest.mark.parametrize('region_name', ['us-west-2'])
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::729543576514:role/o3de-automation-tests'])
+@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
-class TestAWSMetrics_Windows(object):
-    def test_AWSMetrics_RealTimeAnalytics_MetricsSentToCloudWatch(self,
-                                                                  level: str,
-                                                                  launcher: ly_test_tools.launchers.Launcher,
-                                                                  asset_processor: pytest.fixture,
-                                                                  workspace: pytest.fixture,
-                                                                  aws_utils: pytest.fixture,
-                                                                  aws_credentials: aws_credentials,
-                                                                  resource_mappings: pytest.fixture,
-                                                                  cdk: pytest.fixture,
-                                                                  aws_metrics_utils: aws_metrics_utils,
-                                                                  ):
+class TestAWSMetricsWindows(object):
+    def test_realtime_analytics_metrics_sent_to_cloudwatch(self,
+                                                           level: str,
+                                                           launcher: ly_test_tools.launchers.Launcher,
+                                                           asset_processor: pytest.fixture,
+                                                           workspace: pytest.fixture,
+                                                           aws_utils: pytest.fixture,
+                                                           aws_credentials: aws_credentials,
+                                                           resource_mappings: pytest.fixture,
+                                                           cdk: pytest.fixture,
+                                                           aws_metrics_utils: aws_metrics_utils,
+                                                           ):
         """
         Tests that the submitted metrics are sent to CloudWatch for real-time analytics.
         """
@@ -163,14 +163,14 @@ class TestAWSMetrics_Windows(object):
         # Stop the Kinesis Data Analytics application.
         aws_metrics_utils.stop_kinesis_data_analytics_application(analytics_application_name)
 
-    def test_AWSMetrics_UnauthorizedUser_RequestRejected(self,
-                                                         level: str,
-                                                         launcher: ly_test_tools.launchers.Launcher,
-                                                         cdk: pytest.fixture,
-                                                         aws_credentials: aws_credentials,
-                                                         asset_processor: pytest.fixture,
-                                                         resource_mappings: pytest.fixture,
-                                                         workspace: pytest.fixture):
+    def test_unauthorized_user_request_rejected(self,
+                                                level: str,
+                                                launcher: ly_test_tools.launchers.Launcher,
+                                                cdk: pytest.fixture,
+                                                aws_credentials: aws_credentials,
+                                                asset_processor: pytest.fixture,
+                                                resource_mappings: pytest.fixture,
+                                                workspace: pytest.fixture):
         """
         Tests that unauthorized users cannot send metrics events to the AWS backed backend.
         """
@@ -188,7 +188,7 @@ class TestAWSMetrics_Windows(object):
             assert result, 'Metrics events are sent successfully by unauthorized user'
             logger.info('Unauthorized user is rejected to send metrics.')
 
-    def test_AWSMetrics_BatchAnalytics_MetricsDeliveredToS3(self,
+    def test_batch_analytics_metrics_delivered_to_s3(self,
                                                             level: str,
                                                             launcher: ly_test_tools.launchers.Launcher,
                                                             cdk: pytest.fixture,
@@ -235,4 +235,3 @@ class TestAWSMetrics_Windows(object):
         time.sleep(60)
         # Empty the S3 bucket. S3 buckets can only be deleted successfully when it doesn't contain any object.
         aws_metrics_utils.empty_s3_bucket(analytics_bucket_name)
-

@@ -76,5 +76,5 @@ class TestAWSClientAuthAnonymousCredentials(object):
                 expected_lines=['(Script) - Success anonymous credentials'],
                 unexpected_lines=['(Script) - Fail anonymous credentials'],
                 halt_on_unexpected=True,
-                )
+            )
             assert result, 'Anonymous credentials fetched successfully.'

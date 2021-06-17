@@ -14,8 +14,6 @@ from AWS.Windows.cdk.cdk_utils import Cdk
 
 logger = logging.getLogger(__name__)
 
-# AWS module level fixtures
-
 
 @pytest.fixture(scope='function')
 def aws_utils(
@@ -32,6 +30,7 @@ def aws_utils(
     :param region_name: AWS account region to set for session.
     :return AWSUtils class object.
     """
+
     aws_utils_obj = AwsUtils(assume_role_arn, session_name, region_name)
 
     def teardown():
@@ -40,6 +39,9 @@ def aws_utils(
     request.addfinalizer(teardown)
 
     return aws_utils_obj
+
+# Set global pytest variable for cdk to avoid recreating instance
+pytest.cdk_obj = None
 
 
 @pytest.fixture(scope='function')
@@ -67,18 +69,18 @@ def cdk(
 
     cdk_path = f'{workspace.paths.engine_root()}/Gems/{feature_name}/cdk'
     logger.info(f'CDK Path {cdk_path}')
-    cdk_obj = Cdk(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session())
 
-    if bootstrap_required:
-        cdk_obj.bootstrap()
+    if pytest.cdk_obj is None:
+        pytest.cdk_obj = Cdk(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session(),
+                             bootstrap_required)
 
     def teardown():
         if destroy_stacks_on_teardown:
-            cdk_obj.destroy()
+            pytest.cdk_obj.destroy()
             # Enable after https://github.com/aws/aws-cdk/issues/986 is fixed.
             # Until then clean the bootstrap bucket manually.
             # cdk_obj.remove_bootstrap_stack()
 
     request.addfinalizer(teardown)
 
-    return cdk_obj
+    return pytest.cdk_obj
