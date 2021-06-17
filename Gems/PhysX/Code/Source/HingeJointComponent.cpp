@@ -53,7 +53,9 @@ namespace PhysX
         
         JointComponent::LeadFollowerInfo leadFollowerInfo;
         ObtainLeadFollowerInfo(leadFollowerInfo);
-        if (!leadFollowerInfo.m_followerActor)
+        if (leadFollowerInfo.m_followerActor == nullptr ||
+            leadFollowerInfo.m_leadBody == nullptr ||
+            leadFollowerInfo.m_followerBody == nullptr)
         {
             return;
         }
@@ -70,9 +72,7 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_jointHandle = sceneInterface->AddJoint(
-                leadFollowerInfo.m_followerBody->m_sceneOwner,
-                &configuration,  
-                leadFollowerInfo.m_leadBody->m_bodyHandle, 
+                leadFollowerInfo.m_followerBody->m_sceneOwner, &configuration, leadFollowerInfo.m_leadBody->m_bodyHandle,
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }

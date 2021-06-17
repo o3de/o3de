@@ -147,9 +147,9 @@ namespace PhysX
 
     JointLimitProperties EditorJointLimitPairConfig::ToGameTimeConfig() const
     {
-        return JointLimitProperties(m_standardLimitConfig.m_damping
-            , m_standardLimitConfig.m_isLimited
+        return JointLimitProperties(m_standardLimitConfig.m_isLimited
             , m_standardLimitConfig.m_isSoftLimit
+            , m_standardLimitConfig.m_damping
             , m_limitPositive, m_limitNegative
             , m_standardLimitConfig.m_stiffness
             , m_standardLimitConfig.m_tolerance);
