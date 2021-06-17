@@ -67,7 +67,7 @@ namespace AZ
 
             if (isDefaultValue)
             {
-                *outputValue = 0;
+                *outputValue = {};
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Integer value set to default of zero.");
             }
 

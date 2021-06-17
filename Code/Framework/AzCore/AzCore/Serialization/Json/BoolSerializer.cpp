@@ -84,7 +84,7 @@ namespace AZ
 
         if (IsExplicitDefault(inputValue))
         {
-            *valAsBool = false;
+            *valAsBool = {};
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Boolean value set to default of 'false'.");
         }
 
