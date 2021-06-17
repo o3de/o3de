@@ -14,6 +14,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace SandboxEditor
@@ -62,10 +63,12 @@ namespace SandboxEditor
         {
             if (auto* registry = AZ::SettingsRegistry::Get())
             {
+                using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
+
                 m_notifyEventHandler = registry->RegisterNotifier(
                     [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
                     {
-                        if (path == GridSnappingSetting)
+                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }

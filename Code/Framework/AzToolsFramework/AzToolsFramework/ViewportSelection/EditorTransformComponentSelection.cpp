@@ -495,7 +495,7 @@ namespace AzToolsFramework
         ViewportInteraction::ViewportInteractionRequestBus::EventResult(
             snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
 
-        // show/hide snapping viewport ui only if there are entities selected and snapping is enabled
+        // show snapping viewport ui only if there are entities selected and snapping is enabled
         SetViewportUiClusterVisible(m_clusterId, visible && snapping);
     }
 
