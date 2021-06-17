@@ -69,7 +69,7 @@ protected slots:
     void OnLevelNameChange();
     void OnClearButtonClicked();
     void PopupAssetPicker();
-    void onStartup();
+    void OnStartup();
 
 public:
     QString         m_level;

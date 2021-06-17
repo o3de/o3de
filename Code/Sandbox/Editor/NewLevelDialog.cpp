@@ -104,7 +104,7 @@ CNewLevelDialog::CNewLevelDialog(QWidget* pParent /*=NULL*/)
     // widgets are constructed. Therefore, creating more widgets changes the keyboard focus. That is why setFocus() is called last.
     // Secondly, using singleShot() allows setFocus() slot of the QLineEdit instance to be invoked right after the event system
     // is ready to do so. Therefore, it is better to use singleShot() than directly call setFocus().
-    QTimer::singleShot(0, ui->LEVEL, SLOT(onStartup()));
+    QTimer::singleShot(0, ui->LEVEL, SLOT(OnStartup()));
 
     ReloadLevelFolder();
 }
@@ -113,7 +113,7 @@ CNewLevelDialog::~CNewLevelDialog()
 {
 }
 
-void CNewLevelDialog::onStartup()
+void CNewLevelDialog::OnStartup()
 {
     UpdateData(false);
     setFocus();
