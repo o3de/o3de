@@ -19,6 +19,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
@@ -595,7 +596,9 @@ namespace AZ
                 }
                 else
                 {
-                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, "Serialization information for target type not found.");
+                    using ReporterString = AZStd::fixed_string<1024>;
+                    status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
+                        ReporterString::format("Serialization information for target type %s not found.", loadedTypeId.m_typeId.ToString<ReporterString>().c_str()));
                     return ResolvePointerResult::FullyProcessed;
                 }
                 objectType = loadedTypeId.m_typeId;
