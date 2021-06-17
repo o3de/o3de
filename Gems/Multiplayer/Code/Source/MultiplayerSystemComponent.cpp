@@ -201,11 +201,10 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerSystemComponent::StartHost(uint16_t port, bool isDedicated)
+    void MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
         InitializeMultiplayer(isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer);
-        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-        networkInterface->Listen(port);
+        m_networkInterface->Listen(port);
     }
 
     void MultiplayerSystemComponent::Connect(AZStd::string remoteAddress, uint16_t port)
@@ -217,13 +216,11 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Terminate()
     {
-        INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
-        
         auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
-        networkInterface->GetConnectionSet().VisitConnections(visitor);
+        m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
         {
-            networkInterface->StopListening();
+            m_networkInterface->StopListening();
             m_shutdownEvent.Signal(m_networkInterface);
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
             {
@@ -681,7 +678,6 @@ namespace Multiplayer
         // Signal to session management that a user has left the server
         if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
-            
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
                 connection->GetConnectionRole() == ConnectionRole::Acceptor)
             {
@@ -937,14 +933,12 @@ namespace Multiplayer
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ::Interface<IMultiplayer>::Get()->StartHost(sv_port, sv_isDedicated);
+        AZ::Interface<IMultiplayer>::Get()->StartHosting(sv_port, sv_isDedicated);
     }
     AZ_CONSOLEFREEFUNC(host, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection as a host for other clients to connect to");
 
     void connect([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AzNetworking::IpAddress address;
-
         if (arguments.size() < 1)
         {
             const AZ::CVarFixedString remoteAddress = cl_serveraddr;
@@ -966,8 +960,6 @@ namespace Multiplayer
             int32_t portNumber = atol(portStr);
             AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, portNumber);
         }
-        
-        
     }
     AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");
 

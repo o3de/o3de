@@ -23,7 +23,6 @@
 namespace AzNetworking
 {
     class INetworkInterface;
-    class IpAddress;
 }
 
 namespace Multiplayer
@@ -70,7 +69,7 @@ namespace Multiplayer
         //! Starts hosting a server
         //! @param port The port to listen for connection on
         //! @param isDedicated Whether the server is dedicated or client hosted
-        virtual void StartHost(uint16_t port, bool isDedicated = true) = 0;
+        virtual void StartHosting(uint16_t port, bool isDedicated = true) = 0;
 
         //! Connects to the specified IP as a Client
         //! @param remoteAddress The domain or IP to connect to

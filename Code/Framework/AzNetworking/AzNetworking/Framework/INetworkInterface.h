@@ -89,7 +89,6 @@ namespace AzNetworking
         virtual bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) = 0;
 
         //! Closes the network interface to stop accepting new incoming connections.
-        //! @param port the listen port number this network interface will potentially bind to, 0 if it's a don't care
         //! @return boolean true if the operation was successful, false if it failed
         virtual bool StopListening() = 0;
 
