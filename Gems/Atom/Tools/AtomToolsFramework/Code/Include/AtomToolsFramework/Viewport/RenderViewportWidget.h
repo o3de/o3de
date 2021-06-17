@@ -16,6 +16,7 @@
 #include <QElapsedTimer>
 #include <Atom/RPI.Public/Base.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Input/QtEventToAzInputManager.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Viewport/ViewportControllerInterface.h>
@@ -162,5 +163,7 @@ namespace AtomToolsFramework
         AZStd::optional<QPoint> m_lastCursorPosition;
         // The viewport settings (e.g. grid snapping, grid size) for this viewport.
         const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
+        // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
+        AzToolsFramework::QtEventToAzInputMapper m_inputChannelMapper = AzToolsFramework::QtEventToAzInputMapper(this);
     };
 } //namespace AtomToolsFramework
