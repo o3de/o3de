@@ -68,7 +68,8 @@ namespace AZ
             virtual void SetSunRadiusFactor(float factor) = 0;
 
             // Fog Settings
-            virtual void EnableFog(bool enable) = 0;
+            virtual void SetFogEnabled(bool enable) = 0;
+            virtual bool IsFogEnabled() = 0;
             virtual void SetFogColor(const AZ::Color &color) = 0;
             virtual void SetFogTopHeight(float topHeight) = 0;
             virtual void SetFogBottomHeight(float bottomHeight) = 0;

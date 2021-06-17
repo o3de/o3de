@@ -234,10 +234,10 @@ namespace AZ
             return SunPosition(atan2(sunPosition.GetZ(), sunPosition.GetX()), asin(sunPosition.GetY()));
         }
 
-        void PhysicalSkyComponentController::Enable(bool enable)
+        void PhysicalSkyComponentController::SetEnabled(bool enable)
         {
             m_configuration.m_skyBoxFogSettings.m_enable = enable;
-            m_featureProcessorInterface->FogEnable(enable);
+            m_featureProcessorInterface->SetFogEnabled(enable);
         }
 
         bool PhysicalSkyComponentController::IsEnabled() const

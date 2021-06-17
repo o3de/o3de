@@ -29,7 +29,7 @@ namespace AZ
             static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
             virtual ~SkyBoxFogRequests() {}
 
-            virtual void Enable(bool enable) = 0;
+            virtual void SetEnabled(bool enable) = 0;
             virtual bool IsEnabled() const = 0;
             virtual void SetColor(const AZ::Color& color) = 0;
             virtual const AZ::Color& GetColor() const = 0;
