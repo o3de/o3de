@@ -210,6 +210,15 @@ namespace AzToolsFramework
         //! Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
 
+        //! An interface to notify when changes to viewport settings have happened.
+        class ViewportSettingNotifications
+        {
+        public:
+            virtual void OnGridSnappingChanged(bool enabled) = 0;
+        };
+
+        using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
+
         //! Requests to freeze the Viewport Input
         //! Added to prevent a bug with the legacy CryEngine Viewport code that would
         //! keep doing raycast tests even when no level is loaded, causing a crash.
