@@ -25,6 +25,7 @@
 #include <System/PhysXSdkCallbacks.h>
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
+#include <System/PhysXJointInterface.h>
 
 namespace physx
 {
@@ -128,6 +129,7 @@ namespace PhysX
         Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
         PhysXSettingsRegistryManager& m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
+        PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
 
         class MaterialLibraryAssetHelper
             : private AZ::Data::AssetBus::Handler

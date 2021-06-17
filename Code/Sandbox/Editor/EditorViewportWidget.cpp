@@ -76,7 +76,6 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
-#include "EditorViewportSettings.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -1450,6 +1449,17 @@ void EditorViewportWidget::SetViewportId(int id)
     {
         SetAsActiveViewport();
     }
+
+    m_editorViewportSettingsCallbacks = SandboxEditor::CreateEditorViewportSettingsCallbacks();
+
+    m_gridSnappingHandler = SandboxEditor::GridSnappingChangedEvent::Handler(
+        [id](const bool snapping)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingChanged, snapping);
+        });
+
+    m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()

@@ -208,8 +208,8 @@ namespace PhysX
             }
             else
             {
-                EXPECT_EQ(joint->GetChildBody(), &node->GetRigidBody());
-                EXPECT_EQ(joint->GetParentBody(), &ragdoll->GetNode(parentIndex)->GetRigidBody());
+                EXPECT_EQ(joint->GetChildBodyHandle(), node->GetRigidBody().m_bodyHandle);
+                EXPECT_EQ(joint->GetParentBodyHandle(), ragdoll->GetNode(parentIndex)->GetRigidBody().m_bodyHandle);
             }
         }
     }
