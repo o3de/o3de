@@ -1,5 +1,4 @@
 @echo off
-
 REM 
 REM All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
 REM its licensors.
@@ -11,6 +10,7 @@ REM remove or modify any license notices. This file is distributed on an "AS IS"
 REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
+@echo off
 :: Set up and run LY Python CMD prompt
 :: Sets up the DccScriptingInterface_Env,
 :: Puts you in the CMD within the dev environment
@@ -27,7 +27,7 @@ PUSHD %~dp0
 :: Keep changes local
 SETLOCAL enableDelayedExpansion
 
-CALL %~dp0\Project_Env.bat
+CALL %~dp0\..\Project_Env.bat
 
 echo.
 echo _____________________________________________________________________

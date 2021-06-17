@@ -15,6 +15,7 @@
 #include <AzCore/Math/PackedVector3.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <NvCloth/IClothSystem.h>
 #include <NvCloth/IFabricCooker.h>
@@ -552,7 +553,7 @@ namespace NvCloth
 
             if (!destVerticesBuffer)
             {
-                AZ_Error("ClothComponentMesh", false,
+                AZ_Error("ClothComponentMesh", AZ::RHI::IsNullRenderer(),
                     "Invalid vertex position buffer obtained from the render mesh to be modified.");
                 continue;
             }

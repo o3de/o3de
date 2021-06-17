@@ -486,7 +486,7 @@ namespace AZ
                     AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
                 }
                 else
-                {                    
+                {
                     AZ_Printf("ProfilingCaptureSystemComponent", "Cpu profiling statistics was saved to file [%s]\n", outputFilePath.c_str());
                 }
 
@@ -500,7 +500,7 @@ namespace AZ
                 ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
                     saveResult.IsSuccess(),
                     captureInfo);
-                                
+
             });
 
             // Start the TickBus.

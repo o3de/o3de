@@ -119,7 +119,7 @@ namespace AZ
         {
             // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
             // so we can reduce unnecessary reinitialization in that case.
-            if (materialTypeAsset.Get() == m_materialTypeAsset.Get()) 
+            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
             {
                 ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
 

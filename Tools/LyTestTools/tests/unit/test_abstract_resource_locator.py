@@ -24,6 +24,9 @@ mock_engine_root = "mock_engine_root"
 mock_dev_path = "mock_dev_path"
 mock_build_directory = 'mock_build_directory'
 mock_project = 'mock_project'
+mock_manifest_json_file = {'projects': [mock_project]}
+mock_project_json_file = {'project_name': mock_project}
+mock_project_json = os.path.join(mock_project, 'project.json')
 
 
 class TestFindEngineRoot(object):
@@ -47,11 +50,24 @@ class TestFindEngineRoot(object):
         with pytest.raises(OSError):
             abstract_resource_locator._find_engine_root(mock_initial_path)
 
+@mock.patch('builtins.open', mock.MagicMock())
+class TestFindProjectJson(object):
+
+    @mock.patch('os.path.isfile', mock.MagicMock(return_value=True))
+    @mock.patch('os.path.basename', mock.MagicMock(return_value=mock_project))
+    @mock.patch('json.load', mock.MagicMock(side_effect=[mock_manifest_json_file, mock_project_json_file]))
+    def test_FindProjectJson_ManifestJson_ReturnsProjectJson(self):
+        project = abstract_resource_locator._find_project_json(mock_engine_root, mock_project)
+
+        assert project == mock_project_json
+
 
 @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator.os.path.abspath',
             mock.MagicMock(return_value=mock_initial_path))
 @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_engine_root',
             mock.MagicMock(return_value=mock_engine_root))
+@mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json',
+            mock.MagicMock(return_value=os.path.join(mock_project, 'project.json')))
 class TestAbstractResourceLocator(object):
 
     def test_Init_HasEngineRoot_SetsAttrs(self):
@@ -93,12 +109,11 @@ class TestAbstractResourceLocator(object):
 
         assert mock_abstract_resource_locator.build_directory() == mock_build_directory
 
-    def test_Project_IsCalled_ReturnsProjectPath(self):
+    def test_Project_IsCalled_ReturnsProjectDir(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
             mock_build_directory, mock_project)
-        expected_path = os.path.join(mock_abstract_resource_locator.engine_root(), mock_project)
 
-        assert mock_abstract_resource_locator.project() == expected_path
+        assert mock_abstract_resource_locator.project() == os.path.dirname(mock_project_json)
 
     def test_AssetProcessor_IsCalled_ReturnsAssetProcessorPath(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
@@ -168,8 +183,7 @@ class TestAbstractResourceLocator(object):
     def test_AutoexecFile_IsCalled_ReturnsAutoexecFilePath(self):
         mock_abstract_resource_locator = abstract_resource_locator.AbstractResourceLocator(
             mock_build_directory, mock_project)
-        expected_path = os.path.join(mock_abstract_resource_locator.engine_root(),
-                                     mock_abstract_resource_locator._project,
+        expected_path = os.path.join(mock_abstract_resource_locator._project,
                                      'autoexec.cfg')
 
         assert mock_abstract_resource_locator.autoexec_file() == expected_path

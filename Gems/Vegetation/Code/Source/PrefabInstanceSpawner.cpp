@@ -95,13 +95,13 @@ namespace Vegetation
     {
         UnloadAssets();
 
-        // Note that the spawnable tickets *also* track asset loading.  We *could* just rely on that, queue the asset load, and mark
-        // the spawner as immediately ready for use (i.e. always return "true" in IsLoaded() and IsSpawnable() ).
-        // However, we would still need to manage the asset loading here anyways to ensure that the asset lifetime matches the
-        // lifetime of the vegetation components, independent of which instances are spawned / despawned.  The spawnable system won't
-        // be able to *finish* spawning any instances until the asset is loaded anyways, so there's no real value in starting to spawn
-        // via the spawnable system until the asset finishes loading.  So, we track the load and wait to set IsLoaded() / IsSpawnable()
-        // to true until after the asset is loaded.
+        // Note that the spawnable tickets manage and track asset loading as well.  We *could* just rely on that and mark
+        // the spawner as immediately ready for use (i.e. always return "true" in IsLoaded() and IsSpawnable() ), but this
+        // would cause us to wait until the first instance is spawned to load the asset, creating a delay right at the point
+        // that the vegetation is becoming visible.  It would also cause the asset to get auto-unloaded every time all the
+        // instances using it are despawned. By loading it *prior* to marking things as ready, we can ensure that we have the
+        // asset at the point that the first instance is spawned, and that it won't get auto-unloaded every time the instances
+        // are despawned.
         m_spawnableAsset.QueueLoad();
         AZ::Data::AssetBus::MultiHandler::BusConnect(m_spawnableAsset.GetId());
     }

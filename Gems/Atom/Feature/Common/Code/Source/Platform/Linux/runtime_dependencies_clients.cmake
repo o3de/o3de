@@ -9,7 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_COMPILE_OPTIONS
-    PRIVATE
-        -fexceptions
+set(LY_RUNTIME_DEPENDENCIES
+    Gem::Atom_RHI_Vulkan.Private
 )

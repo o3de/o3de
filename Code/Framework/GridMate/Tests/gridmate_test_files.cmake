@@ -24,5 +24,4 @@ set(FILES
     StreamSocketDriverTests.cpp
     CarrierStreamSocketDriverTests.cpp
     Carrier.cpp
-    Interest.cpp
 )
