@@ -15,6 +15,7 @@ REM
 cd %~dp0
 PUSHD %~dp0
 
+:: This is a legacy envar which is being migrated to LY_PROJECT_NAME
 for %%a in (.) do set LY_PROJECT=%%~na
 
 echo.
@@ -25,6 +26,9 @@ echo _____________________________________________________________________
 echo.
 
 echo     LY_PROJECT = %LY_PROJECT%
+
+set LY_PROJECT_NAME=%LY_PROJECT%
+echo     LY_PROJECT_NAME = %LY_PROJECT_NAME%
 
 :: Put you project env vars and overrides here
 
