@@ -47,8 +47,6 @@ CEditorPreferencesPage_AWS::CEditorPreferencesPage_AWS()
 {
     m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
     InitializeSettings();
-
-    // TODO Update with AWS svg.
     m_icon = QIcon(":/res/AWS_preferences_icon.svg");
 }
 
