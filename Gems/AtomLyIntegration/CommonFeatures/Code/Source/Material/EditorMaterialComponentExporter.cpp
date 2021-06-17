@@ -104,7 +104,7 @@ namespace AZ
 
                 // Constructing a dialog with a table to display all configurable material export items
                 QDialog dialog(activeWindow);
-                dialog.setWindowTitle("Generate Source Materials");
+                dialog.setWindowTitle("Generate/Manage Source Materials");
 
                 const QStringList headerLabels = { "Material Slot", "Material Filename", "Overwrite" };
                 const int MaterialSlotColumn = 0;
