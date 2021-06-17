@@ -33,7 +33,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment
         m_internalLayouts = AZStd::unordered_map<Qt::Alignment, QBoxLayout*> {
             CreateSubLayout(new QVBoxLayout(), 0, 0, Qt::AlignTop | Qt::AlignLeft),
-            CreateSubLayout(new QHBoxLayout(), 1, 0, Qt::AlignBottom | Qt::AlignLeft),
+            CreateSubLayout(new QVBoxLayout(), 1, 0, Qt::AlignBottom | Qt::AlignLeft),
             CreateSubLayout(new QVBoxLayout(), 0, 1, Qt::AlignTop),
             CreateSubLayout(new QHBoxLayout(), 1, 1, Qt::AlignBottom),
             CreateSubLayout(new QVBoxLayout(), 0, 2, Qt::AlignTop | Qt::AlignRight),
@@ -66,6 +66,7 @@ namespace AzToolsFramework::ViewportUi::Internal
                 index = layoutForAlignment->second->count();
                 break;
             // TopRight and BottomLeft are special cases
+            // place the spacer differently according to whether it's a vertical or horizontal layout
             case Qt::AlignTop | Qt::AlignRight:
                 if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
                 {
