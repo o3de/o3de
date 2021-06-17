@@ -61,6 +61,11 @@ namespace AZ
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
 
+                if (!binding.m_attachment)
+                {
+                    continue;
+                }
+
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
@@ -95,6 +100,10 @@ namespace AZ
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
                 if (binding.m_slotType != PassSlotType::Output && binding.m_slotType != PassSlotType::InputOutput)
+                {
+                    continue;
+                }
+                if (!binding.m_attachment)
                 {
                     continue;
                 }

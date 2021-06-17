@@ -65,8 +65,20 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             string(GENEX_STRIP ${include_directory} include_genex_expr)
             if(include_genex_expr STREQUAL include_directory) # only for cases where there are no generation expressions
                 unset(current_public_headers)
+
+                cmake_path(NORMAL_PATH include_directory)
+                string(REGEX REPLACE "/$" "" include_directory "${include_directory}")
+                cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} NORMALIZE include_directory_child_of_o3de_root)
+                if(NOT include_directory_child_of_o3de_root)
+                    message(FATAL_ERROR "Include directory of \"${include_directory}\" is outside of the O3DE root folder of \"${LY_ROOT_FOLDER}\". For the INSTALL step, the O3DE root folder must be a prefix of all include directories")
+                endif()
+
+                cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
+                cmake_path(APPEND include_location "${rel_include_dir}" ".." OUTPUT_VARIABLE destination_dir)
+                cmake_path(NORMAL_PATH destination_dir)
+
                 install(DIRECTORY ${include_directory}
-                    DESTINATION ${include_location}/${relative_target_source_dir}
+                    DESTINATION ${destination_dir}
                     COMPONENT ${install_component}
                     FILES_MATCHING
                         PATTERN *.h
@@ -138,8 +150,10 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         foreach(include ${include_directories})
             string(GENEX_STRIP ${include} include_genex_expr)
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE relative_include)
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/include/${relative_target_source_dir}/${relative_include}\n")
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE target_include)
+                cmake_path(NORMAL_PATH target_include)
+                # Escape the LY_ROOT_FOLDER variable so that it isn't resolved during the install step
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${target_include}\n")
             endif()
         endforeach()
     endif()

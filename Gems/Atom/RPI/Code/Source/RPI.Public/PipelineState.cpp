@@ -124,12 +124,9 @@ namespace AZ
             RefreshShaderVariant();
         }
 
-        void PipelineStateForDraw::OnShaderVariantReinitialized(
-            [[maybe_unused]] const Shader& shader,
-            const ShaderVariantId& shaderVariantId,
-            [[maybe_unused]] ShaderVariantStableId shaderVariantStableId)
+        void PipelineStateForDraw::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
         {
-            if(shaderVariantId == m_shaderVariantId)
+            if(shaderVariant.GetShaderVariantId() == m_shaderVariantId)
             {
                 RefreshShaderVariant();
             }

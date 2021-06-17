@@ -19,14 +19,16 @@
 
 namespace AWSCore
 {
+    constexpr char AWSAttributionMetricDefaultO3DEVersion[] = "1.1";
+
     AttributionMetric::AttributionMetric(const AZStd::string& timestamp)
-        : m_version("1.1")
+        : m_version(AWSAttributionMetricDefaultO3DEVersion)
         , m_timestamp(timestamp)
     {
     }
 
     AttributionMetric::AttributionMetric()
-        : m_version("1.1")
+        : m_version(AWSAttributionMetricDefaultO3DEVersion)
     {
         m_timestamp = AttributionMetric::GenerateTimeStamp();
     }

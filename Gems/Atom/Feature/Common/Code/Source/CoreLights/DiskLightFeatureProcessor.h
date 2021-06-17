@@ -60,6 +60,7 @@ namespace AZ
             void SetPredictionSampleCount(LightHandle handle, uint16_t count) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetPcfMethod(LightHandle handle, PcfMethod method) override;
+            void SetEsmExponent(LightHandle handle, float esmExponent) override;
 
             void SetDiskData(LightHandle handle, const DiskLightData& data) override;
 
