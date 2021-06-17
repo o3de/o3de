@@ -286,9 +286,13 @@ namespace Blast
 
         // Create damage and actor render managers
         m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
-        m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
-            AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
-            m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
+
+        if (m_meshDataComponent)
+        {
+            m_actorRenderManager = AZStd::make_unique<ActorRenderManager>(
+                AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::MeshFeatureProcessorInterface>(GetEntityId()),
+                m_meshDataComponent, GetEntityId(), m_blastAsset->GetPxAsset()->getChunkCount(), AZ::Vector3(transform.GetUniformScale()));
+        }
 
         // Spawn the family
         m_family->Spawn(transform);
@@ -540,7 +544,11 @@ namespace Blast
 
     void BlastFamilyComponent::OnActorCreated([[maybe_unused]] const BlastFamily& family, const BlastActor& actor)
     {
-        m_actorRenderManager->OnActorCreated(actor);
+        if (m_actorRenderManager)
+        {
+            m_actorRenderManager->OnActorCreated(actor);
+        }
+
         m_solver->notifyActorCreated(*actor.GetTkActor().getActorLL());
         
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
@@ -576,7 +584,11 @@ namespace Blast
         }
 
         m_solver->notifyActorDestroyed(*actor.GetTkActor().getActorLL());
-        m_actorRenderManager->OnActorDestroyed(actor);
+
+        if (m_actorRenderManager)
+        {
+            m_actorRenderManager->OnActorDestroyed(actor);
+        }
     }
 
     // Update positions of entities with render meshes corresponding to their right dynamic bodies.

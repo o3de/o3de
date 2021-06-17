@@ -192,9 +192,7 @@ namespace AZ
             OnShaderReloaded();
         }
 
-        void LightCullingTilePreparePass::OnShaderVariantReinitialized(
-             const AZ::RPI::Shader&,  const AZ::RPI::ShaderVariantId&,
-             AZ::RPI::ShaderVariantStableId)
+        void LightCullingTilePreparePass::OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant&)
         {
             OnShaderReloaded();
         }

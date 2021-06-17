@@ -21,7 +21,7 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<AreaLightComponentConfig, ComponentConfig>()
-                    ->Version(5) // ATOM-14637
+                    ->Version(6) // ATOM-15654
                     ->Field("LightType", &AreaLightComponentConfig::m_lightType)
                     ->Field("Color", &AreaLightComponentConfig::m_color)
                     ->Field("IntensityMode", &AreaLightComponentConfig::m_intensityMode)
@@ -41,7 +41,8 @@ namespace AZ
                     ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
                     ->Field("Prediction Sample Count", &AreaLightComponentConfig::m_predictionSampleCount)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
-                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod);
+                    ->Field("Pcf Method", &AreaLightComponentConfig::m_pcfMethod)
+                    ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
                     ;
             }
         }
@@ -200,5 +201,11 @@ namespace AZ
 
             return m_pcfMethod != PcfMethod::BoundarySearch;
         }
+
+        bool AreaLightComponentConfig::IsEsmDisabled() const
+        {
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
     }
 }
