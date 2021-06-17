@@ -15,6 +15,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/EBus/Event.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
@@ -40,6 +41,7 @@ namespace AZ
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
             , public Data::AssetBus::Handler
+            , public AssetInitBus::Handler
         {
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
@@ -134,7 +136,10 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
             /// AssetBus overrides
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             ///////////////////////////////////////////////////////////////////
+
+            void ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset);
 
             ///////////////////////////////////////////////////////////////////
             /// ShaderVariantFinderNotificationBus overrides
@@ -165,8 +170,13 @@ namespace AZ
                 RHI::ShaderStageAttributeMapList m_attributeMaps;
             };
 
-            bool FinalizeAfterLoad();
+            bool PostLoadInit() override;
             void SetReady();
+
+            //! SelectShaderApiData() must be called before most other ShaderAsset functions.
+            bool SelectShaderApiData();
+
+            //! Returns the active ShaderApiDataContainer which was selected in SelectShaderApiData().
             ShaderApiDataContainer& GetCurrentShaderApiData();
             const ShaderApiDataContainer& GetCurrentShaderApiData() const;
 
@@ -216,7 +226,6 @@ namespace AZ
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,
                 const Data::AssetFilterCB& assetLoadFilterCB) override;
-            Data::AssetHandler::LoadResult PostLoadInit(const Data::Asset<Data::AssetData>& asset);
         };
 
         //////////////////////////////////////////////////////////////////////////

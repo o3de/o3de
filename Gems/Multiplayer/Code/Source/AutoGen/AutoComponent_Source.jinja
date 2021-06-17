@@ -826,7 +826,7 @@ enum class NetworkProperties
 #}
 {% macro DefineNetworkPropertyBehaviorReflection(Component, ReplicateFrom, ReplicateTo, ClassName) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
-{% if (Property.attrib['IsPublic'] | booleanTrue == true) and (Property.attrib['GenerateEventBindings'] | booleanTrue == true) -%}
+{% if (Property.attrib['IsPublic'] | booleanTrue == true) and (Property.attrib['ExposeToScript'] | booleanTrue == true) -%}
     // {{ UpperFirst(Property.attrib['Name']) }}: Replicate from {{ ReplicateFrom }} to {{ ReplicateTo }}
 {%  if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' %}
     ->Method("Get{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, int32_t index) -> {{ Property.attrib['Type'] }}

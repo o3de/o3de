@@ -11,6 +11,7 @@
  */
 
 #include <Atom/RHI/CommandQueue.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 
 namespace AZ
@@ -86,6 +87,7 @@ namespace AZ
 
         void CommandQueue::FlushCommands()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "CommandQueue: FlushCommands");
             while (!m_isWorkQueueEmpty && !m_isQuitting)
             {
                 AZStd::this_thread::yield();

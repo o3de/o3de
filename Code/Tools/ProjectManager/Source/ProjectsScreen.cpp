@@ -85,7 +85,7 @@ namespace O3DE::ProjectManager
         QFrame* frame = new QFrame(this);
         frame->setObjectName("firstTimeContent");
         {
-            QVBoxLayout* layout = new QVBoxLayout(this);
+            QVBoxLayout* layout = new QVBoxLayout();
             layout->setContentsMargins(0, 0, 0, 0);
             layout->setAlignment(Qt::AlignTop);
             frame->setLayout(layout);
@@ -100,7 +100,7 @@ namespace O3DE::ProjectManager
                                    "available by downloading our sample project."));
             layout->addWidget(introLabel);
 
-            QHBoxLayout* buttonLayout = new QHBoxLayout(this);
+            QHBoxLayout* buttonLayout = new QHBoxLayout();
             buttonLayout->setAlignment(Qt::AlignLeft);
             buttonLayout->setSpacing(s_spacerSize);
 

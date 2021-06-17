@@ -78,7 +78,7 @@ namespace AZ
             // ShaderReloadNotificationBus overrides...
             void OnShaderReinitialized(const Shader& shader) override;
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
-            void OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId) override;
+            void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
 
             void LoadShader();

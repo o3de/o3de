@@ -8,4 +8,7 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-ly_create_alias(NAME Sponza.Builders NAMESPACE Gem)
+# This will export its "SourcePaths" to the generated "cmake_dependencies.<project>.assetbuilder.setreg"
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AtomContent_Sponza.Builders NAMESPACE Gem)
+endif()

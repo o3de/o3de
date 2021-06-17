@@ -406,6 +406,7 @@ namespace AZ
                 AZStd::vector<AZ::BehaviorParameter> eventParamsTypes{ AZStd::initializer_list<AZ::BehaviorParameter>{
                     CreateBehaviorEventParameter<decay_array<T>>()... } };
                 behaviorContext->Class<AZ::Event<T...>>()
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                     ->Attribute(AZ::Script::Attributes::EventHandlerCreationFunction, createHandlerHolder)
                     ->Attribute(AZ::Script::Attributes::EventParameterTypes, eventParamsTypes)
                     ->Method("HasHandlerConnected", &AZ::Event<T...>::HasHandlerConnected)
@@ -413,6 +414,7 @@ namespace AZ
 
                 behaviorContext->Class<AZ::EventHandler<T...>>()
                     ->Method("Disconnect", &AZ::EventHandler<T...>::Disconnect)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                     ;
             }
         }
