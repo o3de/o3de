@@ -46,7 +46,7 @@ namespace AZ
             bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }
 
             ShaderVariantStableId GetStableId() const { return m_shaderVariantAsset->GetStableId(); }
-            
+
             const Data::Asset<ShaderAsset>& GetShaderAsset() const { return m_shaderAsset; }
             const Data::Asset<ShaderVariantAsset>& GetShaderVariantAsset() const { return m_shaderVariantAsset; }
 

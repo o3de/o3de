@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(FILES
-    Tests/TestImpactTestTargetB.cpp
+set(LY_COMPILE_OPTIONS
+    PRIVATE
+        /EHsc
 )
