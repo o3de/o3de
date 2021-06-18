@@ -148,6 +148,67 @@ namespace AZ
                 return false;
             }
 
+#ifdef SCENEAPI_SAVE_MANIFEST_AS_XML
+            bool SceneManifest::SaveToFile(const AZStd::string& absoluteFilePath, SerializeContext* serializeContext)
+            {
+                AZ_TraceContext(ErrorWindowName, absoluteFilePath);
+                bool result = false;
+
+                IO::SystemFile manifestFile;
+                if (manifestFile.Open(absoluteFilePath.c_str(), IO::SystemFile::SF_OPEN_READ_WRITE | IO::SystemFile::SF_OPEN_CREATE))
+                {
+                    IO::SystemFileStream manifestFileStream(&manifestFile, false);
+                    AZ_Assert(manifestFileStream.IsOpen(), "Manifest file stream is not open.");
+
+                    if (!serializeContext)
+                    {
+                        EBUS_EVENT_RESULT(serializeContext, ComponentApplicationBus, GetSerializeContext);
+                        if (!serializeContext)
+                        {
+                            AZ_Error("SceneManifest", false, "No serialization context was created.");
+                            manifestFileStream.Close();
+                            manifestFile.Close();
+                            return false;
+                        }
+                    }
+
+                    result = Utils::SaveObjectToStream<SceneManifest>(manifestFileStream, ObjectStream::ST_XML, this, serializeContext);
+                    manifestFileStream.Close();
+                    manifestFile.Close();
+                    result = true;
+                }
+                else
+                {
+                    AZ_Error("SceneManifest", false, "Cannot open manifest file for writing.");
+                }
+
+                return result;
+            }
+
+            void SceneManifest::SerializeEvents::OnWriteBegin(void* classPtr)
+            {
+                SceneManifest* manifest = reinterpret_cast<SceneManifest*>(classPtr);
+                manifest->Clear();
+            }
+
+            void SceneManifest::SerializeEvents::OnWriteEnd(void* classPtr)
+            {
+                SceneManifest* manifest = reinterpret_cast<SceneManifest*>(classPtr);
+
+                auto end = AZStd::remove_if(manifest->m_values.begin(), manifest->m_values.end(), 
+                    [](const ValueStorageType& entry) -> bool
+                    {
+                        return !entry;
+                    });
+                manifest->m_values.erase(end, manifest->m_values.end());
+
+                for (size_t i = 0; i < manifest->m_values.size(); ++i)
+                {
+                    Index index = aznumeric_caster(i);
+                    manifest->m_storageLookup[manifest->m_values[i].get()] = index;
+                }
+            }
+#else
             bool SceneManifest::SaveToFile(const AZStd::string& absoluteFilePath, SerializeContext* context)
             {
                 AZ_TraceContext(ErrorWindowName, absoluteFilePath);
@@ -177,6 +238,7 @@ namespace AZ
 
                 return true;
             }
+#endif
 
             AZStd::shared_ptr<const DataTypes::IManifestObject> SceneManifest::SceneManifestConstDataConverter(
                 const AZStd::shared_ptr<DataTypes::IManifestObject>& value)
@@ -190,6 +252,9 @@ namespace AZ
                 if (serializeContext)
                 {
                     serializeContext->Class<SceneManifest>()
+#ifdef SCENEAPI_SAVE_MANIFEST_AS_XML
+                        ->EventHandler<SerializeEvents>()
+#endif
                         ->Version(1, &SceneManifest::VersionConverter)
                         ->Field("values", &SceneManifest::m_values);
                 }

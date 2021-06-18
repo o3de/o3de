@@ -27,6 +27,8 @@
 #include <SceneAPI/SceneCore/Containers/Views/ConvertIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
 
+//#define SCENEAPI_SAVE_MANIFEST_AS_XML
+
 namespace AZ
 {
     class JsonRegistrationContext;
@@ -106,6 +108,22 @@ namespace AZ
             private:
                 void Init();
 
+#ifdef SCENEAPI_SAVE_MANIFEST_AS_XML
+                // If SceneManifest if part of a class normal reflection will work as expected, but if it's directly serialized
+                //      additional arguments for the common serialization functions are required. This function is utility uses
+                //      the correct arguments to load the SceneManifest from a stream in-place.
+                bool LoadFromStream(IO::GenericStream& stream, SerializeContext* context = nullptr);
+                // If SceneManifest if part of a class normal reflection will work as expected, but if it's directly serialized
+                //      additional arguments for the common serialization functions are required. This function is utility uses
+                //      the correct arguments to save the SceneManifest to a stream.
+                bool SaveToStream(IO::GenericStream& stream, SerializeContext* context = nullptr) const;
+
+                struct SerializeEvents : public SerializeContext::IEventHandler
+                {
+                    void OnWriteBegin(void* classPtr) override;
+                    void OnWriteEnd(void* classPtr) override;
+                };
+#endif
                 
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
                 StorageLookup m_storageLookup;

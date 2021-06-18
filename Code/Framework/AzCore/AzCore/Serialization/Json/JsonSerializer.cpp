@@ -488,6 +488,9 @@ namespace AZ
         // tell the caller of this function to write the type id and provide a default object, if requested, for
         // the specific polymorphic instance the pointer is pointing to.
         const AZ::Uuid& actualClassId = rtti.GetActualUuid(object);
+
+        // Note: If it is crashing here, it might be that you're serializing a pointer and forgot to initialize it with nullptr.
+        // Check the elementClassData for reasoning element.
         const AZ::Uuid& actualDefaultClassId = rtti.GetActualUuid(defaultObject);
 
         if (actualClassId != rtti.GetTypeId())

@@ -15,6 +15,7 @@
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 
 #include <SceneAPIExt/Rules/MetaDataRule.h>
+#include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 #include <SceneAPIExt/Groups/IMotionGroup.h>
 #include <RCExt/Motion/MotionGroupExporter.h>
 #include <RCExt/ExportContexts.h>
@@ -85,6 +86,19 @@ namespace EMotionFX
                 {
                     AZ_Error("EMotionFX", false, "Applying meta data to '%s' failed.", filename.c_str());
                 }
+            }
+
+            /*EMotionFX::MotionEventTable* eventTable = nullptr;
+            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::MotionEventTable*>(motionGroup, eventTable))
+            {
+                motion->SetEventTable(eventTable);
+            }*/
+            EMotionFX::Pipeline::Rule::MotionMetaData motionMetaData;
+            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::Pipeline::Rule::MotionMetaData>(motionGroup, motionMetaData))
+            {
+                motion->SetEventTable(motionMetaData.m_motionEventTable);
+                motionMetaData.m_motionEventTable->InitAfterLoading(motion);
+                motion->SetMotionExtractionFlags(motionMetaData.m_motionExtractionFlags);
             }
 
             ExporterLib::SaveMotion(filename, motion, MCore::Endian::ENDIAN_LITTLE);

@@ -40,7 +40,7 @@ namespace CommandSystem
          * @param motion The motion to read the changes from.
          * @result A string containing a list of commands.
          */
-        static AZStd::vector<MCore::Command*> GenerateMotionMetaData(EMotionFX::Motion* motion);
+        //static AZStd::vector<MCore::Command*> GenerateMotionMetaData(EMotionFX::Motion* motion);
 
         /**
          * Use the given list , prepare it for the given motion and apply the meta data.

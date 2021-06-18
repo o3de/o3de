@@ -29,7 +29,7 @@
 
 namespace CommandSystem
 {
-
+    /*
     AZStd::vector<MCore::Command*> MetaData::GenerateMotionMetaData(EMotionFX::Motion* motion)
     {
         AZStd::vector<MCore::Command*> commands;
@@ -69,7 +69,7 @@ namespace CommandSystem
 
         return commands;
     }
-
+    */
 
     bool MetaData::ApplyMetaDataOnMotion(EMotionFX::Motion* motion, const AZStd::vector<MCore::Command*>& metaDataCommands)
     {

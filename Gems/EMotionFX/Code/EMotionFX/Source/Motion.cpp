@@ -77,7 +77,7 @@ namespace EMotionFX
 
         if (mEventTable)
         {
-            mEventTable->Destroy();
+            delete mEventTable;
         }
 
         delete m_motionData;
@@ -220,11 +220,10 @@ namespace EMotionFX
     {
         if (mEventTable && mEventTable != newTable)
         {
-            mEventTable->Destroy();
+            delete mEventTable;
         }
         mEventTable = newTable;
     }
-
 
     void Motion::SetID(uint32 id)
     {
