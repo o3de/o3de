@@ -93,7 +93,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
             [this]()
             {
-                if (const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty())
+                if (!m_ui->m_searchWidget->GetFilterString().isEmpty())
                 {
                     m_tableModel->UpdateTableModelMaps();
                 }
@@ -123,10 +123,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             });
         connect(
             m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this,
-            [this](bool state)
+            [this](bool visible)
             {
-                m_ui->m_assetBrowserTableViewWidget->setVisible(state);
-                m_ui->m_assetBrowserTreeViewWidget->setVisible(!state);
+                m_ui->m_assetBrowserTableViewWidget->setVisible(visible);
+                m_ui->m_assetBrowserTreeViewWidget->setVisible(!visible);
             });
     }
 

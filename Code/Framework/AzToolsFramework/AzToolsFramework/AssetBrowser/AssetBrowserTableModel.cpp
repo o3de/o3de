@@ -126,13 +126,13 @@ namespace AzToolsFramework
 
         void AssetBrowserTableModel::UpdateTableModelMaps()
         {
+            emit layoutAboutToBeChanged();
             if (!m_indexMap.isEmpty())
             {
                 beginRemoveRows(m_indexMap.first(), m_indexMap.first().row(), m_indexMap.last().row());
                 m_indexMap.clear();
                 endRemoveRows();
             }
-            emit layoutAboutToBeChanged();
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
         }

@@ -155,7 +155,6 @@ namespace AzToolsFramework
                         // The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
                         // To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.
                         const auto& stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
-                        bool isStringFilter = false;
                         if (stringCompositeFilter)
                         {
                             //Once we have the main composite filter we can now obtain its subfilters and check if
@@ -167,17 +166,13 @@ namespace AzToolsFramework
                                 return !strFilter.isNull();
                             };
 
-                            const auto stringSubfliterConstIter =
+                            const auto& stringSubFilterConstIt  =
                                 AZStd::find_if(stringSubfilters.cbegin(), stringSubfilters.cend(), canBeCasted);
 
                             // A Composite StringFilter will only have just one subfilter (the StringFilter) and nothing more.
-                            if (stringSubfliterConstIter != stringSubfilters.end() && stringSubfilters.size() == 1)
-                            {
-                                isStringFilter = true;
-                            }
+                            return stringSubFilterConstIt != stringSubfilters.end() && stringSubfilters.size() == 1;
                         }
-
-                        return isStringFilter;
+                        return false;
                     });
 
                 if (compositeStringFilterIter != subFilters.end())
