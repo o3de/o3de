@@ -15,18 +15,6 @@
 
 #pragma optimize("", off)
 
-void StupidLog(const AZStd::string& filename)
-{
-    AZStd::string contents = "Here!";
-    AZ::IO::SystemFile file;
-    const AZStd::vector<char> bytes(contents.begin(), contents.end());
-    file.Open(
-        (AZStd::string("e:/") + (filename + ".txt")).c_str(),
-        AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-
-    file.Write(bytes.data(), bytes.size());
-}
-
 namespace PythonCoverage
 {
     void PythonCoverageEditorSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -39,64 +27,45 @@ namespace PythonCoverage
 
     void PythonCoverageEditorSystemComponent::Activate()
     {
-        AzToolsFramework::EditorPythonRunnerRequestBus::Handler::BusConnect();
+        AzToolsFramework::EditorPythonRunnerNotificationBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
-        m_coverageFile = "e:/coverage.txt";
         EnumerateAllModuleComponents();
     }
 
     void PythonCoverageEditorSystemComponent::Deactivate()
     {
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AZ::EntitySystemBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorPythonRunnerRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonRunnerNotificationBus::Handler::BusDisconnect();
     }
 
     void PythonCoverageEditorSystemComponent::OnEntityActivated(const AZ::EntityId& entityId)
     {
-        StupidLog("OnEntityActivated");
         EnumerateComponentsForEntity(entityId);
         WriteCoverageFile();
     }
-
+    
     void PythonCoverageEditorSystemComponent::WriteCoverageFile()
     {
-        StupidLog("WriteCoverageFile");
-
         // Yes, we're doing blocking file operations on the main thread... If this becomes an issue this can be offloaded
         // to a worker thread
         if (m_coverageFile.has_value())
         {
-            StupidLog("INSIDE_WriteCoverageFile");
-
             AZStd::string contents;
             const auto coveringModules = GetParentComponentModulesForAllActivatedEntities();
             if (coveringModules.empty())
             {
-                contents += "Entity components:\n";
-                for (const auto& [uuid, desc] : m_entityComponents)
-                {
-                    contents += AZStd::string::format("\t%s {%s}\n", desc->GetName(), uuid.ToString<AZStd::string>().c_str());
-                }
-
-                contents += "Module components:\n";
-                for (const auto& [uuid, moduleName] : m_moduleComponents)
-                {
-                    contents += AZStd::string::format("\t%s {%s}\n", moduleName.c_str(), uuid.ToString<AZStd::string>().c_str());
-                }
+                return;
             }
-
+    
             for (const auto& coveringModule : coveringModules)
             {
                 contents += coveringModule + "\n";
             }
-
+    
             AZ::IO::SystemFile file;
             const AZStd::vector<char> bytes(contents.begin(), contents.end());
             if (!file.Open(
-                    //m_coverageFile.value().c_str(),
-                    "e:/foo.txt",
+                    m_coverageFile.value().c_str(),
                     AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
             {
                 AZ_Error(
@@ -104,7 +73,7 @@ namespace PythonCoverage
                     AZStd::string::format("Couldn't open file %s for writing", m_coverageFile.value().c_str()).c_str());
                 return;
             }
-
+    
             if (!file.Write(bytes.data(), bytes.size()))
             {
                 AZ_Error(
@@ -114,7 +83,7 @@ namespace PythonCoverage
             }
         }
     }
-
+    
     void PythonCoverageEditorSystemComponent::EnumerateAllModuleComponents()
     {
         AZ::ModuleManagerRequestBus::Broadcast(
@@ -130,16 +99,16 @@ namespace PythonCoverage
                         m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();
                     }
                 }
-
+    
                 return true;
             });
     }
-
+    
     void PythonCoverageEditorSystemComponent::EnumerateComponentsForEntity(const AZ::EntityId& entityId)
     {
         AZ::Entity* entity = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(entityId));
-
+    
         if (entity)
         {
             for (const auto& entityComponent : entity->GetComponents())
@@ -152,7 +121,7 @@ namespace PythonCoverage
             }
         }
     }
-
+    
     AZStd::unordered_set<AZStd::string> PythonCoverageEditorSystemComponent::GetParentComponentModulesForAllActivatedEntities() const
     {
         AZStd::unordered_set<AZStd::string> coveringModuleOutputNames;
@@ -163,13 +132,12 @@ namespace PythonCoverage
                 coveringModuleOutputNames.insert(moduleComponent->second);
             }
         }
-
+    
         return coveringModuleOutputNames;
     }
-
+    
     void PythonCoverageEditorSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
-        StupidLog("ExecuteByFilenameAsTest");
         m_entityComponents.clear();
         m_coverageFile = AZStd::nullopt;
         

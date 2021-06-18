@@ -39,6 +39,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/EditorPythonRunnerNotificationBus.h>
 
 namespace Platform
 {
@@ -579,6 +580,9 @@ namespace EditorPythonBindings
 
         if (!script.empty())
         {
+            AzToolsFramework::EditorPythonRunnerNotificationBus::Broadcast(
+                &AzToolsFramework::EditorPythonRunnerNotificationBus::Events::ExecuteByString, script);
+
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
@@ -639,11 +643,15 @@ namespace EditorPythonBindings
     void PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
     {
         AZStd::vector<AZStd::string_view> args;
+        AzToolsFramework::EditorPythonRunnerNotificationBus::Broadcast(
+            &AzToolsFramework::EditorPythonRunnerNotificationBus::Events::ExecuteByFilename, filename);
         ExecuteByFilenameWithArgs(filename, args);
     }
 
     void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
+        AzToolsFramework::EditorPythonRunnerNotificationBus::Broadcast(
+            &AzToolsFramework::EditorPythonRunnerNotificationBus::Events::ExecuteByFilenameAsTest, filename, args);
         const Result evalResult = EvaluateFile(filename, args);
         if (evalResult == Result::Okay)
         {
@@ -659,6 +667,8 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
+        AzToolsFramework::EditorPythonRunnerNotificationBus::Broadcast(
+            &AzToolsFramework::EditorPythonRunnerNotificationBus::Events::ExecuteByFilenameWithArgs, filename, args);
         EvaluateFile(filename, args);
     }
 
