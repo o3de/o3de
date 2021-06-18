@@ -308,7 +308,7 @@
   },
   "windows_installer": {
     "TAGS": [
-      "package"
+      "nightly-clean"
     ],
     "COMMAND": "build_installer_windows.cmd",
     "PARAMETERS": {
