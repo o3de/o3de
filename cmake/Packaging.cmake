@@ -136,10 +136,6 @@ if(LY_INSTALLER_UPLOAD_URL)
         set(CPACK_AWS_PROFILE ${LY_INSTALLER_AWS_PROFILE})
     elseif (DEFINED ENV{LY_INSTALLER_AWS_PROFILE})
         set(CPACK_AWS_PROFILE $ENV{LY_INSTALLER_AWS_PROFILE})
-    else()
-        message(FATAL_ERROR
-            "An AWS profile is required for installer S3 uploading.  Please provide "
-            "one via LY_INSTALLER_AWS_PROFILE CLI argument or environment variable")
     endif()
 
     strip_trailing_slash(${LY_INSTALLER_UPLOAD_URL} LY_INSTALLER_UPLOAD_URL)
