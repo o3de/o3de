@@ -32,6 +32,9 @@ namespace AzToolsFramework
         public:
             AZ_CLASS_ALLOCATOR(AssetBrowserTableModel, AZ::SystemAllocator, 0);
             explicit AssetBrowserTableModel(QObject* parent = nullptr);
+
+            void UpdateTableModelMaps();
+
             ////////////////////////////////////////////////////////////////////
             // QSortFilterProxyModel
             void setSourceModel(QAbstractItemModel* sourceModel) override;
@@ -39,7 +42,7 @@ namespace AzToolsFramework
             QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
-            void UpdateTableModelMaps();
+            QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
 
         protected:
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
