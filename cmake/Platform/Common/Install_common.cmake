@@ -240,7 +240,7 @@ set_property(TARGET ${TARGET_NAME}
     )
 
     # Since a CMakeLists.txt could contain multiple targets, we generate it in a folder per target
-    file(READ ${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
+    ly_file_read(${LY_ROOT_FOLDER}/cmake/install/InstalledTarget.in target_cmakelists_template)
     string(CONFIGURE ${target_cmakelists_template} output_cmakelists_data @ONLY)
     set(${OUTPUT_CONFIGURED_TARGET} ${output_cmakelists_data} PARENT_SCOPE)
 endfunction()
@@ -317,8 +317,7 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         string(APPEND ENABLE_GEMS_PLACEHOLDER ${enable_gems_command})
     endforeach()
 
-
-    file(READ ${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
+    ly_file_read(${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
 
     # Initialize the target install source directory to path underneath the current binary directory
     set(target_install_source_dir ${CMAKE_CURRENT_BINARY_DIR}/install/${relative_target_source_dir})
