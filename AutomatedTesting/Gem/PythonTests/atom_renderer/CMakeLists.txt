@@ -39,7 +39,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
     )
     ly_add_pytest(
         NAME AutomatedTesting::AtomRenderer_HydraTests_GPUTests
-        TEST_SUITE sandbox
+        TEST_SUITE main
         TEST_REQUIRES gpu
         TEST_SERIAL
         TIMEOUT 400
