@@ -382,6 +382,16 @@ namespace AZ
             m_useViewport = false;
         }
 
+        void DynamicDrawContext::SetStencilReference(uint8_t stencilRef)
+        {
+            m_stencilRef = stencilRef;
+        }
+
+        uint8_t DynamicDrawContext::GetStencilReference() const
+        {
+            return m_stencilRef;
+        }
+
         void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
         {
             AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
@@ -474,6 +484,9 @@ namespace AZ
                 drawItem.m_viewportsCount = 1;
                 drawItem.m_viewports = &m_viewport;
             }
+
+            // Set stencil reference. Used when stencil is enabled.
+            drawItem.m_stencilRef = m_stencilRef;
 
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);

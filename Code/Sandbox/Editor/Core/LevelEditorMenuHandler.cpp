@@ -715,9 +715,10 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
         {
             return view.IsViewportPane();
         });
-#endif
 
     viewportViewsMenuWrapper.AddSeparator();
+
+#endif
 
     if (CViewManager::IsMultiViewportEnabled())
     {

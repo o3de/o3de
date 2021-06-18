@@ -35,6 +35,9 @@
 
 namespace AWSCore
 {
+
+    static constexpr int IconSize = 16;
+
     AWSCoreEditorMenu::AWSCoreEditorMenu(const QString& text)
         : QMenu(text)
         , m_resourceMappingToolWatcher(nullptr)
@@ -43,6 +46,7 @@ namespace AWSCore
         InitializeResourceMappingToolAction();
         this->addSeparator();
         InitializeAWSFeatureGemActions();
+        AddSpaceForIcon(this);
 
         AWSCoreEditorRequestBus::Handler::BusConnect();
     }
@@ -136,6 +140,8 @@ namespace AWSCore
         globalDocsMenu->addAction(AddExternalLinkAction(AWSAndScriptCanvasActionText, AWSAndScriptCanvasUrl, ":/Notifications/link.svg"));
         globalDocsMenu->addAction(AddExternalLinkAction(AWSAndComponentsActionText, AWSAndComponentsUrl, ":/Notifications/link.svg"));
         globalDocsMenu->addAction(AddExternalLinkAction(CallAWSResourcesActionText, CallAWSResourcesUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(globalDocsMenu);
     }
 
     void AWSCoreEditorMenu::InitializeAWSFeatureGemActions()
@@ -170,6 +176,8 @@ namespace AWSCore
             AWSClientAuthPlatformSpecificActionText, AWSClientAuthPlatformSpecificUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));
+
+        AddSpaceForIcon(subMenu);
     }
 
     void AWSCoreEditorMenu::SetAWSMetricsEnabled()
@@ -197,7 +205,9 @@ namespace AWSCore
             [configFilePath](){
                 QDesktopServices::openUrl(QUrl::fromLocalFile(configFilePath.c_str()));
             });
+
         subMenu->addAction(settingsAction);
+        AddSpaceForIcon(subMenu);
     }
 
     QMenu* AWSCoreEditorMenu::SetAWSFeatureSubMenu(const AZStd::string& menuText)
@@ -209,11 +219,19 @@ namespace AWSCore
             {
                 QMenu* subMenu = new QMenu(QObject::tr(menuText.c_str()));
                 subMenu->setIcon(QIcon(QString(":/Notifications/checkmark.svg")));
+                subMenu->setProperty("noHover", true);
                 this->insertMenu(*itr, subMenu);
                 this->removeAction(*itr);
                 return subMenu;
             }
         }
         return nullptr;
+    }
+
+    void AWSCoreEditorMenu::AddSpaceForIcon(QMenu *menu)
+    {
+        QSize size = menu->sizeHint();
+        size.setWidth(size.width() + IconSize);
+        menu->setFixedSize(size);
     }
 } // namespace AWSCore

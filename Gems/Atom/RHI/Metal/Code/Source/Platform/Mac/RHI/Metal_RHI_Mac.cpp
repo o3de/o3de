@@ -94,7 +94,7 @@ namespace Platform
 
     void ResizeInternal(RHIMetalView* metalView, CGSize viewSize)
     {
-        [metalView resizeSubviewsWithOldSize:viewSize];
+        [metalView.metalLayer setDrawableSize: viewSize];
     }
 
     RHIMetalView* GetMetalView(NativeWindowType* nativeWindow)

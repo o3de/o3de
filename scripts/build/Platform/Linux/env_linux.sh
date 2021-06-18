@@ -13,27 +13,11 @@
 set -o errexit # exit on the first failure encountered
 
 if ! command -v cmake &> /dev/null; then
-    if [[ -z $LY_CMAKE_PATH ]]; then LY_CMAKE_PATH=${LY_3RDPARTY_PATH}/CMake/3.19.1/Linux/bin; fi
-    if [[ ! -d $LY_CMAKE_PATH ]]; then
-        echo "[ci_build] CMake path not found"
-        exit 1
-    fi
-    PATH=${LY_CMAKE_PATH}:${PATH}
-    if ! command -v cmake &> /dev/null; then
-        echo "[ci_build] CMake not found"
-        exit 1
-    fi
+    echo "[ci_build] CMake not found"
+    exit 1
 fi
 
 if ! command -v ninja &> /dev/null; then
-    if [[ -z $LY_NINJA_PATH ]]; then LY_NINJA_PATH=${LY_3RDPARTY_PATH}/ninja/1.10.1/Linux; fi
-    if [[ ! -d $LY_NINJA_PATH ]]; then
-        echo "[ci_build] Ninja path not found"
-        exit 1
-    fi
-    PATH=${LY_NINJA_PATH}:${PATH}
-    if ! command -v ninja &> /dev/null; then
-        echo "[ci_build] Ninja not found"
-        exit 1
-    fi
+    echo "[ci_build] Ninja not found"
+    exit 1
 fi

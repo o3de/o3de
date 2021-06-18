@@ -82,6 +82,8 @@ namespace O3DE::ProjectManager
 
         m_headerWidget->ReinitForProject();
 
+        connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemListView->model()->index(0,0);

@@ -21,4 +21,6 @@ set(FILES
     Tests/TestAssetCode/AnimGraphAssetFactory.h
     Tests/TestAssetCode/ActorAssetFactory.h
     Tests/TestAssetCode/MotionSetAssetFactory.h
+    Tests/D6JointLimitConfiguration.cpp
+    Tests/D6JointLimitConfiguration.h
 )
