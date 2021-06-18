@@ -43,6 +43,8 @@ namespace AWSGameLift
             const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftCreateSessionRequest& createSessionRequest)
         {
+            AZ_TracePrintf(AWSGameLiftCreateSessionActivityName, "Requesting CreateGameSession against Amazon GameLift service ...");
+
             AZStd::string result = "";
             Aws::GameLift::Model::CreateGameSessionRequest request = BuildAWSGameLiftCreateGameSessionRequest(createSessionRequest);
             auto createSessionOutcome = gameliftClient.CreateGameSession(request);

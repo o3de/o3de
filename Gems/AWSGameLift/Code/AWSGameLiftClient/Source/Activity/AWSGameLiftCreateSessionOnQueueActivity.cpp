@@ -43,6 +43,9 @@ namespace AWSGameLift
             const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
         {
+            AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
+                "Requesting StartGameSessionPlacement against Amazon GameLift service ...");
+
             AZStd::string result = "";
             Aws::GameLift::Model::StartGameSessionPlacementRequest request =
                 BuildAWSGameLiftStartGameSessionPlacementRequest(createSessionOnQueueRequest);

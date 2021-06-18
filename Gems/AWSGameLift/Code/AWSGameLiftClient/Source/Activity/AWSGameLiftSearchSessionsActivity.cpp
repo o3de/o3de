@@ -10,6 +10,8 @@
  *
  */
 
+#include <AzFramework/Session/SessionConfig.h>
+
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 #include <AWSGameLiftSessionConstants.h>
 
@@ -36,6 +38,8 @@ namespace AWSGameLift
             const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest)
         {
+            AZ_TracePrintf(AWSGameLiftSearchSessionsActivityName, "Requesting SearchGameSessions against Amazon GameLift service ...");
+
             AzFramework::SearchSessionsResponse response;
             Aws::GameLift::Model::SearchGameSessionsRequest request = BuildAWSGameLiftSearchGameSessionsRequest(searchSessionsRequest);
             Aws::GameLift::Model::SearchGameSessionsOutcome outcome = gameliftClient.SearchGameSessions(request);

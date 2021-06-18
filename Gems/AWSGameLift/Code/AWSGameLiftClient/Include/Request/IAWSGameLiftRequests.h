@@ -13,7 +13,9 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Session/ISessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -51,4 +53,26 @@ namespace AWSGameLift
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     };
     using AWSGameLiftRequestBus = AZ::EBus<IAWSGameLiftRequests, AWSGameLiftRequests>;
+
+    // ISessionAsyncRequests EBus wrapper for scripting
+    class AWSGameLiftSessionAsyncRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftSessionAsyncRequestBus = AZ::EBus<AzFramework::ISessionAsyncRequests, AWSGameLiftSessionAsyncRequests>;
+
+    // ISessionRequests EBus wrapper for scripting
+    class AWSGameLiftSessionRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        using MutexType = AZStd::recursive_mutex;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+    };
+    using AWSGameLiftSessionRequestBus = AZ::EBus<AzFramework::ISessionRequests, AWSGameLiftSessionRequests>;
 } // namespace AWSGameLift

@@ -34,7 +34,7 @@ ly_add_target(
 )
 
 ly_add_target(
-    NAME AWSGameLift.Client ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME AWSGameLift.Clients ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsgamelift_client_shared_files.cmake
@@ -52,10 +52,9 @@ ly_add_target(
 )
 
 # Load the "Gem::AWSGameLift" module in all types of applications.
-ly_create_alias(NAME AWSGameLift.Clients NAMESPACE Gem TARGETS Gem::AWSGameLift.Client)
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AWSGameLift.Tools NAMESPACE Gem TARGETS Gem::AWSGameLift.Client)
-    ly_create_alias(NAME AWSGameLift.Builders NAMESPACE Gem TARGETS Gem::AWSGameLift.Client)
+    ly_create_alias(NAME AWSGameLift.Tools NAMESPACE Gem TARGETS Gem::AWSGameLift.Clients)
+    ly_create_alias(NAME AWSGameLift.Builders NAMESPACE Gem TARGETS Gem::AWSGameLift.Clients)
 endif()
 
 ################################################################################

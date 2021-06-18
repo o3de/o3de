@@ -12,9 +12,7 @@
 
 #pragma once
 
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzFramework/Session/ISessionRequests.h>
 #include <Request/IAWSGameLiftRequests.h>
 
 namespace Aws
@@ -32,17 +30,6 @@ namespace AWSGameLift
     struct AWSGameLiftJoinSessionRequest;
     struct AWSGameLiftSearchSessionsRequest;
 
-    // ISessionAsyncRequests EBus wrapper for scripting
-    class AWSGameLiftSessionAsyncRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        using MutexType = AZStd::recursive_mutex;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-    };
-    using AWSGameLiftSessionAsyncRequestBus = AZ::EBus<AzFramework::ISessionAsyncRequests, AWSGameLiftSessionAsyncRequests>;
-
     // SessionAsyncRequestNotificationBus EBus handler for scripting
     class AWSGameLiftSessionAsyncRequestNotificationBusHandler
         : public AzFramework::SessionAsyncRequestNotificationBus::Handler
@@ -50,8 +37,13 @@ namespace AWSGameLift
     {
     public:
         AZ_EBUS_BEHAVIOR_BINDER(
-            AWSGameLiftSessionAsyncRequestNotificationBusHandler, "{6E13FC73-53DC-4B6B-AEA7-9038DE4C9635}", AZ::SystemAllocator,
-            OnCreateSessionAsyncComplete, OnSearchSessionsAsyncComplete, OnJoinSessionAsyncComplete, OnLeaveSessionAsyncComplete);
+            AWSGameLiftSessionAsyncRequestNotificationBusHandler,
+            "{6E13FC73-53DC-4B6B-AEA7-9038DE4C9635}",
+            AZ::SystemAllocator,
+            OnCreateSessionAsyncComplete,
+            OnSearchSessionsAsyncComplete,
+            OnJoinSessionAsyncComplete,
+            OnLeaveSessionAsyncComplete);
 
         void OnCreateSessionAsyncComplete(const AZStd::string& createSessionReponse) override
         {
@@ -73,17 +65,6 @@ namespace AWSGameLift
             Call(FN_OnLeaveSessionAsyncComplete);
         }
     };
-
-    // ISessionRequests EBus wrapper for scripting
-    class AWSGameLiftSessionRequests
-        : public AZ::EBusTraits
-    {
-    public:
-        using MutexType = AZStd::recursive_mutex;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-    };
-    using AWSGameLiftSessionRequestBus = AZ::EBus<AzFramework::ISessionRequests, AWSGameLiftSessionRequests>;
 
     //! AWSGameLiftClientManager
     //! GameLift client manager to support game and player session related client requests

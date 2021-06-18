@@ -24,6 +24,8 @@ namespace AWSGameLift
             auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
             if (clientRequestHandler)
             {
+                AZ_TracePrintf(AWSGameLiftLeaveSessionActivityName, "Requesting to leave the current session...");
+
                 clientRequestHandler->RequestPlayerLeaveSession();
             }
             else

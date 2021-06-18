@@ -12,6 +12,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Session/SessionConfig.h>
 
 #include <Request/AWSGameLiftSearchSessionsRequest.h>
 #include <AWSGameLiftSessionConstants.h>

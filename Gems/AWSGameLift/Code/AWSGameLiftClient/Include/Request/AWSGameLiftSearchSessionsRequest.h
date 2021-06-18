@@ -13,9 +13,6 @@
 #pragma once
 
 #include <AzFramework/Session/ISessionRequests.h>
-#include <aws/gamelift/model/SearchGameSessionsResult.h>
-
-#include <AzFramework/Session/SessionConfig.h>
 
 namespace AWSGameLift
 {

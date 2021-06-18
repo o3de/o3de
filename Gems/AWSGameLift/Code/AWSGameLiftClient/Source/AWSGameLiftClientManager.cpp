@@ -196,8 +196,6 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting CreateGameSession against Amazon GameLift service ...");
-
             result = CreateSessionActivity::CreateSession(*gameLiftClient, createSessionRequest);
         }
         return result;
@@ -214,8 +212,6 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting StartGameSessionPlacement against Amazon GameLift service ...");
-
             result = CreateSessionOnQueueActivity::CreateSessionOnQueue(*gameliftClient, createSessionOnQueueRequest);
         }
         return result;
@@ -271,12 +267,7 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_TracePrintf(AWSGameLiftClientManagerName,
-                "Requesting CreatePlayerSession for player %s against Amazon GameLift service ...", joinSessionRequest.m_playerId.c_str());
-
             auto createPlayerSessionOutcome = JoinSessionActivity::CreatePlayerSession(*gameliftClient, joinSessionRequest);
-
-            AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting player to connect to game session ...");
 
             result = JoinSessionActivity::RequestPlayerJoinSession(createPlayerSessionOutcome);
         }
@@ -285,8 +276,6 @@ namespace AWSGameLift
 
     void AWSGameLiftClientManager::LeaveSession()
     {
-        AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting to leave the current session...");
-
         AWSGameLift::LeaveSessionActivity::LeaveSession();
     }
 
@@ -357,8 +346,6 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_TracePrintf(AWSGameLiftClientManagerName, "Requesting SearchGameSessions against Amazon GameLift service ...");
-
             response = SearchSessionsActivity::SearchSessions(*gameliftClient, searchSessionsRequest);
         }
         return response;

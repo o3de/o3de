@@ -10,6 +10,8 @@
  *
  */
 
+#include <AzFramework/Session/SessionConfig.h>
+
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 #include <AWSGameLiftClientFixture.h>
 #include <AWSGameLiftSessionConstants.h>

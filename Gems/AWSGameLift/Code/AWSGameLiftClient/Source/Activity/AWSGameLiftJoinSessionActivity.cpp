@@ -47,6 +47,10 @@ namespace AWSGameLift
             const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftJoinSessionRequest& joinSessionRequest)
         {
+            AZ_TracePrintf(AWSGameLiftJoinSessionActivityName,
+                "Requesting CreatePlayerSession for player %s against Amazon GameLift service ...",
+                joinSessionRequest.m_playerId.c_str());
+
             Aws::GameLift::Model::CreatePlayerSessionRequest request =
                 BuildAWSGameLiftCreatePlayerSessionRequest(joinSessionRequest);
             auto createPlayerSessionOutcome = gameliftClient.CreatePlayerSession(request);
@@ -68,6 +72,8 @@ namespace AWSGameLift
                 auto clientRequestHandler = AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Get();
                 if (clientRequestHandler)
                 {
+                    AZ_TracePrintf(AWSGameLiftJoinSessionActivityName, "Requesting player to connect to game session ...");
+
                     AzFramework::SessionConnectionConfig sessionConnectionConfig =
                         BuildSessionConnectionConfig(createPlayerSessionOutcome);
                     result = clientRequestHandler->RequestPlayerJoinSession(sessionConnectionConfig);

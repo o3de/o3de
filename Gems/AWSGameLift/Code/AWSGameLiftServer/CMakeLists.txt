@@ -30,7 +30,7 @@ ly_add_target(
     )
 
 ly_add_target(
-    NAME AWSGameLift.Server ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME AWSGameLift.Servers ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         awsgamelift_server_shared_files.cmake
@@ -43,9 +43,6 @@ ly_add_target(
             Gem::AWSGameLift.Server.Static
             3rdParty::AWSGameLiftServerSDK
 )
-
-# Load the "Gem::AWSGameLift" module in all types of applications.
-ly_create_alias(NAME AWSGameLift.Servers NAMESPACE Gem TARGETS Gem::AWSGameLift.Server)
 
 ################################################################################
 # Tests
