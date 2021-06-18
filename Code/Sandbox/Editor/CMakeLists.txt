@@ -104,7 +104,6 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
-            3rdParty::Qt::WebEngineWidgets
             3rdParty::tiff
             3rdParty::squish-ccr
             3rdParty::zlib

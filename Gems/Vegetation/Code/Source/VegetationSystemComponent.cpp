@@ -25,6 +25,7 @@
 #include <Vegetation/InstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
+#include <Vegetation/PrefabInstanceSpawner.h>
 
 #include <CrySystemBus.h>
 
@@ -73,6 +74,7 @@ namespace Vegetation
         InstanceSpawner::Reflect(context);
         EmptyInstanceSpawner::Reflect(context);
         DynamicSliceInstanceSpawner::Reflect(context);
+        PrefabInstanceSpawner::Reflect(context);
         Descriptor::Reflect(context);
         AreaConfig::Reflect(context);
         AreaComponentBase::Reflect(context);

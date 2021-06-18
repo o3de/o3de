@@ -9,7 +9,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_COMPILE_OPTIONS
-    PRIVATE
-        /EHsc
+set(LY_RUNTIME_DEPENDENCIES
+    Gem::Atom_RHI_Metal.Private
+    Gem::Atom_RHI_Vulkan.Private
+    Gem::Atom_RHI_DX12.Private
+    Gem::Atom_RHI_Metal.Builders
+    Gem::Atom_RHI_Vulkan.Builders
+    Gem::Atom_RHI_DX12.Builders
 )
