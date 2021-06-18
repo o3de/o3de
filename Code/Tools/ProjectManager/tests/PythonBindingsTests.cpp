@@ -1,0 +1,74 @@
+/*
+* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+* its licensors.
+*
+* For complete copyright and license terms please see the LICENSE at the root of this
+* distribution (the "License"). All use of this software is governed by the License,
+* or, if provided, by the license below or the license accompanying this file. Do not
+* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*
+*/
+
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/Utils.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <PythonBindings.h>
+#include <ProjectManager_Test_Traits_Platform.h>
+
+#include <QDir>
+
+namespace O3DE::ProjectManager
+{
+    class PythonBindingsTests 
+        : public ::UnitTest::ScopedAllocatorSetupFixture
+    {
+    public:
+
+        PythonBindingsTests()
+        {
+            const AZ::IO::FixedMaxPath enginePath = AZ::Test::GetEngineRootPath();
+            m_pythonBindings = AZStd::make_unique<PythonBindings>(enginePath);
+        }
+
+        ~PythonBindingsTests()
+        {
+            m_pythonBindings.reset();
+        }
+
+        AZStd::unique_ptr<ProjectManager::PythonBindings> m_pythonBindings;
+    };
+
+    TEST_F(PythonBindingsTests, PythonBindings_Start_Python_Succeeds)
+    {
+        EXPECT_TRUE(m_pythonBindings->PythonStarted());
+    }
+
+    TEST_F(PythonBindingsTests, PythonBindings_Create_Project_Succeeds)
+    {
+        AZ_TEST_ASSERT(m_pythonBindings->PythonStarted());
+
+        auto templateResults = m_pythonBindings->GetProjectTemplates();
+        AZ_TEST_ASSERT(templateResults.IsSuccess());
+
+        QVector<ProjectTemplateInfo> templates = templateResults.GetValue();
+        AZ_TEST_ASSERT(!templates.isEmpty());
+
+        // use the first registered template
+        QString templatePath = templates.at(0).m_path;
+
+        AZ::Test::ScopedAutoTempDirectory tempDir;
+
+        ProjectInfo projectInfo;
+        projectInfo.m_path = QDir::toNativeSeparators(QString(tempDir.GetDirectory()) + "/" + "TestProject");
+        projectInfo.m_projectName = "TestProjectName";
+
+        auto result = m_pythonBindings->CreateProject(templatePath, projectInfo);
+        EXPECT_TRUE(result.IsSuccess());
+
+        ProjectInfo resultProjectInfo = result.GetValue();
+        EXPECT_EQ(projectInfo.m_path, resultProjectInfo.m_path);
+        EXPECT_EQ(projectInfo.m_projectName, resultProjectInfo.m_projectName);
+    }
+}
