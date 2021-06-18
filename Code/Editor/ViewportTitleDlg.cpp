@@ -451,19 +451,19 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
     {
         for (size_t i = 0; i < customPresets.size(); ++i)
         {
-            if (customPresets[i].isEmpty())
+            if (customPresets[static_cast<int>(i)].isEmpty())
             {
                 break;
             }
 
             float fov = gSettings.viewports.fDefaultFov;
             bool ok;
-            float f = customPresets[i].toDouble(&ok);
+            float f = customPresets[static_cast<int>(i)].toDouble(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
-                QAction* action = menu->addAction(customPresets[i]);
+                QAction* action = menu->addAction(customPresets[static_cast<int>(i)]);
                 connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
@@ -537,13 +537,13 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     for (size_t i = 0; i < customPresets.size(); ++i)
     {
-        if (customPresets[i].isEmpty())
+        if (customPresets[static_cast<int>(i)].isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+):(\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPresets[static_cast<int>(i)]);
         if (matches.hasMatch())
         {
             bool ok;
@@ -551,7 +551,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
             Q_ASSERT(ok);
             unsigned int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPresets[static_cast<int>(i)]);
             connect(action, &QAction::triggered, action, [width, height, callback]() {callback(width, height); });
         }
     }
@@ -668,13 +668,13 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
 
     for (size_t i = 0; i < customPresets.size(); ++i)
     {
-        if (customPresets[i].isEmpty())
+        if (customPresets[static_cast<int>(i)].isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+) x (\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPresets[static_cast<int>(i)]);
         if (matches.hasMatch())
         {
             bool ok;
@@ -682,7 +682,7 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
             Q_ASSERT(ok);
             int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPresets[static_cast<int>(i)]);
             connect(action, &QAction::triggered, action, [width, height, callback](){ callback(width, height); });
         }
     }
