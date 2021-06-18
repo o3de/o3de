@@ -250,9 +250,11 @@ namespace AzFramework
     AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityTemplate,
         EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext)
     {
-        AZ::Entity* clonedEntity = AZ::IdUtils::Remapper<AZ::EntityId, false>::CloneObjectAndGenerateNewIdsAndFixRefs(
+        // If the same ID gets remapped more than once, preserve the original remapping instead of overwriting it.
+        constexpr bool allowDuplicateIds = false;
+
+        return AZ::IdUtils::Remapper<AZ::EntityId, allowDuplicateIds>::CloneObjectAndGenerateNewIdsAndFixRefs(
                 &entityTemplate, templateToCloneMap, &serializeContext);
-        return clonedEntity;
     }
 
     void SpawnableEntitiesManager::GenerateEntityIdMappings(const Spawnable::EntityList& entities, EntityIdMap& idMap)
