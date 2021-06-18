@@ -10,5 +10,4 @@
 #
 
 set(FILES 
-    Tests/Editor/AWSCoreEditorTest.cpp
 )
