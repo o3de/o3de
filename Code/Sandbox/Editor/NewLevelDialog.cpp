@@ -45,7 +45,9 @@ public:
     QValidator::State validate([[maybe_unused]] QString& input, [[maybe_unused]] int& pos) const override
     {
         if (m_parentDialog->ValidateLevel())
+        {
             return QValidator::Acceptable;
+        }
 
         return QValidator::Intermediate;
     }
@@ -191,6 +193,12 @@ bool CNewLevelDialog::ValidateLevel()
     QString selectedFolder = ui->LEVEL_FOLDERS->text();
     QString absolutePath = QDir::cleanPath(projectLevelsDir.absoluteFilePath(selectedFolder));
     QString relativePath = projectLevelsDir.relativeFilePath(absolutePath);
+
+    // Prevent saving to a different drive.
+    if (projectLevelsDir.absolutePath()[0] != absolutePath[0])
+    {
+        return false;
+    }
 
     if (relativePath.startsWith(".."))
     {
