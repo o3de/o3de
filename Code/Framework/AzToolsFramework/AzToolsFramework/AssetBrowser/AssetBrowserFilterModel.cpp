@@ -154,7 +154,7 @@ namespace AzToolsFramework
                     {
                         // The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
                         // To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.
-                        const auto stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
+                        const auto& stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
                         bool isStringFilter = false;
                         if (stringCompositeFilter)
                         {
