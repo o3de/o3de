@@ -23,3 +23,5 @@ int main(int argc, char* argv[])
     [pool release];
     return 0;
 }
+
+void CVar_OnViewportPosition([[maybe_unused]] const AZ::Vector2& value) {}

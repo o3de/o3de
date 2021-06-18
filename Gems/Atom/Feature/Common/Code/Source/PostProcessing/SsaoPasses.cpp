@@ -41,9 +41,9 @@ namespace AZ
             return ParentPass::IsEnabled();
         }
 
-        void SsaoParentPass::OnBuildAttachmentsFinishedInternal()
+        void SsaoParentPass::InitializeInternal()
         {
-            ParentPass::OnBuildAttachmentsFinishedInternal();
+            ParentPass::InitializeInternal();
 
             m_blurParentPass = FindChildPass(Name("SsaoBlur"))->AsParent();
             AZ_Assert(m_blurParentPass, "[SsaoParentPass] Could not retrieve parent blur pass.");

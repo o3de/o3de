@@ -309,6 +309,56 @@ namespace AzFramework
         }
 
         //---------------------------------------------------------------------
+        GenerateRelativeSourcePathRequest::GenerateRelativeSourcePathRequest(const AZ::OSString& sourcePath)
+        {
+            AZ_Assert(!sourcePath.empty(), "GenerateRelativeSourcePathRequest: asset path is empty");
+            m_sourcePath = sourcePath;
+        }
+
+        unsigned int GenerateRelativeSourcePathRequest::GetMessageType() const
+        {
+            return MessageType;
+        }
+
+        void GenerateRelativeSourcePathRequest::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<GenerateRelativeSourcePathRequest, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("SourcePath", &GenerateRelativeSourcePathRequest::m_sourcePath);
+            }
+        }
+
+        //---------------------------------------------------------------------
+        GenerateRelativeSourcePathResponse::GenerateRelativeSourcePathResponse(
+            bool resolved, const AZ::OSString& relativeSourcePath, const AZ::OSString& rootFolder)
+        {
+            m_relativeSourcePath = relativeSourcePath;
+            m_resolved = resolved;
+            m_rootFolder = rootFolder;
+        }
+
+        unsigned int GenerateRelativeSourcePathResponse::GetMessageType() const
+        {
+            return GenerateRelativeSourcePathRequest::MessageType;
+        }
+
+        void GenerateRelativeSourcePathResponse::Reflect(AZ::ReflectContext* context)
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<GenerateRelativeSourcePathResponse, BaseAssetProcessorMessage>()
+                    ->Version(1)
+                    ->Field("RelativeSourcePath", &GenerateRelativeSourcePathResponse::m_relativeSourcePath)
+                    ->Field("RootFolder", &GenerateRelativeSourcePathResponse::m_rootFolder)
+                    ->Field("Resolved", &GenerateRelativeSourcePathResponse::m_resolved);
+            }
+        }
+
+        //---------------------------------------------------------------------
         GetFullSourcePathFromRelativeProductPathRequest::GetFullSourcePathFromRelativeProductPathRequest(const AZ::OSString& relativeProductPath)
         {
             AZ_Assert(!relativeProductPath.empty(), "GetFullSourcePathFromRelativeProductPathRequest called with empty path");

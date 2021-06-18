@@ -229,6 +229,9 @@ public:
     void OnFileResaveSlices();
     void OnFileEditEditorini();
     void OnPreferences();
+    void OnOpenProjectManagerSettings();
+    void OnOpenProjectManagerNew();
+    void OnOpenProjectManager();
     void OnRedo();
     void OnUpdateRedo(QAction* action);
     void OnUpdateUndo(QAction* action);
@@ -332,6 +335,8 @@ private:
     // If this flag is set, the next OnIdle() will update, even if the app is in the background, and then
     // this flag will be reset.
     bool m_bForceProcessIdle = false;
+    // This is set while IdleProcessing is running to prevent re-entrancy
+    bool m_idleProcessingRunning = false;
     // Keep the editor alive, even if no focus is set
     bool m_bKeepEditorActive = false;
     // Currently creating a new level
@@ -358,13 +363,15 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
 
 private:
+    static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
+
     struct PythonOutputHandler;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     friend struct PythonTestOutputHandler;
 
-    void OnWireframe();
+    void OpenProjectManager(const AZStd::string& screen);
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
@@ -400,9 +407,6 @@ private:
     void OnToolsScriptHelp();
     void OnViewCycle2dviewport();
     void OnDisplayGotoPosition();
-    void OnChangemovespeedIncrease();
-    void OnChangemovespeedDecrease();
-    void OnChangemovespeedChangestep();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
     void OnValidatelevel();

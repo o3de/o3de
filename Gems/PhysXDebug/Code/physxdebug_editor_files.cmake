@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/PhysXDebug_precompiled.cpp
     Source/PhysXDebug_precompiled.h
     Source/EditorSystemComponent.cpp
     Source/EditorSystemComponent.h

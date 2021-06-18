@@ -9,24 +9,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-set(LY_WIX_PATH "" CACHE PATH "Path to the WiX install path")
-
-if(LY_WIX_PATH)
-    file(TO_CMAKE_PATH ${LY_QTIFW_PATH} CPACK_WIX_ROOT)
-elseif(DEFINED ENV{WIX})
-    file(TO_CMAKE_PATH $ENV{WIX} CPACK_WIX_ROOT)
-endif()
+set(CPACK_WIX_ROOT "" CACHE PATH "Path to the WiX install path")
 
 if(CPACK_WIX_ROOT)
     if(NOT EXISTS ${CPACK_WIX_ROOT})
-        message(FATAL_ERROR "Invalid path supplied for LY_WIX_PATH argument or WIX environment variable")
+        message(FATAL_ERROR "Invalid path supplied for CPACK_WIX_ROOT argument")
     endif()
 else()
     # early out as no path to WiX has been supplied effectively disabling support
     return()
 endif()
 
-set(CPACK_GENERATOR "WIX")
+set(CPACK_GENERATOR WIX)
+
+set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
+set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
+set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
 
 # CPack will generate the WiX product/upgrade GUIDs further down the chain if they weren't supplied
 # however, they are unique for each run.  instead, let's do the auto generation here and add it to
@@ -83,12 +81,39 @@ set(CPACK_WIX_PRODUCT_ICON ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/produc
 set(CPACK_WIX_TEMPLATE "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Template.wxs.in")
 
 set(CPACK_WIX_EXTRA_SOURCES
+    "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/PostInstallSetup.wxs"
     "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/Shortcuts.wxs"
+)
+
+set(CPACK_WIX_EXTENSIONS
+    WixUtilExtension
 )
 
 set(_embed_artifacts "yes")
 
 if(LY_INSTALLER_DOWNLOAD_URL)
+
+    if(LY_INSTALLER_LICENSE_URL)
+        set(WIX_THEME_INSTALL_LICENSE_ELEMENT
+            "<Hypertext Name=\"EulaHyperlink\" X=\"11\" Y=\"121\" Width=\"-11\" Height=\"51\" TabStop=\"yes\" FontId=\"3\" HideWhenDisabled=\"yes\">#(loc.InstallLicenseLinkText)</Hypertext>"
+        )
+    else()
+        set(WIX_THEME_INSTALL_LICENSE_ELEMENT
+            "<Richedit Name=\"EulaRichedit\" X=\"11\" Y=\"80\" Width=\"-11\" Height=\"-70\" TabStop=\"yes\" FontId=\"0\" HexStyle=\"0x800000\" />"
+        )
+    endif()
+
+    configure_file(
+        "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.xml.in"
+        "${CPACK_BINARY_DIR}/BootstrapperTheme.xml"
+        @ONLY
+    )
+    configure_file(
+        "${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/BootstrapperTheme.wxl.in"
+        "${CPACK_BINARY_DIR}/BootstrapperTheme.wxl"
+        @ONLY
+    )
+
     set(_embed_artifacts "no")
 
     # the bootstrapper will at the very least need a different upgrade guid
@@ -101,4 +126,5 @@ endif()
 
 set(CPACK_WIX_CANDLE_EXTRA_FLAGS
     -dCPACK_EMBED_ARTIFACTS=${_embed_artifacts}
+    -dCPACK_CMAKE_PACKAGE_NAME=${_cmake_package_name}
 )

@@ -88,6 +88,35 @@ namespace AZ::Internal
                     m_enginePaths.emplace_back(EngineInfo{AZ::IO::FixedMaxPath{value}.LexicallyNormal(), {}});
                 }
 
+                AZ::SettingsRegistryInterface::VisitResponse Traverse(
+                    [[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
+                    AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type) override
+                {
+                    auto response = AZ::SettingsRegistryInterface::VisitResponse::Continue;
+                    if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
+                    {
+                        if (type == AZ::SettingsRegistryInterface::Type::Array)
+                        {
+                            if (valueName.compare("engines") != 0)
+                            {
+                                response = AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                            }
+                        }
+                    }
+                    else if (action == AZ::SettingsRegistryInterface::VisitAction::Value)
+                    {
+                        if (type == AZ::SettingsRegistryInterface::Type::String)
+                        {
+                            if (valueName.compare("path") != 0)
+                            {
+                                response = AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                            }
+                        }
+                    }
+
+                    return response;
+                }
+
                 AZStd::vector<EngineInfo> m_enginePaths{};
             };
 
@@ -612,6 +641,8 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         else
         {
+            // Set the default ProjectUserPath to the <engine-root>/user directory
+            registry.Set(FilePathKey_ProjectUserPath, (engineRoot / "user").LexicallyNormal().Native());
             AZ_TracePrintf("SettingsRegistryMergeUtils",
                 R"(Project path isn't set in the Settings Registry at "%.*s". Project-related filepaths will not be set)" "\n",
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());

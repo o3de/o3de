@@ -287,9 +287,9 @@ namespace AudioControls
                     QDataStream stream(&encoded, QIODevice::ReadOnly);
                     while (!stream.atEnd())
                     {
-                        int row, col;
+                        int streamRow, streamCol;
                         QMap<int, QVariant> roleDataMap;
-                        stream >> row >> col >> roleDataMap;
+                        stream >> streamRow >> streamCol >> roleDataMap;
                         if (!roleDataMap.isEmpty())
                         {
                             // If dropping a folder, make sure that folder name doesn't already exist where it is being dropped
@@ -341,9 +341,9 @@ namespace AudioControls
             {
                 QByteArray data = mimeData->data(format);
                 QDataStream stream(&data, QIODevice::ReadOnly);
-                int row, col;
+                int streamRow, streamCol;
                 QMap<int, QVariant> roleDataMap;
-                stream >> row >> col >> roleDataMap;
+                stream >> streamRow >> streamCol >> roleDataMap;
                 if (!roleDataMap.isEmpty() && roleDataMap[eDR_TYPE] != eIT_FOLDER)
                 {
                     return false;

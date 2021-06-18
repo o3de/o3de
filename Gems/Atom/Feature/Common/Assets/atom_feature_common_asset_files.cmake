@@ -23,6 +23,7 @@ set(FILES
     Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
+    Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
     Materials/Types/Skin.shader
@@ -61,7 +62,6 @@ set(FILES
     Materials/Types/StandardPBR_ShaderEnable.lua
     Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
     Materials/Types/StandardPBR_Shadowmap_WithPS.shader
-    Materials/Types/StandardPBR_SubsurfaceState.lua
     Materials/Types/MaterialInputs/AlphaInput.azsli
     Materials/Types/MaterialInputs/BaseColorInput.azsli
     Materials/Types/MaterialInputs/ClearCoatInput.azsli
@@ -89,6 +89,7 @@ set(FILES
     Passes/CascadedShadowmaps.pass
     Passes/CheckerboardResolveColor.pass
     Passes/CheckerboardResolveDepth.pass
+    Passes/ContrastAdaptiveSharpening.pass
     Passes/ConvertToAcescg.pass
     Passes/DebugOverlayParent.pass
     Passes/DeferredFog.pass
@@ -207,6 +208,7 @@ set(FILES
     Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
+    Passes/Taa.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass
@@ -246,7 +248,6 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/TransparentPassSrg.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli

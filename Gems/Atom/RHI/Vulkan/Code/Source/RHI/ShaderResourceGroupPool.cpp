@@ -135,6 +135,12 @@ namespace AZ
             {
                 const RHI::ShaderInputBufferUnboundedArrayIndex index(groupIndex);
                 auto bufViews = groupData.GetBufferViewUnboundedArray(index);
+                if (bufViews.empty())
+                {
+                    // skip empty unbounded arrays
+                    continue;
+                }
+
                 uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::BufferViewUnboundedArray);
                 descriptorSet.UpdateBufferViews(layoutIndex, bufViews);
             }
@@ -144,6 +150,12 @@ namespace AZ
             {
                 const RHI::ShaderInputImageUnboundedArrayIndex index(groupIndex);
                 auto imgViews = groupData.GetImageViewUnboundedArray(index);
+                if (imgViews.empty())
+                {
+                    // skip empty unbounded arrays
+                    continue;
+                }
+
                 uint32_t layoutIndex = m_descriptorSetLayout->GetLayoutIndexFromGroupIndex(groupIndex, DescriptorSetLayout::ResourceType::ImageViewUnboundedArray);
                 descriptorSet.UpdateImageViews(layoutIndex, imgViews, shaderImageUnboundeArrayList[groupIndex].m_type);
             }

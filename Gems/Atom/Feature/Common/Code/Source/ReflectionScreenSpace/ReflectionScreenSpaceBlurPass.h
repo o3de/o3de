@@ -37,19 +37,23 @@ namespace AZ
             //! to store the previous frame image
             Data::Instance<RPI::AttachmentImage>& GetFrameBufferImageAttachment() { return m_frameBufferImageAttachment; }
 
+            //! Returns the number of mip levels in the blur
+            uint32_t GetNumBlurMips() const { return m_numBlurMips; }
+
         private:
             explicit ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor);
 
-            void CreateChildPasses(uint32_t numBlurMips);
+            void CreateChildPassesInternal() override;
 
             // Pass Overrides...
             void ResetInternal() override;
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
 
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_verticalBlurChildPasses;
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_horizontalBlurChildPasses;
 
             Data::Instance<RPI::AttachmentImage> m_frameBufferImageAttachment;
+            uint32_t m_numBlurMips = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

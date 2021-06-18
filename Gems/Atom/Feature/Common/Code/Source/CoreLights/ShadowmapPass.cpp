@@ -107,7 +107,7 @@ namespace AZ
             m_scissorState = scissor;
         }
 
-        void ShadowmapPass::BuildAttachmentsInternal()
+        void ShadowmapPass::BuildInternal()
         {
             RPI::Ptr<RPI::ParentPass> parentPass = GetParent();
             if (!parentPass)
@@ -135,7 +135,7 @@ namespace AZ
             action.m_loadAction = m_clearEnabled ? RHI::AttachmentLoadAction::Clear : RHI::AttachmentLoadAction::DontCare;
             binding.m_unifiedScopeDesc = RHI::UnifiedScopeAttachmentDescriptor(attachmentId, imageViewDescriptor, action);
 
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
       } // namespace Render

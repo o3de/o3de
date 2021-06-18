@@ -15,6 +15,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/Color.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -24,6 +25,15 @@
 
 namespace AtomToolsFramework
 {
+    AZ_CVAR(
+        AZ::Color,
+        ed_cameraSystemOrbitPointColor,
+        AZ::Color::CreateFromRgba(255, 255, 255, 255),
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "");
+    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
     {
@@ -57,6 +67,11 @@ namespace AtomToolsFramework
         m_cameraListBuilder = builder;
     }
 
+    void ModularViewportCameraController::SetCameraPropsBuilderCallback(const CameraPropsBuilder& builder)
+    {
+        m_cameraPropsBuilder = builder;
+    }
+
     void ModularViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
     {
         if (m_cameraListBuilder)
@@ -65,15 +80,25 @@ namespace AtomToolsFramework
         }
     }
 
+    void ModularViewportCameraController::SetupCameraProperies(AzFramework::CameraProps& cameraProps)
+    {
+        if (m_cameraPropsBuilder)
+        {
+            m_cameraPropsBuilder(cameraProps);
+        }
+    }
+
     ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(
         const AzFramework::ViewportId viewportId, ModularViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModularViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
+        controller->SetupCameraProperies(m_cameraProps);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&) {
+            auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&)
+            {
                 if (!m_updatingTransform)
                 {
                     UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
@@ -131,15 +156,30 @@ namespace AtomToolsFramework
             if (m_cameraMode == CameraMode::Control)
             {
                 m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
-                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, event.m_deltaTime.count());
+                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_cameraProps, event.m_deltaTime.count());
+
+                // if there has been an interpolation, only clear the look at point if it is no longer
+                // centered in the view (the camera has looked away from it)
+                if (m_lookAtAfterInterpolation.has_value())
+                {
+                    if (const float lookDirection =
+                            (*m_lookAtAfterInterpolation - m_camera.Translation()).GetNormalized().Dot(m_camera.Transform().GetBasisY());
+                        !AZ::IsCloseMag(lookDirection, 1.0f, 0.001f))
+                    {
+                        m_lookAtAfterInterpolation = {};
+                    }
+                }
 
                 viewportContext->SetCameraTransform(m_camera.Transform());
             }
             else if (m_cameraMode == CameraMode::Animation)
             {
-                const auto smootherStepFn = [](const float t) { return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f); };
-                const float transitionT = smootherStepFn(m_animationT);
+                const auto smootherStepFn = [](const float t)
+                {
+                    return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
+                };
 
+                const float transitionT = smootherStepFn(m_animationT);
                 const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
                     m_transformStart.GetRotation().Slerp(m_transformEnd.GetRotation(), transitionT),
                     m_transformStart.GetTranslation().Lerp(m_transformEnd.GetTranslation(), transitionT));
@@ -169,16 +209,23 @@ namespace AtomToolsFramework
     {
         if (const float alpha = AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f); alpha > AZ::Constants::FloatEpsilon)
         {
-            debugDisplay.SetColor(1.0f, 1.0f, 1.0f, alpha);
-            debugDisplay.DrawWireSphere(m_camera.m_lookAt, 0.5f);
+            const AZ::Color orbitPointColor = ed_cameraSystemOrbitPointColor;
+            debugDisplay.SetColor(orbitPointColor.GetR(), orbitPointColor.GetG(), orbitPointColor.GetB(), alpha);
+            debugDisplay.DrawWireSphere(m_camera.m_lookAt, ed_cameraSystemOrbitPointSize);
         }
     }
 
-    void ModernViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
+    void ModernViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float lookAtDistance)
     {
         m_animationT = 0.0f;
         m_cameraMode = CameraMode::Animation;
         m_transformStart = m_camera.Transform();
         m_transformEnd = worldFromLocal;
+        m_lookAtAfterInterpolation = m_transformEnd.GetTranslation() + m_transformEnd.GetBasisY() * lookAtDistance;
+    }
+
+    AZStd::optional<AZ::Vector3> ModernViewportCameraControllerInstance::LookAtAfterInterpolation() const
+    {
+        return m_lookAtAfterInterpolation;
     }
 } // namespace AtomToolsFramework

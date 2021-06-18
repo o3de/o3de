@@ -45,7 +45,7 @@ namespace AZ
             Fence* fenceToSignal)
         {
             AZStd::vector<VkCommandBuffer> vkCommandBuffers;
-            AZStd::vector<VkSemaphore> vkWaitSemaphores;
+            AZStd::vector<VkSemaphore> vkWaitSemaphoreVector; // vulkan.h has a #define called vkWaitSemaphores, so we name this differently
             AZStd::vector<VkPipelineStageFlags> vkWaitPipelineStages;
             AZStd::vector<VkSemaphore> vkSignalSemaphores;
             VkSubmitInfo submitInfo;
@@ -65,11 +65,11 @@ namespace AZ
                     return item->GetNativeSemaphore(); 
                 });
                 vkWaitPipelineStages.reserve(waitSemaphoresInfo.size());
-                vkWaitSemaphores.reserve(waitSemaphoresInfo.size());
+                vkWaitSemaphoreVector.reserve(waitSemaphoresInfo.size());
                 AZStd::for_each(waitSemaphoresInfo.begin(), waitSemaphoresInfo.end(), [&](auto& item) 
                 { 
                     vkWaitPipelineStages.push_back(item.first);
-                    vkWaitSemaphores.push_back(item.second->GetNativeSemaphore());
+                    vkWaitSemaphoreVector.push_back(item.second->GetNativeSemaphore());
                     // Wait until the wait semaphores has been submitted for signaling.
                     item.second->WaitEvent();
                 });
@@ -77,8 +77,8 @@ namespace AZ
                 submitInfo = {};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.pNext = nullptr;
-                submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vkWaitSemaphores.size());
-                submitInfo.pWaitSemaphores = vkWaitSemaphores.empty() ? nullptr : vkWaitSemaphores.data();
+                submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vkWaitSemaphoreVector.size());
+                submitInfo.pWaitSemaphores = vkWaitSemaphoreVector.empty() ? nullptr : vkWaitSemaphoreVector.data();
                 submitInfo.pWaitDstStageMask = vkWaitPipelineStages.empty() ? nullptr : vkWaitPipelineStages.data();
                 submitInfo.commandBufferCount = static_cast<uint32_t>(vkCommandBuffers.size());
                 submitInfo.pCommandBuffers = vkCommandBuffers.empty() ? nullptr : vkCommandBuffers.data();

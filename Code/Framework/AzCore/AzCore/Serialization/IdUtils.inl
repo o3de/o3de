@@ -30,8 +30,10 @@ namespace AZ
             bool m_isModifiedContainer;
         };
 
-        template<typename IdType>
-        unsigned int Remapper<IdType>::RemapIds(void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType>::IdMapper& mapper, AZ::SerializeContext* context, bool replaceId)
+        template<typename IdType, bool AllowDuplicates>
+        unsigned int Remapper<IdType, AllowDuplicates>::RemapIds(
+            void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType, AllowDuplicates>::IdMapper& mapper,
+            AZ::SerializeContext* context, bool replaceId)
         {
             if (!context)
             {
@@ -152,16 +154,18 @@ namespace AZ
             return replaced;
         }
 
-        template<typename IdType>
-        unsigned int Remapper<IdType>::ReplaceIdsAndIdRefs(void* classPtr, const AZ::Uuid& classUuid, const IdMapper& mapper, AZ::SerializeContext* context /*= nullptr*/)
+        template<typename IdType, bool AllowDuplicates>
+        unsigned int Remapper<IdType, AllowDuplicates>::ReplaceIdsAndIdRefs(void* classPtr, const AZ::Uuid& classUuid, const IdMapper& mapper, AZ::SerializeContext* context /*= nullptr*/)
         {
             unsigned int replaced = RemapIds(classPtr, classUuid, mapper, context, true);
             replaced += RemapIds(classPtr, classUuid, mapper, context, false);
             return replaced;
         }
 
-        template<typename IdType>
-        unsigned int Remapper<IdType>::RemapIdsAndIdRefs(void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType>::IdReplacer& mapper, AZ::SerializeContext* context)
+        template<typename IdType, bool AllowDuplicates>
+        unsigned int Remapper<IdType, AllowDuplicates>::RemapIdsAndIdRefs(
+            void* classPtr, const AZ::Uuid& classUuid, const typename Remapper<IdType, AllowDuplicates>::IdReplacer& mapper,
+            AZ::SerializeContext* context)
         {
             if (!context)
             {

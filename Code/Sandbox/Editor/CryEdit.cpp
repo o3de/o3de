@@ -53,11 +53,13 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Console/IConsole.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/ProjectManager/ProjectManager.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -69,6 +71,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 // AzQtComponents
@@ -279,6 +282,8 @@ BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
     [[maybe_unused]] DWORD lFlags, BOOL bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -352,6 +357,8 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
     for (int i = idStart; i <= idEnd; ++i) \
         ON_COMMAND(i, method);
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
+
 void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
@@ -372,6 +379,10 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
+    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
+        ed_previewGameInFullscreen_once = true;
+        OnViewSwitchToGame();
+    });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
@@ -395,8 +406,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_SWITCH_PHYSICS, OnSwitchPhysics)
     ON_COMMAND(ID_GAME_SYNCPLAYER, OnSyncPlayer)
     ON_COMMAND(ID_RESOURCES_REDUCEWORKINGSET, OnResourcesReduceworkingset)
-
-    ON_COMMAND(ID_WIREFRAME, OnWireframe)
 
     ON_COMMAND(ID_VIEW_CONFIGURELAYOUT, OnViewConfigureLayout)
 
@@ -437,9 +446,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
 #endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
-    ON_COMMAND(ID_CHANGEMOVESPEED_INCREASE, OnChangemovespeedIncrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_DECREASE, OnChangemovespeedDecrease)
-    ON_COMMAND(ID_CHANGEMOVESPEED_CHANGESTEP, OnChangemovespeedChangestep)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
     ON_COMMAND(ID_VALIDATELEVEL, OnValidatelevel)
@@ -476,6 +482,11 @@ void CCryEditApp::RegisterActionHandlers()
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
+
+    // Project Manager 
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
+    ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
 }
 
 CCryEditApp* CCryEditApp::s_currentInstance = nullptr;
@@ -2072,6 +2083,8 @@ void CCryEditApp::OnDocumentationAWSSupport()
 void CCryEditApp::OnDocumentationFeedback()
 {
     FeedbackDialog dialog;
+    dialog.show();
+    dialog.adjustSize();
     dialog.exec();
 }
 
@@ -2269,6 +2282,14 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     {
         return 0;
     }
+
+    // Ensure we don't get called re-entrantly
+    // This can occur when a nested Qt event loop fires (e.g. by way of a modal dialog calling exec)
+    if (m_idleProcessingRunning)
+    {
+        return 0;
+    }
+    QScopedValueRollback<bool> guard(m_idleProcessingRunning, true);
 
     ////////////////////////////////////////////////////////////////////////
     // Call the update function of the engine
@@ -2853,6 +2874,34 @@ void CCryEditApp::OnPreferences()
     */
 }
 
+void CCryEditApp::OnOpenProjectManagerSettings()
+{
+    OpenProjectManager("UpdateProject");
+}
+
+void CCryEditApp::OnOpenProjectManagerNew()
+{
+    OpenProjectManager("CreateProject");
+}
+
+void CCryEditApp::OnOpenProjectManager()
+{
+    OpenProjectManager("Projects");
+}
+
+void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
+{
+    // provide the current project path for in case we want to update the project
+    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project-path %s", screen.c_str(), projectPath.c_str());
+    bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
+    if (!launchSuccess)
+    {
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QObject::tr("Failed to launch O3DE Project Manager"), QObject::tr("Failed to find or start the O3dE Project Manager"));
+    }
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUndo()
 {
@@ -3105,6 +3154,15 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
     GetIEditor()->GetDocument()->SetPathName(fullyQualifiedLevelName);
     GetIEditor()->GetGameEngine()->SetLevelPath(levelPath);
 
+    if (usePrefabSystemForLevels)
+    {
+        auto* service = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (service)
+        {
+            service->CreateNewLevelPrefab(fullyQualifiedLevelName.toUtf8().constData(), DefaultLevelTemplateName);
+        }
+    }
+
     if (GetIEditor()->GetDocument()->Save())
     {
         if (!usePrefabSystemForLevels)
@@ -3303,6 +3361,8 @@ void CCryEditApp::OnCreateSlice()
 void CCryEditApp::OnOpenLevel()
 {
     CLevelFileDialog levelFileDialog(true);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
 
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
@@ -3406,31 +3466,6 @@ void CCryEditApp::OnResourcesReduceworkingset()
 #ifdef WIN32 // no such thing on macOS
     SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
 #endif
-}
-
-void CCryEditApp::OnWireframe()
-{
-    int             nWireframe(R_SOLID_MODE);
-    ICVar*      r_wireframe(gEnv->pConsole->GetCVar("r_wireframe"));
-
-    if (r_wireframe)
-    {
-        nWireframe = r_wireframe->GetIVal();
-    }
-
-    if (nWireframe != R_WIREFRAME_MODE)
-    {
-        nWireframe = R_WIREFRAME_MODE;
-    }
-    else
-    {
-        nWireframe = R_SOLID_MODE;
-    }
-
-    if (r_wireframe)
-    {
-        r_wireframe->Set(nWireframe);
-    }
 }
 
 void CCryEditApp::OnUpdateWireframe(QAction* action)
@@ -3644,40 +3679,8 @@ void CCryEditApp::OnViewCycle2dviewport()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnDisplayGotoPosition()
 {
-    CGotoPositionDlg dlg;
-    dlg.exec();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedIncrease()
-{
-    gSettings.cameraMoveSpeed += m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedDecrease()
-{
-    gSettings.cameraMoveSpeed -= m_moveSpeedStep;
-    if (gSettings.cameraMoveSpeed < 0.01f)
-    {
-        gSettings.cameraMoveSpeed = 0.01f;
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnChangemovespeedChangestep()
-{
-    bool ok = false;
-    int fractionalDigitCount = 5;
-    float step = aznumeric_caster(QInputDialog::getDouble(AzToolsFramework::GetActiveWindow(), QObject::tr("Change Move Increase/Decrease Step"), QStringLiteral(""), m_moveSpeedStep, std::numeric_limits<float>::lowest(), std::numeric_limits<float>::max(), fractionalDigitCount, &ok));
-    if (ok)
-    {
-        m_moveSpeedStep = step;
-    }
+    GotoPositionDialog dialog;
+    dialog.exec();
 }
 
 //////////////////////////////////////////////////////////////////////////

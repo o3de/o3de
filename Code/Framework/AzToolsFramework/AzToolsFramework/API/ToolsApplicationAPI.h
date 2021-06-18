@@ -240,6 +240,11 @@ namespace AzToolsFramework
         virtual int RemoveDirtyEntity(AZ::EntityId target) = 0;
 
         /*!
+         * Clears the dirty entity set.
+         */
+        virtual void ClearDirtyEntities() = 0;
+
+        /*!
          * \return true if an undo/redo operation is in progress.
          */
         virtual bool IsDuringUndoRedo() = 0;
@@ -910,9 +915,6 @@ namespace AzToolsFramework
             eECMF_HIDE_ENTITY_CREATION = 0x1,
             eECMF_USE_VIEWPORT_CENTER = 0x2,
         };
-
-        /// Populate global edit-time context menu.
-        virtual void PopulateEditorGlobalContextMenu(QMenu * /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/) {}
 
         /// Populate slice portion of edit-time context menu
         virtual void PopulateEditorGlobalContextMenu_SliceSection(QMenu * /*menu*/, const AZ::Vector2& /*point*/, int /*flags*/) {}

@@ -20,6 +20,8 @@
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
@@ -145,7 +147,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::Activate()
         {
-            const RHI::ShaderResourceGroupLayout* sceneSrgLayout = RPI::RPISystemInterface::Get()->GetSceneSrgAsset()->GetLayout();
+            const RHI::ShaderResourceGroupLayout* sceneSrgLayout = RPI::RPISystemInterface::Get()->GetSceneSrgLayout().get();
 
             GpuBufferHandler::Descriptor desc;
 
@@ -786,7 +788,7 @@ namespace AZ
                 }
             };
 
-            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
             const IndexedDataVector<DirectionalLightShadowData> lastShadowData = m_shadowData[nullptr];
             IndexedDataVector<EsmShadowmapsPass::FilterParameter> lastEsmParameter = m_esmParameterData[nullptr];
             while (lastEsmParameter.GetDataCount() < Shadow::MaxNumberOfCascades)
@@ -1070,7 +1072,18 @@ namespace AZ
                     segment.m_pipelineViewTag = viewTag;
                     if (!segment.m_view || segment.m_view->GetName() != viewName)
                     {
-                        segment.m_view = RPI::View::CreateView(viewName, RPI::View::UsageShadow);
+                        RPI::View::UsageFlags usageFlags = RPI::View::UsageShadow;
+
+                        // if the shadow is rendering in an EnvironmentCubeMapPass it also needs to be a ReflectiveCubeMap view,
+                        // to filter out shadows from objects that are excluded from the cubemap
+                        RPI::PassClassFilter<RPI::EnvironmentCubeMapPass> passFilter;
+                        AZStd::vector<AZ::RPI::Pass*> cubeMapPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
+                        if (!cubeMapPasses.empty())
+                        {
+                            usageFlags |= RPI::View::UsageReflectiveCubeMap;
+                        }
+
+                        segment.m_view = RPI::View::CreateView(viewName, usageFlags);
                     }
                 }
             }
@@ -1106,7 +1119,7 @@ namespace AZ
                     {
                         for (EsmShadowmapsPass* pass : it.second)
                         {
-                            pass->QueueForBuildAttachments();
+                            pass->QueueForBuildAndInitialization();
                         }
                     }
                 }

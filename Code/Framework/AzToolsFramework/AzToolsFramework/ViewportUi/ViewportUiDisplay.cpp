@@ -100,6 +100,22 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
     }
 
+    void ViewportUiDisplay::SetClusterButtonLocked(const ViewportUiElementId clusterId, const ButtonId buttonId, const bool isLocked)
+    {
+        if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiCluster->SetButtonLocked(buttonId, isLocked);
+        }
+    }
+
+    void ViewportUiDisplay::SetClusterButtonTooltip(const ViewportUiElementId clusterId, const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        if (auto viewportUiCluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
+        {
+            viewportUiCluster->SetButtonTooltip(buttonId, tooltip);
+        }
+    }
+
     void ViewportUiDisplay::RemoveClusterButton(ViewportUiElementId clusterId, ButtonId buttonId)
     {
         if (auto cluster = qobject_cast<ViewportUiCluster*>(GetViewportUiElement(clusterId).get()))
@@ -265,7 +281,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::HideViewportUiElement(ViewportUiElementId elementId)
     {
         if (ViewportUiElementInfo element = GetViewportUiElementInfo(elementId);
-            element.m_widget && UiDisplayEnabled())
+            element.m_widget)
         {
             element.m_widget->setVisible(false);
         }

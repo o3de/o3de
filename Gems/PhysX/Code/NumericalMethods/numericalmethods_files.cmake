@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/NumericalMethods_precompiled.cpp
     Source/NumericalMethods_precompiled.h
     Include/NumericalMethods/Optimization.h
     Include/NumericalMethods/Eigenanalysis.h

@@ -51,7 +51,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME GraphCanvas.Editor GEM_MODULE
-
         NAMESPACE Gem
         AUTOMOC
         AUTORCC
@@ -75,4 +74,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             3rdParty::Qt::Xml
             AZ::AzQtComponents
     )
+
+    # Load the "Gem::GraphCanvas" module in Builders and Tools
+    ly_create_alias(NAME GraphCanvas.Builders NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
+    ly_create_alias(NAME GraphCanvas.Tools    NAMESPACE Gem TARGETS Gem::GraphCanvas.Editor)
+
+
 endif ()

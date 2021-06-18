@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/ScriptedEntityTweener_precompiled.cpp
     Source/ScriptedEntityTweener_precompiled.h
     Include/ScriptedEntityTweener/ScriptedEntityTweenerBus.h
     Include/ScriptedEntityTweener/ScriptedEntityTweenerEnums.h

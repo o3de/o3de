@@ -75,14 +75,14 @@
           <widget class="QSvgWidget" name="m_logo" native="true">
            <property name="minimumSize">
             <size>
-             <width>161</width>
-             <height>49</height>
+             <width>175</width>
+             <height>66</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>161</width>
-             <height>49</height>
+             <width>175</width>
+             <height>66</height>
             </size>
            </property>
           </widget>

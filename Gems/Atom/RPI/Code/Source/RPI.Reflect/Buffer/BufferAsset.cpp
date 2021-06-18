@@ -30,7 +30,8 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<BufferAsset>()
-                    ->Version(1)
+                    ->Version(2)
+                    ->Field("Name", &BufferAsset::m_name)
                     ->Field("Buffer", &BufferAsset::m_buffer)
                     ->Field("BufferDescriptor", &BufferAsset::m_bufferDescriptor)
                     ->Field("BufferViewDescriptor", &BufferAsset::m_bufferViewDescriptor)
@@ -79,6 +80,11 @@ namespace AZ
         CommonBufferPoolType BufferAsset::GetCommonPoolType() const
         {
             return m_poolType;
+        }
+
+        const AZStd::string& BufferAsset::GetName() const
+        {
+            return m_name;
         }
     } //namespace RPI
 } // namespace AZ

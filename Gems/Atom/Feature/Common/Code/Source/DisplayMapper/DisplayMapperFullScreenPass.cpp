@@ -34,7 +34,7 @@ namespace AZ
         {
         }
 
-        void DisplayMapperFullScreenPass::BuildAttachmentsInternal()
+        void DisplayMapperFullScreenPass::BuildInternal()
         {
             RPI::PassConnection inConnection;
             inConnection.m_localSlot = InputAttachmentName;
@@ -53,9 +53,5 @@ namespace AZ
             m_inputReferenceAttachmentName = attachmentName;
         }
 
-        void DisplayMapperFullScreenPass::Init()
-        {
-            FullscreenTrianglePass::Init();
-        }
     }   // namespace Render
 }   // namespace AZ

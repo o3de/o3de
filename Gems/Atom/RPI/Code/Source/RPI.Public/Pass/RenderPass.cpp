@@ -10,6 +10,7 @@
 *
 */
 
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -128,7 +129,7 @@ namespace AZ
         }
 
 
-        void RenderPass::OnBuildAttachmentsFinishedInternal()
+        void RenderPass::InitializeInternal()
         {
             if (m_shaderResourceGroup != nullptr)
             {
@@ -165,7 +166,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error("Pass System", false, "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }
@@ -522,8 +523,11 @@ namespace AZ
                 }
             };
 
-            ExecuteOnTimestampQuery(beginQuery);
-            ExecuteOnPipelineStatisticsQuery(beginQuery);
+            if (context.GetCommandListIndex() == 0)
+            {
+                ExecuteOnTimestampQuery(beginQuery);
+                ExecuteOnPipelineStatisticsQuery(beginQuery);
+            }
         }
 
         void RenderPass::EndScopeQuery(const RHI::FrameGraphExecuteContext& context)
@@ -533,8 +537,23 @@ namespace AZ
                 query->EndQuery(context);
             };
 
-            ExecuteOnTimestampQuery(endQuery);
-            ExecuteOnPipelineStatisticsQuery(endQuery);
+            // This scopy query implmentation should be replaced by
+            // [ATOM-5407] [RHI][Core] - Add GPU timestamp and pipeline statistic support for scopes
+            
+            // For timestamp query, it's okay to execute across different command lists
+            if (context.GetCommandListIndex() == context.GetCommandListCount() - 1)
+            {
+                ExecuteOnTimestampQuery(endQuery);
+            }
+            // For all the other types of queries except timestamp, the query start and end has to be in the same command list
+            // Here only tracks the PipelineStatistics for the first command list due to that we don't know how many queries are
+            // needed when AddScopeQueryToFrameGraph is called.
+            // This implementation leads to an issue that we may not get accurate pipeline statistic data
+            // for passes which were executed with more than one command list
+            if (context.GetCommandListIndex() == 0)
+            {
+                ExecuteOnPipelineStatisticsQuery(endQuery);
+            }
         }
 
         void RenderPass::ReadbackScopeQueryResults()
