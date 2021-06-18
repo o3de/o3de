@@ -16,15 +16,14 @@
 #include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
 #include <Builder/ScriptCanvasBuilderWorker.h>
-
 #include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
@@ -37,7 +36,6 @@
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
-
 #include <Source/Components/SceneComponent.h>
 
 namespace ScriptCanvasBuilder
@@ -536,14 +534,30 @@ namespace ScriptCanvasBuilder
             }
         }
 
+        bool entityAdded = false;
+
+        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+        {
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RemoveEntity(buildEntity);
+        }
+
         if (buildEntity->GetState() == AZ::Entity::State::Constructed)
         {
             buildEntity->Init();
+            entityAdded = true;
         }
 
         if (buildEntity->GetState() == AZ::Entity::State::Init)
         {
             buildEntity->Activate();
+        }
+
+        if (!entityAdded)
+        {
+            if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+            {
+                AZ::Interface<AZ::ComponentApplicationRequests>::Get()->AddEntity(buildEntity);
+            }
         }
 
         return sourceGraph;

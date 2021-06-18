@@ -90,6 +90,7 @@ namespace ScriptCanvasEditor
                 ->Version(10, &EditorScriptCanvasComponentVersionConverter)
                 ->Field("m_name", &EditorScriptCanvasComponent::m_name)
                 ->Field("m_assetHolder", &EditorScriptCanvasComponent::m_scriptCanvasAssetHolder)
+                ->Field("runtimeDataIsValid", &EditorScriptCanvasComponent::m_runtimeDataIsValid)
                 ->Field("runtimeDataOverrides", &EditorScriptCanvasComponent::m_variableOverrides)
                 ;
 

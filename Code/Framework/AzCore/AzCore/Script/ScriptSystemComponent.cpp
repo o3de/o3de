@@ -907,7 +907,6 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
 
     if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(reflection))
     {
-        
         serializeContext->Class<ScriptSystemComponent, AZ::Component>()
             ->Version(1)
             // ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC("AssetBuilder", 0xc739c7d7) }))

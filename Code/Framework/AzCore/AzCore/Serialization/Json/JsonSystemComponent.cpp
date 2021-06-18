@@ -102,8 +102,6 @@ namespace AZ
             jsonContext->Serializer<JsonArraySerializer>()
                 ->HandlesType<AZStd::array>();
 
-            jsonContext->Serializer<JsonAnySerializer>()
-                ->HandlesType<AZStd::any>();
             jsonContext->Serializer<JsonVariantSerializer>()
                 ->HandlesType<AZStd::variant>();
             jsonContext->Serializer<JsonOptionalSerializer>()
