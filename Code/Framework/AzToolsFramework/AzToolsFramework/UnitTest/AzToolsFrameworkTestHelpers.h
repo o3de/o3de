@@ -239,6 +239,7 @@ namespace UnitTest
         bool PropertyDisplayInvalidated() const { return m_propertyDisplayInvalidated; }
 
         AZStd::vector<AZ::ComponentId> m_componentIds;
+        AzToolsFramework::EntityIdList m_entityIds;
 
     private:
         // PropertyEditorEntityChangeNotificationBus ...
