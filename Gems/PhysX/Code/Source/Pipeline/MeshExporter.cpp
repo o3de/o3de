@@ -155,7 +155,7 @@ namespace PhysX
 
                 if (materialIndexIter != materialIndexByName.end())
                 {
-                    return materialIndexIter->second;
+                    return static_cast<AZ::u16>(materialIndexIter->second);
                 }
 
                 // Add it to the list otherwise
@@ -417,7 +417,7 @@ namespace PhysX
             AZ_Assert(pxCooking, "Failed to create PxCooking");
 
             physx::PxBoundedData strideData;
-            strideData.count = vertices.size();
+            strideData.count = static_cast<physx::PxU32>(vertices.size());
             strideData.stride = sizeof(Vec3);
             strideData.data = vertices.data();
 
@@ -453,7 +453,7 @@ namespace PhysX
                 physx::PxTriangleMeshDesc meshDesc;
                 meshDesc.points = strideData;
 
-                meshDesc.triangles.count = indices.size() / 3;
+                meshDesc.triangles.count = static_cast<physx::PxU32>(indices.size() / 3);
                 meshDesc.triangles.stride = sizeof(AZ::u32) * 3;
                 meshDesc.triangles.data = indices.data();
 
@@ -638,9 +638,9 @@ namespace PhysX
             {
                 decomposer->Compute(
                     vhacdVertices.data(),
-                    vhacdVertices.size() / 3,
+                    static_cast<uint32_t>(vhacdVertices.size() / 3),
                     nodeExportData.m_indices.data(),
-                    nodeExportData.m_indices.size() / 3,
+                    static_cast<uint32_t>(nodeExportData.m_indices.size() / 3),
                     vhacdParams
                 );
             }
@@ -656,9 +656,9 @@ namespace PhysX
 
                 decomposer->Compute(
                     vhacdVertices.data(),
-                    vhacdVertices.size() / 3,
+                    static_cast<uint32_t>(vhacdVertices.size() / 3),
                     vhacdIndices.data(),
-                    vhacdIndices.size() / 3,
+                    static_cast<uint32_t>(vhacdIndices.size() / 3),
                     vhacdParams
                 );
             }
@@ -841,7 +841,7 @@ namespace PhysX
                     // by the amount of vertices already added in the last iteration
                     for (const NodeCollisionGeomExportData& exportData : totalExportData)
                     {
-                        vtx_idx startingIndex = mergedVertices.size();
+                        vtx_idx startingIndex = static_cast<vtx_idx>(mergedVertices.size());
 
                         mergedVertices.insert(mergedVertices.end(), exportData.m_vertices.begin(), exportData.m_vertices.end());
 

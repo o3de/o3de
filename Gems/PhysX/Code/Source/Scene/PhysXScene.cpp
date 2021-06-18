@@ -867,7 +867,7 @@ namespace PhysX
 
         if (newJoint != nullptr)
         {
-            AzPhysics::JointIndex index = index = m_joints.size();
+            AzPhysics::JointIndex index = static_cast<AzPhysics::JointIndex>(m_joints.size());
             m_joints.emplace_back(newJointCrc, newJoint);
 
             const AzPhysics::JointHandle newJointHandle(newJointCrc, index);
