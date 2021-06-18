@@ -38,8 +38,7 @@ namespace AzToolsFramework
             QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
             QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-        public Q_SLOTS:
+            QModelIndex parent(const QModelIndex& child) const override;
             void UpdateTableModelMaps();
 
         protected:

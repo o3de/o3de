@@ -69,6 +69,11 @@ namespace AzToolsFramework
             return sourceIndex.data(role);
         }
 
+        QModelIndex AssetBrowserTableModel::parent([[maybe_unused]] const QModelIndex& child) const
+        {
+            return QModelIndex();
+        }
+
         QModelIndex AssetBrowserTableModel::index(int row, int column, const QModelIndex& parent) const
         {
             return parent.isValid() ? QModelIndex() : createIndex(row, column, m_indexMap[row].internalPointer());
@@ -121,13 +126,13 @@ namespace AzToolsFramework
 
         void AssetBrowserTableModel::UpdateTableModelMaps()
         {
-            emit layoutAboutToBeChanged();
             if (!m_indexMap.isEmpty())
             {
                 beginRemoveRows(m_indexMap.first(), m_indexMap.first().row(), m_indexMap.last().row());
                 m_indexMap.clear();
                 endRemoveRows();
             }
+            emit layoutAboutToBeChanged();
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
         }

@@ -133,61 +133,69 @@ namespace AzToolsFramework
 
         void AssetBrowserFilterModel::FilterUpdatedSlotImmediate()
         {
-            auto compFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(m_filter);
+            const auto compFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(m_filter);
             if (compFilter)
             {
                 const auto& subFilters = compFilter->GetSubFilters();
+                const auto& compFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(),
+                    [subFilters](FilterConstType filter) -> bool
+                    {
+                        const auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
+                        return !assetTypeFilter.isNull();
+                    });
 
-                const auto compositeFilterIterator = AZStd::find_if(subFilters.cbegin(), subFilters.cend(), [subFilters](FilterConstType filter) -> bool
+                if (compFilterIter != subFilters.end())
                 {
-                    const auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
-                    return !assetTypeFilter.isNull();
-                });
-
-                if (compositeFilterIterator != subFilters.end())
-                {
-                    m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(*compositeFilterIterator);
+                    m_assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compFilterIter);
                 }
 
-                const auto compStringFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(), [](FilterConstType filter) -> bool
-                {
-                    //The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
-                    //To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.
-                    const auto stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter> >(filter);
-                    bool isStringFilter = false;
-                    if (stringCompositeFilter)
+                const auto& compositeStringFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(),
+                    [subFilters](FilterConstType filter) -> bool
                     {
-                        const auto& stringSubfilters = stringCompositeFilter->GetSubFilters();
-                        auto canBeCasted = [](FilterConstType filt) -> bool
+                        // The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
+                        // To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.
+                        const auto stringCompositeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
+                        bool isStringFilter = false;
+                        if (stringCompositeFilter)
                         {
-                            auto strFilter = qobject_cast<QSharedPointer<const StringFilter>>(filt);
-                            return !strFilter.isNull();
-                        };
-                        const auto stringSubfliterConstIter = AZStd::find_if(stringSubfilters.cbegin(), stringSubfilters.cend(), canBeCasted);
+                            //Once we have the main composite filter we can now obtain its subfilters and check if
+                            //it has a StringFilter
+                            const auto& stringSubfilters = stringCompositeFilter->GetSubFilters();
+                            auto canBeCasted = [](FilterConstType filt) -> bool
+                            {
+                                const auto& strFilter = qobject_cast<QSharedPointer<const StringFilter>>(filt);
+                                return !strFilter.isNull();
+                            };
 
-                        //A Composite StringFilter will only have just one subfilter and nothing more.
-                        if (stringSubfliterConstIter != stringSubfilters.end() && stringSubfilters.size() == 1)
-                        {
-                            isStringFilter = true;
+                            const auto stringSubfliterConstIter =
+                                AZStd::find_if(stringSubfilters.cbegin(), stringSubfilters.cend(), canBeCasted);
+
+                            // A Composite StringFilter will only have just one subfilter (the StringFilter) and nothing more.
+                            if (stringSubfliterConstIter != stringSubfilters.end() && stringSubfilters.size() == 1)
+                            {
+                                isStringFilter = true;
+                            }
                         }
-                    }
 
-                    return isStringFilter;
-                });
-                if (compStringFilterIter != subFilters.end())
+                        return isStringFilter;
+                    });
+
+                if (compositeStringFilterIter != subFilters.end())
                 {
-                    const auto compStringFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compStringFilterIter);
+                    const auto& compStringFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(*compositeStringFilterIter);
 
-                    if (!compStringFilter->GetSubFilters().isEmpty() && compStringFilter->GetSubFilters()[0])
+                    if (!compStringFilter->GetSubFilters().isEmpty())
                     {
-                        m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(compStringFilter->GetSubFilters()[0]);
+                        const auto& stringFilter = compStringFilter->GetSubFilters()[0];
+                        AZ_Assert(
+                            stringFilter,
+                            "AssetBrowserFilterModel - String Filter is not a valid Composite Filter");
+                        m_stringFilter = qobject_cast<QSharedPointer<const StringFilter>>(stringFilter);
                     }
                 }
-
             }
             invalidateFilter();
             Q_EMIT filterChanged();
-            emit stringFilterPopulated(!m_stringFilter.isNull());
         }
 
         void AssetBrowserFilterModel::filterUpdatedSlot()
