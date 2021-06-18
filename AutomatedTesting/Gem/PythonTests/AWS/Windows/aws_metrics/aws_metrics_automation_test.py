@@ -18,11 +18,12 @@ import typing
 from datetime import datetime
 import ly_test_tools.log.log_monitor
 
-from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
-from AWS.common.aws_utils import aws_utils
-from AWS.common.aws_credentials import aws_credentials
+# fixture imports
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk import cdk
+from AWS.Windows.cdk.cdk_utils import Cdk
+from AWS.common.aws_utils import AwsUtils
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
+from AWS.common.aws_credentials import aws_credentials
 from .aws_metrics_utils import aws_metrics_utils
 
 AWS_METRICS_FEATURE_NAME = 'AWSMetrics'
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 
 def setup(launcher: ly_test_tools.launchers.Launcher,
-          cdk: cdk,
+          cdk: Cdk,
           asset_processor: asset_processor,
           resource_mappings: resource_mappings,
           context_variable: str = '') -> typing.Tuple[ly_test_tools.log.log_monitor.LogMonitor, str, str]:
@@ -116,18 +117,18 @@ def remove_file(file_path: str) -> None:
 @pytest.mark.parametrize('region_name', ['us-west-2'])
 @pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
-class TestAWSMetrics_Windows(object):
-    def test_AWSMetrics_RealTimeAnalytics_MetricsSentToCloudWatch(self,
-                                                                  level: str,
-                                                                  launcher: ly_test_tools.launchers.Launcher,
-                                                                  asset_processor: pytest.fixture,
-                                                                  workspace: pytest.fixture,
-                                                                  aws_utils: aws_utils,
-                                                                  aws_credentials: aws_credentials,
-                                                                  resource_mappings: resource_mappings,
-                                                                  cdk: cdk,
-                                                                  aws_metrics_utils: aws_metrics_utils,
-                                                                  ):
+class TestAWSMetricsWindows(object):
+    def test_realtime_analytics_metrics_sent_to_cloudwatch(self,
+                                                           level: str,
+                                                           launcher: ly_test_tools.launchers.Launcher,
+                                                           asset_processor: pytest.fixture,
+                                                           workspace: pytest.fixture,
+                                                           aws_utils: pytest.fixture,
+                                                           aws_credentials: aws_credentials,
+                                                           resource_mappings: pytest.fixture,
+                                                           cdk: pytest.fixture,
+                                                           aws_metrics_utils: aws_metrics_utils,
+                                                           ):
         """
         Tests that the submitted metrics are sent to CloudWatch for real-time analytics.
         """
@@ -148,7 +149,7 @@ class TestAWSMetrics_Windows(object):
                 'AWS/Lambda',
                 'Invocations',
                 [{'Name': 'FunctionName',
-                  'Value': f'{stack_name}-AnalyticsProcessingLambda'}],
+                  'Value': f'{stack_name}-AnalyticsProcessingLambdaName'}],
                 start_time)
             logger.info('Operational health metrics sent to CloudWatch.')
 
@@ -162,14 +163,14 @@ class TestAWSMetrics_Windows(object):
         # Stop the Kinesis Data Analytics application.
         aws_metrics_utils.stop_kinesis_data_analytics_application(analytics_application_name)
 
-    def test_AWSMetrics_UnauthorizedUser_RequestRejected(self,
-                                                         level: str,
-                                                         launcher: ly_test_tools.launchers.Launcher,
-                                                         cdk: cdk,
-                                                         aws_credentials: aws_credentials,
-                                                         asset_processor: pytest.fixture,
-                                                         resource_mappings: resource_mappings,
-                                                         workspace: pytest.fixture):
+    def test_unauthorized_user_request_rejected(self,
+                                                level: str,
+                                                launcher: ly_test_tools.launchers.Launcher,
+                                                cdk: pytest.fixture,
+                                                aws_credentials: aws_credentials,
+                                                asset_processor: pytest.fixture,
+                                                resource_mappings: pytest.fixture,
+                                                workspace: pytest.fixture):
         """
         Tests that unauthorized users cannot send metrics events to the AWS backed backend.
         """
@@ -187,14 +188,14 @@ class TestAWSMetrics_Windows(object):
             assert result, 'Metrics events are sent successfully by unauthorized user'
             logger.info('Unauthorized user is rejected to send metrics.')
 
-    def test_AWSMetrics_BatchAnalytics_MetricsDeliveredToS3(self,
+    def test_batch_analytics_metrics_delivered_to_s3(self,
                                                             level: str,
                                                             launcher: ly_test_tools.launchers.Launcher,
-                                                            cdk: cdk,
+                                                            cdk: pytest.fixture,
                                                             aws_credentials: aws_credentials,
                                                             asset_processor: pytest.fixture,
-                                                            resource_mappings: resource_mappings,
-                                                            aws_utils: aws_utils,
+                                                            resource_mappings: pytest.fixture,
+                                                            aws_utils: pytest.fixture,
                                                             aws_metrics_utils: aws_metrics_utils,
                                                             workspace: pytest.fixture):
         """
@@ -234,4 +235,3 @@ class TestAWSMetrics_Windows(object):
         time.sleep(60)
         # Empty the S3 bucket. S3 buckets can only be deleted successfully when it doesn't contain any object.
         aws_metrics_utils.empty_s3_bucket(analytics_bucket_name)
-
