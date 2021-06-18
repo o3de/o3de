@@ -69,7 +69,7 @@ namespace AZ
             if (srgLayout)
             {
                 auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
-                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, DefaultSupervariantIndex, srgLayout->GetName());
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
                 if (m_shaderResourceGroup)
                 {

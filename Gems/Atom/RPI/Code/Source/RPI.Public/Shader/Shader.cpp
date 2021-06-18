@@ -21,6 +21,7 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 #include <AzCore/Interface/Interface.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
@@ -33,6 +34,19 @@ namespace AZ
             auto anySupervariantName = AZStd::any(supervariantName);
             Data::Instance<Shader> shaderInstance = Data::InstanceDatabase<Shader>::Instance().FindOrCreate(
                 Data::InstanceId::CreateFromAssetId(shaderAsset.GetId()), shaderAsset, &anySupervariantName);
+
+            if (shaderInstance)
+            {
+                // [GFX TODO][ATOM-15813] Change InstanceDatabase<Shader> to support multiple instances with different supervariants.
+                // At this time we do not support multiple supervariants loaded for a shader asset simultaneously, so if this shader
+                // is referring to the wrong supervariant we need to change it to the correct one.
+                SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(supervariantName);
+                if (supervariantIndex.IsValid() && shaderInstance->GetSupervariantIndex() != supervariantIndex)
+                {
+                    shaderInstance->ChangeSupervariant(supervariantIndex);
+                }
+            }
+
             return shaderInstance;
         }
 
@@ -68,8 +82,6 @@ namespace AZ
 
         RHI::ResultCode Shader::Init(ShaderAsset& shaderAsset)
         {
-            AZ_Assert(m_supervariantIndex != InvalidSupervariantIndex, "Invalid supervariant index");
-
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
             ShaderVariantFinderNotificationBus::Handler::BusConnect(shaderAsset.GetId());
 
@@ -395,5 +407,15 @@ namespace AZ
         {
             return m_drawListTag;
         }
+
+        void Shader::ChangeSupervariant(SupervariantIndex supervariantIndex)
+        {
+            if (supervariantIndex != m_supervariantIndex)
+            {
+                m_supervariantIndex = supervariantIndex;
+                Init(*m_asset);
+            }
+        }
+
     } // namespace RPI
 } // namespace AZ

@@ -20,6 +20,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <Atom/RPI.Reflect/Shader/IShaderVariantFinder.h>
+#include <Atom/RPI.Public/Shader/ShaderSystem.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
@@ -148,18 +149,28 @@ namespace AZ
 
         SupervariantIndex ShaderAsset::GetSupervariantIndex(const AZ::Name& supervariantName) const
         {
-            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
-            const uint32_t supervariantCount = supervariants.size();
-            for (uint32_t index = 0; index < supervariantCount; ++index)
-            {
-                if (supervariants[index].m_name == supervariantName)
-                {
-                    return SupervariantIndex{index};
-                }
-            }
-            return InvalidSupervariantIndex;
-        }
+            SupervariantIndex supervariantIndex = InvalidSupervariantIndex;
 
+            // check for an RPI ShaderSystem supervariant
+            RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
+            if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
+            {
+                // search for the combined requested name and system supervariant name
+                // Note: the shader may not support this supervariant, if it doesn't we will
+                // fallback to the requested name below
+                AZStd::string combinedName = supervariantName.GetCStr();
+                combinedName.append(shaderSystemInterface->GetSupervariantName().GetCStr());
+                supervariantIndex = GetSupervariantIndexInternal(AZ::Name(combinedName));
+            }
+
+            if (supervariantIndex == InvalidSupervariantIndex)
+            {
+                // search for the requested name
+                supervariantIndex = GetSupervariantIndexInternal(supervariantName);
+            }
+
+            return supervariantIndex;
+        }
 
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariant(
             const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
@@ -296,6 +307,24 @@ namespace AZ
             return RHI::NullSrgLayout;
         }
 
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const
+        {
+            SupervariantIndex supervariantIndex = DefaultSupervariantIndex;
+
+            // check for an RPI ShaderSystem specified supervariant
+            RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
+            if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
+            {
+                SupervariantIndex systemSupervariantIndex = GetSupervariantIndexInternal(shaderSystemInterface->GetSupervariantName());
+                if (systemSupervariantIndex.IsValid())
+                {
+                    supervariantIndex = systemSupervariantIndex;
+                }
+            }
+
+            return FindShaderResourceGroupLayout(shaderResourceGroupName, supervariantIndex);
+        }
+
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(
             uint32_t bindingSlot, SupervariantIndex supervariantIndex) const
         {
@@ -317,6 +346,24 @@ namespace AZ
             }
 
             return RHI::NullSrgLayout;
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindShaderResourceGroupLayout(uint32_t bindingSlot) const
+        {
+            SupervariantIndex supervariantIndex = DefaultSupervariantIndex;
+
+            // check for an RPI ShaderSystem specified supervariant
+            RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
+            if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
+            {
+                SupervariantIndex systemSupervariantIndex = GetSupervariantIndexInternal(shaderSystemInterface->GetSupervariantName());
+                if (systemSupervariantIndex.IsValid())
+                {
+                    supervariantIndex = systemSupervariantIndex;
+                }
+            }
+
+            return FindShaderResourceGroupLayout(bindingSlot, supervariantIndex);
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& ShaderAsset::FindFallbackShaderResourceGroupLayout(
@@ -465,6 +512,20 @@ namespace AZ
             }
 
             return &supervariants[index];
+        }
+
+        SupervariantIndex ShaderAsset::GetSupervariantIndexInternal(AZ::Name supervariantName) const
+        {
+            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            const uint32_t supervariantCount = supervariants.size();
+            for (uint32_t index = 0; index < supervariantCount; ++index)
+            {
+                if (supervariants[index].m_name == supervariantName)
+                {
+                    return SupervariantIndex{ index };
+                }
+            }
+            return InvalidSupervariantIndex;
         }
 
         bool ShaderAsset::FinalizeAfterLoad()
