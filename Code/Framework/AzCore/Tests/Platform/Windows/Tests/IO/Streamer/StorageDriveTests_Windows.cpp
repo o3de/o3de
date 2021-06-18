@@ -18,6 +18,10 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
+#if defined(HAVE_BENCHMARK)
+#include <benchmark/benchmark.h>
+#endif
+
 #include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
 
@@ -46,6 +50,7 @@ namespace AZ::IO
             options.m_hasSeekPenalty = HasSeekPenalty;
             options.m_enableUnbufferedReads = TestEnableUnbufferReads;
             options.m_enableSharing = TestEnableSharedReads;
+            options.m_minimalReporting = true;
 
             return StorageDriveWin({ "c:/" }, TestMaxFileHandles, TestMaxMetaDataEntries, TestPhysicalSectorSize,
                 TestLogicalSectorSize, TestMaxIOChannels, TestOverCommit, options);
@@ -151,6 +156,7 @@ namespace AZ::IO
             m_configurationOptions.m_hasSeekPenalty = HasSeekPenalty;
             m_configurationOptions.m_enableUnbufferedReads = TestEnableUnbufferReads;
             m_configurationOptions.m_enableSharing = TestEnableSharedReads;
+            m_configurationOptions.m_minimalReporting = true;
 
             m_storageDriveWin = AZStd::make_shared<AZ::IO::StorageDriveWin>(AZStd::vector<AZStd::string_view>{drive}, TestMaxFileHandles,
                 TestMaxMetaDataEntries, TestPhysicalSectorSize, TestLogicalSectorSize, TestMaxIOChannels, overCommit, m_configurationOptions);
@@ -1148,3 +1154,137 @@ namespace AZ::IO
         azfree(buffers[numRequests - 1]);
     }
 } // namespace AZ::IO
+
+#ifdef HAVE_BENCHMARK
+namespace Benchmark
+{
+    class StorageDriveWindowsFixture : public benchmark::Fixture
+    {
+    public:
+        constexpr static char* TestFileName = "StreamerBenchmark.bin";
+        constexpr static size_t FileSize = 64_mib;
+            
+        void SetupStreamer(bool enableFileSharing)
+        {
+            using namespace AZ::IO;
+
+            m_fileIO = new UnitTest::TestFileIOBase();
+            m_previousFileIO = AZ::IO::FileIOBase::GetInstance();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_fileIO);
+
+            SystemFile file;
+            file.Open(TestFileName, SystemFile::OpenMode::SF_OPEN_CREATE | SystemFile::OpenMode::SF_OPEN_READ_WRITE);
+            AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
+            ::memset(buffer.get(), 'c', FileSize);
+            
+            file.Write(buffer.get(), FileSize);
+            file.Close();
+
+            AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath(TestFileName);
+            if (absolutePath.has_value())
+            {
+                AZStd::string drive;
+                AZ::StringFunc::Path::GetDrive(absolutePath->c_str(), drive);
+
+                m_absolutePath = *absolutePath;
+
+                StorageDriveWin::ConstructionOptions options;
+                options.m_hasSeekPenalty = false;
+                options.m_enableUnbufferedReads = true; // Leave this on otherwise repeated loads will be using the Windows cache instead.
+                options.m_enableSharing = enableFileSharing;
+                options.m_minimalReporting = true;
+                AZStd::shared_ptr<StreamStackEntry> storageDriveWin =
+                    AZStd::make_shared<StorageDriveWin>(AZStd::vector<AZStd::string_view>{ drive }, 32, 32, 4_kib, 512, 8, 0, options);
+
+                AZStd::unique_ptr<Scheduler> stack = AZStd::make_unique<Scheduler>(AZStd::move(storageDriveWin));
+                m_streamer = aznew Streamer(AZStd::thread_desc{}, AZStd::move(stack));
+            }
+        }
+
+        void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        {
+            using namespace AZ::IO;
+
+            AZStd::string temp;
+            m_absolutePath.swap(temp);
+
+            delete m_streamer;
+
+            SystemFile::Delete(TestFileName);
+            
+            AZ::IO::FileIOBase::SetInstance(nullptr);
+            AZ::IO::FileIOBase::SetInstance(m_previousFileIO);
+            delete m_fileIO;
+        }
+
+        void RepeatedlyReadFile(benchmark::State& state)
+        {
+            using namespace AZ::IO;
+            using namespace AZStd::chrono;
+
+            AZStd::unique_ptr<char[]> buffer(new char[FileSize]);
+    
+            for (auto _ : state)
+            {
+                AZStd::binary_semaphore waitForReads;
+                AZStd::atomic<system_clock::time_point> end;
+                auto callback = [&end, &waitForReads]([[maybe_unused]] FileRequestHandle request)
+                {
+                    benchmark::DoNotOptimize(end = high_resolution_clock::now());
+                    waitForReads.release();
+                };
+
+                FileRequestPtr request = m_streamer->Read(m_absolutePath, buffer.get(), state.range(0), state.range(0));
+                m_streamer->SetRequestCompleteCallback(request, callback);
+
+                system_clock::time_point start;
+                benchmark::DoNotOptimize(start = high_resolution_clock::now());
+                m_streamer->QueueRequest(request);
+
+                waitForReads.try_acquire_for(AZStd::chrono::seconds(5));
+                auto durationInSeconds = duration_cast<duration<double>>(end.load() - start);
+
+                state.SetIterationTime(durationInSeconds.count());
+
+                m_streamer->QueueRequest(m_streamer->FlushCaches());
+            }
+        }
+
+        AZStd::string m_absolutePath;
+        AZ::IO::Streamer* m_streamer{};
+        AZ::IO::FileIOBase* m_previousFileIO{};
+        UnitTest::TestFileIOBase* m_fileIO{};
+    };
+
+    BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsBaseline)(benchmark::State& state)
+    {
+        SetupStreamer(false);
+        RepeatedlyReadFile(state);
+    }
+
+    BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsWithFileReadSharingEnabled)(benchmark::State& state)
+    {
+        using namespace AZ::IO;
+
+        SetupStreamer(true);
+        RepeatedlyReadFile(state);
+    }
+
+    // For these benchmarks the CPU stat doesn't provide useful information because it uses GetThreadTimes on Window but since the main
+    // thread is mostly sleeping while waiting for the read on the Streamer thread to complete this will report values (close to) zero.
+
+    BENCHMARK_REGISTER_F(StorageDriveWindowsFixture, ReadsBaseline)
+        ->RangeMultiplier(8)
+        ->Range(1024, 64_mib)
+        ->UseManualTime()
+        ->Unit(benchmark::kMillisecond);
+
+    BENCHMARK_REGISTER_F(StorageDriveWindowsFixture, ReadsWithFileReadSharingEnabled)
+        ->RangeMultiplier(8)
+        ->Range(1024, 64_mib)
+        ->UseManualTime()
+        ->Unit(benchmark::kMillisecond);
+
+} // namespace Benchmark
+#endif // HAVE_BENCHMARK
