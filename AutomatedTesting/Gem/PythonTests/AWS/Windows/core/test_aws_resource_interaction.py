@@ -17,12 +17,8 @@ import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.asset_processor_utils as asset_processor_utils
 import os
 import logging
-import json
 import time
-from typing import List
 
-import boto3
-from boto3.dynamodb.table import TableResource
 from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
 from AWS.Windows.cdk.cdk import cdk
@@ -30,9 +26,7 @@ from AWS.common.aws_utils import aws_utils
 from AWS.common.aws_utils import AwsUtils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
-AWS_PROJECT_NAME = 'AWS-AutomationTest'
 AWS_CORE_FEATURE_NAME = 'AWSCore'
-AWS_CORE_DEFAULT_PROFILE_NAME = 'default'
 AWS_RESOURCE_MAPPING_FILE_NAME = 'aws_resource_mappings.json'
 
 process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill ProjectManager windows
@@ -49,17 +43,17 @@ logger = logging.getLogger(__name__)
 @pytest.mark.parametrize('feature_name', [AWS_CORE_FEATURE_NAME])
 @pytest.mark.usefixtures('aws_utils')
 @pytest.mark.parametrize('region_name', ['us-west-2'])
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
+@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::179802234733:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
 @pytest.mark.usefixtures('workspace')
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['AWS/Core'])
 @pytest.mark.usefixtures('resource_mappings')
-@pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
+@pytest.mark.parametrize('resource_mappings_filename', [AWS_RESOURCE_MAPPING_FILE_NAME])
 class TestAWSCoreAWSResourceInteraction(object):
     """
     Test class to verify AWSCore can downloading a file from S3.
-    """b
+    """
     def test_download_from_s3(self,
                               level: str,
                               launcher: pytest.fixture,
@@ -85,6 +79,7 @@ class TestAWSCoreAWSResourceInteraction(object):
         log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
 
         launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
 
         if not os.path.exists('s3download'):
             os.makedirs('s3download')
@@ -93,23 +88,21 @@ class TestAWSCoreAWSResourceInteraction(object):
             result = log_monitor.monitor_log_for_lines(
                 expected_lines=['(Script) - [S3] Head object request is done',
                                 '(Script) - [S3] Head object success: Object example.txt is found.',
-                                '(Script) - [S3] Get object request is done',
-                                '(Script) - [S3] Head object success: Object example.txt is found.',
                                 '(Script) - [S3] Get object success: Object example.txt is downloaded.'],
                 unexpected_lines=['(Script) - [S3] Head object error: No response body.',
                                   '(Script) - [S3] Get object error: Request validation failed, output file directory doesn\'t exist.'],
                 halt_on_unexpected=True,
                 )
 
-            assert result, ''
+            assert result, "Expected lines weren't found."
 
         download_dir = os.path.join(os.getcwd(), 's3download/output.txt')
 
         file_was_downloaded = os.path.exists(download_dir)
         # clean up the file directories.
         if file_was_downloaded:
-            os.remove('s3download/output.txt')
-        os.rmdir('./s3download')
+            os.remove(download_dir)
+        os.rmdir(os.path.dirname(download_dir))
 
         assert file_was_downloaded, 'The expected file wasn\'t successfully downloaded'
 
@@ -138,6 +131,7 @@ class TestAWSCoreAWSResourceInteraction(object):
         log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
 
         launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
@@ -157,7 +151,7 @@ class TestAWSCoreAWSResourceInteraction(object):
                                 resource_mappings: pytest.fixture,
                                 workspace,
                                 asset_processor,
-                                aws_utils: AwsUtils
+                                aws_utils: AwsUtils,
                                 ):
         """
         Setup: Deploys  the CDK application
@@ -167,12 +161,7 @@ class TestAWSCoreAWSResourceInteraction(object):
 
         def write_test_table_data(region: str):
             session = aws_utils._assume_session.resource('dynamodb', region_name=region)
-
-            aws_resource_directory = os.path.join("../../../../../Config", AWS_RESOURCE_MAPPING_FILE_NAME)
-            with open(aws_resource_directory, "r") as aws_resource:
-                aws_resource_data = json.load(aws_resource)
-
-            table_name = aws_resource_data["AWSResourceMappings"]["AWSCore.ExampleDynamoTableOutput"]["Name/ID"].split('/')[1]
+            table_name = resource_mappings.get_resource_name_id("AWSCore.ExampleDynamoTableOutput").split('/')[1]
             table = session.Table(table_name)
 
             try:
@@ -200,6 +189,7 @@ class TestAWSCoreAWSResourceInteraction(object):
         log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
 
         launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
 
         with launcher.start(launch_ap=False):
             result = log_monitor.monitor_log_for_lines(
