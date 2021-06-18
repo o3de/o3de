@@ -54,7 +54,7 @@ namespace Multiplayer
     //!
     //! IMultiplayer is an AZ::Interface<T> that provides applications access to
     //! multiplayer session information and events.  IMultiplayer is implemented on the
-    //! MultiplayerSystemsComponent and is used to define and access information about
+    //! MultiplayerSystemComponent and is used to define and access information about
     //! the type of session and the role held by the current agent. An Agent is defined
     //! here as an actor in a session. Types of Agents included by default are a Client,
     //! a Client Server and a Dedicated Server.

@@ -37,7 +37,7 @@ namespace AzNetworking
     //!
     //! ICompressor is an abstract compression interface meant for user provided GEMs to implement (such as the [Multiplayer
     //! Compression Gem](http://docs.o3de.org/docs/user-guide/gems/reference/multiplayer-compression)).
-    //! Compression is currently supported on Udp and Tcp connections.  Instantiation of a compressor is controlled by the
+    //! Compression is supported for both TCP and UDP connections.  Instantiation of a compressor is controlled by the
     //! `net_UdpCompressor` or `net_TcpCompressor` cvar for their respective protocols.  
 
     class ICompressor

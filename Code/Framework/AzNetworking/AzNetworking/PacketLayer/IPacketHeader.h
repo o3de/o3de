@@ -38,7 +38,7 @@ namespace AzNetworking
     //! front information about the state of the packet. Currently there is only one flag to indicate if the Packet is
     //! compressed or not.
     //! 
-    //! The remainder of the header contains the PacketType and the PacketId. While the PacketFlags byte is exempted from most
+    //! The remainder of the header contains the PacketType and the PacketId. While the PacketFlags byte is exempt from most
     //! additional forms of processing, the remainder of the header is not.
     
     class IPacketHeader
