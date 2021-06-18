@@ -15,6 +15,7 @@
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AzCore/std/containers/map.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Builder/ScriptCanvasBuilderComponent.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
 #include <ScriptCanvas/Asset/Functions/RuntimeFunctionAssetHandler.h>
@@ -168,6 +169,8 @@ namespace ScriptCanvasBuilder
 
     void PluginComponent::Reflect(AZ::ReflectContext* context)
     {
+        BuildVariableOverrides::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PluginComponent, AZ::Component>()

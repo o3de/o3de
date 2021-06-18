@@ -144,8 +144,7 @@ namespace ScriptCanvasBuilder
 
             // copy to override list for editor display
             m_entityIds.push_back(*graphEntityId);
-            auto& overrideValue = m_overrides.back();
-            m_overrides.push_back(*graphEntityId);
+            auto& overrideValue = m_entityIds.back();
             overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
             overrideValue.SetAllowSignalOnChange(false);
         }
