@@ -384,7 +384,7 @@ namespace Audio
                 src_short_to_float_array(
                     reinterpret_cast<AZ::s16*>(m_conversionBufferIn.m_data),
                     reinterpret_cast<float*>(m_conversionBufferOut.m_data),
-                    numFrames * m_config.m_numChannels
+                    static_cast<int>(numFrames * m_config.m_numChannels)
                 );
 
                 // Swap to move the 'working' buffer back to the 'In' buffer.
@@ -397,8 +397,8 @@ namespace Audio
                 {
                     // Setup Conversion Data
                     m_srcData.end_of_input = 0;
-                    m_srcData.input_frames = numFrames;
-                    m_srcData.output_frames = numFrames;
+                    m_srcData.input_frames = static_cast<long>(numFrames);
+                    m_srcData.output_frames = static_cast<long>(numFrames);
                     m_srcData.data_in = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
                     m_srcData.data_out = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
 
@@ -478,7 +478,7 @@ namespace Audio
                 src_float_to_short_array(
                     reinterpret_cast<float*>(m_conversionBufferIn.m_data),
                     *reinterpret_cast<AZ::s16**>(outputData),
-                    numFrames * m_config.m_numChannels
+                    static_cast<int>(numFrames * m_config.m_numChannels)
                 );
             }
             else
