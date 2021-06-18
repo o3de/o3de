@@ -1128,7 +1128,7 @@ namespace LyShine
         // walk the graph recursively to add up all of the data
         GetDebugInfoRenderNodeList(m_renderNodes, info, uniqueTextures);
 
-        info.m_numUniqueTextures = uniqueTextures.size();
+        info.m_numUniqueTextures = static_cast<int>(uniqueTextures.size());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1183,7 +1183,7 @@ namespace LyShine
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
                 
                 IRenderer::DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
-                info.m_numPrimitives += primitives.size();
+                info.m_numPrimitives += static_cast<int>(primitives.size());
                 {
                     for (const IRenderer::DynUiPrimitive& primitive : primitives)
                     {
@@ -1367,7 +1367,7 @@ namespace LyShine
                 }
 
                 IRenderer::DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
-                int numPrimitives = primitives.size();
+                int numPrimitives = static_cast<int>(primitives.size());
                 int numTriangles = 0;
                 for (const IRenderer::DynUiPrimitive& primitive : primitives)
                 {
