@@ -355,7 +355,7 @@ namespace LmbrCentral
             return;
         }
 
-        const AZ::u32 segments = segmentCount * spline->GetSegmentGranularity() + segmentCount - 1;
+        const AZ::u32 segments = static_cast<AZ::u32>(segmentCount * spline->GetSegmentGranularity() + segmentCount - 1);
         const AZ::u32 totalSegments = segments + capSegments * 2;
         const AZ::u32 capSegmentTipVerts = capSegments > 0 ? 2 : 0;
         const size_t numVerts = sides * (totalSegments + 1) + capSegmentTipVerts;
@@ -594,7 +594,7 @@ namespace LmbrCentral
         // to ensure the total radius stays positive
         if (GetTotalRadius(AZ::SplineAddress(vertIndex)) < 0.0f)
         {
-            SetVariableRadius(vertIndex, -GetRadius());
+            SetVariableRadius(static_cast<int>(vertIndex), -GetRadius());
         }
     }
 
