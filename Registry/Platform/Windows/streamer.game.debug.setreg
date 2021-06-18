@@ -1,0 +1,74 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        [
+                            {
+                                "$type": "AZ::IO::WindowsStorageDriveConfig",
+                                "MaxFileHandles": 32,
+                                "MaxMetaDataCache": 32,
+                                "Overcommit": 8,
+                                "EnableFileSharing": true,
+                                "EnableUnbufferedReads": true,
+                                "MinimalReporting": false
+                            },
+                            {
+                                "$type": "AZ::IO::ReadSplitterConfig",
+                                "BufferSizeMib": 6,
+                                "SplitSize": "MaxTransfer",
+                                "AdjustOffset": true,
+                                "SplitAlignedRequests": false
+                            },
+                            {
+                                "$type": "AzFramework::RemoteStorageDriveConfig",
+                                "MaxFileHandles": 1024 
+                            },
+                            {
+                                "$type": "AZ::IO::BlockCacheConfig",
+                                "CacheSizeMib": 10,
+                                "BlockSize": "MaxTransfer"
+                            },
+                            {
+                                "$type": "AZ::IO::DedicatedCacheConfig",
+                                "CacheSizeMib": 2,
+                                "BlockSize": "MemoryAlignment",
+                                "WriteOnlyEpilog": true
+                            },
+                            {
+                                "$type": "AZ::IO::FullFileDecompressorConfig",
+                                "MaxNumReads": 2,
+                                "MaxNumJobs": 2
+                            }
+                        ]
+                    },
+                    "DevMode":
+                    {
+                        "Stack":
+                        [
+                            {
+                                "$type": "AZ::IO::WindowsStorageDriveConfig",
+                                "MaxFileHandles": 1024,
+                                "MaxMetaDataCache": 1024,
+                                "Overcommit": 8,
+                                "EnableFileSharing": true,
+                                "EnableUnbufferedReads": false
+                            },
+                            {
+                                "$type": "AzFramework::RemoteStorageDriveConfig",
+                                "MaxFileHandles": 1024 
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

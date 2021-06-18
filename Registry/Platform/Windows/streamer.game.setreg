@@ -27,8 +27,7 @@
                                 // will avoid saturating the IO controller which can be needed if the drive is used by other applications.
                                 "Overcommit": 8,
                                 // Globally enable file sharing. This allows files to used outside AZ::IO::Streamer, including other 
-                                // applications while in use by AZ::IO::Streamer. File sharing can negatively impact performance and is 
-                                // recommended for development only. 
+                                // applications while in use by AZ::IO::Streamer.
                                 "EnableFileSharing": false,
                                 // Use unbuffered reads for the fastest possible read speeds by bypassing the Windows file cache. This 
                                 // results in a faster read the first time a file is read, but subsequent reads will possibly be slower as
@@ -61,24 +60,6 @@
                                 "$type": "AZ::IO::FullFileDecompressorConfig",
                                 "MaxNumReads": 2,
                                 "MaxNumJobs": 2
-                            }
-                        ]
-                    },
-                    "DevMode":
-                    {
-                        "Stack":
-                        [
-                            {
-                                "$type": "AZ::IO::WindowsStorageDriveConfig",
-                                "MaxFileHandles": 1024,
-                                "MaxMetaDataCache": 1024,
-                                "Overcommit": 8,
-                                "EnableFileSharing": true,
-                                "EnableUnbufferedReads": false
-                            },
-                            {
-                                "$type": "AzFramework::RemoteStorageDriveConfig",
-                                "MaxFileHandles": 1024 
                             }
                         ]
                     }
