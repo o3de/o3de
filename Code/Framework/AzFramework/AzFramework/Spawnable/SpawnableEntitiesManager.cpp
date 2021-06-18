@@ -250,8 +250,17 @@ namespace AzFramework
     AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityTemplate,
         EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext)
     {
-        return AZ::IdUtils::Remapper<AZ::EntityId, true>::CloneObjectAndGenerateNewIdsAndFixRefs(
+        AZ::Entity* clonedEntity = AZ::IdUtils::Remapper<AZ::EntityId, false>::CloneObjectAndGenerateNewIdsAndFixRefs(
                 &entityTemplate, templateToCloneMap, &serializeContext);
+        return clonedEntity;
+    }
+
+    void SpawnableEntitiesManager::GenerateEntityIdMappings(const Spawnable::EntityList& entities, EntityIdMap& idMap)
+    {
+        for (auto& entity : entities)
+        {
+            idMap.emplace(entity->GetId(), AZ::Entity::MakeId());
+        }
     }
 
     bool SpawnableEntitiesManager::ProcessRequest(SpawnAllEntitiesCommand& request)
@@ -277,6 +286,10 @@ namespace AzFramework
             spawnedEntities.reserve(spawnedEntities.size() + entitiesToSpawnSize);
             spawnedEntityIndices.reserve(spawnedEntityIndices.size() + entitiesToSpawnSize);
             templateToCloneEntityIdMap.reserve(entitiesToSpawnSize);
+
+            // Pre-generate the full set of entity ID to new entity ID mappings, so that during the clone operation below,
+            // any entity references that point to a not-yet-cloned entity will still get their IDs remapped correctly.
+            GenerateEntityIdMappings(entitiesToSpawn, templateToCloneEntityIdMap);
 
             for (size_t i = 0; i < entitiesToSpawnSize; ++i)
             {
@@ -356,6 +369,10 @@ namespace AzFramework
 
             spawnedEntities.reserve(spawnedEntities.size() + entitiesToSpawnSize);
             spawnedEntityIndices.reserve(spawnedEntityIndices.size() + entitiesToSpawnSize);
+
+            // Pre-generate the full set of entity ID to new entity ID mappings, so that during the clone operation below,
+            // any entity references that point to a not-yet-cloned entity will still get their IDs remapped correctly.
+            GenerateEntityIdMappings(entitiesToSpawn, templateToCloneEntityIdMap);
 
             for (size_t index : request.m_entityIndices)
             {
@@ -463,6 +480,10 @@ namespace AzFramework
                 size_t entitiesToSpawnSize = entities.size();
                 templateToCloneEntityIdMap.reserve(entitiesToSpawnSize);
 
+                // Pre-generate the full set of entity ID to new entity ID mappings, so that during the clone operation below,
+                // any entity references that point to a not-yet-cloned entity will still get their IDs remapped correctly.
+                GenerateEntityIdMappings(entities, templateToCloneEntityIdMap);
+
                 for (size_t i = 0; i < entitiesToSpawnSize; ++i)
                 {
                     AZ::Entity* clone = CloneSingleEntity(*entities[i], templateToCloneEntityIdMap, *request.m_serializeContext);
@@ -476,6 +497,11 @@ namespace AzFramework
             {
                 size_t entitiesSize = entities.size();
                 templateToCloneEntityIdMap.reserve(entitiesSize);
+
+                // Pre-generate the full set of entity ID to new entity ID mappings, so that during the clone operation below,
+                // any entity references that point to a not-yet-cloned entity will still get their IDs remapped correctly.
+                GenerateEntityIdMappings(entities, templateToCloneEntityIdMap);
+
                 for (size_t index : ticket.m_spawnedEntityIndices)
                 {
                     // It's possible for the new spawnable to have a different number of entities, so guard against this.

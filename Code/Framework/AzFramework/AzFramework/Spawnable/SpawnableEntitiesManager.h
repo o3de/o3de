@@ -194,6 +194,12 @@ namespace AzFramework
         bool ProcessRequest(BarrierCommand& request);
         bool ProcessRequest(DestroyTicketCommand& request);
 
+        //! Generate a base set of original-to-new entity ID mappings to use during spawning.
+        //! Since Entity references get fixed up on an entity-by-entity basis while spawning, it's important to have the complete
+        //! set of new IDs available right at the start.  This way, entities that refer to other entities that haven't spawned yet
+        //! will still get their references remapped correctly.
+        void GenerateEntityIdMappings(const Spawnable::EntityList& entities, EntityIdMap& idMap);
+
         Queue m_highPriorityQueue;
         Queue m_regularPriorityQueue;
 
