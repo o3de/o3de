@@ -120,7 +120,7 @@ function(strip_trailing_slash in_url out_url)
     endif()
 endfunction()
 
-set(_versioned_target_url_tag ${LY_VERSION_STRING}/${PAL_HOST_PLATFORM_NAME})
+set(CPACK_VERSIONED_TARGET_TAG "${PAL_HOST_PLATFORM_NAME}-${LY_VERSION_STRING}")
 
 if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
     set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
@@ -139,7 +139,7 @@ if(LY_INSTALLER_UPLOAD_URL)
     endif()
 
     strip_trailing_slash(${LY_INSTALLER_UPLOAD_URL} LY_INSTALLER_UPLOAD_URL)
-    set(CPACK_UPLOAD_URL ${LY_INSTALLER_UPLOAD_URL}/${_versioned_target_url_tag})
+    set(CPACK_UPLOAD_URL ${LY_INSTALLER_UPLOAD_URL})
 endif()
 
 # IMPORTANT: required to be included AFTER setting all property overrides
@@ -189,7 +189,7 @@ if(LY_INSTALLER_DOWNLOAD_URL)
 
     # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY (local)
     cpack_configure_downloads(
-        ${LY_INSTALLER_DOWNLOAD_URL}/${_versioned_target_url_tag}
+        ${LY_INSTALLER_DOWNLOAD_URL}
         UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
         ALL
     )
