@@ -195,12 +195,19 @@ namespace ScriptCanvasBuilder
         for (size_t index = 0; index != buildOverrides.m_variables.size(); ++index)
         {
             auto& variable = buildOverrides.m_variables[index];
-            auto iter = AZStd::find_if(buildOverrides.m_overrides.begin(), buildOverrides.m_overrides.end(), [&variable](auto& candidate){ candidate.GetVariableId()== variable.GetVariableId(); });
+            auto iter = AZStd::find_if(buildOverrides.m_overrides.begin(), buildOverrides.m_overrides.end(), [&variable](auto& candidate){ return candidate.GetVariableId()== variable.GetVariableId(); });
             if (iter != buildOverrides.m_overrides.end())
             {
-                // assert is not entity type
-                runtimeOverrides.m_variables.push_back(iter->GetDatum()->ToAny());
-                runtimeOverrides.m_variableIndices[index] = true;
+                if (iter->GetDatum())
+                {
+                    runtimeOverrides.m_variables.push_back(iter->GetDatum()->ToAny());
+                    runtimeOverrides.m_variableIndices[index] = true;
+                }
+                else
+                {
+                    AZ_Warning("ScriptCanvasBuilder", false, "build overrides missing variable override, Script may not function properly");
+                    runtimeOverrides.m_variableIndices[index] = false;
+                }
             }
             else
             {
@@ -210,8 +217,15 @@ namespace ScriptCanvasBuilder
 
         for (auto& entity : buildOverrides.m_entityIds)
         {
-            // assert is entity type
-            runtimeOverrides.m_entityIds.push_back(*entity.GetDatum()->GetAs<AZ::EntityId>());
+            if (entity.GetDatum() && entity.GetDatum()->GetAs<AZ::EntityId>())
+            {
+                runtimeOverrides.m_entityIds.push_back(*entity.GetDatum()->GetAs<AZ::EntityId>());
+            }
+            else
+            {
+                AZ_Warning("ScriptCanvasBuilder", false, "build overrides missing EntityId, Script may not function properly");
+                runtimeOverrides.m_entityIds.push_back(AZ::EntityId{});
+            }
         }
 
         for (auto& buildDependency : buildOverrides.m_dependencies)

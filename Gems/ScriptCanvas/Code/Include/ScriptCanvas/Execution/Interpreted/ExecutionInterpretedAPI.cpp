@@ -704,8 +704,9 @@ namespace ScriptCanvas
 
         int Unpack(lua_State* lua, DependencyConstructionPack& args)
         {
+            // #functions2_prefabs this needs to know where it is in the recursive process
             ActivationInputArray storage;
-            ActivationData data(args.executionState->GetEntityId(), args.executionState->GetVariableOverrides(), args.runtimeData, storage);
+            ActivationData data(args.executionState->GetEntityId(), args.executionState->GetRuntimeDataOverrides(), args.runtimeData, storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return range.totalCount;

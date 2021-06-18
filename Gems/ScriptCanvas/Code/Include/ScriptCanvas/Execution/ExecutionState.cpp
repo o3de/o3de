@@ -87,9 +87,9 @@ namespace ScriptCanvas
         return m_component->GetScriptCanvasId();
     }
 
-    const VariableData& ExecutionState::GetVariableOverrides() const
+    const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
     {
-        return m_component->GetVariableOverrides();
+        return m_component->GetRuntimeDataOverrides();
     }
 
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)

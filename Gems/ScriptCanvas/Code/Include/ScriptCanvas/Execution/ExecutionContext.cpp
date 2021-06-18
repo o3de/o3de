@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Nodeable.h>
@@ -24,13 +25,13 @@
 
 namespace ExecutionContextCpp
 {
-    void TypeCopy(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    void CopyTypeInformationOnly(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
     {
         lhs.m_typeId = rhs.m_typeId;
         lhs.m_azRtti = rhs.m_azRtti;
     }
 
-    void ValueCopy(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    void CopyTypeAndValueSource(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
     {
         lhs.m_typeId = rhs.m_typeId;
         lhs.m_azRtti = rhs.m_azRtti;
@@ -56,9 +57,21 @@ namespace ScriptCanvas
             , storage(storage)
         {}
 
+        const void* ActivationData::GetVariableSource(size_t index, size_t& overrideIndexTracker) const
+        {
+            if (variableOverrides.m_variableIndices[index])
+            {
+                return AZStd::any_cast<const void*>(variableOverrides.m_variables[overrideIndexTracker++]);
+            }
+            else
+            {
+                return runtimeData.m_input.m_variables[index].second.GetAsDanger();
+            }
+        }
+
         ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
-            // #functions2_prefabs prepare the runtime variables, consider only saving the overriden ones to the runtime
+            // #functions2_prefabs prepare the runtime variables, this will now have to recurse, child constructor calls will have to call a version of this
 
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
@@ -74,7 +87,7 @@ namespace ScriptCanvas
                 auto destVariableIter = rangeOut.inputs;
                 for (; sourceVariableIter != sourceVariableSentinel; ++sourceVariableIter, ++destVariableIter)
                 {
-                    ExecutionContextCpp::ValueCopy(*destVariableIter, *sourceVariableIter);
+                    ExecutionContextCpp::CopyTypeAndValueSource(*destVariableIter, *sourceVariableIter);
                 }
             }
 
@@ -83,27 +96,33 @@ namespace ScriptCanvas
                 auto sourceVariableIter = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
                 auto destVariableIter = rangeOut.inputs + runtimeData.m_activationInputRange.nodeableCount;
 
+                size_t overrideIndexTracker = 0;
                 const size_t sentinel = runtimeData.m_input.m_variables.size();
-                for (size_t index = 0; index != sentinel; ++index)
+                for (size_t index = 0; index != sentinel; ++index, ++destVariableIter, ++sourceVariableIter)
                 {
-                    auto& idDatumPair = runtimeData.m_input.m_variables[index];
-                    if (activationData.variableOverrides.m_variableIndices[index])
-                    {
-                        // it has been overridden
-                    }
-                    else
-                    {
-                        // it has not, just take the source asset copy
-                    }
+                    ExecutionContextCpp::CopyTypeInformationOnly(*destVariableIter, *sourceVariableIter);
+                    destVariableIter->m_value = const_cast<void*>(activationData.GetVariableSource(index, overrideIndexTracker));
+                }
+            }
 
-                    ExecutionContextCpp::TypeCopy(*destVariableIter, *sourceVariableIter);
+            AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
+                + runtimeData.m_activationInputRange.nodeableCount
+                + runtimeData.m_activationInputRange.variableCount;
 
-                    auto variableOverride = activationData.variableOverrides.FindVariable(idDatumPair.first);
-                    const Datum* datum = variableOverride ? variableOverride->GetDatum() : &idDatumPair.second;
-                    destVariableIter->m_value = const_cast<void*>(datum->GetAsDanger());
+            const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
 
+            bool prefabSystemEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            if (!prefabSystemEnabled)
+            { 
+                // in prefab mode, entity ids have already been remapped
+                for (const auto& entityId : activationData.variableOverrides.m_entityIds)
+                {
+                    destVariableIter->m_typeId = entityIdTypeId;
+                    destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
+                    auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
+                    *entityIdValuePtr = entityId;
                     ++destVariableIter;
-                    ++sourceVariableIter;
                 }
             }
 
@@ -118,32 +137,20 @@ namespace ScriptCanvas
                     AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(loadedEntityIdMap, owningContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetLoadedEntityIdMap);
                 }
 
-                AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
-                    + runtimeData.m_activationInputRange.nodeableCount
-                    + runtimeData.m_activationInputRange.variableCount;
-
-                const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
                 for (auto& idEntityPair : runtimeData.m_input.m_entityIds)
                 {
                     destVariableIter->m_typeId = entityIdTypeId;
                     destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
                     auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
 
-                    if (auto variableOverride = activationData.variableOverrides.FindVariable(idEntityPair.first))
+                    auto iter = loadedEntityIdMap.find(idEntityPair.second);
+                    if (iter != loadedEntityIdMap.end())
                     {
-                        *entityIdValuePtr = *variableOverride->GetDatum()->GetAs<Data::EntityIDType>();
+                        *entityIdValuePtr = iter->second;
                     }
                     else
                     {
-                        auto iter = loadedEntityIdMap.find(idEntityPair.second);
-                        if (iter != loadedEntityIdMap.end())
-                        {
-                            *entityIdValuePtr = iter->second;
-                        }
-                        else
-                        {
-                            *entityIdValuePtr = Data::EntityIDType();
-                        }
+                        *entityIdValuePtr = Data::EntityIDType();
                     }
 
                     ++destVariableIter;
