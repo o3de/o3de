@@ -86,7 +86,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //! Get number of currently existing viewports.
-    virtual int GetViewCount() { return m_viewports.size(); };
+    virtual int GetViewCount() { return static_cast<int>(m_viewports.size()); };
     //! Get viewport by index.
     //! @param index 0 <= index < GetViewportCount()
     virtual CViewport* GetView(int index) { return m_viewports[index]; }
