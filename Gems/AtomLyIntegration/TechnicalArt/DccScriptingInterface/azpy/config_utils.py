@@ -165,12 +165,14 @@ def get_current_project():
     bootstrap_box = None
 
     try:
-        bootstrap_box = Box.from_json(filename=PATH_USER_O3DE_BOOTSTRAP,
+        bootstrap_box = Box.from_json(filename=str(Path(PATH_USER_O3DE_BOOTSTRAP).resolve()),
                                      encoding="utf-8",
                                      errors="strict",
                                      object_pairs_hook=OrderedDict)
-    except FileExistsError as e:
-        _LOGGER.error('File does not exist: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+    except Exception as e:
+        # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
+        _LOGGER.error('FileExistsError: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+        _LOGGER.error('exception is: {}'.format(e))
 
     if bootstrap_box:
         # this seems fairly hard coded - what if the data changes?

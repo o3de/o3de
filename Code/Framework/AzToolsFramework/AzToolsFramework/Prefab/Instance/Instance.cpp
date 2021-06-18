@@ -373,17 +373,25 @@ namespace AzToolsFramework
             }
         }
 
-        void Instance::GetConstNestedEntities(const AZStd::function<bool(const AZ::Entity&)>& callback)
+        bool Instance::GetEntities_Impl(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
         {
-            GetConstEntities(callback);
-
-            for (const auto& [instanceAlias, instance] : m_nestedInstances)
+            for (auto& [entityAlias, entity] : m_entities)
             {
-                instance->GetConstNestedEntities(callback);
+                if (!entity)
+                {
+                    continue;
+                }
+
+                if (!callback(entity))
+                {
+                    return false;
+                }
             }
+
+            return true;
         }
 
-        void Instance::GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback)
+        bool Instance::GetConstEntities_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const
         {
             for (const auto& [entityAlias, entity] : m_entities)
             {
@@ -394,19 +402,83 @@ namespace AzToolsFramework
 
                 if (!callback(*entity))
                 {
-                    break;
+                    return false;
                 }
             }
+
+            return true;
         }
 
-        void Instance::GetNestedEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
+        bool Instance::GetAllEntitiesInHierarchy_Impl(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
         {
-            GetEntities(callback);
+            if (HasContainerEntity())
+            {
+                if (!callback(m_containerEntity))
+                {
+                    return false;
+                }
+            }
+
+            if (!GetEntities_Impl(callback))
+            {
+                return false;
+            }
 
             for (auto& [instanceAlias, instance] : m_nestedInstances)
             {
-                instance->GetNestedEntities(callback);
+                if (!instance->GetAllEntitiesInHierarchy_Impl(callback))
+                {
+                    return false;
+                }
             }
+
+            return true;
+        }
+
+        bool Instance::GetAllEntitiesInHierarchyConst_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const
+        {
+            if (HasContainerEntity())
+            {
+                if (!callback(*m_containerEntity))
+                {
+                    return false;
+                }
+            }
+
+            if (!GetConstEntities_Impl(callback))
+            {
+                return false;
+            }
+
+            for (const auto& [instanceAlias, instance] : m_nestedInstances)
+            {
+                if (!instance->GetAllEntitiesInHierarchyConst_Impl(callback))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        void Instance::GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
+        {
+            GetEntities_Impl(callback);
+        }
+
+        void Instance::GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback) const
+        {
+            GetConstEntities_Impl(callback);
+        }
+
+        void Instance::GetAllEntitiesInHierarchy(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
+        {
+            GetAllEntitiesInHierarchy_Impl(callback);
+        }
+
+        void Instance::GetAllEntitiesInHierarchyConst(const AZStd::function<bool(const AZ::Entity&)>& callback) const
+        {
+            GetAllEntitiesInHierarchyConst_Impl(callback);
         }
 
         void Instance::GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback)
@@ -414,44 +486,6 @@ namespace AzToolsFramework
             for (auto& [instanceAlias, instance] : m_nestedInstances)
             {
                 callback(instance);
-            }
-        }
-
-        void Instance::GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
-        {
-            for (auto& [entityAlias, entity] : m_entities)
-            {
-                if (!callback(entity))
-                {
-                    break;
-                }
-            }
-        }
-
-        void Instance::GetEntities(EntityList& entities, bool includeNestedEntities)
-        {
-            // Non-recursive traversal of instances
-            AZStd::vector<Instance*> instancesToTraverse = { this };
-            while (!instancesToTraverse.empty())
-            {
-                Instance* currentInstance = instancesToTraverse.back();
-                instancesToTraverse.pop_back();
-                if (includeNestedEntities)
-                {
-                    instancesToTraverse.reserve(instancesToTraverse.size() + currentInstance->m_nestedInstances.size());
-                    for (const auto& instanceByAlias : currentInstance->m_nestedInstances)
-                    {
-                        instancesToTraverse.push_back(instanceByAlias.second.get());
-                    }
-                }
-
-                // Size increases by 1 for each instance because we have to count the container entity also.
-                entities.reserve(entities.size() + currentInstance->m_entities.size() + 1);
-                entities.push_back(m_containerEntity.get());
-                for (const auto& entityByAlias : currentInstance->m_entities)
-                {
-                    entities.push_back(entityByAlias.second.get());
-                }
             }
         }
 

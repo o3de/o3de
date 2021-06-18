@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
-        m_verticalLayout = new QVBoxLayout(this);
+        m_verticalLayout = new QVBoxLayout();
 
         // you cannot remove content margins in qss
         m_verticalLayout->setContentsMargins(0, 0, 0, 0);

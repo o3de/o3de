@@ -13,7 +13,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
-#include <PythonBindings.h>
+#include <AzCore/IO/Path/Path.h>
 #include <ScreenDefs.h>
 #endif
 
@@ -25,12 +25,8 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& engineRootPath, const AZ::IO::PathView& projectPath,
+        explicit ProjectManagerWindow(QWidget* parent, const AZ::IO::PathView& projectPath,
             ProjectManagerScreen startScreen = ProjectManagerScreen::Projects);
-        ~ProjectManagerWindow();
-
-    private:
-        AZStd::unique_ptr<PythonBindings> m_pythonBindings;
     };
 
 } // namespace O3DE::ProjectManager
