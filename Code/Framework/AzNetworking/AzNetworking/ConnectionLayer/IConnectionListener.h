@@ -22,6 +22,12 @@ namespace AzNetworking
 {
     //! @class IConnectionListener
     //! @brief interface class for application layer dealing with connection level events.
+    //!
+    //! IConnectionListener defines an abstract interface that the user of AzNetworking is expected to implement to react and
+    //! handle all IConnection related events, including the handling of any received IPacket derived packets.  The AzNetworking
+    //! user should derive a handler class from IConnectionListener, and provide an instance of that handler to any
+    //! INetworkInterface the user instantiates.  The lifetime of the IConnectionListener must outlive the lifetime of the
+    //! INetworkInterface.
     class IConnectionListener
     {
     public:
