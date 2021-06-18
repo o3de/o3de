@@ -58,7 +58,7 @@ namespace ImageProcessingAtom
 
         void ImageThumbnail::LoadThread()
         {
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::QueueEvent(
+            AzToolsFramework::Thumbnailer::ThumbnailerRendererRequestBus::Event(
                 AZ::RPI::StreamingImageAsset::RTTI_Type(), &AzToolsFramework::Thumbnailer::ThumbnailerRendererRequests::RenderThumbnail,
                 m_key,
                 ImageThumbnailSize);
