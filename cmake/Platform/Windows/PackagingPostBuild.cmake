@@ -17,7 +17,7 @@ string(REPLACE "/" "\\" _fixed_package_install_dir ${CPACK_PACKAGE_INSTALL_DIREC
 set(_cpack_wix_out_dir ${CPACK_TOPLEVEL_DIRECTORY})
 set(_bootstrap_out_dir "${CPACK_TOPLEVEL_DIRECTORY}/bootstrap")
 
-set(_bootstrap_filename "${CPACK_PACKAGE_FILE_NAME}.exe")
+set(_bootstrap_filename "${CPACK_PACKAGE_FILE_NAME}_installer.exe")
 set(_bootstrap_output_file ${_cpack_wix_out_dir}/${_bootstrap_filename})
 
 set(_ext_flags
