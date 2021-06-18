@@ -41,6 +41,8 @@ namespace AZ
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
 
+        OperationFlags GetOperationsFlags() const override;
+
         //! Does the same as load, but doesn't report through the provided callback in the settings. Instead the final
         //! ResultCode and message are returned and it's up to the caller to report if need needed.
         MessageResult UnreportedLoad(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue);

@@ -28,6 +28,8 @@
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -469,7 +471,7 @@ namespace AZ
             if (m_skinnedMeshInputBuffers)
             {
                 m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-                AZ_Error("AtomActorInstance", m_boneTransforms, "Failed to create bone transform buffer.");
+                AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
 
                 // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
                 // Wait for them all to be ready before creating the instance

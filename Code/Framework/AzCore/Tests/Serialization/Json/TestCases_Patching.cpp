@@ -303,6 +303,29 @@ namespace JsonSerializationTests
             R"( { "foo": [ "bar", "baz" ] })");
     }
 
+    TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchRemoveArrayMembersInCorrectOrder_ReportsSuccess)
+    {
+        CheckApplyPatch(
+            R"( { "foo": [ "bar", "qux", "baz" ] })",
+            R"( [
+                    { "op": "remove", "path": "/foo/2" },
+                    { "op": "remove", "path": "/foo/1" }
+                ])",
+            R"( { "foo": [ "bar" ] })");
+    }
+
+    TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchRemoveArrayMembersInWrongOrder_ReportsError)
+    {
+        using namespace AZ::JsonSerializationResult;
+        CheckApplyPatchOutcome(
+            R"( { "foo": [ "bar", "qux", "baz" ] })",
+            R"( [
+                    { "op": "remove", "path": "/foo/1" },
+                    { "op": "remove", "path": "/foo/2" }
+                ])",
+            Outcomes::Invalid, Processing::Halted);
+    }
+
     TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchRemoveOperationInvalidParent_ReportError)
     {
         using namespace AZ::JsonSerializationResult;
@@ -947,6 +970,27 @@ namespace JsonSerializationTests
                     { "op": "remove", "path": "/2" }
                 ])"
         );
+    }
+
+    TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveLastArrayEntries_MultipleOperationsInCorrectOrder)
+    {
+        CheckCreatePatch(
+            R"( [ "foo", "hello", "bar" ])", R"( [ "foo" ])",
+            R"( [
+                    { "op": "remove", "path": "/2" },
+                    { "op": "remove", "path": "/1" }
+                ])");
+    }
+
+    TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveAllArrayEntries_MultipleOperationsInCorrectOrder)
+    {
+        CheckCreatePatch(
+            R"( [ "foo", "hello", "bar" ])", R"( [])",
+            R"( [
+                    { "op": "remove", "path": "/2" },
+                    { "op": "remove", "path": "/1" },
+                    { "op": "remove", "path": "/0" }
+                ])");
     }
 
     TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveObjectFromArrayInMiddle_OperationToUpdateMember)

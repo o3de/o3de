@@ -30,6 +30,8 @@ namespace AZ
             rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, const Uuid& valueTypeId,
             JsonSerializerContext& context) override;
 
+        OperationFlags GetOperationsFlags() const override;
+        
     private:
         // Note: These need to be defined as "const char[]" instead of "const char*" so that they can be implicitly converted
         // to a rapidjson::GenericStringRef<>.  (This also lets rapidjson get the string length at compile time)

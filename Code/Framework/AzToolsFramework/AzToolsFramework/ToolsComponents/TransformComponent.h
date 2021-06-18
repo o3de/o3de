@@ -182,9 +182,12 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
             AZ::Outcome<void, AZStd::string> ValidatePotentialParent(void* newValue, const AZ::Uuid& valueType);
-            AZ::u32 ParentChanged();
-            AZ::u32 TransformChanged();
-            AZ::u32 StaticChanged();
+
+            AZ::u32 TransformChangedInspector();
+            AZ::u32 ParentChangedInspector();
+            AZ::u32 StaticChangedInspector();
+
+            bool TransformChanged();
 
             AZ::Transform GetLocalTranslationTM() const;
             AZ::Transform GetLocalRotationTM() const;

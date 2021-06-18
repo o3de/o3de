@@ -26,12 +26,6 @@
             "isOptional": false
         },
         {
-            "file": "EngineFinder.cmake",
-            "origin": "EngineFinder.cmake",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
             "file": "Code/${NameLower}_files.cmake",
             "origin": "Code/${NameLower}_files.cmake",
             "isTemplated": true,
@@ -48,12 +42,6 @@
             "origin": "Code/CMakeLists.txt",
             "isTemplated": true,
             "isOptional": false
-        },
-        {
-            "file": "Code/gem.json",
-            "origin": "Code/gem.json",
-            "isTemplated": true,
-            "isOptional": true
         },
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
@@ -176,8 +164,20 @@
             "isOptional": false
         },
         {
+            "file": "Code/gem.json",
+            "origin": "Code/gem.json",
+            "isTemplated": true,
+            "isOptional": true
+        },
+        {
             "file": "Config/shader_global_build_options.json",
             "origin": "Config/shader_global_build_options.json",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
+            "file": "EngineFinder.cmake",
+            "origin": "EngineFinder.cmake",
             "isTemplated": false,
             "isOptional": false
         },
@@ -478,7 +478,7 @@
         {
             "file": "ShaderLib/README.md",
             "origin": "ShaderLib/README.md",
-            "isTemplated": true,
+            "isTemplated": false,
             "isOptional": true
         },
         {
@@ -514,7 +514,7 @@
         {
             "file": "game.cfg",
             "origin": "game.cfg",
-            "isTemplated": true,
+            "isTemplated": false,
             "isOptional": false
         },
         {
@@ -650,6 +650,10 @@
         {
             "dir": "Shaders",
             "origin": "Shaders"
+        },
+        {
+            "dir": "Shaders/ShaderResourceGroups",
+            "origin": "Shaders/ShaderResourceGroups"
         }
     ]
 }

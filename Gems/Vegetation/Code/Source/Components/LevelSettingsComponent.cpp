@@ -9,7 +9,6 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#include "Vegetation_precompiled.h"
 #include "LevelSettingsComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
