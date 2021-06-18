@@ -18,10 +18,10 @@
 #include <AzFramework/Physics/MaterialBus.h>
 #include <cfloat>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <Source/RigidBody.h>
 #include <Source/Scene/PhysXScene.h>
 #include <Source/Shape.h>
-#include <Source/Joint.h>
 
 namespace PhysX
 {
@@ -262,21 +262,24 @@ namespace PhysX
                             physx::PxTransform parentTM(parentOffset);
                             physx::PxTransform childTM(physx::PxIdentity);
 
-                            AZStd::shared_ptr<Physics::JointLimitConfiguration> jointLimitConfig = configuration.m_nodes[nodeIndex].m_jointLimit;
-                            if (!jointLimitConfig)
+                            AZStd::shared_ptr<AzPhysics::JointConfiguration> jointConfig = configuration.m_nodes[nodeIndex].m_jointConfig;
+                            if (!jointConfig)
                             {
-                                AZStd::vector<AZ::TypeId> supportedJointLimitTypes = JointUtils::GetSupportedJointTypes();
-
-                                if (!supportedJointLimitTypes.empty())
-                                {
-                                    jointLimitConfig = JointUtils::CreateJointLimitConfiguration(supportedJointLimitTypes[0]);
-                                }
+                                jointConfig = AZStd::make_shared<D6JointLimitConfiguration>();
                             }
+                            
+                            AzPhysics::JointHandle jointHandle = sceneInterface->AddJoint(
+                                sceneHandle, jointConfig.get(), 
+                                ragdoll->GetNode(parentIndex)->GetRigidBody().m_bodyHandle,
+                                ragdoll->GetNode(nodeIndex)->GetRigidBody().m_bodyHandle);
 
-                            AZStd::shared_ptr<Physics::Joint> joint = JointUtils::CreateJoint(
-                                jointLimitConfig,
-                                &ragdoll->GetNode(parentIndex)->GetRigidBody(),
-                                &ragdoll->GetNode(nodeIndex)->GetRigidBody());
+                            AzPhysics::Joint* joint = sceneInterface->GetJointFromHandle(sceneHandle, jointHandle);
+
+                            if (!joint)
+                            {
+                                AZ_Error("PhysX Ragdoll", false, "Failed to create joint for node index %i.", nodeIndex);
+                                return nullptr;
+                            }
 
                             // Moving from PhysX 3.4 to 4.1, the allowed range of the twist angle was expanded from -pi..pi
                             // to -2*pi..2*pi.

@@ -75,8 +75,6 @@ set(FILES
     Source/Shape.cpp
     Source/Material.cpp
     Source/Material.h
-    Source/Joint.cpp
-    Source/Joint.h
     Source/ForceRegionForces.cpp
     Source/ForceRegionForces.h
     Source/ForceRegion.cpp
@@ -104,6 +102,7 @@ set(FILES
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h
+    Include/PhysX/Joint/Configuration/PhysXJointConfiguration.h
     Source/Common/PhysXSceneQueryHelpers.h
     Source/Common/PhysXSceneQueryHelpers.cpp
     Source/Configuration/PhysXConfiguration.cpp
@@ -112,6 +111,11 @@ set(FILES
     Source/Debug/PhysXDebug.h
     Source/Debug/PhysXDebug.cpp
     Source/Debug/Configuration/PhysXDebugConfiguration.cpp
+    Source/Joint/PhysXJoint.h
+    Source/Joint/PhysXJoint.cpp
+    Source/Joint/PhysXJointUtils.h
+    Source/Joint/PhysXJointUtils.cpp
+    Source/Joint/Configuration/PhysXJointConfiguration.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp
     Source/Scene/PhysXSceneInterface.h
@@ -128,6 +132,8 @@ set(FILES
     Source/System/PhysXCpuDispatcher.h
     Source/System/PhysXJob.cpp
     Source/System/PhysXJob.h
+    Source/System/PhysXJointInterface.h
+    Source/System/PhysXJointInterface.cpp
     Source/System/PhysXSdkCallbacks.h
     Source/System/PhysXSdkCallbacks.cpp
     Source/System/PhysXSystem.h
