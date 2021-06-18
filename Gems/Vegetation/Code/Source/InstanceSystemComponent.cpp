@@ -483,7 +483,7 @@ namespace Vegetation
             AZStd::lock_guard<decltype(m_instanceMapMutex)> scopedLock(m_instanceMapMutex);
             AZ_Assert(m_instanceMap.find(instanceData.m_instanceId) == m_instanceMap.end(), "InstanceId %llu is already in use!", instanceData.m_instanceId);
             m_instanceMap[instanceData.m_instanceId] = AZStd::make_pair(instanceData.m_descriptorPtr, opaqueInstanceData);
-            m_instanceCount = static_cast<int>(m_instanceMap.size());
+            m_instanceCount = static_cast<AZStd::atomic_int::value_type>(m_instanceMap.size());
         }
     }
 
@@ -503,7 +503,7 @@ namespace Vegetation
                 opaqueInstanceData = instanceItr->second.second;
                 m_instanceMap.erase(instanceItr);
             }
-            m_instanceCount = static_cast<int>(m_instanceMap.size());
+            m_instanceCount = static_cast<AZStd::atomic_int::value_type>(m_instanceMap.size());
         }
 
         if (opaqueInstanceData)
