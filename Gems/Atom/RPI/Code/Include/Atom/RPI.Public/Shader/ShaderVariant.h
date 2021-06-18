@@ -56,7 +56,7 @@ namespace AZ
             bool IsRootVariant() const { return m_shaderVariantAsset->IsRootVariant(); }
 
             ShaderVariantStableId GetStableId() const { return m_shaderVariantAsset->GetStableId(); }
-            
+
             const Data::Asset<ShaderAsset>& GetShaderAsset() const { return m_shaderAsset; }
             const Data::Asset<ShaderVariantAsset>& GetShaderVariantAsset() const { return m_shaderVariantAsset; }
 
@@ -65,10 +65,10 @@ namespace AZ
             bool Init(
                 const Data::Asset<ShaderAsset>& shaderAsset,
                 const Data::Asset<ShaderVariantAsset>& shaderVariantAsset);
-            
+
             // AssetBus overrides...
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            
+
             //! A reference to the shader asset that this is a variant of.
             Data::Asset<ShaderAsset> m_shaderAsset;
 

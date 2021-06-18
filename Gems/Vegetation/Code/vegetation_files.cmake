@@ -17,6 +17,7 @@ set(FILES
     Include/Vegetation/InstanceSpawner.h
     Include/Vegetation/DynamicSliceInstanceSpawner.h
     Include/Vegetation/EmptyInstanceSpawner.h
+    Include/Vegetation/PrefabInstanceSpawner.h
     Include/Vegetation/AreaComponentBase.h
     Include/Vegetation/Ebuses/AreaSystemRequestBus.h
     Include/Vegetation/Ebuses/AreaNotificationBus.h
@@ -104,6 +105,7 @@ set(FILES
     Source/Descriptor.cpp
     Source/DynamicSliceInstanceSpawner.cpp
     Source/EmptyInstanceSpawner.cpp
+    Source/PrefabInstanceSpawner.cpp
     Source/VegetationSystemComponent.cpp
     Source/VegetationSystemComponent.h
     Source/InstanceData.cpp

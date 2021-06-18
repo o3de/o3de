@@ -105,6 +105,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzFrameworkTestShared
                 Gem::Vegetation.Static
     )
     ly_add_googletest(

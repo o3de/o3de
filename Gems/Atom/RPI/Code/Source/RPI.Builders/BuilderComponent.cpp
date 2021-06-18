@@ -105,20 +105,6 @@ namespace AZ
             m_assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantTreeAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<SkinMetaAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<MorphTargetMetaAssetHandler>());
-
-            RPI::MaterialFunctorSourceDataRegistration* materialFunctorRegistration = RPI::MaterialFunctorSourceDataRegistration::Get();
-            AZ_Assert(materialFunctorRegistration,
-                "MaterialFunctorSourceDataRegistration must be added to a component of the current module, "
-                "and initialize it in the component's Init() call.");
-            materialFunctorRegistration->RegisterMaterialFunctor("Lua", azrtti_typeid<LuaMaterialFunctorSourceData>());
-
-
-            // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-            auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-            if (assetCatalog)
-            {
-                assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
-            }
         }
 
         void BuilderComponent::Deactivate()

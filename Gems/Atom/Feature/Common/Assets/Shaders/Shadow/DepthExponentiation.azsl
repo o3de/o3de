@@ -71,7 +71,7 @@ void MainCS(uint3 dispatchId: SV_DispatchThreadID)
 
             // Todo: Expose Esm exponent slider for directional lights
             // This would remove the exp calculation below, collapsing it into a subtraction in DirectionalLightShadow.azsli
-            // ATOM-15775 
+            // ATOM-15775
             const float outValue = exp(EsmExponentialShift * depth);
             PassSrg::m_outputShadowmap[dispatchId].r = outValue;
             break;

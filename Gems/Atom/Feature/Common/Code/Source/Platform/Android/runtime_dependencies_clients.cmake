@@ -9,7 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-# This will export its "SourcePaths" to the generated "cmake_dependencies.<project>.assetbuilder.setreg"
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AtomContent_LookDevelopmentStudioPixar.Builders NAMESPACE Gem)
-endif()
+set(LY_RUNTIME_DEPENDENCIES
+    Gem::Atom_RHI_Vulkan.Private
+)

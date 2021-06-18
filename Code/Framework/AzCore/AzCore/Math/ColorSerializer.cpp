@@ -36,6 +36,12 @@ namespace AZ
         Color* color = reinterpret_cast<Color*>(outputValue);
         AZ_Assert(color, "Output value for JsonColorSerializer can't be null.");
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *color = Color::CreateZero();
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Color value set to default of zero.");
+        }
+
         switch (inputValue.GetType())
         {
         case rapidjson::kArrayType:
@@ -43,10 +49,14 @@ namespace AZ
         case rapidjson::kObjectType:
             return LoadObject(*color, inputValue, context);
         
-        case rapidjson::kStringType: // fall through
-        case rapidjson::kNumberType: // fall through
-        case rapidjson::kNullType:   // fall through
-        case rapidjson::kFalseType:  // fall through
+        case rapidjson::kStringType:
+            [[fallthrough]];
+        case rapidjson::kNumberType:
+            [[fallthrough]];
+        case rapidjson::kNullType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
         case rapidjson::kTrueType:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                 "Unsupported type. Colors can only be read from arrays or objects.");
@@ -89,6 +99,11 @@ namespace AZ
         {
             return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::PartialDefaults, "Color partially stored.");
         }
+    }
+
+    auto JsonColorSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
     }
 
     JsonSerializationResult::Result JsonColorSerializer::LoadObject(Color& output, const rapidjson::Value& inputValue, 
