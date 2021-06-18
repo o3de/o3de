@@ -9,7 +9,6 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#include "Vegetation_precompiled.h"
 #include "VegetationSystemComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -26,8 +25,6 @@
 #include <Vegetation/EmptyInstanceSpawner.h>
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/PrefabInstanceSpawner.h>
-
-#include <CrySystemBus.h>
 
 namespace Vegetation
 {
