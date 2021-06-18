@@ -30,13 +30,13 @@ namespace Multiplayer
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
-        Uninitialized,   ///< Agent is uninitialized.
-        Client,          ///< A Client connected to either a server or host.
-        ClientServer,    ///< A Client that also hosts and is the authority of the session
-        DedicatedServer  ///< A Dedicated Server which does not locally host any clients
+        Uninitialized,   //!< Agent is uninitialized.
+        Client,          //!< A Client connected to either a server or host.
+        ClientServer,    //!< A Client that also hosts and is the authority of the session
+        DedicatedServer  //!< A Dedicated Server which does not locally host any clients
     };
 
-    //! Payload detailing aspects of a Connection other services may be interested in
+    //! @brief Payload detailing aspects of a Connection other services may be interested in
     struct MultiplayerAgentDatum
     {
         bool m_isInvited;
@@ -49,7 +49,22 @@ namespace Multiplayer
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
 
-    //! IMultiplayer provides insight into the Multiplayer session and its Agents
+    //! @class IMultiplayer
+    //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
+    //!
+    //! IMultiplayer is an AZ::Interface<T> that provides applications access to
+    //! multiplayer session information and events.  IMultiplayer is implemented on the
+    //! MultiplayerSystemComponent and is used to define and access information about
+    //! the type of session and the role held by the current agent. An Agent is defined
+    //! here as an actor in a session. Types of Agents included by default are a Client,
+    //! a Client Server and a Dedicated Server.
+    //! 
+    //! IMultiplayer also provides events to allow developers to receive and respond to
+    //! notifications relating to the session. These include Session Init and Shutdown
+    //! and on acquisition of a new connection. These events are only fired on Client
+    //! Server or Dedicated Server. These events are useful for services that talk to
+    //! matchmaking services that may run in an entirely different layer which may need
+    //! insight to the gameplay session.
     class IMultiplayer
     {
     public:

@@ -67,8 +67,14 @@ namespace AZ
 
             // SkyBoxFeatureProcessorInterface overrides ...
             void Enable(bool enable) override;
-            bool IsEnable() override;
+            bool IsEnabled() override;
             void SetSkyboxMode(SkyBoxMode mode) override;
+            void SetFogSettings(const SkyBoxFogSettings& fogSettings) override;
+            void SetFogEnabled(bool enable) override;
+            bool IsFogEnabled() override;
+            void SetFogColor(const AZ::Color& color) override;
+            void SetFogTopHeight(float topHeight) override;
+            void SetFogBottomHeight(float bottomHeight) override;
 
             void SetCubemapRotationMatrix(AZ::Matrix4x4 matrix) override;
             void SetCubemap(Data::Instance<RPI::Image> cubemap) override;
@@ -145,6 +151,10 @@ namespace AZ
             RHI::ShaderInputNameIndex m_cubemapIndex = "m_skyboxCubemap";
             RHI::ShaderInputNameIndex m_cubemapRotationMatrixIndex = "m_cubemapRotationMatrix";
             RHI::ShaderInputNameIndex m_cubemapExposureIndex = "m_cubemapExposure";
+            RHI::ShaderInputNameIndex m_fogEnableIndex = "m_fogEnable";
+            RHI::ShaderInputNameIndex m_fogColorIndex = "m_fogColor";
+            RHI::ShaderInputNameIndex m_fogTopHeightIndex = "m_fogTopHeight";
+            RHI::ShaderInputNameIndex m_fogBottomHeightIndex = "m_fogBottomHeight";
 
             bool m_skyNeedUpdate = true;
             bool m_sunNeedUpdate = true;
@@ -152,6 +162,7 @@ namespace AZ
 
             bool m_enable = false;
             SkyBoxMode m_skyboxMode = SkyBoxMode::None;
+            SkyBoxFogSettings m_fogSettings;
             Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg = nullptr;
 
             Data::Instance<RPI::Image> m_cubemapTexture = nullptr;
