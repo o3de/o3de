@@ -32,7 +32,50 @@ class Cdk:
     Expects system to have NodeJS, AWS CLI and CDK installed globally and have their paths setup as env variables.
     """
 
-    def __init__(self, cdk_path: str, project: str, account_id: str,
+    def __init__(self):
+        self._cdk_env = ''
+        self._stacks = []
+        self._cdk_path = os.path.dirname(os.path.realpath(__file__))
+        self._session = ''
+
+        cdk_npm_latest_version_cmd = ['npm', 'view', 'aws-cdk', 'version']
+
+        output = process_utils.check_output(
+            cdk_npm_latest_version_cmd,
+            cwd=self._cdk_path,
+            shell=True)
+        cdk_npm_latest_version = output.split()[0]
+
+        cdk_version_cmd = ['cdk', 'version']
+        output = process_utils.check_output(
+            cdk_version_cmd,
+            cwd=self._cdk_path,
+            shell=True)
+        cdk_version = output.split()[0]
+        logger.info(f'Current CDK version {cdk_version}')
+
+        if cdk_version != cdk_npm_latest_version:
+            try:
+                logger.info(f'Updating CDK to latest')
+                # uninstall and reinstall cdk in case npm has been updated.
+                output = process_utils.check_output(
+                    'npm uninstall -g aws-cdk',
+                    cwd=self._cdk_path,
+                    shell=True)
+
+                logger.info(f'Uninstall CDK output: {output}')
+
+                output = process_utils.check_output(
+                    'npm install -g aws-cdk@latest',
+                    cwd=self._cdk_path,
+                    shell=True)
+
+                logger.info(f'Install CDK output: {output}')
+            except subprocess.CalledProcessError as error:
+                logger.warning(f'Failed reinstalling latest CDK on npm'
+                               f'\nError:{error.stderr}')
+
+    def setup(self, cdk_path: str, project: str, account_id: str,
                  workspace: pytest.fixture, session: boto3.session.Session, bootstrap_required: bool):
         """
         :param cdk_path: Path where cdk app.py is stored.
@@ -53,44 +96,9 @@ class Cdk:
         self._cdk_env['AWS_ACCESS_KEY_ID'] = credentials.access_key
         self._cdk_env['AWS_SECRET_ACCESS_KEY'] = credentials.secret_key
         self._cdk_env['AWS_SESSION_TOKEN'] = credentials.token
-        self._stacks = []
         self._cdk_path = cdk_path
 
         self._session = session
-
-        try:
-            cdk_version_cmd = ['cdk', 'list']
-
-            process_utils.check_call(
-                cdk_version_cmd,
-                cwd=self._cdk_path,
-                env=self._cdk_env,
-                shell=True)
-        except subprocess.CalledProcessError as cdkVersionError:
-            logger.warning(f'Found CDK version issue'
-                           f'\nError:{cdkVersionError.stderr}')
-
-            try:
-                logger.info(f'Updating CDK to latest')
-                # uninstall and reinstall cdk in case npm has been updated.
-                output = process_utils.check_output(
-                    'npm uninstall -g aws-cdk',
-                    cwd=self._cdk_path,
-                    env=self._cdk_env,
-                    shell=True)
-
-                logger.info(f'Uninstall CDK output: {output}')
-
-                output = process_utils.check_output(
-                    'npm install -g aws-cdk',
-                    cwd=self._cdk_path,
-                    env=self._cdk_env,
-                    shell=True)
-
-                logger.info(f'Install CDK output: {output}')
-            except subprocess.CalledProcessError as error:
-                logger.warning(f'Failed reinstalling latest CDK on npm'
-                               f'\nError:{error.stderr}')
 
         output = process_utils.check_output(
             'python -m pip install -r requirements.txt',

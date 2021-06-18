@@ -71,9 +71,10 @@ def cdk(
     logger.info(f'CDK Path {cdk_path}')
 
     if pytest.cdk_obj is None:
-        pytest.cdk_obj = Cdk(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session(),
-                             bootstrap_required)
+        pytest.cdk_obj = Cdk()
 
+    pytest.cdk_obj.setup(cdk_path, project, aws_utils.assume_account_id(), workspace, aws_utils.assume_session(),
+                             bootstrap_required)
     def teardown():
         if destroy_stacks_on_teardown:
             pytest.cdk_obj.destroy()
