@@ -102,7 +102,7 @@ def C4044695_PhysXCollider_AddMultipleSurfaceFbx():
     # 6) Check if multiple material slots show up under Materials section in the PhysX Collider component
     pte = collider_component.get_property_tree()
     def get_surface_count():
-        count = pte.get_container_count("Collider Configuration|Physics Material|Mesh Surfaces")
+        count = pte.get_container_count("Collider Configuration|Physics Materials|Slots")
         return count.GetValue()
 
     Report.result(

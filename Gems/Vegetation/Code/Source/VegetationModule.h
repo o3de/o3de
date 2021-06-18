@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include "Vegetation_precompiled.h"
 #include <AzCore/Module/Module.h>
 
 namespace Vegetation

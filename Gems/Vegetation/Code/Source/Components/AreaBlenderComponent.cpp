@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "AreaBlenderComponent.h"
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
