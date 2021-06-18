@@ -528,7 +528,6 @@ namespace AZ
         {
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
             AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId, "Was expecting to update the root variant");
-            GetCurrentShaderApiData().m_rootShaderVariantAsset = asset;
             ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
         }
 

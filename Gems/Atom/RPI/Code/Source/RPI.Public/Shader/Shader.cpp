@@ -69,7 +69,8 @@ namespace AZ
         {
             AZ_Assert(m_supervariantIndex != InvalidSupervariantIndex, "Invalid supervariant index");
             Data::AssetBus::Handler::BusDisconnect();
-            ShaderReloadNotificationBus::Handler::BusDisconnect();            ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
+            ShaderReloadNotificationBus::Handler::BusDisconnect();
+            ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
 
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
             RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
@@ -81,7 +82,7 @@ namespace AZ
                 AZStd::unique_lock<decltype(m_variantCacheMutex)> lock(m_variantCacheMutex);
                 m_shaderVariants.clear();
             }
-            m_rootVariant.Init(shaderAsset, shaderAsset.GetRootVariant());
+            m_rootVariant.Init(m_asset, shaderAsset.GetRootVariant(), m_supervariantIndex);
             m_rootVariant.Init(Data::Asset<ShaderAsset>{&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad}, shaderAsset.GetRootVariant(m_supervariantIndex), m_supervariantIndex);
 
             if (m_pipelineLibraryHandle.IsNull())
@@ -212,9 +213,8 @@ namespace AZ
                 else
                 {
                     //This is the first time the shader variant asset comes to life.
-                    ShaderVariant newVariant;
-                    newVariant.Init(m_asset, shaderVariantAsset, m_supervariantIndex);
-                    m_shaderVariants.emplace(stableId, newVariant);
+                    updatedVariant.Init(m_asset, shaderVariantAsset, m_supervariantIndex);
+                    m_shaderVariants.emplace(stableId, updatedVariant);
                 }
             }
 

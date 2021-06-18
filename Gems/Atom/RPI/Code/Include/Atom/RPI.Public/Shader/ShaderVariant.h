@@ -59,7 +59,7 @@ namespace AZ
             // Called by Shader. Initializes runtime data from asset data. Returns whether the call succeeded.
             bool Init(
                 const Data::Asset<ShaderAsset>& shaderAsset,
-                const Data::Asset<ShaderVariantAsset>& shaderVariantAsset);
+                const Data::Asset<ShaderVariantAsset>& shaderVariantAsset,
                 SupervariantIndex supervariantIndex);
 
             // AssetBus overrides...
@@ -77,6 +77,7 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> m_shaderVariantAsset;
 
             const RHI::RenderStates* m_renderStates = nullptr; // Cached from ShaderAsset.
+            SupervariantIndex m_supervariantIndex;
         };
     }
 }

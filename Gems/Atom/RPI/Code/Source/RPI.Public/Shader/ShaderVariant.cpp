@@ -27,9 +27,11 @@ namespace AZ
             const Data::Asset<ShaderVariantAsset>& shaderVariantAsset,
             SupervariantIndex supervariantIndex)
         {            
-            m_pipelineStateType = shaderAsset.GetPipelineStateType();
-            m_pipelineLayoutDescriptor = shaderAsset.GetPipelineLayoutDescriptor(supervariantIndex);            m_shaderVariantAsset = shaderVariantAsset;
-            m_renderStates = &shaderAsset.GetRenderStates(supervariantIndex);
+            m_pipelineStateType = shaderAsset->GetPipelineStateType();
+            m_pipelineLayoutDescriptor = shaderAsset->GetPipelineLayoutDescriptor(supervariantIndex);
+            m_shaderVariantAsset = shaderVariantAsset;
+            m_renderStates = &shaderAsset->GetRenderStates(supervariantIndex);
+            m_supervariantIndex = supervariantIndex;
             return true;
         }
 
@@ -86,14 +88,14 @@ namespace AZ
             if (asset.GetAs<ShaderVariantAsset>())
             {
                 Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-                Init(m_shaderAsset, shaderVariantAsset);
+                Init(m_shaderAsset, shaderVariantAsset, m_supervariantIndex);
                 ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
             }
 
             if (asset.GetAs<ShaderAsset>())
             {
                 Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-                Init(shaderAsset, m_shaderVariantAsset);
+                Init(shaderAsset, m_shaderVariantAsset, m_supervariantIndex);
                 ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
             }
         }
