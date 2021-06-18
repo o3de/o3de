@@ -9,11 +9,13 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
+
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
 namespace AZ
@@ -21,15 +23,24 @@ namespace AZ
     namespace RPI
     {
         bool ShaderVariant::Init(
-            const ShaderAsset& shaderAsset,
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset,
-            SupervariantIndex supervariantIndex)
-        {            
-            m_pipelineStateType = shaderAsset.GetPipelineStateType();
-            m_pipelineLayoutDescriptor = shaderAsset.GetPipelineLayoutDescriptor(supervariantIndex);
+            const Data::Asset<ShaderAsset>& shaderAsset,
+            const Data::Asset<ShaderVariantAsset>& shaderVariantAsset)
+        {
+            Data::AssetBus::MultiHandler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusConnect(shaderAsset.GetId());
+            Data::AssetBus::MultiHandler::BusConnect(shaderVariantAsset.GetId());
+
+            m_shaderAsset = shaderAsset;
+            m_pipelineStateType = shaderAsset->GetPipelineStateType();
+            m_pipelineLayoutDescriptor = shaderAsset->GetPipelineLayoutDescriptor();
             m_shaderVariantAsset = shaderVariantAsset;
-            m_renderStates = &shaderAsset.GetRenderStates(supervariantIndex);
+
             return true;
+        }
+
+        ShaderVariant::~ShaderVariant()
+        {
+            Data::AssetBus::MultiHandler::BusDisconnect();
         }
 
         void ShaderVariant::ConfigurePipelineState(RHI::PipelineStateDescriptor& descriptor) const
@@ -41,12 +52,11 @@ namespace AZ
             case RHI::PipelineStateType::Draw:
             {
                 AZ_Assert(m_pipelineStateType == RHI::PipelineStateType::Draw, "ShaderVariant is not intended for the raster pipeline.");
-                AZ_Assert(m_renderStates, "Invalid RenderStates");
                 RHI::PipelineStateDescriptorForDraw& descriptorForDraw = static_cast<RHI::PipelineStateDescriptorForDraw&>(descriptor);
                 descriptorForDraw.m_vertexFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Vertex);
                 descriptorForDraw.m_tessellationFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Tessellation);
                 descriptorForDraw.m_fragmentFunction = m_shaderVariantAsset->GetShaderStageFunction(RHI::ShaderStage::Fragment);
-                descriptorForDraw.m_renderStates = *m_renderStates;
+                descriptorForDraw.m_renderStates = m_shaderVariantAsset->GetRenderStates();
                 break;
             }
 
@@ -69,6 +79,35 @@ namespace AZ
             default:
                 AZ_Assert(false, "Unexpected PipelineStateType");
                 break;
+            }
+        }
+
+        const ShaderInputContract& ShaderVariant::GetInputContract() const
+        {
+            return m_shaderVariantAsset->GetInputContract();
+        }
+
+        const ShaderOutputContract& ShaderVariant::GetOutputContract() const
+        {
+            return m_shaderVariantAsset->GetOutputContract();
+        }
+
+        void ShaderVariant::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderVariant::OnAssetReloaded %s", this, asset.GetHint().c_str());
+
+            if (asset.GetAs<ShaderVariantAsset>())
+            {
+                Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                Init(m_shaderAsset, shaderVariantAsset);
+                ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
+            }
+
+            if (asset.GetAs<ShaderAsset>())
+            {
+                Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                Init(shaderAsset, m_shaderVariantAsset);
+                ShaderReloadNotificationBus::Event(m_shaderAsset.GetId(), &ShaderReloadNotificationBus::Events::OnShaderVariantReinitialized, *this);
             }
         }
 

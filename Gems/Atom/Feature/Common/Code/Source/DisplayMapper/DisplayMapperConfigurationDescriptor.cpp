@@ -50,6 +50,19 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
+                behaviorContext->Class<OutputDeviceTransformType>()
+                    ->Enum<OutputDeviceTransformType::OutputDeviceTransformType_48Nits>("OutputDeviceTransformType_48Nits")
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ->Enum<OutputDeviceTransformType::OutputDeviceTransformType_1000Nits>("OutputDeviceTransformType_100Nits")
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ->Enum<OutputDeviceTransformType::OutputDeviceTransformType_2000Nits>("OutputDeviceTransformType_2000Nits")
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ->Enum<OutputDeviceTransformType::OutputDeviceTransformType_4000Nits>("OutputDeviceTransformType_4000Nits")
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ->Enum<OutputDeviceTransformType::NumOutputDeviceTransformTypes>("OutputDeviceTransformType_NumOutputDeviceTransformTypes")
+                    ->Attribute(AZ::Script::Attributes::Module, "atom")
+                    ;
+
                 behaviorContext->Class<AcesParameterOverrides>("AcesParameterOverrides")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")

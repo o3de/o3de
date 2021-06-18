@@ -26,7 +26,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
         else()
             # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            file(READ "${project_real_path}/project.json" project_json)
+            ly_file_read("${project_real_path}/project.json" project_json)
             string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
             if(json_error)
                 message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
@@ -196,6 +196,16 @@ function(ly_delayed_generate_static_modules_inl)
             ly_get_gem_load_dependencies(all_game_gem_dependencies ${project_name}.GameLauncher)
 
             foreach(game_gem_dependency ${all_game_gem_dependencies})
+                # Sometimes, a gem's Client variant may be an interface library
+                # which dependes on multiple gem targets. The interface libraries
+                # should be skipped; the real dependencies of the interface will be processed
+                if(TARGET ${game_gem_dependency})
+                    get_target_property(target_type ${game_gem_dependency} TYPE)
+                    if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                        continue()
+                    endif()
+                endif()
+
                 # To match the convention on how gems targets vs gem modules are named,
                 # we remove the ".Static" from the suffix
                 # Replace "." with "_"
@@ -224,6 +234,14 @@ function(ly_delayed_generate_static_modules_inl)
                     list(APPEND all_server_gem_dependencies ${server_gem_load_dependencies} ${server_gem_dependency})
                 endforeach()
                 foreach(server_gem_dependency ${all_server_gem_dependencies})
+                    # Skip interface libraries
+                    if(TARGET ${server_gem_dependency})
+                        get_target_property(target_type ${server_gem_dependency} TYPE)
+                        if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                            continue()
+                        endif()
+                    endif()
+
                     # Replace "." with "_"
                     string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
 

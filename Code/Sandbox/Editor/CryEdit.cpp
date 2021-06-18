@@ -2886,7 +2886,7 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 {
     // provide the current project path for in case we want to update the project
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project_path %s", screen.c_str(), projectPath.c_str());
+    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project-path %s", screen.c_str(), projectPath.c_str());
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {
@@ -3998,17 +3998,10 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 {
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        QString platform = "";
-
-#ifdef WIN64
-        platform = "[x64]";
-#else
-        platform = "[x86]";
-#endif //WIN64
 
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("Open 3D Engine Editor Beta %1 - Build %2").arg(platform).arg(LY_BUILD);
+            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
         }
 
         if (!sPreTitleStr.isEmpty())

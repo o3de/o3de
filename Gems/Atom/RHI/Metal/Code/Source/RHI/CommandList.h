@@ -99,7 +99,16 @@ namespace AZ
             {
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgsByIndex;
                 AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgsBySlot;
+                AZStd::array<AZ::HashValue64, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgVisHashByIndex;
             };
+            
+            using MetalArgumentBufferArray = AZStd::array<id<MTLBuffer>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+            using MetalArgumentBufferArrayOffsets = AZStd::array<NSUInteger, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+            void BindArgumentBuffers(RHI::ShaderStage shaderStage,
+                                     uint16_t registerIdMin,
+                                     uint16_t registerIdMax,
+                                     MetalArgumentBufferArray& mtlArgBuffers,
+                                     MetalArgumentBufferArrayOffsets mtlArgBufferOffsets);
             
             ShaderResourceBindings& GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType pipelineType);            
             

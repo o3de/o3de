@@ -154,11 +154,23 @@ SandboxIntegrationManager::SandboxIntegrationManager()
 {
     // Required to receive events from the Cry Engine undo system
     GetIEditor()->GetUndoManager()->AddListener(this);
+
+    // Only create the PrefabIntegrationManager if prefabs are enabled
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    if (prefabSystemEnabled)
+    {
+        m_prefabIntegrationManager = aznew AzToolsFramework::Prefab::PrefabIntegrationManager();
+    }
 }
 
 SandboxIntegrationManager::~SandboxIntegrationManager()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
+
+    delete m_prefabIntegrationManager;
+    m_prefabIntegrationManager = nullptr;
 }
 
 void SandboxIntegrationManager::Setup()
@@ -187,11 +199,16 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert((m_editorEntityUiInterface != nullptr),
         "SandboxIntegrationManager requires a EditorEntityUiInterface instance to be present on Setup().");
 
-    m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-
-    AZ_Assert(
-        (m_prefabIntegrationInterface != nullptr),
-        "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    if (prefabSystemEnabled)
+    {
+        m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ_Assert(
+            (m_prefabIntegrationInterface != nullptr),
+            "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+    }
 
     m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
     AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");

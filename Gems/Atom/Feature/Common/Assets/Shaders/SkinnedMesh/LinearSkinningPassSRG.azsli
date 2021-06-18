@@ -16,7 +16,7 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    RWBuffer<float> m_skinnedMeshOutputStream;    
+    RWStructuredBuffer<float> m_skinnedMeshOutputStream;    
 }
 
 ShaderResourceGroup InstanceSrg : SRG_PerDraw

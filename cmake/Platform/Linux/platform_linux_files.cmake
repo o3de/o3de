@@ -19,6 +19,5 @@ set(FILES
     LYWrappers_linux.cmake
     PAL_linux.cmake
     PALDetection_linux.cmake
-    windeployqt_wrapper.cmake
     RPathChange.cmake
 )

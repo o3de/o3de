@@ -84,7 +84,7 @@ function(ly_create_alias)
     # now add the final alias:
     add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${ly_create_alias_NAME})
 
-    # Store off the arguments needed used ly_create_alias into a DIRECTORY property
+    # Store off the arguments used by ly_create_alias into a DIRECTORY property
     # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
 
     # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
@@ -136,8 +136,8 @@ function(ly_enable_gems)
         if(NOT was_able_to_load_the_file)
             message(FATAL_ERROR "could not load the GEM_FILE ${ly_enable_gems_GEM_FILE}")
         endif()
-        if(NOT ENABLED_GEMS)
-            message(FATAL_ERROR "GEM_FILE ${ly_enable_gems_GEM_FILE} did not set the value of ENABLED_GEMS.\n"
+        if(NOT DEFINED ENABLED_GEMS)
+            message(WARNING "GEM_FILE ${ly_enable_gems_GEM_FILE} did not set the value of ENABLED_GEMS.\n"
                                 "Gem Files should contain set(ENABLED_GEMS ... <list of gem names>)")
         endif()
         set(ly_enable_gems_GEMS ${ENABLED_GEMS})
@@ -148,9 +148,19 @@ function(ly_enable_gems)
     foreach(target_name ${ly_enable_gems_TARGETS})
         foreach(variant_name ${ly_enable_gems_VARIANTS})
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_ENABLE_GEMS "${ly_enable_gems_PROJECT_NAME},${target_name},${variant_name}")
+            define_property(GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${ly_enable_gems_PROJECT_NAME},${target_name},${variant_name}"
+                BRIEF_DOCS "List of gem names to evaluate variants against" FULL_DOCS "Names of gems that will be paired with the variant name
+                    to determine if it is valid target that should be added as an application dynamic load dependency")
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_ENABLE_GEMS_"${ly_enable_gems_PROJECT_NAME},${target_name},${variant_name}" ${ly_enable_gems_GEMS})
         endforeach()
     endforeach()
+
+    # Store off the arguments used by ly_enable_gems into a DIRECTORY property
+    # This will be used to re-create the ly_enable_gems call in the generated CMakeLists.txt at the INSTALL step
+
+    # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
+    string(REPLACE ";" " " enable_gems_args "${ly_enable_gems_PROJECT_NAME},${ly_enable_gems_GEMS},${ly_enable_gems_GEM_FILE},${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
+    set_property(DIRECTORY APPEND PROPERTY LY_ENABLE_GEMS_ARGUMENTS "${enable_gems_args}")
 endfunction()
 
 # call this before runtime dependencies are used to add any relevant targets
@@ -176,6 +186,20 @@ function(ly_enable_gems_delayed)
 
         get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project_target_variant}")
         if (NOT gem_dependencies)
+            get_property(gem_dependencies_defined GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project_target_variant}" DEFINED)
+            if (gem_dependencies_defined)
+                # special case, if the LY_DELAYED_ENABLE_GEMS_"${project_target_variant}" property is DEFINED
+                # but empty, add an entry to the LY_DELAYED_LOAD_DEPENDENCIES to have the
+                # cmake_dependencies.*.setreg file for the (project, target) tuple to be regenerated
+                # This is needed if the ENABLED_GEMS list for a project goes from >0 to 0. In this case
+                # the cmake_dependencies would have a stale list of gems to load unless it is regenerated
+                get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${project},${target}" SET)
+                if(NOT delayed_load_target_set)
+                    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${project},${target}")
+                    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${project},${target}" "")
+                endif()
+            endif()
+            # Continue to the next iteration loop regardless as there are no gem dependencies
             continue()
         endif()
 
