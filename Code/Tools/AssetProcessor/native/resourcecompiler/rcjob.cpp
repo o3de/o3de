@@ -788,13 +788,6 @@ namespace AssetProcessor
 
         // if we get here, we are good to go in terms of disk space and sources existing, so we make the best attempt we can.
         // first, we broadcast the name of ALL of the outputs we are about to change:
-        for (const QPair<QString, QString>& filePair : outputsToCopy)
-        {
-            const QString& productAbsolutePath = filePair.second;
-            // note that this absolute path is a real file system path, and the following API requires normalized paths:
-            QString normalized = AssetUtilities::NormalizeFilePath(productAbsolutePath);
-            AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, normalized.toUtf8().constData());
-        }
 
         // after we do the above notify its important that we do not early exit this function without undoing those locks.
 
@@ -823,13 +816,6 @@ namespace AssetProcessor
 
         // once we're done, regardless of success or failure, we 'unlock' those files for further process.
         // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
-        for (const QPair<QString, QString>& filePair : outputsToCopy)
-        {
-            const QString& productAbsolutePath = filePair.second;
-            // note that this absolute path is a real file system path, and the following API requires normalized paths:
-            QString normalized = AssetUtilities::NormalizeFilePath(productAbsolutePath);
-            AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, normalized.toUtf8().constData(), anyFileFailed);
-        }
         
         return !anyFileFailed;
     }
