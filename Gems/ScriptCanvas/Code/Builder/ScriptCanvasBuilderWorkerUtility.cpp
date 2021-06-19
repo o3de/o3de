@@ -16,7 +16,6 @@
 #include <Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/Math/Uuid.h>
@@ -534,30 +533,11 @@ namespace ScriptCanvasBuilder
             }
         }
 
-        bool entityAdded = false;
-
-        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
-        {
-            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RemoveEntity(buildEntity);
-        }
-
-        if (buildEntity->GetState() == AZ::Entity::State::Constructed)
-        {
-            buildEntity->Init();
-            entityAdded = true;
-        }
+        ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(buildEntity);
 
         if (buildEntity->GetState() == AZ::Entity::State::Init)
         {
             buildEntity->Activate();
-        }
-
-        if (!entityAdded)
-        {
-            if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
-            {
-                AZ::Interface<AZ::ComponentApplicationRequests>::Get()->AddEntity(buildEntity);
-            }
         }
 
         return sourceGraph;

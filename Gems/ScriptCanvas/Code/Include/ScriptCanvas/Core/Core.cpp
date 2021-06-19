@@ -10,8 +10,8 @@
 *
 */
 
-
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -22,6 +22,38 @@
 
 namespace ScriptCanvas
 {
+    ScopedAuxiliaryEntityHandler::ScopedAuxiliaryEntityHandler(AZ::Entity* buildEntity)
+        : m_buildEntity(buildEntity)
+        , m_wasAdded(false)
+    {
+        if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+        {
+            AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RemoveEntity(buildEntity);
+        }
+
+        if (buildEntity->GetState() == AZ::Entity::State::Constructed)
+        {
+            buildEntity->Init();
+            m_wasAdded = true;
+        }
+    }
+
+    ScopedAuxiliaryEntityHandler::~ScopedAuxiliaryEntityHandler()
+    {
+        if (m_buildEntity->GetState() == AZ::Entity::State::Init)
+        {
+            m_buildEntity->Activate();
+        }
+
+        if (!m_wasAdded)
+        {
+            if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)
+            {
+                AZ::Interface<AZ::ComponentApplicationRequests>::Get()->AddEntity(m_buildEntity);
+            }
+        }
+    }
+
     bool IsNamespacePathEqual(const NamespacePath& lhs, const NamespacePath& rhs)
     {
         if (lhs.size() != rhs.size())
