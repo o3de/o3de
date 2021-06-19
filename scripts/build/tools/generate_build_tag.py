@@ -39,7 +39,11 @@ def run_git_command(args, repo_root):
     output = process.stdout.splitlines()
     # something went wrong and we somehow got more information then requested
     if len(output) != 1:
-        print(f'Unexpected output received from command: git {subprocess.list2cmdline(args)}')
+        print(f'Unexpected output received.\n'
+            f'Command: git {subprocess.list2cmdline(args)}\n'
+            f'Output:{process.stdout}\n'
+            f'Error: {process.stderr}\n'
+        )
         exit(1)
 
     return output[0].strip('"')
