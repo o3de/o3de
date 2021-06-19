@@ -612,10 +612,10 @@ namespace AZ
                 ValueToKeyDataMap valueToKeyDataMap;
                 // Key time can be less than zero, normalize to have zero be the lowest time.
                 double keyOffset = 0;
-                for (int keyIdx = 0; keyIdx < meshMorphAnim->mNumKeys; keyIdx++)
+                for (unsigned int keyIdx = 0; keyIdx < meshMorphAnim->mNumKeys; keyIdx++)
                 {
                     aiMeshMorphKey& key = meshMorphAnim->mKeys[keyIdx];
-                    for (int valIdx = 0; valIdx < key.mNumValuesAndWeights; ++valIdx)
+                    for (unsigned int valIdx = 0; valIdx < key.mNumValuesAndWeights; ++valIdx)
                     {
                         int currentValue = key.mValues[valIdx];
                         KeyData thisKey(key.mWeights[valIdx], key.mTime);

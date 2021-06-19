@@ -1555,7 +1555,7 @@ namespace EMotionFX
         const uint32 geomLODLevel = 0;
         const uint32 numNodes = mSkeleton->GetNumNodes();
 
-        for (int nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+        for (uint32 nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
         {
             // check if this node has a mesh, if not we can skip it
             Mesh* mesh = GetMesh(geomLODLevel, nodeIndex);
