@@ -1,15 +1,18 @@
-#Lumberyard source to target mapping
-[target]
-name = "${target_name}"
-output_name = "${target_output_name}"
-path = "${target_path}"
-[sources]
-input = [
+{
+    "sources": {
+        "input": [
 ${autogen_input_files}
-]
-output = [
+        ],
+        "output": [
 ${autogen_output_files}
-]
-static = [
+        ],
+        "static": [
 ${static_sources}
-]
+        ]
+    },
+    "target": {
+        "name": "${target_name}",
+        "output_name": "${target_output_name}",
+        "path": "${target_path}"
+    }
+}

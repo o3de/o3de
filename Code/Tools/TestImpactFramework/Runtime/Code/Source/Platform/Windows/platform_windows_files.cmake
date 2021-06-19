@@ -10,5 +10,12 @@
 #
 
 set(FILES
-    Dummy_Windows.cpp
+    Process/TestImpactWin32_ProcessLauncher.cpp
+    Process/TestImpactWin32_Process.cpp
+    Process/TestImpactWin32_Process.h
+    Process/TestImpactWin32_Handle.h
+    Process/TestImpactWin32_Pipe.cpp
+    Process/TestImpactWin32_Pipe.h
+    TestEngine/JobRunner/TestImpactWin32_TestTargetExtension.cpp
+    TestEngine/TestImpactWin32_TestEngineJobFailure.cpp
 )

@@ -271,6 +271,12 @@ namespace AZ
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(pipelineType);
 
             const PipelineState* pipelineState = static_cast<const PipelineState*>(item.m_pipelineState);
+            if(!pipelineState)
+            {
+                AZ_Assert(false, "Pipeline state not provided");
+                return false;
+            }
+            
             bool updatePipelineState = m_state.m_pipelineState != pipelineState;
             // The pipeline state gets set first.
             if (updatePipelineState)

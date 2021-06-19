@@ -121,10 +121,10 @@ namespace AzToolsFramework
             /**
             * Gets the entities in the Instance DOM.  Can recursively trace all nested instances.
             */
-            void GetConstNestedEntities(const AZStd::function<bool(const AZ::Entity&)>& callback);
-            void GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback);
-            void GetNestedEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
             void GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
+            void GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback) const;
+            void GetAllEntitiesInHierarchy(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
+            void GetAllEntitiesInHierarchyConst(const AZStd::function<bool(const AZ::Entity&)>& callback) const;
             void GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback);
 
             /**
@@ -184,18 +184,17 @@ namespace AzToolsFramework
 
             static InstanceAlias GenerateInstanceAlias();
 
-        protected:
-            /**
-            * Gets the entities owned by this instance
-            */
-            void GetEntities(EntityList& entities, bool includeNestedEntities = false);
-
         private:
             static constexpr const char s_aliasPathSeparator = '/';
 
             void ClearEntities();
 
             void RemoveEntities(const AZStd::function<bool(const AZStd::unique_ptr<AZ::Entity>&)>& filter);
+
+            bool GetEntities_Impl(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
+            bool GetConstEntities_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const;
+            bool GetAllEntitiesInHierarchy_Impl(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback);
+            bool GetAllEntitiesInHierarchyConst_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const;
 
             bool RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias);
             AZStd::unique_ptr<AZ::Entity> DetachEntity(const EntityAlias& entityAlias);

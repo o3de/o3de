@@ -57,6 +57,9 @@ namespace AZ
             /// Returns srgVisibility data
             const ShaderResourceGroupVisibility& GetSrgResourcesVisibility(uint32_t index) const;
             
+            /// Returns srgVisibility hash
+            const AZ::HashValue64 GetSrgResourcesVisibilityHash(uint32_t index) const;
+            
             /// Returns the root constant specific layout information
             uint32_t GetRootConstantsSize() const;
             uint32_t GetRootConstantsSlotIndex() const;
@@ -83,6 +86,9 @@ namespace AZ
             
             /// Cache Visibility across all the resources within the SRG
             AZStd::fixed_vector<ShaderResourceGroupVisibility, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgResourcesVisibility;
+            
+            /// Cache Visibility hash across all the resources within the SRG
+            AZStd::fixed_vector<AZ::HashValue64, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgResourcesVisibilityHash;
             
             uint32_t m_rootConstantSlotIndex = (uint32_t)-1;
             uint32_t m_rootConstantsSize = 0;

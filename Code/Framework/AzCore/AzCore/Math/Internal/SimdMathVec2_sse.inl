@@ -471,6 +471,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::Reciprocal(FloatArgType value)
         {
+            value = Sse::ReplaceFourth(Sse::ReplaceThird(value, 1.0f), 1.0f);
             return Sse::Reciprocal(value);
         }
 
@@ -513,6 +514,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::SqrtInv(FloatArgType value)
         {
+            value = Sse::ReplaceFourth(Sse::ReplaceThird(value, 1.0f), 1.0f);
             return Sse::SqrtInv(value);
         }
 
