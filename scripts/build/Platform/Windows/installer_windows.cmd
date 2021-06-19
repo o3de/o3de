@@ -50,20 +50,22 @@ IF ERRORLEVEL 1 (
     GOTO :popd_error
 )
 
-REM generate the build ID for artifact upload tagging
-PUSHD "%~dp0/../../../.."
-SET "ENGINE_ROOT=%cd%"
-POPD
+REM use the git info to generate an identifier used by the online installer urls
+SET "BUILD_ID_FILE=_CPack\\build_id.txt"
 
-SET "GEN_BUILD_ID_SCRIPT=%ENGINE_ROOT%/scripts/build/tools/generate_build_tag.py"
-SET "BUILD_ID_FILE=_CPack/build_id.txt"
-
-ECHO [ci_build] "%ENGINE_ROOT%/python/python.cmd" -u "%GEN_BUILD_ID_SCRIPT%" "%BUILD_ID_FILE%"
-CALL "%ENGINE_ROOT%/python/python.cmd" -u "%GEN_BUILD_ID_SCRIPT%" "%BUILD_ID_FILE%"
-IF ERRORLEVEL 1 (
-    ECHO [ci_build] Failed to generate build ID
-    GOTO :popd_error
+SET BRANCH_ID=""
+REM limit branch separators to 6
+FOR /F "tokens=1-6 delims=/" %%a in ("!BRANCH_NAME!") DO (
+    SET BRANCH_ID=%%a
+    if NOT "%%b"=="" SET BRANCH_ID=!BRANCH_ID!-%%b
+    if NOT "%%c"=="" SET BRANCH_ID=!BRANCH_ID!-%%c
+    if NOT "%%d"=="" SET BRANCH_ID=!BRANCH_ID!-%%d
+    if NOT "%%e"=="" SET BRANCH_ID=!BRANCH_ID!-%%e
+    if NOT "%%f"=="" SET BRANCH_ID=!BRANCH_ID!-%%f
 )
+
+REM write out the build ID to disk so cpack can consume it
+ECHO %BRANCH_ID%/%CHANGE_DATE%-%CHANGE_ID:~0,7% > "%BUILD_ID_FILE%"
 
 ECHO [ci_build] "!CPACK_PATH!" -C %CONFIGURATION%
 "!CPACK_PATH!"  -C %CONFIGURATION%
