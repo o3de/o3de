@@ -32,6 +32,12 @@ namespace AZ
             m_shaderVariantAsset = shaderVariantAsset;
             m_renderStates = &shaderAsset->GetRenderStates(supervariantIndex);
             m_supervariantIndex = supervariantIndex;
+
+            Data::AssetBus::MultiHandler::BusDisconnect();
+            Data::AssetBus::MultiHandler::BusConnect(shaderAsset.GetId());
+            Data::AssetBus::MultiHandler::BusConnect(shaderVariantAsset.GetId());
+
+            m_shaderAsset = shaderAsset;
             return true;
         }
 
