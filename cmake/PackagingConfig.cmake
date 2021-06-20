@@ -16,7 +16,7 @@ endif()
 
 if(CPACK_AUTO_GEN_TAG)
     set(_python_script python.sh)
-    if(${_target_name} STREQUAL WINDOWS)
+    if(${_target_name} STREQUAL Windows)
         set(_python_script python.cmd)
     endif()
 
@@ -34,7 +34,7 @@ if(CPACK_AUTO_GEN_TAG)
     )
 
     if (NOT ${_gen_tag_result} EQUAL 0)
-        message(FATAL_ERROR "Failed to generate build tag!")
+        message(FATAL_ERROR "Failed to generate build tag!  Errors: ${_gen_tag_errors}")
     endif()
 
     set(_url_tag ${_gen_tag_output})
