@@ -124,8 +124,11 @@ set(_upload_command
     --file_regex="${_file_regex}"
     --bucket ${_bucket}
     --key_prefix ${_prefix}
-    --profile ${CPACK_AWS_PROFILE}
 )
+
+if(CPACK_AWS_PROFILE)
+    list(APPEND _upload_command --profile ${CPACK_AWS_PROFILE})
+endif()
 
 message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
 execute_process(
