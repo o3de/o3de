@@ -66,7 +66,8 @@ if __name__ == "__main__":
     # include the commit date to allow some sensible way of sorting
     commit_date = os.environ.get('CHANGE_DATE')
     if not commit_date:
-        commit_date = run_git_command(['show', '-s', '--format=%cs', commit_hash], repo_root)
+        commit_date = run_git_command(['show', '-s', '--format=%cI', commit_hash], repo_root)
+    commit_date = commit_date[0:10]
 
     print(f'{branch}/{commit_date}-{commit_hash}')
     exit(0)
