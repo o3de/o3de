@@ -32,39 +32,41 @@ def run_git_command(args, repo_root):
             f'An error occurred while running a command\n'
             f'Command: git {subprocess.list2cmdline(args)}\n'
             f'Return Code: {process.returncode}\n'
-            f'Error: {process.stderr}'
+            f'Error: {process.stderr}',
+            file=sys.stderr
         )
         exit(1)
 
     output = process.stdout.splitlines()
-    # something went wrong and we somehow got more information then requested
-    if len(output) != 1:
-        print(f'Unexpected output received.\n'
-            f'Command: git {subprocess.list2cmdline(args)}\n'
-            f'Output:{process.stdout}\n'
-            f'Error: {process.stderr}\n'
-        )
-        exit(1)
+    if not output:
+        print(f'No output received for command: git {subprocess.list2cmdline(args)}.')
+        output
 
     return output[0].strip('"')
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generates a build ID based on the state of the git repository')
-    parser.add_argument('output_file', help='Path to the output file where the build ID will be written to')
-    parsed_args = parser.parse_args()
-
+    '''
+    Generates a build ID based on the state of the git repository.  Will first attempt to use
+    existing environment variable (e.g. BRANCH_NAME, CHANGE_ID, CHANGE_DATE) before falling
+    back to running git commands directly
+    '''
     repo_root = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-    branch = run_git_command(['branch', '--show-current'], repo_root)
+    branch = os.environ.get('BRANCH_NAME')
+    if not branch:
+        branch = run_git_command(['rev-parse', '--abbrev-ref', 'HEAD'], repo_root)
     branch = branch.replace('/', '-')
 
-    commit_hash = run_git_command(['show', '--format="%h"', '--no-patch'], repo_root)
+    commit_hash = os.environ.get('CHANGE_ID')
+    if not commit_hash:
+        commit_hash = run_git_command(['rev-parse', 'HEAD'], repo_root)
+    commit_hash = commit_hash[0:9]
 
     # include the commit date to allow some sensible way of sorting
-    commit_date = run_git_command(['show', '-s', '--format="%cs"', commit_hash], repo_root)
+    commit_date = os.environ.get('CHANGE_DATE')
+    if not commit_date:
+        commit_date = run_git_command(['show', '-s', '--format=%cs', commit_hash], repo_root)
 
-    with open(parsed_args.output_file, 'w') as out_file:
-        out_file.write(f'{branch}/{commit_date}-{commit_hash}')
-
-    sys.exit(0)
+    print(f'{branch}/{commit_date}-{commit_hash}')
+    exit(0)
