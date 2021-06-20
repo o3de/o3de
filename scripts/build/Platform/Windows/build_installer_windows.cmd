@@ -10,8 +10,6 @@ REM remove or modify any license notices. This file is distributed on an "AS IS"
 REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM
 
-SET "LY_INSTALLER_UPLOAD_URL=s3://%CPACK_BUCKET%"
-
 CALL "%~dp0build_windows.cmd"
 IF NOT %ERRORLEVEL%==0 GOTO :error
 
