@@ -50,23 +50,6 @@ IF ERRORLEVEL 1 (
     GOTO :popd_error
 )
 
-REM use the git info to generate an identifier used by the online installer urls
-SET "BUILD_ID_FILE=_CPack\\build_id.txt"
-
-SET BRANCH_ID=""
-REM limit branch separators to 6
-FOR /F "tokens=1-6 delims=/" %%a in ("!BRANCH_NAME!") DO (
-    SET BRANCH_ID=%%a
-    if NOT "%%b"=="" SET BRANCH_ID=!BRANCH_ID!-%%b
-    if NOT "%%c"=="" SET BRANCH_ID=!BRANCH_ID!-%%c
-    if NOT "%%d"=="" SET BRANCH_ID=!BRANCH_ID!-%%d
-    if NOT "%%e"=="" SET BRANCH_ID=!BRANCH_ID!-%%e
-    if NOT "%%f"=="" SET BRANCH_ID=!BRANCH_ID!-%%f
-)
-
-REM write out the build ID to disk so cpack can consume it
-ECHO %BRANCH_ID%/%CHANGE_DATE%-%CHANGE_ID:~0,7% > "%BUILD_ID_FILE%"
-
 ECHO [ci_build] "!CPACK_PATH!" -C %CONFIGURATION%
 "!CPACK_PATH!"  -C %CONFIGURATION%
 IF NOT %ERRORLEVEL%==0 (

@@ -24,24 +24,10 @@ set(_ext_flags
     -ext WixBalExtension
 )
 
-set(_build_id_file ${CPACK_BINARY_DIR}/build_id.txt)
-if(EXISTS ${_build_id_file})
-    file(READ ${_build_id_file} _build_id)
-
-    set(_full_download_url ${CPACK_DOWNLOAD_SITE}/${_build_id}/${CPACK_VERSIONED_TARGET_TAG})
-    set(_full_upload_url ${CPACK_UPLOAD_URL}/${_build_id}/${CPACK_VERSIONED_TARGET_TAG})
-else()
-    # format: YYYY-MM-DD-HHmm UTC
-    string(TIMESTAMP _timestamp "%Y%-%m-%d-%H%m" UTC)
-
-    set(_full_download_url ${CPACK_DOWNLOAD_SITE}/notag/${_timestamp}/${CPACK_VERSIONED_TARGET_TAG})
-    set(_full_upload_url ${CPACK_UPLOAD_URL}/notag/${_timestamp}/${CPACK_VERSIONED_TARGET_TAG})
-endif()
-
 set(_addtional_defines
     -dCPACK_BOOTSTRAP_THEME_FILE=${CPACK_BINARY_DIR}/BootstrapperTheme
     -dCPACK_BOOTSTRAP_UPGRADE_GUID=${CPACK_WIX_BOOTSTRAP_UPGRADE_GUID}
-    -dCPACK_DOWNLOAD_SITE=${_full_download_url}
+    -dCPACK_DOWNLOAD_SITE=${CPACK_DOWNLOAD_SITE}
     -dCPACK_LOCAL_INSTALLER_DIR=${_cpack_wix_out_dir}
     -dCPACK_PACKAGE_FILE_NAME=${CPACK_PACKAGE_FILE_NAME}
     -dCPACK_PACKAGE_INSTALL_DIRECTORY=${_fixed_package_install_dir}
@@ -123,7 +109,7 @@ file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_
 file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
 
 # strip the scheme and extract the bucket/key prefix from the URL
-string(REPLACE "s3://" "" _stripped_url ${_full_upload_url})
+string(REPLACE "s3://" "" _stripped_url ${CPACK_UPLOAD_URL})
 string(REPLACE "/" ";" _tokens ${_stripped_url})
 
 list(POP_FRONT _tokens _bucket)
@@ -141,7 +127,7 @@ set(_upload_command
     --profile ${CPACK_AWS_PROFILE}
 )
 
-message(STATUS "Uploading artifacts to ${_full_upload_url}")
+message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
 execute_process(
     COMMAND ${_upload_command}
     RESULT_VARIABLE _upload_result

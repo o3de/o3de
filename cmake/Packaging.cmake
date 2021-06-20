@@ -14,11 +14,29 @@ if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
 endif()
 
 # public facing options will be used for conversion into cpack specific ones below.
-set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING "URL embedded into the installer to download additional artifacts")
 set(LY_INSTALLER_LICENSE_URL "" CACHE STRING "Optionally embed a link to the license instead of raw text")
+
+set(LY_INSTALLER_AUTO_GEN_TAG OFF CACHE BOOL
+"Automatically generate a build tag based on the git repo and append it to the download/upload URLs.  \
+Format: <branch>/<commit_date>-<commit_hash>"
+)
+
+set(LY_INSTALLER_DOWNLOAD_URL "" CACHE STRING
+"Base URL embedded into the installer to download additional artifacts, the host target and version \
+number will automatically appended as '<version>/<host>'.  If LY_INSTALLER_AUTO_GEN_TAG is set, the \
+full URL format will be: <base_url>/<build_tag>/<host>"
+)
+
 set(LY_INSTALLER_UPLOAD_URL "" CACHE STRING
-    "URL used to automatically upload the artifacts.  Can also be set via LY_INSTALLER_UPLOAD_URL environment variable.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>")
-set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING "AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable.")
+"Base URL used to upload the installer artifacts after generation, the host target and version number \
+will automatically appended as '<version>/<host>'.  If LY_INSTALLER_AUTO_GEN_TAG is set, the full URL \
+format will be: <base_url>/<build_tag>/<host>.  Can also be set via LY_INSTALLER_UPLOAD_URL environment \
+variable.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>"
+)
+
+set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING
+"AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable."
+)
 
 set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 
@@ -45,6 +63,10 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSI
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/_CPack) # to match other CPack out dirs
+
+# this config file allows the dynamic setting of cpack variables at cpack-time instead of cmake configure
+set(CPACK_PROJECT_CONFIG_FILE ${CPACK_SOURCE_DIR}/PackagingConfig.cmake)
+set(CPACK_AUTO_GEN_TAG ${LY_INSTALLER_AUTO_GEN_TAG})
 
 # attempt to apply platform specific settings
 ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
@@ -119,8 +141,6 @@ function(strip_trailing_slash in_url out_url)
         set(${out_url} ${in_url} PARENT_SCOPE)
     endif()
 endfunction()
-
-set(CPACK_VERSIONED_TARGET_TAG "${PAL_HOST_PLATFORM_NAME}-${LY_VERSION_STRING}")
 
 if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
     set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
