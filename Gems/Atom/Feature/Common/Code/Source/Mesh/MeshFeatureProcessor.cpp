@@ -783,7 +783,7 @@ namespace AZ
 
                 // retrieve vertex/index buffers
                 RPI::ModelLod::StreamBufferViewList streamBufferViews;
-                [[maybe_unused]] bool result = modelLod->GetStreamsForMesh(
+                bool result = modelLod->GetStreamsForMesh(
                     inputStreamLayout,
                     streamBufferViews,
                     nullptr,
@@ -791,7 +791,12 @@ namespace AZ
                     meshIndex,
                     materialAssignment.m_matModUvOverrides,
                     material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
-                AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
+
+                if (!result)
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "Mesh is missing required vertex streams for RayTracing. Skipping.");
+                    continue;
+                }
 
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
