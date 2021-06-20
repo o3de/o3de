@@ -258,7 +258,10 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     palRm('commitid')
 
     // CHANGE_DATE is used by the installer to provide some ability to sort tagged builds in addition to BRANCH_NAME and CHANGE_ID
-    palSh("git show -s --format=\"%%cs\" ${env.CHANGE_ID} > commitdate", 'Getting commit date')
+    commitDateFmt = '%%cs'
+    if (env.IS_UNIX) commitDateFmt = '%cs'
+
+    palSh("git show -s --format=${commitDateFmt} ${env.CHANGE_ID} > commitdate", 'Getting commit date')
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
