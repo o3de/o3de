@@ -9,15 +9,15 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 
+import os
+import logging
+import time
 
 import pytest
 import ly_test_tools
 import ly_test_tools.log.log_monitor
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.asset_processor_utils as asset_processor_utils
-import os
-import logging
-import time
 
 from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
