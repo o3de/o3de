@@ -32,6 +32,7 @@ set(_addtional_defines
     -dCPACK_PACKAGE_FILE_NAME=${CPACK_PACKAGE_FILE_NAME}
     -dCPACK_PACKAGE_INSTALL_DIRECTORY=${_fixed_package_install_dir}
     -dCPACK_WIX_PRODUCT_LOGO=${CPACK_WIX_PRODUCT_LOGO}
+    -dCPACK_RESOURCE_PATH=${CPACK_SOURCE_DIR}/Platform/Windows/Packaging
 )
 
 if(CPACK_LICENSE_URL)
