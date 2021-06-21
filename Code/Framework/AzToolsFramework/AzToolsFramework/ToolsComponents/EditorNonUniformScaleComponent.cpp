@@ -13,6 +13,7 @@
 #include <AzCore/Math/ToString.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 
@@ -56,6 +57,13 @@ namespace AzToolsFramework
                             "Non-uniform Scale Component Mode")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
                 }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->ConstantProperty("EditorNonUniformScaleComponentTypeId", BehaviorConstant(EditorNonUniformScaleComponent::RTTI_Type()))
+                    ->Attribute(AZ::Script::Attributes::Module, "editor")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);
             }
         }
 
