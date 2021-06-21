@@ -160,7 +160,7 @@ namespace AZ
                         0,0,1,0,
                         0,0,0,1 };
             yUpWorld.StoreToRowMajorFloat12(viewToWorldMatrixRaw);
-            AZ::Matrix4x4 prevViewToWorldMatrix = m_viewToWorldMatrix;
+            const AZ::Matrix4x4 prevViewToWorldMatrix = m_viewToWorldMatrix;
             m_viewToWorldMatrix = AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw);
 
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
