@@ -55,6 +55,8 @@ ly_append_configurations_options(
         -g # debug symbols
     COMPILATION_RELEASE
         -O2
+    LINK_NON_STATIC
+        -Wl,-undefined,error
 )
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
