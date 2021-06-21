@@ -79,7 +79,11 @@ namespace AZ
             // Add the current view which can potentially be the editor view
             auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            allSceneViews.insert(atomViewportRequests->GetCurrentView(contextName).get());
+            auto currentView = atomViewportRequests->GetCurrentView(contextName);
+            if (IsEditorView(currentView))
+            {
+                allSceneViews.insert(currentView.get());
+            }
 
             // calculate blend weights for all cameras
             PostProcessSettingsInterface::ViewBlendWeightMap perViewBlendWeights;
@@ -146,6 +150,13 @@ namespace AZ
             {
                 m_cameraEntities.insert(cameraId);
             }
+
+            AZ::RPI::ViewPtr view = nullptr;
+            AZ::RPI::ViewProviderBus::EventResult(view, cameraId, &AZ::RPI::ViewProvider::GetView);
+            if (view != nullptr)
+            {
+                m_allCameraViews.insert(view.get());
+            }
         }
 
         void PostFxLayerComponentController::OnCameraRemoved(const AZ::EntityId& cameraId)
@@ -174,6 +185,11 @@ namespace AZ
             {
                 return m_taggedCameraEntities;
             }
+        }
+
+        bool PostFxLayerComponentController::IsEditorView(const AZ::RPI::ViewPtr view)
+        {
+            return m_allCameraViews.find(view.get()) == m_allCameraViews.end() ? true : false;
         }
 
         bool PostFxLayerComponentController::HasTags(const AZ::EntityId& entityId, const AZStd::vector<AZStd::string>& tags) const

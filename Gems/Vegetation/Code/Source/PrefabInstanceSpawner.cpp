@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include <Vegetation/PrefabInstanceSpawner.h>
 
 #include <AzCore/Asset/AssetManager.h>

@@ -28,7 +28,6 @@ ly_add_target(
             Gem::LmbrCentral
             Gem::SurfaceData
         PUBLIC
-            Legacy::CryCommon
             Gem::AtomLyIntegration_CommonFeatures.Static
     RUNTIME_DEPENDENCIES
         Gem::GradientSignal

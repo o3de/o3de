@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "EditorDescriptorListCombinerComponent.h"
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 

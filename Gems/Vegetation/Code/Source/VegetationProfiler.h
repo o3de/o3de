@@ -9,14 +9,13 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
-
 #pragma once
 
-class CImageEx;
+// VEG_PROFILE_ENABLED is defined in the wscript
+// VEG_PROFILE_ENABLED is only defined in the Vegetation gem by default
+#if defined(VEG_PROFILE_ENABLED)
+#define VEG_PROFILE_METHOD(Method) Method
+#else
+#define VEG_PROFILE_METHOD(...) // no-op
+#endif
 
-class CImageHDR
-{
-public:
-    bool Load(const QString& fileName, CImageEx& outImage);
-};

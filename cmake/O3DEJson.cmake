@@ -30,7 +30,7 @@ endfunction()
 #! read_json_array
 #  Reads the a json array field into a cmake list variable
 function(o3de_read_json_array read_output_array input_json_path array_key)
-    file(READ ${input_json_path} manifest_json_data)
+    ly_file_read(${input_json_path} manifest_json_data)
     string(JSON array_count ERROR_VARIABLE manifest_json_error
         LENGTH ${manifest_json_data} ${array_key})
     if(manifest_json_error)
@@ -53,7 +53,7 @@ function(o3de_read_json_array read_output_array input_json_path array_key)
 endfunction()
 
 function(o3de_read_json_key output_value input_json_path key)
-    file(READ ${input_json_path} manifest_json_data)
+    ly_file_read(${input_json_path} manifest_json_data)
     string(JSON value ERROR_VARIABLE manifest_json_error GET ${manifest_json_data} ${key})
     if(manifest_json_error)
         message(FATAL_ERROR "Error reading field at key ${key} in file \"${input_json_path}\" : ${manifest_json_error}")
