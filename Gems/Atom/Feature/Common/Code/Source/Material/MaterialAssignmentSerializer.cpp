@@ -166,7 +166,6 @@ namespace AZ
                                                                   : "Failed to store MaterialAssignment information.");
         }
 
-        //! Helper function to load a handled type from an AZStd::any value
         template<typename T>
         bool JsonMaterialAssignmentSerializer::LoadAny(
             AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
@@ -181,13 +180,12 @@ namespace AZ
 
                 if (typeId == azrtti_typeid<T>())
                 {
-                    T value;
+                    T value = {};
                     result.Combine(ContinueLoadingFromJsonObjectField(&value, azrtti_typeid<T>(), inputPropertyValue, "Value", context));
                     propertyValue = value;
                     return true;
                 }
             }
-
             return false;
         }
 
@@ -211,7 +209,6 @@ namespace AZ
                     ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
                 return true;
             }
-
             return false;
         }
     } // namespace Render
