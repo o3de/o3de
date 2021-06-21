@@ -700,7 +700,7 @@ namespace Multiplayer
         // We avoid this for client server as the host itself is a user and non-transient dedicated servers
         if (sv_isTransient && m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {   
-            if (m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
+            if (m_networkInterface->GetConnectionSet().GetActiveConnectionCount() == 0)
             {
                 Terminate();
             }

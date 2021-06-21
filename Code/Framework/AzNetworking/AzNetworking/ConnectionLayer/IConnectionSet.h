@@ -47,5 +47,9 @@ namespace AzNetworking
         //! Returns the current total connection count for this connection set
         //! @return the current total connection count for this connection set
         virtual uint32_t GetConnectionCount() const = 0;
+
+        //! Returns the current total count of connections not pending disconnect for this connection set
+        //! @return the current total count of connections not pending disconnect for this connection set
+        virtual uint32_t GetActiveConnectionCount() const = 0;
     };
 }
