@@ -1766,7 +1766,7 @@ namespace LUAEditor
         }
 
         AzFramework::StringFunc::Path::Split(name.toUtf8().data(), nullptr, &m_lastOpenFilePath);
-        newAssetName = name.toUtf8();
+        newAssetName = name.toUtf8().data();
 
         return true;
     }
