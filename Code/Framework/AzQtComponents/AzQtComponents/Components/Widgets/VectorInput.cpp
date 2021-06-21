@@ -38,7 +38,7 @@ VectorElement::VectorElement(QWidget* parent)
     VectorElement::layout(this, m_spinBox, m_label, false);
 
     connect(m_spinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &VectorElement::onValueChanged);
-    connect(m_spinBox, &AzQtComponents::DoubleSpinBox::editingFinished, this, &VectorElement::editingFinished);
+    connect(m_spinBox, &AzQtComponents::DoubleSpinBox::editingFinished, this, &VectorElement::onSpinBoxEditingFinished);
 }
 
 void VectorElement::SetLabel(const char* label)
@@ -60,11 +60,44 @@ const QString& VectorElement::label() const
 
 void VectorElement::setValue(double newValue)
 {
+    // Nothing to do if the value is not actually changed
+    if (AZ::IsClose(m_value, newValue, std::numeric_limits<double>::epsilon()))
+    {
+        return;
+    }
+
+    // If the spin box currently has focus, the user is editing it, so we should not
+    // change the value from non-user input while they're in the middle of editing
+    if (m_spinBox->hasFocus())
+    {
+        auto& deferredValue = m_deferredExternalValue.emplace();
+        deferredValue.value = newValue;
+        deferredValue.prevValue = m_value;
+        return;
+    }
+
     m_value = newValue;
     const QSignalBlocker blocker(m_spinBox);
     m_spinBox->setValue(newValue);
     m_wasValueEditedByUser = false;
     emit valueChanged(newValue);
+}
+
+void VectorElement::onSpinBoxEditingFinished()
+{
+    if (m_deferredExternalValue)
+    {
+        DeferredSetValue deferredValue = *m_deferredExternalValue;
+        m_deferredExternalValue.reset();
+
+        if (m_value == deferredValue.prevValue)
+        {
+            AZ_Warning("VectorElement", !m_spinBox->hasFocus(), "Editing finished but the spinbox still has focus");
+            setValue(deferredValue.value);
+        }
+    }
+
+    emit editingFinished();
 }
 
 void VectorElement::setCoordinate(VectorElement::Coordinate coordinate)
@@ -249,7 +282,7 @@ VectorInput::VectorInput(QWidget* parent, int elementCount, int elementsPerRow, 
                     {
                         OnValueChangedInElement(value, elementIndex);
                     });
-                connect(m_elements[elementIndex]->GetSpinBox(), &AzQtComponents::DoubleSpinBox::editingFinished, this, &VectorInput::editingFinished);
+                connect(m_elements[elementIndex], &VectorElement::editingFinished, this, &VectorInput::editingFinished);
 
                 numberOfElementsRemaining--;
             }
