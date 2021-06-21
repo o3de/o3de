@@ -9,6 +9,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzCore/std/optional.h>
 #endif
 
 class QLabel;
@@ -18,6 +19,12 @@ namespace AzQtComponents
 
     class Style;
 
+    #pragma warning(push)
+
+    // 'AzQtComponents::VectorElement::m_deferredExternalValue': class 'AZStd::optional<AzQtComponents::VectorElement::DeferredSetValue>' needs to
+    // have dll-interface to be used by clients of class 'AzQtComponents::VectorElement' 
+    #pragma warning(disable:4251)
+    
     /*!
      * \class VectorElement
      * \brief All flexible vector GUI's are constructed using a number vector elements. Each Vector
@@ -98,7 +105,14 @@ namespace AzQtComponents
 
         void resizeLabel();
 
+        void onSpinBoxEditingFinished();
+
     private:
+        struct DeferredSetValue
+        {
+            double prevValue, value;
+        };
+
         // m_labelText must be initialised before m_spinBox. It is used by editFieldRect, which gets
         // called by the spin box constructor.
         QString m_labelText = {};
@@ -108,7 +122,12 @@ namespace AzQtComponents
         double m_value = 0.0;
         //! Indicates whether the value in the spin box has been edited by the user or not
         bool m_wasValueEditedByUser = false;
+        //! If a value is editing, but not by the user, and the user is currently editing the value,
+        //! avoid overwriting their work, until they finish editing
+        AZStd::optional<DeferredSetValue> m_deferredExternalValue;
     };
+
+    #pragma warning(pop)
 
     //////////////////////////////////////////////////////////////////////////
 
