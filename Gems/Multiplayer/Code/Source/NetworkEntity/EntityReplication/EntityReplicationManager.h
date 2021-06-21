@@ -34,7 +34,9 @@ namespace Multiplayer
 {
     class IEntityDomain;
     class EntityReplicator;
-
+    
+    //! @class EntityReplicationManager
+    //! @brief Handles replication of relevant entities for one connection.
     class EntityReplicationManager final
     {
     public:
