@@ -716,7 +716,6 @@ namespace Multiplayer
     {
         if (m_agentType == multiplayerType)
         {
-            // No-op
             return;
         }
 
