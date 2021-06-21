@@ -62,7 +62,7 @@ class AndroidDeployment(object):
         :param deployment_type:         The type of deployment (DEPLOY_APK_ONLY, DEPLOY_ASSETS_ONLY, or DEPLOY_BOTH)
         :param game_name:               The name of the game whose assets are being deployed. None if is_test_project is True
         :param asset_mode:              The asset mode of deployment (LOOSE, PAK, VFS). None if is_test_project is True
-        :param asset_type:              The asset type (for android, 'es3'). None if is_test_project is True
+        :param asset_type:              The asset type. None if is_test_project is True
         :param embedded_assets:         Boolean to indicate if the assets are embedded in the APK or not
         :param is_unit_test:            Boolean to indicate if this is a unit test deployment
         """
@@ -184,11 +184,15 @@ class AndroidDeployment(object):
 
         call_arguments.extend(arg_list)
 
-        output = subprocess.check_output(call_arguments,
-                                         shell=True,
-                                         stderr=subprocess.DEVNULL).decode(common.DEFAULT_TEXT_READ_ENCODING,
-                                                                           common.ENCODING_ERROR_HANDLINGS)
-        return output
+        try:
+            output = subprocess.check_output(call_arguments,
+                                             shell=True,
+                                             stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               common.ENCODING_ERROR_HANDLINGS)
+            return output
+        except subprocess.CalledProcessError as err:
+            raise common.LmbrCmdError(err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                        common.ENCODING_ERROR_HANDLINGS))
 
     def adb_shell(self, command, device_id):
         """

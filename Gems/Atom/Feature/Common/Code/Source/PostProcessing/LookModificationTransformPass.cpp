@@ -36,10 +36,10 @@ namespace AZ
                 &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         }
 
-        void LookModificationPass::BuildAttachmentsInternal()
+        void LookModificationPass::BuildInternal()
         {
             m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void LookModificationPass::FrameBeginInternal([[maybe_unused]] FramePrepareParams params)

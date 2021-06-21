@@ -49,6 +49,7 @@
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -112,20 +113,20 @@ static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no 
 
 class EditorEntityNotifications
     : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
-    , public AzToolsFramework::EditorEvents::Bus::Handler
+    , public AzToolsFramework::EditorContextMenuBus::Handler
 {
 public:
     EditorEntityNotifications(CRenderViewport& renderViewport)
         : m_renderViewport(renderViewport)
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     }
 
     ~EditorEntityNotifications() override
     {
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     }
 
     // AzToolsFramework::EditorEntityContextNotificationBus
@@ -138,7 +139,7 @@ public:
         m_renderViewport.OnStopPlayInEditor();
     }
 
-    // AzToolsFramework::EditorEvents::Bus
+    // AzToolsFramework::EditorContextMenu::Bus
     void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override
     {
         m_renderViewport.PopulateEditorGlobalContextMenu(menu, point, flags);
@@ -1259,9 +1260,6 @@ CBaseObject* CRenderViewport::GetCameraObject() const
 //////////////////////////////////////////////////////////////////////////
 void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
-    static ICVar* outputToHMD = gEnv->pConsole->GetCVar("output_to_hmd");
-    AZ_Assert(outputToHMD, "cvar output_to_hmd is undeclared");
-
     switch (event)
     {
     case eNotify_OnBeginGameMode:
@@ -1282,7 +1280,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
                 if (deviceInfo)
                 {
-                    outputToHMD->Set(1);
                     m_previousContext = SetCurrentContext(deviceInfo->renderWidth, deviceInfo->renderHeight);
                     if (m_renderer->GetIStereoRenderer())
                     {
@@ -1312,10 +1309,6 @@ void CRenderViewport::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 // called SetCurrentContext(...) on the renderer, probably did some rendering, but then either
                 // failed to set the context back when done, or set it back to the wrong one.
                 CryWarning(VALIDATOR_MODULE_3DENGINE, VALIDATOR_WARNING, "RenderViewport render context was not correctly restored by someone else.");
-            }
-            if (gSettings.bEnableGameModeVR)
-            {
-                outputToHMD->Set(0);
             }
             RestorePreviousContext(m_previousContext);
             m_bInRotateMode = false;

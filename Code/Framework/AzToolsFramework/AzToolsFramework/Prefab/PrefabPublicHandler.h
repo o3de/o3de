@@ -14,11 +14,14 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/string/string_view.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
+
+class QString;
 
 namespace AzToolsFramework
 {
@@ -27,7 +30,6 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
-
         class InstanceEntityMapperInterface;
         class InstanceToTemplateInterface;
         class PrefabLoaderInterface;
@@ -44,7 +46,7 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) override;
+            PrefabOperationResult CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView absolutePath) override;
             PrefabOperationResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
@@ -62,13 +64,43 @@ namespace AzToolsFramework
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+
         private:
             PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
             bool RetrieveAndSortPrefabEntitiesAndInstances(const EntityList& inputEntities, Instance& commonRootEntityOwningInstance,
                 EntityList& outEntities, AZStd::vector<Instance*>& outInstances) const;
+            EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+
+            /**
+             * Duplicate a list of entities owned by a common owning instance by directly
+             * copying/modifying their entries in the instance DOM
+             *
+             * \param commonOwningInstance The common owning instance of all the entities being duplicated.
+             * \param entities The list of Entities that will be duplicated.
+             * \param domToAddDuplicatedEntitiesUnder The DOM of the common owning instance where the duplicated
+             *      entity DOM values will be added to.
+             * \param duplicatedEntityIds A list of EntityIds corresponding to the entities that were duplicated.
+             */
+            void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
+                const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
+                EntityIdList& duplicatedEntityIds);
+            /**
+             * Duplicate a list of instances owned by a common owning instance by directly
+             * copying/modifying their entries in the instance DOM
+             *
+             * \param commonOwningInstance The common owning instance of all the instances being duplicated.
+             * \param entities The list of Instances that will be duplicated.
+             * \param domToAddDuplicatedInstancesUnder The DOM of the common owning instance where the duplicated
+             *      instance DOM values will be added to.
+             * \param duplicatedEntityIds A list of EntityIds corresponding to the instances that were duplicated.
+             */
+            void DuplicateNestedInstancesInInstance(Instance& commonOwningInstance,
+                const AZStd::vector<Instance*>& instances, PrefabDom& domToAddDuplicatedInstancesUnder,
+                EntityIdList& duplicatedEntityIds, AZStd::unordered_map<InstanceAlias, Instance*>& newInstanceAliasToOldInstanceMap);
             
             /**
              * Applies the correct transform changes to the container entity based on the parent and child entities provided, and returns an appropriate patch.
@@ -86,8 +118,8 @@ namespace AzToolsFramework
             /**
              * Creates a link between the templates of an instance and its parent.
              * 
-             * \param sourceInstance The instance that corresponds to the source template of the link.
-             * \param targetInstance The id of the target template.
+             * \param sourceInstance The instance that corresponds to the source template of the link (child).
+             * \param targetInstance The id of the target template (parent).
              * \param undoBatch The undo batch to set as parent for this create link action.
              * \param patch The patch to store in the newly created link dom.
              * \param isUndoRedoSupportNeeded The flag indicating whether the link should be created with undo/redo support or not.
@@ -129,6 +161,21 @@ namespace AzToolsFramework
              */
             bool IsCyclicalDependencyFound(
                 InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
+            static void Internal_HandleContainerOverride(
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
+                const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
+            static void Internal_HandleEntityChange(
+                UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
+                PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
+            void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
+
+            void UpdateLinkPatchesWithNewEntityAliases(
+                PrefabDom& linkPatch,
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& oldEntityAliases,
+                Instance& newParent);
+
+            static void ReplaceOldAliases(QString& stringToReplace, AZStd::string_view oldAlias, AZStd::string_view newAlias);
 
             static Instance* GetParentInstance(Instance* instance);
             static Instance* GetAncestorOfInstanceThatIsChildOfRoot(const Instance* ancestor, Instance* descendant);

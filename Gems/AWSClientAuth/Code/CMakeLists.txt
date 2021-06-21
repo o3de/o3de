@@ -29,6 +29,9 @@ ly_add_target(
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
+        Gem::HttpRequestor
 )
 
 ly_add_target( 
@@ -44,12 +47,22 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::AWSCore
-            Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::AWSClientAuth.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
+        Gem::HttpRequestor
 )
+
+# Load the "Gem::AWSClientAuth" module in all types of applications.
+ly_create_alias(NAME AWSClientAuth.Servers NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+ly_create_alias(NAME AWSClientAuth.Clients NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AWSClientAuth.Tools NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+    ly_create_alias(NAME AWSClientAuth.Builders NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+endif()
 
 ################################################################################
 # Tests
@@ -71,10 +84,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::AWSCore
-                Gem::AWSClientAuth.Static
                 AZ::AWSNativeSDKInit
+                Gem::AWSClientAuth.Static
+                Gem::AWSCore
                 Gem::HttpRequestor
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
+            AZ::AWSNativeSDKInit
+            Gem::HttpRequestor
    )
    ly_add_googletest(
         NAME Gem::AWSClientAuth.Tests

@@ -10,6 +10,5 @@
 #
 
 set(FILES
-    Source/Atom_RHI_Vulkan_precompiled.cpp
     Source/Atom_RHI_Vulkan_precompiled.h
 )

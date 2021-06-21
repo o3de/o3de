@@ -169,6 +169,8 @@ public:
     AmazonToolbar GetMiscToolbar() const;
     AmazonToolbar GetPlayConsoleToolbar() const;
 
+    void AddButtonToEditToolbar(QAction* action);
+
 private:
     Q_DISABLE_COPY(ToolbarManager);
     void SaveToolbars();

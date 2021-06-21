@@ -60,10 +60,14 @@ namespace AZ
             const Data::Asset<ResourcePoolAsset>& GetPoolAsset() const;
 
             CommonBufferPoolType GetCommonPoolType() const;
+            
+            const AZStd::string& GetName() const;
 
         private:
             // Called by asset creators to assign the asset to a ready state.
             void SetReady();
+
+            AZStd::string m_name;
 
             AZStd::vector<uint8_t> m_buffer;
 

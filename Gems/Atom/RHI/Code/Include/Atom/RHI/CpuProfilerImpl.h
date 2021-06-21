@@ -102,6 +102,7 @@ namespace AZ
             void EndTimeRegion() final;
             void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) final;
             void SetProfilerEnabled(bool enabled) final;
+            bool IsProfilerEnabled() const final;
 
         private:
             // Lazily create and register the local thread data

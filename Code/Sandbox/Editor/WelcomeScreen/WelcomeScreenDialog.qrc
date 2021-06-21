@@ -1,5 +1,5 @@
 <RCC>
   <qresource prefix="WelcomeScreenDialog">
-    <file>WelcomeScreenDialogHeader.png</file>
+    <file>DefaultActiveProject.png</file>
   </qresource>
 </RCC>

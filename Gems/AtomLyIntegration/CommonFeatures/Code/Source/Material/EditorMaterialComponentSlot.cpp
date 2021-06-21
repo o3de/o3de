@@ -70,6 +70,12 @@ namespace AZ
                 }
             }
 
+            if (classElement.GetVersion() < 5)
+            {
+                classElement.RemoveElementByName(AZ_CRC_CE("matModUvOverrides"));
+                classElement.RemoveElementByName(AZ_CRC_CE("propertyOverrides"));
+            }
+
             return true;
         }
 
@@ -78,11 +84,9 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorMaterialComponentSlot>()
-                    ->Version(4, &EditorMaterialComponentSlot::ConvertVersion)
+                    ->Version(5, &EditorMaterialComponentSlot::ConvertVersion)
                     ->Field("id", &EditorMaterialComponentSlot::m_id)
                     ->Field("materialAsset", &EditorMaterialComponentSlot::m_materialAsset)
-                    ->Field("propertyOverrides", &EditorMaterialComponentSlot::m_propertyOverrides)
-                    ->Field("matModUvOverrides", &EditorMaterialComponentSlot::m_matModUvOverrides)
                     ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -269,32 +273,24 @@ namespace AZ
 
             QAction* action = nullptr;
 
-            action = menu.addAction("Open Material Editor...", [this]() { EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenInMaterialEditor, ""); });
-            action->setVisible(!m_materialAsset.GetId().IsValid());
-
-            action = menu.addAction("Clear", [this]() { Clear(); });
-            action->setEnabled(m_materialAsset.GetId().IsValid() || !m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
-
-            action = menu.addAction("Set Default Asset", [this]() { SetDefaultAsset(); });
+            action = menu.addAction("Generate/Manage Source Material...", [this]() { OpenMaterialExporter(); });
             action->setEnabled(m_id.m_materialAssetId.IsValid());
 
             menu.addSeparator();
 
-            action = menu.addAction("Generate Source Material...", [this]() { OpenMaterialExporter(); });
-            action->setEnabled(m_id.m_materialAssetId.IsValid());
-
-            menu.addSeparator();
-
-            const auto instanceAssetId = m_materialAsset.GetId().IsValid() ? m_materialAsset.GetId() : m_id.m_materialAssetId;
+            action = menu.addAction("Edit Source Material...", [this]() { OpenMaterialEditor(); });
+            action->setEnabled(HasSourceData());
 
             action = menu.addAction("Edit Material Instance...", [this]() { OpenMaterialInspector(); });
             action->setEnabled(m_materialAsset.GetId().IsValid());
 
-            action = menu.addAction("Edit Material Model UV Map...", [this]() { OpenUvNameMapInspector(); });
+            action = menu.addAction("Edit Material Instance UV Map...", [this]() { OpenUvNameMapInspector(); });
             action->setEnabled(m_materialAsset.GetId().IsValid());
 
-            action = menu.addAction("Edit Material in Material Editor...", [this]() { OpenMaterialEditor(); });
-            action->setEnabled(HasSourceData());
+            menu.addSeparator();
+
+            action = menu.addAction("Clear Material Instance Overrides", [this]() { m_propertyOverrides = {}; m_matModUvOverrides = {}; });
+            action->setEnabled(!m_propertyOverrides.empty() || !m_matModUvOverrides.empty());
 
             menu.exec(QCursor::pos());
         }

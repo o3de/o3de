@@ -29,7 +29,9 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserFilterModel;
+        class AssetBrowserTableModel;
         class AssetBrowserModel;
+        class AssetBrowserTableFilterModel;
     }
 }
 
@@ -53,6 +55,7 @@ private:
 
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
+    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     
     void UpdatePreview() const;

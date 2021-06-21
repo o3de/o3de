@@ -40,6 +40,12 @@
                     }
                 }
             ],
+            "FallbackConnections": [
+                {
+                    "Input": "InputColor",
+                    "Output": "OutputColor"
+                }
+            ],
             "PassRequests": [
                 {
                     "Name": "SMAAConvertToPerceptualColor",

@@ -12,7 +12,6 @@
 
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
-
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
@@ -24,13 +23,23 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Session/ISessionRequests.h>
+#include <AzFramework/Session/SessionConfig.h>
 #include <AzFramework/Spawnable/Spawnable.h>
+#include <AzFramework/Visibility/IVisibilitySystem.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+
 #include <AzNetworking/Framework/INetworking.h>
+
+#include <cmath>
 
 namespace AZ::ConsoleTypeHelpers
 {
@@ -74,6 +83,7 @@ namespace Multiplayer
     AZ_CVAR(ProtocolType, sv_protocol, ProtocolType::Udp, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "This flag controls whether we use TCP or UDP for game networking");
     AZ_CVAR(bool, sv_isDedicated, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether the host command creates an independent or client hosted server");
     AZ_CVAR(AZ::TimeMs, cl_defaultNetworkEntityActivationTimeSliceMs, AZ::TimeMs{ 0 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Max Ms to use to activate entities coming from the network, 0 means instantiate everything");
+    AZ_CVAR(AZ::TimeMs, sv_serverSendRateMs, AZ::TimeMs{ 50 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum number of milliseconds between each network update");
     AZ_CVAR(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset, "prefabs/player.network.spawnable", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The default spawnable to use when a new player connects");
 
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -107,6 +117,31 @@ namespace Multiplayer
             behaviorContext->Class<RpcIndex>();
             behaviorContext->Class<ClientInputId>();
             behaviorContext->Class<HostFrameId>();
+
+            behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+                ->Method("GetOnClientDisconnectedEvent", [](AZ::EntityId id) -> AZ::Event<>*
+                {
+                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                    if (!entity)
+                    {
+                        AZ_Warning("Multiplayer Property", false, "MultiplayerSystemComponent GetOnClientDisconnectedEvent failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        return nullptr;
+                    }
+
+                    MultiplayerSystemComponent* mpComponent = entity->FindComponent<MultiplayerSystemComponent>();
+                    if (!mpComponent)
+                    {
+                        AZ_Warning("Multiplayer Property", false, "MultiplayerSystemComponent GetOnClientDisconnected failed. Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                        return nullptr;
+                    }
+
+                    return &mpComponent->m_clientDisconnectedEvent;
+                })
+                ->Attribute(
+                    AZ::Script::Attributes::AzEventDescription,
+                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"});
         }
 
         MultiplayerComponent::Reflect(context);
@@ -142,9 +177,14 @@ namespace Multiplayer
     void MultiplayerSystemComponent::Activate()
     {
         AZ::TickBus::Handler::BusConnect();
+        AzFramework::SessionNotificationBus::Handler::BusConnect();
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MPNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
-        m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
+        if (AZ::Interface<AZ::IConsole>::Get())
+        {
+            m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
+        }
         AZ::Interface<IMultiplayer>::Register(this);
+        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Register(this);
 
         //! Register our gems multiplayer components to assign NetComponentIds
         RegisterMultiplayerComponents();
@@ -152,14 +192,103 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Deactivate()
     {
+        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
         AZ::Interface<IMultiplayer>::Unregister(this);
+        m_consoleCommandHandler.Disconnect();
+        AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+        AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    bool MultiplayerSystemComponent::RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& config)
     {
-        AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
-        AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Client);
+
+        m_pendingConnectionTickets.push(config.m_playerSessionId);
+        AZStd::string hostname = config.m_dnsName.empty() ? config.m_ipAddress : config.m_dnsName;
+        const IpAddress ipAddress(hostname.c_str(), config.m_port, m_networkInterface->GetType());
+        m_networkInterface->Connect(ipAddress);
+
+        return true;
+    }
+
+    void MultiplayerSystemComponent::RequestPlayerLeaveSession()
+    {
+        if (GetAgentType() == MultiplayerAgentType::Client)
+        {
+            AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
+            auto visitor = [](IConnection& connection)
+            {
+                connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local);
+            };
+            m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+        }
+    }
+
+    bool MultiplayerSystemComponent::OnSessionHealthCheck()
+    {
+        return true;
+    }
+
+    bool MultiplayerSystemComponent::OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig)
+    {
+        // Check if session manager has a certificate for us and pass it along if so
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+        {
+            AZ::CVarFixedString externalCertPath = AZ::CVarFixedString(
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetExternalSessionCertificate().c_str());
+            if (!externalCertPath.empty())
+            {
+                AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            }
+
+            AZ::CVarFixedString internalCertPath = AZ::CVarFixedString(
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->GetInternalSessionCertificate().c_str());
+            if (!internalCertPath.empty())
+            {
+                AZ::CVarFixedString commandString = "net_SslInternalCertificateFile " + internalCertPath;
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            }
+        }
+
+        Multiplayer::MultiplayerAgentType serverType = sv_isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer;
+        AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(serverType);
+        return m_networkInterface->Listen(sessionConfig.m_port);
+    }
+
+    bool MultiplayerSystemComponent::OnDestroySessionBegin()
+    {
+        bool disconnectSuccessful = true;
+        IConnectionSet& connectionSet = m_networkInterface->GetConnectionSet();
+        connectionSet.VisitConnections([&disconnectSuccessful](IConnection& connection)
+        {
+            bool didDisconnect = connection.Disconnect(DisconnectReason::TerminatedByServer, TerminationEndpoint::Remote);
+            disconnectSuccessful = disconnectSuccessful && didDisconnect;
+        });
+        return disconnectSuccessful;
+    }
+
+    void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        const AZ::TimeMs deltaTimeMs = aznumeric_cast<AZ::TimeMs>(static_cast<int32_t>(deltaTime * 1000.0f));
+        const AZ::TimeMs hostTimeMs = AZ::GetElapsedTimeMs();
+        const AZ::TimeMs serverRateMs = static_cast<AZ::TimeMs>(sv_serverSendRateMs);
+        const float serverRateSeconds = static_cast<float>(serverRateMs) / 1000.0f;
+
+        TickVisibleNetworkEntities(deltaTime, serverRateSeconds);
+
+        if (GetAgentType() == MultiplayerAgentType::ClientServer
+         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+        {
+            m_serverSendAccumulator += deltaTime;
+            if (m_serverSendAccumulator < serverRateSeconds)
+            {
+                return;
+            }
+            m_serverSendAccumulator -= serverRateSeconds;
+            m_networkTime.IncrementHostFrameId();
+        }
 
         // Handle deferred local rpc messages that were generated during the updates
         m_networkEntityManager.DispatchLocalDeferredRpcMessages();
@@ -281,6 +410,22 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Connect& packet
     )
     {
+        // Validate our session with the provider if any
+        if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+        {
+            AzFramework::PlayerConnectionConfig config;
+            config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+            config.m_playerSessionId = packet.GetTicket();
+            if(!AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->ValidatePlayerJoinSession(config))
+            {
+                auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+                m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+                return true;
+            }
+
+            reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetProviderTicket(packet.GetTicket().c_str());
+        }
+
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
             // Sync our console
@@ -365,13 +510,21 @@ namespace Multiplayer
         }
 
         EntityReplicationManager& replicationManager = reinterpret_cast<IConnectionData*>(connection->GetUserData())->GetReplicationManager();
-        
-        // Ignore a_Request.GetServerGameTimePoint(), clients can't affect the server gametime
+
+        if ((GetAgentType() == MultiplayerAgentType::Client) && (packet.GetHostFrameId() > m_lastReplicatedHostFrameId))
+        {
+            // Update client to latest server time
+            m_renderBlendFactor = 0.0f;
+            m_lastReplicatedHostTimeMs = packet.GetHostTimeMs();
+            m_lastReplicatedHostFrameId = packet.GetHostFrameId();
+            m_networkTime.AlterTime(m_lastReplicatedHostFrameId, m_lastReplicatedHostTimeMs, AzNetworking::InvalidConnectionId);
+        }
+
         for (AZStd::size_t i = 0; i < packet.GetEntityMessages().size(); ++i)
         {
             const NetworkEntityUpdateMessage& updateMessage = packet.GetEntityMessages()[i];
             handledAll &= replicationManager.HandleEntityUpdateMessage(connection, packetHeader, updateMessage);
-            AZ_Assert(handledAll, "GameServerToClientNetworkRequestHandler EntityUpdates Did not handle all updates");
+            AZ_Assert(handledAll, "EntityUpdates did not handle all update messages");
         }
 
         return handledAll;
@@ -427,10 +580,16 @@ namespace Multiplayer
         datum.m_isInvited = false;
         datum.m_agentType = MultiplayerAgentType::Client;
 
+        AZStd::string providerTicket;
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
             AZLOG_INFO("New outgoing connection to remote address: %s", connection->GetRemoteAddress().GetString().c_str());
-            connection->SendReliablePacket(MultiplayerPackets::Connect(0));
+            if (!m_pendingConnectionTickets.empty())
+            {
+                providerTicket = m_pendingConnectionTickets.front();
+                m_pendingConnectionTickets.pop();
+            }
+            connection->SendReliablePacket(MultiplayerPackets::Connect(0, providerTicket.c_str()));
         }
         else
         {
@@ -438,19 +597,16 @@ namespace Multiplayer
             m_connAcquiredEvent.Signal(datum);
         }
 
+        // Hosts will spawn a new default player prefab for the user that just connected
         if (GetAgentType() == MultiplayerAgentType::ClientServer
-            || GetAgentType() == MultiplayerAgentType::DedicatedServer)
+         || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
-            PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()), 1);
-            INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
-
-            NetworkEntityHandle controlledEntity;
-            if (entityList.size() > 0)
+            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
+            if (controlledEntity.Exists())
             {
-                controlledEntity = entityList[0];
                 controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
             }
-
+            
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
             {
                 connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
@@ -463,7 +619,11 @@ namespace Multiplayer
         {
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
             {
-                connection->SetUserData(new ClientToServerConnectionData(connection, *this));
+                connection->SetUserData(new ClientToServerConnectionData(connection, *this, providerTicket));
+            }
+            else
+            {
+                reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetProviderTicket(providerTicket);
             }
 
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
@@ -487,10 +647,11 @@ namespace Multiplayer
         AZStd::string reasonString = ToString(reason);
         AZLOG_INFO("%s due to %s from remote address: %s", endpointString, reasonString.c_str(), connection->GetRemoteAddress().GetString().c_str());
 
-        // The authority is shutting down its connection
-        if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        // The client is disconnecting
+        if (GetAgentType() == MultiplayerAgentType::Client)
         {
-            m_shutdownEvent.Signal(m_networkInterface);
+            AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
+            m_clientDisconnectedEvent.Signal();
         }
 
         // Clean up any multiplayer connection data we've bound to this connection instance
@@ -499,6 +660,33 @@ namespace Multiplayer
             IConnectionData* connectionData = reinterpret_cast<IConnectionData*>(connection->GetUserData());
             delete connectionData;
             connection->SetUserData(nullptr);
+        }
+
+        // Signal to session management that a user has left the server
+        if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
+        {
+            if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
+                connection->GetConnectionRole() == ConnectionRole::Acceptor)
+            {
+                AzFramework::PlayerConnectionConfig config;
+                config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());
+                config.m_playerSessionId = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->GetProviderTicket();
+                AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandlePlayerLeaveSession(config);
+            }
+        }
+
+        // Signal to session management when there are no remaining players in a dedicated server for potential cleanup
+        // We avoid this for client server as the host itself is a user
+        if (m_agentType == MultiplayerAgentType::DedicatedServer && connection->GetConnectionRole() == ConnectionRole::Acceptor)
+        {   
+            if (m_networkInterface->GetConnectionSet().GetConnectionCount() == 0)
+            {
+                m_shutdownEvent.Signal(m_networkInterface);
+                if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
+                {
+                    AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandleDestroySession();
+                }
+            }
         }
     }
 
@@ -522,7 +710,23 @@ namespace Multiplayer
             }
         }
         m_agentType = multiplayerType;
+
+        // Spawn the default player for this host since the host is also a player (not a dedicated server)
+        if (m_agentType == MultiplayerAgentType::ClientServer)
+        {
+            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
+            if (NetBindComponent* controlledEntityNetBindComponent = controlledEntity.GetNetBindComponent())
+            {
+                controlledEntityNetBindComponent->SetAllowAutonomy(true);
+            }
+        }
+        
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
+    }
+
+    void MultiplayerSystemComponent::AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler)
+    {
+        handler.Connect(m_clientDisconnectedEvent);
     }
 
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
@@ -594,6 +798,74 @@ namespace Multiplayer
         AZLOG_INFO("Total RPCs received bytes: %llu", aznumeric_cast<AZ::u64>(rpcsRecv.m_totalBytes));
     }
 
+    void MultiplayerSystemComponent::TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds)
+    {
+        const float targetAdjustBlend = AZStd::clamp(deltaTime / serverRateSeconds, 0.0f, 1.0f);
+        m_renderBlendFactor += targetAdjustBlend;
+
+        // Linear close to the origin, but asymptote at y = 1
+        const float adjustedBlendFactor = 1.0f - (std::pow(0.2f, m_renderBlendFactor));
+        AZLOG(NET_Blending, "Computed blend factor of %f", adjustedBlendFactor);
+
+        if (Camera::ActiveCameraRequestBus::HasHandlers())
+        {
+            // If there's a camera, update only what's visible
+            AZ::Transform activeCameraTransform;
+            Camera::Configuration activeCameraConfiguration;
+            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+            Camera::ActiveCameraRequestBus::BroadcastResult(activeCameraConfiguration, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraConfiguration);
+
+            const AZ::ViewFrustumAttributes frustumAttributes
+            (
+                activeCameraTransform,
+                activeCameraConfiguration.m_frustumHeight / activeCameraConfiguration.m_frustumWidth,
+                activeCameraConfiguration.m_fovRadians,
+                activeCameraConfiguration.m_nearClipDistance,
+                activeCameraConfiguration.m_farClipDistance
+            );
+            const AZ::Frustum viewFrustum = AZ::Frustum(frustumAttributes);
+
+            // Unfortunately necessary, as NotifyPreRender can update transforms and thus cause a deadlock inside the vis system
+            AZStd::vector<NetBindComponent*> gatheredEntities;
+            AzFramework::IEntityBoundsUnion* entityBoundsUnion = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get();
+            AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(viewFrustum,
+                [&gatheredEntities, entityBoundsUnion](const AzFramework::IVisibilityScene::NodeData& nodeData)
+            {
+                gatheredEntities.reserve(gatheredEntities.size() + nodeData.m_entries.size());
+                for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+                {
+                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                    {
+                        AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+                        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                        if (netBindComponent != nullptr)
+                        {
+                            gatheredEntities.push_back(netBindComponent);
+                        }
+                    }
+                }
+            });
+
+            for (NetBindComponent* netBindComponent : gatheredEntities)
+            {
+                netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+            }
+        }
+        else
+        {
+            // If there's no camera, fall back to updating all net entities
+            for (auto& iter : *(m_networkEntityManager.GetNetworkEntityTracker()))
+            {
+                AZ::Entity* entity = iter.second;
+                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                if (netBindComponent != nullptr)
+                {
+                    netBindComponent->NotifyPreRender(deltaTime, adjustedBlendFactor);
+                }
+            }
+        }
+    }
+
     void MultiplayerSystemComponent::OnConsoleCommandInvoked
     (
         AZStd::string_view command,
@@ -627,6 +899,19 @@ namespace Multiplayer
         {
             console->PerformCommand(command.c_str(), AZ::ConsoleSilentMode::NotSilent, AZ::ConsoleInvokedFrom::AzNetworking, requiredSet);
         }
+    }
+
+    NetworkEntityHandle MultiplayerSystemComponent::SpawnDefaultPlayerPrefab()
+    {
+        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()), 1);
+        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
+
+        NetworkEntityHandle controlledEntity;
+        if (entityList.size() > 0)
+        {
+            controlledEntity = entityList[0];
+        }
+        return controlledEntity;
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

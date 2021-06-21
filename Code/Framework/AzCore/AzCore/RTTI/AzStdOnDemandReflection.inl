@@ -406,6 +406,7 @@ namespace AZ
                 AZStd::vector<AZ::BehaviorParameter> eventParamsTypes{ AZStd::initializer_list<AZ::BehaviorParameter>{
                     CreateBehaviorEventParameter<decay_array<T>>()... } };
                 behaviorContext->Class<AZ::Event<T...>>()
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                     ->Attribute(AZ::Script::Attributes::EventHandlerCreationFunction, createHandlerHolder)
                     ->Attribute(AZ::Script::Attributes::EventParameterTypes, eventParamsTypes)
                     ->Method("HasHandlerConnected", &AZ::Event<T...>::HasHandlerConnected)
@@ -413,6 +414,7 @@ namespace AZ
 
                 behaviorContext->Class<AZ::EventHandler<T...>>()
                     ->Method("Disconnect", &AZ::EventHandler<T...>::Disconnect)
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                     ;
             }
         }
@@ -813,20 +815,27 @@ namespace AZ
     {
         using ContainerType = AZStd::tuple<T...>;
 
-        template<size_t Index>
-        static void ReflectUnpackMethodFold(BehaviorContext::ClassBuilder<ContainerType>& builder)
+        template<typename Targ, size_t Index>
+        static void ReflectUnpackMethodFold(BehaviorContext::ClassBuilder<ContainerType>& builder, const AZStd::vector<AZStd::string>& typeNames)
         {
             const AZStd::string methodName = AZStd::string::format("Get%zu", Index);
-            builder->Method(methodName.data(), [](ContainerType& value) { return AZStd::get<Index>(value); })
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+            builder->Method(methodName.data(), [](ContainerType& thisPointer) { return AZStd::get<Index>(thisPointer); })
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                 ->Attribute(AZ::ScriptCanvasAttributes::TupleGetFunctionIndex, Index)
                 ;
+
+            builder->Property
+                ( AZStd::string::format("element_%zu_%s", Index, typeNames[Index].c_str()).c_str()
+                , [](ContainerType& thisPointer) { return AZStd::get<Index>(thisPointer); }
+                , [](ContainerType& thisPointer, const Targ& element) { AZStd::get<Index>(thisPointer) = element; });
         }
 
-        template<size_t... Indices>
+        template<typename... Targ, size_t... Indices>
         static void ReflectUnpackMethods(BehaviorContext::ClassBuilder<ContainerType>& builder, AZStd::index_sequence<Indices...>)
         {
-            (ReflectUnpackMethodFold<Indices>(builder), ...);
+            AZStd::vector<AZStd::string> typeNames;
+            ScriptCanvasOnDemandReflection::GetTypeNames<T...>(typeNames, *builder.m_context);
+            (ReflectUnpackMethodFold<Targ, Indices>(builder, typeNames), ...);
         }
 
         static void Reflect(ReflectContext* context)
@@ -851,9 +860,10 @@ namespace AZ
                     ->Attribute(AZ::ScriptCanvasAttributes::TupleConstructorFunction, constructorHolder)
                     ;
 
-                ReflectUnpackMethods(builder, AZStd::make_index_sequence<sizeof...(T)>{});
+                ReflectUnpackMethods<T...>(builder, AZStd::make_index_sequence<sizeof...(T)>{});
+
                 builder->Method("GetSize", []() { return AZStd::tuple_size<ContainerType>::value; })
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
                     ;
             }
         }

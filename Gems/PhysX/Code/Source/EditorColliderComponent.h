@@ -158,7 +158,6 @@ namespace PhysX
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
         Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialAsset(const AZ::Data::AssetId& id) override;
         void SetMaterialId(const Physics::MaterialId& id) override;
         void UpdateMaterialSlotsFromMeshAsset();
 
@@ -245,13 +244,13 @@ namespace PhysX
         AZ::Data::AssetId FindMatchingPhysicsAsset(const AZ::Data::Asset<AZ::Data::AssetData>& renderMeshAsset,
             const AZStd::vector<AZ::Data::AssetId>& physicsAssets);
 
-        void ValidateMaterialSurfaces();
+        void ValidateAssetMaterials();
 
         void InitEventHandlers();
         DebugDraw::Collider m_colliderDebugDraw;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler m_onDefaultMaterialLibraryChangedEventHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.

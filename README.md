@@ -88,7 +88,7 @@ If you have the Git credential manager core or other credential helpers installe
         *   Game Development with C++
         *   MSVC v142 - VS 2019 C++ x64/x86
         *   C++ 2019 redistributable update
-*   CMake 3.19.1 minimum: [https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi](https://cmake.org/files/LatestRelease/cmake-3.19.1-win64-x64.msi)
+*   CMake 3.20 minimum: [https://cmake.org/download/](https://cmake.org/download/)
 
 #### Optional
 
@@ -105,7 +105,7 @@ If you have the Git credential manager core or other credential helpers installe
 
 1.  Install the following redistributables to the following:
     - Visual Studio and VC++ redistributable can be installed to any location
-    - CMake can be installed to any location, as long as it's available in the system path, otherwise it can be installed to: `<3rdParty Path>\CMake\3.19.1`
+    - CMake can be installed to any location, as long as it's available in the system path
     - WWise can be installed anywhere, but you will need to set an environment variable for CMake to detect it:  `set LY_WWISE_INSTALL_PATH=<path to WWise>`
     
 1.  Navigate into the repo folder, then download the python runtime with this command
@@ -117,11 +117,6 @@ If you have the Git credential manager core or other credential helpers installe
 
     ```
     python\get_python.bat
-    ```
-    
-1.  While still within the repo folder, register the engine with this command:
-    ```
-    scripts\o3de.bat register --this-engine
     ```
 
 1.  Configure the source into a solution using this command line, replacing <your build path> and <3rdParty cache path> to a path you've created:
@@ -146,7 +141,11 @@ If you have the Git credential manager core or other credential helpers installe
    
 1.  This will compile after some time and binaries will be available in the build path you've specified
 
-### Setting up new projects    
+### Setting up new projects
+1.  While still within the repo folder, register the engine with this command:
+    ```
+    scripts\o3de.bat register --this-engine
+    ```
 1. Setup new projects using the `o3de create-project` command. In the 0.5 branch, the project directory must be a subdirectory in the repo folder.
     ```
     <Repo path>\scripts\o3de.bat create-project --project-path <your new project path>
@@ -160,10 +159,10 @@ If you have the Git credential manager core or other credential helpers installe
     cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
 
     // For the 0.5 branch, you must build a new Editor for each project:
-    cmake --build <your project build path> --target <New Project Name> Editor --config profile -- /m
+    cmake --build <your project build path> --target <New Project Name>.GameLauncher Editor --config profile -- /m
     
     // For all other branches, just build the project:
-    cmake --build <your project build path> --target <New Project Name> --config profile -- /m
+    cmake --build <your project build path> --target <New Project Name>.GameLauncher --config profile -- /m
     ```
   
 For a tutorial on project configuration, see [Creating Projects Using the Command Line](https://docs.o3de.org/docs/welcome-guide/get-started/project-config/creating-projects-using-cli) in the documentation.

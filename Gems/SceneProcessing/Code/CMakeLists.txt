@@ -66,7 +66,17 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::SceneCore
             AZ::SceneData
     )
+    # the SceneProcessing.Editor module above is only used in Builders and Tools.
+    ly_create_alias(NAME SceneProcessing.Builders NAMESPACE Gem TARGETS Gem::SceneProcessing.Editor)
+    ly_create_alias(NAME SceneProcessing.Tools    NAMESPACE Gem TARGETS Gem::SceneProcessing.Editor)
+
+# SceneProcessing Gem is only used in Tools and builders and is a requirement for the Editor
+ly_enable_gems(GEMS SceneProcessing VARIANTS Tools
+    TARGETS Editor)
+ly_enable_gems(GEMS SceneProcessing VARIANTS Builders
+    TARGETS AssetBuilder AssetProcessor AssetProcessorBatch)
 endif()
+
 
 ################################################################################
 # Tests
@@ -84,7 +94,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Gem::SceneProcessing
+        RUNTIME_DEPENDENCIES
+            Gem::SceneProcessing
     )
     ly_add_googletest(
         NAME Gem::SceneProcessing.Tests

@@ -13,8 +13,6 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
 ly_add_target(
     NAME EditorCore SHARED
     NAMESPACE Legacy
@@ -106,7 +104,6 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
-            3rdParty::Qt::WebEngineWidgets
             3rdParty::tiff
             3rdParty::squish-ccr
             3rdParty::zlib
@@ -129,6 +126,8 @@ ly_add_target(
             3rdParty::AWSNativeSDK::Core
             3rdParty::Qt::Network
             Legacy::EditorCore
+    RUNTIME_DEPENDENCIES
+        Gem::AtomViewportDisplayInfo
 )
 ly_add_source_properties(
     SOURCES CryEdit.cpp
@@ -159,7 +158,7 @@ ly_add_source_properties(
 # Editor
 ################################################################################
 ly_add_target(
-    NAME Editor ${PAL_TRAIT_BUILD_EDITOR_APPLICATION_TYPE} # Mac Editor is a bare executable on Atom until we can fix packaging of the shader compilers. DO NOT MERGE BACK TO MAINLINE
+    NAME Editor APPLICATION
     NAMESPACE Legacy
     AUTORCC
     FILES_CMAKE
@@ -173,6 +172,12 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Legacy::CrySystem
         Legacy::EditorLib
+        ProjectManager
+)
+set_property(SOURCE
+    CryEdit.cpp
+    APPEND PROPERTY
+        COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
 )
 ly_add_translations(
     TARGETS Editor
@@ -183,15 +188,8 @@ ly_add_translations(
 )
 ly_add_dependencies(Editor AssetProcessor)
 
-if(TARGET Editor)
-    set_property(SOURCE
-        CryEdit.cpp
-        APPEND PROPERTY
-            COMPILE_DEFINITIONS LY_CMAKE_TARGET="Editor"
-    )
-else()
-    message(FATAL_ERROR "Cannot set LY_CMAKE_TARGET define to Editor as the target doesn't exist anymore."
-        " Perhaps it has been renamed")
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET Editor APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
 endif()
 
 ################################################################################
@@ -243,7 +241,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 Legacy::EditorLib
-                Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests

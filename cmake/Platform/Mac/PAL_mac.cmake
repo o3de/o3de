@@ -24,6 +24,7 @@ ly_set(PAL_TRAIT_BUILD_CPACK_SUPPORTED FALSE)
 # Test library support
 ly_set(PAL_TRAIT_TEST_GOOGLE_TEST_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_TEST_GOOGLE_BENCHMARK_SUPPORTED TRUE)
+ly_set(PAL_TRAIT_TEST_LYTESTTOOLS_SUPPORTED TRUE)
 ly_set(PAL_TRAIT_TEST_PYTEST_SUPPORTED FALSE)
 ly_set(PAL_TRAIT_TEST_TARGET_TYPE MODULE)
 
@@ -35,7 +36,7 @@ else()
 endif()
 
 # Set the default asset type for deployment
-set(LY_ASSET_DEPLOY_ASSET_TYPE "osx_gl" CACHE STRING "Set the asset type for deployment.")
+set(LY_ASSET_DEPLOY_ASSET_TYPE "mac" CACHE STRING "Set the asset type for deployment.")
 
 # Set the python cmd tool
 ly_set(LY_PYTHON_CMD ${CMAKE_CURRENT_SOURCE_DIR}/python/python.sh)

@@ -12691,8 +12691,7 @@ static int glad_vk_find_extensions_vulkan( VkPhysicalDevice physical_device) {
 #endif
     GLAD_VK_KHR_push_descriptor = glad_vk_has_extension("VK_KHR_push_descriptor", extension_count, extensions);
     GLAD_VK_KHR_ray_tracing = (glad_vk_has_extension("VK_KHR_acceleration_structure", extension_count, extensions)
-        && glad_vk_has_extension("VK_KHR_ray_tracing_pipeline", extension_count, extensions)
-        && glad_vk_has_extension("VK_KHR_ray_query", extension_count, extensions));
+        && glad_vk_has_extension("VK_KHR_ray_tracing_pipeline", extension_count, extensions));
     GLAD_VK_KHR_relaxed_block_layout = glad_vk_has_extension("VK_KHR_relaxed_block_layout", extension_count, extensions);
     GLAD_VK_KHR_sampler_mirror_clamp_to_edge = glad_vk_has_extension("VK_KHR_sampler_mirror_clamp_to_edge", extension_count, extensions);
     GLAD_VK_KHR_sampler_ycbcr_conversion = glad_vk_has_extension("VK_KHR_sampler_ycbcr_conversion", extension_count, extensions);

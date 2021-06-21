@@ -15,6 +15,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <LyShine/LyShineBus.h>
 
 namespace LyShineEditor
 {
@@ -22,6 +23,7 @@ namespace LyShineEditor
         : public AZ::Component
         , protected AzToolsFramework::EditorEvents::Bus::Handler
         , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+        , protected LyShine::LyShineRequestBus::Handler
     {
     public:
         AZ_COMPONENT(LyShineEditorSystemComponent, "{64D08A3F-A682-4CAF-86C1-DA91638494BA}");
@@ -54,6 +56,11 @@ namespace LyShineEditor
         // AssetBrowserInteractionNotifications interface implementation
         void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& /*sourceUUID*/, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
         AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // LyShineRequestBus interface implementation
+        void EditUICanvas(const AZStd::string_view& canvasPath) override;
         ////////////////////////////////////////////////////////////////////////
     };
 }

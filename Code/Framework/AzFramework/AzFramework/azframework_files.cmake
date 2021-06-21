@@ -204,6 +204,8 @@ set(FILES
     Physics/Collision/CollisionLayers.cpp
     Physics/Collision/CollisionGroups.h
     Physics/Collision/CollisionGroups.cpp
+    Physics/Common/PhysicsJoint.h
+    Physics/Common/PhysicsJoint.cpp
     Physics/Common/PhysicsSceneQueries.h
     Physics/Common/PhysicsSceneQueries.cpp
     Physics/Common/PhysicsEvents.h
@@ -215,6 +217,8 @@ set(FILES
     Physics/Common/PhysicsSimulatedBodyEvents.cpp
     Physics/Common/PhysicsTypes.h
     Physics/Components/SimulatedBodyComponentBus.h
+    Physics/Configuration/JointConfiguration.h
+    Physics/Configuration/JointConfiguration.cpp
     Physics/Configuration/CollisionConfiguration.h
     Physics/Configuration/CollisionConfiguration.cpp
     Physics/Configuration/RigidBodyConfiguration.h
@@ -259,8 +263,6 @@ set(FILES
     Physics/Ragdoll.h
     Physics/Utils.h
     Physics/Utils.cpp
-    Physics/Joint.h
-    Physics/Joint.cpp
     Physics/ClassConverters.cpp
     Physics/ClassConverters.h
     Physics/MaterialBus.h

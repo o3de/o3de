@@ -10,6 +10,7 @@
 #
 
 set(FILES
+    Include/Atom/RPI.Public/AssetInitBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/Culling.h
     Include/Atom/RPI.Public/FeatureProcessor.h
@@ -82,11 +83,8 @@ set(FILES
     Include/Atom/RPI.Public/Pass/Specific/SelectorPass.h
     Include/Atom/RPI.Public/Pass/Specific/SwapChainPass.h
     Include/Atom/RPI.Public/Shader/Shader.h
-    Include/Atom/RPI.Public/Shader/Shader2.h
     Include/Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h
-    Include/Atom/RPI.Public/Shader/ShaderReloadNotificationBus2.h
     Include/Atom/RPI.Public/Shader/ShaderVariant.h
-    Include/Atom/RPI.Public/Shader/ShaderVariant2.h
     Include/Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h
     Include/Atom/RPI.Public/Shader/ShaderResourceGroup.h
     Include/Atom/RPI.Public/Shader/ShaderResourceGroupPool.h
@@ -160,9 +158,7 @@ set(FILES
     Source/RPI.Public/Pass/Specific/SelectorPass.cpp
     Source/RPI.Public/Pass/Specific/SwapChainPass.cpp
     Source/RPI.Public/Shader/Shader.cpp
-    Source/RPI.Public/Shader/Shader2.cpp
     Source/RPI.Public/Shader/ShaderVariant.cpp
-    Source/RPI.Public/Shader/ShaderVariant2.cpp
     Source/RPI.Public/Shader/ShaderReloadDebugTracker.cpp
     Source/RPI.Public/Shader/ShaderResourceGroup.cpp
     Source/RPI.Public/Shader/ShaderResourceGroupPool.cpp

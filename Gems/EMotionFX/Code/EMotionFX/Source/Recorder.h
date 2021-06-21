@@ -23,6 +23,7 @@
 #include <MCore/Source/File.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/MultiThreadManager.h>
+#include <EMotionFX/Source/ActorInstanceBus.h>
 #include <EMotionFX/Source/AnimGraphObjectIds.h>
 #include <EMotionFX/Source/EventHandler.h>
 #include <EMotionFX/Source/EventInfo.h>
@@ -47,7 +48,7 @@ namespace EMotionFX
 
     class EMFX_API Recorder
         : public BaseObject
-        , public EventHandler
+        , private EMotionFX::ActorInstanceNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -319,9 +320,8 @@ namespace EMotionFX
         void RemoveActorInstanceFromRecording(ActorInstance* actorInstance);
         void RemoveAnimGraphFromRecording(AnimGraph* animGraph);
 
-        // EventHandler overrides
-        const AZStd::vector<EventTypes> GetHandledEventTypes() const override { return {EMotionFX::EVENT_TYPE_ON_DELETE_ACTOR_INSTANCE}; }
-        void OnDeleteActorInstance(ActorInstance* actorInstance) override;
+        // ActorInstanceNotificationBus overrides
+        void OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance) override;
 
         void SampleAndApplyTransforms(float timeInSeconds, ActorInstance* actorInstance) const;
         void SampleAndApplyMainTransform(float timeInSeconds, ActorInstance* actorInstance) const;

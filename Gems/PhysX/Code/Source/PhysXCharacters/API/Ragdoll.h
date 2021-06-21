@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
@@ -46,7 +47,7 @@ namespace PhysX
         void EnableSimulationQueued(const Physics::RagdollState& initialState) override;
         void DisableSimulation() override;
         void DisableSimulationQueued() override;
-        bool IsSimulated() override;
+        bool IsSimulated() const override;
         void GetState(Physics::RagdollState& ragdollState) const override;
         void SetState(const Physics::RagdollState& ragdollState) override;
         void SetStateQueued(const Physics::RagdollState& ragdollState) override;
@@ -84,5 +85,6 @@ namespace PhysX
         bool m_queuedDisableSimulation = false;
 
         AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneStartSimHandler;
+        static AZStd::mutex m_sceneEventMutex;
     };
 } // namespace PhysX

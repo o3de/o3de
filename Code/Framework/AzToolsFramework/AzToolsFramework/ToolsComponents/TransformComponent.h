@@ -99,22 +99,7 @@ namespace AzToolsFramework
             float GetLocalZ() override;
 
             // Rotation modifiers
-            void SetRotation(const AZ::Vector3& eulerAnglesRadians) override;
-            void SetRotationQuaternion(const AZ::Quaternion& quaternion) override;
-            void SetRotationX(float eulerAngleRadians) override;
-            void SetRotationY(float eulerAngleRadians) override;
-            void SetRotationZ(float eulerAngleRadians) override;
-
-            void RotateByX(float eulerAngleRadians) override;
-            void RotateByY(float eulerAngleRadians) override;
-            void RotateByZ(float eulerAngleRadians) override;
-
-            AZ::Vector3 GetRotationEulerRadians() override;
-            AZ::Quaternion GetRotationQuaternion() override;
-
-            float GetRotationX() override;
-            float GetRotationY() override;
-            float GetRotationZ() override;
+            void SetWorldRotationQuaternion(const AZ::Quaternion& quaternion) override;
 
             AZ::Vector3 GetWorldRotation() override;
             AZ::Quaternion GetWorldRotationQuaternion() override;
@@ -130,9 +115,7 @@ namespace AzToolsFramework
             AZ::Quaternion GetLocalRotationQuaternion() override;
 
             // Scale Modifiers
-            void SetLocalScale(const AZ::Vector3& scale) override;
             AZ::Vector3 GetLocalScale() override;
-            AZ::Vector3 GetWorldScale() override;
 
             void SetLocalUniformScale(float scale) override;
             float GetLocalUniformScale() override;
@@ -199,9 +182,12 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
             AZ::Outcome<void, AZStd::string> ValidatePotentialParent(void* newValue, const AZ::Uuid& valueType);
-            AZ::u32 ParentChanged();
-            AZ::u32 TransformChanged();
-            AZ::u32 StaticChanged();
+
+            AZ::u32 TransformChangedInspector();
+            AZ::u32 ParentChangedInspector();
+            AZ::u32 StaticChangedInspector();
+
+            bool TransformChanged();
 
             AZ::Transform GetLocalTranslationTM() const;
             AZ::Transform GetLocalRotationTM() const;

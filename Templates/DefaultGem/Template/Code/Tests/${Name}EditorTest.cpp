@@ -14,24 +14,4 @@
 
 #include <AzTest/AzTest.h>
 
-class ${Name}EditorTest
-    : public ::testing::Test
-{
-protected:
-    void SetUp() override
-    {
-
-    }
-
-    void TearDown() override
-    {
-
-    }
-};
-
-TEST_F(${Name}EditorTest, SanityTest)
-{
-    ASSERT_TRUE(true);
-}
-
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

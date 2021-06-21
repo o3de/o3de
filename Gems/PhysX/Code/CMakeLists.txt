@@ -46,6 +46,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
+        PRIVATE
             Gem::LmbrCentral
 )
 
@@ -66,9 +67,14 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::PhysX.Static
+            Gem::LmbrCentral
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# use the PhysX module in clients and servers:
+ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
+ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -107,7 +113,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::CryCommon
-                Gem::LmbrCentral
+                Gem::LmbrCentral.Editor
                 Gem::PhysX.NumericalMethods
                 Gem::PhysX.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static
@@ -122,6 +128,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOMOC
         FILES_CMAKE
             physx_editor_shared_files.cmake
+        COMPILE_DEFINITIONS
+            PUBLIC
+                PHYSX_ENABLE_MULTI_THREADING
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -136,12 +145,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::LmbrCentral.Editor
     )
 
+    # use the PhysX.Editor module in dev tools:
+    ly_create_alias(NAME PhysX.Builders NAMESPACE Gem TARGETS Gem::PhysX.Editor)
+    ly_create_alias(NAME PhysX.Tools    NAMESPACE Gem TARGETS Gem::PhysX.Editor)
+
 endif()
 
 ################################################################################
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    
 
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
@@ -157,9 +172,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTestShared
                 AZ::AzTest
                 Gem::PhysX.Static
+                Gem::LmbrCentral
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
     )
+
+    if(PAL_TRAIT_JOINTS_TYPED_TEST_CASE)
+        ly_add_source_properties(
+            SOURCES Tests/PhysXJointsTest.cpp
+            PROPERTY COMPILE_DEFINITIONS 
+            VALUES ENABLE_JOINTS_TYPED_TEST_CASE
+        )
+    endif()
+
     ly_add_googletest(
         NAME Gem::PhysX.Tests
     )

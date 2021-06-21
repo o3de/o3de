@@ -11,6 +11,7 @@
 */
 
 #include <Atom/RHI/CommandList.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -78,6 +79,7 @@ namespace AZ
 
         void GpuQuerySystem::Update()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "GpuQuerySystem: Update");
             for (auto& queryPool : m_queryPoolArray)
             {
                 if (queryPool)

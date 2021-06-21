@@ -36,10 +36,10 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
-            Gem::LmbrCentral
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::LmbrCentral
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
@@ -66,6 +66,10 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# Clients and servers use the above EMotionFX module
+ly_create_alias(NAME EMotionFX.Clients NAMESPACE Gem TARGETS EMotionFX)
+ly_create_alias(NAME EMotionFX.Servers NAMESPACE Gem TARGETS EMotionFX)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     
@@ -129,6 +133,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # builders and tools use the above EMotionFX.Editor module
+    ly_create_alias(NAME EMotionFX.Builders NAMESPACE Gem TARGETS EMotionFX.Editor)
+    ly_create_alias(NAME EMotionFX.Tools NAMESPACE Gem TARGETS EMotionFX.Editor)
+
 endif()
 
 ################################################################################

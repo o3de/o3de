@@ -27,10 +27,13 @@
   },
   "profile_vs2019_pipe": {
     "TAGS": [
-      "default"
+      "default",
+      "nightly-incremental",
+      "nightly-clean"
     ],
     "steps": [
       "profile_vs2019",
+      "test_impact_analysis",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]
@@ -56,7 +59,7 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
-      "SCRIPT_PARAMETERS": "--platform Windows --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_NAME!\" --changelist \"!CHANGE_ID!\""
+      "SCRIPT_PARAMETERS": "--platform Windows --jobname \"!JOB_NAME!\" --jobnumber \"!BUILD_NUMBER!\" --jobnode \"!NODE_LABEL!\" --changelist \"!CHANGE_ID!\""
     }
   },
   "windows_packaging_all": {
@@ -79,6 +82,15 @@
       "SCRIPT_PARAMETERS": "--platform 3rdParty --type 3rdParty_all"
     }
   },
+  "test_impact_analysis": {
+    "TAGS": [
+    ],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
+      "SCRIPT_PARAMETERS": "--testFailurePolicy=continue --suite main --pipeline !PIPELINE_NAME! --destCommit !CHANGE_ID! --config \"build\\windows_vs2019\\bin\\TestImpactFramework\\persistent\\tiaf.profile.json\""
+    }
+  },
   "debug_vs2019": {
     "TAGS": [
         "weekly-build-metrics"
@@ -87,7 +99,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -101,7 +113,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG=FALSE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -119,7 +131,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_TEST_IMPACT_ACTIVE=1 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=!TEST_IMPACT_WIN_BINARY!",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -135,7 +147,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=FALSE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=FALSE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -150,7 +162,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -171,13 +183,14 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
       "TEST_METRICS": "True",
-      "TEST_RESULTS": "True"
+      "TEST_RESULTS": "True",
+      "TEST_SCREENSHOTS": "True"
     }
   },
   "asset_profile_vs2019": {
@@ -190,7 +203,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -209,7 +222,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -231,7 +244,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_sandbox",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -250,7 +263,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
@@ -269,7 +282,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -285,7 +298,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build\\mono_windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -300,9 +313,23 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCMAKE_INSTALL_PREFIX=install -DO3DE_HOME_PATH=\"!WORKSPACE!/home\" -DO3DE_REGISTER_ENGINE_PATH=\"!WORKSPACE!/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE",
         "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "INSTALL",
+        "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "windows_installer": {
+    "TAGS": [
+      "package"
+    ],
+    "COMMAND": "build_installer_windows.cmd",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DCPACK_WIX_ROOT=\"!WIX!\"",
+        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_TARGET": "ALL_BUILD",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
@@ -332,7 +359,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/build/windows_vs2019/install/cmake",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/install/cmake",
       "CMAKE_LY_PROJECTS": "",
       "CMAKE_TARGET": "ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

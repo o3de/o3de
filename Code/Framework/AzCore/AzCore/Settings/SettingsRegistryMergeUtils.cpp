@@ -88,6 +88,35 @@ namespace AZ::Internal
                     m_enginePaths.emplace_back(EngineInfo{AZ::IO::FixedMaxPath{value}.LexicallyNormal(), {}});
                 }
 
+                AZ::SettingsRegistryInterface::VisitResponse Traverse(
+                    [[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
+                    AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type type) override
+                {
+                    auto response = AZ::SettingsRegistryInterface::VisitResponse::Continue;
+                    if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
+                    {
+                        if (type == AZ::SettingsRegistryInterface::Type::Array)
+                        {
+                            if (valueName.compare("engines") != 0)
+                            {
+                                response = AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                            }
+                        }
+                    }
+                    else if (action == AZ::SettingsRegistryInterface::VisitAction::Value)
+                    {
+                        if (type == AZ::SettingsRegistryInterface::Type::String)
+                        {
+                            if (valueName.compare("path") != 0)
+                            {
+                                response = AZ::SettingsRegistryInterface::VisitResponse::Skip;
+                            }
+                        }
+                    }
+
+                    return response;
+                }
+
                 AZStd::vector<EngineInfo> m_enginePaths{};
             };
 
@@ -612,6 +641,8 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         else
         {
+            // Set the default ProjectUserPath to the <engine-root>/user directory
+            registry.Set(FilePathKey_ProjectUserPath, (engineRoot / "user").LexicallyNormal().Native());
             AZ_TracePrintf("SettingsRegistryMergeUtils",
                 R"(Project path isn't set in the Settings Registry at "%.*s". Project-related filepaths will not be set)" "\n",
                 aznumeric_cast<int>(projectPathKey.size()), projectPathKey.data());
@@ -785,7 +816,11 @@ namespace AZ::SettingsRegistryMergeUtils
         }
     }
 
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine, bool executeCommands)
+    // This function intentionally copies `commandLine`. It looks like it only uses it as a const reference, but the
+    // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
+    // ensures that the iterators remain valid.
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
@@ -800,7 +835,7 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
-            if (commandArgument.m_option == "regremove")
+            else if (commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {

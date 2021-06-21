@@ -311,7 +311,8 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> modelAsset = actor->GetMeshAsset();
             if (!modelAsset.IsReady())
             {
-                AZ_Error("CreateSkinnedMeshInputFromActor", false, "Attempting to create skinned mesh input buffers for an actor that doesn't have a loaded model.");
+                AZ_Warning("CreateSkinnedMeshInputFromActor", false, "Check if the actor has a mesh added. Right click the source file in the asset browser, click edit settings, "
+                    "and navigate to the Meshes tab. Add a mesh if it's missing.");
                 return nullptr;
             }
 
@@ -595,7 +596,7 @@ namespace AZ
             // Create a buffer and populate it with the transforms
             RPI::CommonBufferDescriptor descriptor;
             descriptor.m_bufferData = boneTransforms.data();
-            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s_%s", actorInstance->GetActor()->GetName(), Uuid::CreateRandom().ToString<AZStd::string>().c_str());
+            descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s", actorInstance->GetActor()->GetName());
             descriptor.m_byteCount = boneTransforms.size() * sizeof(float);
             descriptor.m_elementSize = floatsPerBone * sizeof(float);
             descriptor.m_poolType = RPI::CommonBufferPoolType::ReadOnly;

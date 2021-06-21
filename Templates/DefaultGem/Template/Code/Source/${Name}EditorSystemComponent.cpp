@@ -15,24 +15,53 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <${Name}EditorSystemComponent.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    void ${Name}EditorSystemComponent::Reflect(AZ::ReflectContext* context)
+    void ${SanitizedCppName}EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<${Name}EditorSystemComponent, AZ::Component>()->Version(1);
+            serializeContext->Class<${SanitizedCppName}EditorSystemComponent, ${SanitizedCppName}SystemComponent>()
+                ->Version(0);
         }
     }
 
-    void ${Name}EditorSystemComponent::Activate()
+    ${SanitizedCppName}EditorSystemComponent::${SanitizedCppName}EditorSystemComponent() = default;
+
+    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent() = default;
+
+    void ${SanitizedCppName}EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
+        BaseSystemComponent::GetProvidedServices(provided);
+        provided.push_back(AZ_CRC_CE("${SanitizedCppName}EditorService"));
+    }
+
+    void ${SanitizedCppName}EditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        BaseSystemComponent::GetIncompatibleServices(incompatible);
+        incompatible.push_back(AZ_CRC_CE("${SanitizedCppName}EditorService"));
+    }
+
+    void ${SanitizedCppName}EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        BaseSystemComponent::GetRequiredServices(required);
+    }
+
+    void ${SanitizedCppName}EditorSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        BaseSystemComponent::GetDependentServices(dependent);
+    }
+
+    void ${SanitizedCppName}EditorSystemComponent::Activate()
+    {
+        ${SanitizedCppName}SystemComponent::Activate();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
-    void ${Name}EditorSystemComponent::Deactivate()
+    void ${SanitizedCppName}EditorSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        ${SanitizedCppName}SystemComponent::Deactivate();
     }
 
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}

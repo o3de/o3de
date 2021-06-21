@@ -23,13 +23,20 @@ namespace AZ
     public:
         AZ_RTTI(JsonTupleSerializer, "{1AA0ADC1-395A-4223-8A73-304ACDEE7793}", BaseJsonSerializer);
         AZ_CLASS_ALLOCATOR_DECL;
+
         JsonSerializationResult::Result Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
             JsonDeserializerContext& context) override;
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
 
+        OperationFlags GetOperationsFlags() const override;
+
     private:
-        JsonSerializationResult::Result LoadContainer(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+        JsonSerializationResult::Result LoadContainer(
+            void* outputValue,
+            const Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
+            bool isNewInstance,
             JsonDeserializerContext& context);
     };
 } // namespace AZ

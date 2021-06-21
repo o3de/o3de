@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/GradientSignal_precompiled.cpp
     Source/GradientSignal_precompiled.h
     Include/GradientSignal/GradientSampler.h
     Include/GradientSignal/SmoothStep.h

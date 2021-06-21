@@ -291,7 +291,6 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
     # Install the Find file to our <install_location>/cmake directory
     install(FILES ${CMAKE_CURRENT_LIST_FILE}
         DESTINATION cmake
-        COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
     )
 
     # We only want to install external targets that are part of our source tree
@@ -302,7 +301,6 @@ function(ly_install_external_target 3RDPARTY_ROOT_DIRECTORY)
         get_filename_component(rel_path ${rel_path} DIRECTORY)
         install(DIRECTORY ${3RDPARTY_ROOT_DIRECTORY}
             DESTINATION ${rel_path}
-            COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT}
         )
     endif()
 
@@ -313,6 +311,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
 ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME})
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 
-ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
-ly_get_absolute_pal_filename(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME})
-ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
+if(NOT INSTALLED_ENGINE)
+    # Add the 3rdParty cmake files to the IDE
+    ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
+    ly_get_absolute_pal_filename(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME})
+    ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
+endif()

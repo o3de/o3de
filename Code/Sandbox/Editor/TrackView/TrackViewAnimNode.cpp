@@ -205,10 +205,10 @@ CTrackViewAnimNode::CTrackViewAnimNode(IAnimSequence* pSequence, IAnimNode* anim
         for (int i = 0; i < nodeCount; ++i)
         {
             IAnimNode* node = pSequence->GetNode(i);
-            IAnimNode* pParentNode = node->GetParent();
+            IAnimNode* pNodeParentNode = node->GetParent();
 
             // If our node is the parent, then the current node is a child of it
-            if (animNode == pParentNode)
+            if (animNode == pNodeParentNode)
             {
                 CTrackViewAnimNodeFactory animNodeFactory;
                 CTrackViewAnimNode* pNewTVAnimNode = animNodeFactory.BuildAnimNode(pSequence, node, this);
@@ -2012,9 +2012,9 @@ void CTrackViewAnimNode::SetPosRotScaleTracksDefaultValues(bool positionAllowed,
             }
             if (scaleAllowed)
             {
-                AZ::Vector3 scale = AZ::Vector3::CreateOne();
-                AZ::TransformBus::EventResult(scale, entityId, &AZ::TransformBus::Events::GetWorldScale);
-                m_animNode->SetScale(time, AZVec3ToLYVec3(scale));
+                float scale = 1.0f;
+                AZ::TransformBus::EventResult(scale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+                m_animNode->SetScale(time, Vec3(scale, scale, scale));
             }
         }
     }

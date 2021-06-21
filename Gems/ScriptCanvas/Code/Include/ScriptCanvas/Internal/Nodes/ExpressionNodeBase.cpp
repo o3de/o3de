@@ -121,13 +121,13 @@ namespace ScriptCanvas
             {
                 if (slotId == ExpressionNodeBaseProperty::GetInSlotId(this))
                 {
-                    for (const SlotId& slotId : m_dirtyInputs)
+                    for (const SlotId& dirtySlotId : m_dirtyInputs)
                     {
-                        auto variableIter = m_slotToVariableMap.find(slotId);
+                        auto variableIter = m_slotToVariableMap.find(dirtySlotId);
 
                         if (variableIter != m_slotToVariableMap.end())
                         {
-                            PushVariable(variableIter->second, (*FindDatum(slotId)));
+                            PushVariable(variableIter->second, (*FindDatum(dirtySlotId)));
                         }
                     }
 

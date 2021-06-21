@@ -10,7 +10,6 @@
 #
 
 set(FILES
-    Source/EMotionFX_precompiled.cpp
     Source/EMotionFX_precompiled.h
     ../Assets/Editor/Layouts/Layouts.qrc
     ../Assets/Editor/Images/Icons/Resources.qrc

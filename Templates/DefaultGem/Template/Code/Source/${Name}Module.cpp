@@ -12,39 +12,19 @@
  */
 // {END_LICENSE}
 
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Module/Module.h>
 
+#include <${Name}ModuleInterface.h>
 #include <${Name}SystemComponent.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Module
-        : public AZ::Module
+    class ${SanitizedCppName}Module
+        : public ${SanitizedCppName}ModuleInterface
     {
     public:
-        AZ_RTTI(${Name}Module, "${ModuleClassId}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(${Name}Module, AZ::SystemAllocator, 0);
-
-        ${Name}Module()
-            : AZ::Module()
-        {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            m_descriptors.insert(m_descriptors.end(), {
-                ${Name}SystemComponent::CreateDescriptor(),
-            });
-        }
-
-        /**
-         * Add required SystemComponents to the SystemEntity.
-         */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
-        {
-            return AZ::ComponentTypeList {
-                azrtti_typeid<${Name}SystemComponent>(),
-            };
-        }
+        AZ_RTTI(${SanitizedCppName}Module, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator, 0);
     };
-}// namespace ${Name}
+}// namespace ${SanitizedCppName}
 
-AZ_DECLARE_MODULE_CLASS(Gem_${Name}, ${Name}::${Name}Module)
+AZ_DECLARE_MODULE_CLASS(Gem_${SanitizedCppName}, ${SanitizedCppName}::${SanitizedCppName}Module)

@@ -389,7 +389,7 @@ namespace ScriptCanvas
 
     bool Datum::Empty() const
     {
-        return GetValueAddress() == nullptr;
+        return m_storage.empty() || GetValueAddress() == nullptr;
     }
 
     template<typename t_Value>

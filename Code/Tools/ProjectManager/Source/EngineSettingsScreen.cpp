@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
     EngineSettingsScreen::EngineSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        auto* layout = new QVBoxLayout(this);
+        auto* layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignTop);
 
         setObjectName("engineSettingsScreen");
@@ -80,6 +80,16 @@ namespace O3DE::ProjectManager
     ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::EngineSettings;
+    }
+
+    QString EngineSettingsScreen::GetTabText()
+    {
+        return tr("Engine");
+    }
+
+    bool EngineSettingsScreen::IsTab()
+    {
+        return true;
     }
 
     void EngineSettingsScreen::OnTextChanged()

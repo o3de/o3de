@@ -28,6 +28,7 @@ WINDOWS = sys.platform.startswith('win')
 HOST_OS_PLATFORM = 'unknown'
 HOST_OS_EDITOR = 'unknown'
 HOST_OS_DEDICATED_SERVER = 'unknown'
+HOST_OS_GENERIC_EXECUTABLE = 'unknown'
 LAUNCHERS = {}
 for launcher_option in ALL_LAUNCHER_OPTIONS:
     LAUNCHERS[launcher_option] = None
