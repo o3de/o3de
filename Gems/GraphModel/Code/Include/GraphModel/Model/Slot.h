@@ -181,6 +181,16 @@ namespace GraphModel
         AZ::JsonSerializationResult::Result Store(
             rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, const AZ::Uuid& valueTypeId,
             AZ::JsonSerializerContext& context) override;
+
+    private:
+        template<typename T>
+        bool LoadAny(
+            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result);
+        template<typename T>
+        bool StoreAny(
+            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+            AZ::JsonSerializationResult::ResultCode& result);
     };
 
     //!!! Start in Graph.h for high level GraphModel documentation !!!

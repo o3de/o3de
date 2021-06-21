@@ -11,6 +11,10 @@
 */
 
 // AZ
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -310,11 +314,19 @@ namespace GraphModel
         AZ_Assert(slot, "Output value for JsonSlotSerializer can't be null.");
 
         JSR::ResultCode result(JSR::Tasks::ReadField);
-        if (inputValue.HasMember("m_value") && inputValue["m_value"].IsObject())
+
+        auto serializedSlotValue = inputValue.FindMember("m_value");
+        if (serializedSlotValue != inputValue.MemberEnd())
         {
-            auto serializedSlotValue = inputValue.FindMember("m_value");
             AZStd::any slotValue;
-            if (AttemptLoadAny(slotValue, serializedSlotValue->value, context, result))
+            if (LoadAny<bool>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<int>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<float>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZStd::string>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZ::Vector2>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZ::Vector3>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZ::Vector4>(slotValue, serializedSlotValue->value, context, result) ||
+                LoadAny<AZ::EntityId>(slotValue, serializedSlotValue->value, context, result))
             {
                 slot->m_value = slotValue;
             }
@@ -351,13 +363,21 @@ namespace GraphModel
         outputValue.SetObject();
 
         JSR::ResultCode result(JSR::Tasks::WriteValue);
+
         {
             AZ::ScopedContextPath subPathPropertyOverrides(context, "m_value");
 
             if (!slot->m_value.empty())
             {
                 rapidjson::Value outputPropertyValue;
-                if (AttemptStoreAny(slot->m_value, outputPropertyValue, context, result))
+                if (StoreAny<bool>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<int>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<float>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZStd::string>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZ::Vector2>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZ::Vector3>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZ::Vector4>(slot->m_value, outputPropertyValue, context, result) ||
+                    StoreAny<AZ::EntityId>(slot->m_value, outputPropertyValue, context, result))
                 {
                     outputValue.AddMember("m_value", outputPropertyValue, context.GetJsonAllocator());
                 }
@@ -377,6 +397,51 @@ namespace GraphModel
             result,
             result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored MaterialAssignment information."
             : "Failed to store MaterialAssignment information.");
+    }
+
+    template<typename T>
+    bool JsonSlotSerializer::LoadAny(
+        AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+        AZ::JsonSerializationResult::ResultCode& result)
+    {
+        if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
+        {
+            // Requiring explicit type info to differentiate be=tween colors versus vectors and numeric types
+            const AZ::Uuid baseTypeId = azrtti_typeid<T>();
+            AZ::Uuid typeId = AZ::Uuid::CreateNull();
+            result.Combine(LoadTypeId(typeId, inputPropertyValue, context, &baseTypeId));
+
+            if (typeId == azrtti_typeid<T>())
+            {
+                T value;
+                result.Combine(ContinueLoadingFromJsonObjectField(&value, azrtti_typeid<T>(), inputPropertyValue, "Value", context));
+                propertyValue = value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template<typename T>
+    bool JsonSlotSerializer::StoreAny(
+        const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+        AZ::JsonSerializationResult::ResultCode& result)
+    {
+        if (propertyValue.is<T>())
+        {
+            outputPropertyValue.SetObject();
+
+            // Storing explicit type info to differentiate be=tween colors versus vectors and numeric types
+            rapidjson::Value typeValue;
+            result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
+            outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
+
+            T value = AZStd::any_cast<T>(propertyValue);
+            result.Combine(
+                ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
+            return true;
+        }
+        return false;
     }
 
     void Slot::Reflect(AZ::ReflectContext* context)

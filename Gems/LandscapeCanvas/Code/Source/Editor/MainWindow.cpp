@@ -884,6 +884,10 @@ namespace LandscapeCanvasEditor
                 if (landscapeCanvasComponent)
                 {
                     landscapeCanvasComponent->m_graph = *m_serializeContext->CloneObject(graph.get());
+
+                    // Mark the Landscape Canvas entity as dirty so the changes to the graph will be picked up on the next save
+                    AzToolsFramework::ScopedUndoBatch undo("Update Landscape Canvas Graph");
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, rootEntityId);
                 }
             }
         }
