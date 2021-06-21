@@ -88,7 +88,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
         editContext->Class<AssetBrowserSearch>("Asset Browser Search View", "Asset Browser Search View")
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSearch::m_numOfItemsShown, "Maximum number of displayed items",
                 "Maximum number of displayed items displayed in the Search View")
-            ->Attribute(AZ::Edit::Attributes::Min, 200)
+            ->Attribute(AZ::Edit::Attributes::Min, 10)
             ->Attribute(AZ::Edit::Attributes::Max, 1000);
 
         editContext->Class<CEditorPreferencesPage_Files>("File Preferences", "Class for handling File Preferences")

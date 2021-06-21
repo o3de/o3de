@@ -8,6 +8,8 @@
 #include <AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
+#pragma optimize("", off)
+
 namespace AzToolsFramework
 {
     namespace AssetBrowser
@@ -151,20 +153,18 @@ namespace AzToolsFramework
                 endRemoveRows();
             }
 
-            AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome outcome;
-            AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(outcome, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
-                "Settings|MaxDisplayedItemsNumInSearch");
-            //AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
-            //    outcome, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
-            //    "Settings\ExperimentalFeatures|TotalIlluminationEnabled");
+             AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome outcome;
+             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(outcome, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
+               "Settings|MaxDisplayedItemsNumInSearch");
 
-            AZStd::any* outcomeValue = &outcome.GetValue<AZStd::any>();
-            //bool trr = false;
-            if (outcomeValue->is<int>() == true)
+            AZStd::any outcomeValue = outcome.GetValue<AZStd::any>();
+            if (outcomeValue.is<int>() == true)
             {
-                m_numberOfItemsDisplayed = AZStd::any_cast<int>(*outcomeValue);
-                //trr = AZStd::any_cast<bool>(outcomeValue);
+                m_numberOfItemsDisplayed = AZStd::any_cast<int>(outcome.GetValue());
             }
+
+            AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
+                m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
 
             BuildTableModelMap(sourceModel());
             emit layoutChanged();
@@ -172,3 +172,4 @@ namespace AzToolsFramework
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 #include "AssetBrowser/moc_AssetBrowserTableModel.cpp"
+#pragma optimize("", on)

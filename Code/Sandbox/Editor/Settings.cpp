@@ -1205,3 +1205,8 @@ AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() cons
 {
     return consoleBackgroundColorTheme;
 }
+
+int SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
+{
+    return SEditorSettings::numberOfItemsShownInSearch;
+}
