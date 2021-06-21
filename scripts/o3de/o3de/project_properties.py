@@ -16,7 +16,7 @@ import pathlib
 import sys
 import logging
 
-from o3de import manifest
+from o3de import manifest, utils
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -47,6 +47,9 @@ def edit_project_props(proj_path: pathlib.Path,
     if new_origin:
         proj_json['origin'] = new_origin
     if new_name:
+        if not utils.validate_identifier(new_name):
+            logger.error(f'Project name must be fewer than 64 characters, contain only alphanumeric, "_" or "-" characters, and start with a letter.  {new_name}')
+            return 1
         proj_json['project_name'] = new_name 
     if new_display:
         proj_json['display_name'] = new_display
