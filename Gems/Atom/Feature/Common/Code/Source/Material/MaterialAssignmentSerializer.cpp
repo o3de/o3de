@@ -189,7 +189,6 @@ namespace AZ
             return false;
         }
 
-        //! Helper function to store a handled type to an AZStd::any value
         template<typename T>
         bool JsonMaterialAssignmentSerializer::StoreAny(
             const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
