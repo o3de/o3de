@@ -161,7 +161,7 @@ namespace AZ
 
             // Always disable ray tracing flag on skinned meshes
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDataHandle->m_descriptor.m_rayTracingEnabled &= !descriptor.m_isSkinnedMeshWithMotion;
+            meshDataHandle->m_descriptor.m_isRayTracingEnabled &= !descriptor.m_isSkinnedMeshWithMotion;
 
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
@@ -368,7 +368,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
