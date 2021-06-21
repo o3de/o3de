@@ -10,9 +10,9 @@
 *
 */
 
-#include "Viewport/MaterialViewportWidget.h"
-
 #include <QApplication>
+#include <QWidget>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Matrix4x4.h>
