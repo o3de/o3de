@@ -17,6 +17,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
@@ -54,6 +55,15 @@ namespace PhysX
                 return physXDebug->GetDebugDisplayData().m_globalCollisionDebugDraw == requiredState;
             }
             return false;
+        }
+
+        bool IsDrawColliderReadOnly()
+        {
+            bool helpersVisible = false;
+            AzToolsFramework::EditorRequestBus::BroadcastResult(helpersVisible,
+                &AzToolsFramework::EditorRequests::DisplayHelpersVisible);
+            // if helpers are visible, draw colliders is NOT read only and can be changed.
+            return !helpersVisible;
         }
 
         static void BuildAABBVerts(const AZ::Aabb& aabb,
@@ -145,28 +155,42 @@ namespace PhysX
                         "PhysX Collider Debug Draw", "Manages global and per-collider debug draw settings and logic")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
                             "Shows the geometry for the collider in the viewport")
-                        ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
-                            "If set, the geometry of this collider is visible in the viewport")
-                        ->Attribute(AZ::Edit::Attributes::Visibility,
-                            VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
+                            ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
+                                "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
+                            ->Attribute(AZ::Edit::Attributes::Visibility,
+                                VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
                             "Shows the geometry for the collider in the viewport")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
-                        ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
-                            "A global setting is overriding this property (to disable the override, "
-                            "set the Global Collision Debug setting to \"Set manually\" in the PhysX Configuration)")
-                        ->Attribute(AZ::Edit::Attributes::Visibility,
-                            VisibilityFunc{ []() { return !IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXSettingsWindow)
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
+                            ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
+                                "A global setting is overriding this property (to disable the override, "
+                                "set the Global Collision Debug setting to \"Set manually\" in the PhysX Configuration)."
+                                "'Draw Helpers' needs to be enabled to use.")
+                            ->Attribute(AZ::Edit::Attributes::Visibility,
+                                VisibilityFunc{ []() { return !IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXSettingsWindow)
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ;
                 }
             }
+        }
+
+        Collider::Collider()
+            : m_debugDisplayDataChangedEvent(
+                  [this]([[maybe_unused]] const PhysX::Debug::DebugDisplayData& data)
+                  {
+                      this->RefreshTreeHelper();
+                  })
+        {
+            
         }
 
         void Collider::Connect(AZ::EntityId entityId)
         {
             m_entityId = entityId;
             AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entityId);
+            AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusConnect(m_entityId);
         }
 
         void Collider::SetDisplayCallback(const DisplayCallback* callback)
@@ -176,6 +200,11 @@ namespace PhysX
 
         void Collider::Disconnect()
         {
+            if (AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusIsConnected())
+            {
+                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
+            }
+            AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             m_displayCallback = nullptr;
             m_entityId = AZ::EntityId();
@@ -729,6 +758,33 @@ namespace PhysX
                     debugDisplay.PopMatrix();
                 }
             }
+        }
+
+        void Collider::OnDrawHelpersChanged([[maybe_unused]] bool enabled)
+        {
+            RefreshTreeHelper();
+        }
+
+        void Collider::OnSelected()
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(
+                AzFramework::g_defaultSceneEntityDebugDisplayId);
+            if (auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get())
+            {
+                physXDebug->RegisterDebugDisplayDataChangedEvent(m_debugDisplayDataChangedEvent);
+            }
+        }
+
+        void Collider::OnDeselected()
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
+            m_debugDisplayDataChangedEvent.Disconnect();
+        }
+
+        void Collider::RefreshTreeHelper()
+        {
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
 
         AZStd::string Collider::GetEntityName() const 
