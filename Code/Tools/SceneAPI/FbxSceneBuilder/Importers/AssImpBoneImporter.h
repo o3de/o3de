@@ -31,8 +31,7 @@ namespace AZ
                 ~AssImpBoneImporter() override = default;
 
                 static void Reflect(ReflectContext* context);
-
-                aiMatrix4x4 CalculateWorldTransform(const aiNode* currentNode);
+                
                 Events::ProcessingResult ImportBone(AssImpNodeEncounteredContext& context);
             };
         } // namespace FbxSceneBuilder

@@ -98,7 +98,7 @@ namespace AZ
                 }
             }
 
-            aiMatrix4x4 AssImpBoneImporter::CalculateWorldTransform(const aiNode* currentNode)
+            aiMatrix4x4 CalculateWorldTransform(const aiNode* currentNode)
             {
                 aiMatrix4x4 transform = {};
                 const aiNode* iteratingNode = currentNode;
