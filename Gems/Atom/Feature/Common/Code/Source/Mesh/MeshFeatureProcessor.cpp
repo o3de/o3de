@@ -1050,7 +1050,7 @@ namespace AZ
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
-            if (m_descriptor.m_excludeFromReflectionCubeMaps)
+            if (m_excludeFromReflectionCubeMaps)
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
