@@ -135,7 +135,21 @@ namespace AtomToolsFramework
     {
         if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
         {
-            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
+            const AzFramework::CameraInput::Response response =
+                m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
+
+            if (m_response != response)
+            {
+                const auto cursorCapture = response == AzFramework::CameraInput::Response::Focused
+                    ? &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture
+                    : &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture;
+
+                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(GetViewportId(), cursorCapture);
+
+                m_response = response;
+            }
+
+            return response != AzFramework::CameraInput::Response::Nil;
         }
 
         return false;

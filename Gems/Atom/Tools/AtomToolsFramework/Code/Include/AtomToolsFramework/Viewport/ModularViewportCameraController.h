@@ -74,6 +74,7 @@ namespace AtomToolsFramework
         AzFramework::Camera m_targetCamera;
         AzFramework::CameraSystem m_cameraSystem;
         AzFramework::CameraProps m_cameraProps;
+        AzFramework::CameraInput::Response m_response = AzFramework::CameraInput::Response::Nil;
 
         AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
         AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity();

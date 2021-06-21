@@ -160,7 +160,7 @@ namespace AzFramework
         camera.m_lookAt = transform.GetTranslation() + (camera.Rotation().GetBasisY() * -camera.m_lookDist);
     }
 
-    bool CameraSystem::HandleEvents(const InputEvent& event)
+    CameraInput::Response CameraSystem::HandleEvents(const InputEvent& event)
     {
         if (const auto& horizonalMotion = AZStd::get_if<HorizontalMotionEvent>(&event))
         {
@@ -193,20 +193,31 @@ namespace AzFramework
         m_idleCameraInputs.push_back(AZStd::move(cameraInput));
     }
 
-    bool Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
+    CameraInput::Response Cameras::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, const float scrollDelta)
     {
-        bool handling = false;
+        const auto handleCameraInputFn = [&](CameraInput* cameraInput, const CameraInput::Response response)
+        {
+            if (const CameraInput::Response currentResponse = cameraInput->HandleEvents(event, cursorDelta, scrollDelta);
+                currentResponse > response)
+            {
+                return currentResponse;
+            }
+
+            return response;
+        };
+
+        CameraInput::Response response = CameraInput::Response::Nil;
         for (auto& cameraInput : m_activeCameraInputs)
         {
-            handling = cameraInput->HandleEvents(event, cursorDelta, scrollDelta) || handling;
+            response = handleCameraInputFn(cameraInput.get(), response);
         }
 
         for (auto& cameraInput : m_idleCameraInputs)
         {
-            handling = cameraInput->HandleEvents(event, cursorDelta, scrollDelta) || handling;
+            response = handleCameraInputFn(cameraInput.get(), response);
         }
 
-        return handling;
+        return response;
     }
 
     Camera Cameras::StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, const float scrollDelta, const float deltaTime)
@@ -303,7 +314,8 @@ namespace AzFramework
         };
     }
 
-    bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
+    CameraInput::Response RotateCameraInput::HandleEvents(
+        const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         const ClickDetector::ClickEvent clickEvent = [&event, this]
         {
@@ -340,7 +352,7 @@ namespace AzFramework
         // note - must also check !ending to ensure the mouse up (release) event
         // is not consumed and can be propagated to other systems.
         // (don't swallow mouse up events)
-        return !Idle() && !Ending();
+        return !Idle() && !Ending() ? Response::Focused : Response::Nil;
     }
 
     Camera RotateCameraInput::StepCamera(
@@ -387,7 +399,7 @@ namespace AzFramework
         };
     }
 
-    bool PanCameraInput::HandleEvents(
+    CameraInput::Response PanCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
@@ -405,7 +417,7 @@ namespace AzFramework
             }
         }
 
-        return !Idle();
+        return !Idle() ? Response::Focused : Response::Nil;
     }
 
     Camera PanCameraInput::StepCamera(
@@ -428,7 +440,7 @@ namespace AzFramework
         return nextCamera;
     }
 
-    TranslateCameraInput::TranslationType TranslateCameraInput::translationFromKey(InputChannelId channelId)
+    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(InputChannelId channelId)
     {
         if (channelId == CameraTranslateForwardId)
         {
@@ -477,14 +489,14 @@ namespace AzFramework
         };
     }
 
-    bool TranslateCameraInput::HandleEvents(
+    CameraInput::Response TranslateCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= translationFromKey(input->m_channelId);
+                m_translation |= TranslationFromKey(input->m_channelId);
                 if (m_translation != TranslationType::Nil)
                 {
                     BeginActivation();
@@ -498,7 +510,7 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(translationFromKey(input->m_channelId));
+                m_translation &= ~(TranslationFromKey(input->m_channelId));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();
@@ -510,7 +522,7 @@ namespace AzFramework
             }
         }
 
-        return !Idle();
+        return !Idle() ? Response::Unfocused : Response::Nil;
     }
 
     Camera TranslateCameraInput::StepCamera(
@@ -575,7 +587,7 @@ namespace AzFramework
         m_boost = false;
     }
 
-    bool OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
+    CameraInput::Response OrbitCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta)
     {
         if (const auto* input = AZStd::get_if<DiscreteInputEvent>(&event))
         {
@@ -597,7 +609,7 @@ namespace AzFramework
             return m_orbitCameras.HandleEvents(event, cursorDelta, scrollDelta);
         }
 
-        return !Idle();
+        return !Idle() ? Response::Unfocused : Response::Nil;
     }
 
     Camera OrbitCameraInput::StepCamera(
@@ -669,7 +681,7 @@ namespace AzFramework
         };
     }
 
-    bool OrbitDollyScrollCameraInput::HandleEvents(
+    CameraInput::Response OrbitDollyScrollCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
@@ -677,7 +689,7 @@ namespace AzFramework
             BeginActivation();
         }
 
-        return !Idle();
+        return !Idle() ? Response::Unfocused : Response::Nil;
     }
 
     Camera OrbitDollyScrollCameraInput::StepCamera(
@@ -701,7 +713,7 @@ namespace AzFramework
         };
     }
 
-    bool OrbitDollyCursorMoveCameraInput::HandleEvents(
+    CameraInput::Response OrbitDollyCursorMoveCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto& input = AZStd::get_if<DiscreteInputEvent>(&event))
@@ -719,7 +731,7 @@ namespace AzFramework
             }
         }
 
-        return !Idle();
+        return !Idle() ? Response::Focused : Response::Nil;
     }
 
     Camera OrbitDollyCursorMoveCameraInput::StepCamera(
@@ -741,7 +753,7 @@ namespace AzFramework
         };
     }
 
-    bool ScrollTranslationCameraInput::HandleEvents(
+    CameraInput::Response ScrollTranslationCameraInput::HandleEvents(
         const InputEvent& event, [[maybe_unused]] const ScreenVector& cursorDelta, [[maybe_unused]] float scrollDelta)
     {
         if (const auto* scroll = AZStd::get_if<ScrollEvent>(&event))
@@ -749,7 +761,7 @@ namespace AzFramework
             BeginActivation();
         }
 
-        return !Idle();
+        return !Idle() ? Response::Unfocused : Response::Nil;
     }
 
     Camera ScrollTranslationCameraInput::StepCamera(
