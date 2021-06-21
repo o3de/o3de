@@ -1211,25 +1211,23 @@ namespace AzToolsFramework
 
                     const auto instanceTemplateId = instancePtr->GetTemplateId();
                     auto parentContainerEntityId = parentInstance.GetContainerEntityId();
-                    instancePtr->GetNestedInstances(
-                        [&](AZStd::unique_ptr<Instance>& nestedInstancePtr)
+
+                    instancePtr->DetachNestedInstances(
+                        [&](AZStd::unique_ptr<Instance> detachedNestedInstance)
                     {
-                        //get previous link patch
-                        auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstancePtr->GetLinkId());
-                        PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
-                        AZ_Assert(
-                            linkPatches.has_value(), "Unable to get patches on link with id '%llu' during prefab creation.",
-                            nestedInstancePtr->GetLinkId());
+                        PrefabDom& nestedInstanceTemplateDom =
+                            m_prefabSystemComponentInterface->FindTemplateDom(detachedNestedInstance->GetTemplateId());
 
-                        PrefabDom linkPatchesCopy;
-                        linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
-
-                        RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
-
-                        UpdateLinkPatchesWithNewEntityAliases(linkPatchesCopy, oldEntityAliases, parentInstance);
+                        Instance& nestedInstanceUnderNewParent = parentInstance.AddInstance(AZStd::move(detachedNestedInstance));
                         
-                        CreateLink(*nestedInstancePtr, parentTemplateId, undoBatch.GetUndoBatch(),
-                            AZStd::move(linkPatchesCopy), true);
+                        PrefabDom nestedInstanceDomUnderNewParent;
+                        m_instanceToTemplateInterface->GenerateDomForInstance(
+                            nestedInstanceDomUnderNewParent, nestedInstanceUnderNewParent);
+                        PrefabDom reparentPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(
+                            reparentPatch, nestedInstanceTemplateDom, nestedInstanceDomUnderNewParent);
+                        
+                        CreateLink(nestedInstanceUnderNewParent, parentTemplateId, undoBatch.GetUndoBatch(), AZStd::move(reparentPatch), true);
                     });
                 }
 

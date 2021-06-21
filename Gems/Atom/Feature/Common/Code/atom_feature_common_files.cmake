@@ -32,6 +32,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h
+    Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
     Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.h
@@ -297,6 +298,8 @@ set(FILES
     Source/SkinnedMesh/SkinnedMeshVertexStreamProperties.h
     Source/SkyBox/SkyBoxFeatureProcessor.cpp
     Source/SkyBox/SkyBoxFeatureProcessor.h
+    Source/SkyBox/SkyBoxFogSettings.h
+    Source/SkyBox/SkyBoxFogSettings.cpp
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
     Source/LuxCore/LuxCoreTexturePass.cpp
