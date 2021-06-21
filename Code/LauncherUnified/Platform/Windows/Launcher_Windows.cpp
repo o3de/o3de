@@ -12,6 +12,7 @@
 #include <Launcher.h>
 
 #include <CryCommon/CryLibrary.h>
+#include <AzCore/Math/Vector2.h>
 
 int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow)
 {
