@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include "Vegetation_precompiled.h"
 #include <VegetationModule.h>
 
 namespace Vegetation

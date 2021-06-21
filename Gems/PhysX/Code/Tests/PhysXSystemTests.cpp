@@ -219,8 +219,9 @@ namespace PhysX
                 preSimEventCount++;
             });
         AzPhysics::SystemEvents::OnPostsimulateEvent::Handler postSimEvent(
-            [&postSimEventCount]()
+            [&expectedTickTime, &postSimEventCount](float deltaTime)
             {
+                EXPECT_NEAR(expectedTickTime, deltaTime, 0.001f);
                 postSimEventCount++;
             });
         physicsSystem->RegisterPreSimulateEvent(preSimEvent);
