@@ -628,7 +628,7 @@ namespace AZ
             {
                 MeshHandleDescriptor meshDescriptor;
                 meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
-                meshDescriptor.m_skinnedMeshWithMotion = true;
+                meshDescriptor.m_isSkinnedMeshWithMotion = true;
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
                     m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
             }

@@ -32,8 +32,8 @@ namespace AZ
             using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             Data::Asset<RPI::ModelAsset> m_modelAsset;
-            bool m_skinnedMeshWithMotion = false;
-            bool m_rayTracingEnabled = true;
+            bool m_isSkinnedMeshWithMotion = false;
+            bool m_isRayTracingEnabled = true;
             bool m_useForwardPassIblSpecular = false;
             RequiresCloneCallback m_requiresCloneCallback = {};
         };

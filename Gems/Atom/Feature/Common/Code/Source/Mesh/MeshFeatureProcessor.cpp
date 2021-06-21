@@ -159,14 +159,9 @@ namespace AZ
 
             meshDataHandle->m_descriptor = descriptor;
 
-            // Mark skinned meshes to enable special processes to generate motion vector 
-            meshDataHandle->m_skinnedMeshWithMotion = descriptor.m_skinnedMeshWithMotion;
-
-            // set ray tracing flag, but always disable on skinned meshes
+            // Always disable ray tracing flag on skinned meshes
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDataHandle->m_rayTracingEnabled = descriptor.m_rayTracingEnabled && (descriptor.m_skinnedMeshWithMotion == false);
-
-            meshDataHandle->m_useForwardPassIblSpecular = descriptor.m_useForwardPassIblSpecular;
+            meshDataHandle->m_descriptor.m_rayTracingEnabled &= !descriptor.m_isSkinnedMeshWithMotion;
 
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
@@ -373,7 +368,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
@@ -390,12 +385,12 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 // update the ray tracing data based on the current state and the new state
-                if (rayTracingEnabled && !meshHandle->m_rayTracingEnabled)
+                if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
                     meshHandle->SetRayTracingData();
                 }
-                else if (!rayTracingEnabled && meshHandle->m_rayTracingEnabled)
+                else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
@@ -405,7 +400,7 @@ namespace AZ
                 }
 
                 // set new state
-                meshHandle->m_rayTracingEnabled = rayTracingEnabled;
+                meshHandle->m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
             }
         }
 
@@ -421,7 +416,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_useForwardPassIblSpecular = useForwardPassIblSpecular;
+                meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
                 meshHandle->m_objectSrgNeedsUpdate = true;
 
                 if (meshHandle->m_model)
@@ -455,7 +450,7 @@ namespace AZ
             // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
             for (auto& meshInstance : m_meshData)
             {
-                if (meshInstance.m_useForwardPassIblSpecular)
+                if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
                     meshInstance.m_objectSrgNeedsUpdate = true;
                 }
@@ -603,7 +598,7 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_rayTracingEnabled)
+            if (m_descriptor.m_isRayTracingEnabled)
             {
                 SetRayTracingData();
             }
@@ -676,7 +671,7 @@ namespace AZ
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, m_shaderResourceGroup, materialAssignment.m_matModUvOverrides);
 
                 // set the shader option to select forward pass IBL specular if necessary
-                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_useForwardPassIblSpecular }))
+                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
@@ -687,7 +682,7 @@ namespace AZ
                 m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
 
                 // stencil bits
-                uint8_t stencilRef = m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
+                uint8_t stencilRef = m_descriptor.m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
                 stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
 
                 drawPacket.SetStencilRef(stencilRef);
@@ -1055,7 +1050,7 @@ namespace AZ
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
-            if (m_excludeFromReflectionCubeMaps)
+            if (m_descriptor.m_excludeFromReflectionCubeMaps)
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
@@ -1107,12 +1102,12 @@ namespace AZ
             //[GFX TODO][ATOM-4726] Replace this with a "isSkinnedMesh" external material property and a functor that enables/disables the appropriate shader
             for (auto& shaderItem : material->GetShaderCollection())
             {
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "StaticMeshMotionVector" } && m_skinnedMeshWithMotion)
+                if (shaderItem.GetShaderAsset()->GetName() == Name{ "StaticMeshMotionVector" } && m_descriptor.m_isSkinnedMeshWithMotion)
                 {
                     shaderItem.SetEnabled(false);
                 }
                  
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "SkinnedMeshMotionVector" } && (!m_skinnedMeshWithMotion))
+                if (shaderItem.GetShaderAsset()->GetName() == Name{ "SkinnedMeshMotionVector" } && (!m_descriptor.m_isSkinnedMeshWithMotion))
                 {
                     shaderItem.SetEnabled(false);
                 }
@@ -1128,7 +1123,7 @@ namespace AZ
 
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
 
-            if (reflectionProbeFeatureProcessor && (m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
+            if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
             {
                 // retrieve probe constant indices
                 AZ::RHI::ShaderInputConstantIndex posConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_aabbPos"));
