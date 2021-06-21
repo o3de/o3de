@@ -193,17 +193,12 @@ namespace AZ::SceneGenerationComponents
         const AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes = [](const SceneGraph& graph)
         {
             AZStd::vector<AZStd::pair<const IMeshData*, NodeIndex>> meshes;
-            for (auto it = graph.GetContentStorage().cbegin(); it != graph.GetContentStorage().cend(); ++it)
+            const auto meshNodes = Containers::MakeDerivedFilterView<IMeshData>(graph.GetContentStorage());
+            for (auto it = meshNodes.cbegin(); it != meshNodes.cend(); ++it)
             {
-                // Skip anything that isn't a mesh.
-                const auto* mesh = azdynamic_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(it->get());
-                if (!mesh)
-                {
-                    continue;
-                }
-
                 // Get the mesh data and node index and store them in the vector as a pair, so we can iterate over them later.
-                meshes.emplace_back(mesh, graph.ConvertToNodeIndex(it));
+                // The sequential calls to GetBaseIterator unwrap the layers of FilterIterators from the MakeDerivedFilterView
+                meshes.emplace_back(&(*it), graph.ConvertToNodeIndex(it.GetBaseIterator().GetBaseIterator().GetBaseIterator()));
             }
             return meshes;
         }(graph);
