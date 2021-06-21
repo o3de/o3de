@@ -33,6 +33,12 @@ namespace AZ
         AZ::Transform* transformInstance = reinterpret_cast<AZ::Transform*>(outputValue);
         AZ_Assert(transformInstance, "Output value for JsonTransformSerializer can't be null.");
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *transformInstance = AZ::Transform::CreateIdentity();
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Transform value set to identity.");
+        }
+
         JSR::ResultCode result(JSR::Tasks::ReadField);
 
         {
@@ -72,7 +78,7 @@ namespace AZ
 
         return context.Report(
             result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded Transform information."
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded Transform information."
                                                               : "Failed to load Transform information.");
     }
 
@@ -138,6 +144,11 @@ namespace AZ
             result,
             result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored Transform information."
                                                               : "Failed to store Transform information.");
+    }
+
+    auto JsonTransformSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
     }
 
 } // namespace AZ

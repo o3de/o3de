@@ -9,7 +9,6 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#include "Vegetation_precompiled.h"
 #include "DebugSystemComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>

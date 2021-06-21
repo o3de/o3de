@@ -219,7 +219,7 @@ namespace AZ
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "main per-frame work");
                 m_frameScheduler.BeginFrame();
-                
+
                 frameGraphCallback(m_frameScheduler);
 
                 /**

@@ -242,8 +242,16 @@ namespace AZ
         // MaterialReloadNotificationBus overrides...
         void Material::OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnMaterialAssetReinitialized %s", this, materialAsset.GetHint().c_str());
-            OnAssetReloaded(materialAsset);
+            // It's important that we don't just pass materialAsset to Init() because when reloads occur,
+            // it's possible for old Asset objects to hang around and report reinitialization, so materialAsset
+            // might be stale data.
+
+            if (materialAsset.Get() == m_materialAsset.Get())
+            {
+                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnMaterialAssetReinitialized %s", this, materialAsset.GetHint().c_str());
+
+                OnAssetReloaded(m_materialAsset);
+            }
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -259,8 +267,6 @@ namespace AZ
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
         {
-            // TODO: I think we should make Shader handle OnShaderAssetReinitialized and treat it just like the shader reloaded.
-
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
