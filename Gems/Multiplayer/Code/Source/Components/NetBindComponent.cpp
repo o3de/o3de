@@ -70,7 +70,7 @@ namespace Multiplayer
                     }
                     return netBindComponent->IsNetEntityRoleAuthority();
                 })
-            
+
                 ->Method("IsNetEntityRoleAutonomous", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
@@ -87,7 +87,7 @@ namespace Multiplayer
                     }
                     return netBindComponent->IsNetEntityRoleAutonomous();
                 })
-           
+
                 ->Method("IsNetEntityRoleClient", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
@@ -104,8 +104,8 @@ namespace Multiplayer
                     }
                     return netBindComponent->IsNetEntityRoleClient();
                 })
-				
-                ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
+
+            ->Method("IsNetEntityRoleServer", [](AZ::EntityId id) -> bool {
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
