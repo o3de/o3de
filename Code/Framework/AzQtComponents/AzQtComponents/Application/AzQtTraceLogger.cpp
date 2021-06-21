@@ -12,22 +12,58 @@
 
 #include <AzQtComponents/Application/AzQtTraceLogger.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzFramework/Logging/LogFile.h>
+
 
 namespace AzQtComponents
 {
-    AzQtTraceLogger::AzQtTraceLogger()
+    class AzQtTraceLogger::Impl : public AZ::Debug::TraceMessageBus::Handler
     {
-        AZ::Debug::TraceMessageBus::Handler::BusConnect();
+    public:
+        void WriteStartupLog(char name[]);
+
+        Impl()
+        {
+            AZ::Debug::TraceMessageBus::Handler::BusConnect();
+        }
+        ~Impl()
+        {
+            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
+        }
+
+    protected:
+        //////////////////////////////////////////////////////////////////////////
+        // AZ::Debug::TraceMessageBus::Handler overrides...
+        bool OnOutput(const char* window, const char* message) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        struct LogMessage
+        {
+        public:
+            AZStd::string window;
+            AZStd::string message;
+        };
+        AZStd::vector<LogMessage> m_startupLogSink;
+        AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
+    };
+
+    AzQtTraceLogger::AzQtTraceLogger()
+        : m_impl(new Impl)
+    {
     }
 
     AzQtTraceLogger::~AzQtTraceLogger()
     {
-        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
-    
-    bool AzQtTraceLogger::OnOutput(const char* window, const char* message)
+
+    void AzQtTraceLogger::WriteStartupLog(char name[])
+    {
+        m_impl->WriteStartupLog(name);
+    }
+
+    bool AzQtTraceLogger::Impl::OnOutput(const char* window, const char* message)
     {
         if (m_logFile)
         {
@@ -40,7 +76,7 @@ namespace AzQtComponents
         return false;
     }
 
-    void AzQtTraceLogger::WriteStartupLog(char name[])
+    void AzQtTraceLogger::Impl::WriteStartupLog(char name[])
     {
         using namespace AzFramework;
 
@@ -76,4 +112,3 @@ namespace AzQtComponents
         }
     }
 } // namespace AzQtComponents
-

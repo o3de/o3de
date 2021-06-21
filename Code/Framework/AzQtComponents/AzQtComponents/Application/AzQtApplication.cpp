@@ -33,8 +33,7 @@ namespace AzQtComponents
          AzQtComponents::PrepareQtPaths();
 
          QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
- 
-         
+
     }
 
     void AzQtApplication::setDpiScaling()
