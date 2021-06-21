@@ -98,6 +98,20 @@ namespace AZ
                 }
             }
 
+            aiMatrix4x4 AssImpBoneImporter::CalculateWorldTransform(const aiNode* currentNode)
+            {
+                aiMatrix4x4 transform = {};
+                const aiNode* iteratingNode = currentNode;
+                
+                while (iteratingNode)
+                {
+                    transform = iteratingNode->mTransformation * transform;
+                    iteratingNode = iteratingNode->mParent;
+                }
+
+                return transform;
+            }
+
             Events::ProcessingResult AssImpBoneImporter::ImportBone(AssImpNodeEncounteredContext& context)
             {
                 AZ_TraceContext("Importer", "Bone");
@@ -166,14 +180,7 @@ namespace AZ
                     createdBoneData = AZStd::make_shared<SceneData::GraphData::RootBoneData>();
                 }
                 
-                aiMatrix4x4 transform{};
-                const aiNode* iteratingNode = currentNode;
-                
-                while (iteratingNode)
-                {
-                    transform = iteratingNode->mTransformation * transform;
-                    iteratingNode = iteratingNode->mParent;
-                }
+                aiMatrix4x4 transform = CalculateWorldTransform(currentNode);
                 
                 SceneAPI::DataTypes::MatrixType globalTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
 

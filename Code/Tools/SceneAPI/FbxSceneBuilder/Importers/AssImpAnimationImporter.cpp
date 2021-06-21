@@ -449,13 +449,13 @@ namespace AZ
 
                 AZStd::unordered_set<AZStd::string> boneList;
 
-                for (int i = 0; i < scene->mNumMeshes; ++i)
+                for (int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
-                    auto mesh = scene->mMeshes[i];
+                    aiMesh* mesh = scene->mMeshes[meshIndex];
 
-                    for (auto boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
-                        auto bone = mesh->mBones[boneIndex];
+                        aiBone* bone = mesh->mBones[boneIndex];
 
                         boneList.insert(bone->mName.C_Str());
                     }
@@ -463,20 +463,22 @@ namespace AZ
 
                 decltype(boneAnimations) fillerAnimations;
 
-                // Go through all the animations and make sure we create placeholder animations for any bones missing them
+                // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
                 for (auto&& anim : boneAnimations)
                 {
-                    for (auto boneName : boneList)
+                    const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
+                    const aiNode* parent = node->mParent;
+
+                    while (parent && parent != scene->mRootNode)
                     {
-                        if (!IsPivotNode(aiString(boneName.c_str())))
+                        if (!IsPivotNode(parent->mName))
                         {
-                            if (!boneAnimations.contains(boneName) &&
-                                !fillerAnimations.contains(boneName))
+                            if (!boneAnimations.contains(parent->mName.C_Str()) &&
+                                !fillerAnimations.contains(parent->mName.C_Str()))
                             {
                                 // Create 1 key for each type that just copies the current transform
                                 ConsolidatedNodeAnim emptyAnimation;
-                                auto node = scene->mRootNode->FindNode(boneName.c_str());
-                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
+                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(parent);
 
                                 aiVector3D position, scale;
                                 aiQuaternion rotation;
@@ -484,7 +486,7 @@ namespace AZ
                                 globalTransform.Decompose(scale, rotation, position);
 
                                 emptyAnimation.mNumRotationKeys = emptyAnimation.mNumPositionKeys = emptyAnimation.mNumScalingKeys = 1;
-                                
+
                                 emptyAnimation.m_ownedPositionKeys.emplace_back(0, position);
                                 emptyAnimation.mPositionKeys = emptyAnimation.m_ownedPositionKeys.data();
 
@@ -493,11 +495,13 @@ namespace AZ
 
                                 emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
                                 emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
-                                
-                                fillerAnimations.insert(
-                                    AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
+
+                                fillerAnimations.insert(AZStd::make_pair(
+                                    parent->mName.C_Str(), AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                             }
                         }
+
+                        parent = parent->mParent;
                     }
                 }
 
