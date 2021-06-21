@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "EditorBlockerComponent.h"
 #include <AzCore/Serialization/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>

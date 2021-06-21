@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "DistributionFilterComponent.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>

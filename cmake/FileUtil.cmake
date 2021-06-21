@@ -118,4 +118,13 @@ override_pak_root=${LY_OVERRIDE_PAK_FOLDER_ROOT}
 
 endfunction()
 
-
+#! ly_file_read: wrap to file(READ) that adds the file to configuration tracking
+#
+# file(READ) does not add file tracking. So changes to the file being read will not cause a cmake regeneration
+#
+function(ly_file_read path content)
+    unset(file_content)
+    file(READ ${path} file_content)
+    set(${content} ${file_content} PARENT_SCOPE)
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${path})
+endfunction()

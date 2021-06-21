@@ -115,12 +115,19 @@ namespace AZ
             }
         }
 
-        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>&)
+        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset)
         {
-            // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
-            // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
-            // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
-            MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
+            // so we can reduce unnecessary reinitialization in that case.
+            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
+            {
+                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
+
+                // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
+                // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
+                // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
+                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            }
         }
         
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)

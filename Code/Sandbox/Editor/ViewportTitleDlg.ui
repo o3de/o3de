@@ -82,6 +82,18 @@
      </widget>
    </item>   
    <item>
+     <widget class="QToolButton" name="m_helpers">
+       <property name="icon">
+         <iconset>
+           <normaloff>:/Menu/helpers.svg</normaloff>:/Menu/helpers.svg
+         </iconset>
+       </property>
+       <property name="checkable">
+         <bool>true</bool>
+       </property>
+     </widget>
+   </item>   
+   <item>
      <widget class="QToolButton" name="m_resolutionMenu">
        <property name="icon">
          <iconset>
@@ -94,7 +106,7 @@
      <widget class="QToolButton" name="m_overflowBtn">
        <property name="icon">
          <iconset>
-           <normaloff>:/stylesheet/img/UI20/menu-centered.svg</normaloff>:/stylesheet/img/UI20/menu-centered.svg
+           <normaloff>:/Menu/menu.svg</normaloff>:/Menu/menu.svg
          </iconset>
        </property>
      </widget>

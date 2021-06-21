@@ -10,14 +10,11 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "EditorAreaBlenderComponent.h"
 #include <AzCore/Serialization/Utils.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
-#include <MathConversion.h>
-#include <IRenderAuxGeom.h>
 #include <GradientSignal/Ebuses/SectorDataRequestBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>

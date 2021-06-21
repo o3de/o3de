@@ -222,7 +222,7 @@ namespace EMotionFX
 
     private:
         PhysicsSetup::ColliderConfigType m_configType;
-        size_t m_colliderIndex;
+        AZ::u64 m_colliderIndex;
 
         bool m_oldIsDirty;
         AZStd::string m_oldContents;
