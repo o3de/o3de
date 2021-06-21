@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "MSAAResolveDepthTemplate",
-            "PassClass": "FullScreenTriangle",
+            "PassClass": "MSAAResolveFullScreenPass",
             "Slots": [
                 {
                     "Name": "Input",
