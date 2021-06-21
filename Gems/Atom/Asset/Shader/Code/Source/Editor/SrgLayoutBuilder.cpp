@@ -203,6 +203,16 @@ namespace AZ
                 // queue up AzslBuilder dependencies:
                 for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
                 {
+                    const bool isAzsli = AzFramework::StringFunc::Path::IsExtension(fullPath.c_str(), "azsli");
+                    if (isAzsli)
+                    {
+                        auto skipCheck = ShaderBuilderUtility::ShouldSkipFileForSrgProcessing(SrgLayoutBuilderName, fullPath);
+                        if (skipCheck != ShaderBuilderUtility::SrgSkipFileResult::ContinueProcess)
+                        {
+                            continue;
+                        }
+                    }
+
                     AddAzslBuilderJobDependency(jobDescriptor, info.m_identifier, shaderPlatformInterface->GetAPIName().GetCStr(), fullPath);
                 }
                 response.m_createJobOutputs.push_back(jobDescriptor);
