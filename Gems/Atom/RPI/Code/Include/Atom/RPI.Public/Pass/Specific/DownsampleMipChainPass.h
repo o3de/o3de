@@ -40,6 +40,7 @@ namespace AZ
           
             //! Creates a new pass without a PassTemplate
             static Ptr<DownsampleMipChainPass> Create(const PassDescriptor& descriptor);
+            virtual ~DownsampleMipChainPass();
             
         protected:
             explicit DownsampleMipChainPass(const PassDescriptor& descriptor);

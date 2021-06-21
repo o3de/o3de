@@ -35,7 +35,6 @@ namespace AZ
             {
                 m_device = device;
                 m_srgLayout = srgLayout;
-                //m_srgPool = srgPool;
                                                 
                 m_constantBufferSize = srgLayout->GetConstantDataSize();
                 if (m_constantBufferSize)
@@ -95,34 +94,6 @@ namespace AZ
                     AttachConstantBuffer();
                 }
             }
-            
-            NullDescriptorManager& nullDescriptorManager = m_device->GetNullDescriptorManager();
-            for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : m_srgLayout->GetShaderInputListForBuffers())
-            {
-                if(shaderInputBuffer.m_type == RHI::ShaderInputBufferType::Typed)
-                {
-                    RHI::Ptr<Memory> nullMtlBufferMemPtr = nullDescriptorManager.GetNullImageBuffer().GetMemory();
-                    [m_argumentEncoder setTexture : nullMtlBufferMemPtr->GetGpuAddress<id<MTLTexture>>()
-                                         atIndex  : shaderInputBuffer.m_registerId];
-                }
-                else
-                {
-                    RHI::Ptr<Memory> nullMtlBufferMemPtr = nullDescriptorManager.GetNullBuffer().GetMemory();
-                    [m_argumentEncoder setBuffer : nullMtlBufferMemPtr->GetGpuAddress<id<MTLBuffer>>()
-                                       offset    : nullDescriptorManager.GetNullBuffer().GetOffset()
-                                        atIndex  : shaderInputBuffer.m_registerId];
-                }
-            }
-            
-            
-            for (const RHI::ShaderInputImageDescriptor& shaderInputImage : m_srgLayout->GetShaderInputListForImages())
-            {
-                RHI::Ptr<Memory> nullMtlImagePtr = m_device->GetNullDescriptorManager().GetNullImage(shaderInputImage.m_type).GetMemory();
-                [m_argumentEncoder setTexture : nullMtlImagePtr->GetGpuAddress<id<MTLTexture>>()
-                                     atIndex  : shaderInputImage.m_registerId];
-            }
-             
-            
         }
         
         bool ArgumentBuffer::CreateArgumentDescriptors(NSMutableArray* argBufferDecriptors)

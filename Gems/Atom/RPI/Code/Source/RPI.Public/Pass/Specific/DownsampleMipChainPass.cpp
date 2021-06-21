@@ -57,6 +57,11 @@ namespace AZ
             ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
         }
 
+        DownsampleMipChainPass::~DownsampleMipChainPass()
+        {
+            ShaderReloadNotificationBus::Handler::BusDisconnect();
+        }
+    
         void DownsampleMipChainPass::ResetInternal()
         {
             RemoveChildren();
