@@ -23,7 +23,6 @@ from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
 from AWS.Windows.cdk.cdk import cdk
 from AWS.common.aws_utils import aws_utils
-from AWS.common.aws_utils import AwsUtils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_CORE_FEATURE_NAME = 'AWSCore'
@@ -34,6 +33,20 @@ process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill Proje
 GAME_LOG_NAME = 'Game.log'
 
 logger = logging.getLogger(__name__)
+
+
+def setup(launcher: pytest.fixture, cdk: pytest.fixture, resource_mappings: pytest.fixture):
+    asset_processor_utils.kill_asset_processor()
+    logger.info(f'Cdk stack names:\n{cdk.list()}')
+    stacks = cdk.deploy(additonal_params=['--all'])
+    resource_mappings.populate_output_keys(stacks)
+    asset_processor.start()
+    asset_processor.wait_for_idle()
+
+    file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
+    log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
+
+    return log_monitor
 
 
 @pytest.mark.SUITE_periodic
@@ -68,15 +81,7 @@ class TestAWSCoreAWSResourceInteraction(object):
         Verification: Log monitor looks for success download. The existence and contents of the file are also verified.
         """
 
-        asset_processor_utils.kill_asset_processor()
-        logger.info(f'Cdk stack names:\n{cdk.list()}')
-        stacks = cdk.deploy(additonal_params=['--all'])
-        resource_mappings.populate_output_keys(stacks)
-        asset_processor.start()
-        asset_processor.wait_for_idle()
-
-        file_to_monitor = os.path.join(launcher.workspace.paths.project_log(), GAME_LOG_NAME)
-        log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
+        log_monitor = setup(launcher, cdk, resource_mappings)
 
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
@@ -119,16 +124,8 @@ class TestAWSCoreAWSResourceInteraction(object):
         Tests: Runs the test level.
         Verification: Searches the logs for the expected output from the example lambda.
         """
-        asset_processor_utils.kill_asset_processor()
-        logger.info(f'Cdk stack names:\n{cdk.list()}')
-        stacks = cdk.deploy(additonal_params=['--all'])
-        resource_mappings.populate_output_keys(stacks)
-        asset_processor.start()
-        asset_processor.wait_for_idle()
 
-        project_log = launcher.workspace.paths.project_log()
-        file_to_monitor = os.path.join(project_log, GAME_LOG_NAME)
-        log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
+        log_monitor = setup(launcher, cdk, resource_mappings)
 
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
@@ -151,7 +148,7 @@ class TestAWSCoreAWSResourceInteraction(object):
                                 resource_mappings: pytest.fixture,
                                 workspace,
                                 asset_processor,
-                                aws_utils: AwsUtils,
+                                aws_utils: pytest.fixture,
                                 ):
         """
         Setup: Deploys  the CDK application
@@ -161,6 +158,9 @@ class TestAWSCoreAWSResourceInteraction(object):
 
         def write_test_table_data(region: str):
             session = aws_utils._assume_session.resource('dynamodb', region_name=region)
+            # The value that is populated in the resource mapping config is the full ARN address.
+            # This needs additional parsing to work, hence the split, otherwise it breaks the expected regex.
+            # example input: arn:aws:dynamodb:us-west-2:179802234733:table/AUTOMATEDTESTING-Core-Example-us-west-2-AUTOMATEDTESTINGCoreTable23F94002-UAIYTR5XICW2
             table_name = resource_mappings.get_resource_name_id("AWSCore.ExampleDynamoTableOutput").split('/')[1]
             table = session.Table(table_name)
 
@@ -176,17 +176,7 @@ class TestAWSCoreAWSResourceInteraction(object):
                 logger.exception(f'Failed to load data into table {table.name}')
                 raise
 
-        asset_processor_utils.kill_asset_processor()
-        logger.info(f'Cdk stack names:\n{cdk.list()}')
-        stacks = cdk.deploy(additonal_params=['--all'])
-        resource_mappings.populate_output_keys(stacks)
-        write_test_table_data("us-west-2")
-        asset_processor.start()
-        asset_processor.wait_for_idle()
-
-        project_log = launcher.workspace.paths.project_log()
-        file_to_monitor = os.path.join(project_log, GAME_LOG_NAME)
-        log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=launcher, log_file_path=file_to_monitor)
+        log_monitor = setup(launcher, cdk, resource_mappings)
 
         launcher.args = ['+LoadLevel', level]
         launcher.args.extend(['-rhi=null'])
