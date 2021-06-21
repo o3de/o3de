@@ -20,7 +20,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
             __APPLE__
             DARWIN
         LINK_NON_STATIC
-            -Wl,-undefined,error
             -headerpad_max_install_names
             -lpthread
             -lncurses

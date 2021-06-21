@@ -151,6 +151,10 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
+            // Add or replace the Source parameter in the dom
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().c_str());
+
             // Create new Template with the Prefab DOM.
             TemplateId newTemplateId = m_prefabSystemComponentInterface->AddTemplate(relativePath, readPrefabFileResult.TakeValue());
             if (newTemplateId == InvalidTemplateId)

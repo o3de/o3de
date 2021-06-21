@@ -263,15 +263,13 @@ namespace AWSCore
         SetApiEndpointAndRegion(config);
 
         ServiceAPI::AWSAttributionRequestJob* requestJob = ServiceAPI::AWSAttributionRequestJob::Create(
-            [this](ServiceAPI::AWSAttributionRequestJob* successJob)
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* successJob)
             {
-                AZ_UNUSED(successJob);
-                
                 UpdateLastSend();
                 AZ_Printf("AWSAttributionManager", "AWSAttribution metric submit success");
 
             },
-            [this](ServiceAPI::AWSAttributionRequestJob* failJob)
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
             {
                 AZ_Error("AWSAttributionManager", false, "Metrics send error: %s", failJob->error.message.c_str());
             },
