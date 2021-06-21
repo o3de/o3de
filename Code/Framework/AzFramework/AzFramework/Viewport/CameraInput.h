@@ -105,6 +105,14 @@ namespace AzFramework
             End
         };
 
+        //! The type of response to input/event handling.
+        enum class Response
+        {
+            Nil, //!< Not handled, no response.
+            Unfocused, //!< Handles, focus is not obtained (primary input device can still be used).
+            Focused //!< Handled, focus is obtained/maintained (primary input device is captured).
+        };
+
         virtual ~CameraInput() = default;
 
         bool Beginning() const
@@ -153,7 +161,7 @@ namespace AzFramework
             ResetImpl();
         }
 
-        virtual bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
+        virtual Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
         virtual Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) = 0;
 
         virtual bool Exclusive() const
@@ -173,8 +181,10 @@ namespace AzFramework
     //! Properties to use to configure behavior across all types of camera.
     struct CameraProps
     {
-        AZStd::function<float()> m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
-        AZStd::function<float()> m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()>
+            m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()>
+            m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
     };
 
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, float deltaTime);
@@ -182,7 +192,7 @@ namespace AzFramework
     class Cameras
     {
     public:
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta);
+        CameraInput::Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta);
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime);
 
         void AddCamera(AZStd::shared_ptr<CameraInput> cameraInput);
@@ -213,7 +223,7 @@ namespace AzFramework
     class CameraSystem
     {
     public:
-        bool HandleEvents(const InputEvent& event);
+        CameraInput::Response HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
 
         Cameras m_cameras;
@@ -229,7 +239,7 @@ namespace AzFramework
         explicit RotateCameraInput(InputChannelId rotateChannelId);
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_rotateSpeedFn;
@@ -275,7 +285,7 @@ namespace AzFramework
         PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_panSpeedFn;
@@ -321,7 +331,7 @@ namespace AzFramework
         explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
 
@@ -383,7 +393,7 @@ namespace AzFramework
             return static_cast<TranslationType>(~static_cast<std::underlying_type_t<TranslationType>>(lhs));
         }
 
-        static TranslationType translationFromKey(InputChannelId channelId);
+        static TranslationType TranslationFromKey(InputChannelId channelId);
 
         TranslationType m_translation = TranslationType::Nil;
         TranslationAxesFn m_translationAxesFn;
@@ -396,7 +406,7 @@ namespace AzFramework
         OrbitDollyScrollCameraInput();
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_scrollSpeedFn;
@@ -408,7 +418,7 @@ namespace AzFramework
         explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_cursorSpeedFn;
@@ -423,7 +433,7 @@ namespace AzFramework
         ScrollTranslationCameraInput();
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_scrollSpeedFn;
@@ -435,7 +445,7 @@ namespace AzFramework
         using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
         // CameraInput overrides ...
-        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
 
