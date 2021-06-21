@@ -116,17 +116,29 @@ namespace AzNetworking
 
         m_port = port;
         m_allowIncomingConnections = true;
-        m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone);
-        m_readerThread.RegisterSocket(m_socket.get());
-        return true;
+        if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone))
+        {
+            m_readerThread.RegisterSocket(m_socket.get());
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     ConnectionId UdpNetworkInterface::Connect(const IpAddress& remoteAddress)
     {
         if (!m_socket->IsOpen())
         {
-            m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone);
-            m_readerThread.RegisterSocket(m_socket.get());
+            if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone))
+            {
+                m_readerThread.RegisterSocket(m_socket.get());
+            }
+            else
+            {
+                return InvalidConnectionId;
+            }
         }
 
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();

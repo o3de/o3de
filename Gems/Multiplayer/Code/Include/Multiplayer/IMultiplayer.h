@@ -69,12 +69,14 @@ namespace Multiplayer
         //! Starts hosting a server
         //! @param port The port to listen for connection on
         //! @param isDedicated Whether the server is dedicated or client hosted
-        virtual void StartHosting(uint16_t port, bool isDedicated = true) = 0;
+        //! @return if the application successfully started hosting
+        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
 
         //! Connects to the specified IP as a Client
         //! @param remoteAddress The domain or IP to connect to
         //! @param port The port to connect to
-        virtual void Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+        //! @result if a connection was successfully created
+        virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
 
         // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
         virtual void Terminate() = 0;

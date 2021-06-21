@@ -201,17 +201,17 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
+    bool MultiplayerSystemComponent::StartHosting(uint16_t port, bool isDedicated)
     {
         InitializeMultiplayer(isDedicated ? MultiplayerAgentType::DedicatedServer : MultiplayerAgentType::ClientServer);
-        m_networkInterface->Listen(port);
+        return m_networkInterface->Listen(port);
     }
 
-    void MultiplayerSystemComponent::Connect(AZStd::string remoteAddress, uint16_t port)
+    bool MultiplayerSystemComponent::Connect(AZStd::string remoteAddress, uint16_t port)
     {
         InitializeMultiplayer(MultiplayerAgentType::Client);
         const IpAddress address(remoteAddress.c_str(), port, m_networkInterface->GetType());
-        m_networkInterface->Connect(address);
+        return m_networkInterface->Connect(address) != InvalidConnectionId;
     }
 
     void MultiplayerSystemComponent::Terminate()
