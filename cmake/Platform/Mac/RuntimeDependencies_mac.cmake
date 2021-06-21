@@ -9,4 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
+set(LY_BUILD_FIXUP_BUNDLE TRUE CACHE BOOL "Fix bundles on build (deploys frameworks and calls fixup_bundle)")
+
+set(LY_RUNTIME_DEPENDENCIES_TEMPLATE ${LY_ROOT_FOLDER}/cmake/Platform/Mac/runtime_dependencies_mac.cmake.in)
 include(cmake/Platform/Common/RuntimeDependencies_common.cmake)

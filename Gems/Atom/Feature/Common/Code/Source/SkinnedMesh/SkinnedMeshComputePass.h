@@ -44,7 +44,7 @@ namespace AZ
 
             // ShaderReloadNotificationBus::Handler overrides...
             void OnShaderReinitialized(const RPI::Shader& shader) override;
-            void OnShaderVariantReinitialized(const RPI::Shader& shader, const RPI::ShaderVariantId& shaderVariantId, RPI::ShaderVariantStableId shaderVariantStableId) override;
+            void OnShaderVariantReinitialized(const RPI::ShaderVariant& shaderVariant) override;
 
             SkinnedMeshFeatureProcessor* m_skinnedMeshFeatureProcessor = nullptr;
         };

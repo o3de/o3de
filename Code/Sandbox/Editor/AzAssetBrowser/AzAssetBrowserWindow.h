@@ -63,8 +63,6 @@ private:
 private Q_SLOTS:
     void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
     void DoubleClickedItem(const QModelIndex& element);
-    void SwitchDisplayView(bool state);
-    void LockToDefaultView(bool state);
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

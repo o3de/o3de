@@ -190,6 +190,12 @@ namespace AZ
         }
 
         size_t addedCount = container->Size(outputValue) - containerSize;
+        if (addedCount > 0)
+        {
+            // If at least one entry was added then the map is no longer in it's default state so
+            // mark is with success so the result can at best be partial defaults.
+            retVal.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
+        }
         AZStd::string_view message =
             addedCount >= maximumSize ? "Successfully read associative container." :
             addedCount == 0 ? "Unable to read data for the associative container." : 
@@ -215,10 +221,10 @@ namespace AZ
         // Load key
         void* keyAddress = pairContainer->GetElementByIndex(address, pairElement, 0);
         AZ_Assert(keyAddress, "Element reserved for associative container, but unable to retrieve address of the key.");
-        ContinuationFlags keyLoadFlags = ContinuationFlags::None;
+        ContinuationFlags keyLoadFlags = ContinuationFlags::LoadAsNewInstance;
         if (keyElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
         {
-            keyLoadFlags = ContinuationFlags::ResolvePointer;
+            keyLoadFlags |= ContinuationFlags::ResolvePointer;
             *reinterpret_cast<void**>(keyAddress) = nullptr;
         }
         JSR::ResultCode keyResult = ContinueLoading(keyAddress, keyElement->m_typeId, key, context, keyLoadFlags);
@@ -231,10 +237,10 @@ namespace AZ
         // Load value
         void* valueAddress = pairContainer->GetElementByIndex(address, pairElement, 1);
         AZ_Assert(valueAddress, "Element reserved for associative container, but unable to retrieve address of the value.");
-        ContinuationFlags valueLoadFlags = ContinuationFlags::None; 
+        ContinuationFlags valueLoadFlags = ContinuationFlags::LoadAsNewInstance; 
         if (valueElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER)
         {
-            valueLoadFlags = ContinuationFlags::ResolvePointer;
+            valueLoadFlags |= ContinuationFlags::ResolvePointer;
             *reinterpret_cast<void**>(valueAddress) = nullptr;
         }
         JSR::ResultCode valueResult = ContinueLoading(valueAddress, valueElement->m_typeId, value, context, valueLoadFlags);

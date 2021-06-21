@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
+#include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ISkinWeightData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
@@ -172,10 +173,13 @@ namespace EMotionFX
 
             AZ::SceneAPI::Events::ProcessingResult ActorGroupBehavior::BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const
             {
-                const bool hasBoneOrSkinData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBoneData>(scene, true) ||
-                                                AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::ISkinWeightData>(scene, true);
-                const bool hasAnimationData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, true);
-                if (SceneHasActorGroup(scene) || !hasBoneOrSkinData || hasAnimationData)
+                const bool hasBoneData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBoneData>(scene, true);
+                const bool hasSkinData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::ISkinWeightData>(scene, true);
+                const bool hasBlendShapeData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBlendShapeData>(scene, true);
+                // Skip building the default actor in case a valid actor group with overwritten settings exists, or
+                // in the most common case for animation files, that do contain an animated skeleton while not containing a skin or blend shapes.
+                if (SceneHasActorGroup(scene) ||
+                    (hasBoneData && (!hasSkinData && !hasBlendShapeData)))
                 {
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;
                 }

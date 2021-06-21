@@ -8,3 +8,9 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+
+# Add the PrimitiveAssets Asset-only gem as a Builder variant
+# This will export its "SourcePaths" to the generated "cmake_dependencies.<project>.assetbuilder.setreg"
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME PrimitiveAssets.Builders NAMESPACE Gem)
+endif()

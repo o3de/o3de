@@ -80,9 +80,7 @@ class TestSystemExample(object):
         with launcher.start():
             remote_console.start()
             launcher_load = remote_console.expect_log_line(
-                match_string='========================== '
-                             'Finished loading textures '
-                             '============================',
+                match_string='Level system is loading "simple_jacklocomotion"',
                 timeout=load_wait)
 
         # Assert loading was successful using remote console logs:
