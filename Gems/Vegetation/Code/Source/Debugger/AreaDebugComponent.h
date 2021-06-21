@@ -14,6 +14,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector3.h>
@@ -31,13 +32,13 @@ namespace Vegetation
 {
     AZ_INLINE AZ::Color GetDebugColor()
     {
-        static uint32 debugColor = 0xff << 8;
+        static uint32_t debugColor = 0xff << 8;
         AZ::Color value;
         value.FromU32(debugColor | (0xff << 24)); // add in alpha 255
         // use a golden ratio sequence to generate the next color
         // new color = fract(old color * 1.6)
         // Treat the 24 bits as normalized 0 - 1
-        debugColor = (uint32)((((uint64)debugColor * 0x1999999ull) - 0xffffffull) & 0xffffffull);
+        debugColor = azlossy_cast<uint32_t>(((aznumeric_cast<uint64_t>(debugColor) * 0x1999999ull) - 0xffffffull) & 0xffffffull);
         return value;
     }
 

@@ -70,7 +70,7 @@
 #include <PostProcessing/BloomCompositePass.h>
 #include <ScreenSpace/DeferredFogPass.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
-
+#include <SkyBox/SkyBoxFogSettings.h>
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -117,6 +117,7 @@ namespace AZ
             TransformServiceFeatureProcessor::Reflect(context);
             ProjectedShadowFeatureProcessor::Reflect(context);
             SkyBoxFeatureProcessor::Reflect(context);
+            SkyBoxFogSettings::Reflect(context);
             UseTextureFunctor::Reflect(context);
             DrawListFunctor::Reflect(context);
             SubsurfaceTransmissionParameterFunctor::Reflect(context);

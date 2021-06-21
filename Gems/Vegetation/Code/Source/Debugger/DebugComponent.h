@@ -167,7 +167,7 @@ namespace Vegetation
 
         using AreaData = AZStd::vector<AreaTracker>;
         AZStd::size_t MakeAreaSectorKey(AZ::EntityId areaId, SectorId sectorId);
-        AZStd::unordered_map<uint64, AreaTracker> m_currentAreasTiming;
+        AZStd::unordered_map<uint64_t, AreaTracker> m_currentAreasTiming;
         AreaData m_areaData;
 
         AZStd::vector<SectorTiming> m_currentSortedTimingList;

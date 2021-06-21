@@ -21,7 +21,6 @@
 // Editor
 #include "Util/ImageGif.h"
 #include "Util/ImageTIF.h"
-#include "Util/ImageHDR.h"
 
 //////////////////////////////////////////////////////////////////////////
 bool CImageUtil::Save(const QString& strFileName, CImageEx& inImage)
@@ -274,10 +273,6 @@ bool CImageUtil::LoadImage(const QString& fileName, CImageEx& image, bool* pQual
     else if (azstricmp(ext, ".png") == 0)
     {
         return CImageUtil::Load(fileName, image);
-    }
-    else if (azstricmp(ext, ".hdr") == 0)
-    {
-        return CImageHDR().Load(fileName, image);
     }
     else
     {

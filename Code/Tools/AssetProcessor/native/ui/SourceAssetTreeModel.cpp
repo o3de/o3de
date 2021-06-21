@@ -63,7 +63,7 @@ namespace AssetProcessor
         }
 
 
-        AZ::IO::Path fullPath = AZ::IO::Path(scanFolder.m_scanFolder, AZ::IO::PosixPathSeparator) / source.m_sourceName;
+        AZ::IO::Path fullPath = AZ::IO::Path(scanFolder.m_scanFolder) / source.m_sourceName;
 
         // It's common for Open 3D Engine game projects and scan folders to be in a subfolder
         // of the engine install. To improve readability of the source files, strip out
@@ -74,7 +74,7 @@ namespace AssetProcessor
         }
         if (m_assetRootSet)
         {
-            AzFramework::StringFunc::Replace(fullPath.Native(), m_assetRoot.absolutePath().toUtf8(), "");
+            fullPath = fullPath.LexicallyProximate(m_assetRoot.absolutePath().toUtf8().constData());
         }
 
         if (fullPath.empty())
@@ -88,11 +88,12 @@ namespace AssetProcessor
         QModelIndex newIndicesStart;
 
         AssetTreeItem* parentItem = m_root.get();
-        AZ::IO::Path currentFullFolderPath;
-        const AZ::IO::PathView filename = fullPath.Filename();
-        const AZ::IO::PathView fullPathWithoutFilename = fullPath.RemoveFilename();
+        // Use posix path separator for each child item
+        AZ::IO::Path currentFullFolderPath(AZ::IO::PosixPathSeparator);
+        const AZ::IO::FixedMaxPath filename = fullPath.Filename();
+        fullPath.RemoveFilename();
         AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
-        for (auto pathIt = fullPathWithoutFilename.begin(); pathIt != fullPathWithoutFilename.end(); ++pathIt)
+        for (auto pathIt = fullPath.begin(); pathIt != fullPath.end(); ++pathIt)
         {
             currentPath = pathIt->FixedMaxPathString();
             currentFullFolderPath /= currentPath;

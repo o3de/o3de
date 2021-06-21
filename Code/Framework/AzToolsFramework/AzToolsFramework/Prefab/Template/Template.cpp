@@ -207,6 +207,10 @@ namespace AzToolsFramework
                 instanceValue->CopyFrom(linkDom, m_prefabDom.GetAllocator());
             }
 
+            // Remove Source parameter from the dom. It will be added on file load, and should not be stored to disk.
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Erase(output);
+
             return true;
         }
 
