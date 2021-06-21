@@ -149,46 +149,43 @@ namespace AZ
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const MaterialAssignmentMap& materials,
-            bool skinnedMeshWithMotion,
-            bool rayTracingEnabled,
-            RequiresCloneCallback requiresCloneCallback)
+            const MeshHandleDescriptor& descriptor,
+            const MaterialAssignmentMap& materials)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
 
+            meshDataHandle->m_descriptor = descriptor;
+
             // Mark skinned meshes to enable special processes to generate motion vector 
-            meshDataHandle->m_skinnedMeshWithMotion = skinnedMeshWithMotion;
+            meshDataHandle->m_skinnedMeshWithMotion = descriptor.m_skinnedMeshWithMotion;
 
             // set ray tracing flag, but always disable on skinned meshes
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDataHandle->m_rayTracingEnabled = rayTracingEnabled && (skinnedMeshWithMotion == false);
+            meshDataHandle->m_rayTracingEnabled = descriptor.m_rayTracingEnabled && (descriptor.m_skinnedMeshWithMotion == false);
+
+            meshDataHandle->m_useForwardPassIblSpecular = descriptor.m_useForwardPassIblSpecular;
 
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
-            meshDataHandle->m_originalModelAsset = modelAsset;
-            meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
-            meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
+            meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
+            meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const Data::Instance<RPI::Material>& material,
-            bool skinnedMeshWithMotion,
-            bool rayTracingEnabled,
-            RequiresCloneCallback requiresCloneCallback)
+            const MeshHandleDescriptor& descriptor,
+            const Data::Instance<RPI::Material>& material)
         {
             Render::MaterialAssignmentMap materials;
             Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
             defaultMaterial.m_materialInstance = material;
 
-            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled, requiresCloneCallback);
+            return AcquireMesh(descriptor, materials);
         }
 
         bool MeshFeatureProcessor::ReleaseMesh(MeshHandle& meshHandle)
@@ -210,7 +207,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_originalModelAsset, meshHandle->m_materialAssignments);
+                MeshHandle clone = AcquireMesh(meshHandle->m_descriptor, meshHandle->m_materialAssignments);
                 return clone;
             }
             return MeshFeatureProcessor::MeshHandle();
@@ -377,6 +374,14 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                if (excludeFromReflectionCubeMaps)
+                {
+                    meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+                }
+                else
+                {
+                    meshHandle->m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
+                }
             }
         }
 
@@ -507,8 +512,8 @@ namespace AZ
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
-            if (m_parent->m_requiresCloningCallback &&
-                m_parent->m_requiresCloningCallback(modelAsset))
+            if (m_parent->m_descriptor.m_requiresCloneCallback &&
+                m_parent->m_descriptor.m_requiresCloneCallback(modelAsset))
             {
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);

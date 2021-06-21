@@ -624,9 +624,11 @@ namespace AZ
             AZ_Error("ActorComponentController", meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
             if (meshFeatureProcessor)
             {
-                // Last boolean parameter indicates if motion vector is enabled
+                MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
+                meshDescriptor.m_skinnedMeshWithMotion = true;
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
+                    m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
             }
 
             // If render proxies already exist, they will be auto-freed
