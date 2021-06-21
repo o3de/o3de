@@ -404,9 +404,11 @@ namespace GraphModel
         AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
         AZ::JsonSerializationResult::ResultCode& result)
     {
-        if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
+        auto valueItr = inputPropertyValue.FindMember("Value");
+        auto typeItr = inputPropertyValue.FindMember("$type");
+        if ((valueItr != inputPropertyValue.MemberEnd()) && (typeItr != inputPropertyValue.MemberEnd()))
         {
-            // Requiring explicit type info to differentiate be=tween colors versus vectors and numeric types
+            // Requiring explicit type info to differentiate between colors versus vectors and numeric types
             const AZ::Uuid baseTypeId = azrtti_typeid<T>();
             AZ::Uuid typeId = AZ::Uuid::CreateNull();
             result.Combine(LoadTypeId(typeId, inputPropertyValue, context, &baseTypeId));
@@ -431,7 +433,7 @@ namespace GraphModel
         {
             outputPropertyValue.SetObject();
 
-            // Storing explicit type info to differentiate be=tween colors versus vectors and numeric types
+            // Storing explicit type info to differentiate between colors versus vectors and numeric types
             rapidjson::Value typeValue;
             result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
             outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
