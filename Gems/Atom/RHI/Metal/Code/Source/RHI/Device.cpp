@@ -80,6 +80,9 @@ namespace AZ
 
             m_nullDescriptorManager.Init(*this);
             
+            m_samplerCache = [[NSCache alloc]init];
+            [m_samplerCache setName:@"SamplerCache"];
+            
             return RHI::ResultCode::Success;
         }
     
@@ -100,6 +103,10 @@ namespace AZ
             m_argumentBufferAllocator.Shutdown();
             m_releaseQueue.Shutdown();
             m_pipelineLayoutCache.Shutdown();
+            
+            [m_samplerCache removeAllObjects];
+            [m_samplerCache release];
+            m_samplerCache = nil;
             
             for (AZ::u32 i = 0; i < CommandEncoderTypeCount; ++i)
             {

@@ -54,6 +54,7 @@ namespace AZ
             }
 
             m_passData = *passData;
+            ShaderReloadNotificationBus::Handler::BusConnect(passData->m_shaderReference.m_assetId);
         }
 
         void DownsampleMipChainPass::ResetInternal()
@@ -206,5 +207,19 @@ namespace AZ
             ParentPass::FrameBeginInternal(params);
         }
 
+        void DownsampleMipChainPass::OnShaderReinitialized(const Shader& shader)
+        {
+            m_needToUpdateChildren = true;
+        }
+    
+        void DownsampleMipChainPass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
+        {
+            m_needToUpdateChildren = true;
+        }
+    
+        void DownsampleMipChainPass::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
+        {
+            m_needToUpdateChildren = true;
+        }
     }   // namespace RPI
 }   // namespace AZ
