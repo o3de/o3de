@@ -102,6 +102,7 @@ protected:
     void SetupResolutionDropdownMenu();
     void SetupViewportInformationMenu();
     void SetupOverflowMenu();
+    void SetupHelpersButton();
 
     QString m_title;
 
@@ -172,7 +173,6 @@ protected:
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
-    QAction* m_debugHelpersAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
     QAction* m_enableVRAction = nullptr;
     QAction* m_enableGridSnappingAction = nullptr;
