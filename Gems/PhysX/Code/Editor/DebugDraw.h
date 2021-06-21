@@ -114,15 +114,15 @@ namespace PhysX
             const AZStd::vector<AZ::u32>& GetIndices(AZ::u32 geomIndex) const;
 
         protected:
-            // AzFramework::EntityDebugDisplayEventBus
+            // AzFramework::EntityDebugDisplayEventBus overrides ...
             void DisplayEntityViewport(
                 const AzFramework::ViewportInfo& viewportInfo,
                 AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-            // AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler
+            // AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Handler overrides ...
             void OnDrawHelpersChanged(bool enabled) override;
 
-            // AzToolsFramework::EntitySelectionEvents::Bus::Handler
+            // AzToolsFramework::EntitySelectionEvents::Bus::Handler overrides ...
             void OnSelected() override;
             void OnDeselected() override;
 

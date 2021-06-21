@@ -784,7 +784,7 @@ namespace PhysX
         void Collider::RefreshTreeHelper()
         {
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
 
         AZStd::string Collider::GetEntityName() const 
