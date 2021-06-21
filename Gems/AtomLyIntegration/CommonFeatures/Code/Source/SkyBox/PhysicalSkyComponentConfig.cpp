@@ -29,6 +29,7 @@ namespace AZ
                     ->Field("SunIntensity", &PhysicalSkyComponentConfig::m_sunIntensity)
                     ->Field("Turbidity", &PhysicalSkyComponentConfig::m_turbidity)
                     ->Field("SunRadiusFactor", &PhysicalSkyComponentConfig::m_sunRadiusFactor)
+                    ->Field("FogSettings", &PhysicalSkyComponentConfig::m_skyBoxFogSettings)
                     ;
             }
         }

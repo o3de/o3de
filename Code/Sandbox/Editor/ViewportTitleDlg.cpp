@@ -45,6 +45,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
@@ -57,13 +58,16 @@ inline namespace Helpers
 {
     void ToggleHelpers()
     {
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
+        const bool newValue = !GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
+        GetIEditor()->GetDisplaySettings()->DisplayHelpers(newValue);
         GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 
-        if (GetIEditor()->GetDisplaySettings()->IsDisplayHelpers() == false)
+        if (newValue == false)
         {
             GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
         }
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, newValue);
     }
 
     bool IsHelpersShown()
