@@ -660,6 +660,7 @@ namespace O3DE::ProjectManager
                 gemInfo.m_displayName = Py_To_String_Optional(data, "DisplayName", gemInfo.m_name);
                 gemInfo.m_summary = Py_To_String_Optional(data, "Summary", "");
                 gemInfo.m_version = Py_To_String_Optional(data, "Version", "");
+                gemInfo.m_requirement = Py_To_String_Optional(data, "Requirements", "");
 
                 if (data.contains("Tags"))
                 {

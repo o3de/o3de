@@ -53,12 +53,14 @@ namespace O3DE::ProjectManager
         static int GetBinarySizeInKB(const QModelIndex& modelIndex);
         static QStringList GetFeatures(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
+        static QString GetRequirement(const QModelIndex& modelIndex);
 
         static bool IsAdded(const QModelIndex& modelIndex);
         static void SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
         static void SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
         static bool NeedsToBeAdded(const QModelIndex& modelIndex);
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex);
+        static bool HasRequirement(const QModelIndex& modelIndex);
 
         QVector<QModelIndex> GatherGemsToBeAdded() const;
         QVector<QModelIndex> GatherGemsToBeRemoved() const;
@@ -84,7 +86,8 @@ namespace O3DE::ProjectManager
             RoleBinarySize,
             RoleFeatures,
             RoleTypes,
-            RolePath
+            RolePath,
+            RoleRequirement
         };
 
         QHash<QString, QModelIndex> m_nameToIndexMap;

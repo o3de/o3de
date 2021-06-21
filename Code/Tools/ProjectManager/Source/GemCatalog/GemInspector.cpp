@@ -70,6 +70,9 @@ namespace O3DE::ProjectManager
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
 
+        m_reqirementsTitleLabel->setText("Requirement");
+        m_reqirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
+
         // Depending and conflicting gems
         m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
         m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGemNames(modelIndex));
@@ -133,6 +136,22 @@ namespace O3DE::ProjectManager
         m_mainLayout->addWidget(hLine);
 
         m_mainLayout->addSpacing(10);
+
+        // Requirements
+        m_reqirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
+
+        QHBoxLayout* requrementsLayout = new QHBoxLayout();
+        requrementsLayout->setAlignment(Qt::AlignTop);
+        requrementsLayout->setMargin(0);
+
+        m_reqirementsIconLabel = new QLabel();
+        m_reqirementsIconLabel->setPixmap(QPixmap(":/Android.svg"));
+        requrementsLayout->addWidget(m_reqirementsIconLabel);
+
+        m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
+        m_reqirementsTextLabel->setWordWrap(true);
+
+        m_mainLayout->addLayout(requrementsLayout);
 
         // Depending and conflicting gems
         m_dependingGems = new GemsSubWidget();
