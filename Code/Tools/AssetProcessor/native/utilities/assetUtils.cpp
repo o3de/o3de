@@ -142,8 +142,9 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
-
-        // note that this absolute path is a real file system path, and the following API requires normalized paths:
+        
+        // once we're done, regardless of success or failure, we 'unlock' those files for further process.
+        // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
         AssetProcessor::ProcessingJobInfoBus::Broadcast(
             &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, normalized.toUtf8().constData(), !operationSucceeded);

@@ -787,9 +787,6 @@ namespace AssetProcessor
         }
 
         // if we get here, we are good to go in terms of disk space and sources existing, so we make the best attempt we can.
-        // first, we broadcast the name of ALL of the outputs we are about to change:
-
-        // after we do the above notify its important that we do not early exit this function without undoing those locks.
 
         bool anyFileFailed = false;
 
@@ -813,9 +810,6 @@ namespace AssetProcessor
                 AZ_TracePrintf(AssetBuilderSDK::WarningWindow, "Unable to change permission for the file: %s.\n", productAbsolutePath.toUtf8().data());
             }
         }
-
-        // once we're done, regardless of success or failure, we 'unlock' those files for further process.
-        // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
         
         return !anyFileFailed;
     }
