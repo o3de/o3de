@@ -352,7 +352,7 @@ namespace MaterialEditor
             ExitMainLoop();
         }
     }
-    ///*
+    /*
     void MaterialEditorApplication::WriteStartupLog()
     {
         using namespace AzFramework;
@@ -388,7 +388,7 @@ namespace MaterialEditor
             m_logFile->FlushLog();
         }
     }
-    //*/
+    */
     void MaterialEditorApplication::LoadSettings()
     {
         AZ::SerializeContext* context = nullptr;
@@ -476,8 +476,8 @@ namespace MaterialEditor
             return;
         }
 
-        //m_traceLogger->WriteStartupLog("MaterialEditor.log");
-        WriteStartupLog();
+        m_traceLogger->WriteStartupLog("MaterialEditor.log");
+        //WriteStartupLog();
 
         if (!LaunchDiscoveryService())
         {

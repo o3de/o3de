@@ -106,7 +106,7 @@ namespace MaterialEditor
         void CompileCriticalAssets();
 
         void ProcessCommandLine(const AZ::CommandLine& commandLine);
-        void WriteStartupLog();
+        //void WriteStartupLog();
 
         void LoadSettings();
         void UnloadSettings();

@@ -16,7 +16,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Logging/LogFile.h>
 
-
 namespace AzQtComponents
 {
     class AzQtTraceLogger::Impl : public AZ::Debug::TraceMessageBus::Handler
@@ -78,11 +77,13 @@ namespace AzQtComponents
 
     void AzQtTraceLogger::Impl::WriteStartupLog(char name[])
     {
-        using namespace AzFramework;
-
+        std::string temp = name;
+    
+        //using namespace AzFramework;
+        ///*
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "FileIO should be running at this point");
-
+        /*
         // There is no log system online so we have to create your own log file.
         char resolveBuffer[AZ_MAX_PATH_LEN] = { 0 };
         fileIO->ResolvePath("@user@", resolveBuffer, AZ_MAX_PATH_LEN);
@@ -110,5 +111,6 @@ namespace AzQtComponents
             m_startupLogSink = {};
             m_logFile->FlushLog();
         }
+        */
     }
 } // namespace AzQtComponents
