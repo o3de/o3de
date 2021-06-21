@@ -48,7 +48,8 @@ namespace AzPhysics
         using OnPresimulateEvent = AZ::Event<float>;
 
         //! Event triggers at the end of the SystemInterface::Simulate call.
-        using OnPostsimulateEvent = AZ::Event<>;
+        //! Parameter is the total time that the physics system will run for during the Simulate call.
+        using OnPostsimulateEvent = AZ::Event<float>;
 
         //! Event trigger when a Scene is added to the simulation.
         //! When triggered will send the handle to the new Scene.

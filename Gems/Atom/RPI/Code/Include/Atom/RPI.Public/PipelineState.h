@@ -88,7 +88,7 @@ namespace AZ
             // ShaderReloadNotificationBus overrides...
             void OnShaderReinitialized(const AZ::RPI::Shader& shader) override;
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
-            void OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId) override;
+            void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
             ///////////////////////////////////////////////////////////////////
 
             // Update shader variant from m_shader. It's called whenever shader, shader asset or shader variant were changed.

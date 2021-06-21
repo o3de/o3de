@@ -74,7 +74,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME AWSCore.Editor MODULE
+        NAME AWSCore.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awscore_editor_shared_files.cmake
@@ -89,6 +89,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AWSCore
     )
 
+    # This target is not a real gem module
+    # It is not meant to be loaded by the ModuleManager in C++
     ly_add_target(
         NAME AWSCore.ResourceMappingTool MODULE
         NAMESPACE Gem

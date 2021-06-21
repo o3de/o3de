@@ -10,5 +10,5 @@
 # {END_LICENSE}
 
 set(FILES
-    Source/${Name}Module.cpp
+    Source/${Name}EditorModule.cpp
 )

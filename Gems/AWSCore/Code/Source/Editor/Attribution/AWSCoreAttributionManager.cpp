@@ -25,20 +25,24 @@
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <ResourceMapping/AWSResourceMappingUtils.h>
 
+#include <QSysInfo>
+#include <QString>
+
 
 
 namespace AWSCore
 {
-    static constexpr const char* EngineVersionJsonKey = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
 
     constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
     constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
-    constexpr char AWSAttributionApiId[] = "xbzx78kvbk";
+    constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
     constexpr char AWSAttributionChinaApiId[] = "";
     constexpr char AWSAttributionApiStage[] = "prod";
+    const int AWSAttributionDefaultDelayInDays = 7;
 
     AWSAttributionManager::AWSAttributionManager()
     {
@@ -58,12 +62,11 @@ namespace AWSCore
     {
         if (ShouldGenerateMetric())
         {
-            // 1. Gather metadata and assemble metric
+            // Gather metadata and assemble metric
             AttributionMetric metric;
             UpdateMetric(metric);            
-            // 2. Identify region and chose attribution endpoint
             
-            // 3. Post metric
+            // Post metric
             SubmitMetric(metric);
         }
     }
@@ -104,8 +107,7 @@ namespace AWSCore
         AZ::u64 delayInSeconds = 0;
         if (!m_settingsRegistry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
         {
-            AZ_Warning("AWSAttributionManager", false, "AWSAttribution delay key not found. Defaulting to delay to day");
-            delayInSeconds = 86400;
+            delayInSeconds = 86400 * AWSAttributionDefaultDelayInDays;
             m_settingsRegistry->Set(AWSAttributionDelaySecondsKey, delayInSeconds);
         }
 
@@ -243,7 +245,8 @@ namespace AWSCore
         metric.SetO3DEVersion(engineVersion);
 
         AZStd::string platform = this->GetPlatform();
-        metric.SetPlatform(platform, "");
+        QString productName = QSysInfo::prettyProductName();
+        metric.SetPlatform(platform, productName.toStdString().c_str());
 
         AZStd::vector<AZStd::string> gemNames;
         GetActiveAWSGems(gemNames);
@@ -256,17 +259,21 @@ namespace AWSCore
     void AWSAttributionManager::SubmitMetric(AttributionMetric& metric)
     {
         AWSCore::ServiceAPI::AWSAttributionRequestJob::Config* config = ServiceAPI::AWSAttributionRequestJob::GetDefaultConfig();
+        // Identify region and chose attribution endpoint
         SetApiEndpointAndRegion(config);
 
         ServiceAPI::AWSAttributionRequestJob* requestJob = ServiceAPI::AWSAttributionRequestJob::Create(
-            [this](ServiceAPI::AWSAttributionRequestJob* successJob)
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* successJob)
             {
-                AZ_UNUSED(successJob);
-                
                 UpdateLastSend();
                 AZ_Printf("AWSAttributionManager", "AWSAttribution metric submit success");
 
-            }, {}, config);
+            },
+            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
+            {
+                AZ_Error("AWSAttributionManager", false, "Metrics send error: %s", failJob->error.message.c_str());
+            },
+            config);
 
         requestJob->parameters.metric = metric;
         requestJob->Start();

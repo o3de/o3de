@@ -175,5 +175,13 @@ namespace AZ::Render
         }
     }
 
+    void DiskLightDelegate::SetEsmExponent(float exponent)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), exponent);
+        }
+    }
+
     
 } // namespace AZ::Render

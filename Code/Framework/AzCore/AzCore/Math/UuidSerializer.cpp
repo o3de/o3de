@@ -33,6 +33,11 @@ namespace AZ
             AZStd::regex_constants::icase | AZStd::regex_constants::optimize);
     }
 
+    auto JsonUuidSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
+    }
+
     JsonSerializationResult::Result JsonUuidSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
     {
@@ -53,13 +58,24 @@ namespace AZ
 
         Uuid* valAsUuid = reinterpret_cast<Uuid*>(outputValue);
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *valAsUuid = AZ::Uuid::CreateNull();
+            return MessageResult("Uuid value set to default of null.", JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed));
+        }
+
         switch (inputValue.GetType())
         {
-        case rapidjson::kArrayType: // fallthrough
-        case rapidjson::kObjectType:// fallthrough
-        case rapidjson::kFalseType: // fallthrough
-        case rapidjson::kTrueType:  // fallthrough
-        case rapidjson::kNumberType:// fallthrough
+        case rapidjson::kArrayType:
+            [[fallthrough]];
+        case rapidjson::kObjectType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
+        case rapidjson::kTrueType:
+            [[fallthrough]];
+        case rapidjson::kNumberType:
+            [[fallthrough]];
         case rapidjson::kNullType:
             return MessageResult("Unsupported type. Uuids can only be read from strings.",
                 JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported));
