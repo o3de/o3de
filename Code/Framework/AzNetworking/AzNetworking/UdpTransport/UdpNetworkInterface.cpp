@@ -375,7 +375,6 @@ namespace AzNetworking
     {
         if (!m_socket->IsOpen())
         {
-            AZ_Assert(false, "StopListen cannot be invoked on an already closed network interface");
             return false;
         }
 
