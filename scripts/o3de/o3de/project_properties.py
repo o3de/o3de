@@ -64,9 +64,9 @@ def edit_project_props(proj_path: pathlib.Path,
                 if tag in proj_json['user_tags']:
                     proj_json['user_tags'].remove(tag)
                 else:
-                    logger.warn(f'{tag} not found in user_tags for removal.')
+                    logger.warning(f'{tag} not found in user_tags for removal.')
         else:
-            logger.warn(f'user_tags property not found.')
+            logger.warning('user_tags property not found.')
     if replace_tags:
         tag_list = [replace_tags] if isinstance(replace_tags, str) else replace_tags
         proj_json['user_tags'] = tag_list
