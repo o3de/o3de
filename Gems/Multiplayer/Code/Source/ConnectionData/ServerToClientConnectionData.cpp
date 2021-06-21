@@ -11,6 +11,7 @@
 */
 
 #include <Source/ConnectionData/ServerToClientConnectionData.h>
+#include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
 {
@@ -44,6 +45,8 @@ namespace Multiplayer
 
     ServerToClientConnectionData::~ServerToClientConnectionData()
     {
+        AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(m_controlledEntity);
+
         m_entityReplicationManager.Clear(false);
         m_controlledEntityRemovedHandler.Disconnect();
     }
