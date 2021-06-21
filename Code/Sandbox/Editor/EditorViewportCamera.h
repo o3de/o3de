@@ -31,7 +31,7 @@ namespace SandboxEditor
     SANDBOX_API void SetDefaultViewportCameraRotation(float pitch, float yaw);
 
     //! Set the camera to interpolate to the given position and orientation.
-    //! @param position The new position of the camera
+    //! @param position The new position of the camera.
     //! @param pitch Amount of pitch in radians.
     //! @param yaw Amount of yaw in radians.
     SANDBOX_API void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, float pitch, float yaw);
