@@ -181,9 +181,19 @@ namespace AZ
 
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-            // Base viewport and scissor off of target attachment
-            m_viewportState = RHI::Viewport(0, static_cast<float>(targetImageSize.m_width), 0, static_cast<float>(targetImageSize.m_height));
-            m_scissorState = RHI::Scissor(0, 0, targetImageSize.m_width, targetImageSize.m_height);
+            m_viewportState = params.m_viewportState;
+            if (m_viewportState.IsNull())
+            {
+                // compute viewport from target attachment
+                m_viewportState = RHI::Viewport(0, static_cast<float>(targetImageSize.m_width), 0, static_cast<float>(targetImageSize.m_height));
+            }
+
+            m_scissorState = params.m_scissorState;
+            if (m_scissorState.IsNull())
+            {
+                // compute scissor from target attachment
+                m_scissorState = RHI::Scissor(0, 0, targetImageSize.m_width, targetImageSize.m_height);
+            }
 
             RenderPass::FrameBeginInternal(params);
         }

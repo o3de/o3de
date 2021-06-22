@@ -25,6 +25,44 @@ namespace AzNetworking
 
     //! @class TcpNetworkInterface
     //! @brief This class implements a TCP network interface.
+    //!
+    //! TcpNetworkInterface is an implementation of AzNetworking::INetworkInterface.
+    //! Unlike UDP, TCP implements a variety of transport features such as congestion
+    //! avoidance, flow control, and reliability. These features are valuable, but TCP
+    //! offers minimal configuration of them. This is why UdpNetworkInterface offers
+    //! similar features, but with greater flexibility in configuration. If your project doesn't
+    //! require the low latency of UDP, consider using TCP.
+    //! 
+    //! ## Packet structure
+    //! 
+    //! * Flags - A bitfield a receiving endpoint can quickly inspect to learn about configuration of a packet
+    //! * Header - Details the type of packet and other information related to reliability
+    //! * Payload - The actual serialized content of the packet
+    //! 
+    //! For more information, read [Networking Packets](http://docs.o3de.org/docs/user-guide/networking/packets) in the O3DE documentation.
+    //! 
+    //! ## Reliability
+    //! 
+    //! TCP packets can only be sent reliably. This is a feature of TCP itself.
+    //! 
+    //! ## Fragmentation
+    //! 
+    //! TCP implements fragmentation under the hood. Consumers of TCP packets will never
+    //! need to worry about reconstructing the contents over multiple transmissions.
+    //! 
+    //! ## Compression
+    //! 
+    //! Compression here refers to content insensitive compression using libraries like
+    //! LZ4. If enabled, the target payload is run through the compressor and replaces
+    //! the original payload if it's in fact smaller. To tell if compression is enabled
+    //! on a given packet, we operate on a bit in the packet's Flags. The Sender writes
+    //! this bit while the Receiver checks it to see if a packet needs to be
+    //! decompressed.
+    //! 
+    //! ## Encryption
+    //! 
+    //! AzNetworking uses the [OpenSSL](https://www.openssl.org/) library to implement TLS encryption. If enabled,
+    //! the O3DE network layer handles the OpenSSL handshake under the hood using provided certificates.
     class TcpNetworkInterface final
         : public INetworkInterface
     {

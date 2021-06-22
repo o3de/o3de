@@ -18,6 +18,11 @@ namespace AzNetworking
 {
     //! @class IConnectionSet
     //! @brief interface class for managing a set of connections.
+    //!
+    //! IConnectionSet defines a simple interface for working with an abstract set of IConnections bound to an
+    //! INetworkInterface.  Generally users of AzNetworking will not have reason to interact directly with the IConnectionSet,
+    //! as its interface is completely wrapped by INetworkInterface.
+
     class IConnectionSet
     {
     public:

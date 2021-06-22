@@ -73,13 +73,15 @@ namespace AZ
             void BusConnectToTags();
 
             const AZStd::unordered_set<AZ::EntityId>& GetCameraEntityList() const;
-
+            bool IsEditorView(const AZ::RPI::ViewPtr view);
             bool HasTags(const AZ::EntityId& entityId, const AZStd::vector<AZStd::string>& tags) const;
 
             // list of entities containing tags set in this component's property.
             AZStd::unordered_set<AZ::EntityId> m_taggedCameraEntities;
             // a list of cameras tracked by this component. This is used if no camera tags are specified.
             AZStd::unordered_set<AZ::EntityId> m_cameraEntities;
+            // a list of camera views in the scene. This is used to test if a view is an editor view.
+            AZStd::unordered_set<AZ::RPI::View*> m_allCameraViews;
 
             PostProcessFeatureProcessorInterface* m_featureProcessorInterface = nullptr;
             PostProcessSettingsInterface* m_postProcessInterface = nullptr;

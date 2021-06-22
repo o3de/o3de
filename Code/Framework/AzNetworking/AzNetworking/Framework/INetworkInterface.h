@@ -22,7 +22,16 @@
 namespace AzNetworking
 {
     //! @class INetworkInterface
-    //! @brief pure virtual network interface class to abstract client/server and tcp/udp concerns from application code.
+    //! @brief Network interface class to abstract client/server and protocol concerns from application code.
+    //!
+    //! INetworkInterface provides an abstract API capable of receiving and opening IConnection objects, sending IPacket objects with optional
+    //! reliability, and determining the delivery status of packets that have been sent unreliably (delivery of reliable packets
+    //! is guaranteed as long as the associated connection remains open). INetworkInterface must be provided an
+    //! IConnectionListener instance that outlives the INetworkInterface itself. The INetworkInterface also creates and manages
+    //! the IConnectionSet, which tracks all open connections bound to the interface. INetworkInterface also provides GetMetrics
+    //! functions which can be used to fetch a struct detailing a variety of metrics relating to send and receive rates for both
+    //! packets and bytes in addition to the effect of features on those rates (such as packet size reduction due to compression.)
+    
     class INetworkInterface
     {
     public:

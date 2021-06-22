@@ -69,7 +69,7 @@ namespace AZ
             m_featureProcessorInterface = RPI::Scene::GetFeatureProcessorForEntity<SkyBoxFeatureProcessorInterface>(entityId);
 
             // only activate if there is no other skybox activate
-            if (!m_featureProcessorInterface->IsEnable())
+            if (!m_featureProcessorInterface->IsEnabled())
             {
                 m_featureProcessorInterface->SetSkyboxMode(SkyBoxMode::Cubemap);
                 m_featureProcessorInterface->Enable(true);

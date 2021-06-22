@@ -10,6 +10,7 @@
 *
 */
 
+#include <cinttypes>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -717,7 +718,7 @@ namespace EMotionFX
         const size_t shapeCount = nodeConfig->m_shapes.size();
         if (m_colliderIndex >= shapeCount)
         {
-            outResult = AZStd::string::format("Cannot remove collider. The joint '%s' is only holding %zu colliders and the index %zu is out of range.", m_jointName.c_str(), shapeCount, m_colliderIndex);
+            outResult = AZStd::string::format("Cannot remove collider. The joint '%s' is only holding %zu colliders and the index %llu is out of range.", m_jointName.c_str(), shapeCount, m_colliderIndex);
             return false;
         }
 

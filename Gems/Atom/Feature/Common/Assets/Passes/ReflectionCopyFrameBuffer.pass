@@ -21,7 +21,7 @@
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
-                        "LoadAction": "Load"
+                        "LoadAction": "DontCare"
                     }
                 }
             ],
