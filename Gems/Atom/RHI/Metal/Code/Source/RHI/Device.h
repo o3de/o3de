@@ -144,6 +144,11 @@ namespace AZ
                 return m_asyncUploadQueue;
             }
             
+            const NSCache* GetSamplerCache() const
+            {
+                return m_samplerCache;
+            }
+            
             BufferMemoryAllocator& GetArgBufferConstantBufferAllocator() { return m_argumentBufferConstantsAllocator;}
             BufferMemoryAllocator& GetArgumentBufferAllocator() { return m_argumentBufferAllocator;}
             
@@ -194,6 +199,7 @@ namespace AZ
             RHI::HeapMemoryUsage m_argumentBufferAllocatorMemoryUsage;
             
             NullDescriptorManager m_nullDescriptorManager;
+            NSCache* m_samplerCache;
         };
     }
 }

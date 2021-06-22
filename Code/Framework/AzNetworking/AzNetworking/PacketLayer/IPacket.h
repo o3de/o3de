@@ -24,6 +24,15 @@ namespace AzNetworking
 
     //! @class IPacket
     //! @brief Base class for all packets.
+    //!
+    //! IPacket defines an abstract interface that all packets transmitted using AzNetworking must conform to. While there are
+    //! a number of core packets used internally by AzNetworking, it is fully possible for end-users to define their own custom
+    //! packets using this interface. PacketType should be distinct, and should be greater than
+    //! AzNetworking::CorePackets::MAX. The Serialize method allows the IPacket to be used by an
+    //! ISerializer to move data between hosts safely and efficiently.
+    //!
+    //! For more information on the packet format and best practices for extending the packet system, read
+    //! [Networking Packets](http://docs.o3de.org/docs/user-guide/networking/packets) on the O3DE documentation site.
     class IPacket
     {
     public:
