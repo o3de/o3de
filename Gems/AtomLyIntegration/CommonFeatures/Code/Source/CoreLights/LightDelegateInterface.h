@@ -85,6 +85,8 @@ namespace AZ
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
             //! Sets the Pcf (Percentage closer filtering) method to use.
             virtual void SetPcfMethod(PcfMethod method) = 0;
+            //! Sets the Esm exponent to use. Higher values produce a steeper falloff between light and shadow.
+            virtual void SetEsmExponent(float exponent) = 0;
         };
     } //  namespace Render
 } // namespace AZ

@@ -1014,7 +1014,6 @@ namespace AzToolsFramework
     static void RefreshUiAfterChange(const EntityIdList& entitiyIds)
     {
         EditorTransformChangeNotificationBus::Broadcast(&EditorTransformChangeNotifications::OnEntityTransformChanged, entitiyIds);
-
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
@@ -1085,7 +1084,7 @@ namespace AzToolsFramework
         auto entityBoxSelectData = AZStd::make_shared<EntityBoxSelectData>();
 
         m_boxSelect.InstallLeftMouseDown(
-            [this, entityBoxSelectData](const ViewportInteraction::MouseInteractionEvent& /*mouseInteraction*/)
+            [this, entityBoxSelectData]([[maybe_unused]] const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
             {
                 // begin selection undo/redo command
                 entityBoxSelectData->m_boxSelectSelectionCommand =
@@ -1283,8 +1282,12 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
-            [this]([[maybe_unused]] const LinearManipulator::Action& action) mutable
+            [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action) mutable
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1313,8 +1316,12 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
-            [this, manipulatorEntityIds](const PlanarManipulator::Action& /*action*/)
+            [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1342,8 +1349,12 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
-            [this, manipulatorEntityIds](const SurfaceManipulator::Action& /*action*/)
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1380,7 +1391,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState](const AngularManipulator::Action& /*action*/) mutable -> void
+            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable -> void
             {
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
@@ -1506,8 +1517,12 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallLeftMouseUpCallback(
-            [this](const AngularManipulator::Action& /*action*/)
+            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action)
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    sharedRotationState->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1553,6 +1568,10 @@ namespace AzToolsFramework
 
         auto uniformLeftMouseUpCallback = [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action)
         {
+            AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                manipulatorEntityIds->m_entityIds);
+
             m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
                 m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
         };
@@ -2390,7 +2409,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_U) },
-            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle ViewportUI", "Hide/Unhide Viewport UI",
+            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle Viewport UI", "Hide/Show Viewport UI",
             [this]()
             {
                 SetAllViewportUiVisible(!m_viewportUiVisible);
@@ -2477,7 +2496,7 @@ namespace AzToolsFramework
 
         // create and register the buttons (strings correspond to icons even if the values appear different)
         m_translateButtonId = RegisterClusterButton(m_transformModeClusterId, "Move");
-        m_rotateButtonId = RegisterClusterButton(m_transformModeClusterId, "Translate");
+        m_rotateButtonId = RegisterClusterButton(m_transformModeClusterId, "Rotate");
         m_scaleButtonId = RegisterClusterButton(m_transformModeClusterId, "Scale");
 
         // set button tooltips
@@ -3630,17 +3649,17 @@ namespace AzToolsFramework
         RegenerateManipulators();
     }
 
-    void EditorTransformComponentSelection::OnEntityVisibilityChanged(const bool /*visibility*/)
+    void EditorTransformComponentSelection::OnEntityVisibilityChanged([[maybe_unused]] const bool visibility)
     {
         m_selectedEntityIdsAndManipulatorsDirty = true;
     }
 
-    void EditorTransformComponentSelection::OnEntityLockChanged(const bool /*locked*/)
+    void EditorTransformComponentSelection::OnEntityLockChanged([[maybe_unused]] const bool locked)
     {
         m_selectedEntityIdsAndManipulatorsDirty = true;
     }
 
-    void EditorTransformComponentSelection::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+    void EditorTransformComponentSelection::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
         SetAllViewportUiVisible(false);
 
@@ -3649,7 +3668,7 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
     }
 
-    void EditorTransformComponentSelection::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+    void EditorTransformComponentSelection::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
         SetAllViewportUiVisible(true);
 

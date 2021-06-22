@@ -130,6 +130,7 @@ namespace Multiplayer
 
         // Instance container for net entities
         AZStd::unique_ptr<Instance> networkInstance(aznew Instance());
+        networkInstance->SetTemplateSourcePath(AZ::IO::PathView(uniqueName));
 
         // Create an asset for our future network spawnable: this allows us to put references to the asset in the components
         AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;

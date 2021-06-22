@@ -134,7 +134,10 @@ namespace AZ
 
         void SkinnedMeshRenderProxy::SetSkinningMatrices(const AZStd::vector<float>& data)
         {
-            WriteToBuffer(m_boneTransforms->GetRHIBuffer(), data);
+            if (m_boneTransforms)
+            {
+                WriteToBuffer(m_boneTransforms->GetRHIBuffer(), data);
+            }
         }
 
         void SkinnedMeshRenderProxy::SetMorphTargetWeights(uint32_t lodIndex, const AZStd::vector<float>& weights)

@@ -198,7 +198,7 @@ namespace PhysX
 
             simulateScenes(tickTime);
         }
-        m_postSimulateEvent.Signal();
+        m_postSimulateEvent.Signal(tickTime);
     }
 
     AzPhysics::SceneHandle PhysXSystem::AddScene(const AzPhysics::SceneConfiguration& config)

@@ -24,6 +24,11 @@ namespace AZ
 
         //! Connect to this EBus to get notifications whenever material objects reload.
         //! The bus address is the AssetId of the MaterialAsset or MaterialTypeAsset.
+        //!
+        //! Be careful when using the parameters provided by these functions. The bus ID is an AssetId, and it's possible for the system to have
+        //! both *old* versions and *new reloaded* versions of the asset in memory at the same time, and they will have the same AssetId. Therefore
+        //! your bus Handlers could receive Reinitialized messages from multiple sources. It may be necessary to check the memory addresses of these
+        //! parameters against local members before using this data.
         class MaterialReloadNotifications
             : public EBusTraits
         {

@@ -9,14 +9,10 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#include "Vegetation_precompiled.h"
 #include "EditorVegetationSystemComponent.h"
 
 #include <Vegetation/Editor/EditorAreaComponentBase.h>
 #include <Vegetation/Editor/EditorVegetationComponentBase.h>
-
-#include <CrySystemBus.h>
-
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
 namespace Vegetation
