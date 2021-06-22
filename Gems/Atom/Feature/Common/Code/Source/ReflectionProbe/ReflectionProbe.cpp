@@ -67,7 +67,7 @@ namespace AZ
                 "Models/ReflectionProbeSphere.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
-            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(m_visualizationModelAsset);
+            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor{ m_visualizationModelAsset });
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
             m_meshFeatureProcessor->SetRayTracingEnabled(m_visualizationMeshHandle, false);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
