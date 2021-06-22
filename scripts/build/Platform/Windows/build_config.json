@@ -56,7 +56,7 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/ci_build_metrics.py",
-      "SCRIPT_PARAMETERS": "--platform=\"Windows\" --repository=\"!REPOSITORY_NAME!\" --jobname=\"!JOB_NAME!\" --jobnumber=\"!BUILD_NUMBER!\" --jobnode=\"!NODE_LABEL!\" --changelist=\"!CHANGE_ID!\""
+      "SCRIPT_PARAMETERS": "--platform=Windows --repository=!REPOSITORY_NAME! --jobname=!JOB_NAME! --jobnumber=!BUILD_NUMBER! --jobnode=!NODE_LABEL! --changelist=!CHANGE_ID!"
     }
   },
   "windows_packaging_all": {
