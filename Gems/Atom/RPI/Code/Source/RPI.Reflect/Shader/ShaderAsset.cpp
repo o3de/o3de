@@ -313,6 +313,7 @@ namespace AZ
             SupervariantIndex supervariantIndex = DefaultSupervariantIndex;
 
             // check for an RPI ShaderSystem specified supervariant
+            // Note: we can just search for the system supervariant name, since the default supervariant is "", so no need to append
             RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
             if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
             {
@@ -354,6 +355,7 @@ namespace AZ
             SupervariantIndex supervariantIndex = DefaultSupervariantIndex;
 
             // check for an RPI ShaderSystem specified supervariant
+            // Note: we can just search for the system supervariant name, since the default supervariant is "", so no need to append
             RPI::ShaderSystemInterface* shaderSystemInterface = ShaderSystemInterface::Get();
             if (shaderSystemInterface && !shaderSystemInterface->GetSupervariantName().IsEmpty())
             {
