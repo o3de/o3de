@@ -163,6 +163,11 @@ namespace AZ
             handler.Connect(m_sizeChangedEvent);
         }
 
+        void ViewportContext::ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_dpiScalingFactorChangedEvent);
+        }
+
         void ViewportContext::ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_viewMatrixChangedEvent);
@@ -303,6 +308,7 @@ namespace AZ
         void ViewportContext::OnDpiScaleFactorChanged(float dpiScaleFactor)
         {
             m_viewportDpiScaleFactor = dpiScaleFactor;
+            m_dpiScalingFactorChangedEvent.Signal(dpiScaleFactor);
         }
     } // namespace RPI
 } // namespace AZ

@@ -92,6 +92,11 @@ namespace AZ
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportSizeChanged.
             void ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler);
 
+            using ScalarChangedEvent = AZ::Event<float>;
+            //! Notifies consumers when the viewport DPI scaling ratio has changed.
+            //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportDpiScalingChanged.
+            void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
+
             using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the view matrix has changed.
             void ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
@@ -141,6 +146,7 @@ namespace AZ
             float m_viewportDpiScaleFactor = 1.0f;
 
             SizeChangedEvent m_sizeChangedEvent;
+            ScalarChangedEvent m_dpiScalingFactorChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
             MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;

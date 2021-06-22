@@ -57,6 +57,8 @@ namespace ImGui
         void SetImGuiRenderResolution(const ImVec2& res) override { m_renderResolution = res; }
         void OverrideRenderWindowSize(uint32_t width, uint32_t height) override;
         void RestoreRenderWindowSizeToDefault() override;
+        void SetDpiScalingFactor(float dpiScalingFactor) override;
+        float GetDpiScalingFactor() const override;
         void Render() override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
