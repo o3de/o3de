@@ -449,6 +449,7 @@ try {
                     repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
+                    env.REPOSITORY_NAME = repository_name
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
 
                     if(env.BRANCH_NAME) {
@@ -459,7 +460,7 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running \"${pipelineName}\" for \"${branchName}\"..."
+                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\"..."
 
                     CheckoutBootstrapScripts(branchName)
 
