@@ -53,10 +53,10 @@ class CognitoIdentityPoolRole:
                                   }
                               }, assume_role_action='sts:AssumeRoleWithWebIdentity'))
 
-        # Above role is created for developers to add custom permissions that they need to provide authorized client.
-        # Developers need to update below policy to add permissions. Currently s3:ListBuckets is set as an example as
-        # role wont allow empty policy statement.
-        # Please update as required.
+        # The above role is created for developers to add custom permissions that they need to provide authorized
+        # client. Developers should update the policy statements below to add their required permissions.
+        # As an example s3:ListBuckets permissions are provided.
+        # Note: There must be at least one policy statement here.
         stack_statement = iam.PolicyStatement(
             actions=[
                 's3:ListBuckets'

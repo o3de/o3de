@@ -53,9 +53,10 @@ command.
 
 
 ## Update Authorization Permissions
-* CDK application creates Authenticated and Unauthenticated CognitoIdentityPoolRole that allows authorized clients to call AWS services.
-* Example permission is set to provide S3:ListBuckets as we cannot have empty IAM policy statement.
-* Developers are expected to update the permissions on the roles created according to their needs by updating the attached managed policy statements.
+To give permissions to call AWS resources, please update CognitoIdentityPoolRole class with correct policy statements.
+
+An example IAM permission policy is provided to grant both authenticated and unauthenticated the permission to list S3 buckets in the project.
+However, it is expected that developers replace these permissions with those required by your users to use your resources.
 
 ## Useful commands
 
