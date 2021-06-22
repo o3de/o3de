@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/View.h>
+#include "..\..\Include\Atom\RPI.Public\ViewportContext.h"
 
 namespace AZ
 {
@@ -28,6 +29,10 @@ namespace AZ
                 m_viewportSize,
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(
+                m_viewportDpiScaleFactor,
+                nativeWindow,
+                &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
@@ -146,6 +151,11 @@ namespace AZ
         AzFramework::WindowSize ViewportContext::GetViewportSize() const
         {
             return m_viewportSize;
+        }
+
+        float ViewportContext::GetDpiScalingFactor() const
+        {
+            return m_viewportDpiScaleFactor;
         }
 
         void ViewportContext::ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler)
@@ -288,6 +298,11 @@ namespace AZ
                 m_viewportSize.m_height = height;
                 m_sizeChangedEvent.Signal(m_viewportSize);
             }
+        }
+
+        void ViewportContext::OnDpiScaleFactorChanged(float dpiScaleFactor)
+        {
+            m_viewportDpiScaleFactor = dpiScaleFactor;
         }
     } // namespace RPI
 } // namespace AZ

@@ -65,7 +65,13 @@ namespace AZ
             ConstViewPtr GetDefaultView() const;
 
             //! Gets the current size of the viewport.
+            //! This value is cached and updated on-demand, so may be performantly queried.
             AzFramework::WindowSize GetViewportSize() const;
+
+            //! Gets the screen DPI scaling factor.
+            //! This value is cached and updated on-demand, so may be performantly queried.
+            //! \see AzFramework::WindowRequests::GetDpiScaleFactor
+            float GetDpiScalingFactor() const;
 
             // SceneNotificationBus interface
             //! Ensures our default view remains set when our scene's render pipelines are modified.
@@ -76,8 +82,10 @@ namespace AZ
             void OnBeginPrepareRender() override;
 
             //WindowNotificationBus interface
-            //! Used to fire a notification when our window resizes
+            //! Used to fire a notification when our window resizes.
             void OnWindowResized(uint32_t width, uint32_t height) override;
+            //! Used to fire a notification when our window DPI changes.
+            void OnDpiScaleFactorChanged(float dpiScaleFactor) override;
 
             using SizeChangedEvent = AZ::Event<AzFramework::WindowSize>;
             //! Notifies consumers when the viewport size has changed.
@@ -130,6 +138,7 @@ namespace AZ
             WindowContextSharedPtr m_windowContext;
             ViewPtr m_defaultView;
             AzFramework::WindowSize m_viewportSize;
+            float m_viewportDpiScaleFactor = 1.0f;
 
             SizeChangedEvent m_sizeChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
