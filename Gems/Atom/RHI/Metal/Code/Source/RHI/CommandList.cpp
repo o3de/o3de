@@ -299,7 +299,6 @@ namespace AZ
                         //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                             uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgVisInfo));
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Vertex)
                             {
@@ -375,6 +374,7 @@ namespace AZ
                                     mtlFragmentOrComputeArgBuffers,
                                     mtlFragmentOrComputeArgBufferOffsets);
             }
+            
             id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
             id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
             
