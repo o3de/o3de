@@ -24,6 +24,7 @@
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
@@ -84,6 +85,7 @@ namespace LandscapeCanvasEditor
         , private AzToolsFramework::EntityCompositionNotificationBus::Handler
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
+        , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
         , private CrySystemEventBus::Handler
     {
         Q_OBJECT
@@ -183,10 +185,15 @@ namespace LandscapeCanvasEditor
         void EntityParentChanged(AZ::EntityId entityId, AZ::EntityId newParentId, AZ::EntityId oldParentId) override;
         ////////////////////////////////////////////////////////////////////////
 
+        //! PrefabPublicNotificationBus overrides
+        void OnPrefabInstancePropagationBegin() override;
+        void OnPrefabInstancePropagationEnd() override;
+
         ////////////////////////////////////////////////////////////////////////
         // CrySystemEventBus overrides
         void OnCryEditorEndCreate() override;
         void OnCryEditorEndLoad() override;
+        void OnCryEditorCloseScene() override;
         void OnCryEditorSceneClosed() override;
         ////////////////////////////////////////////////////////////////////////
 
@@ -246,6 +253,7 @@ namespace LandscapeCanvasEditor
         AZ::SerializeContext* m_serializeContext = nullptr;
 
         bool m_ignoreGraphUpdates = false;
+        bool m_prefabPropagationInProgress = false;
         bool m_inObjectPickMode = false;
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;

@@ -144,6 +144,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             FILES_CMAKE
                 awscore_editor_tests_files.cmake
                 ${pal_editor_include_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+                Tests/Editor/Platform/${PAL_PLATFORM_NAME}/awscore_editor_tests_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Include/Private

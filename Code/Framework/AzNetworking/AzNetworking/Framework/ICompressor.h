@@ -23,10 +23,10 @@ namespace AzNetworking
     //! Collection of compression related error codes
     enum class CompressorError
     {
-        Ok,                   ///< No error, operation finished successfully
-        InsufficientBuffer,   ///< Buffer size is insufficient for the operation to complete, increase the size and try again
-        CorruptData,          ///< Malformed or hacked packet, potentially security issue
-        Uninitialized         ///< Compressor or supplied buffers are uninitialized
+        Ok,                   //!< No error, operation finished successfully
+        InsufficientBuffer,   //!< Buffer size is insufficient for the operation to complete, increase the size and try again
+        CorruptData,          //!< Malformed or hacked packet, potentially security issue
+        Uninitialized         //!< Compressor or supplied buffers are uninitialized
     };
 
     //! Unique identifier of a given compressor
@@ -34,6 +34,12 @@ namespace AzNetworking
 
     //! @class ICompressor
     //! @brief Packet data compressor interface.
+    //!
+    //! ICompressor is an abstract compression interface meant for user provided GEMs to implement (such as the [Multiplayer
+    //! Compression Gem](http://docs.o3de.org/docs/user-guide/gems/reference/multiplayer-compression)).
+    //! Compression is supported for both TCP and UDP connections.  Instantiation of a compressor is controlled by the
+    //! `net_UdpCompressor` or `net_TcpCompressor` cvar for their respective protocols.  
+
     class ICompressor
     {
     public:
@@ -87,8 +93,16 @@ namespace AzNetworking
         ) = 0;
     };
 
-    //! Abstract factory to instantiate compressors.
-    //! Used by the network interface to create a compressor
+    //! @class ICompressorFactory
+    //! @brief Abstract factory to instantiate compressors.
+    //!
+    //! ICompressorFactory is an abstract compression interface meant for user provided GEMs to implement. ICompressorFactory
+    //! implementations can be registered to classes implementing INetworking. Registered factories can then be used to create
+    //! ICompressor implementations on demand. The [Multiplayer Compression
+    //! Gem](http://docs.o3de.org/docs/user-guide/gems/reference/multiplayer-compression) is an example of an ICompressorFactory
+    //! for an LZ4 Compressor. In it, MultiplayerCompressionSystemComponent registers its ICompressorFactory with
+    //! NetworkingSystemComponent, which is an implementation of INetworking. Registered factories are keyed by their AZ Name
+    //! which is accessed through the factory's GetFactoryName method.
     class ICompressorFactory
     {
     public:

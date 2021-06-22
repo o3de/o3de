@@ -326,6 +326,16 @@ namespace AzToolsFramework
             return *(m_nestedInstances[newInstanceAlias] = std::move(instance));
         }
 
+        void Instance::DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback)
+        {
+            for (auto&& [instanceAlias, instance] : m_nestedInstances)
+            {
+                instance->m_parent = nullptr;
+                callback(AZStd::move(instance));
+            }
+            m_nestedInstances.clear();
+        }
+
         AZStd::unique_ptr<Instance> Instance::DetachNestedInstance(const InstanceAlias& instanceAlias)
         {
             AZStd::unique_ptr<Instance> removedNestedInstance;

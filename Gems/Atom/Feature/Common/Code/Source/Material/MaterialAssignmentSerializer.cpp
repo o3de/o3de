@@ -173,7 +173,7 @@ namespace AZ
         {
             if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
             {
-                // Requiring explicit type info to differentiate be=tween colors versus vectors and numeric types
+                // Requiring explicit type info to differentiate between colors versus vectors and numeric types
                 const AZ::Uuid baseTypeId = azrtti_typeid<T>();
                 AZ::Uuid typeId = AZ::Uuid::CreateNull();
                 result.Combine(LoadTypeId(typeId, inputPropertyValue, context, &baseTypeId));
@@ -198,7 +198,7 @@ namespace AZ
             {
                 outputPropertyValue.SetObject();
 
-                // Storing explicit type info to differentiate be=tween colors versus vectors and numeric types
+                // Storing explicit type info to differentiate between colors versus vectors and numeric types
                 rapidjson::Value typeValue;
                 result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
                 outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
