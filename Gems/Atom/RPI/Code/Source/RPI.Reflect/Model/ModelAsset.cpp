@@ -334,12 +334,7 @@ namespace AZ
 
             // When dropping a well-defined character, consisting of a mesh and a skeleton/actor,
             // do not create an entity with a mesh component.
-            if (modelAssetCount == 1 && actorAssetCount == 1)
-            {
-                return true;
-            }
-
-            return false;
+            return modelAssetCount == 1 && actorAssetCount == 1;
         }
     } // namespace RPI
 } // namespace AZ

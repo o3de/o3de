@@ -57,7 +57,7 @@ namespace AzAssetBrowserRequestHandlerPrivate
     using namespace AzToolsFramework::AssetBrowser;
     // return true ONLY if we can handle the drop request in the viewport.
     bool CanSpawnEntityForProduct(const ProductAssetBrowserEntry* product,
-        AZStd::optional<const AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>*> optionalProductEntries = AZStd::nullopt)
+        AZStd::optional<const AZStd::vector<AZ::Data::AssetType>> optionalProductAssetTypes = AZStd::nullopt)
     {
         if (!product)
         {
@@ -84,18 +84,10 @@ namespace AzAssetBrowserRequestHandlerPrivate
             return false;
         }
 
-        if (optionalProductEntries.has_value())
+        if (optionalProductAssetTypes.has_value())
         {
-            const auto& products = optionalProductEntries.value();
-            AZStd::vector<AZ::Data::AssetType> productAssetTypes;
-            productAssetTypes.reserve(products->size());
-            for (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* entry : *products)
-            {
-                productAssetTypes.emplace_back(entry->GetAssetType());
-            }
-
             bool hasConflictingProducts = false;
-            AZ::AssetTypeInfoBus::EventResult(hasConflictingProducts, product->GetAssetType(), &AZ::AssetTypeInfo::HasConflictingProducts, productAssetTypes);
+            AZ::AssetTypeInfoBus::EventResult(hasConflictingProducts, product->GetAssetType(), &AZ::AssetTypeInfo::HasConflictingProducts, optionalProductAssetTypes.value());
             if (hasConflictingProducts)
             {
                 return false;
@@ -528,9 +520,16 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     }
 
     // Handle products
+    AZStd::vector<AZ::Data::AssetType> productAssetTypes;
+    productAssetTypes.reserve(products.size());
+    for (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* entry : products)
+    {
+        productAssetTypes.emplace_back(entry->GetAssetType());
+    }
+
     for (const ProductAssetBrowserEntry* product : products)
     {
-        if (CanSpawnEntityForProduct(product, &products))
+        if (CanSpawnEntityForProduct(product, productAssetTypes))
         {
             SpawnEntityAtPoint(product, viewportDragContext, spawnedEntities, spawnTicket);
         }
