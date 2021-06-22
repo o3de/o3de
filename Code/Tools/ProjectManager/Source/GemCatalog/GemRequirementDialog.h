@@ -14,13 +14,14 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
-#include <GemCatalog/GemModel.h>
 
 #include <QDialogButtonBox>
 #endif
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(GemModel)
+
     class GemRequirementDialog
         : public QDialog
     {
@@ -36,6 +37,5 @@ namespace O3DE::ProjectManager
         void ContinueButtonPressed();
 
         QDialogButtonBox::ButtonRole m_buttonResult = QDialogButtonBox::RejectRole;
-        GemModel* m_model;
     };
 } // namespace O3DE::ProjectManager

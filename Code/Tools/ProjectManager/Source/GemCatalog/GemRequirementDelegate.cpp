@@ -12,9 +12,8 @@
 
 #include <GemCatalog/GemRequirementDelegate.h>
 #include <GemCatalog/GemModel.h>
-#include <QEvent>
+
 #include <QPainter>
-#include <QMouseEvent>
 
 namespace O3DE::ProjectManager
 {

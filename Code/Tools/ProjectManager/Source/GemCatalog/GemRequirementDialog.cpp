@@ -25,7 +25,6 @@ namespace O3DE::ProjectManager
 {
     GemRequirementDialog::GemRequirementDialog(GemModel* model, const QVector<QModelIndex>& gemsToAdd, QWidget* parent)
         : QDialog(parent)
-        , m_model(model)
     {
         setWindowTitle(tr("Manual setup is required"));
         setModal(true);
@@ -56,7 +55,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addSpacing(20);
 
-        GemRequirementFilterProxyModel* proxModel = new GemRequirementFilterProxyModel(m_model, gemsToAdd, this);
+        GemRequirementFilterProxyModel* proxModel = new GemRequirementFilterProxyModel(model, gemsToAdd, this);
 
         GemRequirementListView* m_gemListView = new GemRequirementListView(proxModel, proxModel->GetSelectionModel(), this);
         vLayout->addWidget(m_gemListView);
@@ -68,8 +67,6 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* continueButton = dialogButtons->addButton(tr("Continue"), QDialogButtonBox::ApplyRole);
-
-        resize(640, 400);
 
         connect(cancelButton, &QPushButton::clicked, this, &GemRequirementDialog::CancelButtonPressed);
         connect(continueButton, &QPushButton::clicked, this, &GemRequirementDialog::ContinueButtonPressed);
