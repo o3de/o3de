@@ -10,7 +10,6 @@
 *
 */
 
-// include the required headers
 #include "MotionEventTable.h"
 #include "MotionEvent.h"
 #include "MotionEventTrack.h"
@@ -54,7 +53,6 @@ namespace EMotionFX
             track->SetMotion(motion);
         }
 
-        motion->SetEventTable(this);
         AutoCreateSyncTrack(motion);
     }
 
