@@ -37,7 +37,7 @@ BEGIN
             VALUE "FileDescription", "O3DE Editor"
             VALUE "FileVersion", "0.1.0.1"
             VALUE "InternalName", "Editor"
-            VALUE "LegalCopyright", "Portions of this file Copyright (c) Amazon.com, Inc. or its affiliates. All Rights Reserved. Original file Copyright (c) Crytek GMBH. Used under license by Amazon.com, Inc. and its affiliates."
+            VALUE "LegalCopyright", "Copyright (c) Contributors to the Open 3D Engine Project."
             VALUE "OriginalFilename", "Editor.exe"
             VALUE "ProductName", "O3DE Editor"
             VALUE "ProductVersion", "0.1.0.1"
