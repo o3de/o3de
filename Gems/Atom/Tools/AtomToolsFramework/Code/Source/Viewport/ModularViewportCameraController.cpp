@@ -32,7 +32,7 @@ namespace AtomToolsFramework
         nullptr,
         AZ::ConsoleFunctorFlags::Null,
         "");
-    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)

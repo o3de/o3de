@@ -14,9 +14,15 @@
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h>
 
 namespace SandboxEditor
 {
+    static AZ::Quaternion CameraRotation(const float pitch, const float yaw)
+    {
+        return AZ::Quaternion::CreateRotationZ(yaw) * AZ::Quaternion::CreateRotationX(pitch);
+    }
+
     void SetDefaultViewportCameraPosition(const AZ::Vector3& position)
     {
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
@@ -33,10 +39,20 @@ namespace SandboxEditor
         auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (auto viewportContext = viewportContextManager->GetDefaultViewportContext())
         {
-            const auto rotation = AZ::Quaternion::CreateRotationZ(yaw) * AZ::Quaternion::CreateRotationX(pitch);
             const auto& currentCameraTransform = viewportContext->GetCameraTransform();
             viewportContext->SetCameraTransform(
-                AZ::Transform::CreateFromQuaternionAndTranslation(rotation, currentCameraTransform.GetTranslation()));
+                AZ::Transform::CreateFromQuaternionAndTranslation(CameraRotation(pitch, yaw), currentCameraTransform.GetTranslation()));
+        }
+    }
+
+    void InterpolateDefaultViewportCameraToTransform(const AZ::Vector3& position, const float pitch, const float yaw)
+    {
+        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+        if (auto viewportContext = viewportContextManager->GetDefaultViewportContext())
+        {
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                viewportContext->GetId(), &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+                AZ::Transform::CreateFromQuaternionAndTranslation(CameraRotation(pitch, yaw), position), 0.0f);
         }
     }
 
