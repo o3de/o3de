@@ -32,15 +32,17 @@ namespace AzToolsFramework
         public:
             AZ_CLASS_ALLOCATOR(AssetBrowserTableModel, AZ::SystemAllocator, 0);
             explicit AssetBrowserTableModel(QObject* parent = nullptr);
+
+            void UpdateTableModelMaps();
+
             ////////////////////////////////////////////////////////////////////
             // QSortFilterProxyModel
             void setSourceModel(QAbstractItemModel* sourceModel) override;
             QModelIndex mapToSource(const QModelIndex& proxyIndex) const override;
             QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
             QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-        public Q_SLOTS:
-            void UpdateTableModelMaps();
+            QModelIndex parent(const QModelIndex& child) const override;
+            QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
 
         protected:
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;

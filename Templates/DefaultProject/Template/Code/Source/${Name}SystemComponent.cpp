@@ -49,14 +49,12 @@ namespace ${SanitizedCppName}
         incompatible.push_back(AZ_CRC("${SanitizedCppName}Service"));
     }
 
-    void ${SanitizedCppName}SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void ${SanitizedCppName}SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        AZ_UNUSED(required);
     }
 
-    void ${SanitizedCppName}SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void ${SanitizedCppName}SystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        AZ_UNUSED(dependent);
     }
     
     ${SanitizedCppName}SystemComponent::${SanitizedCppName}SystemComponent()

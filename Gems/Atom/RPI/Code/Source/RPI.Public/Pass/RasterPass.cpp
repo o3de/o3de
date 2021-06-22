@@ -64,11 +64,10 @@ namespace AZ
 
             if (shaderAsset)
             {
-                auto supervariantIndex = DefaultSupervariantIndex;
-                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass, supervariantIndex);
+                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
                 if (srgLayout)
                 {
-                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, supervariantIndex, srgLayout->GetName());
+                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
                     AZ_Assert(
                         m_shaderResourceGroup, "[RasterPass '%s']: Failed to create SRG from shader asset '%s'", GetPathName().GetCStr(),

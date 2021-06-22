@@ -90,8 +90,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setSourceModel(m_filterModel.data());
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
         connect(
-            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, m_tableModel.data(),
-            &AzAssetBrowser::AssetBrowserTableModel::UpdateTableModelMaps);
+            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
+            [this]()
+            {
+                if (!m_ui->m_searchWidget->GetFilterString().isEmpty())
+                {
+                    m_tableModel->UpdateTableModelMaps();
+                }
+            });
         connect(
             m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
             &AzAssetBrowserWindow::SelectionChangedSlot);
@@ -107,8 +113,21 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
         m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
 
-        connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
-        connect(m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this, &AzAssetBrowserWindow::LockToDefaultView);
+        connect(
+            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
+            [this]()
+            {
+                const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
+                m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
+                m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
+            });
+        connect(
+            m_ui->m_viewSwitcherCheckBox, &QCheckBox::stateChanged, this,
+            [this](bool visible)
+            {
+                m_ui->m_assetBrowserTableViewWidget->setVisible(visible);
+                m_ui->m_assetBrowserTreeViewWidget->setVisible(!visible);
+            });
     }
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
@@ -269,27 +288,6 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
         {
             AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
         }
-    }
-}
-
-void AzAssetBrowserWindow::SwitchDisplayView(bool state)
-{
-    m_ui->m_assetBrowserTableViewWidget->setVisible(state);
-    m_ui->m_assetBrowserTreeViewWidget->setVisible(!state);
-}
-
-void AzAssetBrowserWindow::LockToDefaultView(bool state)
-{
-    using AzToolsFramework::AssetBrowser::AssetBrowserFilterModel;
-    SwitchDisplayView(!state);
-    if (state == true)
-    {
-        disconnect(
-            m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
-    }
-    else
-    {
-        connect(m_filterModel.data(), &AssetBrowserFilterModel::stringFilterPopulated, this, &AzAssetBrowserWindow::SwitchDisplayView);
     }
 }
 

@@ -74,7 +74,9 @@ function Process(context)
         shadowMapWithPS:SetEnabled(opacityMode == OpacityMode_Cutout)
         forwardPass:SetEnabled(opacityMode == OpacityMode_Cutout)
 
-        TrySetShaderEnabled(lowEndForwardEDS, (opacityMode == OpacityMode_Opaque) or (opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
+        -- Only enable lowEndForwardEDS in Opaque mode, Transparent mode will be handled by forwardPassEDS. The transparent pass uses the "transparent" draw tag
+        -- for both standard and low end pipelines, so this keeps both shaders from rendering to the transparent draw list.
+        TrySetShaderEnabled(lowEndForwardEDS, opacityMode == OpacityMode_Opaque)
         TrySetShaderEnabled(lowEndForward, opacityMode == OpacityMode_Cutout)
     end
     

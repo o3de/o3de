@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "DistanceBetweenFilterComponent.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>

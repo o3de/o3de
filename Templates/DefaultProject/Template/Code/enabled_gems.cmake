@@ -12,17 +12,22 @@
 set(ENABLED_GEMS
     ${Name}
     Atom_AtomBridge
-    Camera
+    AudioSystem
+    AWSCore
     CameraFramework
+    DebugDraw
     EditorPythonBindings
     EMotionFX
-    GradientSignal
+    GameState
     ImGui
-    LmbrCentral
+    LandscapeCanvas
     LyShine
-    Maestro
-    NvCloth
-    SceneProcessing
+    Multiplayer
+    PhysX
+    SaveData
+    ScriptCanvasPhysics
+    ScriptEvents
+    StartingPointInput
     TextureAtlas
     WhiteBox
 )

@@ -22,6 +22,8 @@ o3de_current_file_path(current_path)
 
 # Make sure we are matching LY_ENGINE_NAME_TO_USE with the current engine
 file(READ ${current_path}/../engine.json engine_json)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${current_path}/../engine.json)
+
 string(JSON this_engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
 if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine_name' from '${current_path}/../engine.json', error: ${json_error}")

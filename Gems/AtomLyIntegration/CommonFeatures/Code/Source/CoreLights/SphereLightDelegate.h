@@ -41,6 +41,7 @@ namespace AZ
             void SetPredictionSampleCount(uint32_t count) override;
             void SetFilteringSampleCount(uint32_t count) override;
             void SetPcfMethod(PcfMethod method) override;
+            void SetEsmExponent(float esmExponent) override;
 
         private:
 

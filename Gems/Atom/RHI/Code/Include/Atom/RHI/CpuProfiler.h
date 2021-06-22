@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
@@ -87,6 +88,8 @@ namespace AZ
 
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;
+
+            virtual bool IsProfilerEnabled() const = 0 ;
         };
 
     } // namespace RPI

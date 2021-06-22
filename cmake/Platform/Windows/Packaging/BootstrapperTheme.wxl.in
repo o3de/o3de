@@ -4,18 +4,16 @@
     xmlns="http://schemas.microsoft.com/wix/2006/localization">
 
     <!-- common -->
-    <String Id="WindowTitle">[WixBundleName] Setup</String>
-    <String Id="Title">[WixBundleName]</String>
+    <String Id="WindowTitle">[WixBundleName] Release [WixBundleVersion] Setup</String>
     <String Id="InstallVersion">Version [WixBundleVersion]</String>
     <String Id="ConfirmCancelMessage">Are you sure you want to cancel?</String>
 
     <!-- welcome page -->
-    <String Id="InstallHeader">Welcome</String>
+    <String Id="InstallHeader">Welcome to @CPACK_PACKAGE_FULL_NAME@!</String>
     <String Id="InstallMessage">
 Setup will install [WixBundleName] on your computer. Click install to continue, options to set the install directory or Close to exit.
     </String>
-    <String Id="InstallLicenseLinkText">[WixBundleName] &lt;a href="#"&gt;license terms&lt;/a&gt;.</String>
-    <String Id="InstallAcceptCheckbox">I &amp;agree to the license terms and conditions</String>
+    <String Id="InstallEulaAcceptance">By installing, you agree to the @WIX_THEME_EULA_ACCEPTANCE_TEXT@</String>
     <String Id="InstallOptionsButton">&amp;Options</String>
     <String Id="InstallInstallButton">&amp;Install</String>
     <String Id="InstallCloseButton">&amp;Close</String>
@@ -34,7 +32,7 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
     <String Id="ModifyCloseButton">&amp;Close</String>
 
     <!-- action progress page -->
-    <String Id="ProgressHeader">Setup Progress</String>
+    <String Id="ProgressHeader">Installing @CPACK_PACKAGE_FULL_NAME@...</String>
     <String Id="ProgressLabel">Processing:</String>
     <String Id="OverallProgressPackageText">Initializing...</String>
     <String Id="ProgressCancelButton">&amp;Cancel</String>
@@ -53,7 +51,9 @@ Setup will install [WixBundleName] on your computer. Click install to continue, 
     <String Id="FailureUninstallHeader">Uninstall Failed</String>
     <String Id="FailureRepairHeader">Repair Failed</String>
     <String Id="FailureHyperlinkLogText">
-One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href="#"&gt;log file&lt;/a&gt;.
+One or more issues caused the setup to fail.  Please fix the issues and then retry setup.  For more information, see the log file.
+
+&lt;a href="#"&gt;View Log File&lt;/a&gt;
     </String>
     <String Id="FailureCloseButton">&amp;Close</String>
 

@@ -37,4 +37,16 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
             AutomatedTesting.Assets
             Editor
     )
+    ly_add_pytest(
+        NAME AutomatedTesting::AtomRenderer_HydraTests_GPUTests
+        TEST_SUITE main
+        TEST_REQUIRES gpu
+        TEST_SERIAL
+        TIMEOUT 400
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_GPUTests.py
+        RUNTIME_DEPENDENCIES
+            AssetProcessor
+            AutomatedTesting.Assets
+            Editor
+    )
 endif()

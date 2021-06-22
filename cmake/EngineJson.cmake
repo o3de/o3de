@@ -22,7 +22,7 @@ set(LY_EXTERNAL_SUBDIRS "" CACHE STRING "List of subdirectories to recurse into 
 # Restricted folders(contains an additional restricted.json), etc...
 # \arg:output_external_subdirs name of output variable to store external subdirectories into
 function(read_engine_external_subdirs output_external_subdirs)
-    file(READ ${LY_ROOT_FOLDER}/engine.json engine_json_data)
+    ly_file_read(${LY_ROOT_FOLDER}/engine.json engine_json_data)
     string(JSON external_subdirs_count ERROR_VARIABLE engine_json_error
         LENGTH ${engine_json_data} "external_subdirectories")
     if(engine_json_error)
