@@ -731,12 +731,10 @@ namespace AzFramework
     bool Application::IsPrefabSystemEnabled() const
     {
         bool value = true;
-        /*
         if (auto* registry = AZ::SettingsRegistry::Get())
         {
             registry->Get(value, ApplicationInternal::s_prefabSystemKey);
         }
-        */
         return value;
     }
 
