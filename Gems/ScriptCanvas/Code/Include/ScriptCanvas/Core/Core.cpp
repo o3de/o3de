@@ -40,11 +40,6 @@ namespace ScriptCanvas
 
     ScopedAuxiliaryEntityHandler::~ScopedAuxiliaryEntityHandler()
     {
-        if (m_buildEntity->GetState() == AZ::Entity::State::Init)
-        {
-            m_buildEntity->Activate();
-        }
-
         if (!m_wasAdded)
         {
             if (AZ::Interface<AZ::ComponentApplicationRequests>::Get() != nullptr)

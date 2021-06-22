@@ -76,6 +76,8 @@ namespace ScriptCanvasBuilder
             return AZ::Failure(AZStd::string("build entity did not have source graph components"));
         }
 
+        request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
+        request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
         request.name = fileNameOnly.empty() ? fileNameOnly : "BuilderGraph";
         request.addDebugInformation = false;
 
