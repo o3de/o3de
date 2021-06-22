@@ -50,7 +50,8 @@ namespace AZ
         {
             ImGui::OtherActiveImGuiRequestBus::Handler::BusConnect();
 
-            auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+            auto atomViewportRequests = AZ::RPI::ViewportContextRequests::Get();
+            AZ_Assert(atomViewportRequests, "AtomViewportContextRequests interface not found!");
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
             AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
 
@@ -105,7 +106,7 @@ namespace AZ
                 // Let our ImguiAtomSystemComponent know once we successfully connect and update the viewport size.
                 if (!m_initialized)
                 {
-                    auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+                    auto atomViewportRequests = AZ::RPI::ViewportContextRequests::Get();
                     auto defaultViewportContext = atomViewportRequests->GetDefaultViewportContext();
                     OnViewportDpiScalingChanged(defaultViewportContext->GetDpiScalingFactor());
                     m_initialized = true;

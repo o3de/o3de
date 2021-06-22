@@ -65,15 +65,15 @@ namespace AZ
             ConstViewPtr GetDefaultView() const;
 
             //! Gets the current size of the viewport.
-            //! This value is cached and updated on-demand, so may be performantly queried.
+            //! This value is cached and updated on-demand, so may be efficiently queried.
             AzFramework::WindowSize GetViewportSize() const;
 
             //! Gets the screen DPI scaling factor.
-            //! This value is cached and updated on-demand, so may be performantly queried.
+            //! This value is cached and updated on-demand, so may be efficiently queried.
             //! \see AzFramework::WindowRequests::GetDpiScaleFactor
             float GetDpiScalingFactor() const;
 
-            // SceneNotificationBus interface
+            // SceneNotificationBus interface overrides...
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
             //! Ensures our default view remains set when our scene's render pipelines are modified.
@@ -81,7 +81,7 @@ namespace AZ
             //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
             void OnBeginPrepareRender() override;
 
-            //WindowNotificationBus interface
+            // WindowNotificationBus interface overrides...
             //! Used to fire a notification when our window resizes.
             void OnWindowResized(uint32_t width, uint32_t height) override;
             //! Used to fire a notification when our window DPI changes.
@@ -119,7 +119,7 @@ namespace AZ
             //! Notifies consumers when this ViewportContext is about to be destroyed.
             void ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler);
 
-            // ViewportRequestBus interface
+            // ViewportRequestBus interface overrides...
             //! Gets the current camera's view matrix.
             const AZ::Matrix4x4& GetCameraViewMatrix() const override;
             //! Sets the current camera's view matrix.

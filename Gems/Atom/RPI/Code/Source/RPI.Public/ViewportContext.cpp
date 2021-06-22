@@ -10,7 +10,6 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/View.h>
-#include "..\..\Include\Atom\RPI.Public\ViewportContext.h"
 
 namespace AZ
 {

@@ -69,7 +69,7 @@ namespace AzFramework
         //! Toggle the full screen state of the window.
         virtual void ToggleFullScreenState() = 0;
 
-        //! Returns a scalar multiplier representing how dots-per-inch this window has, compared
+        //! Returns a scalar multiplier representing how many dots-per-inch this window has, compared
         //! to a "standard" value of 96, the default for Windows in a DPI unaware setting. This can
         //! be used to scale user interface elements to ensure legibility on high density displays.
         virtual float GetDpiScaleFactor() const = 0;

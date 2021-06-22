@@ -55,7 +55,7 @@ namespace AZ
                 auto onSizeChanged = [this, viewportId](AzFramework::WindowSize size)
                 {
                     // Ensure we emit OnViewportSizeChanged with the correct name.
-                    auto viewportContext = this->GetViewportContextById(viewportId);
+                    auto viewportContext = GetViewportContextById(viewportId);
                     if (viewportContext)
                     {
                         ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportSizeChanged, size);
@@ -65,7 +65,7 @@ namespace AZ
                 auto onDpiScalingChanged = [this, viewportId](float dpiScalingFactor)
                 {
                     // Ensure we emit OnViewportDpiScalingChanged with the correct name.
-                    auto viewportContext = this->GetViewportContextById(viewportId);
+                    auto viewportContext = GetViewportContextById(viewportId);
                     if (viewportContext)
                     {
                         ViewportContextNotificationBus::Event(viewportContext->GetName(), &ViewportContextNotificationBus::Events::OnViewportDpiScalingChanged, dpiScalingFactor);

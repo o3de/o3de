@@ -65,8 +65,7 @@ namespace AzFramework
     NativeWindowImpl_Win32::NativeWindowImpl_Win32()
     {
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
-        auto user32module = LoadLibraryA("user32.dll");
-        if (user32module)
+        if (auto user32module = LoadLibraryA("user32.dll"))
         {
             m_getDpiFunction = reinterpret_cast<GetDpiForWindowType*>(GetProcAddress(user32module, "GetDpiForWindow"));
         }
@@ -255,6 +254,7 @@ namespace AzFramework
         {
             const float newScaleFactor = nativeWindowImpl->GetDpiScaleFactor();
             WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnDpiScaleFactorChanged, newScaleFactor);
+            break;
         }
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
