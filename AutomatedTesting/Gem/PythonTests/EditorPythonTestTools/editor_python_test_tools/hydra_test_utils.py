@@ -49,21 +49,12 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     :param cfg_args: Additional arguments for CFG, such as LevelName.
     :param timeout: Length of time for test to run. Default is 60.
     """
-    extra_cmdline_args = []
-    tiaf_coverage_dir = os.getenv('tiaf_coverage_dir')
-    if tiaf_coverage_dir != '':
-            cfg_args.append(f"tiaf_coverage_dir {tiaf_coverage_dir}")
-
     test_case = os.path.join(test_directory, editor_script)
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
-    pycmd = ["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
+    editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
                         "--regset=/Amazon/Preferences/EnablePrefabSystem=false", run_python, test_case,
-                        "--runpythonargs", " ".join(cfg_args)]
-    f = open("e:/editorcmd_2.txt", "w")
-    f.write(str(pycmd))
-    f.close()
-    editor.args.extend(pycmd)
+                        "--runpythonargs", " ".join(cfg_args)])
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])
     if null_renderer:

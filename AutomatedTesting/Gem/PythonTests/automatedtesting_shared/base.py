@@ -36,7 +36,6 @@ class TestAutomationBase:
         
     test_times = {}
     asset_processor = None 
-    tiaf_coverage_dir = os.getenv('tiaf_coverage_dir')
         
     def setup_class(cls):
         cls.test_times = {}
@@ -58,10 +57,6 @@ class TestAutomationBase:
 
 
     def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[]):
-        if self.tiaf_coverage_dir != '':
-            extra_cmdline_args.append("--runpythonargs")
-            extra_cmdline_args.append(f"tiaf_coverage_dir {self.tiaf_coverage_dir}")
-
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -99,10 +94,7 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, "-autotest_mode", "-rhi=null"] + extra_cmdline_args
-        #f = open("e:/editorcmd.txt", "w")
-        #f.write(str(pycmd))
-        #f.close()
+        pycmd = ["--runpythontest", testcase_module_filepath, "-BatchMode", "-autotest_mode", "-rhi=null", f"-pythontestcase={request.node.originalname}"] + extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command
         editor.start(backupFiles = False, launch_ap = False)
         try:
