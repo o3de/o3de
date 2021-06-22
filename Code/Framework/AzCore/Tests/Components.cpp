@@ -1555,7 +1555,9 @@ namespace UnitTest
         }
     }
 
-    TEST_F(Components, EntityIdGeneration)
+    // Temporary disabled. This will be re-enabled in the short term upon completion of SPEC-7384 and
+    // fixed in the long term upon completion of SPEC-4849
+    TEST_F(Components, DISABLED_EntityIdGeneration)
     {
         // Generate 1 million ids across 100 threads, and ensure that none collide
         AZStd::concurrent_unordered_set<AZ::EntityId> entityIds;

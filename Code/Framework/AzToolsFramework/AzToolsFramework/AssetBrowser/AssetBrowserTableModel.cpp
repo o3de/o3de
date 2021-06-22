@@ -69,6 +69,17 @@ namespace AzToolsFramework
             return sourceIndex.data(role);
         }
 
+        QModelIndex AssetBrowserTableModel::parent([[maybe_unused]] const QModelIndex& child) const
+        {
+            return QModelIndex();
+        }
+
+        QModelIndex AssetBrowserTableModel::sibling(
+            [[maybe_unused]] int row, [[maybe_unused]] int column, [[maybe_unused]] const QModelIndex& idx) const
+        {
+            return QModelIndex();
+        }
+
         QModelIndex AssetBrowserTableModel::index(int row, int column, const QModelIndex& parent) const
         {
             return parent.isValid() ? QModelIndex() : createIndex(row, column, m_indexMap[row].internalPointer());

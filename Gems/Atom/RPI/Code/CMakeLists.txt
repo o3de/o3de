@@ -66,6 +66,8 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Public
             Gem::Atom_RHI.Reflect
+    RUNTIME_DEPENDENCIES
+        Gem::Atom_RHI.Private
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -129,6 +131,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Editor.Static
                 Gem::Atom_RPI.Edit
                 Gem::Atom_RPI.Public
+        RUNTIME_DEPENDENCIES
+            Gem::Atom_RHI.Private
     )
 endif()
 

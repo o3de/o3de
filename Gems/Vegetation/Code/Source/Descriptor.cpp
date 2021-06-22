@@ -10,8 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
-
 #include <Vegetation/Descriptor.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <AzCore/Asset/AssetManager.h>

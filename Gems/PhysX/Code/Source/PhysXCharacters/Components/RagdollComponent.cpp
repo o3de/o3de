@@ -379,7 +379,7 @@ namespace PhysX
 
             for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
             {
-                if (const AZStd::shared_ptr<Physics::Joint>& joint = ragdoll->GetNode(nodeIndex)->GetJoint())
+                if (const AzPhysics::Joint* joint = ragdoll->GetNode(nodeIndex)->GetJoint())
                 {
                     if (auto* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
                     {
@@ -407,6 +407,7 @@ namespace PhysX
             AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Event(
                 GetEntityId(), &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);
+            AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {

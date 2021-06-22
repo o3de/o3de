@@ -757,14 +757,21 @@ namespace AZ
         {
             using namespace AZ::JsonSerializationResult;
 
+            // Need special handling if the original type is `any', because `CreateAny' creates an empty `any' in that case,
+            // because it's not possible to store an any inside an any
+            const bool originalTypeIsAny = originalType == azrtti_typeid<AZStd::any>();
+
             AZStd::any convertedDeserialized = settings.m_serializeContext->CreateAny(originalType);
-            if (convertedDeserialized.empty())
+            if (!originalTypeIsAny && convertedDeserialized.empty())
             {
                 AZ_Printf("Convert", "  Failed to deserialized from converted document.\n");
                 return false;
             }
 
-            ResultCode loadResult = JsonSerialization::Load(AZStd::any_cast<void>(&convertedDeserialized), originalType, convertedData, settings);
+            // Get a storage suitable to hold this data.
+            void* objectPtr = originalTypeIsAny ? &convertedDeserialized : AZStd::any_cast<void>(&convertedDeserialized);
+
+            ResultCode loadResult = JsonSerialization::Load(objectPtr, originalType, convertedData, settings);
             if (loadResult.GetProcessing() == Processing::Halted)
             {
                 AZ_Printf("Convert", "  Failed to verify converted document because it couldn't be loaded.\n");
@@ -782,7 +789,7 @@ namespace AZ
             bool result = false;
             if (data->m_serializer)
             {
-                result = data->m_serializer->CompareValueData(original, AZStd::any_cast<void>(&convertedDeserialized));
+                result = data->m_serializer->CompareValueData(original, objectPtr);
             }
             else
             {
@@ -793,7 +800,7 @@ namespace AZ
                 AZStd::vector<AZ::u8> loadedData;
                 AZ::IO::ByteContainerStream<decltype(loadedData)> loadedStream(&loadedData);
                 AZ::Utils::SaveObjectToStream(loadedStream, AZ::ObjectStream::ST_BINARY,
-                    AZStd::any_cast<void>(&convertedDeserialized), convertedDeserialized.type());
+                    objectPtr, originalType);
                 
                 result = 
                     (originalData.size() == loadedData.size()) &&

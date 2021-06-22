@@ -52,7 +52,6 @@ namespace AzToolsFramework
             void OnAssetBrowserComponentReady() override;
 
         Q_SIGNALS:
-            void stringFilterPopulated(bool);
             void filterChanged();
             //////////////////////////////////////////////////////////////////////////
             //QSortFilterProxyModel

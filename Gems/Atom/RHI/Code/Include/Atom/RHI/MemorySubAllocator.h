@@ -11,6 +11,7 @@
 */
 #pragma once
 
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FreeListAllocator.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <Atom/RHI/MemoryAllocation.h>
@@ -160,6 +161,7 @@ namespace AZ
         template <class Traits>
         void MemorySubAllocator<Traits>::GarbageCollect()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "MemorySubAllocator: GarbageCollect");
             for (PageContext& pageContext : m_pageContexts)
             {
                 pageContext.m_allocator.GarbageCollect();

@@ -475,6 +475,11 @@ namespace
                 continue;
             }
 
+            if (auto excludeFromPointer = AZ::FindAttribute(AZ::ScriptCanvasAttributes::Internal::ImplementedAsNodeGeneric, behaviorClass->m_attributes))
+            {
+                continue;
+            }
+
             if (auto excludeFromPointer = AZ::FindAttribute(AZ::Script::Attributes::ExcludeFrom, behaviorClass->m_attributes))
             {
                 AZ::Script::Attributes::ExcludeFlags excludeFlags{};
