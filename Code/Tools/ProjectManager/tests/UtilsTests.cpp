@@ -69,12 +69,16 @@ namespace O3DE::ProjectManager
             AZStd::unique_ptr<ProjectManager::Application> m_application;
         };
 
+#if AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
+        TEST_F(ProjectManagerUtilsTests, DISABLED_MoveProject_Succeeds)
+#else
         TEST_F(ProjectManagerUtilsTests, MoveProject_Succeeds)
+#endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
             EXPECT_TRUE(MoveProject(
                 QDir::currentPath() + QDir::separator() + "ProjectA",
                 QDir::currentPath() + QDir::separator() + "ProjectB",
-                m_application->GetMainWindow().get(), true));
+                nullptr, true));
 
             QFileInfo origFile("ProjectA/origFile.txt");
             EXPECT_TRUE(!origFile.exists());
@@ -89,22 +93,13 @@ namespace O3DE::ProjectManager
             EXPECT_TRUE(replaceFileMoved.exists() && replaceFileMoved.isFile());
         }
 
+#if AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
+        TEST_F(ProjectManagerUtilsTests, DISABLED_ReplaceFile_Succeeds)
+#else
         TEST_F(ProjectManagerUtilsTests, ReplaceFile_Succeeds)
+#endif // !AZ_TRAIT_DISABLE_FAILED_PROJECT_MANAGER_TESTS
         {
-            // Skip messagebox
-            QTimer::singleShot(0, [=]()
-                {
-                    int keyToPress = Qt::Key_Enter;
-
-                    QWidget* widget = QApplication::activeModalWidget();
-                    if (widget)
-                    {
-                        QKeyEvent* event = new QKeyEvent(QEvent::KeyPress, keyToPress, Qt::NoModifier);
-                        QCoreApplication::postEvent(widget, event);
-                    }
-                });
-
-            EXPECT_TRUE(ReplaceFile("ProjectA/origFile.txt", "ProjectA/replaceFile.txt", m_application->GetMainWindow().get()));
+            EXPECT_TRUE(ReplaceFile("ProjectA/origFile.txt", "ProjectA/replaceFile.txt", nullptr, false));
 
             QFile origFile("ProjectA/origFile.txt");
             if (origFile.open(QIODevice::ReadOnly))

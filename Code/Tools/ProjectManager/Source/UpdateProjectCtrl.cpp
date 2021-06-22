@@ -188,70 +188,67 @@ namespace O3DE::ProjectManager
 
     bool UpdateProjectCtrl::UpdateProjectSettings(bool shouldConfirm)
     {
-        if (m_updateSettingsScreen)
+        AZ_Assert(m_updateSettingsScreen, "Update settings screen is nullptr.")
+
+        ProjectInfo newProjectSettings = m_updateSettingsScreen->GetProjectInfo();
+
+        if (m_projectInfo != newProjectSettings)
         {
-            ProjectInfo newProjectSettings = m_updateSettingsScreen->GetProjectInfo();
-
-            if (m_projectInfo != newProjectSettings)
+            if (shouldConfirm)
             {
-                if (shouldConfirm)
+                QMessageBox::StandardButton warningResult = QMessageBox::warning(
+                    this,
+                    QObject::tr("Unsaved Changes!"),
+                    QObject::tr("Would you like to save your changes to project settings?"),
+                    QMessageBox::No | QMessageBox::Yes
+                );
+
+                if (warningResult == QMessageBox::No)
                 {
-                    QMessageBox::StandardButton warningResult = QMessageBox::warning(
-                        this,
-                        QObject::tr("Unsaved Changes!"),
-                        QObject::tr("Would you like to save your changes to project settings?"),
-                        QMessageBox::No | QMessageBox::Yes
-                    );
-
-                    if (warningResult == QMessageBox::No)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-
-                if (!m_updateSettingsScreen->Validate())
-                {
-                    QMessageBox::critical(this, tr("Invalid project settings"), tr("Invalid project settings"));
-                    return false;
-                }
-
-                // Update project if settings changed
-                {
-                    auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
-                    if (!result.IsSuccess())
-                    {
-                        QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
-                        return false;
-                    }
-                }
-
-                // Check if project path has changed and move it
-                if (newProjectSettings.m_path != m_projectInfo.m_path)
-                {
-                    if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
-                    {
-                        QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
-                        return false;
-                    }
-                }
-
-                if (!newProjectSettings.m_imagePath.isEmpty())
-                {
-                    if (!ProjectUtils::ReplaceFile(
-                            QDir(newProjectSettings.m_path).filePath(ProjectPreviewImagePath), newProjectSettings.m_imagePath))
-                    {
-                        QMessageBox::critical(this, tr("File replace failed"), tr("Failed to replace project preview image."));
-                        return false;
-                    }
-                }
-
-                m_projectInfo = newProjectSettings;
             }
 
-            return true;
+            if (!m_updateSettingsScreen->Validate())
+            {
+                QMessageBox::critical(this, tr("Invalid project settings"), tr("Invalid project settings"));
+                return false;
+            }
+
+            // Update project if settings changed
+            {
+                auto result = PythonBindingsInterface::Get()->UpdateProject(newProjectSettings);
+                if (!result.IsSuccess())
+                {
+                    QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
+                    return false;
+                }
+            }
+
+            // Check if project path has changed and move it
+            if (newProjectSettings.m_path != m_projectInfo.m_path)
+            {
+                if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
+                {
+                    QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
+                    return false;
+                }
+            }
+
+            if (!newProjectSettings.m_imagePath.isEmpty())
+            {
+                if (!ProjectUtils::ReplaceFile(
+                        QDir(newProjectSettings.m_path).filePath(ProjectPreviewImagePath), newProjectSettings.m_imagePath))
+                {
+                    QMessageBox::critical(this, tr("File replace failed"), tr("Failed to replace project preview image."));
+                    return false;
+                }
+            }
+
+            m_projectInfo = newProjectSettings;
         }
 
-        return false;
+        return true;
     }
 
 } // namespace O3DE::ProjectManager

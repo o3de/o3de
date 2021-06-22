@@ -184,7 +184,6 @@ namespace O3DE::ProjectManager
             {
                 return false;
             }
-            QDir workingDirectory(QDir::currentPath());
             if (!newDirectory.rename(origPath, newPath))
             {
                 // Likely failed because trying to move to another partition, try copying
@@ -204,20 +203,23 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent)
+        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
         {
             QFileInfo original(origFile);
             if (original.exists())
             {
-                QMessageBox::StandardButton warningResult = QMessageBox::warning(
-                    parent,
-                    QObject::tr("Overwrite File?"),
-                    QObject::tr("Replacing this will overwrite the current file on disk. Are you sure?"),
-                    QMessageBox::No | QMessageBox::Yes);
-
-                if (warningResult == QMessageBox::No)
+                if (interactive)
                 {
-                    return false;
+                    QMessageBox::StandardButton warningResult = QMessageBox::warning(
+                        parent,
+                        QObject::tr("Overwrite File?"),
+                        QObject::tr("Replacing this will overwrite the current file on disk. Are you sure?"),
+                        QMessageBox::No | QMessageBox::Yes);
+
+                    if (warningResult == QMessageBox::No)
+                    {
+                        return false;
+                    }
                 }
             }
 

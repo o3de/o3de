@@ -182,10 +182,4 @@ namespace O3DE::ProjectManager
         // Run the application
         return qApp->exec();
     }
-
-    QSharedPointer<QMainWindow> Application::GetMainWindow()
-    {
-        return QSharedPointer(m_mainWindow);
-    }
-
 }

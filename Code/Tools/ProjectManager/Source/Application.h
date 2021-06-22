@@ -37,7 +37,6 @@ namespace O3DE::ProjectManager
         bool Init(bool interactive = true);
         bool Run();
         void TearDown();
-        QSharedPointer<QMainWindow> GetMainWindow();
 
     private:
         bool InitLog(const char* logName);

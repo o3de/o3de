@@ -38,7 +38,8 @@ namespace O3DE::ProjectManager
         previewExtrasLayout->setAlignment(Qt::AlignLeft);
         previewExtrasLayout->setContentsMargins(50, 0, 0, 0);
 
-        QLabel* projectPreviewLabel = new QLabel(tr("Select an image (PNG). Minimum 209 x 277 pixels."));
+        QLabel* projectPreviewLabel = new QLabel(tr("Select an image (PNG). Minimum %1 x %2 pixels.")
+                           .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
         previewExtrasLayout->addWidget(projectPreviewLabel);
 
         m_projectPreviewImage = new QLabel(this);
@@ -88,6 +89,8 @@ namespace O3DE::ProjectManager
         if (!m_userChangedPreview)
         {
             m_projectPreview->lineEdit()->setText(QDir(m_projectPath->lineEdit()->text()).filePath(ProjectPreviewImagePath));
+            // Setting the text sets m_userChangedPreview to true
+            // Set it back to false because it should only be true when changed by user
             m_userChangedPreview = false;
         }
     }
