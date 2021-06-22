@@ -11,6 +11,7 @@ Editor/EditorLayout.xml
 **/*egg-link
 UserSettings.xml
 [Uu]ser/
+[Uu]ser_test*/
 FrameCapture/**
 .DS_Store
 user*.cfg

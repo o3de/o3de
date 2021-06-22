@@ -156,6 +156,7 @@ class Report:
     def start_test(test_function):
         Report._results = []
         Report._exception = None
+        general.test_output(f"Starting test {test_function.__name__}...\n")
         try:
             test_function()
         except Exception as ex:
@@ -166,7 +167,7 @@ class Report:
     def report_results(test_function):
         success = True
         report_dict = {'name' : test_function.__name__, 'success' : True, 'exception' : None}
-        report = f"Report for {test_function.__name__}:\n"
+        report = f"Test {test_function.__name__} finished.\nReport:\n"
         for result in Report._results:
             passed, info = result
             success = success and passed
@@ -185,9 +186,9 @@ class Report:
         report_dict['success'] = success
         report_dict['output'] = report
         report_dict_str = json.dumps(report_dict)
-        report += f"\nJSON_START({report_dict_str})JSON_END"
+        report += f"\nJSON_START({report_dict_str})JSON_END\n"
         print(report)
-        general.report_test_result(success, report)
+        general.test_output(report)
         assert success, f"Test {test_function.__name__} failed"
 
     @staticmethod

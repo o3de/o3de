@@ -358,6 +358,9 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
                ):
     """Separate implementation to call directly during unit tests"""
 
+    # Convert build directory to absolute path in case it was provided as relative path
+    build_directory = os.path.abspath(build_directory)
+
     workspace = helpers.create_builtin_workspace(
         build_directory=build_directory,
         project=project,

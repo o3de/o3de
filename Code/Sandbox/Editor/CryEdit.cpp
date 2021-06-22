@@ -590,6 +590,7 @@ public:
             {{"project-path", "Supplies the path to the project that the Editor should use", "project-path"}, dummyString},
             {{"engine-path", "Supplies the path to the engine", "engine-path"}, dummyString},
             {{"project-cache-path", "Path to the project cache", "project-cache-path"}, dummyString},
+            {{"project-user-path", "Path to the project user path", "user-path"}, dummyString}
             // add dummy entries here to prevent QCommandLineParser error-ing out on cmd line args that will be parsed later
         };
 
@@ -2306,7 +2307,9 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     bool bIsAppWindow = IsWindowInForeground();
     bool bActive = false;
     int res = 0;
-    if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive)
+    if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive
+        // Automated tests must always keep the editor active, or they can get stuck
+        || m_bAutotestMode)
     {
         res = 1;
         bActive = true;

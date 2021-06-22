@@ -29,16 +29,58 @@ from editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
-    #class test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSingleTest):
-    #    from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
-
-    #class test_C111112_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSingleTest):
-    #    from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
-
-    class test_C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
-        is_parallelizable = False
+    class test_aa(EditorSharedTest):
+        is_batchable = False
         from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
 
-    class test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSharedTest):
-        is_parallelizable = False
+    class test_Holi(EditorSharedTest):
+        is_batchable = False
         from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
+
+#    class test_B(EditorSharedTest):
+#        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+#        is_batchable = False
+
+#    class test_C100001_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+#        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
+#        is_batchable = False
+
+"""
+    class test_C100043_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    class test_C100052_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    class test_C100027_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    class test_C100013_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    class test_C100032_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    class test_C100023_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    class test_C100011_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+        is_batchable = False
+
+    #class test_C100001_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+    #    is_batchable = False
+    #    from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+    #class test_C100002_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+    #    is_batchable = False
+    #    from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+"""
+#    class test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSharedTest):
+#        is_parallelizable = False
+#        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
