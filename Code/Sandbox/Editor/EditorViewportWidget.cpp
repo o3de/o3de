@@ -514,18 +514,28 @@ void EditorViewportWidget::Update()
             // Disable rendering to avoid recursion into Update()
             PushDisableRendering();
 
+
+            //get debug display interface for the viewport
+            AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+            AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, GetViewportId());
+            AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
+
+            AzFramework::DebugDisplayRequests* debugDisplay =
+                AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+
             // draw debug visualizations
-            if (m_debugDisplay)
+            if (debugDisplay)
             {
-                const AZ::u32 prevState = m_debugDisplay->GetState();
-                m_debugDisplay->SetState(
+                const AZ::u32 prevState = debugDisplay->GetState();
+                debugDisplay->SetState(
                     e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
                 AzFramework::EntityDebugDisplayEventBus::Broadcast(
                     &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-                    AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
+                    AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
 
-                m_debugDisplay->SetState(prevState);
+                debugDisplay->SetState(prevState);
             }
 
             QtViewport::Update();

@@ -87,7 +87,7 @@ namespace AzToolsFramework
              */
             void DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
                 const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
-                EntityIdList& duplicatedEntityIds);
+                EntityIdList& duplicatedEntityIds, AZStd::unordered_map<EntityAlias, EntityAlias>& oldAliasToNewAliasMap);
             /**
              * Duplicate a list of instances owned by a common owning instance by directly
              * copying/modifying their entries in the instance DOM

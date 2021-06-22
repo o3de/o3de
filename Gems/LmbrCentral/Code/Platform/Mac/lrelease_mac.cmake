@@ -8,12 +8,3 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
-
-add_custom_command(TARGET LmbrCentral.Editor POST_BUILD
-    COMMAND "${CMAKE_COMMAND}" -P "${LY_ROOT_FOLDER}/cmake/Platform/Mac/RPathChange.cmake"
-            "$<TARGET_FILE_DIR:LmbrCentral.Editor>/lrelease"
-            @loader_path/../lib
-            "${QT_PATH}/lib"
-    COMMENT "Patching lrelease..."
-    VERBATIM
-)

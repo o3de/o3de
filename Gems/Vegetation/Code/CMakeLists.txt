@@ -28,7 +28,6 @@ ly_add_target(
             Gem::LmbrCentral
             Gem::SurfaceData
         PUBLIC
-            Legacy::CryCommon
             Gem::AtomLyIntegration_CommonFeatures.Static
     RUNTIME_DEPENDENCIES
         Gem::GradientSignal
@@ -105,6 +104,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzFrameworkTestShared
                 Gem::Vegetation.Static
     )
     ly_add_googletest(

@@ -47,21 +47,81 @@ namespace AZ
                 }
             }
             
+            void GetAllBones(
+                const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneLookup)
+            {
+                for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                {
+                    const aiMesh* mesh = scene->mMeshes[meshIndex];
+
+                    for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    {
+                        const aiBone* bone = mesh->mBones[boneIndex];
+
+                        boneLookup.emplace(bone->mName.C_Str(), bone);
+                    }
+                }
+            }
+
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
                 const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
-                
+
                 if (currentNode == scene->mRootNode || IsPivotNode(currentNode->mName))
                 {
                     return Events::ProcessingResult::Ignored;
                 }
 
-                aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
+                AZStd::unordered_multimap<AZStd::string, const aiBone*> boneLookup;
+                GetAllBones(scene, boneLookup);
 
-                DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
+                auto boneIterator = boneLookup.find(currentNode->mName.C_Str());
+                const bool isBone = boneIterator != boneLookup.end();
                 
+                DataTypes::MatrixType localTransform;
+
+                if (isBone)
+                {
+                    AZStd::vector<DataTypes::MatrixType> offsets, inverseOffsets;
+                    auto iteratingNode = currentNode;
+
+                    while (iteratingNode && boneLookup.count(iteratingNode->mName.C_Str()))
+                    {
+                        AZStd::string name = iteratingNode->mName.C_Str();
+
+                        auto range = boneLookup.equal_range(name);
+
+                        if (range.first != range.second)
+                        {
+                            // There can be multiple offsetMatrices for a given bone, we're only interested in grabbing the first one
+                            auto boneFirstOffsetMatrix = range.first->second->mOffsetMatrix;
+                            auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(boneFirstOffsetMatrix);
+                            offsets.push_back(azMat);
+                            inverseOffsets.push_back(azMat.GetInverseFull());
+                        }
+
+                        iteratingNode = iteratingNode->mParent;
+                    }
+                    
+                    localTransform =
+                        offsets.at(AZ::GetMin(offsets.size()-1, static_cast<decltype(offsets.size())>(1)))  // parent bone offset, or if there is no parent, then current node offset
+                        * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
+                        * offsets.at(offsets.size() - 1) // Root bone offset
+                        * inverseOffsets.at(0); // Inverse of current node offset
+                }
+                else
+                {
+                    localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(currentNode));
+                }
+
+                // Don't bother adding a node with the identity matrix
+                if (localTransform == DataTypes::MatrixType::Identity())
+                {
+                    return Events::ProcessingResult::Ignored;
+                }
+
                 context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                 context.m_sourceSceneSystem.ConvertUnit(localTransform);
 
@@ -105,9 +165,7 @@ namespace AZ
                 }
                 else
                 {
-                    bool addedData = context.m_scene.GetGraph().SetContent(
-                        context.m_currentGraphPosition,
-                        transformData);
+                    bool addedData = context.m_scene.GetGraph().SetContent(context.m_currentGraphPosition, transformData);
 
                     AZ_Error(SceneAPI::Utilities::ErrorWindow, addedData, "Failed to add node data");
                     return addedData ? Events::ProcessingResult::Success : Events::ProcessingResult::Failure;

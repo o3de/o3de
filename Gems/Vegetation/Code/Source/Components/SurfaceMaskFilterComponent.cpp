@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "SurfaceMaskFilterComponent.h"
 
 #include <AzCore/Component/Entity.h>

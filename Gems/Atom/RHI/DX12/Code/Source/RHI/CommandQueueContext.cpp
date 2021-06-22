@@ -137,6 +137,7 @@ namespace AZ
         void CommandQueueContext::End()
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandQueueContext: End");
 
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
 
@@ -150,7 +151,7 @@ namespace AZ
 
             {
                 AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::AzRender, "Wait and Reset Fence");
-                AZ_ATOM_PROFILE_FUNCTION("RHI", "CommandQueueContext: Wait on Fences");
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("DX12", "CommandQueueContext: Wait on Fences");
 
                 FenceEvent event("FrameFence");
                 m_frameFences[m_currentFrameIndex].Wait(event);

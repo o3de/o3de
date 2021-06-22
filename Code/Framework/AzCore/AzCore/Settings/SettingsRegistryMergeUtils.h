@@ -15,11 +15,7 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-
-namespace AZ
-{
-    class CommandLine;
-}
+#include <AzCore/Settings/CommandLine.h>
 
 namespace AZ::IO
 {
@@ -217,7 +213,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //!     example: --regdump /My/Array/With/Objects
     //! --regdumpall Dumps the entire settings registry to output.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine, bool executeCommands);
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands);
 
     //! Stores the command line settings into the Setting Registry
     //! The arguments can be used later anywhere the command line is needed

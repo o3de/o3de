@@ -89,17 +89,18 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::UpdateProject;
     }
 
+    // Called when pressing "Edit Project Settings..."
     void UpdateProjectCtrl::NotifyCurrentScreen()
     {
         m_stack->setCurrentIndex(ScreenOrder::Settings);
         Update();
+
+        // Gather the available gems that will be shown in the gem catalog.
+        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
     }
 
     void UpdateProjectCtrl::HandleGemsButton()
     {
-        // The next page is the gem catalog. Gather the available gems that will be shown in the gem catalog.
-        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path, /*isNewProject=*/false);
-
         m_stack->setCurrentWidget(m_gemCatalogScreen);
         Update();
     }
@@ -189,11 +190,13 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
-            m_header->setSubTitle(QString(tr("Configure Gems for \"%1\"")).arg(m_projectInfo.m_projectName));
-            m_nextButton->setText(tr("Confirm"));
+            m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.m_projectName));
+            m_header->setSubTitle(QString(tr("Configure Gems")));
+            m_nextButton->setText(tr("Finalize"));
         }
         else
         {
+            m_header->setTitle("");
             m_header->setSubTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.m_projectName));
             m_nextButton->setText(tr("Save"));
         }

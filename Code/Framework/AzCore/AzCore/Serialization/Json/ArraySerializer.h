@@ -30,8 +30,14 @@ namespace AZ
         JsonSerializationResult::Result Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             const Uuid& valueTypeId, JsonSerializerContext& context) override;
 
+        OperationFlags GetOperationsFlags() const override;
+
     protected:
-        JsonSerializationResult::Result LoadContainer(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+        JsonSerializationResult::Result LoadContainer(
+            void* outputValue,
+            const Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
+            bool isNewInstance,
             JsonDeserializerContext& context);
     };
 } // namespace AZ
