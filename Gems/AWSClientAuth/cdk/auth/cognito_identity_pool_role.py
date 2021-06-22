@@ -60,7 +60,7 @@ class CognitoIdentityPoolRole:
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                '*'
+                f'arn:aws:s3:::{project_name}/*'
             ],
             sid=name_utils.format_aws_resource_sid(feature_name, project_name, iam.PolicyStatement.__name__)
         )
