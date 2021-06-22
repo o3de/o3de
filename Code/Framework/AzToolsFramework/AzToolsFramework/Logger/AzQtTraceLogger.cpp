@@ -10,59 +10,25 @@
  *
  */
 
-#include <AzQtComponents/Application/AzQtTraceLogger.h>
+#include <AzToolsFramework/Logger/AzQtTraceLogger.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/Logging/LogFile.h>
 
-namespace AzQtComponents
+
+namespace AzToolsFramework
 {
-    class AzQtTraceLogger::Impl : public AZ::Debug::TraceMessageBus::Handler
-    {
-    public:
-        void WriteStartupLog(char name[]);
-
-        Impl()
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        }
-        ~Impl()
-        {
-            AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-        }
-
-    protected:
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Debug::TraceMessageBus::Handler overrides...
-        bool OnOutput(const char* window, const char* message) override;
-        //////////////////////////////////////////////////////////////////////////
-
-        struct LogMessage
-        {
-        public:
-            AZStd::string window;
-            AZStd::string message;
-        };
-        AZStd::vector<LogMessage> m_startupLogSink;
-        AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
-    };
-
     AzQtTraceLogger::AzQtTraceLogger()
-        : m_impl(new Impl)
     {
+        AZ::Debug::TraceMessageBus::Handler::BusConnect();
     }
 
     AzQtTraceLogger::~AzQtTraceLogger()
     {
+        AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
 
-    void AzQtTraceLogger::WriteStartupLog(char name[])
-    {
-        m_impl->WriteStartupLog(name);
-    }
-
-    bool AzQtTraceLogger::Impl::OnOutput(const char* window, const char* message)
+    bool AzQtTraceLogger::OnOutput(const char* window, const char* message)
     {
         if (m_logFile)
         {
@@ -75,15 +41,13 @@ namespace AzQtComponents
         return false;
     }
 
-    void AzQtTraceLogger::Impl::WriteStartupLog(char name[])
-    {
-        std::string temp = name;
-    
-        //using namespace AzFramework;
-        ///*
+    void AzQtTraceLogger::WriteStartupLog(char name[])
+    {    
+        using namespace AzFramework;
+        
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "FileIO should be running at this point");
-        /*
+
         // There is no log system online so we have to create your own log file.
         char resolveBuffer[AZ_MAX_PATH_LEN] = { 0 };
         fileIO->ResolvePath("@user@", resolveBuffer, AZ_MAX_PATH_LEN);
@@ -111,6 +75,5 @@ namespace AzQtComponents
             m_startupLogSink = {};
             m_logFile->FlushLog();
         }
-        */
     }
-} // namespace AzQtComponents
+} // namespace AzToolsFramework

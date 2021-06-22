@@ -20,7 +20,6 @@ namespace AzQtComponents
 
     AzQtApplication::AzQtApplication(int& argc, char** argv)
         : QApplication(argc, argv)
-        , m_traceLogger(new AzQtTraceLogger)
     {
          // Use a common Qt settings path for applications that don't register their own application name
          if (QApplication::applicationName().isEmpty())

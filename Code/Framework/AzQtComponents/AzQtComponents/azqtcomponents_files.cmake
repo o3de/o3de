@@ -9,8 +9,6 @@ set(FILES
     AzQtComponentsAPI.h
     Application/AzQtApplication.cpp
     Application/AzQtApplication.h
-	Application/AzQtTraceLogger.cpp
-	Application/AzQtTraceLogger.h
     Buses/DragAndDrop.h
     Buses/ShortcutDispatch.h
     DragAndDrop/MainWindowDragAndDrop.h

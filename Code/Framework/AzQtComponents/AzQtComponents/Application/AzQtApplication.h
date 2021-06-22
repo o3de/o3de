@@ -14,7 +14,6 @@
 
 #include <QApplication>
 
-#include <AzQtComponents/Application/AzQtTraceLogger.h>
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 
 namespace AzQtComponents
@@ -27,9 +26,6 @@ namespace AzQtComponents
         void static setDpiScaling();
 
     protected:
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-        AZStd::unique_ptr<AzQtTraceLogger> m_traceLogger;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
 
 } // namespace AzQtComponents

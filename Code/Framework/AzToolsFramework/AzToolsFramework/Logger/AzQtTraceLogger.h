@@ -13,11 +13,11 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzQtComponents/AzQtComponentsAPI.h>
+#include <AzFramework/Logging/LogFile.h>
 
-namespace AzQtComponents
+namespace AzToolsFramework
 {
-    class AZ_QT_COMPONENTS_API AzQtTraceLogger 
+    class AzQtTraceLogger : public AZ::Debug::TraceMessageBus::Handler
     {
     public:
         AzQtTraceLogger();
@@ -25,9 +25,18 @@ namespace AzQtComponents
         void WriteStartupLog(char name[]);
 
     protected:
-        class Impl;
-        AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-        AZStd::unique_ptr<Impl> m_impl;
-        AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+        //////////////////////////////////////////////////////////////////////////
+        // AZ::Debug::TraceMessageBus::Handler overrides...
+        bool OnOutput(const char* window, const char* message) override;
+        //////////////////////////////////////////////////////////////////////////
+
+        struct LogMessage
+        {
+        public:
+            AZStd::string window;
+            AZStd::string message;
+        };
+        AZStd::vector<LogMessage> m_startupLogSink;
+        AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
     };
-} // namespace AzQtComponents
+} // namespace AzToolsFramework
