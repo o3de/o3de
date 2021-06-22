@@ -13,6 +13,7 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Application.h>
 #include <ProjectUtils.h>
+#include <ProjectManager_Test_Traits_Platform.h>
 
 #include <QFile>
 #include <QTextStream>
