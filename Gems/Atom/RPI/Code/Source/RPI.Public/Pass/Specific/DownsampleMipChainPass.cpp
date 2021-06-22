@@ -212,17 +212,17 @@ namespace AZ
             ParentPass::FrameBeginInternal(params);
         }
 
-        void DownsampleMipChainPass::OnShaderReinitialized(const Shader& shader)
+        void DownsampleMipChainPass::OnShaderReinitialized([[maybe_unused]] const Shader& shader)
         {
             m_needToUpdateChildren = true;
         }
     
-        void DownsampleMipChainPass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
+        void DownsampleMipChainPass::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<ShaderAsset>& shaderAsset)
         {
             m_needToUpdateChildren = true;
         }
     
-        void DownsampleMipChainPass::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
+        void DownsampleMipChainPass::OnShaderVariantReinitialized([[maybe_unused]] const ShaderVariant& shaderVariant)
         {
             m_needToUpdateChildren = true;
         }
