@@ -19,4 +19,8 @@ from editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
-    pass
+    class test_C100000_RigidBody_EnablingGravityWorksPoC(EditorSharedTest):
+        from . import C100000_RigidBody_EnablingGravityWorksPoC as test_module
+
+    class test_C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSharedTest):
+        from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
