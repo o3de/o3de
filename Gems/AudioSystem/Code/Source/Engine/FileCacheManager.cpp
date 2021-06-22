@@ -14,6 +14,7 @@
 #include <FileCacheManager.h>
 
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -26,7 +27,6 @@
 #include <AudioSystem_Traits_Platform.h>
 
 #include <IRenderAuxGeom.h>
-#include <CryPath.h>
 
 namespace Audio
 {
@@ -563,16 +563,17 @@ namespace Audio
                     audioFileEntry->m_flags.AddFlags(eAFF_CACHED);
                     audioFileEntry->m_flags.ClearFlags(eAFF_LOADING);
 
-                #if !defined(AUDIO_RELEASE)
+#if !defined(AUDIO_RELEASE)
                     audioFileEntry->m_timeCached = AZStd::chrono::system_clock::now();
-                #endif // !AUDIO_RELEASE
+#endif // !AUDIO_RELEASE
 
                     SATLAudioFileEntryInfo fileEntryInfo;
                     fileEntryInfo.nMemoryBlockAlignment = audioFileEntry->m_memoryBlockAlignment;
                     fileEntryInfo.pFileData = audioFileEntry->m_memoryBlock;
                     fileEntryInfo.nSize = audioFileEntry->m_fileSize;
                     fileEntryInfo.pImplData = audioFileEntry->m_implData;
-                    fileEntryInfo.sFileName = PathUtil::GetFile(audioFileEntry->m_filePath.c_str());
+                    AZ::IO::PathView filePath{ audioFileEntry->m_filePath };
+                    fileEntryInfo.sFileName = filePath.Filename().Native().data();
 
                     AudioSystemImplementationRequestBus::Broadcast(&AudioSystemImplementationRequestBus::Events::RegisterInMemoryFile, &fileEntryInfo);
                     success = true;
@@ -704,7 +705,8 @@ namespace Audio
             fileEntryInfo.pFileData = audioFileEntry->m_memoryBlock;
             fileEntryInfo.nSize = audioFileEntry->m_fileSize;
             fileEntryInfo.pImplData = audioFileEntry->m_implData;
-            fileEntryInfo.sFileName = PathUtil::GetFile(audioFileEntry->m_filePath.c_str());
+            AZ::IO::PathView filePath{ audioFileEntry->m_filePath };
+            fileEntryInfo.sFileName = filePath.Filename().Native().data();
 
             EAudioRequestStatus result = eARS_SUCCESS;
             AudioSystemImplementationRequestBus::BroadcastResult(result, &AudioSystemImplementationRequestBus::Events::UnregisterInMemoryFile, &fileEntryInfo);
@@ -757,14 +759,15 @@ namespace Audio
         fileEntryInfo.pFileData = nullptr;
         fileEntryInfo.nMemoryBlockAlignment = 0;
 
-        AZStd::string fileName(PathUtil::GetFile(audioFileEntry->m_filePath.c_str()));
+        AZ::IO::FixedMaxPath filePath{ audioFileEntry->m_filePath };
+        AZStd::string_view fileName{ filePath.Filename().Native() };
         fileEntryInfo.pImplData = audioFileEntry->m_implData;
-        fileEntryInfo.sFileName = fileName.c_str();
+        fileEntryInfo.sFileName = fileName.data();
 
         const char* fileLocation = nullptr;
         AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
         audioFileEntry->m_filePath = fileLocation;
-        audioFileEntry->m_filePath += fileName.c_str();
+        audioFileEntry->m_filePath.append(fileName.data(), fileName.size());
         AZStd::to_lower(audioFileEntry->m_filePath.begin(), audioFileEntry->m_filePath.end());
 
         audioFileEntry->m_fileSize = gEnv->pCryPak->FGetSize(audioFileEntry->m_filePath.c_str());

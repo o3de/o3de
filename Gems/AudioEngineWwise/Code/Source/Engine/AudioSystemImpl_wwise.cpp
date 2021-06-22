@@ -1427,7 +1427,7 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise Failed to unload bank '%s'\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to unload bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
