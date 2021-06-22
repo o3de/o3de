@@ -262,7 +262,7 @@ def submit_report_document(report_file):
 
 if __name__ == "__main__":
     args = parse_args()
-    print(f"[ci_build_metrics] Generatic build metrics for:"
+    print(f"[ci_build_metrics] Generating build metrics for:"
         f"\n\tPlatform: {args.platform}"
         f"\n\tRepository: {args.repository}"
         f"\n\tJob Name: {args.jobname}"
