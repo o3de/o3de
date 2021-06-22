@@ -15,7 +15,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE main
         TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark and not REQUIRES_gpu"
+        PYTEST_MARKS "SUITE_main and not REQUIRES_gpu"
         TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
@@ -46,7 +46,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SERIAL
         TEST_REQUIRES gpu
         PATH ${CMAKE_CURRENT_LIST_DIR}
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark and REQUIRES_gpu"
+        PYTEST_MARKS "SUITE_main and REQUIRES_gpu"
         TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
