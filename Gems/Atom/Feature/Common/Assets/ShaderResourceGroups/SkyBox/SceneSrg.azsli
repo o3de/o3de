@@ -40,6 +40,11 @@ partial ShaderResourceGroup SceneSrg
     ConstantBuffer<PhysicalSkyData> m_physicalSkyData;
     bool m_physicalSky;
     
+    float m_fogTopHeight;
+    float m_fogBottomHeight;
+    float4 m_fogColor;
+    bool m_fogEnable;
+
     TextureCube m_skyboxCubemap;
     float4x4 m_cubemapRotationMatrix;
     float m_cubemapExposure;
