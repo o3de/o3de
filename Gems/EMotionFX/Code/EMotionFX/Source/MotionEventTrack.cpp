@@ -10,7 +10,6 @@
 *
 */
 
-// include the required headers
 #include "MotionEventTrack.h"
 #include "MotionEvent.h"
 #include "EventManager.h"
@@ -25,6 +24,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
+#pragma optimize("", off)
 
 namespace EMotionFX
 {
@@ -32,15 +32,11 @@ namespace EMotionFX
 
     MotionEventTrack::MotionEventTrack(Motion* motion)
         : mMotion(motion)
-        , mEnabled(true)
-        , mDeletable(true)
     {
     }
 
     MotionEventTrack::MotionEventTrack(const char* name, Motion* motion)
         : mMotion(motion)
-        , mEnabled(true)
-        , mDeletable(true)
         , m_name(name)
     {
     }
@@ -71,7 +67,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<MotionEventTrack>()
-            ->Version(1)
+            ->Version(2, VersionConverter)
             ->Field("name", &MotionEventTrack::m_name)
             ->Field("enabled", &MotionEventTrack::mEnabled)
             ->Field("deletable", &MotionEventTrack::mDeletable)
@@ -91,6 +87,31 @@ namespace EMotionFX
             ->DataElement(AZ::Edit::UIHandlers::Default, &MotionEventTrack::m_events, "Events", "List of events in this track")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
+    }
+
+    bool MotionEventTrack::VersionConverter([[maybe_unused]] AZ::SerializeContext& context, [[maybe_unused]] AZ::SerializeContext::DataElementNode& classElement)
+    {
+        const unsigned int version = classElement.GetVersion();
+        if (version < 2)
+        {
+            int nameElementIndex = classElement.FindElement(AZ_CRC("name"));
+            if (nameElementIndex < 0)
+            {
+                return false;
+            }
+            AZ::SerializeContext::DataElementNode& nameElement = classElement.GetSubElement(nameElementIndex);
+
+            MCore::StringIdPoolIndex oldName;
+            const bool result = nameElement.GetData<MCore::StringIdPoolIndex>(oldName);
+
+            classElement.RemoveElement(nameElementIndex);
+            if (result)
+            {
+                AZStd::string newName = MCore::GetStringIdPool().GetName(oldName.m_index);
+                classElement.AddElementWithData(context, "name", newName);
+            }
+        }
+        return true;
     }
 
 

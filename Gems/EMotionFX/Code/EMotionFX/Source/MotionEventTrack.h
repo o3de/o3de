@@ -190,13 +190,15 @@ namespace EMotionFX
         Motion* mMotion;
 
         /// Is this track enabled?
-        bool mEnabled;
-        bool mDeletable;
+        bool mEnabled = true;
+        bool mDeletable = true;
 
     private:
         void ProcessEventsImpl(float startTime, float endTime, ActorInstance* actorInstance, const MotionInstance* motionInstance, const AZStd::function<void(EMotionFX::EventInfo&)>& processFunc);
 
         template <typename Functor>
         void ExtractEvents(float startTime, float endTime, const MotionInstance* motionInstance, const Functor& processFunc, bool handleLoops = true) const;
+
+        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
     };
 } // namespace EMotionFX
