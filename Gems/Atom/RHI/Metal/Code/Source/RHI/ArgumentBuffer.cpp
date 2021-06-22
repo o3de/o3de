@@ -342,8 +342,15 @@ namespace AZ
             }
 #endif
             
-            m_device->QueueForRelease(m_argumentBuffer);
-            m_device->QueueForRelease(m_constantBuffer);
+            if(m_argumentBuffer.IsValid())
+            {
+                m_device->QueueForRelease(m_argumentBuffer);
+            }
+            
+            if(m_constantBuffer.IsValid())
+            {
+                m_device->QueueForRelease(m_constantBuffer);
+            }
 
             [m_argumentEncoder release];
             m_argumentEncoder = nil;
