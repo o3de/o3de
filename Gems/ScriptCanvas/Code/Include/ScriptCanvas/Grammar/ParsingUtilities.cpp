@@ -52,6 +52,10 @@ namespace ParsingUtilitiesCpp
     using namespace ScriptCanvas;
     using namespace ScriptCanvas::Grammar;
 
+    const AZ::u64 k_parserGeneratedMask = 0x7FC0616C94E7465F;
+    const size_t k_maskIndex = 0;
+    const size_t k_countIndex = 1;
+
     class PrettyPrinter
         : public ExecutionTreeTraversalListener
     {
@@ -1006,6 +1010,12 @@ namespace ScriptCanvas
             return true;
         }
 
+        bool IsParserGeneratedId(const ScriptCanvas::VariableId& id)
+        {
+            using namespace ParsingUtilitiesCpp;
+            return reinterpret_cast<const AZ::u64*>(id.m_id.data)[k_maskIndex] == k_parserGeneratedMask;
+        }
+
         bool IsPropertyExtractionSlot(const ExecutionTreeConstPtr& execution, const Slot* outputSlot)
         {
             auto iter = AZStd::find_if
@@ -1123,6 +1133,16 @@ namespace ScriptCanvas
         AZStd::string MakeMemberVariableName(AZStd::string_view name)
         {
             return AZStd::string::format("%s%s", k_memberNamePrefix, name.data());
+        }
+
+        VariableId MakeParserGeneratedId(size_t count)
+        {
+            using namespace ParsingUtilitiesCpp;
+
+            AZ::Uuid parserGenerated;
+            reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_maskIndex] = k_parserGeneratedMask;
+            reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_countIndex] = count;
+            return ScriptCanvas::VariableId(parserGenerated);
         }
 
         VariableConstructionRequirement ParseConstructionRequirement(VariableConstPtr variable)

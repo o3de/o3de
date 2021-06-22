@@ -340,7 +340,7 @@ namespace ScriptCanvasEditor
             if (mapIter->second == graphIdentifier)
             {
                 foundMatch = true;
-                AZ_Error("ScriptCanvas", false, "Received a duplicated registration callback.");
+                AZ_Warning("ScriptCanvas", false, "Received a duplicated registration callback.");
             }
         }
 

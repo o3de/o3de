@@ -14,6 +14,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Variable/VariableCore.h>
 
 namespace ScriptCanvas
 {
@@ -54,7 +55,7 @@ namespace ScriptCanvasBuilder
         // all of the variables here are overrides
         AZStd::vector<ScriptCanvas::GraphVariable> m_variables;
         // the values here may or may not be overrides
-        AZStd::vector<ScriptCanvas::GraphVariable> m_entityIds;
+        AZStd::vector<AZStd::pair<ScriptCanvas::VariableId, AZ::EntityId>> m_entityIds;
         // this is all that gets exposed to the edit context
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         // AZStd::vector<size_t> m_entityIdRuntimeInputIndices; since all of the entity ids need to go in, they may not need indices
@@ -77,6 +78,7 @@ namespace ScriptCanvasBuilder
         AZStd::string ToString(size_t depth = 0) const;
     };
 
+    // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
 
     AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(AZ::Data::AssetId editorAssetId, AZStd::string_view assetHint, EditorAssetTree* parent = nullptr);

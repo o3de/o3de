@@ -43,10 +43,9 @@ namespace ScriptCanvas
         explicit VariableId(const char* str) = delete;
 
         static void Reflect(AZ::ReflectContext* context);
-        static VariableId MakeVariableId();
-        static VariableId MakeParserGeneratedId();
-        static bool IsParserGeneratedId(const VariableId& id);
 
+        static VariableId MakeVariableId();
+        
         AZ_INLINE const AZ::Uuid& GetDatumId() const { return m_id; }
 
         AZ_INLINE bool IsValid() const

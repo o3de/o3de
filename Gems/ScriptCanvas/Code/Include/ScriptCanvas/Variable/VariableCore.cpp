@@ -15,32 +15,11 @@
 
 #include <ScriptCanvas/Variable/VariableCore.h>
 
-namespace VariableCoreCpp
-{
-    const AZ::u64 k_parserGeneratedMask = 0x7FC0616C94E7465F;
-    const size_t k_maskIndex = 0;
-}
-
 namespace ScriptCanvas
 {
     VariableId VariableId::MakeVariableId()
     {
         return VariableId(AZ::Uuid::CreateRandom());
-    }
-
-    VariableId VariableId::MakeParserGeneratedId()
-    {
-        using namespace VariableCoreCpp;
-        auto parserGenerated = AZ::Uuid::CreateRandom();
-        // technically, this should never get called
-        reinterpret_cast<AZ::u64*>(parserGenerated.data)[k_maskIndex] = k_parserGeneratedMask;
-        return VariableId(parserGenerated);
-    }
-
-    bool VariableId::IsParserGeneratedId(const VariableId& id)
-    {
-        using namespace VariableCoreCpp;
-        return reinterpret_cast<const AZ::u64*>(id.m_id.data)[k_maskIndex] == k_parserGeneratedMask;
     }
 
     void VariableId::Reflect(AZ::ReflectContext* context)

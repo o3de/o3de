@@ -135,18 +135,26 @@ namespace ScriptCanvasBuilder
 
         for (auto& entityId : inputs.m_entityIds)
         {
-            auto graphEntityId = variables.FindVariable(entityId.first);
-            if (!graphEntityId)
-            {
-                AZ_Error("ScriptCanvasBuilder", false, "Missing EntityId from graph data that was just parsed");
-                continue;
-            }
+            m_entityIds.push_back(entityId);
 
-            // copy to override list for editor display
-            m_entityIds.push_back(*graphEntityId);
-            auto& overrideValue = m_entityIds.back();
-            overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
-            overrideValue.SetAllowSignalOnChange(false);
+            if (!ScriptCanvas::Grammar::IsParserGeneratedId(entityId.first))
+            {
+                auto graphEntityId = variables.FindVariable(entityId.first);
+                if (!graphEntityId)
+                {
+                    AZ_Error("ScriptCanvasBuilder", false, "Missing EntityId from graph data that was just parsed");
+                    continue;
+                }
+
+                // copy to override list for editor display
+                if (graphEntityId->IsComponentProperty())
+                {
+                    m_overrides.push_back(*graphEntityId);
+                    auto& overrideValue = m_overrides.back();
+                    overrideValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
+                    overrideValue.SetAllowSignalOnChange(false);
+                }
+            }
         }
     }
 
@@ -185,7 +193,6 @@ namespace ScriptCanvasBuilder
 
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& buildOverrides)
     {
-        // copy the overridden variables back
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
 
         // #functions2_prefabs prepare the runtime variables, consider only saving the overridden ones to the runtime
@@ -216,14 +223,24 @@ namespace ScriptCanvasBuilder
 
         for (auto& entity : buildOverrides.m_entityIds)
         {
-            if (entity.GetDatum() && entity.GetDatum()->GetAs<AZ::EntityId>())
+            auto& variableId = entity.first;
+            auto iter = AZStd::find_if(buildOverrides.m_overrides.begin(), buildOverrides.m_overrides.end(), [&variableId](auto& candidate) { return candidate.GetVariableId() == variableId; });
+            if (iter != buildOverrides.m_overrides.end())
             {
-                runtimeOverrides.m_entityIds.push_back(*entity.GetDatum()->GetAs<AZ::EntityId>());
+                // the entity was overridden on the instance
+                if (iter->GetDatum() && iter->GetDatum()->GetAs<AZ::EntityId>())
+                {
+                    runtimeOverrides.m_entityIds.push_back(*iter->GetDatum()->GetAs<AZ::EntityId>());
+                }
+                else
+                {
+                    AZ_Warning("ScriptCanvasBuilder", false, "build overrides missing EntityId, Script may not function properly");
+                    runtimeOverrides.m_entityIds.push_back(AZ::EntityId{});
+                }
             }
             else
             {
-                AZ_Warning("ScriptCanvasBuilder", false, "build overrides missing EntityId, Script may not function properly");
-                runtimeOverrides.m_entityIds.push_back(AZ::EntityId{});
+                runtimeOverrides.m_entityIds.push_back(entity.second);
             }
         }
 

@@ -12,6 +12,7 @@
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <Builder/ScriptCanvasBuilder.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/EBusHandler.h>
 #include <ScriptCanvas/Core/Graph.h>
@@ -2691,7 +2692,7 @@ namespace ScriptCanvas
 
                 case VariableConstructionRequirement::InputVariable:
                 {
-                    auto variableID = variable->m_sourceVariableId.IsValid() ? variable->m_sourceVariableId : VariableId::MakeParserGeneratedId();
+                    auto variableID = variable->m_sourceVariableId.IsValid() ? variable->m_sourceVariableId : MakeParserGeneratedId(m_genratedIdCount++);
                     inputVariableIds.push_back(variableID);
                     inputVariablesById.insert({ variableID, variable });
                     // sort revealed a datum copy issue: type is not preserved, workaround below
@@ -2941,11 +2942,32 @@ namespace ScriptCanvas
                 {
                     if (!input->m_sourceVariableId.IsValid() && IsEntityIdThatRequiresRuntimeRemap(input))
                     {
-                        input->m_sourceVariableId = VariableId::MakeParserGeneratedId();
+                        input->m_sourceVariableId = MakeParserGeneratedId(m_genratedIdCount++);
                         input->m_source = nullptr;
                         // promote to member variable for at this stage, optimizations on data flow will occur later
                         input->m_isMember = true;
-                        input->m_name = m_graphScope->AddVariableName(input->m_name);
+
+                        AZStd::string entityVariableName;
+
+                        if (slotAndVariable.m_slot)
+                        {
+                            if (execution->GetId().m_node)
+                            {
+                                entityVariableName.append(execution->GetId().m_node->GetNodeName());
+                                entityVariableName.append(".");
+                                entityVariableName.append(slotAndVariable.m_slot->GetName());
+                            }
+                            else
+                            {
+                                entityVariableName.append(slotAndVariable.m_slot->GetName());
+                            }
+                        }
+                        else
+                        {
+                            entityVariableName = input->m_name;
+                        }
+
+                        input->m_name = m_graphScope->AddVariableName(entityVariableName);
                         AddVariable(input);
                     }
                 }
