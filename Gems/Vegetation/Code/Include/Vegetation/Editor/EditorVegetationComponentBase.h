@@ -17,7 +17,6 @@
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <Vegetation/Editor/EditorVegetationComponentTypeIds.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
-#include <CrySystemBus.h>
 
 namespace Vegetation
 {
@@ -28,7 +27,6 @@ namespace Vegetation
     template<typename TComponent, typename TConfiguration>
     class EditorVegetationComponentBase
         : public LmbrCentral::EditorWrappedComponentBase<TComponent, TConfiguration>
-        , private CrySystemEventBus::Handler
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TComponent, TConfiguration>;
@@ -47,11 +45,6 @@ namespace Vegetation
         void Deactivate() override;
 
         static void Reflect(AZ::ReflectContext* context);
-
-        ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCryEditorBeginLevelExport() override;
-        void OnCryEditorEndLevelExport(bool /*success*/) override;
 
     protected:
         using BaseClassType::m_configuration;
