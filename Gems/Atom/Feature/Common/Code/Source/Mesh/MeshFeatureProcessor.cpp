@@ -665,8 +665,6 @@ namespace AZ
                     }
                 }
 
-                SelectMotionVectorShader(material);
-
                 // setup the mesh draw packet
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, m_shaderResourceGroup, materialAssignment.m_matModUvOverrides);
 
@@ -1089,29 +1087,6 @@ namespace AZ
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
             m_cullBoundsNeedsUpdate = false;
-        }
-
-        void MeshDataInstance::SelectMotionVectorShader(Data::Instance<RPI::Material> material)
-        {
-            // Two motion vector shaders are defined in the material for static mesh (only animated by transform matrix)
-            // and skinned mesh (per vertex animation) respectively, it's because they have different input signatures
-            // (skinned mesh needs two streaming channels while static mesh only needs one) that cannot be addressed by shader option
-            // itself. Therefore this function is used to pick one to use and disable the other one depending on the type of the mesh
-            // so it won't cause errors due to missing input streaming channel.
-
-            //[GFX TODO][ATOM-4726] Replace this with a "isSkinnedMesh" external material property and a functor that enables/disables the appropriate shader
-            for (auto& shaderItem : material->GetShaderCollection())
-            {
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "StaticMeshMotionVector" } && m_skinnedMeshWithMotion)
-                {
-                    shaderItem.SetEnabled(false);
-                }
-                 
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "SkinnedMeshMotionVector" } && (!m_skinnedMeshWithMotion))
-                {
-                    shaderItem.SetEnabled(false);
-                }
-            }
         }
 
         void MeshDataInstance::UpdateObjectSrg()
