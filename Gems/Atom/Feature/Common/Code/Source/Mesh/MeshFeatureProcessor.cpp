@@ -158,11 +158,6 @@ namespace AZ
             MeshHandle meshDataHandle = m_meshData.emplace();
 
             meshDataHandle->m_descriptor = descriptor;
-
-            // Always disable ray tracing flag on skinned meshes
-            // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDataHandle->m_descriptor.m_isRayTracingEnabled &= !descriptor.m_isSkinnedMeshWithMotion;
-
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
