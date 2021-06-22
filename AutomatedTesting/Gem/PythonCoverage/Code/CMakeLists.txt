@@ -54,9 +54,6 @@ if(PAL_TRAIT_PYTHONCOVERAGE_SUPPORTED)
                     Gem::PythonCoverage.Editor.Static
         )
 
-        # By default, we will specify that the above target PythonCoverage would be used by
-        # Tool and Builder type targets when this gem is enabled.  If you don't want it
-        # active in Tools or Builders by default, delete one of both of the following lines:
         ly_create_alias(NAME PythonCoverage.Tools    NAMESPACE Gem TARGETS Gem::PythonCoverage.Editor)
         ly_create_alias(NAME PythonCoverage.Builders NAMESPACE Gem TARGETS Gem::PythonCoverage.Editor)
     endif()

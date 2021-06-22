@@ -39,11 +39,11 @@ namespace PythonCoverage
         PythonCoverageEditorSystemComponent() = default;
 
     private:
-        // AZ::Component
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
 
-        // AZ::EntitySystemBus ...
+        // AZ::EntitySystemBus overrides...
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // AZ::EditorPythonScriptNotificationsBus ...
@@ -66,7 +66,7 @@ namespace PythonCoverage
         AZStd::unordered_set<AZStd::string> GetParentComponentModulesForAllActivatedEntities(
             const AZStd::unordered_map<AZ::Uuid, AZ::ComponentDescriptor*>& entityComponents) const;
 
-        //!
+        //! Writes the current coverage data snapshot to disk.
         void WriteCoverageFile();
 
         enum class CoverageState : AZ::u8
