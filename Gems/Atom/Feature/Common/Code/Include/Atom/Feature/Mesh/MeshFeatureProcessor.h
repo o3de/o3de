@@ -98,7 +98,6 @@ namespace AZ
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
-            bool m_skinnedMeshWithMotion = false;
             bool m_rayTracingEnabled = true;
             bool m_visible = true;
             bool m_useForwardPassIblSpecular = false;

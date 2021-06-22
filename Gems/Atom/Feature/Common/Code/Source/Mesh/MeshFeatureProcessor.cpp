@@ -160,9 +160,6 @@ namespace AZ
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
 
-            // Mark skinned meshes to enable special processes to generate motion vector 
-            meshDataHandle->m_skinnedMeshWithMotion = skinnedMeshWithMotion;
-
             // set ray tracing flag, but always disable on skinned meshes
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
             meshDataHandle->m_rayTracingEnabled = rayTracingEnabled && (skinnedMeshWithMotion == false);
