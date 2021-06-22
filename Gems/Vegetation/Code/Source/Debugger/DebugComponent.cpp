@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "DebugComponent.h"
 #include "AreaSystemComponent.h"
 #include "InstanceSystemComponent.h"

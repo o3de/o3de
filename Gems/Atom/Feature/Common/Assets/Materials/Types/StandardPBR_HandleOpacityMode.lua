@@ -25,8 +25,6 @@ AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
 
-ForwardPassIndex = 1
-
 function ConfigureAlphaBlending(shaderItem) 
     shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
     shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
@@ -58,15 +56,17 @@ end
 function Process(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
 
+    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
+
     if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(context:GetShader(ForwardPassIndex))
-        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("transparent")
+        ConfigureAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(context:GetShader(ForwardPassIndex))
-        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("transparent")
+        ConfigureDualSourceBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     else
-        ResetAlphaBlending(context:GetShader(ForwardPassIndex))
-        context:GetShader(ForwardPassIndex):SetDrawListTagOverride("") -- reset to default draw list
+        ResetAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
     end
 end
 

@@ -64,9 +64,9 @@ def register_shipped_engine_o3de_objects(force: bool = False) -> int:
     return ret_val
 
 
-def register_all_in_folder(folder_path: str or pathlib.Path,
+def register_all_in_folder(folder_path: pathlib.Path,
                            remove: bool = False,
-                           engine_path: str or pathlib.Path = None,
+                           engine_path: pathlib.Path = None,
                            exclude: list = None) -> int:
     if not folder_path:
         logger.error(f'Folder path cannot be empty.')
@@ -136,10 +136,11 @@ def register_all_in_folder(folder_path: str or pathlib.Path,
     return ret_val
 
 
-def register_all_o3de_objects_of_type_in_folder(o3de_object_path: str or pathlib.Path,
+def register_all_o3de_objects_of_type_in_folder(o3de_object_path: pathlib.Path,
                                                 o3de_object_type: str,
                                                 remove: bool,
                                                 force: bool,
+                                                stop_iteration_callable: callable,
                                                 **register_kwargs) -> int:
     if not o3de_object_path:
         logger.error(f'Engines path cannot be empty.')
@@ -155,8 +156,11 @@ def register_all_o3de_objects_of_type_in_folder(o3de_object_path: str or pathlib
 
     ret_val = 0
     for root, dirs, files in os.walk(o3de_object_path):
+        # Skip subdirectories where the stop iteration callback is true
+        if stop_iteration_callable and stop_iteration_callable(dirs, files):
+            dirs[:] = []
         if f'{o3de_object_type}.json' in files:
-            o3de_object_type_set.add(root)
+            o3de_object_type_set.add(pathlib.Path(root))
             # Stop iteration of any subdirectories
             # Nested o3de objects of the same type aren't supported(i.e an engine cannot be inside of a engine).
             dirs[:] = []
@@ -170,41 +174,49 @@ def register_all_o3de_objects_of_type_in_folder(o3de_object_path: str or pathlib
     return ret_val
 
 
-def register_all_engines_in_folder(engines_path: str or pathlib.Path,
+def stop_on_template_folders(dirs: list, files: list) -> bool:
+    return 'template.json' in files
+
+
+def register_all_engines_in_folder(engines_path: pathlib.Path,
                                    remove: bool = False,
                                    force: bool = False) -> int:
-    return register_all_o3de_objects_of_type_in_folder(engines_path, 'engine', remove, force)
+    return register_all_o3de_objects_of_type_in_folder(engines_path, 'engine', remove, force, None)
 
 
-def register_all_projects_in_folder(projects_path: str or pathlib.Path,
+def register_all_projects_in_folder(projects_path: pathlib.Path,
                                     remove: bool = False,
-                                    engine_path: str or pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, False, engine_path=engine_path)
+                                    engine_path: pathlib.Path = None) -> int:
+    return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, False,
+                                                       stop_on_template_folders, engine_path=engine_path)
 
 
-def register_all_gems_in_folder(gems_path: str or pathlib.Path,
+def register_all_gems_in_folder(gems_path: pathlib.Path,
                                 remove: bool = False,
                                 engine_path: pathlib.Path = None,
                                 project_path: pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, False, engine_path=engine_path)
+    return register_all_o3de_objects_of_type_in_folder(gems_path, 'gem', remove, False, stop_on_template_folders,
+                                                       engine_path=engine_path)
 
 
-def register_all_templates_in_folder(templates_path: str or pathlib.Path,
+def register_all_templates_in_folder(templates_path: pathlib.Path,
                                      remove: bool = False,
-                                     engine_path: str or pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(templates_path, 'template', remove, False, engine_path=engine_path)
+                                     engine_path: pathlib.Path = None) -> int:
+    return register_all_o3de_objects_of_type_in_folder(templates_path, 'template', remove, False, None,
+                                                       engine_path=engine_path)
 
 
-def register_all_restricted_in_folder(restricted_path: str or pathlib.Path,
+def register_all_restricted_in_folder(restricted_path: pathlib.Path,
                                       remove: bool = False,
-                                      engine_path: str or pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(restricted_path, 'restricted', remove, False, engine_path=engine_path)
+                                      engine_path: pathlib.Path = None) -> int:
+    return register_all_o3de_objects_of_type_in_folder(restricted_path, 'restricted', remove, False, None,
+                                                       engine_path=engine_path)
 
 
-def register_all_repos_in_folder(repos_path: str or pathlib.Path,
+def register_all_repos_in_folder(repos_path: pathlib.Path,
                                  remove: bool = False,
-                                 engine_path: str or pathlib.Path = None) -> int:
-    return register_all_o3de_objects_of_type_in_folder(repos_path, 'repo', remove, force, engine_path=engine_path)
+                                 engine_path: pathlib.Path = None) -> int:
+    return register_all_o3de_objects_of_type_in_folder(repos_path, 'repo', remove, force, None, engine_path=engine_path)
 
 
 def remove_engine_name_to_path(json_data: dict,
@@ -252,7 +264,7 @@ def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: b
 
 
 def register_engine_path(json_data: dict,
-                         engine_path: str or pathlib.Path,
+                         engine_path: pathlib.Path,
                          remove: bool = False,
                          force: bool = False) -> int:
     if not engine_path:
@@ -260,8 +272,11 @@ def register_engine_path(json_data: dict,
         return 1
     engine_path = pathlib.Path(engine_path).resolve()
 
-    for engine_object in json_data.get('engines', {}):
-        engine_object_path = pathlib.Path(engine_object['path']).resolve()
+    for engine_object in json_data.get('engines', []):
+        if isinstance(engine_object, dict):
+            engine_object_path = pathlib.Path(engine_object['path']).resolve()
+        else:
+            engine_object_path = pathlib.Path(engine_object).resolve()
         if engine_object_path == engine_path:
             json_data['engines'].remove(engine_object)
 
@@ -362,7 +377,7 @@ def register_o3de_object_path(json_data: dict,
 
 
 def register_external_subdirectory(json_data: dict,
-                                   external_subdir_path: str or pathlib.Path,
+                                   external_subdir_path: pathlib.Path,
                                    remove: bool = False,
                                    engine_path: pathlib.Path = None,
                                    project_path: pathlib.Path = None) -> int:
@@ -375,7 +390,7 @@ def register_external_subdirectory(json_data: dict,
 
 
 def register_gem_path(json_data: dict,
-                      gem_path: str or pathlib.Path,
+                      gem_path: pathlib.Path,
                       remove: bool = False,
                       engine_path: pathlib.Path = None,
                       project_path:  pathlib.Path = None) -> int:
@@ -384,9 +399,9 @@ def register_gem_path(json_data: dict,
 
 
 def register_project_path(json_data: dict,
-                          project_path: str or pathlib.Path,
+                          project_path: pathlib.Path,
                           remove: bool = False,
-                          engine_path: str or pathlib.Path = None) -> int:
+                          engine_path: pathlib.Path = None) -> int:
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                      validation.valid_o3de_project_json, remove, engine_path, None)
 
@@ -408,9 +423,10 @@ def register_project_path(json_data: dict,
         update_project_json = True
 
     if update_project_json:
+        project_json_path = project_path / 'project.json'
         project_json_data['engine'] = this_engine_json['engine_name']
-        utils.backup_file(project_json)
-        if not manifest.save_o3de_manifest(project_json_data, project_path):
+        utils.backup_file(project_json_path)
+        if not manifest.save_o3de_manifest(project_json_data, project_json_path):
             return 1
 
 
@@ -418,17 +434,17 @@ def register_project_path(json_data: dict,
 
 
 def register_template_path(json_data: dict,
-                           template_path: str or pathlib.Path,
+                           template_path: pathlib.Path,
                            remove: bool = False,
-                           engine_path: str or pathlib.Path = None) -> int:
+                           engine_path: pathlib.Path = None) -> int:
     return register_o3de_object_path(json_data, template_path, 'templates', 'template.json',
                                        validation.valid_o3de_template_json, remove, engine_path, None)
 
 
 def register_restricted_path(json_data: dict,
-                             restricted_path: str or pathlib.Path,
+                             restricted_path: pathlib.Path,
                              remove: bool = False,
-                             engine_path: str or pathlib.Path = None) -> int:
+                             engine_path: pathlib.Path = None) -> int:
     return register_o3de_object_path(json_data, restricted_path, 'restricted', 'restricted.json',
                                      validation.valid_o3de_restricted_json, remove, engine_path, None)
 
@@ -468,7 +484,7 @@ def register_repo(json_data: dict,
 
 
 def register_default_o3de_object_folder(json_data: dict,
-                                        default_o3de_object_folder: str or pathlib.Path,
+                                        default_o3de_object_folder: pathlib.Path,
                                         o3de_object_key: str) -> int:
     # make sure the path exists
     default_o3de_object_folder = pathlib.Path(default_o3de_object_folder).resolve()
@@ -482,7 +498,7 @@ def register_default_o3de_object_folder(json_data: dict,
 
 
 def register_default_engines_folder(json_data: dict,
-                                    default_engines_folder: str or pathlib.Path,
+                                    default_engines_folder: pathlib.Path,
                                     remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_engines_folder() if remove else default_engines_folder,
@@ -490,7 +506,7 @@ def register_default_engines_folder(json_data: dict,
 
 
 def register_default_projects_folder(json_data: dict,
-                                     default_projects_folder: str or pathlib.Path,
+                                     default_projects_folder: pathlib.Path,
                                      remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_projects_folder() if remove else default_projects_folder,
@@ -498,7 +514,7 @@ def register_default_projects_folder(json_data: dict,
 
 
 def register_default_gems_folder(json_data: dict,
-                                 default_gems_folder: str or pathlib.Path,
+                                 default_gems_folder: pathlib.Path,
                                  remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_gems_folder() if remove else default_gems_folder,
@@ -506,7 +522,7 @@ def register_default_gems_folder(json_data: dict,
 
 
 def register_default_templates_folder(json_data: dict,
-                                      default_templates_folder: str or pathlib.Path,
+                                      default_templates_folder: pathlib.Path,
                                       remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_templates_folder() if remove else default_templates_folder,
@@ -514,7 +530,7 @@ def register_default_templates_folder(json_data: dict,
 
 
 def register_default_restricted_folder(json_data: dict,
-                                       default_restricted_folder: str or pathlib.Path,
+                                       default_restricted_folder: pathlib.Path,
                                        remove: bool = False) -> int:
     return register_default_o3de_object_folder(json_data,
                                                manifest.get_o3de_restricted_folder() if remove else default_restricted_folder,
@@ -527,18 +543,18 @@ def register_default_third_party_folder(json_data: dict,
                                                manifest.get_o3de_third_party_folder() if remove else default_third_party_folder,
                                                'default_third_party_folder')
 
-def register(engine_path: str or pathlib.Path = None,
-             project_path: str or pathlib.Path = None,
-             gem_path: str or pathlib.Path = None,
-             external_subdir_path: str or pathlib.Path = None,
-             template_path: str or pathlib.Path = None,
-             restricted_path: str or pathlib.Path = None,
+def register(engine_path: pathlib.Path = None,
+             project_path: pathlib.Path = None,
+             gem_path: pathlib.Path = None,
+             external_subdir_path: pathlib.Path = None,
+             template_path: pathlib.Path = None,
+             restricted_path: pathlib.Path = None,
              repo_uri: str or pathlib.Path = None,
-             default_engines_folder: str or pathlib.Path = None,
-             default_projects_folder: str or pathlib.Path = None,
-             default_gems_folder: str or pathlib.Path = None,
-             default_templates_folder: str or pathlib.Path = None,
-             default_restricted_folder: str or pathlib.Path = None,
+             default_engines_folder: pathlib.Path = None,
+             default_projects_folder: pathlib.Path = None,
+             default_gems_folder: pathlib.Path = None,
+             default_templates_folder: pathlib.Path = None,
+             default_restricted_folder: pathlib.Path = None,
              default_third_party_folder: pathlib.Path = None,
              external_subdir_engine_path: pathlib.Path = None,
              external_subdir_project_path: pathlib.Path = None,
@@ -576,32 +592,32 @@ def register(engine_path: str or pathlib.Path = None,
     result = 0
 
     # do anything that could require a engine context first
-    if isinstance(project_path, str) or isinstance(project_path, pathlib.PurePath):
+    if isinstance(project_path, pathlib.PurePath):
         if not project_path:
             logger.error(f'Project path cannot be empty.')
             return 1
         result = result or register_project_path(json_data, project_path, remove, engine_path)
 
-    if isinstance(gem_path, str) or isinstance(gem_path, pathlib.PurePath):
+    if isinstance(gem_path, pathlib.PurePath):
         if not gem_path:
             logger.error(f'Gem path cannot be empty.')
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
                                    external_subdir_engine_path, external_subdir_project_path)
-    if isinstance(external_subdir_path, str) or isinstance(external_subdir_path, pathlib.PurePath):
+    if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')
             return 1
         result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
                                                 external_subdir_engine_path, external_subdir_project_path)
 
-    if isinstance(template_path, str) or isinstance(template_path, pathlib.PurePath):
+    if isinstance(template_path, pathlib.PurePath):
         if not template_path:
             logger.error(f'Template path cannot be empty.')
             return 1
         result = result or register_template_path(json_data, template_path, remove, engine_path)
 
-    if isinstance(restricted_path, str) or isinstance(restricted_path, pathlib.PurePath):
+    if isinstance(restricted_path, pathlib.PurePath):
         if not restricted_path:
             logger.error(f'Restricted path cannot be empty.')
             return 1
@@ -613,28 +629,28 @@ def register(engine_path: str or pathlib.Path = None,
             return 1
         result = result or register_repo(json_data, repo_uri, remove)
 
-    if isinstance(default_engines_folder, str) or isinstance(default_engines_folder, pathlib.PurePath):
+    if isinstance(default_engines_folder, pathlib.PurePath):
         result = result or register_default_engines_folder(json_data, default_engines_folder, remove)
 
-    if isinstance(default_projects_folder, str) or isinstance(default_projects_folder, pathlib.PurePath):
+    if isinstance(default_projects_folder, pathlib.PurePath):
         result = result or register_default_projects_folder(json_data, default_projects_folder, remove)
 
-    if isinstance(default_gems_folder, str) or isinstance(default_gems_folder, pathlib.PurePath):
+    if isinstance(default_gems_folder, pathlib.PurePath):
         result = result or register_default_gems_folder(json_data, default_gems_folder, remove)
 
-    if isinstance(default_templates_folder, str) or isinstance(default_templates_folder, pathlib.PurePath):
+    if isinstance(default_templates_folder, pathlib.PurePath):
         result = result or register_default_templates_folder(json_data, default_templates_folder, remove)
 
-    if isinstance(default_restricted_folder, str) or isinstance(default_restricted_folder, pathlib.PurePath):
+    if isinstance(default_restricted_folder, pathlib.PurePath):
         result = result or register_default_restricted_folder(json_data, default_restricted_folder, remove)
 
-    if isinstance(default_third_party_folder, str) or isinstance(default_third_party_folder, pathlib.PurePath):
+    if isinstance(default_third_party_folder, pathlib.PurePath):
         result = result or register_default_third_party_folder(json_data, default_third_party_folder, remove)
 
     # engine is done LAST
     # Now that everything that could have an engine context is done, if the engine is supplied that means this is
     # registering the engine itself
-    if isinstance(engine_path, str) or isinstance(engine_path, pathlib.PurePath):
+    if isinstance(engine_path, pathlib.PurePath):
         if not engine_path:
             logger.error(f'Engine path cannot be empty.')
             return 1
@@ -789,41 +805,41 @@ def add_parser_args(parser):
     group.add_argument('--this-engine', action='store_true', required=False,
                        default=False,
                        help='Registers the engine this script is running from.')
-    group.add_argument('-ep', '--engine-path', type=str, required=False,
+    group.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
                        help='Engine path to register/remove.')
-    group.add_argument('-pp', '--project-path', type=str, required=False,
+    group.add_argument('-pp', '--project-path', type=pathlib.Path, required=False,
                        help='Project path to register/remove.')
-    group.add_argument('-gp', '--gem-path', type=str, required=False,
+    group.add_argument('-gp', '--gem-path', type=pathlib.Path, required=False,
                        help='Gem path to register/remove.')
-    group.add_argument('-es', '--external-subdirectory', type=str, required=False,
+    group.add_argument('-es', '--external-subdirectory', type=pathlib.Path, required=False,
                        help='External subdirectory path to register/remove.')
-    group.add_argument('-tp', '--template-path', type=str, required=False,
+    group.add_argument('-tp', '--template-path', type=pathlib.Path, required=False,
                        help='Template path to register/remove.')
-    group.add_argument('-rp', '--restricted-path', type=str, required=False,
+    group.add_argument('-rp', '--restricted-path', type=pathlib.Path, required=False,
                        help='A restricted folder to register/remove.')
     group.add_argument('-ru', '--repo-uri', type=str, required=False,
                        help='A repo uri to register/remove.')
-    group.add_argument('-aep', '--all-engines-path', type=str, required=False,
+    group.add_argument('-aep', '--all-engines-path', type=pathlib.Path, required=False,
                        help='All engines under this folder to register/remove.')
-    group.add_argument('-app', '--all-projects-path', type=str, required=False,
+    group.add_argument('-app', '--all-projects-path', type=pathlib.Path, required=False,
                        help='All projects under this folder to register/remove.')
-    group.add_argument('-agp', '--all-gems-path', type=str, required=False,
+    group.add_argument('-agp', '--all-gems-path', type=pathlib.Path, required=False,
                        help='All gems under this folder to register/remove.')
-    group.add_argument('-atp', '--all-templates-path', type=str, required=False,
+    group.add_argument('-atp', '--all-templates-path', type=pathlib.Path, required=False,
                        help='All templates under this folder to register/remove.')
-    group.add_argument('-arp', '--all-restricted-path', type=str, required=False,
+    group.add_argument('-arp', '--all-restricted-path', type=pathlib.Path, required=False,
                        help='All templates under this folder to register/remove.')
-    group.add_argument('-aru', '--all-repo-uri', type=str, required=False,
+    group.add_argument('-aru', '--all-repo-uri', type=pathlib.Path, required=False,
                        help='All repos under this folder to register/remove.')
-    group.add_argument('-def', '--default-engines-folder', type=str, required=False,
+    group.add_argument('-def', '--default-engines-folder', type=pathlib.Path, required=False,
                        help='The default engines folder to register/remove.')
-    group.add_argument('-dpf', '--default-projects-folder', type=str, required=False,
+    group.add_argument('-dpf', '--default-projects-folder', type=pathlib.Path, required=False,
                        help='The default projects folder to register/remove.')
-    group.add_argument('-dgf', '--default-gems-folder', type=str, required=False,
+    group.add_argument('-dgf', '--default-gems-folder', type=pathlib.Path, required=False,
                        help='The default gems folder to register/remove.')
-    group.add_argument('-dtf', '--default-templates-folder', type=str, required=False,
+    group.add_argument('-dtf', '--default-templates-folder', type=pathlib.Path, required=False,
                        help='The default templates folder to register/remove.')
-    group.add_argument('-drf', '--default-restricted-folder', type=str, required=False,
+    group.add_argument('-drf', '--default-restricted-folder', type=pathlib.Path, required=False,
                        help='The default restricted folder to register/remove.')
     group.add_argument('-dtpf', '--default-third-party-folder', type=pathlib.Path, required=False,
                        help='The default 3rd Party folder to register/remove.')
@@ -831,7 +847,7 @@ def add_parser_args(parser):
                        default=False,
                        help='Refresh the repo cache.')
 
-    parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
+    parser.add_argument('-ohf', '--override-home-folder', type=pathlib.Path, required=False,
                                     help='By default the home folder is the user folder, override it to this folder.')
     parser.add_argument('-r', '--remove', action='store_true', required=False,
                                     default=False,

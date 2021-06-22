@@ -14,16 +14,17 @@ from genericpath import isdir
 from argparse import ArgumentParser
 import json
 from pathlib import Path
-import os
+import time
 
 # this allows us to add additional data if necessary, e.g. frame_test_timestamps.json
 is_timestamp_file = lambda file: file.name.startswith('frame') and file.name.endswith('_timestamps.json')
 ns_to_ms = lambda time: time / 1e6
 
 def main(logs_dir):
-    count = 0
-    total = 0
-    maximum = 0
+    frame_count = 0
+    frame_time_total = 0
+    frame_time_max = 0
+    pass_stats = {}
 
     print(f'Analyzing frame timestamp logs in {logs_dir}')
 
@@ -34,22 +35,38 @@ def main(logs_dir):
 
         data = json.loads(file.read_text())
         entries = data['ClassData']['timestampEntries']
-        timestamps = [entry['timestampResultInNanoseconds'] for entry in entries]
 
-        frame_time = sum(timestamps)
+        frame_time = 0
+        for entry in entries:
+            name = entry['passName']
+            time_ns = entry['timestampResultInNanoseconds']
+            pass_entry = pass_stats.get(name, {'max': 0, 'total': 0})
+
+            pass_entry['max'] = max(time_ns, pass_entry['max'])
+            pass_entry['total'] += time_ns
+            pass_stats[name] = pass_entry
+
+            frame_time += time_ns
+        frame_time_total += frame_time
+
         frame_name = file.name.split('_')[0]
         print(f'- Total time for frame {frame_name}: {ns_to_ms(frame_time)}ms')
 
-        maximum = max(maximum, frame_time)
-        total += frame_time
-        count += 1
+        frame_time_max = max(frame_time, frame_time_max)
+        frame_count += 1
 
-    if count < 1:
+    if frame_count < 1:
         print(f'No logs were found in {base_dir}')
         exit(1)
 
-    print(f'Avg. time across {count} frames: {ns_to_ms(total / count)}ms')
-    print(f'Max frame time: {ns_to_ms(maximum)}ms')
+    frame_avg = frame_time_total / frame_count
+    print(f'Avg time across {frame_count} frames: {ns_to_ms(frame_avg)}ms')
+    print(f'Max frame time: {ns_to_ms(frame_time_max)}ms')
+    print('Pass statistics:')
+    for name, stat in pass_stats.items():
+        avg_ms = ns_to_ms(stat['total'] / frame_count)
+        max_ms = ns_to_ms(stat['max'])
+        print(f'- {name}: {avg_ms}ms avg, {max_ms}ms max')
 
 if __name__ == '__main__':
     parser = ArgumentParser(description='Gathers statistics from a group of pass timestamp logs')

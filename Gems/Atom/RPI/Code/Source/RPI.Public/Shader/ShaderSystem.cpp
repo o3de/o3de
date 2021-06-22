@@ -148,6 +148,16 @@ namespace AZ
         {
             handler.Connect(m_globalShaderOptionUpdatedEvent);
         }
+
+        void ShaderSystem::SetSupervariantName(const AZ::Name& supervariantName)
+        {
+            m_supervariantName = supervariantName;
+        }
+
+        const AZ::Name& ShaderSystem::GetSupervariantName() const
+        {
+            return m_supervariantName;
+        }
         ///////////////////////////////////////////////////////////////////
 
     } // namespace RPI

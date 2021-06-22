@@ -26,7 +26,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
         else()
             # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            file(READ "${project_real_path}/project.json" project_json)
+            ly_file_read("${project_real_path}/project.json" project_json)
             string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
             if(json_error)
                 message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")

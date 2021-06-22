@@ -47,6 +47,12 @@ namespace AZ
 
             //! Connect a handler for GlobalShaderOptionUpdatedEvent's
             virtual void Connect(GlobalShaderOptionUpdatedEvent::Handler& handler) = 0;
+
+            //! The ShaderSystem supervariantName is used by the ShaderAsset to search for an additional supervariant permutation.
+            //! This is done by appending the supervariantName set here to the user-specified supervariant name.
+            //! Currently this is used for NoMSAA supervariant support.
+            virtual void SetSupervariantName(const AZ::Name& supervariantName) = 0;
+            virtual const AZ::Name& GetSupervariantName() const = 0;
         };
 
     }   // namespace RPI

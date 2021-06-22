@@ -24,12 +24,11 @@ from base import TestAutomationBase
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(TestAutomationBase):
-    @pytest.mark.xfail(reason="Running with atom null renderer is causing this test to fail")
+
     def test_C18977329_NvCloth_AddClothSimulationToMesh(self, request, workspace, editor, launcher_platform):
         from . import C18977329_NvCloth_AddClothSimulationToMesh as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.xfail(reason="Running with atom null renderer is causing this test to fail")
     def test_C18977330_NvCloth_AddClothSimulationToActor(self, request, workspace, editor, launcher_platform):
         from . import C18977330_NvCloth_AddClothSimulationToActor as test_module
         self._run_test(request, workspace, editor, test_module)

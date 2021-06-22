@@ -9,7 +9,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "InstanceSystemComponent.h"
 
 #include <AzCore/Debug/Profiler.h> 

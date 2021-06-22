@@ -10,6 +10,7 @@
 *
 */
 
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystem.h>
@@ -213,6 +214,7 @@ namespace AZ
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
 
             {
                 AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "main per-frame work");
@@ -224,8 +226,11 @@ namespace AZ
                  * This exists as a hook to enable RHI sample tests, which are allowed to queue their
                  * own RHI scopes to the frame scheduler. This happens prior to the RPI pass graph registration.
                  */
-                RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
-            
+                {
+                    AZ_ATOM_PROFILE_TIME_GROUP_REGION("RHI", "RHISystem :FrameUpdate: OnFramePrepare");
+                    RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnFramePrepare, m_frameScheduler);
+                }
+
                 RHI::MessageOutcome outcome = m_frameScheduler.Compile(m_compileRequest);
                 if (outcome.IsSuccess())
                 {
