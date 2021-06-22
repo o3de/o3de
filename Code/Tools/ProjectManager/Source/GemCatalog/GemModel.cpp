@@ -219,6 +219,19 @@ namespace O3DE::ProjectManager
         return !modelIndex.data(RoleRequirement).toString().isEmpty();
     }
 
+    bool GemModel::DoGemsToBeAddedHaveRequirements() const
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeAdded(modelIndex) && HasRequirement(modelIndex))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     QVector<QModelIndex> GemModel::GatherGemsToBeAdded() const
     {
         QVector<QModelIndex> result;

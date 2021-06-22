@@ -62,6 +62,8 @@ namespace O3DE::ProjectManager
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex);
         static bool HasRequirement(const QModelIndex& modelIndex);
 
+        bool DoGemsToBeAddedHaveRequirements() const;
+
         QVector<QModelIndex> GatherGemsToBeAdded() const;
         QVector<QModelIndex> GatherGemsToBeRemoved() const;
 

@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QSpacerItem>
 #include <QVBoxLayout>
+#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -70,8 +71,21 @@ namespace O3DE::ProjectManager
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
 
-        m_reqirementsTitleLabel->setText("Requirement");
-        m_reqirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
+        if (m_model->HasRequirement(modelIndex))
+        {
+            m_reqirementsIconLabel->show();
+            m_reqirementsTitleLabel->show();
+            m_reqirementsTextLabel->show();
+
+            m_reqirementsTitleLabel->setText("Requirement");
+            m_reqirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
+        }
+        else
+        {
+            m_reqirementsIconLabel->hide();
+            m_reqirementsTitleLabel->hide();
+            m_reqirementsTextLabel->hide();
+        }
 
         // Depending and conflicting gems
         m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
@@ -143,15 +157,21 @@ namespace O3DE::ProjectManager
         QHBoxLayout* requrementsLayout = new QHBoxLayout();
         requrementsLayout->setAlignment(Qt::AlignTop);
         requrementsLayout->setMargin(0);
+        requrementsLayout->setSpacing(0);
 
         m_reqirementsIconLabel = new QLabel();
-        m_reqirementsIconLabel->setPixmap(QPixmap(":/Android.svg"));
+        m_reqirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
         requrementsLayout->addWidget(m_reqirementsIconLabel);
 
         m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
         m_reqirementsTextLabel->setWordWrap(true);
 
+        QSpacerItem* reqirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+        requrementsLayout->addSpacerItem(reqirementsSpacer);
+
         m_mainLayout->addLayout(requrementsLayout);
+
+        m_mainLayout->addSpacing(20);
 
         // Depending and conflicting gems
         m_dependingGems = new GemsSubWidget();
