@@ -1160,7 +1160,7 @@ namespace AZ::AtomBridge
             // Draw 3 axis aligned circles
             const float stepAngle  = DegToRad(11.25f);
             const float startAngle = DegToRad(0.0f);
-            const float stopAngle = DegToRad(360.0f);
+            const float stopAngle = DegToRad(360.0f) + startAngle;
             SingleColorDynamicSizeLineHelper lines(2+static_cast<int>(360.0f/11.25f)); // num disk segments + 1 for azis line + 1 for spare
             const AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
