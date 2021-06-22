@@ -151,7 +151,7 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(4); // [LYN-3971] Bone pruning crash fix in AssImp SDK
+                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(5); // [LYN-4226] Invert PostRotation matrix in animation chains
                 }
             }
 
@@ -255,7 +255,6 @@ namespace AZ
             {
                 return AZStd::make_pair(animation, anim);
             }
-
             Events::ProcessingResult AssImpAnimationImporter::ImportAnimation(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "Animation");
@@ -447,7 +446,22 @@ namespace AZ
                     
                     return combinedAnimationResult.GetResult();
                 }
-                decltype(boneAnimations) parentFillerAnimations;
+
+                AZStd::unordered_set<AZStd::string> boneList;
+
+                for (int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                {
+                    aiMesh* mesh = scene->mMeshes[meshIndex];
+
+                    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    {
+                        aiBone* bone = mesh->mBones[boneIndex];
+
+                        boneList.insert(bone->mName.C_Str());
+                    }
+                }
+
+                decltype(boneAnimations) fillerAnimations;
 
                 // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
                 for (auto&& anim : boneAnimations)
@@ -459,8 +473,8 @@ namespace AZ
                     {
                         if (!IsPivotNode(parent->mName))
                         {
-                            if (boneAnimations.find(parent->mName.C_Str()) == boneAnimations.end() &&
-                                parentFillerAnimations.find(parent->mName.C_Str()) == parentFillerAnimations.end())
+                            if (!boneAnimations.contains(parent->mName.C_Str()) &&
+                                !fillerAnimations.contains(parent->mName.C_Str()))
                             {
                                 // Create 1 key for each type that just copies the current transform
                                 ConsolidatedNodeAnim emptyAnimation;
@@ -472,7 +486,7 @@ namespace AZ
                                 globalTransform.Decompose(scale, rotation, position);
 
                                 emptyAnimation.mNumRotationKeys = emptyAnimation.mNumPositionKeys = emptyAnimation.mNumScalingKeys = 1;
-                                
+
                                 emptyAnimation.m_ownedPositionKeys.emplace_back(0, position);
                                 emptyAnimation.mPositionKeys = emptyAnimation.m_ownedPositionKeys.data();
 
@@ -481,9 +495,9 @@ namespace AZ
 
                                 emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
                                 emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
-                                
-                                parentFillerAnimations.insert(
-                                    AZStd::make_pair(parent->mName.C_Str(), AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
+
+                                fillerAnimations.insert(AZStd::make_pair(
+                                    parent->mName.C_Str(), AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                             }
                         }
 
@@ -491,7 +505,7 @@ namespace AZ
                     }
                 }
 
-                boneAnimations.insert(AZStd::make_move_iterator(parentFillerAnimations.begin()), AZStd::make_move_iterator(parentFillerAnimations.end()));
+                boneAnimations.insert(AZStd::make_move_iterator(fillerAnimations.begin()), AZStd::make_move_iterator(fillerAnimations.end()));
 
                 auto animItr = boneAnimations.equal_range(currentNode->mName.C_Str());
 

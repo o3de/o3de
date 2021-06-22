@@ -2177,7 +2177,10 @@ namespace ScriptCanvas
             {
                 for (auto& latent : nodeableParse.second->m_latents)
                 {
-                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(latent.second));
+                    if (latent.second)
+                    {
+                        roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(latent.second));
+                    }
                 }
             }
 
@@ -2185,23 +2188,35 @@ namespace ScriptCanvas
             {
                 for (auto& event : eventHandlerParse.second->m_events)
                 {
-                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(event.second));
+                    if (event.second)
+                    {
+                        roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(event.second));
+                    }
                 }
             }
 
             for (auto& eventHandlerParse : m_eventHandlingByNode)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(eventHandlerParse.second->m_eventHandlerFunction));
+                if (eventHandlerParse.second->m_eventHandlerFunction)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(eventHandlerParse.second->m_eventHandlerFunction));
+                }
             }
 
             for (auto variableWriteHandling : m_variableWriteHandlingBySlot)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(variableWriteHandling.second->m_function));
+                if (variableWriteHandling.second->m_function)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(variableWriteHandling.second->m_function));
+                }
             }
 
             for (auto function : m_functions)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(function));
+                if (function)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(function));
+                }
             }
 
             return roots;

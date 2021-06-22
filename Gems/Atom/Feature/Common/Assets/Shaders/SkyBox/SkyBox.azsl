@@ -152,6 +152,18 @@ PSOutput MainPS(VSOutput input)
                 float3 srgbColor = Z * HosekWilkie(cosGamma, gamma, cosTheta) * SceneSrg::m_physicalSkyData.m_physicalSkyAndSunIntensity.x;
                 color = TransformColor(srgbColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
             }
+        } 
+
+        if (SceneSrg::m_fogEnable)
+        {
+            if (input.m_cubemapCoord.z >= 0.0 && input.m_cubemapCoord.z <= SceneSrg::m_fogTopHeight)
+            {
+                color = lerp(SceneSrg::m_fogColor.rgb, color, input.m_cubemapCoord.z > 0.0 ? input.m_cubemapCoord.z/SceneSrg::m_fogTopHeight : 0.0);
+            }
+            else if (input.m_cubemapCoord.z < 0.0 && input.m_cubemapCoord.z >= -SceneSrg::m_fogBottomHeight)
+            {
+                color = SceneSrg::m_fogColor.rgb;
+            }
         }
     }
     else

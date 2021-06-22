@@ -82,6 +82,8 @@ namespace AZ
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the shadowmap Pcf (percentage closer filtering) method.
             virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+            //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
+            virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
             //! Sets all of the the point data for the provided LightHandle.
             virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
         };

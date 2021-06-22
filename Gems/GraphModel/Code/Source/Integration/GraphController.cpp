@@ -1338,11 +1338,7 @@ namespace GraphModelIntegration
 
     GraphCanvasMetadata* GraphController::GetGraphMetadata()
     {
-        if (!m_graph->GetUiMetadata().is<GraphCanvasMetadata>())
-        {
-            m_graph->SetUiMetadata(AZStd::any(GraphCanvasMetadata()));
-        }
-        GraphCanvasMetadata* graphCanvasMetadata = AZStd::any_cast<GraphCanvasMetadata>(&m_graph->GetUiMetadata());
+        GraphCanvasMetadata* graphCanvasMetadata = &m_graph->GetUiMetadata();
         AZ_Assert(graphCanvasMetadata, "GraphCanvasMetadata not initialized");
         return graphCanvasMetadata;
     }

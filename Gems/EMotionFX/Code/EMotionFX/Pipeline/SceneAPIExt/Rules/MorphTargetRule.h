@@ -73,7 +73,7 @@ namespace EMotionFX
                 static size_t DetectMorphTargetAnimations(const AZ::SceneAPI::Containers::Scene& scene);
 
             protected:
-                size_t m_morphAnimationCount;
+                AZ::u64 m_morphAnimationCount;
                 AZStd::string m_descriptionText;
             };
 

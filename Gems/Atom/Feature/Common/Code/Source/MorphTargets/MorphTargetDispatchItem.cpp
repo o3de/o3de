@@ -199,7 +199,7 @@ namespace AZ
             }
         }
 
-        void MorphTargetDispatchItem::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<AZ::RPI::ShaderAsset>& shaderAsset)
+        void MorphTargetDispatchItem::OnShaderAssetReinitialized([[maybe_unused]] const Data::Asset<RPI::ShaderAsset>& shaderAsset)
         {
             if (!Init())
             {
@@ -207,7 +207,7 @@ namespace AZ
             }
         }
 
-        void MorphTargetDispatchItem::OnShaderVariantReinitialized([[maybe_unused]] const RPI::Shader& shader, [[maybe_unused]] const RPI::ShaderVariantId& shaderVariantId, [[maybe_unused]] RPI::ShaderVariantStableId shaderVariantStableId)
+        void MorphTargetDispatchItem::OnShaderVariantReinitialized(const RPI::ShaderVariant&)
         {
             if (!Init())
             {

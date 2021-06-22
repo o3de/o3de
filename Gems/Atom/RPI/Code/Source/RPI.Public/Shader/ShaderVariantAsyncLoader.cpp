@@ -323,9 +323,8 @@ namespace AZ
 
         void ShaderVariantAsyncLoader::Reset()
         {
-            // [GFX TODO ATOM-14544] Idealy we want to be able to reset the ShaderVariantAsyncLoader but this is causing some problems that need to be worked out first.
-            //Shutdown();
-            //Init();
+            Shutdown();
+            Init();
         }
 
         ///////////////////////////////////////////////////////////////////

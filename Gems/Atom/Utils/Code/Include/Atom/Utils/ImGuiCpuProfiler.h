@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Atom/RHI/CpuProfiler.h>
+#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 
 namespace AZ
 {
@@ -56,6 +57,16 @@ namespace AZ
             ImGuiTextFilter m_timedRegionFilter;
 
             GroupRegionMap m_groupRegionMap;
+
+            // Pause cpu profiling. The profiler will show the statistics of the last frame before pause
+            bool m_paused = false;
+
+            // Total frames need to be saved
+            int m_captureFrameCount = 1;
+
+            AZ::RHI::CpuTimingStatistics m_cpuTimingStatisticsWhenPause;
+
+            AZStd::string m_lastCapturedFilePath;
         };
     } // namespace Render
 }
