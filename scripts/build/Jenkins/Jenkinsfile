@@ -449,7 +449,7 @@ try {
                     repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
-                    env.REPOSITORY_NAME = repository_name
+                    env.REPOSITORY_NAME = repositoryName
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
 
                     if(env.BRANCH_NAME) {
