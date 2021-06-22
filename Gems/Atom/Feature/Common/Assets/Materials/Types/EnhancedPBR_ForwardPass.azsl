@@ -353,7 +353,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
         lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
 
-        // add specular
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
         float3 specular = lightingOutput.m_specularColor.rgb;
         specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
@@ -374,7 +374,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
         lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
 
-        // add specular
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
         float3 specular = lightingOutput.m_specularColor.rgb;
         specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
