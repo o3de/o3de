@@ -14,10 +14,10 @@
 // AZ
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/any.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 
 // Graph Model
+#include <GraphModel/Integration/GraphCanvasMetadata.h>
 #include <GraphModel/Model/Common.h>
 #include <GraphModel/Model/GraphElement.h>
 
@@ -136,9 +136,9 @@ namespace GraphModel
         //! Set/gets a bundle of generic metadata that is provided by the node graph UI
         //! system. This may include node positions, comment blocks, node groupings, and 
         //! bookmarks, for example.
-        void SetUiMetadata(const AZStd::any& uiMetadata);
-        const AZStd::any& GetUiMetadata() const;
-        AZStd::any& GetUiMetadata();
+        void SetUiMetadata(const GraphModelIntegration::GraphCanvasMetadata& uiMetadata);
+        const GraphModelIntegration::GraphCanvasMetadata& GetUiMetadata() const;
+        GraphModelIntegration::GraphCanvasMetadata& GetUiMetadata();
 
         AZStd::shared_ptr<Slot> FindSlot(const Endpoint& endpoint);
 
@@ -157,7 +157,7 @@ namespace GraphModel
         ConnectionList m_connections;
 
         //! Used to store and serialize metadata from the graph UI, like node positions, comments, group boxes, etc.
-        AZStd::any m_uiMetadata;
+        GraphModelIntegration::GraphCanvasMetadata m_uiMetadata;
 
         //! Used to store all of our node <-> wrapper node mappings
         NodeWrappingMap m_nodeWrappings;

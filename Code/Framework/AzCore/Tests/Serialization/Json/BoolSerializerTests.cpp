@@ -63,6 +63,18 @@ namespace JsonSerializationTests
         : public BaseJsonSerializerFixture
     {
     public:
+        struct BoolPointerWrapper
+        {
+            AZ_TYPE_INFO(BoolPointerWrapper, "{2E67C069-BB0F-4F00-A704-E964F5FE5ED2}");
+
+            bool* m_value{ nullptr };
+
+            ~BoolPointerWrapper()
+            {
+                azfree(m_value);
+            }
+        };
+
         void SetUp() override
         {
             BaseJsonSerializerFixture::SetUp();
@@ -73,6 +85,12 @@ namespace JsonSerializationTests
         {
             m_boolSerializer.reset();
             BaseJsonSerializerFixture::TearDown();
+        }
+
+        void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
+        {
+            serializeContext->Class<BoolPointerWrapper>()
+                ->Field("Value", &BoolPointerWrapper::m_value);
         }
 
         void Load(rapidjson::Value& testVal, bool expectedBool, AZ::JsonSerializationResult::Outcomes expectedOutcome)

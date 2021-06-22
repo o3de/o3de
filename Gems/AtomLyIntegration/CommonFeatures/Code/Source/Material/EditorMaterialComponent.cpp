@@ -32,7 +32,7 @@ namespace AZ
 {
     namespace Render
     {
-        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate Source Materials...";
+        const char* EditorMaterialComponent::GenerateMaterialsButtonText = "Generate/Manage Source Materials...";
         const char* EditorMaterialComponent::GenerateMaterialsToolTipText = "Generate editable source material files from materials provided by the model.";
 
         const char* EditorMaterialComponent::ResetMaterialsButtonText = "Reset Materials";
@@ -228,10 +228,13 @@ namespace AZ
             action = menu->addAction(GenerateMaterialsButtonText, [this]() { OpenMaterialExporter(); });
             action->setToolTip(GenerateMaterialsToolTipText);
 
+            menu->addSeparator();
+
             action = menu->addAction(ResetMaterialsButtonText, [this]() { ResetMaterialSlots(); });
             action->setToolTip(ResetMaterialsToolTipText);
 
             menu->addSeparator();
+
             action = menu->addAction("Clear Model Materials", [this]() {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Clearing model materials.");
                 SetDirty();

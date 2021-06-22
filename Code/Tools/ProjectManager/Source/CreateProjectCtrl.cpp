@@ -77,6 +77,7 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::CreateProject;
     }
 
+    // Called when pressing "Create New Project"
     void CreateProjectCtrl::NotifyCurrentScreen()
     {
         ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
@@ -84,6 +85,11 @@ namespace O3DE::ProjectManager
         {
             currentScreen->NotifyCurrentScreen();
         }
+
+        // Gather the gems from the project template. When we will have multiple project templates, we need to re-gather them
+        // on changing the template and let the user know that any further changes on top of the template will be lost.
+        QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+        m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
     }
 
     void CreateProjectCtrl::HandleBackButton()
@@ -150,9 +156,6 @@ namespace O3DE::ProjectManager
             if(CurrentScreenIsValid())
             {
                 m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
-
-                QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-                m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template", /*isNewProject=*/true);
 
                 Update();
             }

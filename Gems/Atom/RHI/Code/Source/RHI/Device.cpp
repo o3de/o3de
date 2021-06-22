@@ -10,6 +10,7 @@
 *
 */
 
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
 
@@ -151,6 +152,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsInFrame())
             {
+                AZ_ATOM_PROFILE_FUNCTION("RHI", "Device: EndFrame");
                 EndFrameInternal();
                 m_isInFrame = false;
                 return ResultCode::Success;
@@ -172,6 +174,7 @@ namespace AZ
         {
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
+                AZ_ATOM_PROFILE_FUNCTION("RHI", "Device: CompileMemoryStatistics");
                 MemoryStatisticsBuilder builder;
                 builder.Begin(memoryStatistics, reportFlags);
                 CompileMemoryStatisticsInternal(builder);

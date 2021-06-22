@@ -257,17 +257,18 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void EditorWhiteBoxComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
+        provided.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     void EditorWhiteBoxComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        incompatible.push_back(AZ_CRC_CE("MeshService"));
     }
 
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;

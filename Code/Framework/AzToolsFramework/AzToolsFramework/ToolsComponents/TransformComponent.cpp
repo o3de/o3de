@@ -27,6 +27,7 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -944,7 +945,7 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        AZ::u32 TransformComponent::ParentChanged()
+        AZ::u32 TransformComponent::ParentChangedInspector()
         {
             AZ::u32 refreshLevel = AZ::Edit::PropertyRefreshLevels::None;
 
@@ -974,12 +975,23 @@ namespace AzToolsFramework
             return refreshLevel;
         }
 
-        AZ::u32 TransformComponent::TransformChanged()
+        AZ::u32 TransformComponent::TransformChangedInspector()
+        {
+            if (TransformChanged())
+            {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    EntityIdList{ GetEntityId() });
+            }
+
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        bool TransformComponent::TransformChanged()
         {
             if (!m_suppressTransformChangedEvent)
             {
-                auto parent = GetParentTransformComponent();
-                if (parent)
+                if (auto parent = GetParentTransformComponent())
                 {
                     OnTransformChanged(parent->GetLocalTM(), parent->GetWorldTM());
                 }
@@ -987,13 +999,15 @@ namespace AzToolsFramework
                 {
                     OnTransformChanged(AZ::Transform::Identity(), AZ::Transform::Identity());
                 }
+
+                return true;
             }
 
-            return AZ::Edit::PropertyRefreshLevels::None;
+            return false;
         }
 
         // This is called when our transform changes static state.
-        AZ::u32 TransformComponent::StaticChanged()
+        AZ::u32 TransformComponent::StaticChangedInspector()
         {
             AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
@@ -1175,10 +1189,10 @@ namespace AzToolsFramework
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_parentEntityId, "Parent entity", "")->
                             Attribute(AZ::Edit::Attributes::ChangeValidate, &TransformComponent::ValidatePotentialParent)->
-                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::ParentChanged)->
+                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::ParentChangedInspector)->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushableOnSliceRoot)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_editorTransform, "Values", "")->
-                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChanged)->
+                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::TransformChangedInspector)->
                             Attribute(AZ::Edit::Attributes::AutoExpand, true)->
                         DataElement(AZ::Edit::UIHandlers::Button, &TransformComponent::m_addNonUniformScaleButton, "", "")->
                             Attribute(AZ::Edit::Attributes::ButtonText, "Add non-uniform scale")->
@@ -1189,7 +1203,7 @@ namespace AzToolsFramework
                             EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainOriginalRelativeTransform, "Original relative transform")->
                             EnumAttribute(AZ::TransformConfig::ParentActivationTransformMode::MaintainCurrentWorldTransform, "Current world transform")->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_isStatic ,"Static", "Static entities are highly optimized and cannot be moved during runtime.")->
-                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::StaticChanged)->
+                            Attribute(AZ::Edit::Attributes::ChangeNotify, &TransformComponent::StaticChangedInspector)->
                         DataElement(AZ::Edit::UIHandlers::Default, &TransformComponent::m_cachedWorldTransformParent, "Cached Parent Entity", "")->
                             Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::DontGatherReference | AZ::Edit::SliceFlags::NotPushable)->
                             Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)->

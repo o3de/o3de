@@ -186,6 +186,12 @@ namespace AZ
             }
         }
 
+        bool CpuProfilerImpl::IsProfilerEnabled() const
+        {
+            return m_enabled;
+        }
+
+
         void CpuProfilerImpl::RegisterThreadStorage()
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);

@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "EditorAreaDebugComponent.h"
 
 #include <AzCore/Serialization/Utils.h>
