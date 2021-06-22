@@ -23,12 +23,32 @@ namespace AWSGameLift
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest)
         {
             Aws::GameLift::Model::SearchGameSessionsRequest request;
-            request.SetFilterExpression(searchSessionsRequest.m_filterExpression.c_str());
-            request.SetSortExpression(searchSessionsRequest.m_sortExpression.c_str());
-            request.SetLimit(searchSessionsRequest.m_maxResult);
-            request.SetNextToken(searchSessionsRequest.m_nextToken.c_str());
-            request.SetAliasId(searchSessionsRequest.m_aliasId.c_str());
-            request.SetFleetId(searchSessionsRequest.m_fleetId.c_str());
+            // Optional attributes
+            if (!searchSessionsRequest.m_filterExpression.empty())
+            {
+                request.SetFilterExpression(searchSessionsRequest.m_filterExpression.c_str());
+            }
+            if (!searchSessionsRequest.m_sortExpression.empty())
+            {
+                request.SetSortExpression(searchSessionsRequest.m_sortExpression.c_str());
+            }
+            if (searchSessionsRequest.m_maxResult > 0)
+            {
+                request.SetLimit(searchSessionsRequest.m_maxResult);
+            }
+            if (!searchSessionsRequest.m_nextToken.empty())
+            {
+                request.SetNextToken(searchSessionsRequest.m_nextToken.c_str());
+            }
+            // Required attributes
+            if (!searchSessionsRequest.m_aliasId.empty())
+            {
+                request.SetAliasId(searchSessionsRequest.m_aliasId.c_str());
+            }
+            if (!searchSessionsRequest.m_fleetId.empty())
+            {
+                request.SetFleetId(searchSessionsRequest.m_fleetId.c_str());
+            }
             // TODO: Update the AWS Native SDK to accept the new request parameter.
             //request.SetLocation(searchSessionsRequest.m_location.c_str());
             return request;

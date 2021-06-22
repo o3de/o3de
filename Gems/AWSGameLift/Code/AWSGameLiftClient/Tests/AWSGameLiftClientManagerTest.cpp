@@ -762,10 +762,12 @@ TEST_F(AWSGameLiftClientManagerTest, LeaveSessionAsync_CallWithInterfaceNotRegis
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }
 
-TEST_F(AWSGameLiftClientManagerTest, LeaveSessionAsync_CallWithInterfaceRegistered_LeaveSessionAsyncRequestSent)
+TEST_F(AWSGameLiftClientManagerTest, LeaveSessionAsync_CallWithInterfaceRegistered_LeaveSessionAsyncRequestSentAndGetNotification)
 {
     SessionHandlingClientRequestsMock handlerMock;
     EXPECT_CALL(handlerMock, RequestPlayerLeaveSession).Times(1);
+    SessionAsyncRequestNotificationsHandlerMock sessionHandlerMock;
+    EXPECT_CALL(sessionHandlerMock, OnLeaveSessionAsyncComplete()).Times(1);
 
     m_gameliftClientManager->LeaveSessionAsync();
 }

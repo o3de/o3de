@@ -24,7 +24,12 @@ namespace AWSGameLift
             const AWSGameLiftJoinSessionRequest& joinSessionRequest)
         {
             Aws::GameLift::Model::CreatePlayerSessionRequest request;
-            request.SetPlayerData(joinSessionRequest.m_playerData.c_str());
+            // Optional attributes
+            if (!joinSessionRequest.m_playerData.empty())
+            {
+                request.SetPlayerData(joinSessionRequest.m_playerData.c_str());
+            }
+            // Required attributes
             request.SetPlayerId(joinSessionRequest.m_playerId.c_str());
             request.SetGameSessionId(joinSessionRequest.m_sessionId.c_str());
             return request;

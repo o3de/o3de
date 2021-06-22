@@ -21,20 +21,38 @@ namespace AWSGameLift
             const AWSGameLiftCreateSessionRequest& createSessionRequest)
         {
             Aws::GameLift::Model::CreateGameSessionRequest request;
-            request.SetCreatorId(createSessionRequest.m_creatorId.c_str());
-            request.SetName(createSessionRequest.m_sessionName.c_str());
-            request.SetMaximumPlayerSessionCount(createSessionRequest.m_maxPlayer);
-            request.SetAliasId(createSessionRequest.m_aliasId.c_str());
-            request.SetFleetId(createSessionRequest.m_fleetId.c_str());
-            request.SetIdempotencyToken(createSessionRequest.m_idempotencyToken.c_str());
-
-            for (auto iter = createSessionRequest.m_sessionProperties.begin(); iter != createSessionRequest.m_sessionProperties.end(); iter++)
+            // Optional attributes
+            if (!createSessionRequest.m_creatorId.empty())
+            {
+                request.SetCreatorId(createSessionRequest.m_creatorId.c_str());
+            }
+            if (!createSessionRequest.m_sessionName.empty())
+            {
+                request.SetName(createSessionRequest.m_sessionName.c_str());
+            }
+            if (!createSessionRequest.m_idempotencyToken.empty())
+            {
+                request.SetIdempotencyToken(createSessionRequest.m_idempotencyToken.c_str());
+            }
+            for (auto iter = createSessionRequest.m_sessionProperties.begin();
+                 iter != createSessionRequest.m_sessionProperties.end(); iter++)
             {
                 Aws::GameLift::Model::GameProperty sessionProperty;
                 sessionProperty.SetKey(iter->first.c_str());
                 sessionProperty.SetValue(iter->second.c_str());
                 request.AddGameProperties(sessionProperty);
             }
+
+            // Required attributes
+            if (!createSessionRequest.m_aliasId.empty())
+            {
+                request.SetAliasId(createSessionRequest.m_aliasId.c_str());
+            }
+            if (!createSessionRequest.m_fleetId.empty())
+            {
+                request.SetFleetId(createSessionRequest.m_fleetId.c_str());
+            }
+            request.SetMaximumPlayerSessionCount(createSessionRequest.m_maxPlayer);
 
             return request;
         }

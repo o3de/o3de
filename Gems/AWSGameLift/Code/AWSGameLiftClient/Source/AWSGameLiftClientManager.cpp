@@ -287,6 +287,8 @@ namespace AWSGameLift
             [this]()
             {
                 LeaveSession();
+                AzFramework::SessionAsyncRequestNotificationBus::Broadcast(
+                    &AzFramework::SessionAsyncRequestNotifications::OnLeaveSessionAsyncComplete);
             },
             true, jobContext);
 

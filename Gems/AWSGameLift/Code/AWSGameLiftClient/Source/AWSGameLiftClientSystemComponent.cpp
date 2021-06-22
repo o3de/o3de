@@ -38,6 +38,7 @@ namespace AWSGameLift
         AWSGameLiftCreateSessionRequest::Reflect(context);
         AWSGameLiftJoinSessionRequest::Reflect(context);
         AWSGameLiftSearchSessionsRequest::Reflect(context);
+        ReflectSearchSessionsResponse(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -139,6 +140,40 @@ namespace AWSGameLift
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ;
+        }
+    }
+
+    void AWSGameLiftClientSystemComponent::ReflectSearchSessionsResponse(AZ::ReflectContext* context)
+    {
+        // As it is a common response type, reflection could be moved to AzFramework to avoid duplication
+        AzFramework::SessionConfig::Reflect(context);
+        AzFramework::SearchSessionsResponse::Reflect(context);
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<AzFramework::SessionConfig>("SessionConfig")
+                ->Attribute(AZ::Script::Attributes::Category, "Session")
+                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
+                ->Property("CreationTime", BehaviorValueProperty(&AzFramework::SessionConfig::m_creationTime))
+                ->Property("CreatorId", BehaviorValueProperty(&AzFramework::SessionConfig::m_creatorId))
+                ->Property("CurrentPlayer", BehaviorValueProperty(&AzFramework::SessionConfig::m_currentPlayer))
+                ->Property("DnsName", BehaviorValueProperty(&AzFramework::SessionConfig::m_dnsName))
+                ->Property("IpAddress", BehaviorValueProperty(&AzFramework::SessionConfig::m_ipAddress))
+                ->Property("MaxPlayer", BehaviorValueProperty(&AzFramework::SessionConfig::m_maxPlayer))
+                ->Property("Port", BehaviorValueProperty(&AzFramework::SessionConfig::m_port))
+                ->Property("SessionId", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionId))
+                ->Property("SessionName", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionName))
+                ->Property("SessionProperties", BehaviorValueProperty(&AzFramework::SessionConfig::m_sessionProperties))
+                ->Property("Status", BehaviorValueProperty(&AzFramework::SessionConfig::m_status))
+                ->Property("StatusReason", BehaviorValueProperty(&AzFramework::SessionConfig::m_statusReason))
+                ->Property("TerminationTime", BehaviorValueProperty(&AzFramework::SessionConfig::m_terminationTime))
+                ;
+            behaviorContext->Class<AzFramework::SearchSessionsResponse>("SearchSessionsResponse")
+                ->Attribute(AZ::Script::Attributes::Category, "Session")
+                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
+                ->Property("NextToken", BehaviorValueProperty(&AzFramework::SearchSessionsResponse::m_nextToken))
+                ->Property("SessionConfigs", BehaviorValueProperty(&AzFramework::SearchSessionsResponse::m_sessionConfigs))
                 ;
         }
     }

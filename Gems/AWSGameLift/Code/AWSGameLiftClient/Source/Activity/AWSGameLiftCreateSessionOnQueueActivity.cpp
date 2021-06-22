@@ -21,20 +21,24 @@ namespace AWSGameLift
             const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
         {
             Aws::GameLift::Model::StartGameSessionPlacementRequest request;
-            request.SetGameSessionName(createSessionOnQueueRequest.m_sessionName.c_str());
-            request.SetMaximumPlayerSessionCount(createSessionOnQueueRequest.m_maxPlayer);
-            request.SetGameSessionQueueName(createSessionOnQueueRequest.m_queueName.c_str());
-            request.SetPlacementId(createSessionOnQueueRequest.m_placementId.c_str());
-
+            // Optional attributes
+            if (!createSessionOnQueueRequest.m_sessionName.empty())
+            {
+                request.SetGameSessionName(createSessionOnQueueRequest.m_sessionName.c_str());
+            }
             for (auto iter = createSessionOnQueueRequest.m_sessionProperties.begin();
-                 iter != createSessionOnQueueRequest.m_sessionProperties.end();
-                 iter++)
+                 iter != createSessionOnQueueRequest.m_sessionProperties.end(); iter++)
             {
                 Aws::GameLift::Model::GameProperty sessionProperty;
                 sessionProperty.SetKey(iter->first.c_str());
                 sessionProperty.SetValue(iter->second.c_str());
                 request.AddGameProperties(sessionProperty);
             }
+
+            // Required attributes
+            request.SetGameSessionQueueName(createSessionOnQueueRequest.m_queueName.c_str());
+            request.SetMaximumPlayerSessionCount(createSessionOnQueueRequest.m_maxPlayer);
+            request.SetPlacementId(createSessionOnQueueRequest.m_placementId.c_str());
 
             return request;
         }
