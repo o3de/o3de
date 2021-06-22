@@ -18,6 +18,9 @@ option(LY_TEST_IMPACT_INSTRUMENTATION_BIN "Path to test impact framework instrum
 # Name of test impact framework console static library target
 set(LY_TEST_IMPACT_CONSOLE_STATIC_TARGET "TestImpact.Frontend.Console.Static")
 
+# Name of test impact framework python coverage gem target
+set(LY_TEST_IMPACT_PYTHON_COVERAGE_STATIC_TARGET "PythonCoverage.Editor.Static")
+
 # Name of test impact framework console target
 set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
 
@@ -395,6 +398,7 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE PERSISTENT_DATA_D
 
     # Set the above config file as the default config file to use for the test impact framework console target
     target_compile_definitions(${LY_TEST_IMPACT_CONSOLE_STATIC_TARGET} PUBLIC "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${PERSISTENT_DATA_DIR}/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
+    target_compile_definitions(${LY_TEST_IMPACT_PYTHON_COVERAGE_STATIC_TARGET} PRIVATE "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${PERSISTENT_DATA_DIR}/$<TARGET_FILE_BASE_NAME:${LY_TEST_IMPACT_CONSOLE_TARGET}>.$<CONFIG>.json\"")
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
 

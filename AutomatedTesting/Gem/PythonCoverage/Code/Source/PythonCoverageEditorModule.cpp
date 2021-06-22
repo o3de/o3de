@@ -18,9 +18,7 @@ namespace PythonCoverage
     AZ_CLASS_ALLOCATOR_IMPL(PythonCoverageEditorModule, AZ::SystemAllocator, 0)
 
     PythonCoverageEditorModule::PythonCoverageEditorModule()
-        : PythonCoverageModule()
     {
-        // push results of [MyComponent]::CreateDescriptor() into m_descriptors here
         m_descriptors.insert(
             m_descriptors.end(),
             {

@@ -37,7 +37,15 @@ namespace PythonCoverage
     {
         AzToolsFramework::EditorPythonScriptNotificationsBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+
+        // Attempt to discover the output directory for the test coverage files
         ParseCoverageOutputDirectory();
+
+        if (m_coverageState == CoverageState::Disabled)
+        {
+            return;
+        }
+
         EnumerateAllModuleComponents();
     }
 
@@ -49,16 +57,31 @@ namespace PythonCoverage
 
     void PythonCoverageEditorSystemComponent::OnEntityActivated(const AZ::EntityId& entityId)
     {
+        if (m_coverageState == CoverageState::Disabled)
+        {
+            return;
+        }
+
         EnumerateComponentsForEntity(entityId);
-        WriteCoverageFile();
+
+        // There is currently no way to receive a graceful exit signal in order to properly handle the coverage end of life so
+        // instead we have to serialize the data on-the-fly with blocking disk writes on the main thread... if this adversely
+        // affects performance in a measurable way then this could potentially be put on a worker thread, although it remains to
+        // be seen whether the asynchronous nature of such a thread results in queued up coverage being lost due to the hard exit
+        if (m_coverageState == CoverageState::Gathering)
+        {
+            WriteCoverageFile();
+        }
     }
 
     void PythonCoverageEditorSystemComponent::ParseCoverageOutputDirectory()
     {
         m_coverageState = CoverageState::Disabled;
         const AZStd::string configFilePath = LY_TEST_IMPACT_DEFAULT_CONFIG_FILE;
+
         if (configFilePath.empty())
         {
+            // Config file path will be empty if test impact analysis framework is disabled
             AZ_Warning(Caller, false, "No test impact analysis framework config found.");
             return;
         }
@@ -86,53 +109,49 @@ namespace PythonCoverage
             return;
         }
 
-        const AZ::IO::Path tempWorkspaceRootDir = configurationFile["workspace"]["temp"]["root"].GetString();
-        const AZ::IO::Path artifactRelativeDir = configurationFile["workspace"]["temp"]["relative_paths"]["artifact_dir"].GetString();
+        const auto& tempConfig = configurationFile["workspace"]["temp"];
+        const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
+        const AZ::IO::Path artifactRelativeDir = tempConfig["relative_paths"]["artifact_dir"].GetString();
         m_coverageDir = tempWorkspaceRootDir / artifactRelativeDir;
         m_coverageState = CoverageState::Idle;
     }
     
     void PythonCoverageEditorSystemComponent::WriteCoverageFile()
     {
-        // Yes, we're doing blocking file operations on the main thread... If this becomes an issue this can be offloaded
-        // to a worker thread
-        if (m_coverageState == CoverageState::Gathering)
+        AZStd::string contents;
+        for (const auto& [testCase, entityComponents] : m_entityComponentMap)
         {
-            AZStd::string contents;
-            for (const auto& [testCase, entityComponents] : m_entityComponentMap)
+            const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(entityComponents);
+            if (coveringModules.empty())
             {
-                const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(entityComponents);
-                if (coveringModules.empty())
-                {
-                    return;
-                }
+                return;
+            }
 
-                contents = testCase + "\n";
-                for (const auto& coveringModule : coveringModules)
-                {
-                    contents += AZStd::string::format(" %s\n", coveringModule.c_str());
-                }
-            }
-    
-            AZ::IO::SystemFile file;
-            const AZStd::vector<char> bytes(contents.begin(), contents.end());
-            if (!file.Open(
-                    m_coverageFile.c_str(),
-                    AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+            contents = testCase + "\n";
+            for (const auto& coveringModule : coveringModules)
             {
-                AZ_Error(
-                    Caller, false,
-                    "Couldn't open file %s for writing", m_coverageFile.c_str());
-                return;
+                contents += AZStd::string::format(" %s\n", coveringModule.c_str());
             }
+        }
     
-            if (!file.Write(bytes.data(), bytes.size()))
-            {
-                AZ_Error(
-                    Caller, false,
-                   "Couldn't write contents for file %s", m_coverageFile.c_str());
-                return;
-            }
+        AZ::IO::SystemFile file;
+        const AZStd::vector<char> bytes(contents.begin(), contents.end());
+        if (!file.Open(
+                m_coverageFile.c_str(),
+                AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+        {
+            AZ_Error(
+                Caller, false,
+                "Couldn't open file %s for writing", m_coverageFile.c_str());
+            return;
+        }
+    
+        if (!file.Write(bytes.data(), bytes.size()))
+        {
+            AZ_Error(
+                Caller, false,
+                "Couldn't write contents for file %s", m_coverageFile.c_str());
+            return;
         }
     }
     
@@ -142,10 +161,9 @@ namespace PythonCoverage
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
             [this](const AZ::ModuleData& moduleData)
             {
-                const AZStd::string moduleName = moduleData.GetDebugName();
+                // We can only enumerate shared libs, static libs are invisible to us
                 if (moduleData.GetDynamicModuleHandle())
                 {
-                    const auto fileName = moduleData.GetDynamicModuleHandle()->GetFilename();
                     for (const auto* moduleComponentDescriptor : moduleData.GetModule()->GetComponentDescriptors())
                     {
                         m_moduleComponents[moduleComponentDescriptor->GetUuid()] = moduleData.GetDebugName();

@@ -12,15 +12,17 @@
 
 #pragma once
 
-#include "PythonCoverageModule.h"
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Module/Module.h>
 
 namespace PythonCoverage
 {
-    class PythonCoverageEditorModule : public PythonCoverageModule
+    class PythonCoverageEditorModule
+        : public AZ::Module
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(PythonCoverageEditorModule, "{32C0FFEA-09A7-460F-9257-5BDEF74FCD5B}", PythonCoverageModule);
+        AZ_RTTI(PythonCoverageEditorModule, "{32C0FFEA-09A7-460F-9257-5BDEF74FCD5B}");
 
         PythonCoverageEditorModule();
         ~PythonCoverageEditorModule();
