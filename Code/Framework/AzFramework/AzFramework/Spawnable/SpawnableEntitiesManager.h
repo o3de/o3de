@@ -85,6 +85,22 @@ namespace AzFramework
             AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator, 0);
             static constexpr uint32_t Processing = AZStd::numeric_limits<uint32_t>::max();
 
+            //! Map of template entity ids to their associated instance ids.
+            //! Tickets can be used to spawn the same template entities multiple times, in any order, across multiple calls.
+            //! Since template entities can reference other entities, this map is used to fix up those references across calls
+            //! using the following policy:
+            //! - Entities referencing an entity that hasn't been spawned yet will get a reference to the id that *will* be used
+            //!   the first time that entity will be spawned.  The reference will be invalid until that entity is spawned, but
+            //!   will be valid if/when it gets spawned.
+            //! - Entities referencing an entity that *has* been spawned will get a reference to the id that was *last* used to
+            //!   spawn the entity.
+            //! Note that this implies a certain level of non-determinism when spawning across calls, because the entity references
+            //! will be based on the order in which the SpawnEntity calls occur, which can be affected by things like priority.
+            EntityIdMap m_entityIdReferenceMap;
+            //! For this to work, we also need to keep track of whether or not each entity has been spawned at least once, so we know
+            //! whether or not to replace the id in the map when spawning a new instance of that entity.
+            AZStd::unordered_set<AZ::EntityId> m_previouslySpawned;
+
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
             AZStd::vector<size_t> m_spawnedEntityIndices;
             AZ::Data::Asset<Spawnable> m_spawnable;
@@ -193,6 +209,15 @@ namespace AzFramework
         bool ProcessRequest(ClaimEntitiesCommand& request);
         bool ProcessRequest(BarrierCommand& request);
         bool ProcessRequest(DestroyTicketCommand& request);
+
+        //! Generate a base set of original-to-new entity ID mappings to use during spawning.
+        //! Since Entity references get fixed up on an entity-by-entity basis while spawning, it's important to have the complete
+        //! set of new IDs available right at the start.  This way, entities that refer to other entities that haven't spawned yet
+        //! will still get their references remapped correctly.
+        void InitializeEntityIdMappings(
+            const Spawnable::EntityList& entities, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned);
+        void RefreshEntityIdMapping(
+            const AZ::EntityId& entityId, EntityIdMap& idMap, AZStd::unordered_set<AZ::EntityId>& previouslySpawned);
 
         Queue m_highPriorityQueue;
         Queue m_regularPriorityQueue;

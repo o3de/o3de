@@ -300,7 +300,7 @@ namespace GraphModel
     // Slot
 
     AZ::JsonSerializationResult::Result JsonSlotSerializer::Load(
-        void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+        void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
         AZ::JsonDeserializerContext& context)
     {
         namespace JSR = AZ::JsonSerializationResult;
@@ -343,12 +343,12 @@ namespace GraphModel
 
         return context.Report(
             result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded Slot information."
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded Slot information."
             : "Failed to load Slot information.");
     }
 
     AZ::JsonSerializationResult::Result JsonSlotSerializer::Store(
-        rapidjson::Value& outputValue, const void* inputValue, [[maybe_unused]] const void* defaultValue, const AZ::Uuid& valueTypeId,
+        rapidjson::Value& outputValue, const void* inputValue, [[maybe_unused]] const void* defaultValue, [[maybe_unused]] const AZ::Uuid& valueTypeId,
         AZ::JsonSerializerContext& context)
     {
         namespace JSR = AZ::JsonSerializationResult;
