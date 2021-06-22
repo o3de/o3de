@@ -42,6 +42,7 @@ namespace Audio
 
     using AudioSystemStdAllocator = AZ::AZStdAlloc<AZ::SystemAllocator>;
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     class AudioImplAllocator final
         : public AZ::SystemAllocator
@@ -65,6 +66,29 @@ namespace Audio
     };
 
     using AudioImplStdAllocator = AZ::AZStdAlloc<AZ::SystemAllocator>;
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    class AudioBankAllocator final
+        : public AZ::SystemAllocator
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(AudioBankAllocator, AZ::SystemAllocator, 0)
+        AZ_TYPE_INFO(AudioBankAllocator, "{19E89718-400F-42F9-92C3-E7F0DC1CCC1F}")
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        // IAllocator
+        const char* GetName() const override
+        {
+            return "AudioBankAllocator";
+        }
+
+        const char* GetDescription() const override
+        {
+            return "Generic allocator for use in the Audio File Cache Manager.";
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////
+    };
 
 } // namespace Audio
 

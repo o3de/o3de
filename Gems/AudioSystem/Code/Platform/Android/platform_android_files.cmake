@@ -12,4 +12,5 @@
 set(FILES
     AudioSystem_Traits_Platform.h
     AudioSystem_Traits_Android.h
+    ../Common/AudioSystem_common.cpp
 )
