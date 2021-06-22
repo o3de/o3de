@@ -802,7 +802,7 @@ namespace AZ::AtomBridge
             constexpr float sweepAngleDegrees = 360.0f;
             const float stepAngle = DegToRad(angularStepDegrees);
             const float startAngle = DegToRad(startAngleDegrees);
-            const float stopAngle = DegToRad(sweepAngleDegrees);
+            const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
@@ -832,7 +832,7 @@ namespace AZ::AtomBridge
             // Draw axis aligned arc
             const float stepAngle = DegToRad(angularStepDegrees);
             const float startAngle = DegToRad(startAngleDegrees);
-            const float stopAngle = DegToRad(sweepAngleDegrees);
+            const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateAxisAlignedArc(
@@ -861,7 +861,7 @@ namespace AZ::AtomBridge
             // Draw arbitraty axis arc
             const float stepAngle = DegToRad(angularStepDegrees);
             const float startAngle = DegToRad(startAngleDegrees);
-            const float stopAngle = DegToRad(sweepAngleDegrees);
+            const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
