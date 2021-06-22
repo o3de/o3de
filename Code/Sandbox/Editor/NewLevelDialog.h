@@ -34,7 +34,6 @@
 
 #include <vector>
 
-#include <QAbstractButton>
 #include <QDialog>
 #endif
 
@@ -51,29 +50,28 @@ public:
     CNewLevelDialog(QWidget* pParent = nullptr);   // standard constructor
     ~CNewLevelDialog();
 
+
     QString GetLevel() const;
     void IsResize(bool bIsResize);
-    bool ValidateLevel();
+
 
 protected:
     void UpdateData(bool fromUi = true);
     void OnInitDialog();
 
-    void ReloadLevelFolder();
+    void ReloadLevelFolders();
+    void ReloadLevelFoldersRec(const QString& currentFolder);
 
     void showEvent(QShowEvent* event);
 
-    QString GetLevelsFolder() const;
-
 protected slots:
+    void OnCbnSelendokLevelFolders();
     void OnLevelNameChange();
-    void OnClearButtonClicked();
-    void PopupAssetPicker();
-    void OnStartup();
 
 public:
     QString         m_level;
     QString         m_levelFolders;
+    int                 m_ilevelFolders;
     bool                m_bIsResize;
     bool                m_bUpdate;
 
