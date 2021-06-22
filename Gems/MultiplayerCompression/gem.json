@@ -5,8 +5,8 @@
     "Name": "MultiplayerCompression",
     "DisplayName": "Multiplayer Compression",
     "Version": "0.1.0",
-    "Summary": "The Multiplayer Compression gem provides an open source Compressor for use with the Multiplayer Gem.",
-    "Tags": ["GridMate","Multiplayer","Networking"],
+    "Summary": "The Multiplayer Compression gem provides an open source Compressor for use with AzNetworking's transport layer.",
+    "Tags": ["Multiplayer","Networking"],
     "IconPath": "preview.png",
     "Modules": [
         {
