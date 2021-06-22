@@ -61,6 +61,14 @@ namespace AZ
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
             //! Gets the underlying RPI::ModelAsset for a meshHandle.
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
+            //! Gets the ObjectSrg for a meshHandle.
+            //! Updating the ObjectSrg should be followed by a call to QueueObjectSrgForCompile,
+            //! instead of compiling the srg directly. This way, if the srg has already been queued for compile,
+            //! it will not be queued twice in the same frame. The ObjectSrg should not be updated during
+            //! Simulate, or it will create a race between updating the data and the call to Compile
+            virtual Data::Instance<RPI::ShaderResourceGroup> GetObjectSrg(const MeshHandle& meshHandle) const = 0;
+            //! Queues the object srg for compile.
+            virtual void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const = 0;
             //! Sets the MaterialAssignmentMap for a meshHandle, using just a single material for the DefaultMaterialAssignmentId.
             //! Note if there is already a material assignment map, this will replace the entire map with just a single material.
             virtual void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) = 0;
@@ -78,6 +86,10 @@ namespace AZ
             virtual Transform GetTransform(const MeshHandle& meshHandle) = 0;
             //! Gets the non-uniform scale for a given mesh handle.
             virtual Vector3 GetNonUniformScale(const MeshHandle& meshHandle) = 0;
+            //! Sets the local space bbox for a given mesh handle. You don't need to call this for static models, only skinned/animated models
+            virtual void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) = 0;
+            //! Gets the local space bbox for a given mesh handle. Unless SetLocalAabb has been called before, this will be the bbox of the model asset
+            virtual AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const = 0;
             //! Sets the sort key for a given mesh handle.
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.

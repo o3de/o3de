@@ -40,8 +40,9 @@ namespace AZ
             MSAAResolvePass(const PassDescriptor& descriptor);
 
             // Pass behavior overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
+            bool IsEnabled() const override;
 
         private:
 

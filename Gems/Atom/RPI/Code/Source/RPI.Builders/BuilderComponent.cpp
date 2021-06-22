@@ -26,7 +26,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
@@ -88,7 +87,6 @@ namespace AZ
             m_assetWorkers.emplace_back(MakeAssetBuilder<PassBuilder>());
 
             m_assetHandlers.emplace_back(MakeAssetHandler<ShaderAssetHandler>());
-            m_assetHandlers.emplace_back(MakeAssetHandler<ShaderResourceGroupAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<MaterialTypeAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<MaterialAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<ResourcePoolAssetHandler>());
@@ -101,20 +99,6 @@ namespace AZ
             m_assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantTreeAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<SkinMetaAssetHandler>());
             m_assetHandlers.emplace_back(MakeAssetHandler<MorphTargetMetaAssetHandler>());
-
-            RPI::MaterialFunctorSourceDataRegistration* materialFunctorRegistration = RPI::MaterialFunctorSourceDataRegistration::Get();
-            AZ_Assert(materialFunctorRegistration,
-                "MaterialFunctorSourceDataRegistration must be added to a component of the current module, "
-                "and initialize it in the component's Init() call.");
-            materialFunctorRegistration->RegisterMaterialFunctor("Lua", azrtti_typeid<LuaMaterialFunctorSourceData>());
-
-
-            // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-            auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-            if (assetCatalog)
-            {
-                assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
-            }
         }
 
         void BuilderComponent::Deactivate()

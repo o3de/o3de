@@ -928,6 +928,7 @@ namespace ScriptCanvas
         {
             return execution->GetId().m_node
                 && IsOnce(*execution->GetId().m_node)
+                && execution->GetId().m_slot
                 && execution->GetId().m_slot->GetType() == CombinedSlotType::ExecutionIn;
         }
 
@@ -938,7 +939,7 @@ namespace ScriptCanvas
 
         bool IsOnceReset(const Node& node, const Slot* slot)
         {
-            return slot = OnceProperty::GetResetSlot(&node);
+            return slot == OnceProperty::GetResetSlot(&node);
         }
 
         bool IsOperatorArithmetic(const ExecutionTreeConstPtr& execution)
@@ -1132,13 +1133,13 @@ namespace ScriptCanvas
             }
             else if (variable->m_isExposedToConstruction)
             {
-                if (variable->m_sourceVariableId.IsValid())
-                {
-                    return VariableConstructionRequirement::InputVariable;
-                }
-                else if (variable->m_nodeableNodeId.IsValid())
+                if (variable->m_nodeableNodeId.IsValid())
                 {
                     return VariableConstructionRequirement::InputNodeable;
+                }
+                else if (variable->m_sourceVariableId.IsValid())
+                {
+                    return VariableConstructionRequirement::InputVariable;
                 }
                 else
                 {

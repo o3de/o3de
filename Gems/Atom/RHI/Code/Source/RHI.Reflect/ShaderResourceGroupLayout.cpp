@@ -22,7 +22,9 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderResourceGroupLayout>()
-                    ->Version(6)
+                    ->Version(8) // ATOM-15472
+                    ->Field("m_name", &ShaderResourceGroupLayout::m_name)
+                    ->Field("m_azslFileOfOrigin", &ShaderResourceGroupLayout::m_uniqueId)
                     ->Field("m_staticSamplers", &ShaderResourceGroupLayout::m_staticSamplers)
                     ->Field("m_inputsForBuffers", &ShaderResourceGroupLayout::m_inputsForBuffers)
                     ->Field("m_inputsForImages", &ShaderResourceGroupLayout::m_inputsForImages)
@@ -248,9 +250,9 @@ namespace AZ
 
         bool ShaderResourceGroupLayout::Finalize()
         {
-            if (!ValidateFinalizeState(ValidateFinalizeStateExpect::NotFinalized))
+            if (IsFinalized())
             {
-                return false;
+                return true;
             }
 
             if (m_bindingSlot.IsNull())

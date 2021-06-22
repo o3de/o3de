@@ -175,4 +175,11 @@ namespace AZ::Utils
         path /= ".o3de";
         return path.Native();
     }
+
+    AZ::IO::FixedMaxPathString GetO3deLogsDirectory()
+    {
+        AZ::IO::FixedMaxPath path = GetO3deManifestDirectory();
+        path /= "Logs";
+        return path.Native();
+    }
 }

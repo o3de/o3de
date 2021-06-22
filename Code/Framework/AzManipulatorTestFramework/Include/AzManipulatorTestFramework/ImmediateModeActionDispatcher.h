@@ -12,14 +12,13 @@
 
 #pragma once
 
-#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/ActionDispatcher.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 
 namespace AzManipulatorTestFramework
 {
     //! Dispatches actions immediately to the manipulators.
-    class ImmediateModeActionDispatcher
-        : public ActionDispatcher<ImmediateModeActionDispatcher>
+    class ImmediateModeActionDispatcher : public ActionDispatcher<ImmediateModeActionDispatcher>
     {
         using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using KeyboardModifiers = AzToolsFramework::ViewportInteraction::KeyboardModifiers;
@@ -62,7 +61,7 @@ namespace AzManipulatorTestFramework
         void MouseLButtonUpImpl() override;
         void MousePositionImpl(const AzFramework::ScreenPoint& position) override;
         void KeyboardModifierDownImpl(const KeyboardModifier& keyModifier) override;
-        void KeyboardModifierUpImpl(const  KeyboardModifier& keyModifier) override;
+        void KeyboardModifierUpImpl(const KeyboardModifier& keyModifier) override;
         void ExpectManipulatorBeingInteractedImpl() override;
         void ExpectManipulatorNotBeingInteractedImpl() override;
         void SetEntityWorldTransformImpl(AZ::EntityId entityId, const AZ::Transform& transform) override;
@@ -97,8 +96,7 @@ namespace AzManipulatorTestFramework
         return this;
     }
 
-    inline ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetKeyboardModifiers(
-        KeyboardModifiers& keyboardModifiers)
+    inline ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetKeyboardModifiers(KeyboardModifiers& keyboardModifiers)
     {
         keyboardModifiers = GetKeyboardModifiers();
         return this;

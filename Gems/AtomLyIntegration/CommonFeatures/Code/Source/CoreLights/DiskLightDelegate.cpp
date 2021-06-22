@@ -48,7 +48,7 @@ namespace AZ::Render
 
     float DiskLightDelegate::GetRadius() const
     {
-        return m_shapeBus->GetRadius() * GetTransform().GetScale().GetMaxElement();
+        return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
     }
 
     void DiskLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& /*color*/, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
@@ -172,6 +172,14 @@ namespace AZ::Render
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
+        }
+    }
+
+    void DiskLightDelegate::SetEsmExponent(float exponent)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), exponent);
         }
     }
 

@@ -20,6 +20,7 @@
 
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/ProfileModuleInit.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
 
 // Section dictionary
@@ -192,11 +193,6 @@ void __stl_debug_message(const char* format_str, ...)
 
 #if defined(WIN32) || defined(WIN64)
 #include <intrin.h>
-#endif
-
-// If we use cry memory manager this should be also included in every module.
-#if defined(USING_CRY_MEMORY_MANAGER)
-#include <CryMemoryManager_impl.h>
 #endif
 
 #if defined(APPLE) || defined(LINUX)

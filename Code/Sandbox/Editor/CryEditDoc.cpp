@@ -58,13 +58,11 @@
 #include "LevelFileDialog.h"
 #include "StatObjBus.h"
 
-// LmbrCentral
-#include <ModernViewportCameraController.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
-#include <LmbrCentral/Rendering/EditorLightComponentBus.h>              // for LmbrCentral::EditorLightComponentRequestBus
 
-
+// LmbrCentral
+#include <LmbrCentral/Rendering/EditorLightComponentBus.h> // for LmbrCentral::EditorLightComponentRequestBus
 
 //#define PROFILE_LOADING_WITH_VTUNE
 
@@ -731,6 +729,9 @@ bool CCryEditDoc::SaveModified()
 void CCryEditDoc::OnFileSaveAs()
 {
     CLevelFileDialog levelFileDialog(false);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
+
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
         if (OnSaveDocument(levelFileDialog.GetFileName()))
@@ -1138,7 +1139,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         const QString oldLevelPattern = QDir(oldLevelFolder).absoluteFilePath("*.*");
         const QString oldLevelName = Path::GetFile(GetLevelPathName());
         const QString oldLevelXml = Path::ReplaceExtension(oldLevelName, "xml");
-        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), 0, true);
+        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskAndInZips);
         if (findHandle)
         {
             do

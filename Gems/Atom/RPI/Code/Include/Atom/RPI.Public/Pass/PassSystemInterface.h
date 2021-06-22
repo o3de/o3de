@@ -40,6 +40,37 @@ namespace AZ
 
         using PassCreator = AZStd::function<Ptr<Pass>(const PassDescriptor& descriptor)>;
 
+        // Enum to track the different execution phases of the Pass System
+        enum class PassSystemState : u32
+        {
+            // Default state, 
+            Unitialized,
+
+            // Initial Pass System setup. Transitions to Idle
+            InitializingPassSystem,
+
+            // Pass System is processing passes queued for Removal. Transitions to Idle
+            RemovingPasses,
+
+            // Pass System is processing passes queued for Build (and their child passes). Transitions to Idle
+            BuildingPasses,
+
+            // Pass System is processing passes queued for Initialization (and their child passes). Transitions to Idle
+            InitializingPasses,
+
+            // Pass System is validating that the Pass hierarchy is in a valid state after Build and Initialization. Transitions to Idle
+            ValidatingPasses,
+
+            // Pass System is idle and can transition to any other state (except FrameEnd)
+            Idle,
+
+            // Pass System is currently rendering a frame. Transitions to FrameEnd
+            Rendering,
+
+            // Pass System is finishing rendering a frame. Transitions to Idle
+            FrameEnd,
+        };
+
         class PassSystemInterface
         {
             friend class Pass;
@@ -64,7 +95,10 @@ namespace AZ
             //! initializing a scene;
             virtual void ProcessQueuedChanges() = 0;
             
-            //! Load pass templates listed in a name-assetid mapping asset 
+            //! Load pass templates listed in a name-assetid mapping asset
+            //! This function should be called before the render pipelines which use templates from this mappings are created.
+            //! To load pass template mapping before any render pipelines are created, use OnReadyLoadTemplatesEvent::Handler to
+            //! load desired pass template mappings
             virtual bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath) = 0;
             
             //! Writes a pass template to a .pass file which can then be used as a pass asset. Useful for
@@ -73,9 +107,6 @@ namespace AZ
 
             //! Prints the entire pass hierarchy from the root
             virtual void DebugPrintPassHierarchy() = 0;
-
-            //! Returns whether the Pass System is currently in it's build phase
-            virtual bool IsBuilding() const = 0;
 
             //! Returns whether the Pass System is currently hot reloading
             virtual bool IsHotReloading() const = 0;
@@ -148,14 +179,25 @@ namespace AZ
             //! Find the SwapChainPass associated with window Handle
             virtual SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const = 0;
 
+            using OnReadyLoadTemplatesEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that the pass system is ready to load pass templates
+            //! The event is triggered when pass system is initialized and asset system is ready.
+            //! The handler can add new pass templates or load pass template mappings from assets
+            virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
+
+            virtual PassSystemState GetState() const = 0;
+
         private:
             // These functions are only meant to be used by the Pass class
 
-            // Schedules a pass to have it's BuildAttachments() function called during frame update
-            virtual void QueueForBuildAttachments(Pass* pass) = 0;
+            // Schedules a pass to have it's Build() function called during frame update
+            virtual void QueueForBuild(Pass* pass) = 0;
 
             // Schedules a pass to be deleted during frame update
             virtual void QueueForRemoval(Pass* pass) = 0;
+
+            // Schedules a pass to be initialized during frame update
+            virtual void QueueForInitialization(Pass* pass) = 0;
 
             //! Registers the pass with the pass library. Called in the Pass constructor.
             virtual void RegisterPass(Pass* pass) = 0;
@@ -164,17 +206,10 @@ namespace AZ
             virtual void UnregisterPass(Pass* pass) = 0;
 
         };
-
-        //! Notifications of the pass system such attachments were rebuilt, pass tree changes
-        class PassSystemNotificiations
-            : public AZ::EBusTraits
+                
+        namespace PassSystemEvents
         {
-        public:
+        }
 
-            //! Notify when any pass's attachment was rebuilt
-            virtual void OnPassAttachmentsBuilt() = 0;
-        };
-
-        using PassSystemNotificiationBus = AZ::EBus<PassSystemNotificiations>;
     }   // namespace RPI
 }   // namespace AZ

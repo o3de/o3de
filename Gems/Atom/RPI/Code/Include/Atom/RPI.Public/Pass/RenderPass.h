@@ -72,7 +72,7 @@ namespace AZ
 
             //! Return the View if this pass is associated with a pipeline view via PipelineViewTag.
             //! It may return nullptr if this pass is independent with any views.
-            ViewPtr GetView();
+            ViewPtr GetView() const;
 
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);
@@ -96,7 +96,7 @@ namespace AZ
             void BindPassSrg(const RHI::FrameGraphCompileContext& context, Data::Instance<ShaderResourceGroup>& shaderResourceGroup);
 
             // Pass behavior overrides...
-            void OnBuildAttachmentsFinishedInternal() override;
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 

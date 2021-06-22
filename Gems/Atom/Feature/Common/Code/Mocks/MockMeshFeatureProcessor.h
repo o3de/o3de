@@ -23,6 +23,8 @@ namespace UnitTest
         MOCK_METHOD1(CloneMesh, MeshHandle(const MeshHandle&));
         MOCK_CONST_METHOD1(GetModel, AZStd::intrusive_ptr<AZ::RPI::Model>(const MeshHandle&));
         MOCK_CONST_METHOD1(GetModelAsset, AZ::Data::Asset<AZ::RPI::ModelAsset>(const MeshHandle&));
+        MOCK_CONST_METHOD1(GetObjectSrg, AZStd::intrusive_ptr<AZ::RPI::ShaderResourceGroup>(const MeshHandle&));
+        MOCK_CONST_METHOD1(QueueObjectSrgForCompile, void(const MeshHandle&));
         MOCK_CONST_METHOD1(GetMaterialAssignmentMap, const AZ::Render::MaterialAssignmentMap&(const MeshHandle&));
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));
         MOCK_METHOD3(SetTransform, void(const MeshHandle&, const AZ::Transform&, const AZ::Vector3&));
@@ -31,6 +33,8 @@ namespace UnitTest
         MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
         MOCK_METHOD1(GetTransform, AZ::Transform(const MeshHandle&));
         MOCK_METHOD1(GetNonUniformScale, AZ::Vector3(const MeshHandle&));
+        MOCK_METHOD2(SetLocalAabb, void(const MeshHandle&, const AZ::Aabb&));
+        MOCK_CONST_METHOD1(GetLocalAabb, AZ::Aabb(const MeshHandle&));
         MOCK_METHOD2(SetSortKey, void (const MeshHandle&, AZ::RHI::DrawItemSortKey));
         MOCK_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
         MOCK_METHOD2(SetLodOverride, void(const MeshHandle&, AZ::RPI::Cullable::LodOverride));

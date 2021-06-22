@@ -249,7 +249,7 @@ namespace AZ
         {
             StackedString path(StackedString::Format::JsonPointer);
             JsonDeserializerContext context(settings);
-            result = JsonDeserializer::Load(object, objectType, root, context);
+            result = JsonDeserializer::Load(object, objectType, root, false, context);
         }
         return result;
     }

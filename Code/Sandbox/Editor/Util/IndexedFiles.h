@@ -22,7 +22,6 @@
 
 
 #include "FileUtil.h"
-#include "STLPoolAllocator.h"
 #include <functional>
 
 class CIndexedFiles
@@ -117,15 +116,8 @@ private:
     std::vector <std::function<void()> > m_updateCallbacks;
     IFileUtil::FileArray m_files;
     std::map<QString, int> m_pathToIndex;
-#if defined(_DEBUG) || defined(AZ_COMPILER_CLANG)
-    // In debug, the validation phase of the pool allocator when destructed takes so much time,
-    // and using the STLPoolAllocator causes a strange issue when compiling with clang
     typedef std::set<int, std::less<int> > int_set;
     typedef std::map<QString, int_set, std::less<QString> > TagTable;
-#else
-    typedef std::set<int, std::less<int>, stl::STLPoolAllocator<int> > int_set;
-    typedef std::map<QString, int_set, std::less<QString>, stl::STLPoolAllocator<std::pair<const QString, int_set> > > TagTable;
-#endif
     TagTable m_tags;
     QString m_rootPath;
 

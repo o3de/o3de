@@ -23,6 +23,7 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Pass/MSAAResolvePass.h>
+#include <Atom/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.h>
 #include <Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
 #include <Atom/RPI.Public/Pass/Specific/SelectorPass.h>
@@ -36,7 +37,7 @@ namespace AZ
     {
         void PassFactory::Init(PassLibrary* passLibrary)
         {
-            m_passLibary = passLibrary;
+            m_passLibrary = passLibrary;
             AddCorePasses();
         }
 
@@ -67,6 +68,7 @@ namespace AZ
             AddPassCreator(Name("FullScreenTriangle"), &FullscreenTrianglePass::Create);
             AddPassCreator(Name("ComputePass"), &ComputePass::Create);
             AddPassCreator(Name("MSAAResolvePass"), &MSAAResolvePass::Create);
+            AddPassCreator(Name("MSAAResolveFullScreenPass"), &MSAAResolveFullScreenPass::Create);
             AddPassCreator(Name("DownsampleMipChainPass"), &DownsampleMipChainPass::Create);
             AddPassCreator(Name("EnvironmentCubeMapPass"), &EnvironmentCubeMapPass::Create);
             AddPassCreator(Name("RenderToTexturePass"), &RenderToTexturePass::Create);
@@ -125,7 +127,7 @@ namespace AZ
 
         Ptr<Pass> PassFactory::CreatePassFromTemplate(Name templateName, Name passName)
         {
-            const AZStd::shared_ptr<PassTemplate>& passTemplate = m_passLibary->GetPassTemplate(templateName);
+            const AZStd::shared_ptr<PassTemplate>& passTemplate = m_passLibrary->GetPassTemplate(templateName);
             if (passTemplate == nullptr)
             {
                 AZ_Error("PassFactory", false, "FAILED TO CREATE PASS [%s]. Could not find pass template [%s]", passName.GetCStr(), templateName.GetCStr());
@@ -143,7 +145,7 @@ namespace AZ
                 return nullptr;
             }
 
-            const AZStd::shared_ptr<PassTemplate>& passTemplate = m_passLibary->GetPassTemplate(passRequest->m_templateName);
+            const AZStd::shared_ptr<PassTemplate>& passTemplate = m_passLibrary->GetPassTemplate(passRequest->m_templateName);
             if (passTemplate == nullptr)
             {
                 AZ_Error("PassFactory", false, "FAILED TO CREATE PASS [%s]. Could not find pass template [%s]", passRequest->m_passName.GetCStr(), passRequest->m_templateName.GetCStr());

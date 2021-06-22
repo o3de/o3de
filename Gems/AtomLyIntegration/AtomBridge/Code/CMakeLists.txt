@@ -63,7 +63,12 @@ ly_add_target(
         Gem::EMotionFX_Atom
         Gem::ImguiAtom
         Gem::AtomFont
+        Gem::AtomViewportDisplayInfo
 )
+
+# Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
+ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -104,5 +109,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::ImguiAtom
             Gem::AtomFont
             Gem::AtomToolsFramework.Editor
+            Gem::AtomViewportDisplayInfo
+            Gem::AtomViewportDisplayIcons.Editor
+            Gem::MaterialEditor.Builders
     )
+
+
+    # Any 'tool' and 'builder' type applications should use Gem::Atom_AtomBridge.Editor:
+    ly_create_alias(NAME Atom_AtomBridge.Builders NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
+    ly_create_alias(NAME Atom_AtomBridge.Tools    NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Editor)
 endif()

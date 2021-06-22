@@ -51,7 +51,7 @@ namespace AZ
             {
                 AZ_TraceContext("Importer", "Skin Weights");
 
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 if(currentNode->mNumMeshes <= 0)
@@ -59,34 +59,20 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
-                GetMeshDataFromParentResult meshDataResult(GetMeshDataFromParent(context));
-                if (!meshDataResult.IsSuccess())
-                {
-                    return meshDataResult.GetError();
-                }
-                const SceneData::GraphData::MeshData* const parentMeshData(meshDataResult.GetValue());
-
-                int parentMeshIndex = parentMeshData->GetSdkMeshIndex();
-
                 Events::ProcessingResultCombiner combinedSkinWeightsResult;
 
+                // Don't create this until a bone with weights is encountered
+                Containers::SceneGraph::NodeIndex weightsIndexForMesh;
+                AZStd::string skinWeightName;
+                AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> skinWeightData;
+
+                const uint64_t totalVertices = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
+
+                int vertexCount = 0;
                 for(unsigned nodeMeshIndex = 0; nodeMeshIndex < currentNode->mNumMeshes; ++nodeMeshIndex)
                 {
-                    if (nodeMeshIndex != parentMeshIndex)
-                    {
-                        // Only generate skinning data for the parent mesh.
-                        // Each AssImp mesh is assigned to a unique node,
-                        // so the skinning data should be generated as a child node
-                        // for the associated parent mesh.
-                        continue;
-                    }
                     int sceneMeshIndex = currentNode->mMeshes[nodeMeshIndex];
                     const aiMesh* mesh = scene->mMeshes[sceneMeshIndex];
-
-                    // Don't create this until a bone with weights is encountered
-                    Containers::SceneGraph::NodeIndex weightsIndexForMesh;
-                    AZStd::string skinWeightName;
-                    AZStd::shared_ptr<SceneData::GraphData::SkinWeightData> skinWeightData;
 
                     for(unsigned b = 0; b < mesh->mNumBones; ++b)
                     {
@@ -100,7 +86,6 @@ namespace AZ
                         if (!weightsIndexForMesh.IsValid())
                         {
                             skinWeightName = s_skinWeightName;
-                            skinWeightName += AZStd::to_string(nodeMeshIndex);
                             RenamedNodesMap::SanitizeNodeName(skinWeightName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
 
                             weightsIndexForMesh =
@@ -116,22 +101,24 @@ namespace AZ
                         }
                         Pending pending;
                         pending.m_bone = bone;
-                        pending.m_numVertices = mesh->mNumVertices;
+                        pending.m_numVertices = totalVertices;
                         pending.m_skinWeightData = skinWeightData;
+                        pending.m_vertOffset = vertexCount;
                         m_pendingSkinWeights.push_back(pending);
                     }
-
-                    Events::ProcessingResult skinWeightsResult;
-                    AssImpSceneAttributeDataPopulatedContext dataPopulated(context, skinWeightData, weightsIndexForMesh, skinWeightName);
-                    skinWeightsResult = Events::Process(dataPopulated);
-
-                    if (skinWeightsResult != Events::ProcessingResult::Failure)
-                    {
-                        skinWeightsResult = AddAttributeDataNodeWithContexts(dataPopulated);
-                    }
-
-                    combinedSkinWeightsResult += skinWeightsResult;
+                    vertexCount += mesh->mNumVertices;
                 }
+
+                Events::ProcessingResult skinWeightsResult;
+                AssImpSceneAttributeDataPopulatedContext dataPopulated(context, skinWeightData, weightsIndexForMesh, skinWeightName);
+                skinWeightsResult = Events::Process(dataPopulated);
+
+                if (skinWeightsResult != Events::ProcessingResult::Failure)
+                {
+                    skinWeightsResult = AddAttributeDataNodeWithContexts(dataPopulated);
+                }
+
+                combinedSkinWeightsResult += skinWeightsResult;
 
                 return combinedSkinWeightsResult.GetResult();
             }
@@ -153,7 +140,7 @@ namespace AZ
                         link.boneId = boneId;
                         link.weight = it.m_bone->mWeights[weight].mWeight;
 
-                        it.m_skinWeightData->AddAndSortLink(it.m_bone->mWeights[weight].mVertexId, link);
+                        it.m_skinWeightData->AddAndSortLink(it.m_bone->mWeights[weight].mVertexId + it.m_vertOffset, link);
                     }
                 }
                 const auto result = m_pendingSkinWeights.empty() ? Events::ProcessingResult::Ignored : Events::ProcessingResult::Success;

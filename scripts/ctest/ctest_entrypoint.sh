@@ -14,7 +14,7 @@
 #
 
 CURRENT_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE:-0}" )" >/dev/null 2>&1 && pwd )"
-DEV_DIR="$( dirname "$CURRENT_SCRIPT_DIR" )"
+DEV_DIR=$( dirname "$( dirname "$CURRENT_SCRIPT_DIR" )" )
 PYTHON=$DEV_DIR/python/python.sh
 CTEST_SCRIPT=$CURRENT_SCRIPT_DIR/ctest_driver.py
 

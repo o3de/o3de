@@ -10,7 +10,10 @@
  *
  */
 
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+#include <Atom/Feature/Utils/ProfilingCaptureBus.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
+#include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/std/time.h>
 
 namespace AZ
 {
@@ -34,16 +37,42 @@ namespace AZ
             }
         }
 
-        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics)
+        inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
         {
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;
 
             const ImVec2 windowSize(640.0f, 480.0f);
             ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
+            bool captureToFile = false;
             if (ImGui::Begin("Cpu Profiler", &keepDrawing, ImGuiWindowFlags_None))
             {
-                UpdateGroupRegionMap();
+                m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
+                if (ImGui::Button(m_paused ? "Resume" : "Pause"))
+                {
+                    m_paused = !m_paused;
+                    AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
+                }
+
+                // Update region map and cache the input cpu timing statistics when the profiling is not paused
+                if (!m_paused)
+                {
+                    UpdateGroupRegionMap();
+                    m_cpuTimingStatisticsWhenPause = currentCpuTimingStatistics;
+                }
+
+                if (ImGui::Button("Capture"))
+                {
+                    captureToFile = true;
+                }
+
+                if (!m_lastCapturedFilePath.empty())
+                {
+                    ImGui::SameLine();
+                    ImGui::Text(m_lastCapturedFilePath.c_str());
+                }
+
+                const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
 
                 const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
 
@@ -51,7 +80,7 @@ namespace AZ
                 {
                     // Note: converting to microseconds integer before converting to milliseconds float
                     const float timeInMs = static_cast<float>((duration * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
-                    ImGui::Text("%.1f ms", timeInMs);
+                    ImGui::Text("%.2f ms", timeInMs);
                 };
 
                 const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
@@ -157,6 +186,20 @@ namespace AZ
                 }
             }
             ImGui::End();
+
+            if (captureToFile)
+            {
+                AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
+                AZStd::string timeString;
+                AZStd::to_string(timeString, timeNow);
+                u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
+                AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
+                char resolvedPath[AZ::IO::MaxPathLength];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+                m_lastCapturedFilePath = resolvedPath;
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics,
+                    frameDataFilePath);
+            }
 
             // Toggle if the bool isn't the same as the cached value
             if (cachedShowCpuProfiler != keepDrawing)

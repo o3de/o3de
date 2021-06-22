@@ -121,7 +121,7 @@ protected:
 };
 #endif
 
-Q_GLOBAL_STATIC(QtViewPaneManager, s_instance)
+Q_GLOBAL_STATIC(QtViewPaneManager, s_viewPaneManagerInstance)
 
 
 QWidget* QtViewPane::CreateWidget()
@@ -611,12 +611,12 @@ void QtViewPaneManager::UnregisterPane(const QString& name)
 
 QtViewPaneManager* QtViewPaneManager::instance()
 {
-    return s_instance();
+    return s_viewPaneManagerInstance();
 }
 
 bool QtViewPaneManager::exists()
 {
-    return s_instance.exists();
+    return s_viewPaneManagerInstance.exists();
 }
 
 void QtViewPaneManager::SetMainWindow(AzQtComponents::DockMainWindow* mainWindow, QSettings* settings, const QByteArray& lastMainWindowState)

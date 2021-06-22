@@ -10,8 +10,8 @@
 *
 */
 
-#include <Multiplayer/MultiplayerComponent.h>
-#include <Multiplayer/NetBindComponent.h>
+#include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace Multiplayer
@@ -46,9 +46,24 @@ namespace Multiplayer
         return m_netBindComponent ? m_netBindComponent->GetNetEntityId() : InvalidNetEntityId;
     }
 
-    NetEntityRole MultiplayerComponent::GetNetEntityRole() const
+    bool MultiplayerComponent::IsAuthority() const
     {
-        return m_netBindComponent ? m_netBindComponent->GetNetEntityRole() : NetEntityRole::InvalidRole;
+        return m_netBindComponent ? m_netBindComponent->IsAuthority() : false;
+    }
+
+    bool MultiplayerComponent::IsAutonomous() const
+    {
+        return m_netBindComponent ? m_netBindComponent->IsAutonomous() : false;
+    }
+
+    bool MultiplayerComponent::IsServer() const
+    {
+        return m_netBindComponent ? m_netBindComponent->IsServer() : false;
+    }
+
+    bool MultiplayerComponent::IsClient() const
+    {
+        return m_netBindComponent ? m_netBindComponent->IsClient() : false;
     }
 
     ConstNetworkEntityHandle MultiplayerComponent::GetEntityHandle() const

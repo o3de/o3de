@@ -46,22 +46,69 @@ namespace AZ
                     serializeContext->Class<AssImpTransformImporter, SceneCore::LoadingComponent>()->Version(1);
                 }
             }
-            
+
+            void GetAllBones(const aiScene* scene, AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
+            {
+                for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                {
+                    const aiMesh* mesh = scene->mMeshes[meshIndex];
+
+                    for (unsigned boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    {
+                        const aiBone* bone = mesh->mBones[boneIndex];
+
+                        boneLookup[bone->mName.C_Str()] = bone;
+                    }
+                }
+            }
+
             Events::ProcessingResult AssImpTransformImporter::ImportTransform(AssImpSceneNodeAppendedContext& context)
             {
                 AZ_TraceContext("Importer", "transform");
-                aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
+                const aiNode* currentNode = context.m_sourceNode.GetAssImpNode();
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
-                
+
                 if (currentNode == scene->mRootNode || IsPivotNode(currentNode->mName))
                 {
                     return Events::ProcessingResult::Ignored;
                 }
 
-                aiMatrix4x4 combinedTransform = GetConcatenatedLocalTransform(currentNode);
+                AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
+                GetAllBones(scene, boneLookup);
+
+                auto boneIterator = boneLookup.find(currentNode->mName.C_Str());
+                const bool isBone = boneIterator != boneLookup.end();
+
+                aiMatrix4x4 combinedTransform;
+
+                if (isBone)
+                {
+                    auto parentNode = currentNode->mParent;
+
+                    aiMatrix4x4 offsetMatrix = boneIterator->second->mOffsetMatrix;
+                    aiMatrix4x4 parentOffset {};
+
+                    auto parentBoneIterator = boneLookup.find(parentNode->mName.C_Str());
+
+                    if (parentNode && parentBoneIterator != boneLookup.end())
+                    {
+                        const auto& parentBone = parentBoneIterator->second;
+
+                        parentOffset = parentBone->mOffsetMatrix;
+                    }
+
+                    auto inverseOffset = offsetMatrix;
+                    inverseOffset.Inverse();
+
+                    combinedTransform = parentOffset * inverseOffset;
+                }
+                else
+                {
+                    combinedTransform = GetConcatenatedLocalTransform(currentNode);
+                }
 
                 DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
-                
+
                 context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                 context.m_sourceSceneSystem.ConvertUnit(localTransform);
 
@@ -105,9 +152,7 @@ namespace AZ
                 }
                 else
                 {
-                    bool addedData = context.m_scene.GetGraph().SetContent(
-                        context.m_currentGraphPosition,
-                        transformData);
+                    bool addedData = context.m_scene.GetGraph().SetContent(context.m_currentGraphPosition, transformData);
 
                     AZ_Error(SceneAPI::Utilities::ErrorWindow, addedData, "Failed to add node data");
                     return addedData ? Events::ProcessingResult::Success : Events::ProcessingResult::Failure;

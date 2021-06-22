@@ -17,6 +17,7 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <Integration/Rendering/RenderActorInstance.h>
+#include <EMotionFX/Source/MorphTargetStandard.h>
 
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
@@ -29,6 +30,8 @@
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshOutputStreamManagerInterface.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
+#include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
+
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
@@ -39,8 +42,11 @@ namespace EMotionFX
 }
 namespace AZ::RPI
 {
+    class AuxGeomDraw;
+    class AuxGeomFeatureProcessorInterface;
     class Model;
     class Buffer;
+    class StreamingImage;
 }
 
 namespace AZ
@@ -85,7 +91,7 @@ namespace AZ
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override { AZ_UNUSED(debugOptions) };
+            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
             SkinningMethod GetAtomSkinningMethod() const;
@@ -168,6 +174,18 @@ namespace AZ
             // SkinnedMeshOutputStreamNotificationBus
             void OnSkinnedMeshOutputStreamMemoryAvailable() override;
 
+            // Check to see if the skin material is being used,
+            // and if there are blend shapes with wrinkle masks that should be applied to it
+            void InitWrinkleMasks();
+            void UpdateWrinkleMasks();
+
+            // Helper and debug geometry rendering
+            void RenderSkeleton(RPI::AuxGeomDraw* auxGeom);
+            void RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom);
+            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
+            AZStd::vector<AZ::Vector3> m_auxVertices;
+            AZStd::vector<AZ::Color> m_auxColors;
+
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;
             AZ::Data::Instance<AZ::RPI::Buffer> m_boneTransforms = nullptr;
@@ -179,6 +197,12 @@ namespace AZ
             AZ::TransformInterface* m_transformInterface = nullptr;
             AZStd::set<Data::AssetId> m_waitForMaterialLoadIds;
             AZStd::vector<float> m_morphTargetWeights;
+
+            typedef AZStd::unordered_map<EMotionFX::MorphTargetStandard*, Data::Instance<RPI::Image>> MorphTargetWrinkleMaskMap;
+            AZStd::vector<MorphTargetWrinkleMaskMap> m_morphTargetWrinkleMaskMapsByLod;
+
+            AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
+            AZStd::vector<float> m_wrinkleMaskWeights;
         };
 
     } // namespace Render

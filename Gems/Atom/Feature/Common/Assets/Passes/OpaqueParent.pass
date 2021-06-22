@@ -122,8 +122,8 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "forward",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
                     }
                 },
@@ -222,8 +222,8 @@
                         "$type": "RasterPassData",
                         "DrawListTag": "forwardWithSubsurfaceOutput",
                         "PipelineViewTag": "MainCamera",
-                        "PassSrgAsset": {
-                            "FilePath": "shaderlib/atom/features/pbr/forwardpasssrg.azsli:PassSrg"
+                        "PassSrgShaderAsset": {
+                            "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
                     }
                 },
@@ -305,7 +305,7 @@
                 },
                 {
                     "Name": "SkyBoxPass",
-                    "TemplateName": "SkyBoxTemplate",
+                    "TemplateName": "SkyBoxTwoOutputsTemplate",
                     "Enabled": true,
                     "Connections": [
                         {

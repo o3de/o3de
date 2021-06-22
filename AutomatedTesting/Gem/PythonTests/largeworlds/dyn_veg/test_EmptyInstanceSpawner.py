@@ -16,6 +16,7 @@ import logging
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools._internal.pytest_plugin as internal_plugin
 import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
@@ -37,9 +38,14 @@ class TestEmptyInstanceSpawner(object):
         file_system.delete([os.path.join(workspace.paths.engine_root(), project, "Levels", level)], True, True)
 
     @pytest.mark.test_case_id("C28851762")
-    @pytest.mark.SUITE_periodic
+    @pytest.mark.SUITE_main
     @pytest.mark.dynveg_area
     def test_EmptyInstanceSpawner_EmptySpawnerWorks(self, request, editor, level, launcher_platform):
+
+        # Skip test if running against Debug build
+        if "debug" in internal_plugin.build_directory:
+            pytest.skip("Does not execute against debug builds.")
+
         cfg_args = [level]
 
         expected_lines = [

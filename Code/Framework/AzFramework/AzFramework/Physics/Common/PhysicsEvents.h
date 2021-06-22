@@ -48,7 +48,8 @@ namespace AzPhysics
         using OnPresimulateEvent = AZ::Event<float>;
 
         //! Event triggers at the end of the SystemInterface::Simulate call.
-        using OnPostsimulateEvent = AZ::Event<>;
+        //! Parameter is the total time that the physics system will run for during the Simulate call.
+        using OnPostsimulateEvent = AZ::Event<float>;
 
         //! Event trigger when a Scene is added to the simulation.
         //! When triggered will send the handle to the new Scene.
@@ -58,9 +59,18 @@ namespace AzPhysics
         //! When triggered will send the handle to the old Scene (after this call, the Handle will be invalid).
         using OnSceneRemovedEvent = AZ::Event<AzPhysics::SceneHandle>;
 
-        //! Event that triggers when the default material library changes.
+        //! Event that triggers when the material library changes.
         //! When triggered the event will send the Asset Id of the new material library.
-        using OnDefaultMaterialLibraryChangedEvent = AZ::Event<const AZ::Data::AssetId&>;
+        using OnMaterialLibraryChangedEvent = AZ::Event<const AZ::Data::AssetId&>;
+
+        enum class MaterialLibraryLoadErrorType : uint8_t
+        {
+            InvalidId,
+            ErrorLoading
+        };
+
+        //! Event that triggers when the default material library has loaded with errors.
+        using OnMaterialLibraryLoadErrorEvent = AZ::Event<MaterialLibraryLoadErrorType>;
 
         //! Event that triggers when the default scene configuration changes.
         //! When triggered the event will send the new default scene configuration.

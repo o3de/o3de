@@ -25,8 +25,6 @@ AlphaSource_Packed = 0
 AlphaSource_Split = 1
 AlphaSource_None = 2
 
-ForwardPassIndex = 1
-
 function ConfigureAlphaBlending(shaderItem) 
     shaderItem:GetRenderStatesOverride():SetDepthEnabled(true)
     shaderItem:GetRenderStatesOverride():SetDepthWriteMask(DepthWriteMask_Zero)
@@ -58,12 +56,17 @@ end
 function Process(context)
     local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
 
+    local forwardPassEDS = context:GetShaderByTag("ForwardPass_EDS")
+
     if(opacityMode == OpacityMode_Blended) then
-        ConfigureAlphaBlending(context:GetShader(ForwardPassIndex))
+        ConfigureAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     elseif(opacityMode == OpacityMode_TintedTransparent) then
-        ConfigureDualSourceBlending(context:GetShader(ForwardPassIndex))
+        ConfigureDualSourceBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("transparent")
     else
-        ResetAlphaBlending(context:GetShader(ForwardPassIndex))
+        ResetAlphaBlending(forwardPassEDS)
+        forwardPassEDS:SetDrawListTagOverride("") -- reset to default draw list
     end
 end
 
@@ -90,7 +93,7 @@ function ProcessEditor(context)
             context:SetMaterialPropertyVisibility("opacity.textureMap", MaterialPropertyVisibility_Hidden)
             context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Hidden)
         else
-            local textureMap = context:GetMaterialPropertyValue_image("opacity.textureMap")
+            local textureMap = context:GetMaterialPropertyValue_Image("opacity.textureMap")
 
             if(nil == textureMap) then
                 context:SetMaterialPropertyVisibility("opacity.textureMapUv", MaterialPropertyVisibility_Disabled)

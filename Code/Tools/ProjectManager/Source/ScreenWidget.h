@@ -13,20 +13,23 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
+#include <ProjectInfo.h>
 
 #include <QWidget>
+#include <QStyleOption>
+#include <QPainter>
 #endif
 
 namespace O3DE::ProjectManager
 {
     class ScreenWidget
-        : public QWidget
+        : public QFrame
     {
         Q_OBJECT
 
     public:
         explicit ScreenWidget(QWidget* parent = nullptr)
-            : QWidget(parent)
+            : QFrame(parent)
         {
         }
         ~ScreenWidget() = default;
@@ -39,15 +42,28 @@ namespace O3DE::ProjectManager
         {
             return true;
         }
-        virtual QString GetNextButtonText()
+        virtual bool IsTab()
         {
-            return "Next";
+            return false;
+        }
+        virtual QString GetTabText()
+        {
+            return tr("Missing");
+        }
+
+        //! Notify this screen it is the current screen 
+        virtual void NotifyCurrentScreen()
+        {
+
         }
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
         void GotoPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
+        void NotifyCurrentProject(const QString& projectPath);
+        void NotifyBuildProject(const ProjectInfo& projectInfo);
+
     };
 
 } // namespace O3DE::ProjectManager

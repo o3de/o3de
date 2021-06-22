@@ -91,8 +91,6 @@ namespace AzToolsFramework
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
             
-            const static int m_column;
-
         private:
             AZStd::shared_ptr<RootAssetBrowserEntry> m_rootEntry;
             bool m_loaded;

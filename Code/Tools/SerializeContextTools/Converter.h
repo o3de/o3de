@@ -42,7 +42,7 @@ namespace AZ
             //! Can be used to convert *.ini and *.cfg files
             static bool ConvertConfigFile(Application& application);
 
-        private:
+        protected:
             using PathDocumentPair = AZStd::pair<AZStd::string, rapidjson::Document>;
             using PathDocumentContainer = AZStd::vector<PathDocumentPair>;
 

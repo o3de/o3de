@@ -72,7 +72,7 @@ namespace AZ
             desc.m_bufferSrgName = "m_decals";
             desc.m_elementCountSrgName = "m_decalCount";
             desc.m_elementSize = sizeof(DecalData);
-            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+            desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_decalBufferHandler = GpuBufferHandler(desc);
 
@@ -134,7 +134,14 @@ namespace AZ
             {
                 m_decalData.GetData(decal.GetIndex()) = m_decalData.GetData(sourceDecal.GetIndex());
                 const auto materialAsset = GetMaterialUsedByDecal(sourceDecal);
-                m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                if (materialAsset.IsValid())
+                {
+                    m_materialToTextureArrayLookupTable.at(materialAsset).m_useCount++;
+                }
+                else
+                {
+                    AZ_Warning("DecalTextureArrayFeatureProcessor", false, "CloneDecal called on a decal with no material set.");
+                }
                 m_deviceBufferNeedsUpdate = true;
             }
             return decal;
@@ -278,7 +285,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                SetDecalHalfSize(handle, nonUniformScale * world.GetScale());
+                SetDecalHalfSize(handle, nonUniformScale * world.GetUniformScale());
                 SetDecalPosition(handle, world.GetTranslation());
                 SetDecalOrientation(handle, world.GetRotation());
 
@@ -322,7 +329,7 @@ namespace AZ
         {
             for (int i = 0; i < NumTextureArrays; ++i)
             {
-                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgAsset()->GetLayout();
+                const RHI::ShaderResourceGroupLayout* viewSrgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
                 const AZStd::string baseName = "m_decalTextureArray" + AZStd::to_string(i);
 
                 m_decalTextureArrayIndices[i] = viewSrgLayout->FindShaderInputImageIndex(Name(baseName.c_str()));

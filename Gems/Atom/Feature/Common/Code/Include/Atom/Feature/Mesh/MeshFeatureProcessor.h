@@ -95,6 +95,8 @@ namespace AZ
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
 
+            Aabb m_aabb = Aabb::CreateNull();
+
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
@@ -148,6 +150,8 @@ namespace AZ
 
             Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const override;
             Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const override;
+            Data::Instance<RPI::ShaderResourceGroup> GetObjectSrg(const MeshHandle& meshHandle) const override;
+            void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material) override;
             void SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials) override;
             const MaterialAssignmentMap& GetMaterialAssignmentMap(const MeshHandle& meshHandle) const override;
@@ -157,6 +161,9 @@ namespace AZ
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
             Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
+
+            void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) override;
+            AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;

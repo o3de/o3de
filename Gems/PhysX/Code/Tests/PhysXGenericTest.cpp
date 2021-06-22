@@ -325,9 +325,10 @@ namespace PhysX
         // Box should start asleep
         AzPhysics::RigidBodyConfiguration config;
         config.m_startAsleep = true;
-        Physics::ColliderConfiguration colliderConfig;
-        Physics::SphereShapeConfiguration shapeConfiguration;
-        config.m_colliderAndShapeData = AZStd::make_pair(&colliderConfig, &shapeConfiguration);
+        config.m_colliderAndShapeData = AzPhysics::ShapeColliderPair(
+            AZStd::make_shared<Physics::ColliderConfiguration>(),
+            AZStd::make_shared<Physics::SphereShapeConfiguration>()
+        );
 
         AzPhysics::SimulatedBodyHandle rigidBodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, &config);
         TestUtils::UpdateScene(sceneHandle, 1.0f / 60.0f, 100);

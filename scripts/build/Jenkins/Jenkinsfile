@@ -190,12 +190,14 @@ def CheckoutBootstrapScripts(String branchName) {
         doGenerateSubmoduleConfigurations: false,
         extensions: [
             [$class: 'PruneStaleBranch'],
+            [$class: 'AuthorInChangelog'],
             [$class: 'SparseCheckoutPaths', sparseCheckoutPaths: [
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Jenkins/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/bootstrap/' ],
                 [ $class: 'SparseCheckoutPath', path: 'scripts/build/Platform' ]
             ]],
-            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+            // Shallow checkouts break changelog computation. Do not enable.
+            [$class: 'CloneOption', noTags: false, reference: '', shallow: false]
         ],
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
@@ -234,6 +236,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             branches: scm.branches,
             extensions: [
                 [$class: 'PruneStaleBranch'],
+                [$class: 'AuthorInChangelog'],
                 [$class: 'SubmoduleOption', disableSubmodules: disableSubmodules, recursiveSubmodules: true],
                 [$class: 'CheckoutOption', timeout: 60]
             ],
@@ -310,13 +313,13 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
                 script: 'python/get_python.bat'
         }
 
-        if(env.CLEAN_OUTPUT_DIRECTORY?.toBoolean() || env.CLEAN_ASSETS?.toBoolean()) {
-            def command = "${pipelineConfig.PYTHON_DIR}/python"
-            if(env.IS_UNIX) command += '.sh'
-            else command += '.cmd'
-            command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
-            palSh(command, "Running ${platform} clean")
-        }
+        // Always run the clean step, the scripts detect what variables were set, but it also cleans if
+        // the NODE_LABEL has changed
+        def command = "${pipelineConfig.PYTHON_DIR}/python"
+        if(env.IS_UNIX) command += '.sh'
+        else command += '.cmd'
+        command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
+        palSh(command, "Running ${platform} clean")
     }
 }
 
@@ -339,14 +342,17 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
             checkout scm: [
                 $class: 'GitSCM',
                 branches: [[name: '*/main']],
-                extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']],
+                extensions: [
+                    [$class: 'AuthorInChangelog'],
+                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
+                ],
                 userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
             ]
             withCredentials([usernamePassword(credentialsId: "${env.SERVICE_USER}", passwordVariable: 'apitoken', usernameVariable: 'username')]) {
                 def command = "${pipelineConfig.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py " +
                               '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
                               "-e jenkins.base_url ${env.JENKINS_URL} " +
-                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} "
+                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL}"
                 bat label: "Publishing ${buildJobName} Test Metrics",
                     script: command
             }
@@ -360,6 +366,9 @@ def ExportTestResults(Map options, String platform, String type, String workspac
         dir("${o3deroot}/${params.OUTPUT_DIRECTORY}") {
             junit testResults: "Testing/**/*.xml"
             palRmDir("Testing")
+            // Recreate test runner xml directories that need to be pre generated
+            palMkdir("Testing/Pytest")
+            palMkdir("Testing/Gtest")
         }
     }
 }
@@ -441,7 +450,7 @@ try {
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
-
+                    env.PIPELINE_NAME = pipelineName
                     if(env.BRANCH_NAME) {
                         branchName = env.BRANCH_NAME
                     } else {
@@ -572,14 +581,12 @@ finally {
             )
         }
         node('controller') {
-            emailRecipients = [[$class: 'RequesterRecipientProvider']]
-            if (env.WATCHED_BRANCHES.tokenize(',').contains(branchName)) {
-                emailRecipients.add([$class: 'CulpritsRecipientProvider'])
-            }
             step([
-                $class: 'Mailer', 
-                notifyEveryUnstableBuild: true, 
-                recipients: emailextrecipients(emailRecipients)
+                $class: 'Mailer',
+                notifyEveryUnstableBuild: true,
+                recipients: emailextrecipients([
+                    [$class: 'RequesterRecipientProvider']
+                ])
             ])
         }
     } catch(Exception e) {

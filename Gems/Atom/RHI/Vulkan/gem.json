@@ -1,39 +1,10 @@
 {
     "gem_name": "Atom_RHI_Vulkan",
-    "Dependencies": [
-        {
-            "Uuid": "fb7f322c8bdb42228d9e155c954f98bd",
-            "VersionConstraints": [
-                "~>0.1.0"
-            ],
-            "_comment": "Atom RHI"
-        }
+    "display_name": "Atom RHI Vulkan",
+    "summary": "",
+    "canonical_tags": [
+        "Gem"
     ],
-    "GemFormatVersion": 4,
-    "Uuid": "150d40d376124d98a388dfe890551c03",
-    "Name": "Atom_RHI_Vulkan",
-    "DisplayName": "Atom RHI.Vulkan",
-    "Version": "0.1.0",
-    "Summary": "The Vulkan backend for the Atom Render Hardware Interface",
-    "Tags": ["Atom", "RHI", "Vulkan"],
-    "LinkType": "Dynamic",
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Name": "Private",
-            "Type": "GameModule"
-        },
-        {
-            "Name": "Reflect",
-            "Type": "StaticLib"
-        },
-        {
-            "Name": "Glad",
-            "Type": "StaticLib"
-        },
-        {
-            "Name": "Builders",
-            "Type": "EditorModule"
-        }
+    "user_tags": [
     ]
 }

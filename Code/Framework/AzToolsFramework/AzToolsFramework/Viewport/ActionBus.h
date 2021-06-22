@@ -188,7 +188,7 @@ namespace AzToolsFramework
         virtual void AddEditMenuAction(QAction* action) = 0;
 
         /// Add an action to the Editor menu.
-        virtual void AddMenuAction(AZStd::string_view categoryId, QAction* action) = 0;
+        virtual void AddMenuAction(AZStd::string_view categoryId, QAction* action, bool addToToolsToolbar) = 0;
 
         /// (Re)populate the default EditMenu.
         /// Restore the EditMenu to its default state (the options available when first opening a level).

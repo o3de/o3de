@@ -33,19 +33,7 @@ namespace AssetProcessor
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms = AZStd::vector<AssetBuilderSDK::PlatformInfo>{},
             int order = 0,
             AZ::s64 scanFolderID = 0,
-            bool canSaveNewAssets = false)
-            : m_scanPath(path)
-            , m_displayName(displayName)
-            , m_portableKey (portableKey)
-            , m_isRoot(isRoot)
-            , m_recurseSubFolders(recurseSubFolders)
-            , m_order(order)
-            , m_scanFolderID(scanFolderID)
-            , m_platforms(platforms)
-            , m_canSaveNewAssets(canSaveNewAssets)
-        {
-            // note that m_scanFolderID is 0 unless its filled in from the DB.
-        }
+            bool canSaveNewAssets = false);
 
         ScanFolderInfo() = default;
         ScanFolderInfo(const ScanFolderInfo& other) = default;

@@ -23,6 +23,7 @@ ly_add_target(
         PUBLIC
             Legacy::CryCommon
             Gem::GradientSignal
+        PRIVATE
             Gem::LmbrCentral
 )
 
@@ -42,6 +43,10 @@ ly_add_target(
         Gem::GradientSignal
 )
 
+# Clients and Servers use the above module
+ly_create_alias(NAME FastNoise.Clients  NAMESPACE Gem TARGETS FastNoise)
+ly_create_alias(NAME FastNoise.Servers  NAMESPACE Gem TARGETS FastNoise)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME FastNoise.Editor.Static STATIC
@@ -57,6 +62,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::LmbrCentral.Editor
             PUBLIC
                 Gem::FastNoise.Static
                 AZ::AzToolsFramework
@@ -65,7 +72,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
         NAME FastNoise.Editor GEM_MODULE
-
         NAMESPACE Gem
         FILES_CMAKE
             fastnoise_editor_shared_files.cmake
@@ -76,11 +82,18 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                FastNoise.Editor.Static
+                Gem::FastNoise.Editor.Static
+                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
             Gem::SurfaceData.Editor
     )
+
+    # builders and tools load the above tool module.
+    ly_create_alias(NAME FastNoise.Builders NAMESPACE Gem TARGETS FastNoise.Editor)
+    ly_create_alias(NAME FastNoise.Tools    NAMESPACE Gem TARGETS FastNoise.Editor)
+
+
 endif()
 
 ################################################################################
@@ -103,6 +116,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     FastNoise.Editor.Static
+                    Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
             NAME Gem::FastNoise.Editor.Tests
@@ -120,6 +134,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     Gem::FastNoise.Static
+                    Gem::LmbrCentral
         )
         ly_add_googletest(
             NAME Gem::FastNoise.Tests

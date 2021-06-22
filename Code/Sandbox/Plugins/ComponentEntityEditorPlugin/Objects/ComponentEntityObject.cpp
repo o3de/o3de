@@ -609,14 +609,6 @@ void CComponentEntityObject::InvalidateTM(int nWhyFlags)
         {
             Matrix34 worldTransform = GetWorldTM();
             EBUS_EVENT_ID(m_entityId, AZ::TransformBus, SetWorldTM, LYTransformToAZTransform(worldTransform));
-
-            // When transformed via the editor, make sure the entity is marked dirty for undo capture.
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, m_entityId);
-
-            if (CheckFlags(OBJFLAG_SELECTED))
-            {
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
-            }
         }
     }
 }

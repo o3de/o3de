@@ -890,7 +890,10 @@ namespace EMotionFX
 #if AZ_TRAIT_EMOTIONFX_MAIN_WINDOW_DETACHED
             emotionFXWindowOptions.detachedWindow = true;
 #endif
-            emotionFXWindowOptions.optionalMenuText = "Animation Editor (PREVIEW)";
+            emotionFXWindowOptions.optionalMenuText = "Animation Editor";
+            emotionFXWindowOptions.showOnToolsToolbar = true;
+            emotionFXWindowOptions.toolbarIcon = ":/Menu/emfx_editor.svg";
+
             EditorRequests::Bus::Broadcast(&EditorRequests::RegisterViewPane, EMStudio::MainWindow::GetEMotionFXPaneName(), LyViewPane::CategoryTools, emotionFXWindowOptions, windowCreationFunc);
         }
 

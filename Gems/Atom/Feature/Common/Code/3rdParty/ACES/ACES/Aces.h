@@ -177,4 +177,5 @@ namespace AZ
     }   // namespace Render
 
     AZ_TYPE_INFO_SPECIALIZE(Render::DisplayMapperOperationType, "{41CA80B1-9E0D-41FB-A235-9638D2A905A5}");
+    AZ_TYPE_INFO_SPECIALIZE(Render::OutputDeviceTransformType, "{B94085B7-C0D4-466A-A791-188A4559EC8D}");
 }   // namespace AZ

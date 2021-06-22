@@ -17,6 +17,9 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <AzFramework/Physics/PhysicsScene.h>
+#include <AzCore/Interface/Interface.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -33,20 +36,24 @@ namespace PhysX
         }
     }
 
-    FixedJointComponent::FixedJointComponent(const GenericJointConfiguration& config)
-        : JointComponent(config)
+    FixedJointComponent::FixedJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const JointGenericProperties& genericProperties)
+        : JointComponent(configuration, genericProperties)
     {
     }
 
-    FixedJointComponent::FixedJointComponent(const GenericJointConfiguration& config,
-        const GenericJointLimitsConfiguration& limitConfig)
-        : JointComponent(config, limitConfig)
+    FixedJointComponent::FixedJointComponent(
+        const JointComponentConfiguration& configuration, 
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties)
+        : JointComponent(configuration, genericProperties, limitProperties)
     {
     }
 
     void FixedJointComponent::InitNativeJoint()
     {
-        if (m_joint)
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
         {
             return;
         }
@@ -57,14 +64,23 @@ namespace PhysX
         {
             return;
         }
-        PHYSX_SCENE_READ_LOCK(leadFollowerInfo.m_followerActor->getScene());
-        m_joint = AZStd::make_shared<FixedJoint>(physx::PxFixedJointCreate(
-            PxGetPhysics(),
-            leadFollowerInfo.m_leadActor,
-            leadFollowerInfo.m_leadLocal,
-            leadFollowerInfo.m_followerActor,
-            leadFollowerInfo.m_followerLocal),
-            leadFollowerInfo.m_leadBody,
-            leadFollowerInfo.m_followerBody);
+
+        FixedJointConfiguration configuration;
+        configuration.m_parentLocalPosition = leadFollowerInfo.m_leadLocal.GetTranslation();
+        configuration.m_parentLocalRotation = leadFollowerInfo.m_leadLocal.GetRotation();
+        configuration.m_childLocalPosition = leadFollowerInfo.m_followerLocal.GetTranslation();
+        configuration.m_childLocalRotation = leadFollowerInfo.m_followerLocal.GetRotation();
+
+        configuration.m_genericProperties = m_genericProperties;
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_jointHandle = sceneInterface->AddJoint(
+                leadFollowerInfo.m_followerBody->m_sceneOwner,
+                &configuration,  
+                leadFollowerInfo.m_leadBody->m_bodyHandle, 
+                leadFollowerInfo.m_followerBody->m_bodyHandle);
+            m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
+        }
     }
 } // namespace PhysX

@@ -40,8 +40,6 @@
 #endif
 #endif
 
-#define USE_STEAM 0 // Enable this to start using Steam
-
 // The following definitions are used by Sandbox and RC to determine which platform support is needed
 #define TOOLS_SUPPORT_POWERVR
 #define TOOLS_SUPPORT_ETC2COMP
@@ -243,9 +241,6 @@ typedef uint32 vtx_idx;
         #endif // !NULL_RENDERER
     #endif // TESSELLATION
 #endif // !defined(MOBILE)
-
-
-#define USE_GEOM_CACHES
 
 //------------------------------------------------------
 // SVO GI

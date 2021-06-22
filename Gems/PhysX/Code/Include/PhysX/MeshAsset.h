@@ -58,12 +58,12 @@ namespace PhysX
             static constexpr AZ::u16 TriangleMeshMaterialIndex = (std::numeric_limits<AZ::u16>::max)();
 
             using ShapeConfigurationPair = AZStd::pair<AZStd::shared_ptr<AssetColliderConfiguration>, 
-                AZStd::shared_ptr<Physics::ShapeConfiguration>>; // Have to use shared_ptr here because Physics::ShapeConfigurationList uses it
+                AZStd::shared_ptr<Physics::ShapeConfiguration>>; // Have to use shared_ptr here because AzPhysics::ShapeColliderPairList uses it
             using ShapeConfigurationList = AZStd::vector<ShapeConfigurationPair>;
 
             ShapeConfigurationList m_colliderShapes; //!< Shapes data with optional collider configuration override.
-            AZStd::vector<AZStd::string> m_surfaceNames; //!< List of all surface names.
-            AZStd::vector<AZStd::string> m_materialNames; //!< List of all material names.
+            AZStd::vector<AZStd::string> m_materialNames; //!< List of material names of the mesh asset.
+            AZStd::vector<AZStd::string> m_physicsMaterialNames; //!< List of physics material names associated with each material.
             AZStd::vector<AZ::u16> m_materialIndexPerShape; //!< An index of the material in m_materialNames for each shape.
         };
 
@@ -74,6 +74,8 @@ namespace PhysX
         public:
             AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator, 0);
             AZ_RTTI(MeshAsset, "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}", AZ::Data::AssetData);
+
+            static void Reflect(AZ::ReflectContext* context);
 
             MeshAssetData m_assetData;
         };

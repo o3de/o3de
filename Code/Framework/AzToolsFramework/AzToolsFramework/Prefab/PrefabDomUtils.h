@@ -28,6 +28,7 @@ namespace AzToolsFramework
             inline static const char* PatchesName = "Patches";
             inline static const char* SourceName = "Source";
             inline static const char* LinkIdName = "LinkId";
+            inline static const char* EntityIdName = "Id";
             inline static const char* EntitiesName = "Entities";
             inline static const char* ContainerEntityName = "ContainerEntity";
 
@@ -99,6 +100,20 @@ namespace AzToolsFramework
                     .Append(InstancesName)
                     .Append(instanceName);
             };
+
+            /**
+             * Gets a set of all the template source paths in the given dom.
+             * @param prefabDom The DOM to get the template source paths from.
+             * @param[out] templateSourcePaths The set of template source paths to populate.
+             */
+            void GetTemplateSourcePaths(const PrefabDomValue& prefabDom, AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
+
+            /**
+             * Gets the instances DOM value from the given prefab DOM.
+             * 
+             * @return the instances DOM value or AZStd::nullopt if it instances can't be found.
+             */
+            PrefabDomValueConstReference GetInstancesValue(const PrefabDomValue& prefabDom);
 
             /**
              * Prints the contents of the given prefab DOM value to the debug output console in a readable format.

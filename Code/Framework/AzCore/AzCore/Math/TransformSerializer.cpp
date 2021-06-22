@@ -33,6 +33,12 @@ namespace AZ
         AZ::Transform* transformInstance = reinterpret_cast<AZ::Transform*>(outputValue);
         AZ_Assert(transformInstance, "Output value for JsonTransformSerializer can't be null.");
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *transformInstance = AZ::Transform::CreateIdentity();
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Transform value set to identity.");
+        }
+
         JSR::ResultCode result(JSR::Tasks::ReadField);
 
         {
@@ -60,19 +66,19 @@ namespace AZ
         {
             // Scale is transitioning to a single uniform scale value, but since it's still internally represented as a Vector3,
             // we need to pick one number to use for load/store operations.
-            float scale = transformInstance->GetScale().GetMaxElement();
+            float scale = transformInstance->GetUniformScale();
 
             JSR::ResultCode loadResult =
                 ContinueLoadingFromJsonObjectField(&scale, azrtti_typeid<decltype(scale)>(), inputValue, ScaleTag, context);
 
             result.Combine(loadResult);
 
-            transformInstance->SetScale(AZ::Vector3(scale));
+            transformInstance->SetUniformScale(scale);
         }
 
         return context.Report(
             result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded Transform information."
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded Transform information."
                                                               : "Failed to load Transform information.");
     }
 
@@ -124,8 +130,8 @@ namespace AZ
 
             // Scale is transitioning to a single uniform scale value, but since it's still internally represented as a Vector3,
             // we need to pick one number to use for load/store operations.
-            float scale = transformInstance->GetScale().GetMaxElement();
-            float defaultScale = defaultTransformInstance ? defaultTransformInstance->GetScale().GetMaxElement() : 0.0f;
+            float scale = transformInstance->GetUniformScale();
+            float defaultScale = defaultTransformInstance ? defaultTransformInstance->GetUniformScale() : 0.0f;
 
             JSR::ResultCode storeResult = ContinueStoringToJsonObjectField(
                 outputValue, ScaleTag, &scale, defaultTransformInstance ? &defaultScale : nullptr, azrtti_typeid<decltype(scale)>(),
@@ -138,6 +144,11 @@ namespace AZ
             result,
             result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored Transform information."
                                                               : "Failed to store Transform information.");
+    }
+
+    auto JsonTransformSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
     }
 
 } // namespace AZ

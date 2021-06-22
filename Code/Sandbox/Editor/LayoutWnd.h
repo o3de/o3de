@@ -20,7 +20,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include "Viewport.h"
-#include "InfoBar.h"
 
 #include <QSplitter>
 #include <QPointer>
@@ -77,8 +76,6 @@ private:
     friend class CLayoutWnd;
 };
 
-class InfoBarExpanderWatcher;
-
 /** Main layout window.
 */
 class CLayoutWnd
@@ -116,7 +113,7 @@ public:
     //! Switch 2D viewports.
     void Cycle2DViewport();
 
-    CInfoBar& GetInfoBar() { return *m_infoBar; }
+    using AzQtComponents::ToolBarArea::SetMainWidget;
 
 public slots:
     void ResetLayout();
@@ -162,11 +159,8 @@ private:
     // Id of maximized view pane.
     int m_maximizedViewId;
 
-    CInfoBar* m_infoBar;
-    QToolBar* m_infoToolBar;
     QSize m_infoBarSize;
     QSettings* m_settings;
-    InfoBarExpanderWatcher* m_expanderWatcher;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -95,6 +95,12 @@ namespace AZ::IO
         constexpr int Compare(AZStd::string_view pathString) const noexcept;
         constexpr int Compare(const value_type* pathString) const noexcept;
 
+        // Extension for fixed strings
+        //! extension: fixed string types with MaxPathLength capacity
+        //! Returns a new instance of an AZStd::fixed_string with capacity of MaxPathLength
+        //! made from the internal string
+        constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathString() const noexcept;
+
         // decomposition
         //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
         //! "/O3DE/foo/bar/name.txt"

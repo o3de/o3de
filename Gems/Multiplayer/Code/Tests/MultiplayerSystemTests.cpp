@@ -15,6 +15,7 @@
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Name/Name.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzTest/AzTest.h>
 #include <MultiplayerSystemComponent.h>
 #include <IMultiplayerConnectionMock.h>
@@ -29,21 +30,23 @@ namespace UnitTest
         {
             SetupAllocator();
             AZ::NameDictionary::Create();
-            m_spawnableComponent = new AzFramework::SpawnableSystemComponent();
+            m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
             m_initHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestInitEvent(value); });
             m_mpComponent->AddSessionInitHandler(m_initHandler);
-            m_shutdownHandler = Multiplayer::SessionInitEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
+            m_shutdownHandler = Multiplayer::SessionShutdownEvent::Handler([this](AzNetworking::INetworkInterface* value) { TestShutdownEvent(value); });
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
+            m_mpComponent->Activate();
         }
 
         void TearDown() override
         {
+            m_mpComponent->Deactivate();
             delete m_mpComponent;
-            delete m_spawnableComponent;
+            delete m_netComponent;
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
@@ -71,8 +74,8 @@ namespace UnitTest
         Multiplayer::SessionShutdownEvent::Handler m_shutdownHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
 
+        AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
-        AzFramework::SpawnableSystemComponent* m_spawnableComponent = nullptr;
     };
 
     TEST_F(MultiplayerSystemTests, TestInitEvent)
@@ -85,6 +88,7 @@ namespace UnitTest
 
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
+        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::DedicatedServer);
         IMultiplayerConnectionMock connMock1 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
         IMultiplayerConnectionMock connMock2 = IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Connector);
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);

@@ -324,7 +324,7 @@ namespace AZ
                     );
 
                     // Gather UV names
-                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetRootVariant()->GetInputContract();
+                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetInputContract();
                     for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
                     {
                         const RHI::ShaderSemantic& semantic = channel.m_semantic;
@@ -422,7 +422,7 @@ namespace AZ
                             const MaterialPropertyDescriptor* propertyDescriptor = materialTypeAssetCreator.GetMaterialPropertiesLayout()->GetPropertyDescriptor(propertyIndex);
 
                             AZ::Name enumName = AZ::Name(property.m_value.GetValue<AZStd::string>());
-                            uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
+                            uint32_t enumValue = propertyDescriptor ? propertyDescriptor->GetEnumValue(enumName) : MaterialPropertyDescriptor::InvalidEnumValue;
                             if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
                             {
                                 materialTypeAssetCreator.ReportError("Enum value '%s' couldn't be found in the 'enumValues' list", enumName.GetCStr());

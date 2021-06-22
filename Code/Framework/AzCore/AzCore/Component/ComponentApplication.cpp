@@ -77,6 +77,27 @@
 #endif // defined(AZ_ENABLE_DEBUG_TOOLS)
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/string/conversions.h>
+
+static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
+{
+    if (arguments.empty())
+    {
+        return;
+    }
+
+    const auto entityIdStr = AZStd::string(arguments.front());
+    const auto entityIdValue = AZStd::stoull(entityIdStr);
+
+    AZStd::string entityName;
+    AZ::ComponentApplicationBus::BroadcastResult(
+        entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, AZ::EntityId(entityIdValue));
+
+    AZ_Printf("Entity Debug", "EntityId: %" PRIu64 ", Entity Name: %s", entityIdValue, entityName.c_str());
+}
+
+AZ_CONSOLEFREEFUNC(
+    PrintEntityName, AZ::ConsoleFunctorFlags::Null, "Parameter: EntityId value, Prints the name of the entity to the console");
 
 namespace AZ
 {
@@ -462,8 +483,6 @@ namespace AZ
         // for the application root.
         CalculateAppRoot();
 
-        // Merge the bootstrap.cfg file into the Settings Registry as soon as the OSAllocator has been created.
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_Bootstrap(*m_settingsRegistry);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
@@ -477,7 +496,7 @@ namespace AZ
         m_console = AZ::Interface<AZ::IConsole>::Get();
         if (m_console == nullptr)
         {
-            m_console = aznew AZ::Console();
+            m_console = aznew AZ::Console(*m_settingsRegistry);
             AZ::Interface<AZ::IConsole>::Register(m_console);
             m_ownsConsole = true;
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
@@ -916,27 +935,49 @@ namespace AZ
         SetSettingsRegistrySpecializations(specializations);
 
         AZStd::vector<char> scratchBuffer;
-        // Retrieves the list gem module build targets that the active project depends on
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
-            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         // In development builds apply the o3de registry and the command line to allow early overrides. This will
         // allow developers to override things like default paths or Asset Processor connection settings. Any additional
         // values will be replaced by later loads, so this step will happen again at the end of loading.
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+        // Project User Registry is merged after the command line here to allow make sure the any command line override of the project path
+        // is used for merging the project's user registry
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
 #endif
+        //! Retrieves the list gem targets that the project has load dependencies on
+        //! This populates the /Amazon/Gems/<GemName>/SourcePaths array entries which is required
+        //! by the MergeSettingsToRegistry_GemRegistry() function below to locate the gem's root folder
+        //! and merge in the gem's registry files.
+        //! But when running from a pre-built app from the O3DE SDK(Editor/AssetProcessor), the projects binary
+        //! directory is needed in order to located the load dependency registry files
+        //! That project binary folder is generated with the <ProjectRoot>/user/Registry when CMake is configured
+        //! for the project
+        //! Therefore the order of merging must be as follows
+        //! 1. MergeSettingsToRegistry_ProjectUserRegistry - Populates the /Amazon/Project/Settings/Build/project_build_path
+        //!    which contains the path to the project binary directory
+        //! 2. MergeSettingsToRegistry_TargetBuildDependencyRegistry - Loads the cmake_dependencies.<project_name>.<application_name>.setreg
+        //!    file from the locations in order of
+        //!    1. <executable_directory>/Registry
+        //!    2. <cache_root>/Registry
+        //!    3. <project_build_path>/bin/$<CONFIG>/Registry
+        //! 3. MergeSettingsToRegistry_GemRegistries - Merges the settings registry files from each gem's <GemRoot>/Registry directory
+
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
+            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
 #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
 #endif
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
@@ -1240,7 +1281,7 @@ namespace AZ
                 // So auto load is turned off if option "AutoLoad" key is bool that is false
                 if (valueName == "AutoLoad" && !value)
                 {
-                    // Strip off the AutoLoead entry from the path
+                    // Strip off the AutoLoad entry from the path
                     auto autoLoadKey = AZ::StringFunc::TokenizeLast(path, "/");
                     if (!autoLoadKey)
                     {
@@ -1310,7 +1351,7 @@ namespace AZ
                 {
                     auto CompareDynamicModuleDescriptor = [&dynamicLibraryPath](const DynamicModuleDescriptor& entry)
                     {
-                        return entry.m_dynamicLibraryPath.contains(dynamicLibraryPath);
+                        return AZ::IO::PathView(entry.m_dynamicLibraryPath).Stem() == AZ::IO::PathView(dynamicLibraryPath).Stem();
                     };
                     if (auto moduleIter = AZStd::find_if(gemModules.begin(), gemModules.end(), CompareDynamicModuleDescriptor);
                         moduleIter == gemModules.end())

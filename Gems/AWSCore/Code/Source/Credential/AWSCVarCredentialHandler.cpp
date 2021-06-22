@@ -18,7 +18,6 @@ namespace AWSCore
 {
     AZ_CVAR(AZ::CVarFixedString, cl_awsAccessKey, "", nullptr, AZ::ConsoleFunctorFlags::Null, "Override AWS access key");
     AZ_CVAR(AZ::CVarFixedString, cl_awsSecretKey, "", nullptr, AZ::ConsoleFunctorFlags::Null, "Override AWS secret key");
-    AZ_CVAR(AZ::CVarFixedString, cl_awsSessionToken, "", nullptr, AZ::ConsoleFunctorFlags::Null, "Override AWS session token");
 
     static constexpr char AWSCVARCREDENTIALHANDLER_ALLOC_TAG[] = "AWSCVarCredentialHandler";
 
@@ -43,13 +42,12 @@ namespace AWSCore
     {
         auto accessKey = static_cast<AZ::CVarFixedString>(cl_awsAccessKey);
         auto secretKey = static_cast<AZ::CVarFixedString>(cl_awsSecretKey);
-        auto sessionToken = static_cast<AZ::CVarFixedString>(cl_awsSessionToken);
-        // Session token is not always required
+
         if (!accessKey.empty() && !secretKey.empty())
         {
             AZStd::lock_guard<AZStd::mutex> credentialsLock{m_credentialMutex};
             m_cvarCredentialsProvider = Aws::MakeShared<Aws::Auth::SimpleAWSCredentialsProvider>(
-                AWSCVARCREDENTIALHANDLER_ALLOC_TAG, accessKey.c_str(), secretKey.c_str(), sessionToken.c_str());
+                AWSCVARCREDENTIALHANDLER_ALLOC_TAG, accessKey.c_str(), secretKey.c_str());
             return m_cvarCredentialsProvider;
         }
         return nullptr;

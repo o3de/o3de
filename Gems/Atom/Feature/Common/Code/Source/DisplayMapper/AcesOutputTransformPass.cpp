@@ -44,9 +44,9 @@ namespace AZ
         {
         }
 
-        void AcesOutputTransformPass::Init()
+        void AcesOutputTransformPass::InitializeInternal()
         {
-            DisplayMapperFullScreenPass::Init();
+            DisplayMapperFullScreenPass::InitializeInternal();
 
             AZ_Assert(m_shaderResourceGroup != nullptr, "AcesOutputTransformPass %s has a null shader resource group when calling Init.", GetPathName().GetCStr());
 
@@ -102,6 +102,36 @@ namespace AZ
                     AcesDisplayMapperFeatureProcessor::GetAcesDisplayMapperParameters(&m_displayMapperParameters, OutputDeviceTransformType_48Nits);
                 }
             }
+
+            if (m_acesParameterOverrides.m_overrideDefaults)
+            {
+                m_displayMapperParameters.m_OutputDisplayTransformFlags = 0;
+                if (m_acesParameterOverrides.m_alterSurround)
+                {
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= AcesDisplayMapperFeatureProcessor::AlterSurround;
+                }
+                if (m_acesParameterOverrides.m_applyDesaturation)
+                {
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= AcesDisplayMapperFeatureProcessor::ApplyDesaturation;
+                }
+                if (m_acesParameterOverrides.m_applyCATD60toD65)
+                {
+                    m_displayMapperParameters.m_OutputDisplayTransformFlags |= AcesDisplayMapperFeatureProcessor::ApplyCATD60toD65;
+                }
+
+                m_displayMapperParameters.m_cinemaLimits[0] = m_acesParameterOverrides.m_cinemaLimitsBlack;
+                m_displayMapperParameters.m_cinemaLimits[1] = m_acesParameterOverrides.m_cinemaLimitsWhite;
+                m_displayMapperParameters.m_acesSplineParams.minPoint[0] = m_acesParameterOverrides.m_minPoint;
+                m_displayMapperParameters.m_acesSplineParams.midPoint[0] = m_acesParameterOverrides.m_midPoint;
+                m_displayMapperParameters.m_acesSplineParams.maxPoint[0] = m_acesParameterOverrides.m_maxPoint;
+                m_displayMapperParameters.m_surroundGamma = m_acesParameterOverrides.m_surroundGamma;
+                m_displayMapperParameters.m_gamma = m_acesParameterOverrides.m_gamma;
+            }
+        }
+
+        void AcesOutputTransformPass::SetAcesParameterOverrides(const AcesParameterOverrides& acesParameterOverrides)
+        {
+            m_acesParameterOverrides = acesParameterOverrides;
         }
     }   // namespace Render
 }   // namespace AZ

@@ -14,20 +14,23 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace Multiplayer
 {
     NetworkSpawnableLibrary::NetworkSpawnableLibrary()
     {
+        AZ::Interface<INetworkSpawnableLibrary>::Register(this);
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
     NetworkSpawnableLibrary::~NetworkSpawnableLibrary()
     {
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
+        AZ::Interface<INetworkSpawnableLibrary>::Unregister(this);
     }
 
-    void NetworkSpawnableLibrary::BuildPrefabsList()
+    void NetworkSpawnableLibrary::BuildSpawnablesList()
     {
         auto enumerateCallback = [this](const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
         {
@@ -50,10 +53,10 @@ namespace Multiplayer
 
     void NetworkSpawnableLibrary::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
     {
-        BuildPrefabsList();
+        BuildSpawnablesList();
     }
 
-    AZ::Name NetworkSpawnableLibrary::GetPrefabNameFromAssetId(AZ::Data::AssetId assetId)
+    AZ::Name NetworkSpawnableLibrary::GetSpawnableNameFromAssetId(AZ::Data::AssetId assetId)
     {
         if (assetId.IsValid())
         {

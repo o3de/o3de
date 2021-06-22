@@ -167,28 +167,34 @@ namespace AZ
             AZ_Assert(setOk, "LightCullingTilePreparePass::SetConstantData() - could not set constant data");
         }
 
-        void LightCullingTilePreparePass::BuildAttachmentsInternal()
+        void LightCullingTilePreparePass::BuildInternal()
         {
             ChooseShaderVariant();
+        }
+
+        void LightCullingTilePreparePass::OnShaderReloaded()
+        {
+            LoadShader();
+            AZ_Assert(GetPassState() != RPI::PassState::Rendering, "LightCullingTilePreparePass: Trying to reload shader during rendering");
+            if (GetPassState() == RPI::PassState::Idle)
+            {
+                ChooseShaderVariant();
+            }
         }
 
         void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
         {
-            LoadShader();
-            ChooseShaderVariant();
-        }
-        void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
-        {
-            LoadShader();
-            ChooseShaderVariant();
+            OnShaderReloaded();
         }
 
-        void LightCullingTilePreparePass::OnShaderVariantReinitialized(
-             const AZ::RPI::Shader&,  const AZ::RPI::ShaderVariantId&,
-             AZ::RPI::ShaderVariantStableId)
+        void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
         {
-            LoadShader();
-            ChooseShaderVariant();
+            OnShaderReloaded();
+        }
+
+        void LightCullingTilePreparePass::OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant&)
+        {
+            OnShaderReloaded();
         }
 
     }   // namespace Render

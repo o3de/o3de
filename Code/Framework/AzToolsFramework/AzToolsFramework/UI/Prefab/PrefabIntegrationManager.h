@@ -65,7 +65,7 @@ namespace AzToolsFramework
             // EditorContextMenuBus...
             int GetMenuPosition() const override;
             AZStd::string GetMenuIdentifier() const override;
-            void PopulateEditorGlobalContextMenu(QMenu* menu) const override;
+            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
             // EntityOutlinerSourceDropHandlingBus...
             void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
@@ -93,6 +93,7 @@ namespace AzToolsFramework
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
+            static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
 
             // Prompt and resolve dialogs
             static bool QueryUserForPrefabSaveLocation(

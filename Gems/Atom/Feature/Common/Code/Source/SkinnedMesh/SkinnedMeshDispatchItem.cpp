@@ -12,7 +12,7 @@
 
 #include <SkinnedMesh/SkinnedMeshDispatchItem.h>
 #include <SkinnedMesh/SkinnedMeshOutputStreamManager.h>
-#include <SkinnedMesh/SkinnedMeshComputePass.h>
+#include <SkinnedMesh/SkinnedMeshFeatureProcessor.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -34,7 +34,7 @@ namespace AZ
             size_t lodIndex,
             Data::Instance<RPI::Buffer> boneTransforms,
             const SkinnedMeshShaderOptions& shaderOptions,
-            RPI::Ptr<SkinnedMeshComputePass> skinnedMeshComputePass,
+            SkinnedMeshFeatureProcessor* skinnedMeshFeatureProcessor,
             MorphTargetInstanceMetaData morphTargetInstanceMetaData,
             float morphTargetDeltaIntegerEncoding)
             : m_inputBuffers(inputBuffers)
@@ -45,7 +45,7 @@ namespace AZ
             , m_morphTargetInstanceMetaData(morphTargetInstanceMetaData)
             , m_morphTargetDeltaIntegerEncoding(morphTargetDeltaIntegerEncoding)
         {
-            m_skinningShader = skinnedMeshComputePass->GetShader();
+            m_skinningShader = skinnedMeshFeatureProcessor->GetSkinningShader();
 
             // Shader options are generally set per-skinned mesh instance, but morph targets may only exist on some lods. Override the option for applying morph targets here
             if (m_morphTargetInstanceMetaData.m_accumulatedPositionDeltaOffsetInBytes != MorphTargetConstants::s_invalidDeltaOffset)
@@ -58,7 +58,7 @@ namespace AZ
             }
 
             // CreateShaderOptionGroup will also connect to the SkinnedMeshShaderOptionNotificationBus
-            m_shaderOptionGroup = skinnedMeshComputePass->CreateShaderOptionGroup(m_shaderOptions, *this);
+            m_shaderOptionGroup = skinnedMeshFeatureProcessor->CreateSkinningShaderOptionGroup(m_shaderOptions, *this);
         }
 
         SkinnedMeshDispatchItem::~SkinnedMeshDispatchItem()
@@ -81,19 +81,14 @@ namespace AZ
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
 
-            auto perInstanceSrgAsset = m_skinningShader->FindShaderResourceGroupAsset(AZ::Name{ "InstanceSrg" });
-            if (!perInstanceSrgAsset.GetId().IsValid())
+            auto perInstanceSrgLayout = m_skinningShader->FindShaderResourceGroupLayout(AZ::Name{ "InstanceSrg" });
+            if (!perInstanceSrgLayout)
             {
-                AZ_Error("SkinnedMeshDispatchItem", false, "Failed to get shader resource group asset");
-                return false;
-            }
-            else if (!perInstanceSrgAsset.IsReady())
-            {
-                AZ_Error("SkinnedMeshDispatchItem", false, "Shader resource group asset is not loaded");
+                AZ_Error("SkinnedMeshDispatchItem", false, "Failed to get shader resource group layout");
                 return false;
             }
 
-            m_instanceSrg = RPI::ShaderResourceGroup::Create(perInstanceSrgAsset);
+            m_instanceSrg = RPI::ShaderResourceGroup::Create(m_skinningShader->GetAsset(), m_skinningShader->GetSupervariantIndex(), perInstanceSrgLayout->GetName());
             if (!m_instanceSrg)
             {
                 AZ_Error("SkinnedMeshDispatchItem", false, "Failed to create shader resource group for skinned mesh");

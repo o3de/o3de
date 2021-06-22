@@ -24,12 +24,13 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PUBLIC
-            Legacy::CryCommon
+        PRIVATE
             Gem::LmbrCentral
-            Gem::GradientSignal
-            Gem::SurfaceData.Static
+            Gem::SurfaceData
+        PUBLIC
             Gem::AtomLyIntegration_CommonFeatures.Static
+    RUNTIME_DEPENDENCIES
+        Gem::GradientSignal
 )
 
 ly_add_target(
@@ -50,6 +51,10 @@ ly_add_target(
         Gem::GradientSignal
         Gem::SurfaceData
 )
+
+# the above module is for use in clients and server type applications
+ly_create_alias(NAME Vegetation.Servers NAMESPACE Gem TARGETS Gem::Vegetation)
+ly_create_alias(NAME Vegetation.Clients NAMESPACE Gem TARGETS Gem::Vegetation)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -75,6 +80,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         Gem::GradientSignal.Editor
         Gem::SurfaceData.Editor
     )
+    # the above module is for use in dev tools
+    ly_create_alias(NAME Vegetation.Builders NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+    ly_create_alias(NAME Vegetation.Tools    NAMESPACE Gem TARGETS Gem::Vegetation.Editor)
+
 endif()
 
 ################################################################################
@@ -95,6 +104,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
+                AZ::AzFrameworkTestShared
                 Gem::Vegetation.Static
     )
     ly_add_googletest(

@@ -26,6 +26,7 @@
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/IO/FileOperations.h> // [GFX TODO] Remove when [ATOM-15472]
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzFramework/Process/ProcessCommunicator.h>
@@ -133,11 +134,12 @@ namespace AZ
             SubProducts::Paths productPaths = SubProducts::Paths(SubProducts::Paths::capacity());
             for (auto subProduct : SubProducts::SuffixListMembers)
             {
-                productPaths[subProduct.m_value] = outputFile.empty() ? m_inputFilePath : outputFile;  // that's a reproduction of azslc's behavior (no "-o" = input name is used)
-                AzFramework::StringFunc::Path::ReplaceExtension(productPaths[subProduct.m_value], subProduct.m_string.data());
+                AZStd::string subProductFilePath = outputFile.empty() ? m_inputFilePath : outputFile; // that's a reproduction of azslc's behavior (no "-o" = input name is used)
+                AzFramework::StringFunc::Path::ReplaceExtension(subProductFilePath, subProduct.m_string.data());
                 // append .json if it's one of those subs:
                 auto listOfJsons = { SubProducts::ia, SubProducts::om, SubProducts::srg, SubProducts::options, SubProducts::bindingdep };
-                productPaths[subProduct.m_value] += AZStd::any_of(AZ_BEGIN_END(listOfJsons), [&](auto v) { return v == subProduct.m_value; }) ? ".json" : "";
+                subProductFilePath += AZStd::any_of(AZ_BEGIN_END(listOfJsons), [&](auto v) { return v == subProduct.m_value; }) ? ".json" : "";
+                productPaths[subProduct.m_value] = subProductFilePath;
             }
             productPaths[SubProducts::azslin] = GetInputFilePath();  // post-fixup this one after the loop, because it's not an output of azslc, it's an output of the builder though.
             return { productPaths };

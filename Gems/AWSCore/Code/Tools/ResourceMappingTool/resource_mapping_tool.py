@@ -13,13 +13,16 @@ from argparse import (ArgumentParser, Namespace)
 import logging
 import sys
 
+from utils import aws_utils
 from utils import environment_utils
 from utils import file_utils
 
 # arguments setup
 argument_parser: ArgumentParser = ArgumentParser()
 argument_parser.add_argument('--binaries_path', help='Path to QT Binaries necessary for PySide.')
+argument_parser.add_argument('--config_path', help='Path to resource mapping config directory.')
 argument_parser.add_argument('--debug', action='store_true', help='Execute on debug mode to enable DEBUG logging level')
+argument_parser.add_argument('--profile', default='default', help='Named AWS profile to use for querying AWS resources')
 arguments: Namespace = argument_parser.parse_args()
 
 # logging setup
@@ -50,6 +53,7 @@ if __name__ == "__main__":
         from manager.thread_manager import ThreadManager
         from manager.view_manager import ViewManager
         from style import azqtcomponents_resources
+        from style import editormainwindow_resources
     except ImportError as e:
         logger.error(f"Failed to import module [{e.name}] {e}")
         environment_utils.cleanup_qt_environment()
@@ -71,20 +75,20 @@ if __name__ == "__main__":
 
     logger.info("Initializing configuration manager ...")
     configuration_manager: ConfigurationManager = ConfigurationManager()
-    configuration_manager.setup()
+    configuration_error: bool = not configuration_manager.setup(arguments.profile, arguments.config_path)
 
     logger.info("Initializing thread manager ...")
     thread_manager: ThreadManager = ThreadManager()
-    thread_manager.setup()
+    thread_manager.setup(configuration_error)
 
     logger.info("Initializing view manager ...")
     view_manager: ViewManager = ViewManager()
-    view_manager.setup()
+    view_manager.setup(configuration_error)
 
     logger.info("Initializing controller manager ...")
     controller_manager: ControllerManager = ControllerManager()
-    controller_manager.setup()
+    controller_manager.setup(configuration_error)
     
-    view_manager.show()
+    view_manager.show(configuration_error)
 
     sys.exit(app.exec_())

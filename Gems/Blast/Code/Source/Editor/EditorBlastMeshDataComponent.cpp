@@ -43,6 +43,7 @@ namespace Blast
         AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC("BlastMeshDataService"));
+        incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void EditorBlastMeshDataComponent::Reflect(AZ::ReflectContext* context)
@@ -66,7 +67,7 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-blast-actor.html")
+                        "https://docs.o3de.org/docs/user-guide/components/reference/blast-family-mesh-data/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorBlastMeshDataComponent::m_showMeshAssets,

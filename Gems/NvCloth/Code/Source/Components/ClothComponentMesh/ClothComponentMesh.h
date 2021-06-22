@@ -85,7 +85,7 @@ namespace NvCloth
 
     private:
         void UpdateSimulationCollisions();
-        void UpdateSimulationSkinning();
+        void UpdateSimulationSkinning(float deltaTime);
         void UpdateSimulationConstraints();
         void UpdateRenderData(const AZStd::vector<SimParticleFormat>& particles);
 
@@ -133,7 +133,7 @@ namespace NvCloth
 
         // Cloth Skinning from the character
         AZStd::unique_ptr<ActorClothSkinning> m_actorClothSkinning;
-        AZ::u32 m_numberOfClothSkinningUpdates = 0;
+        float m_timeClothSkinningUpdates = 0.0f;
 
         // Cloth Constraints
         AZStd::unique_ptr<ClothConstraints> m_clothConstraints;

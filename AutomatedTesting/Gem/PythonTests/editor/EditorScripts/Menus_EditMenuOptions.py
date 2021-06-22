@@ -64,8 +64,6 @@ class TestEditMenuOptions(EditorTestHelper):
             ("Modify", "Transform Mode", "Move"),
             ("Modify", "Transform Mode", "Rotate"),
             ("Modify", "Transform Mode", "Scale"),
-            ("Lock Selection",),
-            ("Unlock All Entities",),
             ("Editor Settings", "Global Preferences"),
             ("Editor Settings", "Graphics Settings"),
             ("Editor Settings", "Editor Settings Manager"),

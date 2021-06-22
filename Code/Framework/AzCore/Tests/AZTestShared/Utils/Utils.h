@@ -30,8 +30,14 @@ namespace UnitTest
     public:
         explicit ErrorHandler(const char* errorPattern);
         ~ErrorHandler();
+        //! Returns the total number of errors encountered (including those which match the expected pattern).
         int GetErrorCount() const;
+        //! Returns the total number of warnings encountered (including those which match the expected pattern).
         int GetWarningCount() const;
+        //! Returns the number of errors encountered which matched the expected pattern.
+        int GetExpectedErrorCount() const;
+        //! Returns the number of warnings encountered which matched the expected pattern.
+        int GetExpectedWarningCount() const;
         bool SuppressExpectedErrors(const char* window, const char* message);
 
         // AZ::Debug::TraceMessageBus
@@ -44,6 +50,8 @@ namespace UnitTest
         AZStd::string m_errorPattern;
         int m_errorCount;
         int m_warningCount;
+        int m_expectedErrorCount;
+        int m_expectedWarningCount;
     };
 }
 

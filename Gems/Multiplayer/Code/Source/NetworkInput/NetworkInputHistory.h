@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Multiplayer/NetworkInput.h>
+#include <Multiplayer/NetworkInput/NetworkInput.h>
 #include <AzCore/std/containers/deque.h>
 
 namespace Multiplayer

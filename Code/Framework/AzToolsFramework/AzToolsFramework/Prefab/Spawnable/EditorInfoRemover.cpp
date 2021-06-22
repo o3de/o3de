@@ -62,25 +62,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
-    AZStd::vector<AZ::Entity*> EditorInfoRemover::GetEntitiesFromInstance(AZStd::unique_ptr<Instance>& instance)
+    void EditorInfoRemover::GetEntitiesFromInstance(
+        AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance, EntityList& hierarchyEntities)
     {
-        AZStd::vector<AZ::Entity*> result;
-
-        instance->GetNestedEntities(
-            [&result](const AZStd::unique_ptr<AZ::Entity>& entity)
+        instance->GetAllEntitiesInHierarchy(
+            [&hierarchyEntities](const AZStd::unique_ptr<AZ::Entity>& entity)
             {
-                result.emplace_back(entity.get());
+                hierarchyEntities.emplace_back(entity.get());
                 return true;
             }
         );
-
-        if (instance->HasContainerEntity())
-        {
-            auto containerEntityReference = instance->GetContainerEntity();
-            result.emplace_back(&containerEntityReference->get());
-        }
-
-        return result;
     }
 
     void EditorInfoRemover::SetEditorOnlyEntityHandlerFromCandidates(const EntityList& entities)
@@ -543,7 +534,9 @@ exportComponent, prefabProcessorContext);
         }
 
         // grab all nested entities from the Instance as source entities.
-        EntityList sourceEntities = GetEntitiesFromInstance(instance);
+        EntityList sourceEntities;
+        GetEntitiesFromInstance(instance, sourceEntities);
+
         EntityList exportEntities;
 
         // prepare for validation of component requirements.
@@ -616,7 +609,7 @@ exportComponent, prefabProcessorContext);
         );
 
         // replace entities of instance with exported ones.
-        instance->GetNestedEntities(
+        instance->GetAllEntitiesInHierarchy(
             [&exportEntitiesMap](AZStd::unique_ptr<AZ::Entity>& entity)
             {
                 auto entityId = entity->GetId();
@@ -624,14 +617,6 @@ exportComponent, prefabProcessorContext);
                 return true;
             }
         );
-
-        if (instance->HasContainerEntity())
-        {
-            if (auto found = exportEntitiesMap.find(instance->GetContainerEntityId()); found != exportEntitiesMap.end())
-            {
-                instance->SetContainerEntity(*found->second);
-            }
-        }
 
         // save the final result in the target Prefab DOM.
         PrefabDom filteredPrefab;

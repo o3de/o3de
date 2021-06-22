@@ -6,6 +6,7 @@
                     "project-path",
                     "engine-path",
                     "project-cache-path",
+                    "project-build-path",
                     "regset",
                     "regremove",
                     "regdump",

@@ -50,7 +50,7 @@ namespace AZ
 
         float SphereLightDelegate::GetRadius() const
         {
-            return m_shapeBus->GetRadius() * GetTransform().GetScale().GetMaxElement();
+            return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
         }
 
         void SphereLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
@@ -121,6 +121,15 @@ namespace AZ
                 GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
             }
         }
+
+        void SphereLightDelegate::SetEsmExponent(float esmExponent)
+        {
+            if (GetShadowsEnabled() && GetLightHandle().IsValid())
+            {
+                GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), esmExponent);
+            }
+        }
+
 
     } // namespace Render
 } // namespace AZ

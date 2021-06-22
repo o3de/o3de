@@ -128,6 +128,7 @@ set(FILES
     Serialization/Json/TransformSerializerTests.cpp
     Serialization/Json/TupleSerializerTests.cpp
     Serialization/Json/UnorderedSetSerializerTests.cpp
+    Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
     Math/AabbTests.cpp
     Math/ColorTests.cpp
@@ -152,6 +153,7 @@ set(FILES
     Math/PlaneTests.cpp
     Math/QuaternionPerformanceTests.cpp
     Math/QuaternionTests.cpp
+    Math/RandomTests.cpp
     Math/ShapeIntersectionPerformanceTests.cpp
     Math/ShapeIntersectionTests.cpp
     Math/SfmtTests.cpp

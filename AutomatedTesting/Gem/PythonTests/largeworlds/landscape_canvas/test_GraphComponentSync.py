@@ -23,6 +23,7 @@ import pytest
 # Bail on the test if ly_test_tools doesn't exist.
 pytest.importorskip('ly_test_tools')
 import ly_test_tools.environment.file_system as file_system
+import ly_test_tools._internal.pytest_plugin as internal_plugin
 import editor_python_test_tools.hydra_test_utils as hydra
 
 test_directory = os.path.join(os.path.dirname(__file__), 'EditorScripts')
@@ -46,6 +47,11 @@ class TestGraphComponentSync(object):
     @pytest.mark.BAT
     @pytest.mark.SUITE_main
     def test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(self, request, editor, level, launcher_platform):
+
+        # Skip test if running against Debug build
+        if "debug" in internal_plugin.build_directory:
+            pytest.skip("Does not execute against debug builds.")
+
         cfg_args = [level]
 
         expected_lines = [
@@ -118,10 +124,15 @@ class TestGraphComponentSync(object):
 
     @pytest.mark.test_case_id('C15987206')
     @pytest.mark.SUITE_main
-    def test_LandscapeCanvas_GradientMixerNodeConstruction(self, request, editor, level, launcher_platform):
+    def test_LandscapeCanvas_GradientMixer_NodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Gradient Mixer can be setup in Landscape Canvas and all references are property set.
         """
+
+        # Skip test if running against Debug build
+        if "debug" in internal_plugin.build_directory:
+            pytest.skip("Does not execute against debug builds.")
+
         cfg_args = [level]
 
         expected_lines = [
@@ -141,7 +152,7 @@ class TestGraphComponentSync(object):
 
     @pytest.mark.test_case_id('C21333743')
     @pytest.mark.SUITE_periodic
-    def test_LandscapeCanvas_LayerBlenderNodeConstruction(self, request, editor, level, launcher_platform):
+    def test_LandscapeCanvas_LayerBlender_NodeConstruction(self, request, editor, level, launcher_platform):
         """
         Verifies a Layer Blender can be setup in Landscape Canvas and all references are property set.
         """

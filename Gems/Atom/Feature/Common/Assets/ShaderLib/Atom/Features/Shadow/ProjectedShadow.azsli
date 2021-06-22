@@ -226,7 +226,7 @@ float ProjectedShadow::GetVisibilityEsm()
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> expShadowmap = PassSrg::m_projectedExponentialShadowmap;
+    const Texture2DArray<float> shadowmap = PassSrg::m_projectedExponentialShadowmap;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
@@ -243,10 +243,12 @@ float ProjectedShadow::GetVisibilityEsm()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z, 
             coefficients);
-        const float expDepthInShadowmap = expShadowmap.Sample(
+        const float occluder = shadowmap.Sample(
             PassSrg::LinearSampler, 
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
-        const float ratio = exp(-EsmExponentialShift * depth) * expDepthInShadowmap;
+
+        const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
+        const float ratio = exp(exponent);
         // pow() mitigates light bleeding to shadows from near shadow casters.
         return saturate( pow(ratio, 8) );
     }
@@ -265,7 +267,7 @@ float ProjectedShadow::GetVisibilityEsmPcf()
     }
 
     const float invAtlasSize = ViewSrg::m_invShadowmapAtlasSize;
-    const Texture2DArray<float> expShadowmap = PassSrg::m_projectedExponentialShadowmap;
+    const Texture2DArray<float> shadowmap = PassSrg::m_projectedExponentialShadowmap;
 
     if (m_shadowPosition.x >= 0 && m_shadowPosition.x * size < size - PixelMargin &&
         m_shadowPosition.y >= 0 && m_shadowPosition.y * size < size - PixelMargin)
@@ -282,10 +284,12 @@ float ProjectedShadow::GetVisibilityEsmPcf()
         const float depth = PerspectiveDepthToLinear(
             m_shadowPosition.z,
             coefficients);
-        const float expDepthInShadowmap = expShadowmap.Sample(
+        const float occluder = shadowmap.Sample(
             PassSrg::LinearSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z)).r;
-        float ratio = exp(-EsmExponentialShift * depth) * expDepthInShadowmap;
+
+        const float exponent = -ViewSrg::m_projectedShadows[m_shadowIndex].m_esmExponent * (depth - occluder);
+        float ratio = exp(exponent);
 
         static const float pcfFallbackThreshold = 1.04;
         if (ratio > pcfFallbackThreshold)

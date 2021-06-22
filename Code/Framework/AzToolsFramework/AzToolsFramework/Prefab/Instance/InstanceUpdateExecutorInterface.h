@@ -27,10 +27,13 @@ namespace AzToolsFramework
             virtual ~InstanceUpdateExecutorInterface() = default;
 
             // Add all Instances of Template with given Id into a queue for updating them later.
-            virtual void AddTemplateInstancesToQueue(TemplateId instanceTemplateId) = 0;
+            virtual void AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) = 0;
 
             // Update Instances in the waiting queue.
             virtual bool UpdateTemplateInstancesInQueue() = 0;
+
+            // Remove an Instance from the waiting queue.
+            virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
         };
     }
 }

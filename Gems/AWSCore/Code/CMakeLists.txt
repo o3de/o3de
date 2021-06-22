@@ -45,6 +45,10 @@ ly_add_target(
             Gem::AWSCore.Static
 )
 
+# clients and servers will use the above Gem::AWSCore module.
+ly_create_alias(NAME AWSCore.Servers NAMESPACE Gem TARGETS Gem::AWSCore)
+ly_create_alias(NAME AWSCore.Clients NAMESPACE Gem TARGETS Gem::AWSCore)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME AWSCore.Editor.Static STATIC
@@ -60,31 +64,33 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include/Public
         BUILD_DEPENDENCIES
             PRIVATE
+                AZ::AzQtComponents
                 3rdParty::Qt::Core
                 3rdParty::Qt::Widgets
-                AZ::AzQtComponents
+                Gem::AWSCore.Static
             PUBLIC
                 AZ::AzToolsFramework
+                3rdParty::AWSNativeSDK::AWSCore
     )
 
     ly_add_target(
-        NAME AWSCore.Editor MODULE
+        NAME AWSCore.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             awscore_editor_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Include/Private
-        COMPILE_DEFINITIONS
-            PRIVATE
-                AWSCORE_EDITOR
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                Gem::AWSCore.Static
                 Gem::AWSCore.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
     )
 
+    # This target is not a real gem module
+    # It is not meant to be loaded by the ModuleManager in C++
     ly_add_target(
         NAME AWSCore.ResourceMappingTool MODULE
         NAMESPACE Gem
@@ -99,6 +105,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AWSCore.Editor.Static
     )
     ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
+
+    # Builders and Tools (such as the Editor use AWSCore.Editor) use the .Editor module above.
+    ly_create_alias(NAME AWSCore.Tools NAMESPACE Gem TARGETS Gem::AWSCore.Editor)
+    ly_create_alias(NAME AWSCore.Builders NAMESPACE Gem TARGETS Gem::AWSCore.Editor)
+
 endif()
 
 ################################################################################

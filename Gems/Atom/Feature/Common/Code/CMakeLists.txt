@@ -76,6 +76,8 @@ ly_add_target(
     FILES_CMAKE
         atom_feature_common_shared_files.cmake
         ../Assets/atom_feature_common_asset_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_source_dir}/runtime_dependencies_clients.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
@@ -99,6 +101,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             atom_feature_common_editor_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/runtime_dependencies_tools.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
@@ -130,12 +134,16 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             atom_feature_common_builders_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/runtime_dependencies_tools.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Builders
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
+        RUNTIME_DEPENDENCIES
+            Gem::Atom_RHI.Private
     )
 endif()
 

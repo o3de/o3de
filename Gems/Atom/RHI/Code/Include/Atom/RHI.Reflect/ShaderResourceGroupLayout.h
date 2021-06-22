@@ -75,6 +75,16 @@ namespace AZ
              */
             bool Finalize();
 
+            void SetName(const Name& name) {  m_name = name; }
+            const Name& GetName() const { return m_name; }
+
+            //! This string will be used at runtime for both ShaderResourceGroup and ShaderResourceGroupPool to
+            //! create a unique InstanceId to avoid redundant copies in memory.
+            const AZStd::string& GetUniqueId() const { return m_uniqueId; }
+
+            //! The Set function as described above.
+            //! It is usually the Source azsl/azsli/srgi file where this SRG comes from.
+            void SetUniqueId(const AZStd::string& uniqueId) { m_uniqueId = uniqueId; }
 
             /**
              * Designates this SRG as ShaderVariantKey fallback by providing the generated
@@ -272,6 +282,12 @@ namespace AZ
 
             AZ_SERIALIZE_FRIEND();
 
+            //! Name of the ShaderResourceGroup as specified in the original *.azsl/*.azsli file.
+            Name m_name;
+
+            //! Usually the AZSL file of origin/definition.
+            AZStd::string m_uniqueId;
+
             AZStd::vector<ShaderInputStaticSamplerDescriptor> m_staticSamplers;
 
             AZStd::vector<ShaderInputBufferDescriptor> m_inputsForBuffers;
@@ -314,5 +330,8 @@ namespace AZ
             /// The computed hash value.
             HashValue64 m_hash = HashValue64{ 0 };
         };
+
+        // Suitable for functions that return a null const RHI::Ptr<RHI::ShaderResourceGroupLayout>&.
+        static const RHI::Ptr<RHI::ShaderResourceGroupLayout> NullSrgLayout;
     }
 }

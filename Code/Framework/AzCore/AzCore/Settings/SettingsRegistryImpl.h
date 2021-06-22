@@ -14,6 +14,7 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -35,9 +36,6 @@ namespace AZ
         AZ_CLASS_ALLOCATOR(SettingsRegistryImpl, AZ::OSAllocator, 0);
         AZ_RTTI(AZ::SettingsRegistryImpl, "{E9C34190-F888-48CA-83C9-9F24B4E21D72}", AZ::SettingsRegistryInterface);
 
-        static constexpr size_t MaxFilePathLength = AZ_MAX_PATH_LEN;
-        static constexpr size_t MaxJsonPathLength = 1024;
-        static constexpr size_t MaxCommandLineArgumentLength = 1024;
         static constexpr size_t MaxRegistryFolderEntries = 128;
         
         SettingsRegistryImpl();
@@ -80,11 +78,14 @@ namespace AZ
         bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform, AZStd::string_view rootKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
 
+        void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) override;
+        void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) override;
+
     private:
         using TagList = AZStd::fixed_vector<size_t, Specializations::MaxCount + 1>;
         struct RegistryFile
         {
-            char m_relativePath[MaxFilePathLength]{ 0 };
+            AZ::IO::FixedMaxPathString m_relativePath;
             TagList m_tags;
             bool m_isPatch{ false };
             bool m_isPlatformFile{ false };
@@ -109,5 +110,6 @@ namespace AZ
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;
+        JsonApplyPatchSettings m_applyPatchSettings;
     };
 } // namespace AZ

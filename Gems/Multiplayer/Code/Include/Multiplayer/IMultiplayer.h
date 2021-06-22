@@ -15,8 +15,9 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
-#include <Multiplayer/INetworkEntityManager.h>
-#include <Multiplayer/INetworkTime.h>
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/NetworkTime/INetworkTime.h>
 #include <Multiplayer/MultiplayerStats.h>
 
 namespace AzNetworking
@@ -44,10 +45,10 @@ namespace Multiplayer
         AzNetworking::ByteBuffer<2048> m_userData;
     };
 
+    using ClientDisconnectedEvent = AZ::Event<>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
-    using OnConnectFunctor = AZStd::function<NetworkEntityHandle(AzNetworking::IConnection*, MultiplayerAgentDatum)>;
 
     //! IMultiplayer provides insight into the Multiplayer session and its Agents
     class IMultiplayer
@@ -65,8 +66,12 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
+        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
+        //! @param handler The ClientDisconnectedEvent Handler to add
+        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
-        //! @param handler The SessionInitEvent Handler to add
+        //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
 
         //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
@@ -76,10 +81,6 @@ namespace Multiplayer
         //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
-
-        //! Overrides the default connect behaviour with the provided functor.
-        //! @param functor the function to invoke during a new connection event
-        virtual void SetOnConnectFunctor(const OnConnectFunctor& functor) = 0;
 
         //! Sends a packet telling if entity update messages can be sent
         //! @param readyForEntityUpdates Ready for entity updates or not
@@ -100,28 +101,6 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
-
-        //! Returns the gem name associated with the provided component index.
-        //! @param  netComponentId the componentId to return the gem name of
-        //! @return the name of the gem that contains the requested component
-        virtual const char* GetComponentGemName(NetComponentId netComponentId) const = 0;
-
-        //! Returns the component name associated with the provided component index.
-        //! @param  netComponentId the componentId to return the component name of
-        //! @return the name of the component
-        virtual const char* GetComponentName(NetComponentId netComponentId) const = 0;
-
-        //! Returns the property name associated with the provided component index and property index.
-        //! @param  netComponentId the component index to return the property name of
-        //! @param  propertyIndex  the index of the network property to return the property name of
-        //! @return the name of the network property
-        virtual const char* GetComponentPropertyName(NetComponentId netComponentId, PropertyIndex propertyIndex) const = 0;
-
-        //! Returns the Rpc name associated with the provided component index and rpc index.
-        //! @param  netComponentId the componentId to return the property name of
-        //! @param  rpcIndex       the index of the rpc to return the rpc name of
-        //! @return the name of the requested rpc
-        virtual const char* GetComponentRpcName(NetComponentId netComponentId, RpcIndex rpcIndex) const = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance

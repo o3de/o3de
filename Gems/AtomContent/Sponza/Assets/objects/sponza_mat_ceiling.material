@@ -4,19 +4,14 @@
     "parentMaterial": "",
     "propertyLayoutVersion": 3,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/ceiling_1k_ao.png"
-        },
         "baseColor": {
-            "textureBlendMode": "Lerp",
+            "color": [
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                1.0
+            ],
             "textureMap": "Textures/ceiling_1k_basecolor.png"
-        },
-        "clearCoat": {
-            "enable": true,
-            "factor": 0.5,
-            "influenceMap": "Textures/ceiling_1k_ao.png",
-            "normalMap": "Textures/ceiling_1k_normal.png",
-            "roughness": 0.30000001192092898
         },
         "emissive": {
             "color": [
@@ -26,32 +21,8 @@
                 1.0
             ]
         },
-        "general": {
-            "applySpecularAA": true
-        },
-        "irradiance": {
-            "color": [
-                1.0,
-                0.7591058015823364,
-                0.43776607513427737,
-                1.0
-            ]
-        },
-        "normal": {
-            "textureMap": "Textures/ceiling_1k_normal.png"
-        },
         "opacity": {
             "factor": 1.0
-        },
-        "parallax": {
-            "algorithm": "ContactRefinement",
-            "factor": 0.019999999552965165,
-            "pdo": true,
-            "quality": "Medium",
-            "textureMap": "Textures/ceiling_1k_height.png"
-        },
-        "roughness": {
-            "textureMap": "Textures/ceiling_1k_roughness.png"
         }
     }
 }

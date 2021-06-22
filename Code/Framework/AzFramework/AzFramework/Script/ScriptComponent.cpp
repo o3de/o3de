@@ -264,12 +264,12 @@ namespace AzFramework
     //          SampleRPC =
     //          {
     //              // Two callbacks can be registered to the NetRPC
-    //              // A function to be invoked on the Master - OnMaster
+    //              // A function to be invoked on the main server - OnServer
     //              // and a function to be invoked on the Proxy - OnProxy
     //              //
-    //              // Every NetRPC needs to  have a valid OnMaster function, while OnProxy is optional.
-    //              OnMaster = function()
-    //                  Debug.Log("Function to be invoked on the Master.");
+    //              // Every NetRPC needs to  have a valid OnServer function, while OnProxy is optional.
+    //              OnServer = function()
+    //                  Debug.Log("Function to be invoked on the server.");
     //              end
     //
     //              OnProxy = function()
@@ -693,11 +693,11 @@ namespace AzFramework
             // set the __index so we can read values in case we change the script
             // after we export the component
             lua_pushliteral(lua, "__index");
-            lua_pushcclosure(lua, &Internal::Properties__Index, 1);
+            lua_pushcclosure(lua, &Internal::Properties__Index, 0);
             lua_rawset(lua, -3);
 
             lua_pushliteral(lua, "__newindex");
-            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
+            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 0);
             lua_rawset(lua, -3);
         }
         lua_pop(lua, 1); // pop the properties table (or the nil value)
@@ -900,11 +900,11 @@ namespace AzFramework
             // Ensure that this instance of Properties table has the proper __index and __newIndex metamethods.
             lua_newtable(lua);  // This new table will become the Properties instance metatable.  Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} 
             lua_pushliteral(lua, "__index");  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index
-            lua_pushcclosure(lua, &Internal::Properties__Index, 1);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
+            lua_pushcclosure(lua, &Internal::Properties__Index, 0);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {} __index function
             lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index} 
 
             lua_pushliteral(lua, "__newindex");
-            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 1);
+            lua_pushcclosure(lua, &Internal::Properties__NewIndex, 0);
             lua_rawset(lua, -3);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {} {__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} 
             lua_setmetatable(lua, -2);  // Stack: ScriptRootTable PropertiesTable EntityTable "Properties" {Meta{__index=Internal::Properties__Index __newindex=Internal::Properties__NewIndex} } 
 
@@ -979,7 +979,7 @@ namespace AzFramework
                 };
 
                 serializeContext->Class<ScriptComponent, AZ::Component>()
-                    ->Version(3, converter)
+                    ->Version(4, converter)
                     ->Field("ContextID", &ScriptComponent::m_contextId)
                     ->Field("Properties", &ScriptComponent::m_properties)
                     ->Field("Script", &ScriptComponent::m_script)

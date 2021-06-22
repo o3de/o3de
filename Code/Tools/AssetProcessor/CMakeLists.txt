@@ -125,6 +125,10 @@ ly_add_target(
             AZ::AssetProcessorBatch.Static
 )
 
+if(LY_DEFAULT_PROJECT_PATH)
+    set_property(TARGET AssetProcessor AssetProcessorBatch APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+endif()
+
 # Adds the AssetProcessorBatch target as a C preprocessor define so that it can be used as a Settings Registry
 # specialization in order to look up the generated .setreg which contains the dependencies
 # specified for the target.
@@ -255,8 +259,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME AZ::AssetProcessor.Tests
-        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest
+        TEST_COMMAND $<TARGET_FILE:AZ::AssetProcessor.Tests> --unittest --gtest_filter=-*.SUITE_sandbox*
     )
-
 
 endif()

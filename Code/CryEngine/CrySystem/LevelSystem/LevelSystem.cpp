@@ -17,10 +17,8 @@
 #include "LevelSystem.h"
 #include <IAudioSystem.h>
 #include "IMovieSystem.h"
-#include <IResourceManager.h>
 #include <ILocalizationManager.h>
 #include "CryPath.h"
-#include <Pak/CryPakUtils.h>
 
 #include <LoadScreenBus.h>
 
@@ -261,16 +259,6 @@ void CLevelSystem::Rescan(const char* levelsFolder)
 {
     if (levelsFolder)
     {
-        if (const ICmdLineArg* pModArg = m_pSystem->GetICmdLine()->FindArg(eCLAT_Pre, "MOD"))
-        {
-            if (m_pSystem->IsMODValid(pModArg->GetValue()))
-            {
-                m_levelsFolder.format("Mods/%s/%s", pModArg->GetValue(), levelsFolder);
-                m_levelInfos.clear();
-                ScanFolder(0, true);
-            }
-        }
-
         m_levelsFolder = levelsFolder;
     }
 
@@ -318,8 +306,9 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
 
     AZStd::unordered_set<AZStd::string> pakList;
 
-    bool allowFileSystem = true;
-    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), 0, allowFileSystem);
+    const bool allowFileSystem = true;
+    const uint32_t skipPakFiles = 1;
+    AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(search.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
     if (handle)
     {
@@ -332,7 +321,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
             {
                 if (AZ::StringFunc::Equal(handle.m_filename.data(), LevelPakName))
                 {
-                    // level folder contain pak files like 'level.pak' 
+                    // level folder contain pak files like 'level.pak'
                     // which we only want to load during level loading.
                     continue;
                 }
@@ -363,7 +352,7 @@ void CLevelSystem::ScanFolder(const char* subfolder, bool modFolder)
     PopulateLevels(search, folder, pPak, modFolder, false);
     // Load levels outside of the bundles to maintain backward compatibility.
     PopulateLevels(search, folder, pPak, modFolder, true);
-      
+
 }
 
 void CLevelSystem::PopulateLevels(
@@ -372,7 +361,7 @@ void CLevelSystem::PopulateLevels(
     {
         // allow this find first to actually touch the file system
         // (causes small overhead but with minimal amount of levels this should only be around 150ms on actual DVD Emu)
-        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), 0, fromFileSystemOnly);
+        AZ::IO::ArchiveFileIterator handle = pPak->FindFirst(searchPattern.c_str(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskOnly);
 
         if (handle)
         {
@@ -778,9 +767,6 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
         // switched to level heap, so now imm start the loading screen (renderer will be reinitialized in the levelheap)
         gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START_LOADINGSCREEN, 0, 0);
         gEnv->pSystem->SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_LEVEL_LOAD_START_PREPARE);
-
-        // Inform resource manager about loading of the new level.
-        GetISystem()->GetIResourceManager()->PrepareLevel(pLevelInfo->GetPath(), pLevelInfo->GetName());
     }
 
     for (AZStd::vector<ILevelSystemListener*>::const_iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
@@ -987,10 +973,8 @@ void CLevelSystem::UnloadLevel()
 
     m_lastLevelName.clear();
 
-    GetISystem()->GetIResourceManager()->UnloadLevel();
-
     SAFE_RELEASE(m_pCurrentLevel);
-    
+
     // Force Lua garbage collection (may no longer be needed now the legacy renderer has been removed).
     // Normally the GC step is triggered at the end of this method (by the ESYSTEM_EVENT_LEVEL_POST_UNLOAD event).
     EBUS_EVENT(AZ::ScriptSystemRequestBus, GarbageCollect);

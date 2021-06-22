@@ -47,7 +47,7 @@ namespace AZ
             BloomBlurPass(const RPI::PassDescriptor& descriptor);
 
             // Pass behaviour overrides...
-            void BuildAttachmentsInternal() override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void GetInputInfo();

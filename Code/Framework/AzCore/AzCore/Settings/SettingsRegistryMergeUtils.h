@@ -15,11 +15,7 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
-
-namespace AZ
-{
-    class CommandLine;
-}
+#include <AzCore/Settings/CommandLine.h>
 
 namespace AZ::IO
 {
@@ -51,6 +47,14 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Store the absolute path to the Projects "user" directory, which is a transient directory where per user
     //! project settings can be stored
     inline static constexpr char FilePathKey_ProjectUserPath[] = "/Amazon/AzCore/Runtime/FilePaths/SourceProjectUserPath";
+
+    //! User facing key which represents the root of a project cmake build tree. i.e the ${CMAKE_BINARY_DIR}
+    //! A relative path is taking relative to the *project* root, NOT *engine* root.
+    inline constexpr AZStd::string_view ProjectBuildPath = "/Amazon/Project/Settings/Build/project_build_path";
+    //! In-Memory only key which stores an absolute path to the project build directory
+    inline constexpr AZStd::string_view FilePathKey_ProjectBuildPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectBuildPath";
+    //! In-Memory only key which stores the configuration directory containing the built binaries
+    inline constexpr AZStd::string_view FilePathKey_ProjectConfigurationBinPath = "/Amazon/AzCore/Runtime/FilePaths/ProjectConfigurationBinPath";
 
     //! Development write storage path may be considered temporary or cache storage on some platforms
     inline static constexpr char FilePathKey_DevWriteStorage[] = "/Amazon/AzCore/Runtime/FilePaths/DevWriteStorage";
@@ -128,7 +132,7 @@ namespace AZ::SettingsRegistryMergeUtils
         //! Callback function that is after a has been filtered through the CommentPrefixFunc
         //! to determine if the text matches a section header
         //! returns a view of the section name if the line contains a section
-        //! Otherwise an empty view is returend
+        //! Otherwise an empty view is returned
         using SectionHeaderFunc = AZStd::function<AZStd::string_view(AZStd::string_view line)>;
 
         //! Root JSON pointer path to place all key=values pairs of configuration data within
@@ -163,9 +167,6 @@ namespace AZ::SettingsRegistryMergeUtils
     //! @return true if the configuration file was able to be merged into the Settings Registry
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
         const ConfigParserSettings& configParserSettings);
-
-    //! Loads bootstrap.cfg into the Settings Registry. This file does not support specializations.
-    void MergeSettingsToRegistry_Bootstrap(SettingsRegistryInterface& registry);
 
     //! Extracts file path information from the environment and bootstrap to calculate the various file paths and adds those
     //! to the Settings Registry under the FilePathsRootKey.
@@ -212,7 +213,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //!     example: --regdump /My/Array/With/Objects
     //! --regdumpall Dumps the entire settings registry to output.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, const AZ::CommandLine& commandLine, bool executeCommands);
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands);
 
     //! Stores the command line settings into the Setting Registry
     //! The arguments can be used later anywhere the command line is needed
