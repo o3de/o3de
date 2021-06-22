@@ -23,6 +23,8 @@
 #include <QMenu>
 #include <QSpacerItem>
 #include <QProgressBar>
+#include <QDir>
+#include <QFileInfo>
 
 namespace O3DE::ProjectManager
 {
@@ -90,11 +92,6 @@ namespace O3DE::ProjectManager
         : QFrame(parent)
         , m_projectInfo(projectInfo)
     {
-        if (m_projectInfo.m_newPreviewImagePath.isEmpty())
-        {
-            m_projectInfo.m_newPreviewImagePath = ":/DefaultProjectImage.png";
-        }
-
         BaseSetup();
         if (processing)
         {
@@ -121,8 +118,13 @@ namespace O3DE::ProjectManager
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
 
-        m_projectImageLabel->setPixmap(
-            QPixmap(m_projectInfo.m_newPreviewImagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
+        QString projectPreviewPath = QDir(m_projectInfo.m_path).filePath(m_projectInfo.m_iconPath);
+        QFileInfo doesPreviewExist(projectPreviewPath);
+        if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+        {
+            projectPreviewPath = ":/DefaultProjectImage.png";
+        }
+        m_projectImageLabel->setPixmap(QPixmap(projectPreviewPath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
         m_projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();

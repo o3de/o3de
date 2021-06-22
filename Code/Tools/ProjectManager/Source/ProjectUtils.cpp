@@ -221,11 +221,11 @@ namespace O3DE::ProjectManager
                         return false;
                     }
                 }
-            }
 
-            if (original.exists() && !QFile::remove(origFile))
-            {
-                return false;
+                if (!QFile::remove(origFile))
+                {
+                    return false;
+                }
             }
 
             if (!QFile::copy(newFile, origFile))

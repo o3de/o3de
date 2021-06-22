@@ -53,7 +53,7 @@ namespace O3DE::ProjectManager
         QString m_iconPath;
         QStringList m_userTags;
 
-        // Used on projects home screen
+        // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
 

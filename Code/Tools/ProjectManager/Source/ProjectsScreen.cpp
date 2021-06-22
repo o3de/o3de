@@ -36,7 +36,6 @@
 #include <QSpacerItem>
 #include <QListWidget>
 #include <QListWidgetItem>
-#include <QFileInfo>
 #include <QScrollArea>
 #include <QStackedWidget>
 #include <QFrame>
@@ -219,16 +218,7 @@ namespace O3DE::ProjectManager
 
     ProjectButton* ProjectsScreen::CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing)
     {
-        ProjectButton* projectButton;
-
-        QString projectPreviewPath = QDir(project.m_path).filePath(project.m_iconPath);
-        QFileInfo doesPreviewExist(projectPreviewPath);
-        if (doesPreviewExist.exists() && doesPreviewExist.isFile())
-        {
-            project.m_newPreviewImagePath = projectPreviewPath;
-        }
-
-        projectButton = new ProjectButton(project, this, processing);
+        ProjectButton* projectButton = new ProjectButton(project, this, processing);
 
         flowLayout->addWidget(projectButton);
 
