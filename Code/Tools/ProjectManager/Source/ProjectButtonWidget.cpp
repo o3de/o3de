@@ -129,7 +129,7 @@ namespace O3DE::ProjectManager
         hLayout->setContentsMargins(0, 0, 0, 0);
         m_projectFooter->setLayout(hLayout);
         {
-            QLabel* projectNameLabel = new QLabel(m_projectInfo.m_displayName, this);
+            QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
             hLayout->addWidget(projectNameLabel);
         }
 

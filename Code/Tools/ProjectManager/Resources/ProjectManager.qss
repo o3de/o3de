@@ -286,6 +286,8 @@ QTabBar::tab:pressed
     border:none;
 }
 
+
+
 #projectSettingsTab::tab-bar {
     left: 60px;
 }

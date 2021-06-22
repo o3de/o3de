@@ -18,8 +18,6 @@
 #include <ProjectManagerWindow.h>
 #endif
 
-QT_FORWARD_DECLARE_CLASS(QMainWindow)
-
 namespace AZ
 {
     class Entity;
@@ -44,7 +42,6 @@ namespace O3DE::ProjectManager
         AZStd::unique_ptr<PythonBindings> m_pythonBindings;
         QSharedPointer<QCoreApplication> m_app;
         QSharedPointer<ProjectManagerWindow> m_mainWindow;
-
 
         AZ::Entity* m_entity = nullptr;
     };

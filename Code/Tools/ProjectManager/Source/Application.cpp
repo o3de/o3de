@@ -182,4 +182,5 @@ namespace O3DE::ProjectManager
         // Run the application
         return qApp->exec();
     }
+
 }
