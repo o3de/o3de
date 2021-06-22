@@ -70,7 +70,7 @@ def C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC():
         other_id = args[0]
         if other_id.Equal(terrain_id):
             Report.info("Touched ground")
-            TouchGround.value = False
+            TouchGround.value = True
 
     handler = azlmbr.physics.CollisionNotificationBusHandler()
     handler.connect(ball_id)
