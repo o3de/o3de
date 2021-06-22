@@ -17,7 +17,7 @@ namespace AzFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(NativeWindowImpl_Win32, AZ::SystemAllocator, 0);
-        NativeWindowImpl_Win32() = default;
+        NativeWindowImpl_Win32();
         ~NativeWindowImpl_Win32() override;
 
         // NativeWindow::Implementation overrides...
@@ -33,6 +33,7 @@ namespace AzFramework
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
+        float GetDpiScaleFactor() const override;
 
     private:
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
@@ -49,6 +50,9 @@ namespace AzFramework
         RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
         UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
         bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
+
+        using GetDpiForWindowType = UINT(HWND hwnd);
+        GetDpiForWindowType* m_getDpiFunction = nullptr;
     };
 
     const char* NativeWindowImpl_Win32::s_defaultClassName = "O3DEWin32Class";
@@ -56,6 +60,16 @@ namespace AzFramework
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {
         return aznew NativeWindowImpl_Win32();
+    }
+
+    NativeWindowImpl_Win32::NativeWindowImpl_Win32()
+    {
+        // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
+        auto user32module = LoadLibraryA("user32.dll");
+        if (user32module)
+        {
+            m_getDpiFunction = reinterpret_cast<GetDpiForWindowType*>(GetProcAddress(user32module, "GetDpiForWindow"));
+        }
     }
 
     NativeWindowImpl_Win32::~NativeWindowImpl_Win32()
@@ -237,6 +251,11 @@ namespace AzFramework
             // Send all other WM_SYSKEYDOWN messages to the default WndProc.
             break;
         }
+        case WM_DPICHANGED:
+        {
+            const float newScaleFactor = nativeWindowImpl->GetDpiScaleFactor();
+            WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnDpiScaleFactorChanged, newScaleFactor);
+        }
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
             break;
@@ -328,6 +347,17 @@ namespace AzFramework
         {
             ExitBorderlessWindowFullScreen();
         }
+    }
+
+    float NativeWindowImpl_Win32::GetDpiScaleFactor() const
+    {
+        constexpr UINT defaultDotsPerInch = 96;
+        UINT dotsPerInch = defaultDotsPerInch;
+        if (m_getDpiFunction)
+        {
+            dotsPerInch = m_getDpiFunction(m_win32Handle);
+        }
+        return aznumeric_cast<float>(dotsPerInch) / aznumeric_cast<float>(defaultDotsPerInch);
     }
 
     void NativeWindowImpl_Win32::EnterBorderlessWindowFullScreen()
