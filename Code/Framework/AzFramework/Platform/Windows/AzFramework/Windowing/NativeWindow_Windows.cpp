@@ -8,6 +8,7 @@
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
+#include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
 
 namespace AzFramework
@@ -65,9 +66,9 @@ namespace AzFramework
     NativeWindowImpl_Win32::NativeWindowImpl_Win32()
     {
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
-        if (auto user32module = LoadLibraryA("user32.dll"))
+        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
         {
-            m_getDpiFunction = reinterpret_cast<GetDpiForWindowType*>(GetProcAddress(user32module, "GetDpiForWindow"));
+            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType*>("GetDpiForWindow");
         }
     }
 
