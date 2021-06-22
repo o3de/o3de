@@ -13,24 +13,6 @@
 namespace Vegetation
 {
     template<typename TComponent, typename TConfiguration>
-    void EditorVegetationComponentBase<TComponent, TConfiguration>::OnCryEditorEndLevelExport(bool /*success*/)
-    {
-        // Restore the activation state of our components after the export is complete.
-        if (m_visible)
-        {
-            m_component.Activate();
-        }
-    }
-
-    template<typename TComponent, typename TConfiguration>
-    void EditorVegetationComponentBase<TComponent, TConfiguration>::OnCryEditorBeginLevelExport()
-    {
-        // We need to deactivate our game components at the start of level exports because any vegetation meshes that are loaded
-        // or instances that are spawned can end up in our static vegetation level data.
-        m_component.Deactivate();
-    }
-
-    template<typename TComponent, typename TConfiguration>
     AZ::u32 EditorVegetationComponentBase<TComponent, TConfiguration>::ConfigurationChanged()
     {
         auto refreshResult = BaseClassType::ConfigurationChanged();
@@ -69,13 +51,11 @@ namespace Vegetation
     {
         GradientSignal::SetSamplerOwnerEntity(m_configuration, GetEntityId());
         BaseClassType::Activate();
-        CrySystemEventBus::Handler::BusConnect();
     }
 
     template<typename TComponent, typename TConfiguration>
     void EditorVegetationComponentBase<TComponent, TConfiguration>::Deactivate()
     {
-        CrySystemEventBus::Handler::BusDisconnect();
         BaseClassType::Deactivate();
     }
 
