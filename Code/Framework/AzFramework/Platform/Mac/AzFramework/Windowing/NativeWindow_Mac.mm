@@ -75,6 +75,8 @@ namespace AzFramework
         // Add a fullscreen button in the upper right of the title bar.
         [m_nativeWindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 
+        m_nativeWindow.tabbingMode = NSWindowTabbingModeDisallowed;
+        
         // Make the window active
         [m_nativeWindow makeKeyAndOrderFront:nil];
         m_nativeWindow.title = m_windowTitle;
