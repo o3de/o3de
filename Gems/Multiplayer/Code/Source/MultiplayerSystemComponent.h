@@ -37,7 +37,6 @@ namespace AzFramework
 namespace AzNetworking
 {
     class INetworkInterface;
-    class IpAddress;
 }
 
 namespace Multiplayer
