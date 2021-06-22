@@ -208,22 +208,9 @@ WelcomeScreenDialog QLabel
     margin: 0;
 }
 
-WelcomeScreenDialog QLabel#titleLabel
+WelcomeScreenDialog QLabel#currentProjectLabel
 {
-    font-size: 22px;
-    line-height: 32px;
-}
-
-WelcomeScreenDialog QLabel#bodyLabel
-{
-    font-size: 14px;
-    line-height: 20px;
-}
-
-WelcomeScreenDialog QLabel[fontStyle="sectionTitle"], QLabel#titleLabel[fontStyle="sectionTitle"], QLabel#documentationLink
-{
-    font-size: 16px;
-    line-height: 24px;
+    margin-top: 10px;
 }
 
 WelcomeScreenDialog QPushButton
@@ -232,36 +219,20 @@ WelcomeScreenDialog QPushButton
     line-height: 16px;
 }
 
-WelcomeScreenDialog QFrame#viewContainer
-{
-    background-color: transparent;
-}
-
-WelcomeScreenDialog QFrame#viewContainer[articleStyle="pinned"]
-{
-    background: rgba(180,139,255,5%);
-    border: 1px solid #B48BFF;
-    box-shadow: 0 0 4px 0 rgba(0,0,0,50%);
-}
-
 WelcomeScreenDialog QWidget#articleViewContainerRoot
 {
-    background: #111111;
+    background: #444444;
 }
 
-WelcomeScreenDialog QScrollArea#previewArea
+WelcomeScreenDialog QWidget#levelViewFTUEContainer
 {
-    background-color: transparent;
+    background: #282828;
 }
 
-WelcomeScreenDialog QWidget#articleViewContents
-{
-    background-color: transparent;
-}
-
-WelcomeScreenDialog QFrame#imageFrame
-{
-    background-color: transparent;
+QTableWidget#recentLevelTable::item {
+	background-color: rgb(64,64,64);
+	margin-bottom: 4px;
+	margin-top: 4px;
 }
 
 /* Particle Editor */

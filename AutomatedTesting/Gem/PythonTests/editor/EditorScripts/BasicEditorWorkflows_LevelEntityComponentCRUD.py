@@ -79,8 +79,6 @@ class TestBasicEditorWorkflows(EditorTestHelper):
             grp_box = new_level_dlg.findChild(QtWidgets.QGroupBox, "STATIC_GROUP1")
             level_name = grp_box.findChild(QtWidgets.QLineEdit, "LEVEL")
             level_name.setText(self.args["level"])
-            level_folders = grp_box.findChild(QtWidgets.QComboBox, "LEVEL_FOLDERS")
-            level_folders.setCurrentText("Levels/")
             button_box = new_level_dlg.findChild(QtWidgets.QDialogButtonBox, "buttonBox")
             button_box.button(QtWidgets.QDialogButtonBox.Ok).click()
 

@@ -14,6 +14,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/string_view.h>
 
 #include <ACETypes.h>
@@ -151,7 +152,7 @@ namespace AudioControls
         //! Gets the folder where the implementation specific controls data are stored.
         //! This is used by the ACE to update if controls are changed while the editor is open.
         //! @return String with the path to the folder where the implementation specific controls are stored.
-        virtual AZStd::string GetDataPath() const = 0;
+        virtual AZ::IO::FixedMaxPath GetDataPath() const = 0;
 
         //! Informs the plugin that the ACE has saved the data in case it needs to do any clean up.
         virtual void DataSaved() = 0;
