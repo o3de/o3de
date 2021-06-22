@@ -37,13 +37,9 @@ class CognitoUserPoolSMSRole:
                 'SNSRoleInlinePolicy':
                     iam.PolicyDocument(
                         statements=[
-                            # Need to use * as the resource name used by sns principal service is unknown.
-                            # Hacky solution is to deny publish to all then allowing for rest which is sms only.
-                            iam.PolicyStatement(
-                                effect=iam.Effect.DENY,
-                                actions=['sns:Publish'],
-                                resources=['arn:aws:sns:*:*:*']
-                            ),
+                            # SMS role will be used by CognitoIDP tp allow to publish to SNS topic owned by CognitoIDP
+                            # team to push a sms.
+                            # Need to use * as the resource name used by CognitoIDP principal service is unknown.
                             iam.PolicyStatement(
                                 effect=iam.Effect.ALLOW,
                                 actions=['sns:Publish'],

@@ -51,6 +51,12 @@ To add additional dependencies, for example other CDK libraries, just add
 them to your requirements.txt file and rerun the `..\..\..\Lumberyard\python\pip.cmd install -r .\Gems\AWSClientAuth\cdk\requirements.txt`
 command.
 
+
+## Update Authorization Permissions
+* CDK application creates Authenticated and Unauthenticated CognitoIdentityPoolRole that allows authorized clients to call AWS services.
+* Example permission is set to provide S3:ListBuckets as we cannot have empty IAM policy statement.
+* Developers are expected to update the permissions on the roles created according to their needs by updating the attached managed policy statements.
+
 ## Useful commands
 
  * `cdk ls`          list all stacks in the app
