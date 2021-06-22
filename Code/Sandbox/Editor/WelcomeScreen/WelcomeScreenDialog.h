@@ -52,13 +52,9 @@ private:
     Ui::WelcomeScreenDialog* ui;
 
     QString m_levelPath;
-    QStringListModel* m_pRecentListModel;
     TNameFullPathArray m_levels;
     RecentFileList* m_pRecentList;
-    News::ResourceManifest* m_manifest = nullptr;
-    News::ArticleViewContainer* m_articleViewContainer = nullptr;
     const char* m_levelExtension = nullptr;
-    bool m_waitingOnAsync = true;
     bool m_messageScrollReported = false;
 
     void RemoveLevelEntry(int index);
@@ -66,19 +62,11 @@ private:
     void OnShowToolTip(const QModelIndex& index);
     void OnShowContextMenu(const QPoint& point);
     void OnNewLevelBtnClicked(bool checked);
+    void OnNewLevelLabelClicked(const QString& checked);
     void OnOpenLevelBtnClicked(bool checked);
-    void OnNewSliceBtnClicked(bool checked);
-    void OnOpenSliceBtnClicked(bool checked);
-    void OnRecentLevelListItemClicked(const QModelIndex& index);
-    void OnGettingStartedBtnClicked(bool checked);
-    void OnTutorialsBtnClicked(bool checked);
-    void OnDocumentationBtnClicked(bool checked);
-    void OnForumsBtnClicked(bool checked);
-    void OnAutoLoadLevelBtnClicked(bool checked);
-    void OnShowOnStartupBtnClicked(bool checked);
+    void OnRecentLevelTableItemClicked(const QModelIndex& index);
     void OnCloseBtnClicked(bool checked);
 
-    void SyncUpdate(const QString& /* message */, News::LogType /* logType */) {}
     void SyncFail(News::ErrorCode error);
     void SyncSuccess();
 
