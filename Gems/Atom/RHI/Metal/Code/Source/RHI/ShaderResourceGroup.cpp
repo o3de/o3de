@@ -11,6 +11,7 @@
 */
 #include "Atom_RHI_Metal_precompiled.h"
 
+#include <RHI/ArgumentBuffer.h>
 #include <RHI/ImageView.h>
 #include <RHI/ShaderResourceGroup.h>
 
@@ -33,10 +34,12 @@ namespace AZ
             return *m_compiledArgBuffers[m_compiledDataIndex];
         }
     
-        void ShaderResourceGroup::AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder,
-                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
+        void ShaderResourceGroup::CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                                            ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
+                                                            ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
         {
-            GetCompiledArgumentBuffer().AddUntrackedResourcesToEncoder(commandEncoder, srgResourcesVisInfo);
+            GetCompiledArgumentBuffer().CollectUntrackedResources(commandEncoder, srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
         }
     }
 }

@@ -86,7 +86,7 @@ namespace AudioControls
         const AZStd::string_view GetTypeIcon(TImplControlType type) const override;
         const AZStd::string_view GetTypeIconSelected(TImplControlType type) const override;
         AZStd::string GetName() const override;
-        AZStd::string GetDataPath() const;
+        AZ::IO::FixedMaxPath GetDataPath() const override;
         void DataSaved() override {}
         void ConnectionRemoved(IAudioSystemControl* control) override;
         //////////////////////////////////////////////////////////

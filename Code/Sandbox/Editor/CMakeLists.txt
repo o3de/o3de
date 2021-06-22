@@ -128,6 +128,7 @@ ly_add_target(
             Legacy::EditorCore
     RUNTIME_DEPENDENCIES
         Gem::AtomViewportDisplayInfo
+        Legacy::EditorCommon
 )
 ly_add_source_properties(
     SOURCES CryEdit.cpp

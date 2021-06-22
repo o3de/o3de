@@ -23,6 +23,17 @@ namespace AzNetworking
 
     //! @class INetworking
     //! @brief The interface for creating and working with network interfaces.
+    //!
+    //! INetworking is an Az::Interface<T> that provides applications access to higher level networking abstractions.
+    //! AzNetworking::INetworking can be used to instantiate new INetworkInterfaces that can be configured to operate over
+    //! either TCP or UDP, enable or disable encryption, and be assigned a trust level.
+    //! 
+    //! INetworking is also responsible for registering ICompressorFactory implementations. This allows a developer to have
+    //! access to multiple ICompressorFactory implementations by name.  The [MultiplayerCompressor
+    //! Gem](http://docs.o3de.org/docs/user-guide/gems/reference/multiplayer-compression) is an example of this using the
+    //! [LZ4](https://wikipedia.org/wiki/LZ4_%28compression_algorithm%29) algorithm.
+    //! 
+
     class INetworking
     {
     public:

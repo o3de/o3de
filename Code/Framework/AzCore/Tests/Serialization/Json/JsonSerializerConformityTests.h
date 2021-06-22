@@ -1206,7 +1206,7 @@ namespace JsonSerializationTests
         if (this->m_features.m_enableInitializationTest)
         {
             auto instance = this->m_description.CreateDefaultInstance();
-            typename TypeParam::Type compare;
+            AZStd::remove_cvref_t<typename TypeParam::Type> compare;
             if (!this->m_description.AreEqual(*instance, compare))
             {
                 auto serializer = this->m_description.CreateSerializer();
