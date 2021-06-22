@@ -257,5 +257,5 @@ TEST_F(AuthenticationProviderManagerScriptCanvasTest, Initialize_Fail_InvalidPat
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
     ASSERT_FALSE(m_mockController->Initialize(m_enabledProviderNames, ""));
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 }
