@@ -714,6 +714,19 @@
                     "displayName": "Double-sided",
                     "description": "Whether to render back-faces or just front-faces.",
                     "type": "Bool"
+                },
+                {
+                    "id": "alphaAffectsSpecular",
+                    "displayName": "Alpha affects specular",
+                    "description": "How much the alpha value should also affect specular reflection. This should be 0.0 for materials that physically solid, but light can trasmit through them (like glass), but 1.0 when alpha determines the very presence of a surface (like hair)",
+                    "type": "float",
+                    "min": 0.0,
+                    "max": 1.0,
+                    "defaultValue": 0.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_opacityAffectsSpecularFactor"
+                    }
                 }
             ],
             "uv": [
@@ -1669,4 +1682,3 @@
         "UV1": "Unwrapped"
     }
 }
-
