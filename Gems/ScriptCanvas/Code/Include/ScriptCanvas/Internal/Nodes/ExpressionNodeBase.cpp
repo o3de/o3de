@@ -272,6 +272,17 @@ namespace ScriptCanvas
                 return true;
             }
 
+            void ExpressionNodeBase::fixDynamicGroupDataType(const SlotId& slotId, Data::Type displayType)
+            {
+                Slot* slot = GetSlot(slotId);
+                if (slot && (!slot->IsDynamicSlot() || slot->HasDisplayType()))
+                {
+                    
+                    AZ::Crc32 dynamicGroup = slot->GetDynamicGroup();
+                    SetDisplayType(dynamicGroup, displayType);
+                }
+            }
+
             void ExpressionNodeBase::ParseFormat(bool signalError)
             {
                 ExpressionEvaluation::ParseOutcome parseOutcome = ParseExpression(m_format);

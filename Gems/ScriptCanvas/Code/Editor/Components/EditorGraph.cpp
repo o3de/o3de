@@ -90,6 +90,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
+#include <Include/ScriptCanvas/Libraries/Math/MathExpression.h>
 
 ////
 
@@ -628,7 +629,8 @@ namespace ScriptCanvasEditor
         // Special-case for the execution nodeling extensions, which are adding input/output data slots.
         // We want to automatically promote them to variables so that the user can refer to them more easily
         auto functionDefintionNode = azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(node);
-        if (functionDefintionNode && graphCanvasSlotId.IsValid())
+
+        if (functionDefintionNode&& graphCanvasSlotId.IsValid())
         {
             GraphCanvas::Endpoint endpoint;
             GraphCanvas::SlotRequestBus::EventResult(endpoint, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetEndpoint);
@@ -690,6 +692,66 @@ namespace ScriptCanvasEditor
         }
     }
 
+    void Graph::HandleExpressionNodeExtension(ScriptCanvas::Node* node, GraphCanvas::SlotId graphCanvasSlotId, const GraphCanvas::NodeId& nodeId)
+    {
+        auto MathExpressionNode = azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(node);
+        //if dynamicTypeGroup already has slottype, dont trigger slotTypeSelector
+        /*if (node->GetDisplayType(node->GetDisplayGroupId()) {
+
+        }*/
+        if (MathExpressionNode && graphCanvasSlotId.IsValid())
+        {
+            GraphCanvas::Endpoint endpoint;
+            GraphCanvas::SlotRequestBus::EventResult(endpoint, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetEndpoint);
+
+            const ScriptCanvas::Endpoint scEndpoint = ConvertToScriptCanvasEndpoint(endpoint);
+            if (scEndpoint.IsValid())
+            {
+                ScriptCanvas::Slot* slot = FindSlot(scEndpoint);
+
+                if (slot)
+                {
+                    AZ::Vector2 position;
+                    GraphCanvas::GeometryRequestBus::EventResult(position, nodeId, &GraphCanvas::GeometryRequests::GetPosition);
+
+                    // First we need to automatically display the ShowSlotTypeSelector dialog so the user
+                    // can assign a type and name to the slot they are adding
+                    
+                    VariablePaletteRequests::SlotSetup selectedSlotSetup;
+                    bool createSlot = false;
+
+                    AZStd::unordered_set<AZ::Uuid> selections = {ToAZType(ScriptCanvas::Data::Type::Number()), ToAZType(ScriptCanvas::Data::Type::Vector3())};
+                    QPoint scenePoint(aznumeric_cast<int>(position.GetX()), aznumeric_cast<int>(position.GetY()));
+                    VariablePaletteRequestBus::BroadcastResult(
+                        createSlot, &VariablePaletteRequests::ShowSlotTypeSelector, slot, scenePoint, selectedSlotSetup);
+
+                    if (createSlot && !selectedSlotSetup.m_type.IsNull())
+                    {
+                        if (slot)
+                        {
+                            auto displayType = ScriptCanvas::Data::FromAZType(selectedSlotSetup.m_type);
+                            if (displayType.IsValid())
+                            {
+                                slot->SetDisplayType(displayType);
+                            }
+
+                            if (!selectedSlotSetup.m_name.empty())
+                            {
+                                slot->Rename(selectedSlotSetup.m_name);
+                            }
+                        }
+
+                        
+                    }
+                    else
+                    {
+                        RemoveSlot(endpoint);
+                    }
+                }
+            }
+        }
+
+    }
     AZ::Outcome<ScriptCanvas::Node*> Graph::ReplaceNodeByConfig(ScriptCanvas::Node* oldNode, const ScriptCanvas::NodeConfiguration& nodeConfig,
         ScriptCanvas::ReplacementConnectionMap& remapConnections)
     {
@@ -2465,11 +2527,20 @@ namespace ScriptCanvasEditor
                 }
                 else
                 {
-                    ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
+                        ScriptCanvas::SlotId slotId = canvasNode->HandleExtension(extenderId);
                     if (slotId.IsValid())
                     {
+                        
                         SlotMappingRequestBus::EventResult(graphCanvasSlotId, nodeId, &SlotMappingRequests::MapToGraphCanvasId, slotId);
-                        HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        if (azrtti_cast<ScriptCanvas::Nodes::Core::FunctionDefinitionNode*>(canvasNode))
+                        {
+                            HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        }
+                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode))
+                        {
+                            HandleExpressionNodeExtension(canvasNode, graphCanvasSlotId, nodeId);
+                        }
+                        
                     }
                 }
             }

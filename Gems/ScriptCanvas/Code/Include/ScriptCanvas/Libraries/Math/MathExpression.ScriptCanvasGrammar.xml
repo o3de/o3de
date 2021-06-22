@@ -17,7 +17,7 @@
                   Description="The resulting string."
                   Type="double"
                   DisplayGroup="ExpressionDisplayGroup"
-                  IsInput="False"
-                  IsOutput="True" />
+                  IsInput="True"
+                  IsOutput="False" />
     </Class>
 </ScriptCanvas>

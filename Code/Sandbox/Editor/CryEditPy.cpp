@@ -270,7 +270,7 @@ namespace
 
     void PyLaunchLUAEditor(const char* files)
     {
-        CCryEditApp::instance()->OpenLUAEditor(files);
+        CCryEditApp::instance()->OpenVSCode(files);
     }
 
     bool PyCheckOutDialogEnableForAll(bool isEnable)

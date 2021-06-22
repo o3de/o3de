@@ -1150,7 +1150,16 @@ namespace ScriptCanvasEditor
         AZ_Assert(slot, "A valid slot must be provided");
         if (slot)
         {
+            
             m_slotTypeSelector = new SlotTypeSelectorWidget(GetActiveScriptCanvasId(), this); // Recreate the widget every time because of https://bugreports.qt.io/browse/QTBUG-76509
+
+            /*if (selections.empty()) {
+                m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
+            }
+            else
+            {
+                m_slotTypeSelector->PopulateVariablePalette(selections);
+            }*/
             m_slotTypeSelector->PopulateVariablePalette(m_variablePaletteTypes);
 
             // Only set the slot name if the user has already configured this slot, so if they are creating
