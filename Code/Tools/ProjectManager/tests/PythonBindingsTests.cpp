@@ -28,8 +28,8 @@ namespace O3DE::ProjectManager
 
         PythonBindingsTests()
         {
-            const AZ::IO::FixedMaxPath enginePath = AZ::Test::GetEngineRootPath();
-            m_pythonBindings = AZStd::make_unique<PythonBindings>(enginePath);
+            const AZStd::string engineRootPath{ AZ::Test::GetEngineRootPath() };
+            m_pythonBindings = AZStd::make_unique<PythonBindings>(AZ::IO::PathView(engineRootPath));
         }
 
         ~PythonBindingsTests()
