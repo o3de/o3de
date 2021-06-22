@@ -121,6 +121,7 @@ SEditorSettings::SEditorSettings()
 {
     bSettingsManagerMode = false;
 
+    vscodePath = "";
     undoLevels = 50;
     m_undoSliceOverrideSaveValue = false;
     bShowDashboardAtStartup = true;
@@ -128,6 +129,7 @@ SEditorSettings::SEditorSettings()
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
     bEnableGameModeVR = false;
+    
 
 
     objectHideMask = 0;
@@ -199,6 +201,7 @@ SEditorSettings::SEditorSettings()
 
     // Init source safe params.
     enableSourceControl = true;
+    vscodePath = "vscode";
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     textEditorForScript = "TextEdit";
@@ -492,6 +495,7 @@ void SEditorSettings::Save()
     QString strStringPlaceholder;
 
     // Save settings to registry.
+    SaveValue("Settings", "vscodePath", vscodePath);
     SaveValue("Settings", "UndoLevels", undoLevels);
     SaveValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     SaveValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
@@ -704,6 +708,7 @@ void SEditorSettings::Load()
 
     QString     strPlaceholderString;
     // Load settings from registry.
+    LoadValue("Settings", "vscodePath", vscodePath);
     LoadValue("Settings", "UndoLevels", undoLevels);
     LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);  
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);

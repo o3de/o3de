@@ -46,7 +46,8 @@ private:
     struct GeneralSettings
     {
         AZ_TYPE_INFO(GeneralSettings, "{C2AE8F6D-7AA6-499E-A3E8-ECCD0AC6F3D2}")
-
+        AZStd::string m_vscodePath;
+        //QString m_vscodePath;
         bool m_previewPanel;
         bool m_applyConfigSpec;
         bool m_enableSourceControl;

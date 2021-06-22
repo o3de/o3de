@@ -10,7 +10,7 @@
 *
 */
 // Original file Copyright Crytek GMBH or its affiliates, used under license.
-
+//#define _CRT_SECURE_NO_WARNINGS
 #include "EditorDefs.h"
 
 #ifdef WIN32
@@ -4043,7 +4043,7 @@ CMainFrame * CCryEditApp::GetMainFrame() const
     return MainWindow::instance()->GetOldMainFrame();
 }
 
-void CCryEditApp::StartProcessDetached(const char* process, const char* args)
+bool CCryEditApp::StartProcessDetached(const char* process, const char* args)
 {
     // Build the arguments as a QStringList
     AZStd::vector<AZStd::string> tokens;
@@ -4068,7 +4068,7 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
             if (secondQuotePos == AZStd::string::npos)
             {
                 AZ_Warning("StartProcessDetached", false, "String tokenize failed, no matching \" found.");
-                return;
+                return false;
             }
 
             AZStd::string newElement(AZStd::string(currentStr.data() + (firstQuotePos + 1), (secondQuotePos - 1)));
@@ -4094,6 +4094,7 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
                 break;
             }
         }
+      
     }
 
     QStringList argsList;
@@ -4107,13 +4108,72 @@ void CCryEditApp::StartProcessDetached(const char* process, const char* args)
         process,
         argsList,
         QCoreApplication::applicationDirPath()
+
     );
     AZ_Warning("StartProcessDetached", startDetachedReturn, "Failed to start process:%s args:%s", process, args);
+    if (startDetachedReturn == false)
+    {
+        return false;
+    }
+    else return true;
 }
 
-void CCryEditApp::OpenLUAEditor(const char* files)
+//void CCryEditApp::OpenLUAEditor(const char* files)
+//{
+//    //this function opens up the old Lua editor. Will be replaced with Lua VSCode extension.
+//    AZStd::string args = "-launch lua";
+//    if (files && strlen(files) > 0)
+//    {
+//        AZStd::vector<AZStd::string> resolvedPaths;
+//
+//        AZStd::vector<AZStd::string> tokens;
+//
+//        AzFramework::StringFunc::Tokenize(files, tokens, '|');
+//
+//        for (const auto& file : tokens)
+//        {
+//            char resolved[AZ_MAX_PATH_LEN];
+//
+//            AZStd::string fullPath = Path::GamePathToFullPath(file.c_str()).toUtf8().data();
+//            azstrncpy(resolved, AZ_MAX_PATH_LEN, fullPath.c_str(), fullPath.size());
+//
+//            if (AZ::IO::FileIOBase::GetInstance()->Exists(resolved))
+//            {
+//                AZStd::string current = '\"' + AZStd::string(resolved) + '\"';
+//                AZStd::replace(current.begin(), current.end(), '\\', '/');
+//                resolvedPaths.push_back(current);
+//            }
+//        }
+//
+//        if (!resolvedPaths.empty())
+//        {
+//            for (const auto& resolvedPath : resolvedPaths)
+//            {
+//                args.append(AZStd::string::format(" -files %s", resolvedPath.c_str()));
+//            }
+//        }
+//    }
+//
+//    const char* engineRoot = nullptr;
+//    AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+//    AZ_Assert(engineRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
+//
+//    AZStd::string_view exePath;
+//    AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
+//
+//    AZStd::string process = AZStd::string::format("\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
+//#if defined(AZ_PLATFORM_WINDOWS)
+//        ".exe"
+//#endif
+//        "\"", aznumeric_cast<int>(exePath.size()), exePath.data());
+//
+//    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
+//    StartProcessDetached(process.c_str(), processArgs.c_str());
+//}
+
+void CCryEditApp::OpenVSCode(const char* files)
 {
-    AZStd::string args = "-launch lua";
+    AZStd::string args = "-launch VSCode";
     if (files && strlen(files) > 0)
     {
         AZStd::vector<AZStd::string> resolvedPaths;
@@ -4150,17 +4210,35 @@ void CCryEditApp::OpenLUAEditor(const char* files)
     AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
     AZ_Assert(engineRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
 
-    AZStd::string_view exePath;
-    AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
+    //AZStd::string_view exePath;
+    //AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
+ 
+    //AZStd::string_view exePath{"C:\\Users\\donghp\\AppData\\Local\\Programs\\Microsoft VS Code"};
+    string path = gSettings.vscodePath.toUtf8();
+    AZStd::string_view exePath{path};
 
-    AZStd::string process = AZStd::string::format("\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
+    //use environment variable to locate Visual Studio Code
+    //---------------------------------------------------------------------------
+
+    AZStd::string process = AZStd::string::format(
+        "\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "Code"
 #if defined(AZ_PLATFORM_WINDOWS)
         ".exe"
 #endif
-        "\"", aznumeric_cast<int>(exePath.size()), exePath.data());
+        "\"",
+        aznumeric_cast<int>(exePath.size()), exePath.data());
 
     AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
-    StartProcessDetached(process.c_str(), processArgs.c_str());
+    bool isProcessRunning=StartProcessDetached(process.c_str(), processArgs.c_str());
+
+    //free(pValue);
+    if (!isProcessRunning)
+    {
+        // Notify user that VS Code is not installed and maybe provide link to installer/website
+        QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to open Visual Studio Code. Please install the application and check install location under Edit -> Editor Setting."));
+    }
+
+
 }
 
 void CCryEditApp::PrintAlways(const AZStd::string& output)

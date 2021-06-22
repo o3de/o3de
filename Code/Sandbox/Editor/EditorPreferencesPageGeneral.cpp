@@ -35,6 +35,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<GeneralSettings>()
         ->Version(3)
+        ->Field("Visual Studio Code Path", &GeneralSettings::m_vscodePath)
         ->Field("PreviewPanel", &GeneralSettings::m_previewPanel)
         ->Field("ApplyConfigSpec", &GeneralSettings::m_applyConfigSpec)
         ->Field("EnableSourceControl", &GeneralSettings::m_enableSourceControl)
@@ -81,6 +82,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
     if (editContext)
     {
         editContext->Class<GeneralSettings>("General Settings", "General Editor Preferences")
+            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &GeneralSettings::m_vscodePath, "VSCode installation path","VSCode installation path")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_previewPanel, "Show Geometry Preview Panel", "Show Geometry Preview Panel")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_applyConfigSpec, "Hide objects by config spec", "Hide objects by config spec")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSourceControl, "Enable Source Control", "Enable Source Control")
@@ -146,7 +148,10 @@ QIcon& CEditorPreferencesPage_General::GetIcon()
 
 void CEditorPreferencesPage_General::OnApply()
 {
+
+   
     //general settings
+    gSettings.vscodePath= m_generalSettings.m_vscodePath.c_str();
     gSettings.bPreviewGeometryWindow = m_generalSettings.m_previewPanel;
     gSettings.bApplyConfigSpecInEditor = m_generalSettings.m_applyConfigSpec;
     gSettings.enableSourceControl = m_generalSettings.m_enableSourceControl;
@@ -193,6 +198,7 @@ void CEditorPreferencesPage_General::OnApply()
 void CEditorPreferencesPage_General::InitializeSettings()
 {
     //general settings
+    m_generalSettings.m_vscodePath = gSettings.vscodePath.toUtf8().data();
     m_generalSettings.m_previewPanel = gSettings.bPreviewGeometryWindow;
     m_generalSettings.m_applyConfigSpec = gSettings.bApplyConfigSpecInEditor;
     m_generalSettings.m_enableSourceControl = gSettings.enableSourceControl;

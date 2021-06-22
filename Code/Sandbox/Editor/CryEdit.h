@@ -164,11 +164,13 @@ public:
     //! Launches a detached process
     //! \param process The path to the process to start
     //! \param args Space separated list of arguments to pass to the process on start.
-    void StartProcessDetached(const char* process, const char* args);
+    bool StartProcessDetached(const char* process, const char* args);
 
     //! Launches the Lua Editor/Debugger
     //! \param files A space separated list of aliased paths
-    void OpenLUAEditor(const char* files);
+
+    //void OpenLUAEditor(const char* files);
+    void OpenVSCode(const char* files);
 
     QString GetRootEnginePath() const;
     void RedirectStdoutToNull();
