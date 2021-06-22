@@ -31,7 +31,7 @@ namespace AZ
                 ~AssImpBoneImporter() override = default;
 
                 static void Reflect(ReflectContext* context);
-
+                
                 Events::ProcessingResult ImportBone(AssImpNodeEncounteredContext& context);
             };
         } // namespace FbxSceneBuilder

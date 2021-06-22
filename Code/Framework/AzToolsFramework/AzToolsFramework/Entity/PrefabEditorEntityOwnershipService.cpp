@@ -524,8 +524,6 @@ namespace AzToolsFramework
                                 rootSpawnableIndex = m_playInEditorData.m_assets.size();
                             }
 
-                            LoadReferencedAssets(product.GetReferencedAssets());
-
                             AZ::Data::AssetInfo info;
                             info.m_assetId = product.GetAsset().GetId();
                             info.m_assetType = product.GetAssetType();
@@ -534,6 +532,19 @@ namespace AzToolsFramework
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
                                 &AZ::Data::AssetCatalogRequestBus::Events::RegisterAsset, info.m_assetId, info);
                             m_playInEditorData.m_assets.emplace_back(product.ReleaseAsset().release(), AZ::Data::AssetLoadBehavior::Default);
+
+                            // Ensure the product asset is registered with the AssetManager
+                            // Hold on to the returned asset to keep ref count alive until we assign it the latest data
+                            AZ::Data::Asset<AZ::Data::AssetData> asset =
+                                AZ::Data::AssetManager::Instance().FindOrCreateAsset(info.m_assetId, info.m_assetType, AZ::Data::AssetLoadBehavior::Default);
+
+                            // Update the asset registered in the AssetManager with the data of our product from the Prefab Processor
+                            AZ::Data::AssetManager::Instance().AssignAssetData(m_playInEditorData.m_assets.back());
+                        }
+
+                        for (auto& product : context.GetProcessedObjects())
+                        {
+                            LoadReferencedAssets(product.GetReferencedAssets());
                         }
 
                         // make sure that PRE_NOTIFY assets get their notify before we activate, so that we can preserve the order of 
