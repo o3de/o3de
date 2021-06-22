@@ -12,7 +12,7 @@
 
 #pragma once
 
-// include the required headers
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "PlayBackInfo.h"
@@ -120,7 +120,7 @@ namespace EMotionFX
          * Set the event table.
          * @param newTable The new motion event table for the Motion to use.
          */
-        void SetEventTable(MotionEventTable* newTable);
+        void SetEventTable(AZStd::unique_ptr<MotionEventTable> eventTable);
 
         /**
          * Set the motion framerate.
@@ -257,7 +257,7 @@ namespace EMotionFX
         MotionData*                 m_motionData;           /**< The motion data, which can in theory be any data representation/compression. */
         AZStd::string               mFileName;              /**< The filename of the motion. */
         PlayBackInfo                m_defaultPlayBackInfo;  /**< The default/fallback motion playback info which will be used when no playback info is passed to the Play() function. */
-        MotionEventTable*           mEventTable;            /**< The event table, which contains all events, and will make sure events get executed. */
+        AZStd::unique_ptr<MotionEventTable> m_eventTable;   /**< The event table, which contains all events, and will make sure events get executed. */
         MCore::Distance::EUnitType  mUnitType;              /**< The type of units used. */
         MCore::Distance::EUnitType  mFileUnitType;          /**< The type of units used, inside the file that got loaded. */
         void*                       mCustomData;            /**< A pointer to custom user data that is linked with this motion object. */
