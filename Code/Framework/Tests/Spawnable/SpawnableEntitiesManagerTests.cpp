@@ -640,6 +640,61 @@ namespace UnitTest
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
     }
 
+    TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_MultipleSpawnsInSameCallReferenceCorrectly)
+    {
+        // With SpawnEntities, entity references should either refer to the first entity that *will* be spawned, or the last entity
+        // that *has* been spawned.  This test will create entities 0 1 2 3 that all refer to entity 3, and it will create three sets
+        // of those in the same call, with the following results:
+        // - The first 0 1 2 will forward-reference to the first 3
+        // - The first 3 will reference itself
+        // - The second 0 1 2 will backwards-reference to the first 3
+        // - The second 3 will reference itself
+        // - The third 0 1 2 will backwards-reference to the second 3
+        // - The third 3 will reference itself
+        constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceLast;
+        constexpr size_t NumEntities = 4;
+        FillSpawnable(NumEntities);
+        CreateEntityReferences(refScheme);
+
+        auto callback =
+            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            size_t numElements = entities.size();
+
+            for (size_t i = 0; i < numElements; ++i)
+            {
+                const AZ::Entity* const entity = *(entities.begin() + i);
+
+                auto component = entity->FindComponent<ComponentWithEntityReference>();
+                ASSERT_NE(nullptr, component);
+                AZ::EntityId comparisonId;
+
+                if (i < ((NumEntities * 2) - 1))
+                {
+                    // The first 7 entities (0 1 2 3 0 1 2) will all refer to the 4th one (1st '3').
+                    comparisonId = (*(entities.begin() + (NumEntities - 1)))->GetId();
+                }
+                else if (i < (numElements - 1))
+                {
+                    // The next 4 entities (3 0 1 2) will all refer to the 8th one (2nd '3').
+                    comparisonId = (*(entities.begin() + ((NumEntities * 2) - 1)))->GetId();
+                }
+                else
+                {
+                    // The very last entity (3) will reference itself (3rd '3').
+                    comparisonId = entity->GetId();
+                }
+
+                EXPECT_EQ(comparisonId, component->m_entityReference);
+            }
+        };
+
+        // Create the 3 batches of entities 0, 1, 2, 3.  The entity references should work as described at the top of the test.
+        m_manager->SpawnEntities(*m_ticket, { 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 });
+        m_manager->ListEntities(*m_ticket, callback);
+        m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllEntitiesReferenceOtherEntities_OptionalFlagClearsReferenceMap)
     {
         constexpr EntityReferenceScheme refScheme = EntityReferenceScheme::AllReferenceLast;
