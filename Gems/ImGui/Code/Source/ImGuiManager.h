@@ -82,7 +82,7 @@ namespace ImGui
         DisplayState m_editorWindowState = DisplayState::Hidden;
 
         // ImGui Resolution Settings
-        ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchToMaxRenderResolution;
+        ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchRenderResolution;
         ImVec2 m_renderResolution = ImVec2(1920.0f, 1080.0f);
         ImVec2 m_lastRenderResolution;
         AzFramework::WindowSize m_windowSize = AzFramework::WindowSize(1920, 1080);
