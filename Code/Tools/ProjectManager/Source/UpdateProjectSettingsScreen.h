@@ -32,6 +32,8 @@ namespace O3DE::ProjectManager
 
         bool Validate() override;
 
+        void ResetProjectPreviewPath();
+
     public slots:
         void UpdateProjectPreviewPath();
         void PreviewPathChanged();

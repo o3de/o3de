@@ -439,7 +439,7 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::information(this,
                 tr("Project Should be rebuilt."),
-                projectInfo.m_projectName + tr(" project likely needs to be rebuilt."));
+                projectInfo.GetProjectDisplayName() + tr(" project likely needs to be rebuilt."));
         }
     }
 
@@ -500,8 +500,8 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::StandardButton buildProject = QMessageBox::information(
                 this,
-                tr("Building \"%1\"").arg(projectInfo.m_projectName),
-                tr("Ready to build \"%1\"?").arg(projectInfo.m_projectName),
+                tr("Building \"%1\"").arg(projectInfo.GetProjectDisplayName()),
+                tr("Ready to build \"%1\"?").arg(projectInfo.GetProjectDisplayName()),
                 QMessageBox::No | QMessageBox::Yes);
 
             if (buildProject == QMessageBox::Yes)

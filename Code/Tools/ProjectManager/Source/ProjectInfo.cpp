@@ -86,4 +86,16 @@ namespace O3DE::ProjectManager
     {
         return !m_path.isEmpty() && !m_projectName.isEmpty();
     }
+
+    const QString& ProjectInfo::GetProjectDisplayName() const
+    {
+        if (!m_displayName.isEmpty())
+        {
+            return m_displayName;
+        }
+        else
+        {
+            return m_projectName;
+        }
+    }
 } // namespace O3DE::ProjectManager

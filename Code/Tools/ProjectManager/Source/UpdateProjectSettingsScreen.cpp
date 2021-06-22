@@ -71,14 +71,7 @@ namespace O3DE::ProjectManager
     {
         m_projectInfo = projectInfo;
 
-        if (!projectInfo.m_displayName.isEmpty())
-        {
-            m_projectName->lineEdit()->setText(projectInfo.m_displayName);
-        }
-        else
-        {
-            m_projectName->lineEdit()->setText(projectInfo.m_projectName);
-        }
+        m_projectName->lineEdit()->setText(projectInfo.GetProjectDisplayName());
 
         m_projectPath->lineEdit()->setText(projectInfo.m_path);
         UpdateProjectPreviewPath();
@@ -98,6 +91,12 @@ namespace O3DE::ProjectManager
     bool UpdateProjectSettingsScreen::Validate()
     {
         return ProjectSettingsScreen::Validate() && ValidateProjectPreview();
+    }
+
+    void UpdateProjectSettingsScreen::ResetProjectPreviewPath()
+    {
+        m_userChangedPreview = false;
+        UpdateProjectPreviewPath();
     }
 
     void UpdateProjectSettingsScreen::PreviewPathChanged()
