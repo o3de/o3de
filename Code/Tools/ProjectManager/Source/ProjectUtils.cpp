@@ -223,7 +223,7 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            if (!QFile::remove(origFile))
+            if (original.exists() && !QFile::remove(origFile))
             {
                 return false;
             }

@@ -90,9 +90,9 @@ namespace O3DE::ProjectManager
         : QFrame(parent)
         , m_projectInfo(projectInfo)
     {
-        if (m_projectInfo.m_imagePath.isEmpty())
+        if (m_projectInfo.m_newPreviewImagePath.isEmpty())
         {
-            m_projectInfo.m_imagePath = ":/DefaultProjectImage.png";
+            m_projectInfo.m_newPreviewImagePath = ":/DefaultProjectImage.png";
         }
 
         BaseSetup();
@@ -122,7 +122,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_projectImageLabel);
 
         m_projectImageLabel->setPixmap(
-            QPixmap(m_projectInfo.m_imagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
+            QPixmap(m_projectInfo.m_newPreviewImagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
         m_projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();

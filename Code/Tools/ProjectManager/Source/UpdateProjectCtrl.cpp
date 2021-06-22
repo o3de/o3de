@@ -236,10 +236,10 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            if (!newProjectSettings.m_imagePath.isEmpty())
+            if (!newProjectSettings.m_newPreviewImagePath.isEmpty())
             {
                 if (!ProjectUtils::ReplaceFile(
-                        QDir(newProjectSettings.m_path).filePath(ProjectPreviewImagePath), newProjectSettings.m_imagePath))
+                        QDir(newProjectSettings.m_path).filePath(newProjectSettings.m_iconPath), newProjectSettings.m_newPreviewImagePath))
                 {
                     QMessageBox::critical(this, tr("File replace failed"), tr("Failed to replace project preview image."));
                     return false;

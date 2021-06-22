@@ -221,11 +221,11 @@ namespace O3DE::ProjectManager
     {
         ProjectButton* projectButton;
 
-        QString projectPreviewPath = QDir(project.m_path).filePath(ProjectPreviewImagePath);
+        QString projectPreviewPath = QDir(project.m_path).filePath(project.m_iconPath);
         QFileInfo doesPreviewExist(projectPreviewPath);
         if (doesPreviewExist.exists() && doesPreviewExist.isFile())
         {
-            project.m_imagePath = projectPreviewPath;
+            project.m_newPreviewImagePath = projectPreviewPath;
         }
 
         projectButton = new ProjectButton(project, this, processing);

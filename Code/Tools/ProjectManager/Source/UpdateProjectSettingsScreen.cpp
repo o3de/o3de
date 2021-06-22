@@ -62,7 +62,8 @@ namespace O3DE::ProjectManager
 
         if (m_userChangedPreview)
         {
-            m_projectInfo.m_imagePath = m_projectPreview->lineEdit()->text();
+            m_projectInfo.m_iconPath = ProjectPreviewImagePath;
+            m_projectInfo.m_newPreviewImagePath = m_projectPreview->lineEdit()->text();
         }
         return m_projectInfo;
     }
@@ -81,7 +82,7 @@ namespace O3DE::ProjectManager
     {
         if (!m_userChangedPreview)
         {
-            m_projectPreview->lineEdit()->setText(QDir(m_projectPath->lineEdit()->text()).filePath(ProjectPreviewImagePath));
+            m_projectPreview->lineEdit()->setText(QDir(m_projectPath->lineEdit()->text()).filePath(m_projectInfo.m_iconPath));
             // Setting the text sets m_userChangedPreview to true
             // Set it back to false because it should only be true when changed by user
             m_userChangedPreview = false;
