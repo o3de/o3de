@@ -198,11 +198,13 @@ namespace AzFramework
         AZ::SerializeContext* m_serializeContext{ nullptr };
         //! The priority at which this call will be executed.
         SpawnablePriority m_priority{ SpawnablePriority_Default };
-        //! Entity references are resolved by referring to the last entity spawned from a template entity in the spawnable. If this
-        //! is set to false entities from previous spawn calls are not taken into account. If set to true entity references may be
-        //! resolved to a previously spawned entity. A lookup table has to be constructed when true, which may negatively impact
-        //! performance, especially if a large number of entities are present on a ticket.
-        bool m_referencePreviouslySpawnedEntities{ false };
+        //! Entity references are resolved by referring to the most recent entity spawned from a template entity in the spawnable.
+        //! If the entity referred to hasn't been spawned yet, the reference will be resolved to the first one that *will* be spawned.
+        //! If this flag is set to "true", the id mappings will persist across SpawnEntites calls, and the entity references will resolve
+        //! correctly across them.  
+        //! When "false", the entity id mappings will be reset on this call, so entity references will only work within this call, or
+        //! potentially with any subsequent SpawnEntities call where the flag is true once again.
+        bool m_referencePreviouslySpawnedEntities{ true };
     };
 
     struct DespawnAllEntitiesOptionalArgs final
