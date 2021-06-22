@@ -802,7 +802,7 @@ namespace AZ::AtomBridge
             constexpr float sweepAngleDegrees = 360.0f;
             const float stepAngle = DegToRad(angularStepDegrees);
             const float startAngle = DegToRad(startAngleDegrees);
-            const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
+            const float stopAngle = DegToRad(sweepAngleDegrees);
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
@@ -832,7 +832,7 @@ namespace AZ::AtomBridge
             // Draw axis aligned arc
             const float stepAngle = DegToRad(angularStepDegrees);
             const float startAngle = DegToRad(startAngleDegrees);
-            const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
+            const float stopAngle = DegToRad(sweepAngleDegrees);
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateAxisAlignedArc(
@@ -861,7 +861,7 @@ namespace AZ::AtomBridge
             // Draw arbitraty axis arc
             const float stepAngle = DegToRad(angularStepDegrees);
             const float startAngle = DegToRad(startAngleDegrees);
-            const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
+            const float stopAngle = DegToRad(sweepAngleDegrees);
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
@@ -904,7 +904,7 @@ namespace AZ::AtomBridge
         {
             // Draw circle with single radius.
             const float step = DegToRad(10.0f);
-            const float maxAngle = DegToRad(360.0f) + step;
+            const float maxAngle = DegToRad(360.0f);
             SingleColorStaticSizeLineHelper<40> lines; // hard code 40 lines until DegToRad is constexpr.
 
             AZ::Vector3 radiusV3 = AZ::Vector3(radius);
@@ -1134,7 +1134,7 @@ namespace AZ::AtomBridge
             // This matches Cry behavior, the DrawWireSphere above may need modifying to use the same approach.
             // Draw 3 axis aligned circles
             const float step = DegToRad(10.0f);
-            const float maxAngle = DegToRad(360.0f) + step;
+            const float maxAngle = DegToRad(360.0f);
             SingleColorStaticSizeLineHelper<40*3> lines; // hard code to 40 lines * 3 circles until DegToRad is constexpr.
 
             // Z Axis
@@ -1160,7 +1160,7 @@ namespace AZ::AtomBridge
             // Draw 3 axis aligned circles
             const float stepAngle  = DegToRad(11.25f);
             const float startAngle = DegToRad(0.0f);
-            const float stopAngle = DegToRad(360.0f) + stepAngle;
+            const float stopAngle = DegToRad(360.0f);
             SingleColorDynamicSizeLineHelper lines(2+static_cast<int>(360.0f/11.25f)); // num disk segments + 1 for azis line + 1 for spare
             const AZ::Vector3 radiusV3 = AZ::Vector3(radius);
             CreateArbitraryAxisArc(
