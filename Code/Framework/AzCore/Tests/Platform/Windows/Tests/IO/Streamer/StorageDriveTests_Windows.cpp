@@ -18,10 +18,6 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
-#if defined(HAVE_BENCHMARK)
-#include <benchmark/benchmark.h>
-#endif
-
 #include <Tests/FileIOBaseTestTypes.h>
 #include <Tests/Streamer/StreamStackEntryConformityTests.h>
 
@@ -1155,7 +1151,10 @@ namespace AZ::IO
     }
 } // namespace AZ::IO
 
-#ifdef HAVE_BENCHMARK
+#if defined(HAVE_BENCHMARK)
+
+#include <benchmark/benchmark.h>
+
 namespace Benchmark
 {
     class StorageDriveWindowsFixture : public benchmark::Fixture
@@ -1259,7 +1258,8 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(StorageDriveWindowsFixture, ReadsBaseline)(benchmark::State& state)
     {
-        SetupStreamer(false);
+        constexpr bool EnableFileSharing = false;
+        SetupStreamer(EnableFileSharing);
         RepeatedlyReadFile(state);
     }
 
@@ -1267,7 +1267,8 @@ namespace Benchmark
     {
         using namespace AZ::IO;
 
-        SetupStreamer(true);
+        constexpr bool EnableFileSharing = true;
+        SetupStreamer(EnableFileSharing);
         RepeatedlyReadFile(state);
     }
 
