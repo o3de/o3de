@@ -98,6 +98,20 @@ namespace AZ
                 }
             }
 
+            aiMatrix4x4 CalculateWorldTransform(const aiNode* currentNode)
+            {
+                aiMatrix4x4 transform = {};
+                const aiNode* iteratingNode = currentNode;
+                
+                while (iteratingNode)
+                {
+                    transform = iteratingNode->mTransformation * transform;
+                    iteratingNode = iteratingNode->mParent;
+                }
+
+                return transform;
+            }
+
             Events::ProcessingResult AssImpBoneImporter::ImportBone(AssImpNodeEncounteredContext& context)
             {
                 AZ_TraceContext("Importer", "Bone");
@@ -111,12 +125,7 @@ namespace AZ
                 }
 
                 bool isBone = false;
-
-                if (NodeParentIsOfType(context.m_scene.GetGraph(), context.m_currentGraphPosition, DataTypes::IBoneData::TYPEINFO_Uuid()))
-                {
-                    isBone = true;
-                }
-                else
+                
                 {
                     AZStd::unordered_map<AZStd::string, const aiNode*> mainBoneList;
                     AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
@@ -170,15 +179,8 @@ namespace AZ
                 {
                     createdBoneData = AZStd::make_shared<SceneData::GraphData::RootBoneData>();
                 }
-
-                aiMatrix4x4 transform = currentNode->mTransformation;
-                const aiNode* parent = currentNode->mParent;
                 
-                while (parent)
-                {
-                    transform = parent->mTransformation * transform;
-                    parent = parent->mParent;
-                }
+                aiMatrix4x4 transform = CalculateWorldTransform(currentNode);
                 
                 SceneAPI::DataTypes::MatrixType globalTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(transform);
 

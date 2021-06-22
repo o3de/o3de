@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Asset/AssetManager.h>

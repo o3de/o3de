@@ -493,7 +493,30 @@ namespace AzQtComponents
                 }
             }
             break;
-        }
+            case CE_MenuItem:
+                {
+                    const QMenu* menu = qobject_cast<const QMenu*>(widget);
+                    QAction* action = menu->activeAction();
+                    if (action)
+                    {
+                        QMenu* subMenu = action->menu();
+                        if (subMenu)
+                        {
+                            QVariant noHover = subMenu->property("noHover");
+                            if (noHover.isValid() && noHover.toBool())
+                            {
+                                // First draw as standard to get the correct hover background for the complete control.
+                                QProxyStyle::drawControl(element, option, painter, widget);
+                                // Now draw the icon as non-hovered so control behaves as designed.
+                                QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+                                myOpt.state &= ~QStyle::State_Selected;
+                                return QProxyStyle::drawControl(element, &myOpt, painter, widget);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
 
         return QProxyStyle::drawControl(element, option, painter, widget);
     }

@@ -10,6 +10,9 @@
 *
 */
 
+#include <QApplication>
+#include <QWidget>
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Matrix4x4.h>
@@ -223,7 +226,12 @@ namespace MaterialEditor
             }
             else if (inputChannelId == InputDeviceKeyboard::Key::AlphanumericZ && (m_keys & Ctrl) == None)
             {
-                Reset();
+                // only reset camera if no other widget besides viewport is in focus
+                const auto focus = QApplication::focusWidget();
+                if (!focus || focus->objectName() == "Viewport")
+                {
+                    Reset();
+                }
             }
             break;
         case InputChannel::State::Updated:

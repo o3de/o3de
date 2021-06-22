@@ -54,12 +54,12 @@ namespace AudioControls
     void CAudioWwiseLoader::Load(CAudioSystemEditor_wwise* audioSystemImpl)
     {
         m_audioSystemImpl = audioSystemImpl;
-        const AZStd::string wwiseProjectFullPath(m_audioSystemImpl->GetDataPath());
-        LoadControlsInFolder(wwiseProjectFullPath + WwiseStrings::GameParametersFolder);
-        LoadControlsInFolder(wwiseProjectFullPath + WwiseStrings::GameStatesFolder);
-        LoadControlsInFolder(wwiseProjectFullPath + WwiseStrings::SwitchesFolder);
-        LoadControlsInFolder(wwiseProjectFullPath + WwiseStrings::EventsFolder);
-        LoadControlsInFolder(wwiseProjectFullPath + WwiseStrings::EnvironmentsFolder);
+        const AZ::IO::FixedMaxPath wwiseProjectFullPath{ m_audioSystemImpl->GetDataPath() };
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ wwiseProjectFullPath / WwiseStrings::GameParametersFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ wwiseProjectFullPath / WwiseStrings::GameStatesFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ wwiseProjectFullPath / WwiseStrings::SwitchesFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ wwiseProjectFullPath / WwiseStrings::EventsFolder }.Native());
+        LoadControlsInFolder(AZ::IO::FixedMaxPath{ wwiseProjectFullPath / WwiseStrings::EnvironmentsFolder }.Native());
         LoadSoundBanks(Audio::Wwise::GetBanksRootPath(), "", false);
     }
 

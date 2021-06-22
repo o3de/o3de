@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "BlockerComponent.h"
 
 #include <AzCore/Component/Entity.h>

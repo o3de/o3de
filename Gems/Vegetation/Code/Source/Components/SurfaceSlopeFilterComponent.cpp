@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "SurfaceSlopeFilterComponent.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>

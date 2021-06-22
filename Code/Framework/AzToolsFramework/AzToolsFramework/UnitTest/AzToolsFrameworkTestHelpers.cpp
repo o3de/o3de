@@ -165,11 +165,13 @@ namespace UnitTest
     void EditorEntityComponentChangeDetector::OnEntityTransformChanged(
         const AzToolsFramework::EntityIdList& entityIds)
     {
+        m_entityIds = entityIds;
+
         for (const AZ::EntityId& entityId : entityIds)
         {
             if (const auto* entity = GetEntityById(entityId))
             {
-                if (AZ::Component * transformComponent = entity->FindComponent<Components::TransformComponent>())
+                if (AZ::Component* transformComponent = entity->FindComponent<Components::TransformComponent>())
                 {
                     OnEntityComponentPropertyChanged(transformComponent->GetId());
                 }

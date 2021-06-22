@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "SlopeAlignmentModifierComponent.h"
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/Matrix3x3.h>
