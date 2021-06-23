@@ -13,7 +13,6 @@
 #include <GemCatalog/GemListView.h>
 #include <GemCatalog/GemItemDelegate.h>
 #include <QStandardItemModel>
-#include <QPalette>
 
 namespace O3DE::ProjectManager
 {

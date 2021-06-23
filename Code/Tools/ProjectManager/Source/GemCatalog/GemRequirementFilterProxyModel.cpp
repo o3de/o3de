@@ -11,6 +11,8 @@
 */
 
 #include <GemCatalog/GemRequirementFilterProxyModel.h>
+#include <GemCatalog/GemModel.h>
+
 #include <QItemSelectionModel>
 
 namespace O3DE::ProjectManager

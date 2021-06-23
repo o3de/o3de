@@ -14,7 +14,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzQtComponents/Utilities/SelectionProxyModel.h>
-#include <GemCatalog/GemModel.h>
 #include <QtCore/QSortFilterProxyModel>
 #endif
 
@@ -22,6 +21,8 @@ QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(GemModel)
+
     class GemRequirementFilterProxyModel
         : public QSortFilterProxyModel
     {

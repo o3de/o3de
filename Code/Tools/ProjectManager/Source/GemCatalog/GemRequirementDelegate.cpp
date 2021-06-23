@@ -32,6 +32,7 @@ namespace O3DE::ProjectManager
         QStyleOptionViewItem options(option);
         initStyleOption(&options, modelIndex);
 
+        painter->save();
         painter->setRenderHint(QPainter::Antialiasing);
 
         QRect fullRect, itemRect, contentRect;
