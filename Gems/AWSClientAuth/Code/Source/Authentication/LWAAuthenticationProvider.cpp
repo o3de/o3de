@@ -38,7 +38,7 @@ namespace AWSClientAuth
     {
         if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), LwaSettingsPath))
         {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get login with Amazon settings object for path %s", LwaSettingsPath);
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to get login with Amazon settings object for path %s", LwaSettingsPath);
             return false;
         }
         return true;
@@ -48,21 +48,21 @@ namespace AWSClientAuth
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void LWAAuthenticationProvider::PasswordGrantMultiFactorSignInAsync(const AZStd::string& username, const AZStd::string& password)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void LWAAuthenticationProvider::PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& username, const AZStd::string& confirmationCode)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(confirmationCode);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     // Call LWA authentication provider device code end point.

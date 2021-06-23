@@ -10,23 +10,23 @@
 *
 */
 
-#include "./MeshMotionVectorCommon.azsli"
+#pragma once
 
-struct VSInput
+#if !defined(Q_MOC_RUN)
+#include <QAbstractItemModel>
+#include <QItemSelectionModel>
+#include <QListView>
+#endif
+
+namespace O3DE::ProjectManager
 {
-    float3 m_position : POSITION;
-};
+    class GemRequirementListView
+        : public QListView
+    {
+        Q_OBJECT // AUTOMOC
 
-VSOutput MainVS(VSInput IN)
-{
-    VSOutput OUT;
- 
-    OUT.m_worldPos = mul(SceneSrg::GetObjectToWorldMatrix(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPos, 1.0));
-    OUT.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
-
-    return OUT;
-}
-
-
-
+    public:
+        explicit GemRequirementListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
+        ~GemRequirementListView() = default;
+    };
+} // namespace O3DE::ProjectManager

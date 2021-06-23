@@ -104,7 +104,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target_files(
         TARGETS LmbrCentral.Editor
-        FILES ${QT_LRELEASE_EXECUTABLE}
+        FILES ${lrelease_files}
     )
 
     # by default, load the above "Gem::LmbrCentral.Editor" module in dev tools

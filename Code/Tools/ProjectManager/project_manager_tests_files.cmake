@@ -14,4 +14,5 @@ set(FILES
     Resources/ProjectManager.qss
     tests/ApplicationTests.cpp
     tests/main.cpp
+    tests/UtilsTests.cpp
 )

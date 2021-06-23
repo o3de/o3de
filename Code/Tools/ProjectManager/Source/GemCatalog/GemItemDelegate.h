@@ -62,7 +62,7 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
         inline constexpr static qreal s_buttonFontSize = 10.0;
 
-    private:
+    protected:
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
@@ -71,6 +71,7 @@ namespace O3DE::ProjectManager
 
         QAbstractItemModel* m_model = nullptr;
 
+    private:
         // Platform icons
         void AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath);
         inline constexpr static int s_platformIconSize = 12;

@@ -1,5 +1,5 @@
 {
-    "Source" : "StaticMeshMotionVector",
+    "Source" : "MeshMotionVector",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

@@ -146,12 +146,12 @@ namespace AWSClientAuth
 
     void AWSCognitoAuthenticationProvider::DeviceCodeGrantSignInAsync()
     {
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void AWSCognitoAuthenticationProvider::DeviceCodeGrantConfirmSignInAsync()
     {
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void AWSCognitoAuthenticationProvider::RefreshTokensAsync()
