@@ -38,7 +38,7 @@ struct VertexData
 {
     float3 m_position;
     float3 m_normal;
-    float3 m_tangent;
+    float4 m_tangent;
     float3 m_bitangent;
     float2 m_uv;
 };
@@ -89,10 +89,10 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
             uint meshVertexTangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
 
             // offset into the tangent buffer for this vertex
-            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 12);
+            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 16);
 
             // load the tangent data
-            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load3(tangentOffset)) * barycentrics[i];
+            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load4(tangentOffset)) * barycentrics[i];
         }
 
         // bitangent
@@ -123,6 +123,9 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
     }
     
     vertexData.m_normal = normalize(vertexData.m_normal);
+    vertexData.m_tangent.xyz = normalize(vertexData.m_tangent.xyz);
+    vertexData.m_tangent.w = clamp(vertexData.m_tangent.w, -1.0f, 1.0f);
+    vertexData.m_bitangent = normalize(vertexData.m_bitangent);
 
     return vertexData;
 }
