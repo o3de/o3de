@@ -67,7 +67,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
 {
     m_ui->setupUi(this);
-    m_ui->m_searchWidget->Setup(true, true);
+    m_ui->m_searchWidget->Setup(true, true, true);
 
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 

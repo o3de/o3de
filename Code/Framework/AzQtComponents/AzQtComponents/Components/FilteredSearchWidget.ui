@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>295</width>
-    <height>53</height>
+    <height>98</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,11 +15,8 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QFrame" name="textSearchContainer" native="true">
+    <widget class="QFrame" name="textSearchContainer">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="spacing">
-       <number>0</number>
-      </property>
       <item>
        <widget class="QLineEdit" name="textSearch">
         <property name="sizePolicy">
@@ -27,6 +24,9 @@
           <horstretch>1</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="acceptDrops">
+         <bool>false</bool>
         </property>
         <property name="inputMask">
          <string/>
@@ -43,13 +43,20 @@
         <property name="clearButtonEnabled">
          <bool>true</bool>
         </property>
-        <property name="acceptDrops">
-         <bool>false</bool>
-        </property>
        </widget>
       </item>
       <item>
        <widget class="QToolButton" name="assetTypeSelector">
+        <property name="popupMode">
+         <enum>QToolButton::InstantPopup</enum>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="viewSelector">
         <property name="popupMode">
          <enum>QToolButton::InstantPopup</enum>
         </property>
@@ -78,7 +85,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QFrame" name="filteredParent" native="true">
+    <widget class="QFrame" name="filteredParent">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QLabel" name="label">
@@ -95,7 +102,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="filteredLayout" native="true">
+       <widget class="QFrame" name="filteredLayout">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -109,16 +116,9 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>AzQtComponents::ExtendedLabel</class>
-   <extends>QLabel</extends>
-   <header>AzQtComponents/Components/ExtendedLabel.h</header>
-  </customwidget>
- </customwidgets>
+ <layoutdefault spacing="0" margin="0"/>
  <resources>
   <include location="resources.qrc"/>
  </resources>
  <connections/>
- <layoutdefault spacing="0" margin="0"/>
 </ui>
