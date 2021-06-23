@@ -32,11 +32,11 @@ namespace AzToolsFramework
 {
     // Mapping from Qt::Keys to InputChannelIds.
     // Used to populate m_keyMappings.
-    AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91>& GetQtKeyMappings()
+    const AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91>& GetQtKeyMappings()
     {
         // This asumes modifier keys (ctrl/shift/alt) map to the left control/shift/alt keys  as Qt provides no way to disambiguate
         // in a platform agnostic manner. This could be expanded later with a PAL mapping from native scan codes from QKeyEvents, if needed.
-        static AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91> qtKeyMappings = { {
+        const static AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91> qtKeyMappings = { {
             { Qt::Key_0, AzFramework::InputDeviceKeyboard::Key::Alphanumeric0 },
             { Qt::Key_1, AzFramework::InputDeviceKeyboard::Key::Alphanumeric1 },
             { Qt::Key_2, AzFramework::InputDeviceKeyboard::Key::Alphanumeric2 },
@@ -135,9 +135,9 @@ namespace AzToolsFramework
 
     // Mapping from Qt::MouseButtons to InputChannelIds.
     // Used to populate m_mouseButtonMappings.
-    AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5>& GetQtMouseButtonMappings()
+    const AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5>& GetQtMouseButtonMappings()
     {
-        static AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5> qtMouseButtonMappings = { {
+        static const AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5> qtMouseButtonMappings = { {
             { Qt::MouseButton::LeftButton, AzFramework::InputDeviceMouse::Button::Left },
             { Qt::MouseButton::RightButton, AzFramework::InputDeviceMouse::Button::Right },
             { Qt::MouseButton::MiddleButton, AzFramework::InputDeviceMouse::Button::Middle },
@@ -166,10 +166,10 @@ namespace AzToolsFramework
         , m_cursorPosition(AZStd::make_shared<AzFramework::InputChannel::PositionData2D>())
     {
         const auto& qtKeyMappings = GetQtKeyMappings();
-        m_keyMappings.insert(qtKeyMappings.begin(), qtKeyMappings.end());
+        m_keyMappings.insert(qtKeyMappings.cbegin(), qtKeyMappings.cend());
 
-        const auto& qtMouseButtonMappings = GetQtKeyMappings();
-        m_mouseButtonMappings.insert(qtMouseButtonMappings.begin(), qtMouseButtonMappings.end());
+        const auto& qtMouseButtonMappings = GetQtMouseButtonMappings();
+        m_mouseButtonMappings.insert(qtMouseButtonMappings.cbegin(), qtMouseButtonMappings.cend());
 
         AzFramework::InputDeviceRequests::InputDeviceByIdMap deviceMap;
         AzFramework::InputDeviceRequestBus::Broadcast(&AzFramework::InputDeviceRequestBus::Events::GetInputDevicesById, deviceMap);
