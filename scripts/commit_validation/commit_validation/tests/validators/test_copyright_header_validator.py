@@ -60,8 +60,8 @@ class CopyrightHeaderValidatorTests(unittest.TestCase):
     def test_fileWithAmazonModificationCopyrightHeader_passes(self):
         commit = MockCommit(files=['/someCppFile.cpp'])
         error_list = []
-        self.assertTrue(CopyrightHeaderValidator().run(commit, error_list))
-        self.assertEqual(len(error_list), 0, f"Errors were expected but none were returned.")
+        self.assertFalse(CopyrightHeaderValidator().run(commit, error_list))
+        self.assertNotEqual(len(error_list), 0, f"Errors were expected but none were returned.")
 
     @patch('builtins.open', mock_open(read_data='This file does contains legacy header\n'
                                                 'Copyright{0}Crytek\n'.format(' ')))
