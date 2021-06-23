@@ -1,5 +1,8 @@
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
-// Modifications copyright Amazon.com, Inc. or its affiliates
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ */
 
 #ifndef CRYINCLUDE_CRYEDITOR_IPANELEDITORUTILS_H
 #define CRYINCLUDE_CRYEDITOR_IPANELEDITORUTILS_H
