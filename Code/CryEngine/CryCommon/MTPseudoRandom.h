@@ -48,7 +48,7 @@
 // - 28:7:2005: File created and minor changes by Marco Corbetta
 //
 //*************************************************************************/
-// Modifications copyright Amazon.com, Inc. or its affiliates
+// Modified from original
 
 #ifndef CRYINCLUDE_CRYCOMMON_MTPSEUDORANDOM_H
 #define CRYINCLUDE_CRYCOMMON_MTPSEUDORANDOM_H
