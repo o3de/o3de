@@ -47,11 +47,8 @@ namespace ScriptCanvas
 
         RuntimeComponent() = default;
 
-        RuntimeComponent(AZ::Data::Asset<RuntimeAsset> runtimeAsset);
-
-        const AZ::Data::Asset<RuntimeAsset>& GetAsset() const;
-
-        const RuntimeData& GetAssetData() const;
+        // used to provide debug symbols, usually coming in the form of Node/Slot/Variable IDs
+        const RuntimeData& GetRuntimeAssetData() const;
 
         GraphIdentifier GetGraphIdentifier() const;
 
@@ -96,7 +93,6 @@ namespace ScriptCanvas
         void StopExecution();
 
     private:
-        AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
         ExecutionStatePtr m_executionState;
         AZ::EntityId m_scriptCanvasId;
         RuntimeDataOverrides m_runtimeOverrides;

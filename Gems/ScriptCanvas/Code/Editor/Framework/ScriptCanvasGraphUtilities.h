@@ -24,8 +24,15 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    using LoadedInterpretedDependencies = AZStd::vector<AZStd::pair<AZStd::string, ScriptCanvas::Translation::LuaAssetResult>>;
-    AZ_INLINE LoadedInterpretedDependencies LoadInterpretedDepencies(const ScriptCanvas::DependencySet& dependencySet);
+    struct LoadedInterpretedDependency
+    {
+        AZStd::string path;
+        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
+        ScriptCanvas::Translation::LuaAssetResult luaAssetResult;
+        AZStd::vector<LoadedInterpretedDependency> dependencies;
+    };
+
+    AZ_INLINE AZStd::vector<LoadedInterpretedDependency> LoadInterpretedDepencies(const ScriptCanvas::DependencySet& dependencySet);
 
     AZ_INLINE LoadTestGraphResult LoadTestGraph(AZStd::string_view path);
 

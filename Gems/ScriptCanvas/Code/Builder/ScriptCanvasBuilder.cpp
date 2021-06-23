@@ -196,8 +196,8 @@ namespace ScriptCanvasBuilder
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& buildOverrides)
     {
         ScriptCanvas::RuntimeDataOverrides runtimeOverrides;
-
-        // #functions2_prefabs prepare the runtime variables, consider only saving the overridden ones to the runtime
+        runtimeOverrides.m_runtimeAsset = buildOverrides.m_source;
+        runtimeOverrides.m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         runtimeOverrides.m_variableIndices.resize(buildOverrides.m_variables.size());
 
         for (size_t index = 0; index != buildOverrides.m_variables.size(); ++index)
@@ -242,6 +242,7 @@ namespace ScriptCanvasBuilder
             }
             else
             {
+                // the entity is overridden, as part of the required process of to instantiation
                 runtimeOverrides.m_entityIds.push_back(entity.second);
             }
         }

@@ -706,7 +706,7 @@ namespace ScriptCanvas
         {
             // #functions2_prefabs this needs to know where it is in the recursive process
             ActivationInputArray storage;
-            ActivationData data(args.executionState->GetEntityId(), args.executionState->GetRuntimeDataOverrides(), args.runtimeData, storage);
+            ActivationData data(args.executionState->GetRuntimeDataOverrides(), storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return range.totalCount;

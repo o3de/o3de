@@ -87,18 +87,22 @@ namespace ScriptCanvas
         bool static RequiresDependencyConstructionParametersRecurse(const RuntimeData& data);
     };
 
-    // make build versions of these, runtime needs no variable ids
     struct RuntimeDataOverrides
     {
         AZ_TYPE_INFO(RuntimeDataOverrides, "{CE3C0AE6-4EBA-43B2-B2D5-7AC24A194E63}");
         AZ_CLASS_ALLOCATOR(RuntimeDataOverrides, AZ::SystemAllocator, 0);
 
+        static bool IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides);
+
         static void Reflect(AZ::ReflectContext* reflectContext);
 
+        AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
         AZStd::vector<AZStd::any> m_variables;
         AZStd::vector<bool> m_variableIndices;
         AZStd::vector<AZ::EntityId> m_entityIds;
         AZStd::vector<RuntimeDataOverrides> m_dependencies;
+
+        void EnforcePreloadBehavior();
     };
 
     class RuntimeAssetBase

@@ -59,7 +59,7 @@ namespace ScriptCanvas
     
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
-        return m_component->GetAsset().GetId();
+        return m_component->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
     }
 
     AZ::EntityId ExecutionState::GetEntityId() const

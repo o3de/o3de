@@ -43,17 +43,9 @@ namespace ScriptCanvas
 {
     namespace Execution
     {
-        ActivationData::ActivationData(const RuntimeComponent& component, ActivationInputArray& storage)
-            : entityId(component.GetEntityId())
-            , variableOverrides(component.GetRuntimeDataOverrides())
-            , runtimeData(component.GetAsset()->GetData())
-            , storage(storage)
-        {}
-
-        ActivationData::ActivationData(const AZ::EntityId entityId, const RuntimeDataOverrides& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage)
-            : entityId(entityId)
-            , variableOverrides(variableOverrides)
-            , runtimeData(runtimeData)
+        ActivationData::ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage)
+            : variableOverrides(variableOverrides)
+            , runtimeData(variableOverrides.m_runtimeAsset->GetData())
             , storage(storage)
         {}
 
@@ -71,9 +63,6 @@ namespace ScriptCanvas
 
         ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
-            // #functions2_prefabs prepare the runtime variables, this will now have to recurse, child constructor calls
-            // will have to call a version of this where they get their entry into the runtimeData based on their position in the tree
-
             const RuntimeData& runtimeData = activationData.runtimeData;
             ActivationInputRange rangeOut = runtimeData.m_activationInputRange;
             rangeOut.inputs = activationData.storage.begin();
@@ -81,7 +70,7 @@ namespace ScriptCanvas
             AZ_Assert(rangeOut.totalCount <= activationData.storage.size(), "Too many initial arguments for activation. "
                 "Consider increasing size, source of ActivationInputArray, or breaking up the source graph");
 
-            // nodeables
+            // nodeables - until the optimization is required, every instance gets their own copy
             {
                 auto sourceVariableIter = runtimeData.m_activationInputRange.inputs;
                 const auto sourceVariableSentinel = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
@@ -92,7 +81,7 @@ namespace ScriptCanvas
                 }
             }
 
-            // (possibly overridden) variables
+            // (possibly overridden) variables, only the overrides are saved in on the component, otherwise they are taken from the runtime asset
             {
                 auto sourceVariableIter = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
                 auto destVariableIter = rangeOut.inputs + runtimeData.m_activationInputRange.nodeableCount;
@@ -106,7 +95,7 @@ namespace ScriptCanvas
                 }
             }
 
-            // (always overridden, always) EntityIds
+            // (always overridden) EntityIds
             {
                 AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
                     + runtimeData.m_activationInputRange.nodeableCount

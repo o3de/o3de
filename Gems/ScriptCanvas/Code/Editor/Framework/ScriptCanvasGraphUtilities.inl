@@ -31,9 +31,25 @@ namespace ScriptCanvasEditor
 {
     using namespace ScriptCanvas;
 
-    AZ_INLINE LoadedInterpretedDependencies LoadInterpretedDepencies(const ScriptCanvas::DependencySet& dependencySet)
+    // The runtime context (appropriately) always assumes that EntityIds are overridden, this step copies the values from the runtime data
+    // over to the override data to simulate build step that does this when building prefabs
+    AZ_INLINE void CopyAssetEntityIdsToOverrides(RuntimeDataOverrides& runtimeDataOverrides)
     {
-        LoadedInterpretedDependencies loadedAssets;
+        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds.size());
+        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds)
+        {
+            runtimeDataOverrides.m_entityIds.push_back(varEntityPar.second);
+        }
+
+        for (auto& dependency : runtimeDataOverrides.m_dependencies)
+        {
+            CopyAssetEntityIdsToOverrides(dependency);
+        }
+    }
+
+    AZ_INLINE AZStd::vector<LoadedInterpretedDependency> LoadInterpretedDepencies(const ScriptCanvas::DependencySet& dependencySet)
+    {
+        AZStd::vector<LoadedInterpretedDependency> loadedAssets;
 
         if (!dependencySet.empty())
         {
@@ -74,7 +90,8 @@ namespace ScriptCanvasEditor
                 }
 
                 const ScriptCanvas::Translation::LuaAssetResult& luaAssetResult = luaAssetOutcome.GetValue();
-                loadedAssets.push_back({ modulePath, luaAssetResult });
+                #functions2_recursive_unit_tests
+                loadedAssets.push_back({ modulePath, loadResult.m_runtimeAsset, luaAssetResult, {} });
             }          
         }
 
@@ -187,7 +204,7 @@ namespace ScriptCanvasEditor
 
             RuntimeData runtimeDataBuffer;
             AZStd::vector<RuntimeData> dependencyDataBuffer;
-            LoadedInterpretedDependencies dependencies;
+            AZStd::vector<LoadedInterpretedDependency> dependencies;
 
             if (runGraphSpec.runSpec.execution == ExecutionMode::Interpreted)
             {
@@ -207,9 +224,12 @@ namespace ScriptCanvasEditor
                     {
                         dependencies = LoadInterpretedDepencies(luaAssetResult.m_dependencies.source.userSubgraphs);
 
+                        RuntimeDataOverrides runtimeDataOverrides;
+                        runtimeDataOverrides.m_runtimeAsset = loadResult.m_runtimeAsset;
+
                         if (!dependencies.empty())
                         {
-                            // eventually, this will need to be recursive, or the full asset handling system will need to be integrated into the testing framework
+                            // #functions2_recursive_unit_tests eventually, this will need to be recursive, or the full asset handling system will need to be integrated into the testing framework
                             // in order to test functionality with a dependency stack greater than 2
 
                             // load all script assets, and their dependencies, initialize statics on all those dependencies if it is the first time loaded
@@ -220,7 +240,7 @@ namespace ScriptCanvasEditor
 
                                 for (auto& dependency : dependencies)
                                 {
-                                    inMemoryModules.emplace_back(dependency.first, dependency.second.m_scriptAsset);
+                                    inMemoryModules.emplace_back(dependency.path, dependency.luaAssetResult.m_scriptAsset);
                                 }
 
                                 AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::UseInMemoryRequireHook, inMemoryModules, AZ::ScriptContextIds::DefaultScriptContextId);
@@ -229,7 +249,11 @@ namespace ScriptCanvasEditor
                             for (size_t index = 0; index < dependencies.size(); ++index)
                             {
                                 auto& dependency = dependencies[index];
-                                const ScriptCanvas::Translation::LuaAssetResult& depencyAssetResult = dependency.second;
+                                const ScriptCanvas::Translation::LuaAssetResult& depencyAssetResult = dependency.luaAssetResult;
+
+                                RuntimeDataOverrides dependencyRuntimeDataOverrides;
+                                dependencyRuntimeDataOverrides.m_runtimeAsset = dependency.runtimeAsset;
+                                runtimeDataOverrides.m_dependencies.push_back(dependencyRuntimeDataOverrides);
 
                                 RuntimeData& dependencyData = dependencyDataBuffer[index];
                                 dependencyData.m_input = depencyAssetResult.m_runtimeInputs;
@@ -244,7 +268,9 @@ namespace ScriptCanvasEditor
                         loadResult.m_runtimeAsset.Get()->GetData().m_script = loadResult.m_scriptAsset;
                         loadResult.m_runtimeAsset.Get()->GetData().m_input = luaAssetResult.m_runtimeInputs;
                         loadResult.m_runtimeAsset.Get()->GetData().m_debugMap = luaAssetResult.m_debugMap;
-                        loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>(loadResult.m_runtimeAsset);
+                        loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
+                        CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
+                        loadResult.m_runtimeComponent->SetRuntimeDataOverrides(runtimeDataOverrides);
                         Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->GetData());
                         Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->GetData());
                     }

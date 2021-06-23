@@ -25,6 +25,7 @@ namespace ExecutionStateInterpretedCpp
 
     AZ::Data::Asset<RuntimeAsset> GetSubgraphAssetForDebug(const AZ::Data::AssetId& id)
     {
+        // #functions2 this may have to be made recursive
         auto asset = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(id, AZ::Data::AssetLoadBehavior::PreLoad);
         asset.BlockUntilLoadComplete();
         return asset;
@@ -45,8 +46,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolIn(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_ins.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_ins[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_ins.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_ins[index])
             : nullptr;
     }
 
@@ -60,8 +61,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolOut(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_outs.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_outs[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_outs.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_outs[index])
             : nullptr;
     }
 
@@ -75,8 +76,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolReturn(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_returns.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_returns[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_returns.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_returns[index])
             : nullptr;
     }
 
@@ -90,8 +91,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugDataSource* ExecutionStateInterpreted::GetDebugSymbolVariableChange(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_variables.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_variables[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_variables.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_variables[index])
             : nullptr;
     }
 

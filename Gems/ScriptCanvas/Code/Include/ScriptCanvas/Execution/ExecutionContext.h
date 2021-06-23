@@ -27,13 +27,11 @@ namespace ScriptCanvas
 
         struct ActivationData
         {
-            const AZ::EntityId entityId;
             const RuntimeDataOverrides& variableOverrides;
             const RuntimeData& runtimeData;
             ActivationInputArray& storage;
 
-            ActivationData(const RuntimeComponent& component, ActivationInputArray& storage);
-            ActivationData(const AZ::EntityId entityId, const RuntimeDataOverrides& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage);
+            ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage);
 
             const void* GetVariableSource(size_t index, size_t& overrideIndexTracker) const;
         };

@@ -300,7 +300,7 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId editorAssetId = m_scriptCanvasAssetHolder.GetAssetId();
         AZ::Data::AssetId runtimeAssetId(editorAssetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset(runtimeAssetId, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
-        auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>(runtimeAsset);
+        auto runtimeComponent = gameEntity->CreateComponent<ScriptCanvas::RuntimeComponent>();
         auto runtimeOverrides = ConvertToRuntime(m_variableOverrides);
         runtimeComponent->SetRuntimeDataOverrides(runtimeOverrides);
     }
