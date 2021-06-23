@@ -40,7 +40,7 @@ namespace Audio
 
     namespace Platform
     {
-        void InitializeAudioAllocators(CSoundCVars& audioCvars);
+        void InitializeAudioAllocators();
         void ShutdownAudioAllocators();
     }
 } // namespace Audio
@@ -88,6 +88,16 @@ namespace AudioSystemGem
     void AudioSystemGemSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         AZ_UNUSED(dependent);
+    }
+
+    AudioSystemGemSystemComponent::AudioSystemGemSystemComponent()
+    {
+        Audio::Platform::InitializeAudioAllocators();
+    }
+
+    AudioSystemGemSystemComponent::~AudioSystemGemSystemComponent()
+    {
+        Audio::Platform::ShutdownAudioAllocators();
     }
 
     void AudioSystemGemSystemComponent::Init()
@@ -138,8 +148,6 @@ namespace AudioSystemGem
 
         bool success = false;
 
-        Platform::InitializeAudioAllocators(g_audioCVars);
-
         if (CreateAudioSystem())
         {
             g_audioLogger.Log(eALT_ALWAYS, "AudioSystem created!");
@@ -187,8 +195,6 @@ namespace AudioSystemGem
         // Delete the Audio System
         // It should be the last object that is freed from the audio system memory pool before the allocator is destroyed.
         m_audioSystem.reset();
-
-        Platform::ShutdownAudioAllocators();
 
         g_audioVerbosityVar.Reset();
         g_audioCVars.UnregisterVariables();

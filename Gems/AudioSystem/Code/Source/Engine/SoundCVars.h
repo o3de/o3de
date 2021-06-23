@@ -18,22 +18,41 @@
 
 struct IConsoleCmdArgs;
 
-namespace Audio
+namespace Audio::CVars
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    // AZ CVars (new)
+    AZ_CVAR_EXTERNED(AZ::u64, s_ATLMemorySize);
+    AZ_CVAR_EXTERNED(AZ::u64, s_FileCacheManagerMemorySize);
+    AZ_CVAR_EXTERNED(AZ::u64, s_AudioObjectPoolSize);
+    AZ_CVAR_EXTERNED(AZ::u64, s_AudioEventPoolSize);
+
     AZ_CVAR_EXTERNED(bool, s_EnableRaycasts);
     AZ_CVAR_EXTERNED(float, s_RaycastMinDistance);
     AZ_CVAR_EXTERNED(float, s_RaycastMaxDistance);
     AZ_CVAR_EXTERNED(float, s_RaycastCacheTimeMs);
     AZ_CVAR_EXTERNED(float, s_RaycastSmoothFactor);
 
+    AZ_CVAR_EXTERNED(float, s_PositionUpdateThreshold);
+    AZ_CVAR_EXTERNED(float, s_VelocityTrackingThreshold);
+    AZ_CVAR_EXTERNED(AZ::u32, s_AudioProxiesInitType);
+
+#if !defined(AUDIO_RELEASE)
+    AZ_CVAR_EXTERNED(bool, s_IgnoreWindowFocus);
+    AZ_CVAR_EXTERNED(bool, s_ShowActiveAudioObjectsOnly);
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioTriggersDebugFilter);
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioObjectsDebugFilter);
+#endif // !AUDIO_RELEASE
+
+} // namespace Audio::CVars
+
+namespace Audio
+{
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CSoundCVars
     {
     public:
         CSoundCVars();
-        ~CSoundCVars();
+        ~CSoundCVars() = default;
 
         CSoundCVars(const CSoundCVars&) = delete;           // Copy protection
         CSoundCVars& operator=(const CSoundCVars&) = delete; // Copy protection
@@ -41,27 +60,10 @@ namespace Audio
         void RegisterVariables();
         void UnregisterVariables();
 
-        int m_nATLPoolSize;
-        int m_nFileCacheManagerSize;
-        int m_nAudioObjectPoolSize;
-        int m_nAudioEventPoolSize;
-        int m_nAudioProxiesInitType;
-
-
-        float m_fPositionUpdateThreshold;
-        float m_fVelocityTrackingThreshold;
-
-        float m_audioListenerTranslationZOffset;
-        float m_audioListenerTranslationPercentage;
-
     #if !defined(AUDIO_RELEASE)
-        int m_nIgnoreWindowFocus;
         int m_nDrawAudioDebug;
         int m_nFileCacheManagerDebugFilter;
         int m_nAudioLoggingOptions;
-        int m_nShowActiveAudioObjectsOnly;
-        ICVar* m_pAudioTriggersDebugFilter;
-        ICVar* m_pAudioObjectsDebugFilter;
 
     private:
         static void CmdExecuteTrigger(IConsoleCmdArgs* pCmdArgs);

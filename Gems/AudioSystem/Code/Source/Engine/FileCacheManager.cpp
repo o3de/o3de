@@ -48,7 +48,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////
     void CFileCacheManager::Initialize()
     {
-        AllocateHeap(static_cast<size_t>(g_audioCVars.m_nFileCacheManagerSize), "AudioFileCacheManager");
+        AllocateHeap(static_cast<size_t>(Audio::CVars::s_FileCacheManagerMemorySize), "AudioFileCacheManager");
 
         AudioFileCacheManagerNotficationBus::Handler::BusConnect();
     }

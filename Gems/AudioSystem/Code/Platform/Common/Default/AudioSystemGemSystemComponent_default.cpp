@@ -16,12 +16,12 @@
 
 namespace Audio::Platform
 {
-    void InitializeAudioAllocators(CSoundCVars& audioCVars)
+    void InitializeAudioAllocators()
     {
         // Create audio system memory pool
         if (!AZ::AllocatorInstance<AudioSystemAllocator>::IsReady())
         {
-            const size_t heapSize = audioCVars.m_nATLPoolSize << 10;
+            const size_t heapSize = Audio::CVars::s_ATLMemorySize << 10;
 
             AudioSystemAllocator::Descriptor allocDesc;
 
@@ -41,7 +41,7 @@ namespace Audio::Platform
         // Create the Bank allocator...
         if (!AZ::AllocatorInstance<AudioBankAllocator>::IsReady())
         {
-            const size_t heapSize = audioCVars.m_nFileCacheManagerSize << 10;
+            const size_t heapSize = Audio::CVars::s_FileCacheManagerMemorySize << 10;
 
             AudioBankAllocator::Descriptor allocDesc;
             allocDesc.m_allocationRecords = true;

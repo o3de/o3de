@@ -80,7 +80,7 @@ namespace Audio
     CAudioSystem::CAudioSystem()
         : m_bSystemInitialized(false)
     {
-        m_apAudioProxies.reserve(g_audioCVars.m_nAudioObjectPoolSize);
+        m_apAudioProxies.reserve(Audio::CVars::s_AudioObjectPoolSize);
         m_apAudioProxiesToBeFreed.reserve(16);
 
         AudioSystemRequestBus::Handler::BusConnect();
@@ -252,7 +252,7 @@ namespace Audio
             m_oATL.Initialize();
             m_audioSystemThread.Activate(this);
 
-            for (int i = 0; i < g_audioCVars.m_nAudioObjectPoolSize; ++i)
+            for (AZ::u64 i = 0; i < Audio::CVars::s_AudioObjectPoolSize; ++i)
             {
                 auto audioProxy = azcreate(CAudioProxy, (), Audio::AudioSystemAllocator, "AudioProxy");
                 m_apAudioProxies.push_back(audioProxy);
@@ -442,7 +442,7 @@ namespace Audio
             return;
         }
 
-        if (m_apAudioProxies.size() < g_audioCVars.m_nAudioObjectPoolSize)
+        if (m_apAudioProxies.size() < Audio::CVars::s_AudioObjectPoolSize)
         {
             m_apAudioProxies.push_back(audioProxy);
         }

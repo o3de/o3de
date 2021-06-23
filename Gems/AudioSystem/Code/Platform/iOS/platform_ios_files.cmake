@@ -12,5 +12,5 @@
 set(FILES
     AudioSystem_Traits_Platform.h
     AudioSystem_Traits_iOS.h
-    ../Common/AudioSystem_common.cpp
+    ../Common/Default/AudioSystemGemSystemComponent_default.cpp
 )

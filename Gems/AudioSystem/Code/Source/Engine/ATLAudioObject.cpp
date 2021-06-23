@@ -388,7 +388,7 @@ namespace Audio
         const AZ::Vector3 cPositionDelta = m_oPosition.GetPositionVec() - m_oPreviousPosition.GetPositionVec();
         const float fCurrentVelocity = (1000.0f * cPositionDelta.GetLength()) / fUpdateIntervalMS; // fCurrentVelocity is given in units per second
 
-        if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > g_audioCVars.m_fVelocityTrackingThreshold)
+        if (AZ::GetAbs(fCurrentVelocity - m_fPreviousVelocity) > Audio::CVars::s_VelocityTrackingThreshold)
         {
             m_fPreviousVelocity = fCurrentVelocity;
             SAudioRequest oRequest;
@@ -432,8 +432,8 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CATLAudioObject::CanRunRaycasts() const
     {
-        return Audio::s_EnableRaycasts      // This is the CVar to enable/disable audio raycasts.
-            && Audio::s_RaycastMinDistance < Audio::s_RaycastMaxDistance
+        return Audio::CVars::s_EnableRaycasts      // This is the CVar to enable/disable audio raycasts.
+            && Audio::CVars::s_RaycastMinDistance < Audio::CVars::s_RaycastMaxDistance
             && m_raycastProcessor.CanRun();
     }
 
@@ -475,7 +475,7 @@ namespace Audio
 
         info.UpdateContribution();
         info.m_cached = true;
-        info.m_cacheTimerMs = Audio::s_RaycastCacheTimeMs;
+        info.m_cacheTimerMs = Audio::CVars::s_RaycastCacheTimeMs;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -500,7 +500,7 @@ namespace Audio
         // Max extent is the s_RaycastMaxDistance, and use the distance embedded in the raycast request as a percent (inverse).
         // Objects closer to the listener will have greater contribution amounts.
         // Objects farther away will contribute less obstruction/occlusion, but distance attenuation will be the larger contributing factor.
-        const float maxDistance = static_cast<float>(s_RaycastMaxDistance);
+        const float maxDistance = static_cast<float>(Audio::CVars::s_RaycastMaxDistance);
         float clampedDistance = AZ::GetClamp(m_raycastRequest.m_distance, 0.f, maxDistance);
         float distanceScale = 1.f - (clampedDistance / maxDistance);
 
@@ -528,8 +528,8 @@ namespace Audio
     RaycastProcessor::RaycastProcessor(const TAudioObjectID objectId, const SATLWorldPosition& objectPosition)
         : m_rayInfos(s_maxRaysPerObject, RaycastInfo())
         , m_position(objectPosition)
-        , m_obstructionValue(s_RaycastSmoothFactor, s_epsilon)
-        , m_occlusionValue(s_RaycastSmoothFactor, s_epsilon)
+        , m_obstructionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
+        , m_occlusionValue(Audio::CVars::s_RaycastSmoothFactor, s_epsilon)
         , m_audioObjectId(objectId)
         , m_obstOccType(eAOOCT_IGNORE)
     {
@@ -568,8 +568,8 @@ namespace Audio
             }
         }
 
-        m_obstructionValue.Update(s_RaycastSmoothFactor);
-        m_occlusionValue.Update(s_RaycastSmoothFactor);
+        m_obstructionValue.Update(Audio::CVars::s_RaycastSmoothFactor);
+        m_occlusionValue.Update(Audio::CVars::s_RaycastSmoothFactor);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -628,7 +628,7 @@ namespace Audio
         const float distance = ray.GetLength();
 
         // Prevent raycast when individual sources are not within the allowed distance range...
-        if (Audio::s_RaycastMinDistance >= distance || distance >= Audio::s_RaycastMaxDistance)
+        if (Audio::CVars::s_RaycastMinDistance >= distance || distance >= Audio::CVars::s_RaycastMaxDistance)
         {
             Reset();
             return;
@@ -644,7 +644,7 @@ namespace Audio
         constexpr float spreadDistanceMaxExtent = 10.f;
         constexpr float spreadDistanceDelta = spreadDistanceMaxExtent - spreadDistanceMinExtent;
 
-        const float rayDistancePercent = (distance / Audio::s_RaycastMaxDistance);
+        const float rayDistancePercent = (distance / Audio::CVars::s_RaycastMaxDistance);
 
         const float spreadDist = spreadDistanceMinExtent + rayDistancePercent * spreadDistanceDelta;
 
@@ -700,7 +700,7 @@ namespace Audio
             // Set the pending flag to true, so the results aren't discarded.
             m_rayInfos[rayIndex].m_pending = true;
             // Set the distance in the request structure so it doesn't have the default.
-            m_rayInfos[rayIndex].m_raycastRequest.m_distance = (s_RaycastMaxDistance / 4.f);
+            m_rayInfos[rayIndex].m_raycastRequest.m_distance = (Audio::CVars::s_RaycastMaxDistance / 4.f);
         }
     }
 
@@ -814,7 +814,7 @@ namespace Audio
             // Inspect triggers and apply filter (if set)...
             TTriggerCountMap cTriggerCounts;
 
-            AZStd::string triggerFilter(g_audioCVars.m_pAudioTriggersDebugFilter->GetString());
+            auto triggerFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioTriggersDebugFilter);
             AZStd::to_lower(triggerFilter.begin(), triggerFilter.end());
 
             for (auto& trigger : m_cTriggers)

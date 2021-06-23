@@ -45,7 +45,8 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioProxy::Initialize(const char* const sObjectName, const bool bInitAsync /* = true */)
     {
-        if ((bInitAsync && g_audioCVars.m_nAudioProxiesInitType == 0) || g_audioCVars.m_nAudioProxiesInitType == 2)
+        auto audioProxiesInitType = static_cast<AZ::u32>(Audio::CVars::s_AudioProxiesInitType);
+        if ((bInitAsync && audioProxiesInitType == 0) || audioProxiesInitType == 2)
         {
             if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
             {
@@ -260,8 +261,8 @@ namespace Audio
         if ((m_nFlags & eAPF_WAITING_FOR_ID) == 0)
         {
             // Update position only if the delta exceeds a given value.
-            if (g_audioCVars.m_fPositionUpdateThreshold <= 0.f      // <-- no gating
-                || !refPosition.GetPositionVec().IsClose(m_oPosition.GetPositionVec(), g_audioCVars.m_fPositionUpdateThreshold))
+            if (Audio::CVars::s_PositionUpdateThreshold <= 0.f      // <-- no gating
+                || !refPosition.GetPositionVec().IsClose(m_oPosition.GetPositionVec(), Audio::CVars::s_PositionUpdateThreshold))
             {
                 m_oPosition = refPosition;
 
