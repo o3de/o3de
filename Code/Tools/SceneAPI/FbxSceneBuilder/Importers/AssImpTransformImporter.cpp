@@ -107,6 +107,7 @@ namespace AZ
 
                     if (inverseOffsets.size() == 1)
                     {
+                        // If this is the root bone, just use the inverseOffset, otherwise the equation below just results in the identity matrix
                         localTransform = inverseOffsets[0];
                     }
                     else
