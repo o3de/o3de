@@ -123,8 +123,10 @@ namespace Multiplayer
 
         for (NetworkEntityHandle entityHandle : m_rewoundEntities)
         {
-            NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+            if (NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent())
+            {
             netBindComponent->NotifySyncRewindState();
+        }
         }
         m_rewoundEntities.clear();
     }
