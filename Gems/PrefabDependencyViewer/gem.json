@@ -1,0 +1,15 @@
+{
+    "gem_name": "PrefabDependencyViewer",
+    "origin": "The primary repo for PrefabDependencyViewer goes here: i.e. http://www.mydomain.com",
+    "license": "What license PrefabDependencyViewer uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "PrefabDependencyViewer",
+    "summary": "A short description of PrefabDependencyViewer.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "PrefabDependencyViewer"
+    ],
+    "icon_path": "preview.png",
+    "restricted_name": "gems"
+}

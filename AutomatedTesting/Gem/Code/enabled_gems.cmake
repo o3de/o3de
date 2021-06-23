@@ -51,10 +51,7 @@ set(ENABLED_GEMS
     Atom
     AWSCore
     AWSClientAuth
-    AWSMetrics
-
-
-
-    
+    AWSMetrics    
     AudioSystem
+    PrefabDependencyViewer
 )
