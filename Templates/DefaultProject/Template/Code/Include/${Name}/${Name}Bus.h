@@ -10,7 +10,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *
  */
- // {END_LICENSE}
+// {END_LICENSE}
 
 #pragma once
 
@@ -22,7 +22,7 @@ namespace ${SanitizedCppName}
     class ${SanitizedCppName}Requests
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Requests, "${Random_Uuid}");
+        AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
         virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
