@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiCanvasEditor_precompiled.h"
 
 #include "EditorCommon.h"
@@ -887,9 +882,9 @@ void EditorWindow::AddMenu_PreviewView()
 
 void EditorWindow::AddMenu_Help()
 {
-    const char* documentationUrl = "http://docs.aws.amazon.com/lumberyard/latest/userguide/ui-editor-intro.html";
-    const char* tutorialsUrl = "https://www.youtube.com/amazonlumberyardtutorials";
-    const char* forumUrl = "https://gamedev.amazon.com/forums/spaces/141/ui-2d.html";
+    const char* documentationUrl = "https://docs.o3de.org/docs/user-guide/interactivity/user-interface/";
+    const char* tutorialsUrl = "https://docs.o3de.org/docs/learning-guide/tutorials/";
+    const char* forumUrl = "https://o3deorg.netlify.app/community/";
 
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);

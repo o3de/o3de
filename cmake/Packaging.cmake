@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 if(NOT PAL_TRAIT_BUILD_CPACK_SUPPORTED)
@@ -128,6 +124,39 @@ endif()
 install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
 )
+
+# temporary workaround for acquiring the 3rd party SPDX license manifest, the desired location is from
+# another git repository that's private.  once it's public, only how the URL is formed should change
+set(LY_INSTALLER_3RD_PARTY_LICENSE_URL "" CACHE STRING "URL to the 3rd party SPDX license manifest file for inclusion in packaging.")
+
+if(${LY_VERSION_STRING} VERSION_GREATER "0.0.0.0" AND NOT LY_INSTALLER_3RD_PARTY_LICENSE_URL)
+    message(FATAL_ERROR "Missing required URL for the 3rd party SPDX license manifest file.  "
+        "Please specifiy where to acquire the file via LY_INSTALLER_3RD_PARTY_LICENSE_URL")
+endif()
+
+string(REPLACE "/" ";" _url_components ${LY_INSTALLER_3RD_PARTY_LICENSE_URL})
+list(POP_BACK _url_components _3rd_party_license_filename)
+
+set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
+
+# use the plain file downloader as we don't have the file hash available and using a dummy will
+# delete the file once it fails hash verification
+file(DOWNLOAD
+    ${LY_INSTALLER_3RD_PARTY_LICENSE_URL}
+    ${_3rd_party_license_dest}
+    STATUS _status
+    TLS_VERIFY ON
+)
+list(POP_FRONT _status _status_code)
+
+if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
+    install(FILES ${_3rd_party_license_dest}
+        DESTINATION .
+    )
+else()
+    file(REMOVE ${_3rd_party_license_dest})
+    message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file.  Error: ${_status}")
+endif()
 
 # checks for and removes trailing slash
 function(strip_trailing_slash in_url out_url)
