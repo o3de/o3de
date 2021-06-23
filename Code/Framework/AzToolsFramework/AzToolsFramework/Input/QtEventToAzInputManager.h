@@ -78,17 +78,6 @@ namespace AzToolsFramework
         void HandleWheelEvent(QWheelEvent* wheelEvent);
         void HandleFocusChange(QEvent* event);
 
-        // Mapping from Qt::Keys to InputChannelIds.
-        // Used to populate m_keyMappings.
-        static AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91> QtKeyMappings;
-        // Mapping from Qt::MouseButtons to InputChannelIds.
-        // Used to populate m_mouseButtonMappings.
-        static AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5> QtMouseButtonMappings;
-        // A set of high priority keys that need to be processed at the ShortcutOverride level instead of the
-        // KeyEvent level. This prevents e.g. the main menu bar from processing a press of the "alt" key when the
-        // viewport consumes the event.
-        static AZStd::array<Qt::Key, 5> HighPriorityKeys;
-
         // The current keyboard modifier state used by our synthetic key input channels.
         AZStd::shared_ptr<AzFramework::ModifierKeyStates> m_keyboardModifiers;
         // The current normalized cursor position used by our synthetic system cursor event.

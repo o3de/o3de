@@ -30,132 +30,154 @@
 
 namespace AzToolsFramework
 {
-    // This asumes modifier keys (ctrl/shift/alt) map to the left control/shift/alt keys  as Qt provides no way to disambiguate
-    // in a platform agnostic manner. This could be expanded later with a PAL mapping from native scan codes from QKeyEvents, if needed.
-    AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91> QtEventToAzInputMapper::QtKeyMappings = { {
-        { Qt::Key_0, AzFramework::InputDeviceKeyboard::Key::Alphanumeric0 },
-        { Qt::Key_1, AzFramework::InputDeviceKeyboard::Key::Alphanumeric1 },
-        { Qt::Key_2, AzFramework::InputDeviceKeyboard::Key::Alphanumeric2 },
-        { Qt::Key_3, AzFramework::InputDeviceKeyboard::Key::Alphanumeric3 },
-        { Qt::Key_4, AzFramework::InputDeviceKeyboard::Key::Alphanumeric4 },
-        { Qt::Key_5, AzFramework::InputDeviceKeyboard::Key::Alphanumeric5 },
-        { Qt::Key_6, AzFramework::InputDeviceKeyboard::Key::Alphanumeric6 },
-        { Qt::Key_7, AzFramework::InputDeviceKeyboard::Key::Alphanumeric7 },
-        { Qt::Key_8, AzFramework::InputDeviceKeyboard::Key::Alphanumeric8 },
-        { Qt::Key_9, AzFramework::InputDeviceKeyboard::Key::Alphanumeric9 },
-        { Qt::Key_A, AzFramework::InputDeviceKeyboard::Key::AlphanumericA },
-        { Qt::Key_B, AzFramework::InputDeviceKeyboard::Key::AlphanumericB },
-        { Qt::Key_C, AzFramework::InputDeviceKeyboard::Key::AlphanumericC },
-        { Qt::Key_D, AzFramework::InputDeviceKeyboard::Key::AlphanumericD },
-        { Qt::Key_E, AzFramework::InputDeviceKeyboard::Key::AlphanumericE },
-        { Qt::Key_F, AzFramework::InputDeviceKeyboard::Key::AlphanumericF },
-        { Qt::Key_G, AzFramework::InputDeviceKeyboard::Key::AlphanumericG },
-        { Qt::Key_H, AzFramework::InputDeviceKeyboard::Key::AlphanumericH },
-        { Qt::Key_I, AzFramework::InputDeviceKeyboard::Key::AlphanumericI },
-        { Qt::Key_J, AzFramework::InputDeviceKeyboard::Key::AlphanumericJ },
-        { Qt::Key_K, AzFramework::InputDeviceKeyboard::Key::AlphanumericK },
-        { Qt::Key_L, AzFramework::InputDeviceKeyboard::Key::AlphanumericL },
-        { Qt::Key_M, AzFramework::InputDeviceKeyboard::Key::AlphanumericM },
-        { Qt::Key_N, AzFramework::InputDeviceKeyboard::Key::AlphanumericN },
-        { Qt::Key_O, AzFramework::InputDeviceKeyboard::Key::AlphanumericO },
-        { Qt::Key_P, AzFramework::InputDeviceKeyboard::Key::AlphanumericP },
-        { Qt::Key_Q, AzFramework::InputDeviceKeyboard::Key::AlphanumericQ },
-        { Qt::Key_R, AzFramework::InputDeviceKeyboard::Key::AlphanumericR },
-        { Qt::Key_S, AzFramework::InputDeviceKeyboard::Key::AlphanumericS },
-        { Qt::Key_T, AzFramework::InputDeviceKeyboard::Key::AlphanumericT },
-        { Qt::Key_U, AzFramework::InputDeviceKeyboard::Key::AlphanumericU },
-        { Qt::Key_V, AzFramework::InputDeviceKeyboard::Key::AlphanumericV },
-        { Qt::Key_W, AzFramework::InputDeviceKeyboard::Key::AlphanumericW },
-        { Qt::Key_X, AzFramework::InputDeviceKeyboard::Key::AlphanumericX },
-        { Qt::Key_Y, AzFramework::InputDeviceKeyboard::Key::AlphanumericY },
-        { Qt::Key_Z, AzFramework::InputDeviceKeyboard::Key::AlphanumericZ },
-        { Qt::Key_Backspace, AzFramework::InputDeviceKeyboard::Key::EditBackspace },
-        { Qt::Key_CapsLock, AzFramework::InputDeviceKeyboard::Key::EditCapsLock },
-        { Qt::Key_Enter, AzFramework::InputDeviceKeyboard::Key::EditEnter },
-        { Qt::Key_Space, AzFramework::InputDeviceKeyboard::Key::EditSpace },
-        { Qt::Key_Tab, AzFramework::InputDeviceKeyboard::Key::EditTab },
-        { Qt::Key_Escape, AzFramework::InputDeviceKeyboard::Key::Escape },
-        { Qt::Key_F1, AzFramework::InputDeviceKeyboard::Key::Function01 },
-        { Qt::Key_F2, AzFramework::InputDeviceKeyboard::Key::Function02 },
-        { Qt::Key_F3, AzFramework::InputDeviceKeyboard::Key::Function03 },
-        { Qt::Key_F4, AzFramework::InputDeviceKeyboard::Key::Function04 },
-        { Qt::Key_F5, AzFramework::InputDeviceKeyboard::Key::Function05 },
-        { Qt::Key_F6, AzFramework::InputDeviceKeyboard::Key::Function06 },
-        { Qt::Key_F7, AzFramework::InputDeviceKeyboard::Key::Function07 },
-        { Qt::Key_F8, AzFramework::InputDeviceKeyboard::Key::Function08 },
-        { Qt::Key_F9, AzFramework::InputDeviceKeyboard::Key::Function09 },
-        { Qt::Key_F10, AzFramework::InputDeviceKeyboard::Key::Function10 },
-        { Qt::Key_F11, AzFramework::InputDeviceKeyboard::Key::Function11 },
-        { Qt::Key_F12, AzFramework::InputDeviceKeyboard::Key::Function12 },
-        { Qt::Key_F13, AzFramework::InputDeviceKeyboard::Key::Function13 },
-        { Qt::Key_F14, AzFramework::InputDeviceKeyboard::Key::Function14 },
-        { Qt::Key_F15, AzFramework::InputDeviceKeyboard::Key::Function15 },
-        { Qt::Key_F16, AzFramework::InputDeviceKeyboard::Key::Function16 },
-        { Qt::Key_F17, AzFramework::InputDeviceKeyboard::Key::Function17 },
-        { Qt::Key_F18, AzFramework::InputDeviceKeyboard::Key::Function18 },
-        { Qt::Key_F19, AzFramework::InputDeviceKeyboard::Key::Function19 },
-        { Qt::Key_F20, AzFramework::InputDeviceKeyboard::Key::Function20 },
-        { Qt::Key_Alt, AzFramework::InputDeviceKeyboard::Key::ModifierAltL },
-        { Qt::Key_Control, AzFramework::InputDeviceKeyboard::Key::ModifierCtrlL },
-        { Qt::Key_Shift, AzFramework::InputDeviceKeyboard::Key::ModifierShiftL },
-        { Qt::Key_Super_L, AzFramework::InputDeviceKeyboard::Key::ModifierSuperL },
-        { Qt::Key_Super_R, AzFramework::InputDeviceKeyboard::Key::ModifierSuperR },
-        { Qt::Key_Down, AzFramework::InputDeviceKeyboard::Key::NavigationArrowDown },
-        { Qt::Key_Left, AzFramework::InputDeviceKeyboard::Key::NavigationArrowLeft },
-        { Qt::Key_Right, AzFramework::InputDeviceKeyboard::Key::NavigationArrowRight },
-        { Qt::Key_Up, AzFramework::InputDeviceKeyboard::Key::NavigationArrowUp },
-        { Qt::Key_Delete, AzFramework::InputDeviceKeyboard::Key::NavigationDelete },
-        { Qt::Key_End, AzFramework::InputDeviceKeyboard::Key::NavigationEnd },
-        { Qt::Key_Home, AzFramework::InputDeviceKeyboard::Key::NavigationHome },
-        { Qt::Key_Insert, AzFramework::InputDeviceKeyboard::Key::NavigationInsert },
-        { Qt::Key_PageDown, AzFramework::InputDeviceKeyboard::Key::NavigationPageDown },
-        { Qt::Key_PageUp, AzFramework::InputDeviceKeyboard::Key::NavigationPageUp },
-        { Qt::Key_Apostrophe, AzFramework::InputDeviceKeyboard::Key::PunctuationApostrophe },
-        { Qt::Key_Backslash, AzFramework::InputDeviceKeyboard::Key::PunctuationBackslash },
-        { Qt::Key_BracketLeft, AzFramework::InputDeviceKeyboard::Key::PunctuationBracketL },
-        { Qt::Key_BracketRight, AzFramework::InputDeviceKeyboard::Key::PunctuationBracketR },
-        { Qt::Key_Comma, AzFramework::InputDeviceKeyboard::Key::PunctuationComma },
-        { Qt::Key_Equal, AzFramework::InputDeviceKeyboard::Key::PunctuationEquals },
-        { Qt::Key_hyphen, AzFramework::InputDeviceKeyboard::Key::PunctuationHyphen },
-        { Qt::Key_Period, AzFramework::InputDeviceKeyboard::Key::PunctuationPeriod },
-        { Qt::Key_Semicolon, AzFramework::InputDeviceKeyboard::Key::PunctuationSemicolon },
-        { Qt::Key_Slash, AzFramework::InputDeviceKeyboard::Key::PunctuationSlash },
-        { Qt::Key_QuoteLeft, AzFramework::InputDeviceKeyboard::Key::PunctuationTilde },
-        { Qt::Key_Pause, AzFramework::InputDeviceKeyboard::Key::WindowsSystemPause },
-        { Qt::Key_Print, AzFramework::InputDeviceKeyboard::Key::WindowsSystemPrint },
-        { Qt::Key_ScrollLock, AzFramework::InputDeviceKeyboard::Key::WindowsSystemScrollLock },
-    } };
+    // Mapping from Qt::Keys to InputChannelIds.
+    // Used to populate m_keyMappings.
+    AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91>& GetQtKeyMappings()
+    {
+        // This asumes modifier keys (ctrl/shift/alt) map to the left control/shift/alt keys  as Qt provides no way to disambiguate
+        // in a platform agnostic manner. This could be expanded later with a PAL mapping from native scan codes from QKeyEvents, if needed.
+        static AZStd::array<AZStd::pair<Qt::Key, AzFramework::InputChannelId>, 91> qtKeyMappings = { {
+            { Qt::Key_0, AzFramework::InputDeviceKeyboard::Key::Alphanumeric0 },
+            { Qt::Key_1, AzFramework::InputDeviceKeyboard::Key::Alphanumeric1 },
+            { Qt::Key_2, AzFramework::InputDeviceKeyboard::Key::Alphanumeric2 },
+            { Qt::Key_3, AzFramework::InputDeviceKeyboard::Key::Alphanumeric3 },
+            { Qt::Key_4, AzFramework::InputDeviceKeyboard::Key::Alphanumeric4 },
+            { Qt::Key_5, AzFramework::InputDeviceKeyboard::Key::Alphanumeric5 },
+            { Qt::Key_6, AzFramework::InputDeviceKeyboard::Key::Alphanumeric6 },
+            { Qt::Key_7, AzFramework::InputDeviceKeyboard::Key::Alphanumeric7 },
+            { Qt::Key_8, AzFramework::InputDeviceKeyboard::Key::Alphanumeric8 },
+            { Qt::Key_9, AzFramework::InputDeviceKeyboard::Key::Alphanumeric9 },
+            { Qt::Key_A, AzFramework::InputDeviceKeyboard::Key::AlphanumericA },
+            { Qt::Key_B, AzFramework::InputDeviceKeyboard::Key::AlphanumericB },
+            { Qt::Key_C, AzFramework::InputDeviceKeyboard::Key::AlphanumericC },
+            { Qt::Key_D, AzFramework::InputDeviceKeyboard::Key::AlphanumericD },
+            { Qt::Key_E, AzFramework::InputDeviceKeyboard::Key::AlphanumericE },
+            { Qt::Key_F, AzFramework::InputDeviceKeyboard::Key::AlphanumericF },
+            { Qt::Key_G, AzFramework::InputDeviceKeyboard::Key::AlphanumericG },
+            { Qt::Key_H, AzFramework::InputDeviceKeyboard::Key::AlphanumericH },
+            { Qt::Key_I, AzFramework::InputDeviceKeyboard::Key::AlphanumericI },
+            { Qt::Key_J, AzFramework::InputDeviceKeyboard::Key::AlphanumericJ },
+            { Qt::Key_K, AzFramework::InputDeviceKeyboard::Key::AlphanumericK },
+            { Qt::Key_L, AzFramework::InputDeviceKeyboard::Key::AlphanumericL },
+            { Qt::Key_M, AzFramework::InputDeviceKeyboard::Key::AlphanumericM },
+            { Qt::Key_N, AzFramework::InputDeviceKeyboard::Key::AlphanumericN },
+            { Qt::Key_O, AzFramework::InputDeviceKeyboard::Key::AlphanumericO },
+            { Qt::Key_P, AzFramework::InputDeviceKeyboard::Key::AlphanumericP },
+            { Qt::Key_Q, AzFramework::InputDeviceKeyboard::Key::AlphanumericQ },
+            { Qt::Key_R, AzFramework::InputDeviceKeyboard::Key::AlphanumericR },
+            { Qt::Key_S, AzFramework::InputDeviceKeyboard::Key::AlphanumericS },
+            { Qt::Key_T, AzFramework::InputDeviceKeyboard::Key::AlphanumericT },
+            { Qt::Key_U, AzFramework::InputDeviceKeyboard::Key::AlphanumericU },
+            { Qt::Key_V, AzFramework::InputDeviceKeyboard::Key::AlphanumericV },
+            { Qt::Key_W, AzFramework::InputDeviceKeyboard::Key::AlphanumericW },
+            { Qt::Key_X, AzFramework::InputDeviceKeyboard::Key::AlphanumericX },
+            { Qt::Key_Y, AzFramework::InputDeviceKeyboard::Key::AlphanumericY },
+            { Qt::Key_Z, AzFramework::InputDeviceKeyboard::Key::AlphanumericZ },
+            { Qt::Key_Backspace, AzFramework::InputDeviceKeyboard::Key::EditBackspace },
+            { Qt::Key_CapsLock, AzFramework::InputDeviceKeyboard::Key::EditCapsLock },
+            { Qt::Key_Enter, AzFramework::InputDeviceKeyboard::Key::EditEnter },
+            { Qt::Key_Space, AzFramework::InputDeviceKeyboard::Key::EditSpace },
+            { Qt::Key_Tab, AzFramework::InputDeviceKeyboard::Key::EditTab },
+            { Qt::Key_Escape, AzFramework::InputDeviceKeyboard::Key::Escape },
+            { Qt::Key_F1, AzFramework::InputDeviceKeyboard::Key::Function01 },
+            { Qt::Key_F2, AzFramework::InputDeviceKeyboard::Key::Function02 },
+            { Qt::Key_F3, AzFramework::InputDeviceKeyboard::Key::Function03 },
+            { Qt::Key_F4, AzFramework::InputDeviceKeyboard::Key::Function04 },
+            { Qt::Key_F5, AzFramework::InputDeviceKeyboard::Key::Function05 },
+            { Qt::Key_F6, AzFramework::InputDeviceKeyboard::Key::Function06 },
+            { Qt::Key_F7, AzFramework::InputDeviceKeyboard::Key::Function07 },
+            { Qt::Key_F8, AzFramework::InputDeviceKeyboard::Key::Function08 },
+            { Qt::Key_F9, AzFramework::InputDeviceKeyboard::Key::Function09 },
+            { Qt::Key_F10, AzFramework::InputDeviceKeyboard::Key::Function10 },
+            { Qt::Key_F11, AzFramework::InputDeviceKeyboard::Key::Function11 },
+            { Qt::Key_F12, AzFramework::InputDeviceKeyboard::Key::Function12 },
+            { Qt::Key_F13, AzFramework::InputDeviceKeyboard::Key::Function13 },
+            { Qt::Key_F14, AzFramework::InputDeviceKeyboard::Key::Function14 },
+            { Qt::Key_F15, AzFramework::InputDeviceKeyboard::Key::Function15 },
+            { Qt::Key_F16, AzFramework::InputDeviceKeyboard::Key::Function16 },
+            { Qt::Key_F17, AzFramework::InputDeviceKeyboard::Key::Function17 },
+            { Qt::Key_F18, AzFramework::InputDeviceKeyboard::Key::Function18 },
+            { Qt::Key_F19, AzFramework::InputDeviceKeyboard::Key::Function19 },
+            { Qt::Key_F20, AzFramework::InputDeviceKeyboard::Key::Function20 },
+            { Qt::Key_Alt, AzFramework::InputDeviceKeyboard::Key::ModifierAltL },
+            { Qt::Key_Control, AzFramework::InputDeviceKeyboard::Key::ModifierCtrlL },
+            { Qt::Key_Shift, AzFramework::InputDeviceKeyboard::Key::ModifierShiftL },
+            { Qt::Key_Super_L, AzFramework::InputDeviceKeyboard::Key::ModifierSuperL },
+            { Qt::Key_Super_R, AzFramework::InputDeviceKeyboard::Key::ModifierSuperR },
+            { Qt::Key_Down, AzFramework::InputDeviceKeyboard::Key::NavigationArrowDown },
+            { Qt::Key_Left, AzFramework::InputDeviceKeyboard::Key::NavigationArrowLeft },
+            { Qt::Key_Right, AzFramework::InputDeviceKeyboard::Key::NavigationArrowRight },
+            { Qt::Key_Up, AzFramework::InputDeviceKeyboard::Key::NavigationArrowUp },
+            { Qt::Key_Delete, AzFramework::InputDeviceKeyboard::Key::NavigationDelete },
+            { Qt::Key_End, AzFramework::InputDeviceKeyboard::Key::NavigationEnd },
+            { Qt::Key_Home, AzFramework::InputDeviceKeyboard::Key::NavigationHome },
+            { Qt::Key_Insert, AzFramework::InputDeviceKeyboard::Key::NavigationInsert },
+            { Qt::Key_PageDown, AzFramework::InputDeviceKeyboard::Key::NavigationPageDown },
+            { Qt::Key_PageUp, AzFramework::InputDeviceKeyboard::Key::NavigationPageUp },
+            { Qt::Key_Apostrophe, AzFramework::InputDeviceKeyboard::Key::PunctuationApostrophe },
+            { Qt::Key_Backslash, AzFramework::InputDeviceKeyboard::Key::PunctuationBackslash },
+            { Qt::Key_BracketLeft, AzFramework::InputDeviceKeyboard::Key::PunctuationBracketL },
+            { Qt::Key_BracketRight, AzFramework::InputDeviceKeyboard::Key::PunctuationBracketR },
+            { Qt::Key_Comma, AzFramework::InputDeviceKeyboard::Key::PunctuationComma },
+            { Qt::Key_Equal, AzFramework::InputDeviceKeyboard::Key::PunctuationEquals },
+            { Qt::Key_hyphen, AzFramework::InputDeviceKeyboard::Key::PunctuationHyphen },
+            { Qt::Key_Period, AzFramework::InputDeviceKeyboard::Key::PunctuationPeriod },
+            { Qt::Key_Semicolon, AzFramework::InputDeviceKeyboard::Key::PunctuationSemicolon },
+            { Qt::Key_Slash, AzFramework::InputDeviceKeyboard::Key::PunctuationSlash },
+            { Qt::Key_QuoteLeft, AzFramework::InputDeviceKeyboard::Key::PunctuationTilde },
+            { Qt::Key_Pause, AzFramework::InputDeviceKeyboard::Key::WindowsSystemPause },
+            { Qt::Key_Print, AzFramework::InputDeviceKeyboard::Key::WindowsSystemPrint },
+            { Qt::Key_ScrollLock, AzFramework::InputDeviceKeyboard::Key::WindowsSystemScrollLock },
+        } };
 
-    AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5> QtEventToAzInputMapper::QtMouseButtonMappings = { {
-        { Qt::MouseButton::LeftButton, AzFramework::InputDeviceMouse::Button::Left },
-        { Qt::MouseButton::RightButton, AzFramework::InputDeviceMouse::Button::Right },
-        { Qt::MouseButton::MiddleButton, AzFramework::InputDeviceMouse::Button::Middle },
-        { Qt::MouseButton::ExtraButton1, AzFramework::InputDeviceMouse::Button::Other1 },
-        { Qt::MouseButton::ExtraButton2, AzFramework::InputDeviceMouse::Button::Other2 },
-    } };
+        return qtKeyMappings;
+    }
 
+    // Mapping from Qt::MouseButtons to InputChannelIds.
+    // Used to populate m_mouseButtonMappings.
+    AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5>& GetQtMouseButtonMappings()
+    {
+        static AZStd::array<AZStd::pair<Qt::MouseButton, AzFramework::InputChannelId>, 5> qtMouseButtonMappings = { {
+            { Qt::MouseButton::LeftButton, AzFramework::InputDeviceMouse::Button::Left },
+            { Qt::MouseButton::RightButton, AzFramework::InputDeviceMouse::Button::Right },
+            { Qt::MouseButton::MiddleButton, AzFramework::InputDeviceMouse::Button::Middle },
+            { Qt::MouseButton::ExtraButton1, AzFramework::InputDeviceMouse::Button::Other1 },
+            { Qt::MouseButton::ExtraButton2, AzFramework::InputDeviceMouse::Button::Other2 },
+        } };
+
+        return qtMouseButtonMappings;
+    }
+
+    // A set of high priority keys that need to be processed at the ShortcutOverride level instead of the
+    // KeyEvent level. This prevents e.g. the main menu bar from processing a press of the "alt" key when the
+    // viewport consumes the event.
+    //
     // Currently this is only set for modifier keys.
     // This should only be expanded sparingly, any keys handled here will not be bubbled up to the shortcut system.
     // ex: If Key_S was here, the viewport would consume S key presses before the application could process a QAction with a Ctrl+S
     // shortcut.
-    AZStd::array<Qt::Key, 5> QtEventToAzInputMapper::HighPriorityKeys = { Qt::Key_Alt, Qt::Key_Control, Qt::Key_Shift, Qt::Key_Super_L,
-                                                                          Qt::Key_Super_R };
+    constexpr static AZStd::array<Qt::Key, 5> HighPriorityKeys = { Qt::Key_Alt, Qt::Key_Control, Qt::Key_Shift, Qt::Key_Super_L,
+                                                                   Qt::Key_Super_R };
 
     QtEventToAzInputMapper::QtEventToAzInputMapper(QWidget* sourceWidget)
         : QObject(sourceWidget)
         , m_sourceWidget(sourceWidget)
         , m_keyboardModifiers(AZStd::make_shared<AzFramework::ModifierKeyStates>())
         , m_cursorPosition(AZStd::make_shared<AzFramework::InputChannel::PositionData2D>())
-        , m_keyMappings(QtKeyMappings.begin(), QtKeyMappings.end())
-        , m_mouseButtonMappings(QtMouseButtonMappings.begin(), QtMouseButtonMappings.end())
     {
+        const auto& qtKeyMappings = GetQtKeyMappings();
+        m_keyMappings.insert(qtKeyMappings.begin(), qtKeyMappings.end());
+
+        const auto& qtMouseButtonMappings = GetQtKeyMappings();
+        m_mouseButtonMappings.insert(qtMouseButtonMappings.begin(), qtMouseButtonMappings.end());
+
         AzFramework::InputDeviceRequests::InputDeviceByIdMap deviceMap;
         AzFramework::InputDeviceRequestBus::Broadcast(&AzFramework::InputDeviceRequestBus::Events::GetInputDevicesById, deviceMap);
 
         const AzFramework::InputDevice* keyboardDevice = deviceMap.find(AzFramework::InputDeviceKeyboard::Id)->second;
 
         // Create synthetic keyboard input channels.
-        for (auto [_, id] : QtKeyMappings)
+        for (auto [_, id] : qtKeyMappings)
         {
             AZStd::unique_ptr<AzFramework::InputChannel> channel =
                 AZStd::make_unique<AzFramework::InputChannelDigitalWithSharedModifierKeyStates>(id, *keyboardDevice, m_keyboardModifiers);
@@ -166,7 +188,7 @@ namespace AzToolsFramework
         const AzFramework::InputDevice* mouseDevice = deviceMap.find(AzFramework::InputDeviceMouse::Id)->second;
 
         // Create synthetic mouse button input channels.
-        for (auto [_, id] : QtMouseButtonMappings)
+        for (auto [_, id] : qtMouseButtonMappings)
         {
             AZStd::unique_ptr<AzFramework::InputChannel> channel =
                 AZStd::make_unique<AzFramework::InputChannelDigitalWithSharedPosition2D>(id, *mouseDevice, m_cursorPosition);
