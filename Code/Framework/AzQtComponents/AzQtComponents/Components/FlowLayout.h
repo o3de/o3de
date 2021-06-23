@@ -37,7 +37,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-// Modifications copyright Amazon.com, Inc. or its affiliates
+// Modified from original
 
 #ifndef FLOWLAYOUT_H
 #define FLOWLAYOUT_H
