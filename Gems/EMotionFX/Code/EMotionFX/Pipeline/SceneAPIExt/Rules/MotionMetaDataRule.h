@@ -29,6 +29,9 @@ namespace EMotionFX
                 AZ_RTTI(MotionMetaData, "{A381A915-3CB3-4F60-82B3-70865CFA1F4F}");
                 AZ_CLASS_ALLOCATOR(MotionMetaData, AZ::SystemAllocator, 0)
 
+                MotionMetaData() = default;
+                virtual ~MotionMetaData() = default;
+
                 static void Reflect(AZ::ReflectContext* context);
 
                 EMotionFX::MotionEventTable* m_motionEventTable = nullptr;
@@ -44,6 +47,7 @@ namespace EMotionFX
 
                 MotionMetaDataRule();
                 MotionMetaDataRule(const MotionMetaData& data);
+                ~MotionMetaDataRule() final = default;
 
                 const MotionMetaData& GetData() const override      { return m_data; }
                 void SetData(const MotionMetaData& data) override   { m_data = data; }
