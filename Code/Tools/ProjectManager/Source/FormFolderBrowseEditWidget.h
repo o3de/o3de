@@ -13,21 +13,21 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <FormLineEditWidget.h> 
+#include <FormBrowseEditWidget.h> 
 #endif
 
 namespace O3DE::ProjectManager
 {
-    class FormBrowseEditWidget
-        : public FormLineEditWidget 
+    class FormFolderBrowseEditWidget
+        : public FormBrowseEditWidget
     {
         Q_OBJECT
 
     public:
-        explicit FormBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
-        ~FormBrowseEditWidget() = default;
+        explicit FormFolderBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
+        ~FormFolderBrowseEditWidget() = default;
 
-    protected slots:
-        virtual void HandleBrowseButton() = 0;
+    protected:
+        void HandleBrowseButton() override;
     };
 } // namespace O3DE::ProjectManager

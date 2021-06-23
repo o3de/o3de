@@ -11,6 +11,7 @@
  */
 
 #include <ProjectButtonWidget.h>
+#include <ProjectManagerDefs.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
@@ -22,12 +23,11 @@
 #include <QMenu>
 #include <QSpacerItem>
 #include <QProgressBar>
+#include <QDir>
+#include <QFileInfo>
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_projectImageWidth = 210;
-    inline constexpr static int s_projectImageHeight = 280;
-
     LabelButton::LabelButton(QWidget* parent)
         : QLabel(parent)
     {
@@ -92,11 +92,6 @@ namespace O3DE::ProjectManager
         : QFrame(parent)
         , m_projectInfo(projectInfo)
     {
-        if (m_projectInfo.m_imagePath.isEmpty())
-        {
-            m_projectInfo.m_imagePath = ":/DefaultProjectImage.png";
-        }
-
         BaseSetup();
         if (processing)
         {
@@ -118,20 +113,25 @@ namespace O3DE::ProjectManager
         setLayout(vLayout);
 
         m_projectImageLabel = new LabelButton(this);
-        m_projectImageLabel->setFixedSize(s_projectImageWidth, s_projectImageHeight);
+        m_projectImageLabel->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
         m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
 
-        m_projectImageLabel->setPixmap(
-            QPixmap(m_projectInfo.m_imagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
+        QString projectPreviewPath = QDir(m_projectInfo.m_path).filePath(m_projectInfo.m_iconPath);
+        QFileInfo doesPreviewExist(projectPreviewPath);
+        if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+        {
+            projectPreviewPath = ":/DefaultProjectImage.png";
+        }
+        m_projectImageLabel->setPixmap(QPixmap(projectPreviewPath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
         m_projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(0, 0, 0, 0);
         m_projectFooter->setLayout(hLayout);
         {
-            QLabel* projectNameLabel = new QLabel(m_projectInfo.m_displayName, this);
+            QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
             hLayout->addWidget(projectNameLabel);
         }
 
