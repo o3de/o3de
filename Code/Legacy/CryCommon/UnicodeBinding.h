@@ -12,7 +12,6 @@
 //
 // (At least) the following string types can be bound with these helper functions:
 // Types                                            Input  Output Null-Terminator
-// CryStringT<T>, (::string, ::wstring):            yes    yes    implied by type (also Stack and Fixed variants)
 // std::basic_string<T>, std::string, std::wstring: yes    yes    implied by type
 // QString:                                         yes    yes    implied by type
 // std::vector<T>, std::list<T>, std::deque<T>:     yes    yes    not present
@@ -56,18 +55,14 @@
 // Forward declare the supported types.
 // Before actually instantiating a binding however, you need to have the full definition included.
 // Also, this allows us to work with QChar/QString as declared names without a dependency on Qt.
-template<typename T, size_t S>
-class CryStackStringT;
-template<size_t S>
-class CryFixedStringT;
-template<size_t S>
-class CryFixedWStringT;
-template<typename T>
-class CryStringLocalT;
-template<typename T>
-class CryStringT;
+namespace AZStd 
+{
+    template<class Element, size_t MaxElementCount, class Traits>
+    class basic_fixed_string;
+}
 class QChar;
 class QString;
+
 namespace Unicode
 {
     namespace Detail
@@ -253,36 +248,15 @@ namespace Unicode
             static const bool isValid = SValidChar<T, InferEncoding, true>::value;
             static const EBind value = isValid ? eBind_Iterators : eBind_Impossible;
         };
-        template<typename T, bool InferEncoding>
-        struct SBindObject<CryStringT<T>, InferEncoding>
-        {
-            typedef typename add_const<T>::type CharType;
-            static const bool isValid = SValidChar<T, InferEncoding, true>::value;
-            static const EBind value = isValid ? eBind_Data : eBind_Impossible;
-        };
-        template<typename T, bool InferEncoding>
-        struct SBindObject<CryStringLocalT<T>, InferEncoding>
-        {
-            typedef typename add_const<T>::type CharType;
-            static const bool isValid = SValidChar<T, InferEncoding, true>::value;
-            static const EBind value = isValid ? eBind_Data : eBind_Impossible;
-        };
         template<typename T, size_t S, bool InferEncoding>
-        struct SBindObject<CryStackStringT<T, S>, InferEncoding>
+        struct SBindObject<AZStd::basic_fixed_string<T, S>, InferEncoding>
         {
             typedef typename add_const<T>::type CharType;
             static const bool isValid = SValidChar<T, InferEncoding, true>::value;
             static const EBind value = isValid ? eBind_Data : eBind_Impossible;
         };
         template<size_t S, bool InferEncoding>
-        struct SBindObject<CryFixedStringT<S>, InferEncoding>
-        {
-            typedef char CharType;
-            static const bool isValid = SValidChar<CharType, InferEncoding, true>::value;
-            static const EBind value = isValid ? eBind_Data : eBind_Impossible;
-        };
-        template<size_t S, bool InferEncoding>
-        struct SBindObject<CryFixedWStringT<S>, InferEncoding>
+        struct SBindObject<AZStd::fixed_wstring<S>, InferEncoding>
         {
             typedef wchar_t CharType;
             static const bool isValid = SValidChar<CharType, InferEncoding, true>::value;
@@ -348,22 +322,8 @@ namespace Unicode
             static const bool isValid = SValidChar<T, InferEncoding, false>::value;
             static const EBind value = isValid ? eBind_Iterators : eBind_Impossible;
         };
-        template<typename T, bool InferEncoding>
-        struct SBindOutput<CryStringT<T>, InferEncoding>
-        {
-            typedef T CharType;
-            static const bool isValid = SValidChar<T, InferEncoding, false>::value;
-            static const EBind value = isValid ? eBind_Data : eBind_Impossible;
-        };
-        template<typename T, bool InferEncoding>
-        struct SBindOutput<CryStringLocalT<T>, InferEncoding>
-        {
-            typedef T CharType;
-            static const bool isValid = SValidChar<T, InferEncoding, false>::value;
-            static const EBind value = isValid ? eBind_Data : eBind_Impossible;
-        };
         template<typename T, size_t S, bool InferEncoding>
-        struct SBindOutput<CryStackStringT<T, S>, InferEncoding>
+        struct SBindOutput<AZStd::basic_fixed_string<T, S>, InferEncoding>
         {
             typedef T CharType;
             static const bool isValid = SValidChar<T, InferEncoding, false>::value;

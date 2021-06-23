@@ -18,7 +18,7 @@ namespace AtomFontInternal
         if (SUCCEEDED(SHGetFolderPath(0, CSIDL_FONTS, 0, SHGFP_TYPE_DEFAULT, sysFontPath)))
         {
             const char* fontPath = m_strFontPath.c_str();
-            const char* fontName = CryStringUtils::FindFileNameInPath(fontPath);
+            const char* fontName = AZ::IO::PathView(fontPath).Filename();
 
             string newFontPath(sysFontPath);
             newFontPath += "/";

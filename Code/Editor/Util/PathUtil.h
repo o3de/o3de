@@ -230,7 +230,7 @@ namespace Path
     }
     
     template<size_t size>
-    inline bool EndsWithSlash(CryStackStringT<char, size>* path)
+    inline bool EndsWithSlash(AZStd::fixed_string<size>* path)
     {
         if ((!path) || (path->empty()))
         {
@@ -271,7 +271,7 @@ namespace Path
     }
 
     template<size_t size>
-    inline void AddBackslash(CryStackStringT<char, size>* path)
+    inline void AddBackslash(AZstd::fixed_string<size>* path)
     {
         if (path->empty())
         {
@@ -284,7 +284,7 @@ namespace Path
     }
 
     template<size_t size>
-    inline void AddSlash(CryStackStringT<char, size>* path)
+    inline void AddSlash(AZstd::fixed_string<size>* path)
     {
         if (path->empty())
         {

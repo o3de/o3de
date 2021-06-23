@@ -182,7 +182,7 @@ private:    // DO NOT REMOVE - following methods only to be accessed only via CN
     };
 
     typedef std::vector<ListenerRecord> TListenerVec;
-    typedef std::vector<string> TAllocatedNameVec;
+    typedef std::vector<AZStd::string> TAllocatedNameVec;
 
     inline void StartNotificationScope();
     inline void EndNotificationScope();

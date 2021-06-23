@@ -179,28 +179,16 @@ struct SSerializeString
     void resize(int sz) { m_str.resize(sz); }
     void reserve(int sz) { m_str.reserve(sz); }
 
-    void set_string(const string& s)
+    void set_string(const AZStd::string& s)
     {
         m_str.assign(s.begin(), s.size());
     }
-#if !defined(RESOURCE_COMPILER)
-    void set_string(const CryStringLocal& s)
-    {
-        m_str.assign(s.begin(), s.size());
-    }
-#endif
-    template<size_t S>
-    void set_string(const CryFixedStringT<S>& s)
-    {
-        m_str.assign(s.begin(), s.size());
-    }
-
-    operator const string () const {
+    operator const AZStd::string() const {
         return m_str;
     }
 
 private:
-    string m_str;
+    AZStd::string m_str;
 };
 
 // the ISerialize is intended to be implemented by objects that need
@@ -308,7 +296,7 @@ public:
         m_pSerialize->Value(szName, value);
     }
 
-    void Value(const char* szName, string& value, int policy)
+    void Value(const char* szName, AZStd::string& value, int policy)
     {
         if (IsWriting())
         {
@@ -327,11 +315,11 @@ public:
             value = serializeString.c_str();
         }
     }
-    ILINE void Value(const char* szName, string& value)
+    ILINE void Value(const char* szName, AZStd::string& value)
     {
         Value(szName, value, 0);
     }
-    void Value(const char* szName, const string& value, int policy)
+    void Value(const char* szName, const AZStd::string& value, int policy)
     {
         if (IsWriting())
         {
@@ -343,76 +331,7 @@ public:
             assert(0 && "This function can only be used for Writing");
         }
     }
-    ILINE void Value(const char* szName, const string& value)
-    {
-        Value(szName, value, 0);
-    }
-    template <typename T>
-    void Value(const char* szName, CryStringLocalT<T>& value, int policy)
-    {
-        if (IsWriting())
-        {
-            SSerializeString& serializeString = SetSharedSerializeString(value);
-            m_pSerialize->WriteStringValue(szName, serializeString, policy);
-        }
-        else
-        {
-            if (GetSerializationTarget() != eST_Script)
-            {
-                value = "";
-            }
-
-            SSerializeString& serializeString = SetSharedSerializeString(value);
-            m_pSerialize->ReadStringValue(szName, serializeString, policy);
-            value = serializeString.c_str();
-        }
-    }
-    template <typename T>
-    ILINE void Value(const char* szName, CryStringLocalT<T>& value)
-    {
-        Value(szName, value, 0);
-    }
-    template <typename T>
-    void Value(const char* szName, const CryStringLocalT<T>& value, int policy)
-    {
-        if (IsWriting())
-        {
-            SSerializeString& serializeString = SetSharedSerializeString(value);
-            m_pSerialize->WriteStringValue(szName, serializeString, policy);
-        }
-        else
-        {
-            assert(0 && "This function can only be used for Writing");
-        }
-    }
-    template <typename T>
-    ILINE void Value(const char* szName, const CryStringLocalT<T>& value)
-    {
-        Value(szName, value, 0);
-    }
-    template<size_t S>
-    void Value(const char* szName, CryFixedStringT<S>& value, int policy)
-    {
-        if (IsWriting())
-        {
-            SSerializeString& serializeString = SetSharedSerializeString(value);
-            m_pSerialize->WriteStringValue(szName, serializeString, policy);
-        }
-        else
-        {
-            if (GetSerializationTarget() != eST_Script)
-            {
-                value = "";
-            }
-
-            SSerializeString& serializeString = SetSharedSerializeString(value);
-            m_pSerialize->ReadStringValue(szName, serializeString, policy);
-            assert(serializeString.length() <= S);
-            value = serializeString.c_str();
-        }
-    }
-    template<size_t S>
-    ILINE void Value(const char* szName, CryFixedStringT<S>& value)
+    ILINE void Value(const char* szName, const AZStd::string& value)
     {
         Value(szName, value, 0);
     }
@@ -493,7 +412,7 @@ public:
         m_pSerialize->ValueWithDefault(name, x, defaultValue);
     }
 
-    void ValueWithDefault(const char* szName, string& value, const string& defaultValue)
+    void ValueWithDefault(const char* szName, AZStd::string& value, const AZStd::string& defaultValue)
     {
         static SSerializeString defaultSerializeString;
 
@@ -919,29 +838,8 @@ public:
         return CSerializeWrapper<ISerialize>(m_pSerialize);
     }
 
-    SSerializeString& SetSharedSerializeString(const string& str)
+    SSerializeString& SetSharedSerializeString(const AZStd::string& str)
     {
-        static SSerializeString serializeString;
-        serializeString.set_string(str);
-        return serializeString;
-    }
-
-#if !defined(RESOURCE_COMPILER)
-    SSerializeString& SetSharedSerializeString(const CryStringLocal& str)
-    {
-        
-
-        static SSerializeString serializeString;
-        serializeString.set_string(str);
-        return serializeString;
-    }
-#endif
-
-    template<size_t S>
-    SSerializeString& SetSharedSerializeString(const CryFixedStringT<S>& str)
-    {
-        
-
         static SSerializeString serializeString;
         serializeString.set_string(str);
         return serializeString;

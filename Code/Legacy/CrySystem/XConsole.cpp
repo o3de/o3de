@@ -1554,7 +1554,7 @@ const char* CXConsole::GetFlagsString(const uint32 dwFlags)
     // hiding this makes it a bit more difficult for cheaters
     //  if(dwFlags&VF_CHEAT)                  cry_strcat( sFlags,"CHEAT, ");
 
-    cry_strcpy(sFlags, "");
+    azstrcpy(sFlags, "");
 
     if (dwFlags & VF_READONLY)
     {

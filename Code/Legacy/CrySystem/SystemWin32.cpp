@@ -127,7 +127,7 @@ const char* CSystem::GetUserName()
     DWORD dwSize = iNameBufferSize;
     wchar_t nameW[iNameBufferSize];
     ::GetUserNameW(nameW, &dwSize);
-    cry_strcpy(szNameBuffer, CryStringUtils::WStrToUTF8(nameW));
+    azstrcpy(szNameBuffer, CryStringUtils::WStrToUTF8(nameW));
     return szNameBuffer;
 #else
 #if defined(LINUX)
@@ -283,7 +283,7 @@ static const char* GetLastSystemErrorMessage()
                 0,
                 NULL))
         {
-            cry_strcpy(szBuffer, (char*)lpMsgBuf);
+            azstrcpy(szBuffer, (char*)lpMsgBuf);
             LocalFree(lpMsgBuf);
         }
         else
@@ -505,7 +505,9 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
             if (bSucceeded)
             {
                 // Convert from UNICODE to UTF-8
-                cry_strcpy(szMyDocumentsPath, maxPathSize, CryStringUtils::WStrToUTF8(wMyDocumentsPath));
+                AZStd::string str;
+                AZStd::to_string(str, AZStd::wstring(wMyDocumentsPath));
+                azstrcpy(szMyDocumentsPath, maxPathSize, str.c_str());
                 CoTaskMemFree(wMyDocumentsPath);
             }
         }
@@ -519,7 +521,9 @@ bool CSystem::GetWinGameFolder(char* szMyDocumentsPath, int maxPathSize)
         bSucceeded = SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_PERSONAL | CSIDL_FLAG_CREATE, NULL, 0, wMyDocumentsPath));
         if (bSucceeded)
         {
-            cry_strcpy(szMyDocumentsPath, maxPathSize, CryStringUtils::WStrToUTF8(wMyDocumentsPath));
+            AZStd::string str;
+            AZStd::to_string(str, AZStd::wstring(wMyDocumentsPath));
+            azstrcpy(szMyDocumentsPath, maxPathSize, str.c_str());
         }
     }
 

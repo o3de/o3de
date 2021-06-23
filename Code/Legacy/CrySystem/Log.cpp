@@ -509,7 +509,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             stack_string s = szBuffer;
             s += "\t<Scope> ";
             s += sAssetScope;
-            cry_strcpy(szBuffer, s.c_str());
+            azstrcpy(szBuffer, s.c_str());
         }
     }
 
@@ -863,7 +863,7 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
     {
         // When logging from other thread then main, push all log strings to queue.
         SLogMsg msg;
-        cry_strcpy(msg.msg, szString);
+        azstrcpy(msg.msg, szString);
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
@@ -1286,7 +1286,7 @@ void CLog::CreateBackupFile() const
 
     string bakdest = PathUtil::Make(LOG_BACKUP_PATH, sFileWithoutExt + sBackupNameAttachment + "." + sExt);
     fileSystem->CreatePath(LOG_BACKUP_PATH);
-    cry_strcpy(m_sBackupFilename, bakdest.c_str());
+    azstrcpy(m_sBackupFilename, bakdest.c_str());
     // Remove any existing backup file with the same name first since the copy will fail otherwise.
     fileSystem->Remove(m_sBackupFilename);
     fileSystem->Copy(m_szFilename, bakdest);

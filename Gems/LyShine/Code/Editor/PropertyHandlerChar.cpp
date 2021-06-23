@@ -47,7 +47,8 @@ bool PropertyHandlerChar::ReadValuesIntoGUI(size_t index, AzToolsFramework::Prop
         // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
         // work for cases tested but may not in general.
         wchar_t wcharString[2] = { static_cast<wchar_t>(instance), 0 };
-        AZStd::string val(CryStringUtils::WStrToUTF8(wcharString));
+        AZStd::string val;
+        AZStd::to_string(val, AZStd::wstring(wcharString));
         GUI->setValue(val);
     }
     GUI->blockSignals(false);

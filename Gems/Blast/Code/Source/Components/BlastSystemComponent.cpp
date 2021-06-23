@@ -437,8 +437,6 @@ namespace Blast
 
     static void CmdToggleBlastDebugVisualization(IConsoleCmdArgs* args)
     {
-        using namespace CryStringUtils;
-
         const int argumentCount = args->GetArgCount();
 
         if (argumentCount == 2)

@@ -1190,7 +1190,7 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
 
     if (file && *file)
     {
-        CryFixedStringT<MAX_WARNING_LENGTH> fmt = szBuffer;
+        AZStd::fixed_string<MAX_WARNING_LENGTH> fmt = szBuffer;
         fmt += " [File=";
         fmt += file;
         fmt += "]";

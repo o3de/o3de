@@ -88,7 +88,7 @@ Export::CObject::CObject(const char* pName)
 
     nParent = -1;
 
-    cry_strcpy(name, pName);
+    azstrcpy(name, pName);
 
     materialName[0] = '\0';
 
@@ -102,7 +102,7 @@ Export::CObject::CObject(const char* pName)
 
 void Export::CObject::SetMaterialName(const char* pName)
 {
-    cry_strcpy(materialName, pName);
+    azstrcpy(materialName, pName);
 }
 
 

@@ -329,9 +329,6 @@ inline uint32 GetTickCount()
 
 #define _wtof(str) wcstod(str, 0)
 
-// Need to include this before using it's used in finddata, but after the strnicmp definition
-#include "CryString.h"
-
 typedef struct __finddata64_t
 {
     //!< atributes set by find request

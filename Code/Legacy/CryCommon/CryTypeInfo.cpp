@@ -114,7 +114,7 @@ TYPE_INFO_INT(uint64)
 TYPE_INFO_BASIC(float)
 TYPE_INFO_BASIC(double)
 
-TYPE_INFO_BASIC(string)
+TYPE_INFO_BASIC(AZStd::string)
 
 
 const CTypeInfo&PtrTypeInfo()
@@ -129,9 +129,9 @@ const CTypeInfo&PtrTypeInfo()
 // String conversion functions needed by TypeInfo.
 
 // bool
-string ToString(bool const& val)
+AZStd::string ToString(bool const& val)
 {
-    static string sTrue = "true", sFalse = "false";
+    static AZStd::string sTrue = "true", sFalse = "false";
     return val ? sTrue : sFalse;
 }
 
@@ -151,14 +151,14 @@ bool FromString(bool& val, cstr s)
 }
 
 // int64
-string ToString(int64 const& val)
+AZStd::string ToString(int64 const& val)
 {
     char buffer[64];
     _i64toa_s(val, buffer, sizeof(buffer), 10);
     return buffer;
 }
 // uint64
-string ToString(uint64 const& val)
+AZStd::string ToString(uint64 const& val)
 {
     char buffer[64];
     sprintf_s(buffer, "%" PRIu64, val);
@@ -168,7 +168,7 @@ string ToString(uint64 const& val)
 
 
 // long
-string ToString(long const& val)
+AZStd::string ToString(long const& val)
 {
     char buffer[64];
     _ltoa_s(val, buffer, sizeof(buffer), 10);
@@ -176,7 +176,7 @@ string ToString(long const& val)
 }
 
 // ulong
-string ToString(unsigned long const& val)
+AZStd::string ToString(unsigned long const& val)
 {
     char buffer[64];
     _ultoa_s(val, buffer, sizeof(buffer), 10);
@@ -233,33 +233,33 @@ bool FromString(uint64& val, const char* s)                     { return Clamped
 bool FromString(long& val, const char* s)                           { return ClampedIntFromString(val, s); }
 bool FromString(unsigned long& val, const char* s)      { return ClampedIntFromString(val, s); }
 
-string ToString(int const& val)                                             { return ToString(long(val)); }
+AZStd::string ToString(int const& val)                              { return ToString(long(val)); }
 bool FromString(int& val, const char* s)                            { return ClampedIntFromString(val, s); }
 
-string ToString(unsigned int const& val)                            { return ToString((unsigned long)(val)); }
+AZStd::string ToString(unsigned int const& val)             { return ToString((unsigned long)(val)); }
 bool FromString(unsigned int& val, const char* s)           { return ClampedIntFromString(val, s); }
 
-string ToString(short const& val)                                           { return ToString(long(val)); }
+AZStd::string ToString(short const& val)                        { return ToString(long(val)); }
 bool FromString(short& val, const char* s)                      {   return ClampedIntFromString(val, s); }
 
-string ToString(unsigned short const& val)                      { return ToString((unsigned long)(val)); }
+AZStd::string ToString(unsigned short const& val)       { return ToString((unsigned long)(val)); }
 bool FromString(unsigned short& val, const char* s)     {   return ClampedIntFromString(val, s); }
 
-string ToString(char const& val)                                            { return ToString(long(val)); }
+AZStd::string ToString(char const& val)                             { return ToString(long(val)); }
 bool FromString(char& val, const char* s)                           {   return ClampedIntFromString(val, s); }
 
-string ToString(wchar_t const& val)                                     { return ToString(long(val)); }
+AZStd::string ToString(wchar_t const& val)                      { return ToString(long(val)); }
 bool FromString(wchar_t& val, const char* s)                    {   return ClampedIntFromString(val, s); }
 
-string ToString(signed char const& val)                             { return ToString(long(val)); }
+AZStd::string ToString(signed char const& val)              { return ToString(long(val)); }
 bool FromString(signed char& val, const char* s)            {   return ClampedIntFromString(val, s); }
 
-string ToString(unsigned char const& val)                           { return ToString((unsigned long)(val)); }
+AZStd::string ToString(unsigned char const& val)        { return ToString((unsigned long)(val)); }
 bool FromString(unsigned char& val, const char* s)      {   return ClampedIntFromString(val, s); }
 
-string ToString(const AZ::Uuid& val)
+AZStd::string ToString(const AZ::Uuid& val)
 {
-    return val.ToString<string>();
+    return val.ToString<AZStd::string>();
 }
 
 bool FromString(AZ::Uuid& val, const char* s)
@@ -295,7 +295,7 @@ float NumToFromString(float val, int digits, bool floating, char buffer[], int b
 }
 
 // double
-string ToString(double const& val)
+AZStd::string ToString(double const& val)
 {
     char buffer[64];
     sprintf_s(buffer, "%.16g", val);
@@ -307,7 +307,7 @@ bool FromString(double& val, const char* s)
 }
 
 // float
-string ToString(float const& val)
+AZStd::string ToString(float const& val)
 {
     char buffer[64];
     for (int digits = 7; digits < 10; digits++)
@@ -329,11 +329,11 @@ bool FromString(float& val, const char* s)
 
 // string override.
 template <>
-void TTypeInfo<string>::GetMemoryUsage(ICrySizer* pSizer, void const* data) const
+void TTypeInfo<AZStd::string>::GetMemoryUsage(ICrySizer* pSizer, void const* data) const
 {
     // CRAIG: just a temp hack to try and get things working
 #if !defined(LINUX) && !defined(APPLE)
-    pSizer->AddString(*(string*)data);
+    pSizer->AddString(*(AZStd::string*)data);
 #endif
 }
 
@@ -343,7 +343,7 @@ struct STypeInfoTest
 {
     STypeInfoTest()
     {
-        TestType(string("well"));
+        TestType(AZStd::string("well"));
 
         TestType(true);
 
@@ -435,7 +435,7 @@ bool CTypeInfo::CVarInfo::GetAttr(cstr name) const
     return FindAttr(Attrs, name) != 0;
 }
 
-bool CTypeInfo::CVarInfo::GetAttr(cstr name, string& val) const
+bool CTypeInfo::CVarInfo::GetAttr(cstr name, AZStd::string& val) const
 {
     cstr valstr = FindAttr(Attrs, name);
     if (!valstr)
@@ -459,7 +459,7 @@ bool CTypeInfo::CVarInfo::GetAttr(cstr name, string& val) const
             end--;
         }
     }
-    val = string(valstr, end - valstr);
+    val = AZStd::string(valstr, end - valstr);
     return true;
 }
 
@@ -735,7 +735,7 @@ bool CStructInfo::ToValue(const void* data, void* value, const CTypeInfo& typeVa
                     Nameless    ,               1,      ,2      1,2             ;
 */
 
-static void StripCommas(string& str)
+static void StripCommas(AZStd::string& str)
 {
     size_t nLast = str.size();
     while (nLast > 0 && str[nLast - 1] == ',')
@@ -745,9 +745,9 @@ static void StripCommas(string& str)
     str.resize(nLast);
 }
 
-string CStructInfo::ToString(const void* data, FToString flags, const void* def_data) const
+AZStd::string CStructInfo::ToString(const void* data, FToString flags, const void* def_data) const
 {
-    string str;                     // Return str.
+    AZStd::string str;                     // Return str.
 
     for (int i = 0; i < Vars.size(); i++)
     {
@@ -763,7 +763,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
                 str += ",";
             }
 
-            string substr = var.ToString(data, FToString(flags).Sub(0), def_data);
+            AZStd::string substr = var.ToString(data, FToString(flags).Sub(0), def_data);
 
             if (flags.SkipDefault && substr.empty())
             {
@@ -772,7 +772,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
 
             if (flags.NamedFields)
             {
-                if (*str)
+                if (*str.c_str())
                 {
                     str += ",";
                 }
@@ -782,7 +782,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
                     str += "=";
                 }
             }
-            if (substr.find(',') != string::npos || substr.find('=') != string::npos)
+            if (substr.find(',') != AZStd::string::npos || substr.find('=') != AZStd::string::npos)
             {
                 // Encase nested composite types in parens.
                 str += "(";
@@ -811,7 +811,7 @@ string CStructInfo::ToString(const void* data, FToString flags, const void* def_
 // Retrieve and return one subelement from src, advancing the pointer.
 // Copy to tempstr if necessary.
 
-typedef CryStackStringT<char, 256> CTempStr;
+typedef AZStd::fixed_string<256> CTempStr;
 
 void ParseElement(cstr& src, cstr& varname, cstr& val, CTempStr& tempstr)
 {
@@ -882,21 +882,24 @@ void ParseElement(cstr& src, cstr& varname, cstr& val, CTempStr& tempstr)
         if (*end)
         {
             // Must copy sub string to temp.
-            val = (cstr)tempstr + (val - varname);
-            eq = (cstr)tempstr + (eq - varname);
-            varname = tempstr.assign(varname, end);
+            val = tempstr.c_str() + (val - varname);
+            eq = tempstr.c_str() + (eq - varname);
+            tempstr.assign(varname, end);
+            varname = tempstr.c_str();
             non_const(*eq) = 0;
         }
         else
         {
             // Copy just varname to temp, return val in place.
-            varname = tempstr.assign(varname, eq);
+            tempstr.assign(varname, eq);
+            varname = tempstr.c_str();
         }
     }
     else if (*end)
     {
         // Must copy sub string to temp.
-        val = tempstr.assign(val, end);
+        tempstr.assign(val, end);
+        val = tempstr.c_str();
     }
 
     // Else can return val without copying.
@@ -963,7 +966,7 @@ void CStructInfo::SwapEndian(void* data, size_t nCount, bool bWriting) const
 {
     non_const(*this).MakeEndianDesc();
 
-    if (EndianDesc.length() == 1 && !HasBitfields && EndianDescSize(EndianDesc) == Size)
+    if (EndianDesc.length() == 1 && !HasBitfields && EndianDescSize(EndianDesc.c_str()) == Size)
     {
         // Optimised array swap.
         size_t nElems = (EndianDesc[0u] & 0x3F) * nCount;
@@ -989,7 +992,7 @@ void CStructInfo::SwapEndian(void* data, size_t nCount, bool bWriting) const
         // First swap bits.
         // Iterate the endian descriptor.
         void* step = data;
-        for (cstr desc = EndianDesc; *desc; desc++)
+        for (cstr desc = EndianDesc.c_str(); *desc; desc++)
         {
             size_t nElems = *desc & 0x3F;
             switch (*desc & 0xC0)
@@ -1064,7 +1067,7 @@ void CStructInfo::MakeEndianDesc()
                 // Struct-computed endian desc.
                 CStructInfo const& infoSub = static_cast<CStructInfo const&>(var.Type);
                 non_const(infoSub).MakeEndianDesc();
-                subdesc = infoSub.EndianDesc;
+                subdesc = infoSub.EndianDesc.c_str();
                 if (!*subdesc)
                 {
                     // No swapping.

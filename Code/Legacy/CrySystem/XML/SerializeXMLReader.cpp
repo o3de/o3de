@@ -49,7 +49,7 @@ bool CSerializeXMLReaderImpl::Value(const char* name, int8& value)
     return bResult;
 }
 
-bool CSerializeXMLReaderImpl::Value(const char* name, string& value)
+bool CSerializeXMLReaderImpl::Value(const char* name, AZStd::string& value)
 {
     DefaultValue(value); // Set input value to default.
     if (m_nErrors)
@@ -177,7 +177,7 @@ void CSerializeXMLReaderImpl::EndGroup()
 //////////////////////////////////////////////////////////////////////////
 const char* CSerializeXMLReaderImpl::GetStackInfo() const
 {
-    static string str;
+    static AZStd::string str;
     str.assign("");
     for (int i = 0; i < (int)m_nodeStack.size(); i++)
     {

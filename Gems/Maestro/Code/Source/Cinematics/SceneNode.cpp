@@ -916,7 +916,7 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
 void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext& ec)
 {
     char funcName[1024];
-    cry_strcpy(funcName, "Event_");
+    azstrcpy(funcName, "Event_");
     cry_strcat(funcName, key.event.c_str());
     gEnv->pMovieSystem->SendGlobalEvent(funcName);
 }

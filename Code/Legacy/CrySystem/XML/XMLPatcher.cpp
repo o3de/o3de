@@ -345,7 +345,7 @@ void CXMLPatcher::DumpXMLNodes(
     AZ::IO::HandleType inFileHandle,
     int inIndent,
     const XmlNodeRef& inNode,
-    CryFixedStringT<512>* ioTempString)
+    AZStd::fixed_string<512>* ioTempString)
 {
     auto pPak = gEnv->pCryPak;
 
@@ -393,7 +393,7 @@ void CXMLPatcher::DumpFiles(
 
             DumpXMLFile(string().Format("PATCH_%s", pOrigFileName), inBefore);
 
-            CryFixedStringT<128>        newFileName(pOrigFileName);
+            AZStd::fixed_string<128>        newFileName(pOrigFileName);
             newFileName.replace(".xml", "_patched.xml");
 
             DumpXMLFile(string().Format("PATCH_%s", newFileName.c_str()), inAfter);
@@ -414,7 +414,7 @@ void CXMLPatcher::DumpXMLFile(
 
     if (fileHandle != AZ::IO::InvalidHandle)
     {
-        CryFixedStringT<512>        tempStr;
+        AZStd::fixed_string<512>        tempStr;
 
         DumpXMLNodes(fileHandle, 0, inNode, &tempStr);
 

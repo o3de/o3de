@@ -94,12 +94,12 @@ void testXml(bool bReuseStrings)
 // Summary:
 //   Special string wrapper for xml nodes.
 class XmlString
-    : public string
+    : public AZStd::string
 {
 public:
     XmlString() {};
     XmlString(const char* str)
-        : string(str) {};
+        : AZStd::string(str) {};
 
     operator const char*() const {
         return c_str();

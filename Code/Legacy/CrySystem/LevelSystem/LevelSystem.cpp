@@ -567,7 +567,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
     INDENT_LOG_DURING_SCOPE();
 
     char levelName[256];
-    cry_strcpy(levelName, _levelName);
+    azstrcpy(levelName, _levelName);
 
     // Not remove a scope!!!
     {

@@ -21,15 +21,12 @@ namespace O3DELauncher
         CryAllocatorsRAII()
         {
             AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-            AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
 
             AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-            AZ::AllocatorInstance<CryStringAllocator>::Create();
         }
 
         ~CryAllocatorsRAII()
         {
-            AZ::AllocatorInstance<CryStringAllocator>::Destroy();
             AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
         }
     };

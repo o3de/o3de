@@ -78,7 +78,6 @@ set(FILES
     CryCrc32.h
     CryCustomTypes.h
     CryFile.h
-    CryFixedString.h
     CryHeaders.h
     CryHeaders_info.cpp
     CryListenerSet.h
@@ -87,7 +86,6 @@ set(FILES
     CryPath.h
     CryPodArray.h
     CrySizer.h
-    CryString.h
     CrySystemBus.h
     CryThread.h
     CryThreadImpl.h
@@ -111,7 +109,6 @@ set(FILES
     SimpleSerialize.h
     smartptr.h
     StlUtils.h
-    StringUtils.h
     Synchronization.h
     Tarray.h
     Timer.h

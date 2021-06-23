@@ -486,7 +486,7 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
         drv[0] = 0;
     }
 
-    typedef CryStackStringT<char, AZ_MAX_PATH_LEN> path_stack_string;
+    typedef AZStd::fixed_string<AZ_MAX_PATH_LEN> path_stack_string;
 
     const path_stack_string inPath(inpath);
     string::size_type s = inPath.rfind('/', inPath.size());//position of last /

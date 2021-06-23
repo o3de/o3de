@@ -430,18 +430,18 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     {
         const char* const szMessage = m_bIsFatalError ? s_szFatalErrorCode : m_szBugMessage;
         excName = szMessage;
-        cry_strcpy(excCode, szMessage);
-        cry_strcpy(excAddr, "");
-        cry_strcpy(desc, "");
-        cry_strcpy(m_excModule, "");
-        cry_strcpy(excDesc, szMessage);
+        azstrcpy(excCode, szMessage);
+        azstrcpy(excAddr, "");
+        azstrcpy(desc, "");
+        azstrcpy(m_excModule, "");
+        azstrcpy(excDesc, szMessage);
     }
     else
     {
         sprintf_s(excAddr, "0x%04X:0x%p", pex->ContextRecord->SegCs, pex->ExceptionRecord->ExceptionAddress);
         sprintf_s(excCode, "0x%08X", pex->ExceptionRecord->ExceptionCode);
         excName = TranslateExceptionCode(pex->ExceptionRecord->ExceptionCode);
-        cry_strcpy(desc, "");
+        azstrcpy(desc, "");
         sprintf_s(excDesc, "%s\r\n%s", excName, desc);
 
 
@@ -471,9 +471,9 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     WriteLineToLog("Exception Description: %s", desc);
 
 
-    cry_strcpy(m_excDesc, excDesc);
-    cry_strcpy(m_excAddr, excAddr);
-    cry_strcpy(m_excCode, excCode);
+    azstrcpy(m_excDesc, excDesc);
+    azstrcpy(m_excAddr, excAddr);
+    azstrcpy(m_excCode, excCode);
 
 
     char errs[32768];
@@ -499,7 +499,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
         dumpCallStack(funcs);
         // Fill call stack.
         char str[s_iCallStackSize];
-        cry_strcpy(str, "");
+        azstrcpy(str, "");
         for (unsigned int i = 0; i < funcs.size(); i++)
         {
             char temp[s_iCallStackSize];
@@ -509,7 +509,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
             cry_strcat(errs, temp);
             cry_strcat(errs, "\n");
         }
-        cry_strcpy(m_excCallstack, str);
+        azstrcpy(m_excCallstack, str);
     }
 
     cry_strcat(errorString, errs);

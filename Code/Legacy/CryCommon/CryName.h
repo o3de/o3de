@@ -395,13 +395,13 @@ inline bool CCryName::operator>(const CCryName& n) const
     return m_str > n.m_str;
 }
 
-inline bool operator==(const string& s, const CCryName& n)
+inline bool operator==(const AZStd::string& s, const CCryName& n)
 {
-    return n == s;
+    return s == n;
 }
-inline bool operator!=(const string& s, const CCryName& n)
+inline bool operator!=(const AZStd::string& s, const CCryName& n)
 {
-    return n != s;
+    return s != n;
 }
 
 inline bool operator==(const char* s, const CCryName& n)
@@ -543,13 +543,13 @@ inline bool CCryNameCRC::operator>(const CCryNameCRC& n) const
     return m_nID > n.m_nID;
 }
 
-inline bool operator==(const string& s, const CCryNameCRC& n)
+inline bool operator==(const AZStd::string& s, const CCryNameCRC& n)
 {
-    return n == s;
+    return s == n;
 }
-inline bool operator!=(const string& s, const CCryNameCRC& n)
+inline bool operator!=(const AZStd::string& s, const CCryNameCRC& n)
 {
-    return n != s;
+    return s != n;
 }
 
 inline bool operator==(const char* s, const CCryNameCRC& n)

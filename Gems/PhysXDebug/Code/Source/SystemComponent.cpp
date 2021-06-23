@@ -577,8 +577,6 @@ namespace PhysXDebug
 
     static void physx_Debug([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        using namespace CryStringUtils;
-
         const int argumentCount = arguments.size();
 
         if (argumentCount == 1)

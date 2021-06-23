@@ -18,7 +18,6 @@
 #include <vector>
 #include <CryCommon/Cry_Math.h>
 #include <CryCommon/Cry_Color.h>
-#include <CryCommon/CryString.h>
 #include <CryCommon/VertexFormats.h>
 #include <CryCommon/IRenderer.h>
 #include "AtomFont.h"

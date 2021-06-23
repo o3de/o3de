@@ -528,7 +528,7 @@ static void CopyLowercase(char* dst, size_t dstSize, const char* src, size_t src
 }
 
 //////////////////////////////////////////////////////////////////////////
-static void ReplaceEndOfLine(CryFixedStringT<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>& s)
+static void ReplaceEndOfLine(AZStd::fixed_string<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>& s)
 {
     const string oldSubstr("\\n");
     const string newSubstr(" \n");
@@ -536,7 +536,7 @@ static void ReplaceEndOfLine(CryFixedStringT<CLocalizedStringsManager::LOADING_F
     for (;; )
     {
         pos = s.find(oldSubstr, pos);
-        if (pos == CryFixedStringT<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>::npos)
+        if (pos == AZStd::fixed_string<CLocalizedStringsManager::LOADING_FIXED_STRING_LENGTH>::npos)
         {
             return;
         }
@@ -955,7 +955,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
 
     bool bFirstRow = true;
 
-    CryFixedStringT<LOADING_FIXED_STRING_LENGTH> sTmp;
+    AZStd::fixed_string<LOADING_FIXED_STRING_LENGTH> sTmp;
 
     // lower case event name
     char szLowerCaseEvent[128];
@@ -1609,7 +1609,7 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
         {
             continue;
         }
-        AzFramework::StringFunc::Replace(textValue, "\\n", " \n");      // carried over from helper func ReplaceEndOfLine(CryFixedStringT<>& s)
+        AzFramework::StringFunc::Replace(textValue, "\\n", " \n");
         if (keyString[0] == '@')
         {
             AzFramework::StringFunc::LChop(keyString, 1);
@@ -2536,7 +2536,7 @@ void CLocalizedStringsManager::LocalizeNumber(int number, string& outNumberStrin
 
     int n = abs(number);
     string separator;
-    CryFixedStringT<64> tmp;
+    AZStd::fixed_string<64> tmp;
     LocalizeString_ch("@ui_thousand_separator", separator);
     while (n > 0)
     {
@@ -2565,7 +2565,7 @@ void CLocalizedStringsManager::LocalizeNumber_Decimal(float number, int decimals
 {
     if (number == 0.0f)
     {
-        CryFixedStringT<64> tmp;
+        AZStd::fixed_string<64> tmp;
         tmp.Format("%.*f", decimals, number);
         outNumberString.assign(tmp.c_str());
         return;
@@ -2585,7 +2585,7 @@ void CLocalizedStringsManager::LocalizeNumber_Decimal(float number, int decimals
 
     int decimalsAsInt = aznumeric_cast<int>(int_round(decimalsOnly * pow(10.0f, decimals)));
 
-    CryFixedStringT<64> tmp;
+    AZStd::fixed_string<64> tmp;
     tmp.Format("%s%s%0*d", intPart.c_str(), commaSeparator.c_str(), decimals, decimalsAsInt);
 
     outNumberString.assign(tmp.c_str());
@@ -2657,7 +2657,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     if (len > 0)
     {
         // len includes terminating null!
-        CryFixedWStringT<256> tmpString;
+        AZStd::fixed_wstring<256> tmpString;
         tmpString.resize(len);
         ::GetTimeFormatW(lcID, flags, &systemTime, 0, (wchar_t*) tmpString.c_str(), len);
         Unicode::Convert(outTimeString, tmpString);
@@ -2678,7 +2678,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     UnixTimeToSystemTime(t, &systemTime);
 
     // len includes terminating null!
-    CryFixedWStringT<256> tmpString;
+    AZStd::fixed_wstring<256> tmpString;
 
     if (bIncludeWeekday)
     {

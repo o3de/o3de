@@ -42,11 +42,11 @@ enum ScrollDir
 //////////////////////////////////////////////////////////////////////////
 struct CConsoleCommand
 {
-    string m_sName;            // Console command name
-    string m_sCommand;         // lua code that is executed when this command is invoked
-    string m_sHelp;            // optional help string - can be shown in the console with "<commandname> ?"
-    int    m_nFlags;           // bitmask consist of flag starting with VF_ e.g. VF_CHEAT
-    ConsoleCommandFunc m_func; // Pointer to console command.
+    AZStd::string m_sName;            // Console command name
+    AZStd::string m_sCommand;         // lua code that is executed when this command is invoked
+    AZStd::string m_sHelp;            // optional help string - can be shown in the console with "<commandname> ?"
+    int    m_nFlags;                  // bitmask consist of flag starting with VF_ e.g. VF_CHEAT
+    ConsoleCommandFunc m_func;        // Pointer to console command.
 
     //////////////////////////////////////////////////////////////////////////
     CConsoleCommand()
@@ -67,7 +67,7 @@ struct CConsoleCommand
 struct CConsoleCommandArgs
     : public IConsoleCmdArgs
 {
-    CConsoleCommandArgs(string& line, std::vector<string>& args)
+    CConsoleCommandArgs(AZStd::string& line, std::vector<AZStd::string>& args)
         : m_line(line)
         , m_args(args) {};
     virtual int GetArgCount() const { return m_args.size(); };
@@ -87,8 +87,8 @@ struct CConsoleCommandArgs
     }
 
 private:
-    std::vector<string>& m_args;
-    string& m_line;
+    std::vector<AZStd::string>& m_args;
+    AZStd::string& m_line;
 };
 
 
@@ -132,7 +132,7 @@ class CXConsole
     , public AzFramework::CommandRegistrationBus::Handler
 {
 public:
-    typedef std::deque<string> ConsoleBuffer;
+    typedef std::deque<AZStd::string> ConsoleBuffer;
     typedef ConsoleBuffer::iterator ConsoleBufferItor;
     typedef ConsoleBuffer::reverse_iterator ConsoleBufferRItor;
 
@@ -262,7 +262,7 @@ protected: // ------------------------------------------------------------------
     void AddInputUTF8(const AZStd::string& textUTF8);
     void RemoveInputChar(bool bBackSpace);
     void ExecuteInputBuffer();
-    void ExecuteCommand(CConsoleCommand& cmd, string& params, bool bIgnoreDevMode = false);
+    void ExecuteCommand(CConsoleCommand& cmd, AZStd::string& params, bool bIgnoreDevMode = false);
 
     void ScrollConsole();
 
@@ -294,7 +294,7 @@ protected: // ------------------------------------------------------------------
 
     // Arguments:
     //   bFromConsole - true=from console, false=from outside
-    void SplitCommands(const char* line, std::list<string>& split);
+    void SplitCommands(const char* line, std::list<AZStd::string>& split);
     void ExecuteStringInternal(const char* command, const bool bFromConsole, const bool bSilentMode = false);
     void ExecuteDeferredCommands();
 
@@ -320,27 +320,27 @@ private: // ----------------------------------------------------------
 
     void PostLine(const char* lineOfText, size_t len);
 
-    typedef std::map<string, CConsoleCommand, string_nocase_lt> ConsoleCommandsMap;
+    typedef std::map<AZStd::string, CConsoleCommand, string_nocase_lt> ConsoleCommandsMap;
     typedef ConsoleCommandsMap::iterator ConsoleCommandsMapItor;
 
-    typedef std::map<string, string> ConsoleBindsMap;
+    typedef std::map<AZStd::string, AZStd::string> ConsoleBindsMap;
     typedef ConsoleBindsMap::iterator ConsoleBindsMapItor;
 
-    typedef std::map<string, IConsoleArgumentAutoComplete*, stl::less_stricmp<string> > ArgumentAutoCompleteMap;
+    typedef std::map<AZStd::string, IConsoleArgumentAutoComplete*, stl::less_stricmp<AZStd::string> > ArgumentAutoCompleteMap;
 
     struct SConfigVar
     {
-        string m_value;
+        AZStd::string m_value;
         bool m_partOfGroup;
     };
-    typedef std::map<string, SConfigVar, string_nocase_lt> ConfigVars;
+    typedef std::map<AZStd::string, SConfigVar, string_nocase_lt> ConfigVars;
 
     struct SDeferredCommand
     {
-        string  command;
+        AZStd::string  command;
         bool        silentMode;
 
-        SDeferredCommand(const string& _command, bool _silentMode)
+        SDeferredCommand(const AZStd::string& _command, bool _silentMode)
             : command(_command)
             , silentMode(_silentMode)
         {}
@@ -359,10 +359,10 @@ private: // ----------------------------------------------------------
     int                                                         m_nProgress;
     int                                                         m_nProgressRange;
 
-    string                                                  m_sInputBuffer;
-    string                          m_sReturnString;
+    AZStd::string                                                  m_sInputBuffer;
+    AZStd::string                          m_sReturnString;
 
-    string                                                  m_sPrevTab;
+    AZStd::string                                                  m_sPrevTab;
     int                                                         m_nTabCount;
 
     ConsoleCommandsMap                          m_mapCommands;                      //

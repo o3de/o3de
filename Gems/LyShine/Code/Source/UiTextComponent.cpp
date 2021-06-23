@@ -4995,28 +4995,8 @@ bool UiTextComponent::VersionConverter(AZ::SerializeContext& context,
     AZ::SerializeContext::DataElementNode& classElement)
 {
     // conversion from version 1: Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() == 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAssetRef<LyShine::FontAsset>(context, classElement, "FontFileName"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
-
     // conversion from version 1 or 2: Need to convert Text from CryString to AzString
-    if (classElement.GetVersion() <= 2)
-    {
-        // Call internal function to work-around serialization of empty AZ std string
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "Text"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() <= 2, "Unsupported UiTextComponent version: %d", classElement.GetVersion());
 
     // Versions prior to v4: Change default font
     if (classElement.GetVersion() <= 3)

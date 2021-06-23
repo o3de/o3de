@@ -143,7 +143,7 @@ void CTrackEventTrack::GetKeyInfo(int key, const char*& description, float& dura
     CheckValid();
     description = 0;
     duration = 0;
-    cry_strcpy(desc, m_keys[key].event.c_str());
+    azstrcpy(desc, m_keys[key].event.c_str());
     if (!m_keys[key].eventValue.empty())
     {
         cry_strcat(desc, ", ");

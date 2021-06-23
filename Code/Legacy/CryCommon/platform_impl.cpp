@@ -8,7 +8,6 @@
 
 
 #include <platform.h>
-#include <StringUtils.h>
 #include <ISystem.h>
 #include <Random.h>
 #include <UnicodeFunctions.h>
@@ -248,10 +247,7 @@ int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const ch
         return 0;
     }
 #endif
-    wstring wideText, wideCaption;
-    Unicode::Convert(wideText, lpText);
-    Unicode::Convert(wideCaption, lpCaption);
-    return MessageBoxW(NULL, wideText.c_str(), wideCaption.c_str(), uType);
+    return MessageBox(NULL, lpText, lpCaption, uType);
 #else
     return 0;
 #endif

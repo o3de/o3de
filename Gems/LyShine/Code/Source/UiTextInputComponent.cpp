@@ -1185,7 +1185,8 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
                 // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
                 // work for cases tested but may not in general.
                 wchar_t wcharString[2] = { static_cast<wchar_t>(this->GetReplacementCharacter()), 0 };
-                AZStd::string replacementCharString(CryStringUtils::WStrToUTF8(wcharString));
+                AZStd::string replacementCharString;
+                AZStd::to_string(replacementCharString, AZStd::wstring(wcharString));
 
                 int numReplacementChars = LyShine::GetUtf8StringLength(originalText);
 
@@ -1475,54 +1476,10 @@ bool UiTextInputComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SelectedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "PressedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "SelectedColor", "SelectedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "PressedColor", "PressedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToChar(context, classElement, "ReplacementCharacter", defaultReplacementChar))
-        {
-            return false;
-        }
-    }
-
     // conversion from version 1 or 2 to current:
     // - Need to convert CryString ActionName elements to AZStd::string
-    if (classElement.GetVersion() <= 2)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "ChangeAction"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "EndEditAction"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "EnterAction"))
-        {
-            return false;
-        }
-    }
-
+    AZ_Assert(classElement.GetVersion() <= 2, "Unsupported UiTextInputComponent version: %d", classElement.GetVersion());
+    
     // conversion from version 1, 2 or 3 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>
     if (classElement.GetVersion() <= 3)

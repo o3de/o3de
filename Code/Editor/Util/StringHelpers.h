@@ -11,8 +11,6 @@
 #define CRYINCLUDE_CRYCOMMONTOOLS_STRINGHELPERS_H
 #pragma once
 
-#include <CryString.h>
-
 namespace StringHelpers
 {
     // compares two strings to see if they are the same or different, case sensitive
@@ -64,19 +62,6 @@ namespace StringHelpers
     // returns true if the string does contain the specified string or false if it does not
     bool ContainsIgnoreCase(const string& str, const string& pattern);
     bool ContainsIgnoreCase(const wstring& str, const wstring& pattern);
-
-    // checks to see if a string contains a wildcard string pattern, case sensitive
-    // returns true if the string does match the wildcard string pattern or false if it does not
-    bool MatchesWildcards(const string& str, const string& wildcards);
-    bool MatchesWildcards(const wstring& str, const wstring& wildcards);
-
-    // checks to see if a string contains a wildcard string pattern, case is ignored
-    // returns true if the string does match the wildcard string pattern or false if it does not
-    bool MatchesWildcardsIgnoreCase(const string& str, const string& wildcards);
-    bool MatchesWildcardsIgnoreCase(const wstring& str, const wstring& wildcards);
-
-    bool MatchesWildcardsIgnoreCaseExt(const string& str, const string& wildcards, std::vector<string>& wildcardMatches);
-    bool MatchesWildcardsIgnoreCaseExt(const wstring& str, const wstring& wildcards, std::vector<wstring>& wildcardMatches);
 
     string TrimLeft(const string& s);
     wstring TrimLeft(const wstring& s);
