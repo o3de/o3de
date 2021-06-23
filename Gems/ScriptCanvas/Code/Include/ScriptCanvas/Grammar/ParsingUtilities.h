@@ -144,6 +144,8 @@ namespace ScriptCanvas
 
         bool IsOnSelfEntityActivated(const AbstractCodeModel& model, ExecutionTreeConstPtr execution);
 
+        bool IsParserGeneratedId(const VariableId& id);
+
         bool IsPropertyExtractionSlot(const ExecutionTreeConstPtr& execution, const Slot* outputSlot);
 
         bool IsPropertyExtractionNode(const ExecutionTreeConstPtr& execution);
@@ -177,6 +179,8 @@ namespace ScriptCanvas
         bool IsWhileLoop(const ExecutionTreeConstPtr& execution);
 
         bool IsWrittenMathExpression(const ExecutionTreeConstPtr& execution);
+
+        VariableId MakeParserGeneratedId(size_t count);
 
         AZStd::string MakeMemberVariableName(AZStd::string_view name);
 

@@ -8,14 +8,14 @@
 #pragma once
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
+#include <Builder/ScriptCanvasBuilder.h>
 #include <Editor/Assets/ScriptCanvasAssetHolder.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
+#include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Variable/VariableData.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -54,7 +54,6 @@ namespace ScriptCanvasEditor
         void Deactivate() override;
         //=====================================================================
 
-
         //=====================================================================
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
@@ -71,7 +70,7 @@ namespace ScriptCanvasEditor
         void CloseGraph();
 
         void SetName(const AZStd::string& name) { m_name = name; }
-        const AZStd::string& GetName() const { return m_name; };
+        const AZStd::string& GetName() const;
         AZ::EntityId GetEditorEntityId() const { return GetEntity() ? GetEntityId() : AZ::EntityId(); }
         AZ::NamedEntityId GetNamedEditorEntityId() const { return GetEntity() ? GetNamedEntityId() : AZ::NamedEntityId(); }
         
@@ -119,12 +118,8 @@ namespace ScriptCanvasEditor
             (void)incompatible;
         }
 
-        //=====================================================================
-        // AssetCatalogEventBus
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
-        //=====================================================================
-
         void OnScriptCanvasAssetChanged(AZ::Data::AssetId assetId);
 
         void UpdateName();
@@ -133,21 +128,15 @@ namespace ScriptCanvasEditor
         void OnScriptCanvasAssetReady(const ScriptCanvasMemoryAsset::pointer asset);
         //=====================================================================
 
-        void AddVariable(AZStd::string_view varName, const ScriptCanvas::GraphVariable& varDatum);
-        void AddNewVariables(const ScriptCanvas::VariableData& graphVarData);
-        void RemoveVariable(const ScriptCanvas::VariableId& varId);
-        void RemoveOldVariables(const ScriptCanvas::VariableData& graphVarData);
-        bool UpdateVariable(const ScriptCanvas::GraphVariable& graphDatum, ScriptCanvas::GraphVariable& updateDatum, ScriptCanvas::GraphVariable& originalDatum);
-        void LoadVariables(const ScriptCanvasMemoryAsset::pointer memoryAsset);
+        void BuildGameEntityData();
         void ClearVariables();
 
     private:
         AZ::Data::AssetId m_removedCatalogId;
         AZ::Data::AssetId m_previousAssetId;
-
         AZStd::string m_name;
         ScriptCanvasAssetHolder m_scriptCanvasAssetHolder;
-        
-        ScriptCanvas::EditableVariableData m_editableData;
+        bool m_runtimeDataIsValid = false;
+        ScriptCanvasBuilder::BuildVariableOverrides m_variableOverrides;
     };
 }

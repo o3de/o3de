@@ -34,16 +34,16 @@ namespace ScriptCanvas
 
         switch (selection)
         {
-        case Grammar::InterpretedPure:
+        case Grammar::ExecutionStateSelection::InterpretedPure:
             return AZStd::make_shared<ExecutionStateInterpretedPure>(config);
             
-        case Grammar::InterpretedPureOnGraphStart:
+        case Grammar::ExecutionStateSelection::InterpretedPureOnGraphStart:
             return AZStd::make_shared<ExecutionStateInterpretedPureOnGraphStart>(config);
 
-        case Grammar::InterpretedObject:
+        case Grammar::ExecutionStateSelection::InterpretedObject:
             return AZStd::make_shared<ExecutionStateInterpretedPerActivation>(config);
 
-        case Grammar::InterpretedObjectOnGraphStart:
+        case Grammar::ExecutionStateSelection::InterpretedObjectOnGraphStart:
             return AZStd::make_shared<ExecutionStateInterpretedPerActivationOnGraphStart>(config);
             
         default:
@@ -54,7 +54,7 @@ namespace ScriptCanvas
     
     AZ::Data::AssetId ExecutionState::GetAssetId() const
     {
-        return m_component->GetAsset().GetId();
+        return m_component->GetRuntimeDataOverrides().m_runtimeAsset.GetId();
     }
 
     AZ::EntityId ExecutionState::GetEntityId() const
@@ -82,9 +82,9 @@ namespace ScriptCanvas
         return m_component->GetScriptCanvasId();
     }
 
-    const VariableData& ExecutionState::GetVariableOverrides() const
+    const RuntimeDataOverrides& ExecutionState::GetRuntimeDataOverrides() const
     {
-        return m_component->GetVariableOverrides();
+        return m_component->GetRuntimeDataOverrides();
     }
 
     void ExecutionState::Reflect(AZ::ReflectContext* reflectContext)

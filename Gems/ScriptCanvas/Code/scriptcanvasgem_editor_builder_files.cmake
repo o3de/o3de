@@ -7,6 +7,8 @@
 
 set(FILES
     Builder/BuilderSystemComponent.h
+    Builder/ScriptCanvasBuilder.cpp
+    Builder/ScriptCanvasBuilder.h
     Builder/ScriptCanvasBuilderComponent.cpp
     Builder/ScriptCanvasBuilderComponent.h
     Builder/ScriptCanvasBuilderWorker.cpp

@@ -96,16 +96,28 @@ namespace ScriptCanvas
 {
     namespace Translation
     {
-        Result ParseGraph(const Grammar::Request& request)
+        AZ::Outcome<Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(const Grammar::Request& request)
         {
             AZ::Outcome<Grammar::Source, AZStd::string> sourceOutcome = Grammar::Source::Construct(request);
 
             if (!sourceOutcome.IsSuccess())
             {
-                return Result(sourceOutcome.TakeError());
+                return AZ::Failure(sourceOutcome.TakeError());
+            }
+
+            Grammar::AbstractCodeModelConstPtr model = Grammar::AbstractCodeModel::Parse(sourceOutcome.TakeValue());
+            return AZ::Success(model);
+        }
+
+        Result ParseAndTranslateGraph(const Grammar::Request& request)
+        {
+            auto parseOutcome = ParseGraph(request);
+            if (!parseOutcome.IsSuccess())
+            {
+                return Result(parseOutcome.TakeError());
             }
             
-            Grammar::AbstractCodeModelConstPtr model = Grammar::AbstractCodeModel::Parse(sourceOutcome.TakeValue());
+            Grammar::AbstractCodeModelConstPtr model = parseOutcome.TakeValue();
             Translations translations;
             Errors errors;
 
@@ -147,14 +159,6 @@ namespace ScriptCanvas
 //                 }
 
             }
-            else
-            {
-                ValidationResults results;
-                for (auto& test : model->GetValidationEvents())
-                {
-                    results.AddValidationEvent(test.get());
-                }
-            }
 
             return Result(model, AZStd::move(translations), AZStd::move(errors));
         }  
@@ -163,21 +167,21 @@ namespace ScriptCanvas
         {
             Grammar::Request toBoth = request;
             toBoth.translationTargetFlags = TargetFlags::Lua | TargetFlags::Cpp;
-            return ParseGraph(toBoth);
+            return ParseAndTranslateGraph(toBoth);
         }
 
         Result ToCPlusPlus(const Grammar::Request& request)
         {
             Grammar::Request toCpp = request;
             toCpp.translationTargetFlags = TargetFlags::Cpp;
-            return ParseGraph(toCpp);
+            return ParseAndTranslateGraph(toCpp);
         }
 
         Result ToLua(const Grammar::Request& request)
         {
             Grammar::Request toLua = request;
             toLua.translationTargetFlags = TargetFlags::Lua;
-            return ParseGraph(toLua);
+            return ParseAndTranslateGraph(toLua);
         }
         
     } 

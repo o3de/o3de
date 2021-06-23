@@ -245,6 +245,17 @@ namespace ScriptCanvas
     };
 
     using ScriptCanvasSettingsRequestBus = AZ::EBus<ScriptCanvasSettingsRequests>;
+
+    class ScopedAuxiliaryEntityHandler
+    {
+    public:
+        ScopedAuxiliaryEntityHandler(AZ::Entity* buildEntity);
+        ~ScopedAuxiliaryEntityHandler();
+
+    private:
+        bool m_wasAdded = false;
+        AZ::Entity* m_buildEntity = nullptr;
+    };
 }
 
 namespace AZStd

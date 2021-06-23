@@ -9,9 +9,9 @@
 
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-
 #include <Libraries/Libraries.h>
 #include <ScriptCanvas/Core/Contract.h>
 #include <ScriptCanvas/Core/Graph.h>
@@ -21,6 +21,7 @@
 #include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Serialization/ScriptUserDataSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
@@ -53,7 +54,6 @@ namespace ScriptCanvasSystemComponentCpp
 
 namespace ScriptCanvas
 {
-
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
         Nodeable::Reflect(context);
@@ -83,11 +83,16 @@ namespace ScriptCanvas
             }
         }
 
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AZ::ScriptUserDataSerializer>()
+                ->HandlesType<AZStd::any>();
+        }
+
 #if defined(SC_EXECUTION_TRACE_ENABLED)
         ExecutionLogData::Reflect(context);
         ExecutionLogAsset::Reflect(context);
 #endif//defined(SC_EXECUTION_TRACE_ENABLED)
-
     }
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

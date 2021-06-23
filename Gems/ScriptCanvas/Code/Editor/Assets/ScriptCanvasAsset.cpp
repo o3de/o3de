@@ -102,7 +102,6 @@ namespace ScriptCanvas
                 ;
         }
     }
-
 }
 
 namespace ScriptCanvasEditor

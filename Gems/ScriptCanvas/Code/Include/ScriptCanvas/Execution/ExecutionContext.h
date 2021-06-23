@@ -12,9 +12,9 @@
 namespace ScriptCanvas
 {
     class RuntimeComponent;
-    class VariableData;
 
     struct RuntimeData;
+    struct RuntimeDataOverrides;
 
     namespace Execution
     {
@@ -22,13 +22,13 @@ namespace ScriptCanvas
 
         struct ActivationData
         {
-            ActivationData(const RuntimeComponent& component, ActivationInputArray& storage);
-            ActivationData(const AZ::EntityId entityId, const VariableData& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage);
-
-            const AZ::EntityId entityId;
-            const VariableData& variableOverrides;
+            const RuntimeDataOverrides& variableOverrides;
             const RuntimeData& runtimeData;
             ActivationInputArray& storage;
+
+            ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage);
+
+            const void* GetVariableSource(size_t index, size_t& overrideIndexTracker) const;
         };
         
         struct ActivationInputRange

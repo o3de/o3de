@@ -17,9 +17,6 @@
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
-#include "RuntimeComponent.h"
-
-
 namespace ScriptCanvas
 {
     using VariableIdMap = AZStd::unordered_map<VariableId, VariableId>;
@@ -45,11 +42,8 @@ namespace ScriptCanvas
 
         RuntimeComponent() = default;
 
-        RuntimeComponent(AZ::Data::Asset<RuntimeAsset> runtimeAsset);
-
-        const AZ::Data::Asset<RuntimeAsset>& GetAsset() const;
-
-        const RuntimeData& GetAssetData() const;
+        // used to provide debug symbols, usually coming in the form of Node/Slot/Variable IDs
+        const RuntimeData& GetRuntimeAssetData() const;
 
         GraphIdentifier GetGraphIdentifier() const;
 
@@ -57,9 +51,9 @@ namespace ScriptCanvas
 
         AZ::EntityId GetScriptCanvasId() const;
 
-        const VariableData& GetVariableOverrides() const;
+        const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
-        void SetVariableOverrides(const VariableData& overrideData);
+        void SetRuntimeDataOverrides(const RuntimeDataOverrides& overrideData);
 
     protected:
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -94,15 +88,8 @@ namespace ScriptCanvas
         void StopExecution();
 
     private:
-        AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
         ExecutionStatePtr m_executionState;
         AZ::EntityId m_scriptCanvasId;
-                
-        //! Per instance variable data overrides for the runtime asset
-        //! This is serialized when building this component from the EditorScriptCanvasComponent
-        // \todo remove the names from this data, and make it more lightweight
-        // it only needs variable id and value
-        // move the other information to the runtime system component
-        VariableData m_variableOverrides;
+        RuntimeDataOverrides m_runtimeOverrides;
     };
 }

@@ -45,15 +45,15 @@ namespace ScriptCanvas
         AZ::Internal::LuaClassToStack(lua, this, azrtti_typeid<ExecutionStateInterpretedPerActivation>(), AZ::ObjectToLua::ByReference, AZ::AcquisitionOnPush::None);
         // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>
         Execution::ActivationInputArray storage;
-        Execution::ActivationData data(*m_component, storage);
+        Execution::ActivationData data(m_component->GetRuntimeDataOverrides(), storage);
         Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
 
         if (range.requiresDependencyConstructionParameters)
         {
-            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&data.runtimeData.m_requiredAssets)));
-            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, dependencies
+            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&data.variableOverrides.m_dependencies)));
+            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, runtimeDataOverrides
             Execution::PushActivationArgs(lua, range.inputs, range.totalCount);
-            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, dependencies, args...
+            // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>, runtimeDataOverrides, args...
             AZ::Internal::LuaSafeCall(lua, aznumeric_caster(2 + range.totalCount), 1);
         }
         else

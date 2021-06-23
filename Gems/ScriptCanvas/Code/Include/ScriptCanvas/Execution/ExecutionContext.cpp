@@ -7,6 +7,7 @@
 
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Script/ScriptSystemBus.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Nodeable.h>
@@ -19,13 +20,13 @@
 
 namespace ExecutionContextCpp
 {
-    void TypeCopy(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    void CopyTypeInformationOnly(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
     {
         lhs.m_typeId = rhs.m_typeId;
         lhs.m_azRtti = rhs.m_azRtti;
     }
 
-    void ValueCopy(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    void CopyTypeAndValueSource(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
     {
         lhs.m_typeId = rhs.m_typeId;
         lhs.m_azRtti = rhs.m_azRtti;
@@ -37,19 +38,23 @@ namespace ScriptCanvas
 {
     namespace Execution
     {
-        ActivationData::ActivationData(const RuntimeComponent& component, ActivationInputArray& storage)
-            : entityId(component.GetEntityId())
-            , variableOverrides(component.GetVariableOverrides())
-            , runtimeData(component.GetAsset()->GetData())
+        ActivationData::ActivationData(const RuntimeDataOverrides& variableOverrides, ActivationInputArray& storage)
+            : variableOverrides(variableOverrides)
+            , runtimeData(variableOverrides.m_runtimeAsset->GetData())
             , storage(storage)
         {}
 
-        ActivationData::ActivationData(const AZ::EntityId entityId, const VariableData& variableOverrides, const RuntimeData& runtimeData, ActivationInputArray& storage)
-            : entityId(entityId)
-            , variableOverrides(variableOverrides)
-            , runtimeData(runtimeData)
-            , storage(storage)
-        {}
+        const void* ActivationData::GetVariableSource(size_t index, size_t& overrideIndexTracker) const
+        {
+            if (variableOverrides.m_variableIndices[index])
+            {
+                return AZStd::any_cast<void>(&variableOverrides.m_variables[overrideIndexTracker++]);
+            }
+            else
+            {
+                return runtimeData.m_input.m_variables[index].second.GetAsDanger();
+            }
+        }
 
         ActivationInputRange Context::CreateActivateInputRange(ActivationData& activationData)
         {
@@ -60,78 +65,49 @@ namespace ScriptCanvas
             AZ_Assert(rangeOut.totalCount <= activationData.storage.size(), "Too many initial arguments for activation. "
                 "Consider increasing size, source of ActivationInputArray, or breaking up the source graph");
 
-            // nodeables
+            // nodeables - until the optimization is required, every instance gets their own copy
             {
                 auto sourceVariableIter = runtimeData.m_activationInputRange.inputs;
                 const auto sourceVariableSentinel = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
                 auto destVariableIter = rangeOut.inputs;
                 for (; sourceVariableIter != sourceVariableSentinel; ++sourceVariableIter, ++destVariableIter)
                 {
-                    ExecutionContextCpp::ValueCopy(*destVariableIter, *sourceVariableIter);
+                    ExecutionContextCpp::CopyTypeAndValueSource(*destVariableIter, *sourceVariableIter);
                 }
             }
 
-            // (possibly overridden) variables
+            // (possibly overridden) variables, only the overrides are saved in on the component, otherwise they are taken from the runtime asset
             {
                 auto sourceVariableIter = runtimeData.m_activationInputRange.inputs + runtimeData.m_activationInputRange.nodeableCount;
                 auto destVariableIter = rangeOut.inputs + runtimeData.m_activationInputRange.nodeableCount;
 
-                for (auto& idDatumPair : runtimeData.m_input.m_variables)
+                size_t overrideIndexTracker = 0;
+                const size_t sentinel = runtimeData.m_input.m_variables.size();
+                for (size_t index = 0; index != sentinel; ++index, ++destVariableIter, ++sourceVariableIter)
                 {
-                    ExecutionContextCpp::TypeCopy(*destVariableIter, *sourceVariableIter);
-
-                    auto variableOverride = activationData.variableOverrides.FindVariable(idDatumPair.first);
-                    const Datum* datum = variableOverride ? variableOverride->GetDatum() : &idDatumPair.second;
-                    destVariableIter->m_value = const_cast<void*>(datum->GetAsDanger());
-
-                    ++destVariableIter;
-                    ++sourceVariableIter;
+                    ExecutionContextCpp::CopyTypeInformationOnly(*destVariableIter, *sourceVariableIter);
+                    destVariableIter->m_value = const_cast<void*>(activationData.GetVariableSource(index, overrideIndexTracker));
                 }
             }
 
-            // (must always be re-mapped) EntityId
-            if (!runtimeData.m_input.m_entityIds.empty())
+            // (always overridden) EntityIds
             {
-                AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
-                AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
-                AzFramework::EntityIdContextQueryBus::EventResult(owningContextId, activationData.entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-                if (!owningContextId.IsNull())
-                {
-                    AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(loadedEntityIdMap, owningContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetLoadedEntityIdMap);
-                }
-
                 AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
                     + runtimeData.m_activationInputRange.nodeableCount
                     + runtimeData.m_activationInputRange.variableCount;
 
                 const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
-                for (auto& idEntityPair : runtimeData.m_input.m_entityIds)
+
+                for (auto& entityId : activationData.variableOverrides.m_entityIds)
                 {
                     destVariableIter->m_typeId = entityIdTypeId;
                     destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
                     auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
-
-                    if (auto variableOverride = activationData.variableOverrides.FindVariable(idEntityPair.first))
-                    {
-                        *entityIdValuePtr = *variableOverride->GetDatum()->GetAs<Data::EntityIDType>();
-                    }
-                    else
-                    {
-                        auto iter = loadedEntityIdMap.find(idEntityPair.second);
-                        if (iter != loadedEntityIdMap.end())
-                        {
-                            *entityIdValuePtr = iter->second;
-                        }
-                        else
-                        {
-                            *entityIdValuePtr = Data::EntityIDType();
-                        }
-                    }
-
+                    *entityIdValuePtr = entityId;
                     ++destVariableIter;
                 }
             }
-
+            
             return rangeOut;
         }
 

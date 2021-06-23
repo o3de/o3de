@@ -70,6 +70,7 @@ namespace ScriptCanvasBuilder
                 AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
                 return;
             }
+
             AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
             size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
             if (bytesRead != ioStream.GetLength())

@@ -150,8 +150,6 @@ namespace ScriptCanvas
 
             bool IsUserNodeable(VariableConstPtr variable) const;
 
-            bool HasUserNodeableDependenciesInVariables() const;
-
             template<typename T>
             AZStd::vector<Grammar::VariableConstPtr> ToVariableList(const AZStd::vector<AZStd::pair<VariableId, T>>& source) const;
 
@@ -505,6 +503,7 @@ namespace ScriptCanvas
             static UserInParseTopologyResult ParseUserInTolopology(size_t nodelingsOutCount, size_t leavesWithoutNodelingsCount);
 
             size_t m_outIndexCount = 0;
+            size_t m_generatedIdCount = 0;
             ExecutionTreePtr m_start;
             AZStd::vector<const Nodes::Core::Start*> m_startNodes;
             ScopePtr m_graphScope;

@@ -162,7 +162,7 @@ namespace ScriptCanvas
         void GraphToX::WriteCopyright(Writer& writer)
         {
             OpenBlockComment(writer);
-            writer.WriteLine(GetAmazonCopyright());
+            writer.WriteLine(GetCopyright());
             CloseBlockComment(writer);
         }
 

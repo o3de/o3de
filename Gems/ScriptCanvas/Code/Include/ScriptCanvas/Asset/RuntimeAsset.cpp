@@ -15,8 +15,18 @@ namespace ScriptCanvasRuntimeAssetCpp
     {
         AddDependencies = 3,
         ChangeScriptRequirementToAsset,
-        // add your entry above
+
+        // add description above
         Current
+    };
+
+    enum class RuntimeDataOverridesVersion : unsigned int
+    {
+        Initial = 0,
+        AddRuntimeAsset,
+
+        // add description above
+        Current,
     };
 
     enum class FunctionRuntimeDataVersion
@@ -25,7 +35,8 @@ namespace ScriptCanvasRuntimeAssetCpp
         AddSubgraphInterface,
         RemoveLegacyData,
         RemoveConnectionToRuntimeData,
-        // add your entry above
+
+        // add description above
         Current
     };
 }
@@ -97,6 +108,48 @@ namespace ScriptCanvas
         return !m_cloneSources.empty();
     }
 
+    bool RuntimeDataOverrides::IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides)
+    {
+        if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        {
+            return false;
+        }
+
+        for (auto& dependency : overrides.m_dependencies)
+        {
+            if (!IsPreloadBehaviorEnforced(dependency))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void RuntimeDataOverrides::EnforcePreloadBehavior()
+    {
+        m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+
+        for (auto& dependency : m_dependencies)
+        {
+            dependency.EnforcePreloadBehavior();
+        }
+    }
+
+    void RuntimeDataOverrides::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<RuntimeDataOverrides>()
+                ->Version(static_cast<unsigned int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataOverridesVersion::Current))
+                ->Field("runtimeAsset", &RuntimeDataOverrides::m_runtimeAsset)
+                ->Field("variables", &RuntimeDataOverrides::m_variables)
+                ->Field("variableIndices", &RuntimeDataOverrides::m_variableIndices)
+                ->Field("entityIds", &RuntimeDataOverrides::m_entityIds)
+                ->Field("dependencies", &RuntimeDataOverrides::m_dependencies)
+                ;
+        }
+    }
 
     ////////////////////////
     // SubgraphInterfaceData

@@ -136,10 +136,7 @@ namespace ScriptCanvas
         {
             if (nodeEntity)
             {
-                if (nodeEntity->GetState() == AZ::Entity::State::Constructed)
-                {
-                    nodeEntity->Init();
-                }
+                ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(nodeEntity);
 
                 if (auto* node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(nodeEntity))
                 {
@@ -155,10 +152,7 @@ namespace ScriptCanvas
         {
             if (connectionEntity)
             {
-                if (connectionEntity->GetState() == AZ::Entity::State::Constructed)
-                {
-                    connectionEntity->Init();
-                }
+                ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(connectionEntity);
             }
         }
 

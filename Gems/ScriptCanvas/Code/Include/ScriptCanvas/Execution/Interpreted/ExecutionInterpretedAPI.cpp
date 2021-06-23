@@ -680,9 +680,9 @@ namespace ScriptCanvas
         struct DependencyConstructionPack
         {
             ExecutionStateInterpreted* executionState;
-            AZStd::vector<AZ::Data::Asset<RuntimeAsset>>* dependentAssets;
-            const size_t dependentAssetsIndex;
-            RuntimeData& runtimeData;
+            AZStd::vector<RuntimeDataOverrides>* dependencies;
+            const size_t dependenciesIndex;
+            RuntimeDataOverrides& runtimeOverrides;
         };
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
@@ -690,17 +690,16 @@ namespace ScriptCanvas
             auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
-            auto dependentAssets = reinterpret_cast<AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*>(lua_touserdata(lua, 2));
+            auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));
             AZ_Assert(lua_isinteger(lua, 3), "Error in compiled Lua file, 3rd argument to UnpackDependencyArgs is not a number");
-            const size_t dependentAssetsIndex = aznumeric_caster(lua_tointeger(lua, 3));
-
-            return DependencyConstructionPack{ executionState, dependentAssets, dependentAssetsIndex, (*dependentAssets)[dependentAssetsIndex].Get()->m_runtimeData };
+            const size_t dependencyIndex = aznumeric_caster(lua_tointeger(lua, 3));
+            return DependencyConstructionPack{ executionState, dependentOverrides, dependencyIndex, (*dependentOverrides)[dependencyIndex] };
         }
 
         int Unpack(lua_State* lua, DependencyConstructionPack& args)
         {
             ActivationInputArray storage;
-            ActivationData data(args.executionState->GetEntityId(), args.executionState->GetVariableOverrides(), args.runtimeData, storage);
+            ActivationData data(args.runtimeOverrides, storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return range.totalCount;
@@ -708,9 +707,9 @@ namespace ScriptCanvas
 
         int UnpackDependencyConstructionArgs(lua_State* lua)
         {
-            // Lua: executionState, dependentAssets, dependentAssetsIndex
+            // Lua: executionState, dependent overrides, index into dependent overrides
             DependencyConstructionPack pack = UnpackDependencyConstructionArgsSanitize(lua);
-            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&pack.runtimeData.m_requiredAssets)));
+            lua_pushlightuserdata(lua, const_cast<void*>(reinterpret_cast<const void*>(&pack.runtimeOverrides.m_dependencies)));
             return 1 + Unpack(lua, pack);
         }
 

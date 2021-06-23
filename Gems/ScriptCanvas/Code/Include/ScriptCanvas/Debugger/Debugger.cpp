@@ -756,10 +756,9 @@ namespace ScriptCanvas
                         {
                             auto runtimeComponent = (*graphIter);
 
-                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetAsset().GetId().m_guid)
+                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
                             {
                                 // TODO: Gate on ComponentId
-                                // \todo chcurran restore this functionality
                                 // runtimeComponent->SetIsGraphObserved(observedState);
                                 runtimeComponents.erase(graphIter);
                                 break;

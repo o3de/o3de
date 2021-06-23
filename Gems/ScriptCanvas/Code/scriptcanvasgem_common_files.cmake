@@ -588,6 +588,9 @@ set(FILES
     Include/ScriptCanvas/Profiler/Aggregator.cpp
     Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Profiler/DrillerEvents.cpp
+    Include/ScriptCanvas/Serialization/GenericDependantPairSerializer.h
+    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.h
+    Include/ScriptCanvas/Serialization/ScriptUserDataSerializer.cpp
     Include/ScriptCanvas/Data/DataTrait.cpp
     Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/PropertyTraits.cpp

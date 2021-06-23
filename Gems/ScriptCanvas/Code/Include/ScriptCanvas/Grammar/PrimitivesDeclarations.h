@@ -147,7 +147,7 @@ namespace ScriptCanvas
         };
 
         // default to a pure, interpreted function
-        enum ExecutionStateSelection : AZ::u32
+        enum class ExecutionStateSelection : AZ::u32
         {
             InterpretedPure,
             InterpretedPureOnGraphStart,
@@ -247,7 +247,9 @@ namespace ScriptCanvas
 
         AZ_CVAR_EXTERNED(bool, g_disableParseOnGraphValidation);
         AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModel);
+        AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModelAtPrefabTime);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFile);
+        AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFileAtPrefabTime);
 
         struct DependencyInfo
         {
@@ -258,7 +260,7 @@ namespace ScriptCanvas
 
         struct Request
         {
-            AZ::Data::AssetId assetId;
+            AZ::Data::AssetId scriptAssetId;
             const Graph* graph = nullptr;
             AZStd::string_view name;
             AZStd::string_view path;

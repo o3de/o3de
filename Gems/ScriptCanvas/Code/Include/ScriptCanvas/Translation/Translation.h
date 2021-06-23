@@ -18,7 +18,9 @@ namespace ScriptCanvas
 
     namespace Translation
     {
-        Result ParseGraph(const Grammar::Request& request);
+        AZ::Outcome<Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(const Grammar::Request& request);
+
+        Result ParseAndTranslateGraph(const Grammar::Request& request);
 
         Result ToCPlusPlus(const Grammar::Request& request);
 
