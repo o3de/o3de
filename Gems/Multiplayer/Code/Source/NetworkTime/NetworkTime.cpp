@@ -125,8 +125,8 @@ namespace Multiplayer
         {
             if (NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent())
             {
-            netBindComponent->NotifySyncRewindState();
-        }
+                netBindComponent->NotifySyncRewindState();
+            }
         }
         m_rewoundEntities.clear();
     }
