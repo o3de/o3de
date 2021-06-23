@@ -23,10 +23,6 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(MotionEventTable, MotionEventAllocator, 0)
 
-    MotionEventTable::MotionEventTable()
-    {
-    }
-
     MotionEventTable::~MotionEventTable()
     {
         RemoveAllTracks();

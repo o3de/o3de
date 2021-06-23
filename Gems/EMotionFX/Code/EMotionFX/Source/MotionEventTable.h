@@ -50,9 +50,8 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
         AZ_RTTI(MotionEventTable, "{DB5BF142-99BE-4026-8D3E-3E5B30C14714}")
 
-        MotionEventTable();
-
-        ~MotionEventTable();
+        MotionEventTable() = default;
+        virtual ~MotionEventTable();
 
         static void Reflect(AZ::ReflectContext* context);
 
