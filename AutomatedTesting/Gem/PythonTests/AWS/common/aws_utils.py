@@ -8,11 +8,12 @@ remove or modify any license notices. This file is distributed on an "AS IS" BAS
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 """
 import boto3
-import pytest
 import logging
 
 logger = logging.getLogger(__name__)
-logging.getLogger('boto').setLevel(logging.CRITICAL)
+logging.getLogger('boto3').setLevel(logging.WARNING)
+logging.getLogger('botocore').setLevel(logging.WARNING)
+logging.getLogger('nose').setLevel(logging.WARNING)
 
 
 class AwsUtils:
@@ -63,28 +64,3 @@ class AwsUtils:
         clears stored session
         """
         self._assume_session = None
-
-
-@pytest.fixture(scope='function')
-def aws_utils(
-        request: pytest.fixture,
-        assume_role_arn: str,
-        session_name: str,
-        region_name: str):
-    """
-    Fixture for AWS util functions
-    :param request: _pytest.fixtures.SubRequest class that handles getting
-        a pytest fixture from a pytest function/fixture.
-    :param assume_role_arn: Role used to fetch temporary aws credentials, configure service clients with obtained credentials.
-    :param session_name: Session name to set.
-    :param region_name: AWS account region to set for session.
-    :return AWSUtils class object.
-    """
-    aws_utils_obj = AwsUtils(assume_role_arn, session_name, region_name)
-
-    def teardown():
-        aws_utils_obj.destroy()
-
-    request.addfinalizer(teardown)
-
-    return aws_utils_obj

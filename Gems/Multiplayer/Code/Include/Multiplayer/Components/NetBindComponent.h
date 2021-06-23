@@ -64,10 +64,23 @@ namespace Multiplayer
         //! @}
 
         NetEntityRole GetNetEntityRole() const;
-        bool IsAuthority() const;
-        bool IsAutonomous() const;
-        bool IsServer() const;
-        bool IsClient() const;
+        
+        //! IsNetEntityRoleAuthority
+        //! @return true if this network entity is an authoritative proxy on a server (full authority); otherwise false.
+        bool IsNetEntityRoleAuthority() const;
+        
+        //! IsNetEntityRoleAutonomous
+        //! @return true if this network entity is an autonomous proxy on a client (can execute local prediction) or if this network entity is an authoritative proxy on a server but has autonomous privileges (ie: a host who is also a player); otherwise false.   
+        bool IsNetEntityRoleAutonomous() const;
+
+        //! IsNetEntityRoleServer
+        //! @return true if this network entity is a simulated proxy on a server (ie: a different server may have authority for this entity, but the entity has been replicated on this server; otherwise false.
+        bool IsNetEntityRoleServer() const;
+
+        //! IsNetEntityRoleClient
+        //! @return true if this network entity is a simulated proxy on a client; otherwise false.
+        bool IsNetEntityRoleClient() const;
+        
         bool HasController() const;
         NetEntityId GetNetEntityId() const;
         const PrefabEntityId& GetPrefabEntityId() const;

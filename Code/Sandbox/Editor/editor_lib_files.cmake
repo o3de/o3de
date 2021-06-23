@@ -737,8 +737,6 @@ set(FILES
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h
-    Util/ImageHDR.cpp
-    Util/ImageHDR.h
     Util/IObservable.h
     Util/IndexedFiles.cpp
     Util/IndexedFiles.h

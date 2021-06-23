@@ -46,24 +46,24 @@ namespace Multiplayer
         return m_netBindComponent ? m_netBindComponent->GetNetEntityId() : InvalidNetEntityId;
     }
 
-    bool MultiplayerComponent::IsAuthority() const
+    bool MultiplayerComponent::IsNetEntityRoleAuthority() const
     {
-        return m_netBindComponent ? m_netBindComponent->IsAuthority() : false;
+        return m_netBindComponent ? m_netBindComponent->IsNetEntityRoleAuthority() : false;
     }
 
-    bool MultiplayerComponent::IsAutonomous() const
+    bool MultiplayerComponent::IsNetEntityRoleAutonomous() const
     {
-        return m_netBindComponent ? m_netBindComponent->IsAutonomous() : false;
+        return m_netBindComponent ? m_netBindComponent->IsNetEntityRoleAutonomous() : false;
     }
 
-    bool MultiplayerComponent::IsServer() const
+    bool MultiplayerComponent::IsNetEntityRoleServer() const
     {
-        return m_netBindComponent ? m_netBindComponent->IsServer() : false;
+        return m_netBindComponent ? m_netBindComponent->IsNetEntityRoleServer() : false;
     }
 
-    bool MultiplayerComponent::IsClient() const
+    bool MultiplayerComponent::IsNetEntityRoleClient() const
     {
-        return m_netBindComponent ? m_netBindComponent->IsClient() : false;
+        return m_netBindComponent ? m_netBindComponent->IsNetEntityRoleClient() : false;
     }
 
     ConstNetworkEntityHandle MultiplayerComponent::GetEntityHandle() const

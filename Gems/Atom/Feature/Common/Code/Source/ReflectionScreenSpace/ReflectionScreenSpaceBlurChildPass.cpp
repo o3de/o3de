@@ -47,6 +47,9 @@ namespace AZ
                 m_updateSrg = true;
             }
 
+            params.m_viewportState = RHI::Viewport(0, static_cast<float>(m_imageSize.m_width), 0, static_cast<float>(m_imageSize.m_height));
+            params.m_scissorState = RHI::Scissor(0, 0, m_imageSize.m_width, m_imageSize.m_height);
+
             FullscreenTrianglePass::FrameBeginInternal(params);
         }
 
