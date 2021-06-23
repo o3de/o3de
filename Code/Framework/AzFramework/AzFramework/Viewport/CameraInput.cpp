@@ -295,6 +295,16 @@ namespace AzFramework
         m_idleCameraInputs.clear();
     }
 
+    bool Cameras::Exclusive() const
+    {
+        return AZStd::any_of(
+            m_activeCameraInputs.begin(), m_activeCameraInputs.end(),
+            [](const auto& cameraInput)
+            {
+                return cameraInput->Exclusive();
+            });
+    }
+
     RotateCameraInput::RotateCameraInput(const InputChannelId rotateChannelId)
         : m_rotateChannelId(rotateChannelId)
     {
@@ -373,7 +383,7 @@ namespace AzFramework
         };
 
         nextCamera.m_yaw = clampRotation(nextCamera.m_yaw);
-        // clamp pitch to be +-90 degrees
+        // clamp pitch to be +/-90 degrees
         nextCamera.m_pitch = AZ::GetClamp(nextCamera.m_pitch, -AZ::Constants::HalfPi, AZ::Constants::HalfPi);
 
         return nextCamera;
