@@ -52,12 +52,12 @@ namespace AZ
             // RPI::Pass overrides...
             void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
-			
+
             // Scope producer functions...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
-			
+
             void InitializeShaderOption();
             void SetShaderVariantKeyFallbackValue();
 
