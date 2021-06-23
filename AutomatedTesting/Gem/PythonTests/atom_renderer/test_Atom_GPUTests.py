@@ -17,6 +17,7 @@ import os
 import pytest
 
 import ly_test_tools.environment.file_system as file_system
+from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
 import editor_python_test_tools.hydra_test_utils as hydra
 
 logger = logging.getLogger(__name__)
@@ -81,7 +82,9 @@ class TestAllComponentsIndepthTests(object):
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
             cfg_args=[level],
+            auto_test_mode=False,
+            null_renderer=False,
         )
 
         for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
-            self.compare_screenshots(test_screenshot, golden_screenshot)
+            compare_screenshots(test_screenshot, golden_screenshot)
