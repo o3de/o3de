@@ -2675,7 +2675,7 @@ namespace AzToolsFramework
                             "You can also review and update your save locations in the AssetProcessorPlatformConfig.ini file.";
                         AZ_Error("Slice", false, errorMessage.c_str());
 
-                        QString learnMoreLink(QObject::tr("https://docs.aws.amazon.com/console/lumberyard/slices/save"));
+                        QString learnMoreLink(QObject::tr(""));
                         QString learnMoreDescription(QObject::tr(" <a href='%1'>Learn more</a>").arg(learnMoreLink));
 
                         // Display a pop-up, the logs are easy to miss. This will make sure a user who encounters this error immediately knows their slice save has failed.

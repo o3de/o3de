@@ -803,7 +803,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
             auto text = lineEdit->text();
             if (text.isEmpty())
             {
-                QDesktopServices::openUrl(QUrl("https://aws.amazon.com/documentation/lumberyard/"));
+                QDesktopServices::openUrl(QUrl("https://docs.o3de.org/docs/"));
             }
             else
             {

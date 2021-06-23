@@ -128,7 +128,7 @@ namespace UnitTest
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.amazongames.com/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Inspector_TestComponent2::m_data, "Data", "The component's Data");
                 }
             }
@@ -197,7 +197,7 @@ namespace UnitTest
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.amazongames.com/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Inspector_TestComponent3::m_data, "Data", "The component's Data");
                 }
             }

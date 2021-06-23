@@ -56,7 +56,7 @@ namespace AzToolsFramework
         connect(ui->SCRIPT_INPUT, &QLineEdit::textChanged, this, &CScriptTermDialog::OnScriptInputTextChanged);
         connect(ui->SCRIPT_HELP, &QToolButton::clicked, this, &CScriptTermDialog::OnScriptHelp);
         connect(ui->SCRIPT_DOCS, &QToolButton::clicked, this, []() {
-            QDesktopServices::openUrl(QUrl("https://docs.aws.amazon.com/lumberyard/latest/tutorials/tutorials-python.html"));
+            QDesktopServices::openUrl(QUrl("https://docs.o3de.org/docs/user-guide/scripting/"));
             });
 
         InitCompleter();

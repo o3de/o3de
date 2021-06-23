@@ -30,6 +30,6 @@ namespace Vegetation
         static constexpr const char* const s_componentDescription = "Offsets the scale of the vegetation";
         static constexpr const char* const s_icon = "Editor/Icons/Components/VegetationModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/VegetatioModifier.png";
-        static constexpr const char* const s_helpUrl = "https://docs.aws.amazon.com/console/lumberyard/vegetationmodifiers/vegetation-scale-modifier";
+        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/reference/";
     };
 }

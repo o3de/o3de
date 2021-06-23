@@ -2020,7 +2020,7 @@ void CCryEditApp::OnDocumentationTutorials()
 
 void CCryEditApp::OnDocumentationGlossary()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide/glossary");
+    QString webLink = tr("https://docs.o3de.org/docs/user-guide/appendix/glossary/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 

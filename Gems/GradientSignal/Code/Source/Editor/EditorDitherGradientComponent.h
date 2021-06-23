@@ -30,7 +30,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Applies ordered dithering to the input gradient";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.png";
-        static constexpr const char* const s_helpUrl = "https://docs.aws.amazon.com/console/lumberyard/gradientmodifiers/dither-gradient-modifier";
+        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/";
 
     protected:
         AZ::u32 ConfigurationChanged() override;

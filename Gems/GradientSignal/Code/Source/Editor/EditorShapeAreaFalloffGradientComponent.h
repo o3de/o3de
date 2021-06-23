@@ -30,6 +30,6 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient based on distance from a shape";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.png";
-        static constexpr const char* const s_helpUrl = "https://docs.aws.amazon.com/console/lumberyard/gradients/shape-falloff-gradient";
+        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/";
     };
 }

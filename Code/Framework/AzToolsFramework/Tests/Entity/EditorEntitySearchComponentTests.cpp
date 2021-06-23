@@ -52,7 +52,7 @@ namespace AzToolsFramework
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.amazongames.com/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EntitySearch_TestComponent1::m_boolValue, "Bool", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EntitySearch_TestComponent1::m_intValue, "Int", "")
                     ;
@@ -111,7 +111,7 @@ namespace AzToolsFramework
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.amazongames.com/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EntitySearch_TestComponent2::m_floatValue, "Float", "")
                     ;
                 }

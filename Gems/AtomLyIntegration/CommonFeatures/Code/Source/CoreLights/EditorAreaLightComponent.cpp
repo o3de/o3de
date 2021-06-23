@@ -53,7 +53,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->Attribute(Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-light.html")
+                            ->Attribute(Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/atom/area-light/")
                         ;
 
                     editContext->Class<AreaLightComponentController>(

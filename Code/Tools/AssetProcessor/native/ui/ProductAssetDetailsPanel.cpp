@@ -443,7 +443,7 @@ namespace AssetProcessor
     void ProductAssetDetailsPanel::OnSupportClicked(bool /*checked*/)
     {
         QDesktopServices::openUrl(
-            QStringLiteral("https://docs.aws.amazon.com/lumberyard/latest/userguide/asset-bundler-assets-resolving.html"));
+            QStringLiteral("https://docs.o3de.org/docs/user-guide/packaging/asset-bundler/assets-resolving/"));
     }
 
 

@@ -69,7 +69,7 @@ AzQtComponents::CardHeader* header = ui->functionalCard->header();
 header->setIcon(QIcon(":/Cards/img/UI20/Cards/slice_item.png"));
 
 // Set the help url to open in a browser if the user clicks the help button
-header->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+header->setHelpURL("https://docs.o3de.org/docs/");
 
 // Clear the help url
 header->clearHelpURL();
@@ -108,7 +108,7 @@ card->mockDisabledState(true);
     ui->disabledCard->setTitle("Actually Disabled Card");
     ui->disabledCard->setContentWidget(new QWidget());
     ui->disabledCard->header()->setIcon(QIcon(QStringLiteral(":/stylesheet/img/search.svg")));
-    ui->disabledCard->header()->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+    ui->disabledCard->header()->setHelpURL("https://docs.o3de.org/docs/");
     ui->disabledCard->setSecondaryTitle("Secondary Title");
     ui->disabledCard->setSecondaryContentWidget(new QWidget());
     ui->disabledCard->setEnabled(false);
@@ -116,7 +116,7 @@ card->mockDisabledState(true);
     ui->disabledCard2->setTitle("Mock Disabled Card");
     ui->disabledCard2->setContentWidget(new QWidget());
     ui->disabledCard2->header()->setIcon(QIcon(QStringLiteral(":/stylesheet/img/search.svg")));
-    ui->disabledCard2->header()->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+    ui->disabledCard2->header()->setHelpURL("https://docs.o3de.org/docs/");
     ui->disabledCard2->setSecondaryTitle("Secondary Title");
     ui->disabledCard2->setSecondaryContentWidget(new QWidget());
     ui->disabledCard2->mockDisabledState(true);
@@ -127,7 +127,7 @@ card->mockDisabledState(true);
     // put in an example icon
     AzQtComponents::CardHeader* header = ui->functionalCard->header();
     header->setIcon(QIcon(":/Cards/img/UI20/Cards/slice_item.png"));
-    header->setHelpURL("https://aws.amazon.com/documentation/lumberyard/");
+    header->setHelpURL("https://docs.o3de.org/docs/");
 
     connect(ui->addButton, &QPushButton::clicked, this, &CardPage::addNotification);
 

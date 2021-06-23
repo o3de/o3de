@@ -41,7 +41,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NavigationSeed.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NavigationSeed.png")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-nav-seed.html")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/nav-seed/")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorNavigationSeedComponent::m_agentType, "Agent Type", "Describes the type of the Entity for navigation purposes.")
                         ->Attribute(AZ::Edit::Attributes::StringList, &PopulateAgentTypeList)
                         ->Attribute("ChangeNotify", &EditorNavigationSeedComponent::OnAgentTypeChanged);

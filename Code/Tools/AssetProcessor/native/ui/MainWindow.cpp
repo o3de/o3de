@@ -514,7 +514,7 @@ void MainWindow::OnRescanButtonClicked()
 void MainWindow::OnSupportClicked(bool /*checked*/)
 {
     QDesktopServices::openUrl(
-        QStringLiteral("https://docs.aws.amazon.com/lumberyard/latest/userguide/asset-pipeline-processor.html"));
+        QStringLiteral("https://docs.o3de.org/docs/user-guide/assets/pipeline/"));
 }
 
 void MainWindow::EditConnection(const QModelIndex& index)
