@@ -1,12 +1,7 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 """
 This file contains all the code that has to do with creating and instantiate engine templates
@@ -1654,19 +1649,9 @@ def create_project(project_path: pathlib.Path,
                     with open(cmakelists_file_name, 'w') as d:
                         if keep_license_text:
                             d.write('# {BEGIN_LICENSE}\n')
-                            d.write('# All or portions of this file Copyright (c) Amazon.com, Inc. or its'
-                                    ' affiliates or\n')
-                            d.write('# its licensors.\n')
+                            d.write('# Copyright (c) Contributors to the Open 3D Engine Project\n')
                             d.write('#\n')
-                            d.write('# For complete copyright and license terms please see the LICENSE at the'
-                                    ' root of this\n')
-                            d.write('# distribution (the "License"). All use of this software is governed by'
-                                    ' the License,\n')
-                            d.write('# or, if provided, by the license below or the license accompanying this'
-                                    ' file. Do not\n')
-                            d.write('# remove or modify any license notices. This file is distributed on an'
-                                    ' "AS IS" BASIS,\n')
-                            d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                            d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                             d.write('# {END_LICENSE}\n')
 
     # set the "engine" element of the project.json
@@ -2056,19 +2041,9 @@ def create_gem(gem_path: pathlib.Path,
                         with open(cmakelists_file_name, 'w') as d:
                             if keep_license_text:
                                 d.write('# {BEGIN_LICENSE}\n')
-                                d.write(
-                                    '# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or\n')
-                                d.write('# its licensors.\n')
+                                d.write('# Copyright (c) Contributors to the Open 3D Engine Project\n')
                                 d.write('#\n')
-                                d.write(
-                                    '# For complete copyright and license terms please see the LICENSE at the root of this\n')
-                                d.write(
-                                    '# distribution (the "License"). All use of this software is governed by the License,\n')
-                                d.write(
-                                    '# or, if provided, by the license below or the license accompanying this file. Do not\n')
-                                d.write(
-                                    '# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,\n')
-                                d.write('# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n')
+                                d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                                 d.write('# {END_LICENSE}\n')
     return 0
 
