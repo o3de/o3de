@@ -178,7 +178,7 @@ def delete_volume(ec2_client, volume_id):
     print 'Volume {} deleted'.format(volume_id)
 
 def find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, build_type, disk_size):
-    mount_name = get_mount_name(repository_name, project, pipeline, 'main', platform, build_type) # we take snapshots out of main
+    mount_name = get_mount_name(repository_name, project, pipeline, 'stabilization_2106', platform, build_type) # we take snapshots out of stabilization_2106
     response = ec2_client.describe_snapshots(Filters= [{
         'Name': 'tag:Name', 'Values': [mount_name]
     }])

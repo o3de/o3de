@@ -80,8 +80,6 @@ namespace O3DE::ProjectManager
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
 
-        const QString m_projectPreviewImagePath = "/preview.png";
-
         inline constexpr static int s_contentMargins = 80;
         inline constexpr static int s_spacerSize = 20;
     };

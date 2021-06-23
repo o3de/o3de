@@ -182,6 +182,7 @@ namespace AZ
 
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
+<<<<<<< HEAD
             m_viewportState.m_minX = m_viewportState.m_minY = 0;
             m_viewportState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width);
             m_viewportState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height);
@@ -189,6 +190,18 @@ namespace AZ
             m_scissorState.m_minX = m_scissorState.m_minY = 0;
             m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
             m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);
+=======
+            m_viewportState.m_minX = 0.0f;
+            m_viewportState.m_minY = 0.0f;
+            m_viewportState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width);
+            m_viewportState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height);
+
+            m_scissorState.m_minX = 0.0f;
+            m_scissorState.m_minY = 0.0f;
+            m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
+            m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);
+
+>>>>>>> stabilization/2106
             RenderPass::FrameBeginInternal(params);
         }
 
