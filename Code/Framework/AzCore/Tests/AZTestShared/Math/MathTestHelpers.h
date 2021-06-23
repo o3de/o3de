@@ -25,12 +25,14 @@ namespace AZ
     class Vector2;
     class Vector3;
     class Vector4;
+    class Aabb;
     class Transform;
     class Color;
 
     std::ostream& operator<<(std::ostream& os, const Vector2& vec);
     std::ostream& operator<<(std::ostream& os, const Vector3& vec);
     std::ostream& operator<<(std::ostream& os, const Vector4& vec);
+    std::ostream& operator<<(std::ostream& os, const Aabb& aabb);
     std::ostream& operator<<(std::ostream& os, const Quaternion& quat);
     std::ostream& operator<<(std::ostream& os, const Transform& transform);
     std::ostream& operator<<(std::ostream& os, const Color& transform);
