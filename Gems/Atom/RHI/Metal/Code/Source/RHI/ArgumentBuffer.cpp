@@ -35,7 +35,6 @@ namespace AZ
             {
                 m_device = device;
                 m_srgLayout = srgLayout;
-                m_srgPool = srgPool;
                                                 
                 m_constantBufferSize = srgLayout->GetConstantDataSize();
                 if (m_constantBufferSize)
@@ -93,9 +92,6 @@ namespace AZ
                     
                     //Attach the constant buffer
                     AttachConstantBuffer();
-                    
-                    m_samplerCache = [[NSCache alloc]init];
-                    [m_samplerCache setName:@"SamplerCache"];
                 }
             }
         }
@@ -211,8 +207,8 @@ namespace AZ
                 }
                 else
                 {
-                    RHI::Ptr<Memory> nullMtlBufferMemPtr = m_device->GetNullDescriptorManager().GetNullImage(shaderInputImage.m_type).GetMemory();
-                    mtlTextures[imageArrayLen] = nullMtlBufferMemPtr->GetGpuAddress<id<MTLTexture>>();
+                    RHI::Ptr<Memory> nullMtlImagePtr = m_device->GetNullDescriptorManager().GetNullImage(shaderInputImage.m_type).GetMemory();
+                    mtlTextures[imageArrayLen] = nullMtlImagePtr->GetGpuAddress<id<MTLTexture>>();
                 }
                 imageArrayLen++;
             }
@@ -345,15 +341,20 @@ namespace AZ
                 m_device->GetArgumentBufferAllocator().DeAllocate(m_argumentBuffer);
             }
 #endif
-            m_argumentBuffer = {};
-            m_constantBuffer = {};
             
-            [m_samplerCache removeAllObjects];
-            [m_samplerCache release];
-            m_samplerCache = nil;
+            if(m_argumentBuffer.IsValid())
+            {
+                m_device->QueueForRelease(m_argumentBuffer);
+            }
             
+            if(m_constantBuffer.IsValid())
+            {
+                m_device->QueueForRelease(m_constantBuffer);
+            }
+
             [m_argumentEncoder release];
             m_argumentEncoder = nil;
+             
             Base::Shutdown();
         }
         
@@ -374,23 +375,22 @@ namespace AZ
     
         id<MTLSamplerState> ArgumentBuffer::GetMtlSampler(MTLSamplerDescriptor* samplerDesc)
         {
-            id<MTLSamplerState> mtlSamplerState = [m_samplerCache objectForKey:samplerDesc];
+            const NSCache* samplerCache = m_device->GetSamplerCache();
+            id<MTLSamplerState> mtlSamplerState = [samplerCache objectForKey:samplerDesc];
             if(mtlSamplerState == nil)
             {
                 mtlSamplerState = [m_device->GetMtlDevice() newSamplerStateWithDescriptor:samplerDesc];
-                [m_samplerCache setObject:mtlSamplerState forKey:samplerDesc];
+                [samplerCache setObject:mtlSamplerState forKey:samplerDesc];
             }
             
             return mtlSamplerState;
         }
     
-        void ArgumentBuffer::AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const
+        void ArgumentBuffer::CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                                            const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                                            ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
+                                                            GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const
         {
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
-            ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
-            GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
-            
             //Cache the constant buffer associated with a srg
             if (m_constantBufferSize)
             {
@@ -433,25 +433,6 @@ namespace AZ
                         CollectResourcesForGraphics(commandEncoder, visMaskIt->second, it.second, resourcesToMakeResidentGraphics);
                     }
                 }
-            }
-            
-            //Call UseResource on all resources for Compute stage
-            for (const auto& key : resourcesToMakeResidentCompute)
-            {
-                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
-                [static_cast<id<MTLComputeCommandEncoder>>(commandEncoder) useResources: &resourcesToProcessVec[0]
-                                                                                  count: resourcesToProcessVec.size()
-                                                                                  usage: key.first];
-            }
-            
-            //Call UseResource on all resources for Vertex and Fragment stages
-            for (const auto& key : resourcesToMakeResidentGraphics)
-            {
-                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
-                [static_cast<id<MTLRenderCommandEncoder>>(commandEncoder) useResources: &resourcesToProcessVec[0]
-                                                                                 count: resourcesToProcessVec.size()
-                                                                                 usage: key.first.first
-                                                                                stages: key.first.second];
             }
         }
 

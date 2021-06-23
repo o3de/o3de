@@ -53,7 +53,7 @@ namespace AWSClientAuth
 
         if (!m_settingsRegistry->MergeSettingsFile(resolvedPath.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch))
         {
-            AZ_Error("AuthenticationProviderManager", true, "Error merging settings registry for path: %s", resolvedPath.data());
+            AZ_Error("AuthenticationProviderManager", false, "Error merging settings registry for path: %s", resolvedPath.data());
             return false;
         }
 
@@ -199,7 +199,7 @@ namespace AWSClientAuth
         {
             return enumValue.value();
         }
-        AZ_Warning("AuthenticationProviderManager", true, "Incorrect string value for enum: %s", name.c_str());
+        AZ_Warning("AuthenticationProviderManager", false, "Incorrect string value for enum: %s", name.c_str());
         return ProviderNameEnum::None;
     }
 

@@ -12,6 +12,7 @@
 
 #include <PythonBindings.h>
 
+#include <ProjectManagerDefs.h>
 
 // Qt defines slots, which interferes with the use here.
 #pragma push_macro("slots")
@@ -694,6 +695,7 @@ namespace O3DE::ProjectManager
                 projectInfo.m_displayName = Py_To_String_Optional(projectData, "display_name", projectInfo.m_projectName);
                 projectInfo.m_origin = Py_To_String_Optional(projectData, "origin", projectInfo.m_origin);
                 projectInfo.m_summary = Py_To_String_Optional(projectData, "summary", projectInfo.m_summary);
+                projectInfo.m_iconPath = Py_To_String_Optional(projectData, "icon", ProjectPreviewImagePath);
                 if (projectData.contains("user_tags"))
                 {
                     for (auto tag : projectData["user_tags"])
@@ -787,7 +789,7 @@ namespace O3DE::ProjectManager
                     pybind11::str(projectInfo.m_origin.toStdString()), // new_origin
                     pybind11::str(projectInfo.m_displayName.toStdString()), // new_display
                     pybind11::str(projectInfo.m_summary.toStdString()), // new_summary
-                    pybind11::str(projectInfo.m_imagePath.toStdString()), // new_icon
+                    pybind11::str(projectInfo.m_iconPath.toStdString()), // new_icon
                     pybind11::none(), // add_tags not used
                     pybind11::none(), // remove_tags not used
                     pybind11::list(pybind11::cast(newTags))); // replace_tags

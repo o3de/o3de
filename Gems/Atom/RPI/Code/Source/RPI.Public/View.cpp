@@ -160,13 +160,19 @@ namespace AZ
                         0,0,1,0,
                         0,0,0,1 };
             yUpWorld.StoreToRowMajorFloat12(viewToWorldMatrixRaw);
+            const AZ::Matrix4x4 prevViewToWorldMatrix = m_viewToWorldMatrix;
             m_viewToWorldMatrix = AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw);
 
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
 
-            m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
+            // Only signal an update when there is a change, otherwise this might block
+            // user input from changing the value.
+            if (!prevViewToWorldMatrix.IsClose(m_viewToWorldMatrix))
+            {
+                m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
+            }
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
 
             InvalidateSrg();

@@ -26,6 +26,18 @@ namespace AZ
     {
         class MeshDataInstance;
 
+        //! Settings to apply to a mesh handle when acquiring it for the first time
+        struct MeshHandleDescriptor
+        {
+            using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
+
+            Data::Asset<RPI::ModelAsset> m_modelAsset;
+            bool m_isSkinnedMeshWithMotion = false;
+            bool m_isRayTracingEnabled = true;
+            bool m_useForwardPassIblSpecular = false;
+            RequiresCloneCallback m_requiresCloneCallback = {};
+        };
+
         //! MeshFeatureProcessorInterface provides an interface to acquire and release a MeshHandle from the underlying MeshFeatureProcessor
         class MeshFeatureProcessorInterface
             : public RPI::FeatureProcessor
@@ -35,23 +47,16 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<MeshDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
-            using RequiresCloneCallback = AZStd::function<bool(const Data::Asset<RPI::ModelAsset>& modelAsset)>;
 
             //! Acquires a model with an optional collection of material assignments.
             //! @param requiresCloneCallback The callback indicates whether cloning is required for a given model asset.
             virtual MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const MaterialAssignmentMap& materials = {},
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) = 0;
+                const MeshHandleDescriptor& descriptor,
+                const MaterialAssignmentMap& materials = {}) = 0;
             //! Acquires a model with a single material applied to all its meshes.
             virtual MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const Data::Instance<RPI::Material>& material,
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) = 0;
+                const MeshHandleDescriptor& descriptor,
+                const Data::Instance<RPI::Material>& material) = 0;
             //! Releases the mesh handle
             virtual bool ReleaseMesh(MeshHandle& meshHandle) = 0;
             //! Creates a new instance and handle of a mesh using an existing MeshId. Currently, this will reset the new mesh to default materials.

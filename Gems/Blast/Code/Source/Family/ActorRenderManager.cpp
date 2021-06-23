@@ -47,7 +47,7 @@ namespace Blast
         {
             m_chunkActors[chunkId] = &actor;
             m_chunkMeshHandles[chunkId] =
-                m_meshFeatureProcessor->AcquireMesh(m_meshData->GetMeshAsset(chunkId), m_materialMap);
+                m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_meshData->GetMeshAsset(chunkId) }, m_materialMap);
         }
     }
 
