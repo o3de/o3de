@@ -90,7 +90,7 @@ namespace ScriptCanvasEditor
                 }
 
                 const ScriptCanvas::Translation::LuaAssetResult& luaAssetResult = luaAssetOutcome.GetValue();
-                #functions2_recursive_unit_tests
+                // #functions2_recursive_unit_tests
                 loadedAssets.push_back({ modulePath, loadResult.m_runtimeAsset, luaAssetResult, {} });
             }          
         }

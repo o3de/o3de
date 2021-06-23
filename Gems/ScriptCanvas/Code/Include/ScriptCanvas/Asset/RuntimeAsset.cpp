@@ -147,7 +147,7 @@ namespace ScriptCanvas
         {
             serializeContext->Class<RuntimeDataOverrides>()
                 ->Version(static_cast<unsigned int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataOverridesVersion::Current))
-                ->Field("m_runtimeAsset", &RuntimeDataOverrides::m_runtimeAsset)
+                ->Field("runtimeAsset", &RuntimeDataOverrides::m_runtimeAsset)
                 ->Field("variables", &RuntimeDataOverrides::m_variables)
                 ->Field("variableIndices", &RuntimeDataOverrides::m_variableIndices)
                 ->Field("entityIds", &RuntimeDataOverrides::m_entityIds)
