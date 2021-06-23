@@ -46,6 +46,7 @@ namespace O3DE::ProjectManager
     private:
         void Update();
         void UpdateSettingsScreen();
+        bool UpdateProjectSettings(bool shouldConfirm = false);
 
         enum ScreenOrder
         {

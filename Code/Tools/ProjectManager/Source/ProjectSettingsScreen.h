@@ -32,9 +32,9 @@ namespace O3DE::ProjectManager
         ~ProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        ProjectInfo GetProjectInfo();
+        virtual ProjectInfo GetProjectInfo();
 
-        bool Validate();
+        virtual bool Validate();
 
     protected slots:
         virtual bool ValidateProjectName();

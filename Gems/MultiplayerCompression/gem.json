@@ -1,16 +1,10 @@
 {
     "gem_name": "MultiplayerCompression",
-    "GemFormatVersion": 4,
-    "Uuid": "1d353c8ca3c74ed193fd6c6783ae41cc",
-    "Name": "MultiplayerCompression",
-    "DisplayName": "Multiplayer Compression",
-    "Version": "0.1.0",
-    "Summary": "The Multiplayer Compression gem provides an open source Compressor for use with the Multiplayer Gem.",
-    "Tags": ["GridMate","Multiplayer","Networking"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
-    ]
+    "display_name": "Multiplayer Compression",
+    "summary": "The Multiplayer Compression gem provides an open source Compressor for use with AzNetworking's transport layer.",
+    "canonical_tags": ["Multiplayer", "Networking", "Utility"],
+    "user_tags": ["MultiplayerCompression"],
+    "icon_path": "preview.png",
+    "type": "Code",
+    "provider": "Open 3D Foundation"
 }

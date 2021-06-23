@@ -13,7 +13,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "GemInfo.h"
 #include <QAbstractItemModel>
 #include <QItemSelectionModel>
 #include <QListView>

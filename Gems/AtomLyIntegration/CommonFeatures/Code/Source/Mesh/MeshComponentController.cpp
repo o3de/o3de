@@ -317,8 +317,11 @@ namespace AZ
                 MaterialComponentRequestBus::EventResult(materials, entityId, &MaterialComponentRequests::GetMaterialOverrides);
 
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(m_configuration.m_modelAsset, materials,
-                    /*skinnedMeshWithMotion=*/false, /*rayTracingEnabled=*/true, RequiresCloning);
+                MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_modelAsset = m_configuration.m_modelAsset;
+                meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
+                meshDescriptor.m_requiresCloneCallback = RequiresCloning;
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
 
                 const AZ::Transform& transform = m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
@@ -327,7 +330,6 @@ namespace AZ
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
-                m_meshFeatureProcessor->SetUseForwardPassIblSpecular(m_meshHandle, m_configuration.m_useForwardPassIblSpecular);
 
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.

@@ -66,6 +66,7 @@ namespace AZ
             //! it's possible that b.json could be found in either MyGem/Assets/Foo/Bar/a.json or in MyGem/Assets/Bar/a.json.
             //! @param originatingSourceFilePath  Path to a file that references referencedSourceFilePath. May be absolute or relative to asset-root.
             //! @param referencedSourceFilePath   The referenced path as it appears in the originating file. May be relative to the originating file location or relative to asset-root.
+            //! @return the list of possible paths, ordered from highest priority to lowest priority
             AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
             // Definitions...

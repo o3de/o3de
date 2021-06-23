@@ -32,12 +32,18 @@ class CognitoUserPoolSMSRole:
             name_utils.format_aws_resource_id(feature_name, project_name, env, iam.Role.__name__),
             description='Role permissions used by Cognito user pool to send sms',
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+            # Deny all others and then allow only for the current sms role.
             inline_policies={
                 'SNSRoleInlinePolicy':
                     iam.PolicyDocument(
                         statements=[
+                            # SMS role will be used by CognitoIDP tp allow to publish to SNS topic owned by CognitoIDP
+                            # team to push a sms.
+                            # Need to use * as the resource name used by CognitoIDP principal service is unknown.
                             iam.PolicyStatement(
-                                actions=["sns:Publish"], resources=["*"]
+                                effect=iam.Effect.ALLOW,
+                                actions=['sns:Publish'],
+                                resources=['*']
                             )
                         ]
                     )

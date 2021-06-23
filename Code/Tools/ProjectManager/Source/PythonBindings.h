@@ -75,13 +75,15 @@ namespace O3DE::ProjectManager
         bool m_pythonStarted = false;
 
         AZ::IO::FixedMaxPath m_enginePath;
-        pybind11::handle m_engineTemplate;
         AZStd::recursive_mutex m_lock;
+
+        pybind11::handle m_engineTemplate;
         pybind11::handle m_cmake;
         pybind11::handle m_register;
         pybind11::handle m_manifest;
         pybind11::handle m_enableGemProject;
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
+        pybind11::handle m_pathlib;
     };
 }
