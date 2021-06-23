@@ -35,20 +35,27 @@ namespace AZ
         {
             // get attachment size
             RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetInputOutputBinding(1).m_attachment.get();
+                                            
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
+            AZ_Assert(outputAttachment, "ReflectionScreenSpaceBlurChildPass: Output binding has no attachment!");
 
-            RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
-
-            if (m_imageSize != size)
+            RHI::Size inputImageSize = inputAttachment->m_descriptor.m_image.m_size;
+            RHI::Size outputImageSize = outputAttachment->m_descriptor.m_image.m_size;
+            
+            if (m_imageSize != inputImageSize)
             {
-                m_imageSize = size;
+                m_imageSize = inputImageSize;
                 m_outputScale = (m_passType == PassType::Vertical) ? pow(2.0f, m_mipLevel) : 1.0f;
 
                 m_updateSrg = true;
             }
 
-            params.m_viewportState = RHI::Viewport(0, static_cast<float>(m_imageSize.m_width), 0, static_cast<float>(m_imageSize.m_height));
-            params.m_scissorState = RHI::Scissor(0, 0, m_imageSize.m_width, m_imageSize.m_height);
+            uint32_t imgWidth = AZStd::min(inputImageSize.m_width, outputImageSize.m_width);
+            uint32_t imgHeight = AZStd::min(inputImageSize.m_height, outputImageSize.m_height);
+            
+            params.m_viewportState = RHI::Viewport(0, imgWidth, 0, imgHeight);
+            params.m_scissorState = RHI::Scissor(0, 0, imgWidth, imgHeight);
 
             FullscreenTrianglePass::FrameBeginInternal(params);
         }

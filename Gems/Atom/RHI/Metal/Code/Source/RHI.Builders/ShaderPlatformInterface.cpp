@@ -160,7 +160,7 @@ namespace AZ
             // Note: all platforms use DirectX packing rules. We enable vk namespace as well to allow
             // for vk syntax to carry  through from dxc to spirv-cross.
             return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
-                " --use-spaces --unique-idx --namespace=mt,vk --root-const=128";
+                " --use-spaces --unique-idx --namespace=mt,vk --root-const=128 --pad-root-const";
         }
  
         AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const

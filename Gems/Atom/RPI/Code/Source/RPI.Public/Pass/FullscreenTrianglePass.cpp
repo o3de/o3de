@@ -24,6 +24,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/std/algorithm.h>
 
 namespace AZ
 {
@@ -181,20 +182,13 @@ namespace AZ
 
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-            m_viewportState = params.m_viewportState;
-            if (m_viewportState.IsNull())
-            {
-                // compute viewport from target attachment
-                m_viewportState = RHI::Viewport(0, static_cast<float>(targetImageSize.m_width), 0, static_cast<float>(targetImageSize.m_height));
-            }
-
-            m_scissorState = params.m_scissorState;
-            if (m_scissorState.IsNull())
-            {
-                // compute scissor from target attachment
-                m_scissorState = RHI::Scissor(0, 0, targetImageSize.m_width, targetImageSize.m_height);
-            }
-
+            m_viewportState.m_minX = m_viewportState.m_minY = 0;
+            m_viewportState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width);
+            m_viewportState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height);
+            
+            m_scissorState.m_minX = m_scissorState.m_minY = 0;
+            m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
+            m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);
             RenderPass::FrameBeginInternal(params);
         }
 
