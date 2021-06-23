@@ -112,14 +112,12 @@ namespace AZ
                     // Buffer view creation from the shared buffer
                     uint8_t stream = streams[index];
                     SrgBufferDescriptor streamDesc = m_dynamicBuffersDescriptors[stream];
-//                    streamDesc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
 
                     streamDesc.m_viewOffsetInBytes = uint32_t(m_dynamicViewAllocators[stream]->GetVirtualAddress().m_ptr);
                     AZ_Assert(streamDesc.m_viewOffsetInBytes % streamDesc.m_elementSize == 0, "Offset of buffer within The SharedBuffer is NOT aligned.");
                     const RHI::BufferViewDescriptor viewDescriptor = SharedBuffer::CreateResourceViewWithDifferentFormat(
                         streamDesc.m_viewOffsetInBytes, streamDesc.m_elementCount, streamDesc.m_elementSize,
                         streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderRead    // No need for ReadWrite in the raster fill
-//                        streamDesc.m_elementFormat, RHI::BufferBindFlags::ShaderReadWrite    // No need for ReadWrite in the raster fill
                     );
 
                     m_readBuffersViews[index] = RHI::Factory::Get().CreateBufferView();

@@ -79,6 +79,7 @@ set(FILES
     Code/Assets/HairAsset.cpp
 #)
 #set(shaders_sources
+    # Srgs and Utility files
     Assets/Shaders/HairSrgs.azsli
     Assets/Shaders/HairSimulationSrgs.azsli
     Assets/Shaders/HairRenderingSrgs.azsli
@@ -87,6 +88,7 @@ set(FILES
     Assets/Shaders/HairUtilities.azsli
     Assets/Shaders/HairLighting.azsli
 
+    # Simulation Compute shaders
     Assets/Shaders/HairSimulation.azsl
     Assets/Shaders/HairGlobalShapeConstraints.azsl
     Assets/Shaders/HairCalculateStrandLevelData.azsl
@@ -94,9 +96,17 @@ set(FILES
     Assets/Shaders/HairLocalShapeConstraints.azsl
     Assets/Shaders/HairLengthConstraintsWindAndCollision.azsl  
     Assets/Shaders/HairUpdateFollowHair.azsl
+    
+    # Rendering shaders
     Assets/Shaders/HairRenderingFillPPLL.azsl
     Assets/Shaders/HairRenderingResolvePPLL.azsl
 
+    # Collision shaders
+    Assets/Shaders/HairCollisionPrepareSDF.azsl
+    Assets/Shaders/HairCollisionWithSDF.azsl
+    
+
+    # Simulation .shader files
     Assets/Shaders/HairSkinningCompute.shader
     Assets/Shaders/HairGlobalShapeConstraintsCompute.shader  
     Assets/Shaders/HairCalculateStrandLevelDataCompute.shader
@@ -104,8 +114,16 @@ set(FILES
     Assets/Shaders/HairLocalShapeConstraintsCompute.shader
     Assets/Shaders/HairLengthConstraintsWindAndCollisionCompute.shader  
     Assets/Shaders/HairUpdateFollowHairCompute.shader
+    
+    # Rendering .shader file
     Assets/Shaders/HairRenderingFillPPLL.shader
     Assets/Shaders/HairRenderingResolvePPLL.shader
+    
+    # Colisions .shader files
+    Assets/Shaders/HairCollisionInitializeSDF.shader 
+    Assets/Shaders/HairCollisionConstructSDF.shader
+    Assets/Shaders/HairCollisionFinalizeSDF.shader
+    Assets/Shaders/HairCollisionWithSDF.shader 
 #)
 #
 #set(atom_hair_passes

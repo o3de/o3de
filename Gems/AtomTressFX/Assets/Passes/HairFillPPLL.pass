@@ -15,10 +15,15 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
                 },
-                {
+                { // The depth buffer will be used to write the closest hair fragment depth
                     "Name": "Depth",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
+//                    "SlotType": "InputOutput",
+//                    "LoadStoreAction": {
+//                        "LoadAction": "Load",
+//                        "StoreAction": "Store"
+//                    }
                 },
                 {
                     "Name": "RenderTargetInputOutput",
