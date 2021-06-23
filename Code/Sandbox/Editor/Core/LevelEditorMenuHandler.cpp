@@ -841,9 +841,6 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     // Documentation
     auto documentationMenu = helpMenu.AddMenu(tr("Documentation"));
 
-    // Glossary
-    documentationMenu.AddAction(ID_DOCUMENTATION_GLOSSARY);
-
     // Open 3D Engine Documentation
     documentationMenu.AddAction(ID_DOCUMENTATION_O3DE);
 
@@ -859,9 +856,6 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     // Game Dev Blog
     gameDevResourceMenu.AddAction(ID_DOCUMENTATION_GAMEDEVBLOG);
 
-    // GameDev Twitch Channel
-    gameDevResourceMenu.AddAction(ID_DOCUMENTATION_TWITCHCHANNEL);
-
     // Forums
     gameDevResourceMenu.AddAction(ID_DOCUMENTATION_FORUMS);
 
@@ -869,12 +863,6 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     gameDevResourceMenu.AddAction(ID_DOCUMENTATION_AWSSUPPORT);
 
     helpMenu.AddSeparator();
-
-    // Give Us Feedback
-    helpMenu.AddAction(ID_DOCUMENTATION_FEEDBACK);
-
-    // Report a Bug???
-    // auto reportBugMenu = helpMenu.Get()->addAction(tr("Report a Bug"));
 
     // About Open 3D Engine
     helpMenu.AddAction(ID_APP_ABOUT);

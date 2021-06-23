@@ -86,12 +86,12 @@ void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
 
 void CAboutDialog::OnCustomerAgreement()
 {
-    QDesktopServices::openUrl(QUrl(QStringLiteral("http://aws.amazon.com/agreement/")));
+    QDesktopServices::openUrl(QUrl(QStringLiteral("https://lfprojects.org/policies/terms-of-use/")));
 }
 
 void CAboutDialog::OnPrivacyNotice()
 {
-    QDesktopServices::openUrl(QUrl(QStringLiteral("http://aws.amazon.com/privacy/")));
+    QDesktopServices::openUrl(QUrl(QStringLiteral("https://lfprojects.org/policies/privacy-policy/")));
 }
 
 #include <moc_AboutDialog.cpp>
