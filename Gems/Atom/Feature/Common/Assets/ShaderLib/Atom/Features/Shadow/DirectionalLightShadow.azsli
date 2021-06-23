@@ -427,6 +427,7 @@ float DirectionalLightShadow::SamplePcfBicubic()
             shadowCoord.y >= 0. && shadowCoord.y * size < size - PixelMargin && 
             shadowCoord.z < 1. - DepthMargin)
         {
+            m_debugInfo.m_cascadeIndex = indexOfCascade;
             return SamplePcfBicubic(shadowCoord, indexOfCascade);
         }
     }
