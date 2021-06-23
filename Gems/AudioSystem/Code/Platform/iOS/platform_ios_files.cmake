@@ -8,4 +8,5 @@
 set(FILES
     AudioSystem_Traits_Platform.h
     AudioSystem_Traits_iOS.h
+    ../Common/Default/AudioSystemGemSystemComponent_default.cpp
 )
