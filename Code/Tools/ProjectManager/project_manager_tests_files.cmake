@@ -15,4 +15,5 @@ set(FILES
     tests/ApplicationTests.cpp
     tests/PythonBindingsTests.cpp
     tests/main.cpp
+    tests/UtilsTests.cpp
 )

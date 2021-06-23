@@ -312,7 +312,7 @@ namespace AZ::IO
                     {
                         if (reportHardware)
                         {
-                            AZ_Printf("Streamer", "Skipping drive '%s' because to no paths make use of it.\n", driveIt);
+                            AZ_Printf("Streamer", "Skipping drive '%s' because no paths make use of it.\n", driveIt);
                         }
                         while (*driveIt++);
                         continue;

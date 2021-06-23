@@ -12,8 +12,8 @@
 
 #include <NewProjectSettingsScreen.h>
 #include <PythonBindingsInterface.h>
-#include <FormLineEditWidget.h>
 #include <FormBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
 #include <TemplateButtonWidget.h>
 #include <PathValidator.h>
 #include <EngineInfo.h>

@@ -17,3 +17,7 @@ add_custom_command(TARGET LmbrCentral.Editor POST_BUILD
     COMMENT "Patching lrelease..."
     VERBATIM
 )
+
+set(lrelease_files
+    ${QT_LRELEASE_EXECUTABLE}
+)
