@@ -704,7 +704,7 @@ namespace ScriptCanvas
         int Unpack(lua_State* lua, DependencyConstructionPack& args)
         {
             ActivationInputArray storage;
-            ActivationData data(args.executionState->GetRuntimeDataOverrides(), storage);
+            ActivationData data(args.runtimeOverrides, storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return range.totalCount;
