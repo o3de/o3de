@@ -47,13 +47,13 @@ namespace O3DE::ProjectManager
 
     TEST_F(PythonBindingsTests, PythonBindings_Create_Project_Succeeds)
     {
-        AZ_TEST_ASSERT(m_pythonBindings->PythonStarted());
+        ASSERT_TRUE(m_pythonBindings->PythonStarted());
 
         auto templateResults = m_pythonBindings->GetProjectTemplates();
-        AZ_TEST_ASSERT(templateResults.IsSuccess());
+        ASSERT_TRUE(templateResults.IsSuccess());
 
         QVector<ProjectTemplateInfo> templates = templateResults.GetValue();
-        AZ_TEST_ASSERT(!templates.isEmpty());
+        ASSERT_FALSE(templates.isEmpty());
 
         // use the first registered template
         QString templatePath = templates.at(0).m_path;
