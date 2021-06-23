@@ -33,7 +33,8 @@
 //!  across all dispatches and draw calls and used for all the dynamic buffers
 //!  that can change between passes due to the application of skinning, simulation 
 //!  and physics affect and is then read by the rendering shaders.  
-ShaderResourceGroup PassSrg : SRG_PerPass 
+//ShaderResourceGroup PassSrg : SRG_PerPass 
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {   
     //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
     //!  hair OIT data and shade it in the full screen resolve pass.
@@ -52,10 +53,20 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     //------------------------------
     //        Lighting Data
     //------------------------------
+    Sampler LinearSampler
+    {   // Required by LightingData.azsli
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
     Texture2DArray<float> m_directionalLightShadowmap;
     Texture2DArray<float> m_directionalLightExponentialShadowmap;
-    Texture2DArray<float> m_spotLightShadowmaps;
-    Texture2DArray<float> m_spotLightExponentialShadowmap;
+    Texture2DArray<float> m_projectedShadowmaps;
+    Texture2DArray<float> m_projectedExponentialShadowmap;
     Texture2D m_brdfMap;   
     Texture2D<uint4> m_tileLightData;
     StructuredBuffer<uint> m_lightListRemapped;
@@ -136,7 +147,9 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
         }
     }
 
-    float4 fcolor = float4(0, 0, 0, 1);
+//    float4 fcolor = float4(1, 1, 1, 1);     // Blend alpha and inverse alpha 
+    float4 fcolor = float4(1, 1, 1, 0);   // Blend one and inverse alpha
+//    float4 vTmpColor = fcolor;
 
     // Go through the remaining layers of hair
     [allow_uav_condition]
@@ -186,18 +199,28 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
 
         uint shadeParamIndex;	// So we know what settings to shade with
         float3 vColor = UnpackUintIntoFloat3Byte(color, shadeParamIndex);
+//        vTmpColor = float4( min(vColor,vTmpColor.xyz), 1.0);
         
         // Shade the bottom hair layers (cheap shading, just uses scalp base color)
         // Just blend in the color for cheap underhairs
         fcolor.xyz = fcolor.xyz * (1.f - alpha) + (vColor * alpha) * alpha;
-        fcolor.w *= (1.f - alpha);
+//        fcolor.w *= (1.f - alpha);                // Blend one and inverse alpha
+        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
+
+
 
         pointer = NODE_NEXT(pointer);
     }
 
     // Make sure we are blending the correct number of strands (don't blend more than we have)
     float maxAlpha = 0;
-    float minDepth = 1.0;   // furthesr fragment in Atom
+    float minDepth = 1.0;   // furthest fragment in Atom
+
+//    fcolor.xyz = float3(0, 1, 0);
+//    vTmpColor = fcolor;
+//    outDepth = minDepth; 
+//    vTmpColor.w = 0.0;
+//    return vTmpColor;
 
     // Blend the top-most entries
     for (int j = 0; j < KBUFFER_SIZE; j++)
@@ -236,11 +259,13 @@ float4 GatherLinkedList(float2 vfScreenAddress, inout float outDepth )
 
         // Blend in the fragment color
         fcolor.xyz = fcolor.xyz * (1.f - alpha) + (fragmentColor * alpha) * alpha;
-        fcolor.w *= (1.f - alpha);
+//        fcolor.w *= (1.f - alpha);
+        fcolor.w = saturate(fcolor.w + alpha);    // Blend alpha and inverse alpha
     }
 
     outDepth = minDepth;    // the last ine standing is the closest
 
+//    return vTmpColor;
     return fcolor;
 }
 

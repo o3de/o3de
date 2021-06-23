@@ -29,10 +29,10 @@
 
     "BlendState" : 
     {
-        "Enable" : false,
-        "BlendSource" : "AlphaSource",
-        "BlendDest" : "AlphaSourceInverse",
-        "BlendOp" : "Add"
+        "Enable" : false
+//        "BlendSource" : "AlphaSource",
+//        "BlendDest" : "AlphaSourceInverse",
+//        "BlendOp" : "Add"
     },
 
     "ProgramSettings":

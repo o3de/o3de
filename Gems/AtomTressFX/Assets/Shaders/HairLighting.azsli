@@ -227,6 +227,7 @@ float LinearizeDepth(float depthNDC, float fNear, float fFar)
 {
     return fNear * fFar / (fFar - depthNDC * (fFar - fNear));
 }
+
 /*
 // fDepthDistanceWS is the world space distance between the point on the surface and the point in the shadow map.
 // fFiberSpacing is the assumed, average, world space distance between hair fibers.
@@ -366,7 +367,7 @@ float3 AccumulateHairLight(float3 vTangent, float3 vPositionWS, float3 vViewDirW
                 return color;
 }
 
-float3 SimlifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDirWS, in HairShadeParams params, float3 vNDC)
+float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDirWS, in HairShadeParams params, float3 vNDC)
 {
     // Initialize information needed for all lights
     float3 V = normalize(vViewDirWS);
@@ -375,9 +376,9 @@ float3 SimlifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDi
     float3 accumulatedHairColor = float3(0.0, 0.0, 0.0);
 
     float4 lightPosWSVec[3] = {
-        float4(4, -1, 2, 0.35),
-        float4(-4, -.7, 1, 0.2),
-        float4(g_vEye.xyz, 0.5) // + float3(0,0,0.2)    // camera light located a bit above the camera.
+        float4(4, -1, 2, 0.835),
+        float4(-4, -.7, 1, 0.52),
+        float4(g_vEye.xyz, 1.5) // + float3(0,0,0.2)    // camera light located a bit above the camera.
     };
 
     // Right now we fake two lights - one is fixed and the other one 
@@ -403,7 +404,179 @@ float3 SimlifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDi
     return accumulatedHairColor;
 }
 
+//------------------------------------------------------------------------------
+// Include options first
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
+// Then include custom surface and lighting data types
+#include <Atom/Features/PBR/Lighting/LightingData.azsli>
+#include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
+
+//#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
+#include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+//------------------------------------------------------------------------------
+//! Simple Lambertian BRDF. 
+float3 DiffuseLambert(float3 albedo, float3 normal, float3 dirToLight)
+{
+    float NdotL = saturate(dot(normal, dirToLight));
+    return albedo * NdotL * INV_PI;
+} 
+
+// Then define the Diffuse and Specular lighting functions
+float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
+{
+    float3 diffuse = DiffuseLambert(surface.albedo, surface.normal, dirToLight);
+    diffuse *= lightIntensity;
+    return diffuse;
+}
+
+float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
+{
+    float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    specular *= lightIntensity;
+    return specular;
+}
+
+
+//==============================================================================
+#include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
+
+float3 ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
+{
+    float3 diffuseContribution = 0;
+    float3 specularContribution = 0;
+    
+    float3 posToLight = light.m_position - surface.position;
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+
+    
+    // [To Do] Adi: this part can create a crash - probably because the buffers are 
+    //   not properly connected
+    // Only calculate shading if light is in range
+    if (falloff < 1.0f)
+    {
+        
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+        // Standard quadratic falloff
+        d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+        float3 posToLightDir = normalize(posToLight);
+
+        // Diffuse contribution
+        diffuseContribution += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+//        lightingData.diffuseLighting = GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+//        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+
+        // Specular contribution
+//        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        specularContribution += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+    }
+    
+//    diffuseContribution = float3(0, 0.5, 0);
+//    specularContribution += float3(0, 0, 0);
+//    lightingData.diffuseLighting = float3(0, 1, 0);
+//    lightingData.diffuseLighting = float3(0, 0.333*dot(lightIntensity,float3(1,1,1)), 0);
+//    lightingData.specularLighting = float3(0, 1, 0);
+    return diffuseContribution + specularContribution;
+}
+
+float3 ApplySimplePointLights(Surface surface, inout LightingData lightingData)
+{
+    float3 totalContribution = 0;
+    lightingData.tileIterator.LoadAdvance();
+
+    int lightCount = 0;
+    while( !lightingData.tileIterator.IsDone() && lightCount<1) 
+    { 
+        uint currLightIndex = lightingData.tileIterator.GetValue(); 
+        lightingData.tileIterator.LoadAdvance();
+
+        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
+        totalContribution += ApplySimplePointLight(light, surface, lightingData);
+        ++lightCount;
+    }
+    return totalContribution;
+}
+
+//==============================================================================
+
+//------------------------------------------------------------------------------
+//#include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
+//#include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
+//------------------------------------------------------------------------------
+
+float3 CalculateDirectLighting( 
+    float4 screenCoords,    // XY - screen coords 0..max pix res, Z - depth 0..1
+    float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
+    float3 baseColor)
+{    
+    Surface surface;
+
+    float3 screenPosNDC = ScreenPosToNDC(PassSrg::m_linearDepth, screenCoords.xy, screenCoords.z);
+    
+    // Position, Normal, Roughness
+    surface.position = vPositionWS;
+
+    // Calculate the normal along the view-tangent plane in order to
+    // get the best fitting normal from the normal disk around the hair cylinder.
+    float3 biNormal = cross(vTangent, vViewDirWS);
+    float3 projectedNormal = cross(biNormal, vTangent);
+    surface.normal = normalize(projectedNormal);
+
+    surface.roughnessLinear = 0.51f;
+    surface.CalculateRoughnessA();
+
+    // Albedo, SpecularF0
+    const float specularF0Factor = 0.04f; // set this to 0.04?!
+    const float metallic = 0.05;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+    // Clear Coat, Transmission
+    surface.clearCoat.InitializeToZero();
+    surface.transmission.InitializeToZero();
+
+    //------- LightingData initialization -------
+    LightingData lightingData;
+    float4 screenPositionForLighting = mul(ViewSrg::m_viewProjectionMatrix, float4(vPositionWS, 1.0));
+//    screenPositionForLighting.xyz = screenPosNDC; // no go
+
+    // Light iterator
+    // screenPositionForLighting.xy in the iterator init should be in XY pixel location on screen (based on LightCullingShared)
+    // screenPositionForLighting.z should be depth 0..1 (or reverse Z in our case).
+    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+//    lightingData.tileIterator.Init(screenPositionForLighting, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+
+    // [To Do] Adi: Ignore for now, but what do we do with this?
+    // Shadow, Occlusion
+//    lightingData.shadowCoords = IN.m_shadowCoords;
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+
+    //-------------------------
+    // Applying the light loops
+//    ApplyDirectionalLights(surface, lightingData);
+    float3 totalContibution = 0;
+    
+    totalContibution += ApplySimplePointLights(surface, lightingData);
+//    ApplySimpleSpotLights(surface, lightingData);
+
+
+//    return float3( 0.5 + 0.5 * screenCoords.xy, 0); // no go
+//    return float3(screenPosNDC.xy,0); // WORKS
+//    return float3(screenCoords.xy * 0.0005, 0); // WORKS
+//    return float3(0, 2.0 *vPositionWS.z, 0); // no go
+//    return float3(screenPositionForLighting.xy * 1000.0, 0); // no go
+    return totalContibution;
+    return lightingData.diffuseLighting + lightingData.specularLighting;
+}
 
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
 {
@@ -411,6 +584,8 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
 
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
     float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
+//    float4 screenCoords = float4(vNDC, depth);   // screen space position - XY in pixels - ZW are depth 0..1
+    float4 screenCoords = float4(16 * pixelCoord, depth, depth);   // screen space position - XY in pixels - ZW are depth 0..1
 
     // [To Do] Adi: adibugbug - the following is a horrible hack because we don'e have the viewport 
     // dimensions, inverse and ofset - how come this was never done / requested?
@@ -419,7 +594,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     float3 vViewDirWS = g_vEye - vPositionWS;
 
     // Need to expand the tangent that was compressed to store in the buffer
-    float3 vTangent = vTangentCoverage.xyz * 2.f - 1.f;
+    float3 vTangent = normalize(vTangentCoverage.xyz * 2.f - 1.f);
 
     HairShadeParams params;
     params.m_color = baseColor;
@@ -433,11 +608,6 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ex1 = HairParams[shaderParamIndex].m_matKValue.w;
     params.m_Ks2 = HairParams[shaderParamIndex].m_hairKs2;
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
-
-    // Next I calculate the notmal along the view-tangent plane in order to 
-    // get the best fitting normal from the normal disk around the hair cylinder.
-    float3 biNormal = cross(vTangent, vViewDirWS);
-    float3 projectedNormal = normalize(cross(biNormal, vTangent));
 
     //------------------------------------------------------------------
     // [To DO] Adi: this is where you need to plug in Arom lighting pass
@@ -454,6 +624,9 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
 //    return vPositionWS;
 //    return float3( float2(0, 1) + pixelCoord * float2(0.00071, -0.00081), depth);
 //    return vTangent;
-    return SimlifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
+//    return baseColor;
+
+    return CalculateDirectLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, baseColor);
+    return SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }
