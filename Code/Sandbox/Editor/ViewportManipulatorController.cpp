@@ -221,7 +221,8 @@ namespace SandboxEditor
                 interactionHandled, AzToolsFramework::GetEntityContextId(), targetInteractionEvent, mouseInteractionEvent);
         }
 
-        return interactionHandled;
+        // Only filter button/key press events, not release events
+        return interactionHandled && event.m_inputChannel.IsActive();
     }
 
     void ViewportManipulatorControllerInstance::ResetInputChannels()

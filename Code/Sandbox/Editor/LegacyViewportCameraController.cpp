@@ -397,7 +397,7 @@ bool LegacyViewportCameraControllerInstance::HandleInputChannelEvent(const AzFra
     }
     else if (auto key = GetKeyboardKey(event.m_inputChannel); key != Qt::Key_unknown)
     {
-        if (state == InputChannel::State::Ended)
+        if (!event.m_inputChannel.IsActive())
         {
             m_pressedKeys.erase(key);
         }
