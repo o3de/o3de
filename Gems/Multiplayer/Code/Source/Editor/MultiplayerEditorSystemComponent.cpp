@@ -16,6 +16,7 @@
 
 #include <MultiplayerSystemComponent.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
+#include <Editor/MultiplayerEditorUtils.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -214,7 +215,7 @@ namespace Multiplayer
                 AzNetworking::TcpPacketEncodingBuffer& outBuffer = packet.ModifyAssetData();
 
                 // Size the packet's buffer appropriately
-                size_t readSize = TcpPacketEncodingBuffer::GetCapacity();
+                size_t readSize = GetMaxEditorServerInitSize();
                 size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
                 if (byteStreamSize < readSize)
                 {

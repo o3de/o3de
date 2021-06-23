@@ -13,6 +13,7 @@
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Editor/MultiplayerEditorConnection.h>
+#include <Editor/MultiplayerEditorUtils.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AzCore/Asset/AssetManager.h>
@@ -58,7 +59,7 @@ namespace Multiplayer
         if (!packet.GetLastUpdate())
         {
             // More packets are expected, flush this to the buffer
-            m_byteStream.Write(TcpPacketEncodingBuffer::GetCapacity(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
+            m_byteStream.Write(GetMaxEditorServerInitSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
         }
         else
         {
@@ -80,6 +81,11 @@ namespace Multiplayer
 
                 size_t assetSize = m_byteStream.GetCurPos();
                 AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
+                if (!assetDatum)
+                {
+                    AZLOG_ERROR("EditorServerInit packet contains no asset data. Asset: %s", assetHint.c_str());
+                    return false;
+                }
                 assetSize = m_byteStream.GetCurPos() - assetSize;
                 AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::Asset<AZ::Data::AssetData>(assetId, assetDatum, AZ::Data::AssetLoadBehavior::NoLoad);
                 asset.SetHint(assetHint);

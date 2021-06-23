@@ -68,6 +68,7 @@ set(FILES
     Source/ConnectionData/ServerToClientConnectionData.inl
     Source/Editor/MultiplayerEditorConnection.cpp
     Source/Editor/MultiplayerEditorConnection.h
+    Source/Editor/MultiplayerEditorUtils.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
