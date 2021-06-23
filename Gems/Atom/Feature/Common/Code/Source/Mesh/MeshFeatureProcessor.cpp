@@ -706,7 +706,7 @@ namespace AZ
             static const char* UVSemantic = "UV";
             static const RHI::Format PositionStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format NormalStreamFormat = RHI::Format::R32G32B32_FLOAT;
-            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
             static const RHI::Format BitangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format UVStreamFormat = RHI::Format::R32G32_FLOAT;
 
