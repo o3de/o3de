@@ -149,7 +149,7 @@ namespace AWSClientAuth
         }
         else
         {
-            AZ_Warning("AWSCognitoAuthorizationController", true, "No logins found. Fetching anonymous/unauthenticated credentials");
+            AZ_Warning("AWSCognitoAuthorizationController", false, "No logins found. Fetching anonymous/unauthenticated credentials");
         }
 
         AZ::JobContext* jobContext = nullptr;
@@ -277,7 +277,7 @@ namespace AWSClientAuth
         // Check anonymous credentials as they are optional settings in Cognito Identity pool.
         if (!m_cognitoCachingAnonymousCredentialsProvider->GetAWSCredentials().IsEmpty())
         {
-            AZ_Warning("AWSCognitoAuthorizationCredentialHandler", true, "No logins found. Using Anonymous credential provider");
+            AZ_Warning("AWSCognitoAuthorizationCredentialHandler", false, "No logins found. Using Anonymous credential provider");
             return m_cognitoCachingAnonymousCredentialsProvider;
         }
 

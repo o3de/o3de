@@ -8,3 +8,8 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
+
+set(lrelease_files
+    ${QT_LRELEASE_EXECUTABLE}
+    ${QT_PATH}/bin/Qt5Core.dll # this is a dependency of lrelease. Even in debug we use the release version
+)

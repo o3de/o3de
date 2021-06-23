@@ -11,7 +11,7 @@
 */
 
 #include <GemCatalog/GemItemDelegate.h>
-#include "GemModel.h"
+#include <GemCatalog/GemModel.h>
 #include <QEvent>
 #include <QPainter>
 #include <QMouseEvent>
