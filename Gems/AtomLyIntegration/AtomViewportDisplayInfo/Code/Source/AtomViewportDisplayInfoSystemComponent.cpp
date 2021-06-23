@@ -280,20 +280,23 @@ namespace AZ::Render
         }
 
         double averageFPS = 0;
+        double averageFrameMs = 0;
         if (m_fpsHistory.size() > 1)
         {
             deltaTime = m_fpsHistory.back() - m_fpsHistory.front();
             averageFPS = AZStd::chrono::seconds(m_fpsHistory.size()) / deltaTime;
+            averageFrameMs = 1000.0f/averageFPS;
         }
 
         const double frameIntervalSeconds = m_fpsInterval.count();
 
         DrawLine(
             AZStd::string::format(
-                "FPS %.1f [%.0f..%.0f], frame avg over %.1fs",
+                "FPS %.1f [%.0f..%.0f], %.1fms/frame, avg over %.1fs",
                 averageFPS,
                 minFPS,
                 maxFPS,
+                averageFrameMs,
                 frameIntervalSeconds),
             AZ::Colors::Yellow);
     }
