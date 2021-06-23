@@ -76,20 +76,18 @@ namespace PythonCoverage
     void PythonCoverageEditorSystemComponent::ParseCoverageOutputDirectory()
     {
         m_coverageState = CoverageState::Disabled;
-
-        // Config file path will be empty if test impact analysis framework is disabled at the build config level
         const AZStd::string configFilePath = LY_TEST_IMPACT_DEFAULT_CONFIG_FILE;
 
         if (configFilePath.empty())
         {
-            AZ_Warning(Caller, false, "No test impact analysis framework config found.");
+            AZ_Warning(Caller, false, "No test impact analysis framework config file specified.");
             return;
         }
 
         const auto fileSize = AZ::IO::SystemFile::Length(configFilePath.c_str());
         if(!fileSize)
         {
-            AZ_Error(Caller, false, "File '%s' does not exist", configFilePath.c_str());
+            AZ_Error(Caller, false, "Test impact analysis framework config file '%s' does not exist", configFilePath.c_str());
             return;
         }
 
@@ -97,7 +95,7 @@ namespace PythonCoverage
         buffer[fileSize] = '\0';
         if (!AZ::IO::SystemFile::Read(configFilePath.c_str(), buffer.data()))
         {
-            AZ_Error(Caller, false, "Could not read contents of file '%s'", configFilePath.c_str());
+            AZ_Error(Caller, false, "Could not read contents of test impact analysis framework config file '%s'", configFilePath.c_str());
             return;
         }
         
@@ -105,13 +103,13 @@ namespace PythonCoverage
         rapidjson::Document configurationFile;
         if (configurationFile.Parse(configurationData.c_str()).HasParseError())
         {
-            AZ_Error(Caller, false, "Could not parse runtimeConfig data, JSON has errors");
+            AZ_Error(Caller, false, "Could not parse test impact analysis framework config file data, JSON has errors");
             return;
         }
 
         const auto& tempConfig = configurationFile["workspace"]["temp"];
 
-        // Temo directory root path is absolute
+        // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
 
         // Artifact directory is relative to temp directory root
@@ -212,7 +210,7 @@ namespace PythonCoverage
         return coveringModuleOutputNames;
     }
     
-    void PythonCoverageEditorSystemComponent::OnExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
     {
         if (m_coverageState == CoverageState::Disabled)
         {

@@ -47,7 +47,7 @@ namespace PythonCoverage
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // AZ::EditorPythonScriptNotificationsBus ...
-        void OnExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
+        void OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
 
         //! Attempts to parse the test impact analysis framework configuration file.
         //! If either the test impact analysis framework is disabled or the configuration file cannot be parsed, python coverage
