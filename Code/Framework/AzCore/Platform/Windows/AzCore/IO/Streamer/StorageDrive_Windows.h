@@ -44,8 +44,7 @@ namespace AZ::IO
             //! make adjustments. For the most optimal performance align read buffers to the physicalSectorSize.
             u8 m_enableUnbufferedReads : 1;
             //! Globally enable file sharing. This allows files to used outside AZ::IO::Streamer, including other applications
-            //! while in use by AZ::IO::Streamer. File sharing can negatively impact performance and is recommended for
-            //! development only. 
+            //! while in use by AZ::IO::Streamer. 
             u8 m_enableSharing : 1;
             //! If true, only information that's explicitly requested or issues are reported. If false, status information
             //! such as when drives are created and destroyed is reported as well.

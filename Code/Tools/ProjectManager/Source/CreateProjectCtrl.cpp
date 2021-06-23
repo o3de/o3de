@@ -206,7 +206,11 @@ namespace O3DE::ProjectManager
                 PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path);
+                if (!m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path))
+                {
+                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                    return;
+                }
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
                 projectInfo.m_needsBuild = true;

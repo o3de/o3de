@@ -31,5 +31,6 @@
         <file>CarrotArrowDown.svg</file>
         <file>Summary.svg</file>
         <file>WindowClose.svg</file>
+        <file>Warning.svg</file>
     </qresource>
 </RCC>
