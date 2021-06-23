@@ -316,22 +316,14 @@ namespace EMStudio
             // Non-case sensitive group name comparison. Product filenames are lower case only and might mismatch casing of the entered group name.
             if (AzFramework::StringFunc::Equal(group.GetName().c_str(), groupName.c_str()))
             {
-                EMotionFX::MotionEventTable* eventTable = motion->GetEventTable();
-                if (true)
-                {
-                    //EMotionFX::Pipeline::Rule::SaveToGroupNoRef<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::MotionEventTable*>(*scene, group, eventTable);
-                    EMotionFX::Pipeline::Rule::MotionMetaData motionMetaData;
-                    motionMetaData.m_motionEventTable = eventTable;
-                    motionMetaData.m_motionExtractionFlags = motion->GetMotionExtractionFlags();
-                    EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::Pipeline::Rule::MotionMetaData>(*scene, group, motionMetaData);
-                }
-                else
-                {
-                    //EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, AZStd::shared_ptr<EMotionFX::MotionEventTable>>(*scene, group);
-                }
+                // Remove legacy meta data rule.
+                EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::MetaDataRule, const AZStd::vector<MCore::Command*>>(*scene, group);
 
-                EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::MetaDataRule, AZStd::shared_ptr<EMotionFX::MotionEventTable>>(*scene, group);
-                //tempPtr.reset();
+                // Add motion meta data.
+                EMotionFX::Pipeline::Rule::MotionMetaData motionMetaData;
+                motionMetaData.m_motionEventTable = motion->GetEventTable();
+                motionMetaData.m_motionExtractionFlags = motion->GetMotionExtractionFlags();
+                EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::Pipeline::Rule::MotionMetaData>(*scene, group, motionMetaData);
             }
         }
 
