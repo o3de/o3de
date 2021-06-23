@@ -12,37 +12,52 @@
 
 #pragma once
 
-#include <AzCore/std/smart_ptr/unique_ptr.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/Input/Channels/InputChannelDeltaWithSharedPosition2D.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedPosition2D.h>
-#include <AzFramework/Input/Channels/InputChannelDeltaWithSharedPosition2D.h>
 
 #include <QEvent>
+#include <QObject>
+#endif //!defined(Q_MOC_RUN)
 
 class QWidget;
+class QKeyEvent;
+class QMouseEvent;
+class QWheelEvent;
 
 namespace AzToolsFramework
 {
     //! Maps events from the Qt input system to synthetic InputChannels in AzFramework
     //! that can be used by AzFramework::ViewportControllers.
-    class QtEventToAzInputMapper final
+    class QtEventToAzInputMapper final : public QObject
     {
+        Q_OBJECT
+
     public:
         QtEventToAzInputMapper(QWidget* sourceWidget);
         ~QtEventToAzInputMapper() = default;
 
-        //! Maps a Qt event to any relevant input channels
-        //! \returns A vector containing all InputChannels that have changed state.
-        AZStd::vector<AzFramework::InputChannel*> MapQtEventToAzInput(QEvent* event);
         //! Queries whether a given input channel has a synthetic equivalent mapped
         //! by this system.
         //! \returns true if the channel is handled by MapQtEventToAzInput.
         bool HandlesInputEvent(const AzFramework::InputChannel& channel) const;
 
+        // QObject overrides...
+        bool eventFilter(QObject* object, QEvent* event) override;
+
+    signals:
+        //! This signal fires whenever the state of the specified input channel changes.
+        //! This is determined by Qt events dispatched to the source widget.
+        //! \param channel The AZ input channel that has been updated.
+        //! \param event The underlying Qt event that triggered this change, if applicable.
+        void InputChannelUpdated(const AzFramework::InputChannel* channel, QEvent* event);
+
     private:
-        template <class TInputChannel>
+        template<class TInputChannel>
         TInputChannel* GetInputChannel(const AzFramework::InputChannelId& id)
         {
             auto channelIt = m_channels.find(id);
@@ -52,6 +67,16 @@ namespace AzToolsFramework
             }
             return {};
         }
+
+        void NotifyUpdateChannelIfNotIdle(const AzFramework::InputChannel* channel, QEvent* event);
+
+        void ProcessPendingMouseEvents();
+
+        void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
+        void HandleMouseMoveEvent(QMouseEvent* mouseEvent);
+        void HandleKeyEvent(QKeyEvent* keyEvent);
+        void HandleWheelEvent(QWheelEvent* wheelEvent);
+        void HandleFocusChange(QEvent* event);
 
         // Mapping from Qt::Keys to InputChannelIds.
         // Used to populate m_keyMappings.

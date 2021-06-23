@@ -20,6 +20,7 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 
+#include <QApplication>
 #include <QCursor>
 #include <QEvent>
 #include <QKeyEvent>
@@ -141,7 +142,8 @@ namespace AzToolsFramework
                                                                           Qt::Key_Super_R };
 
     QtEventToAzInputMapper::QtEventToAzInputMapper(QWidget* sourceWidget)
-        : m_sourceWidget(sourceWidget)
+        : QObject(sourceWidget)
+        , m_sourceWidget(sourceWidget)
         , m_keyboardModifiers(AZStd::make_shared<AzFramework::ModifierKeyStates>())
         , m_cursorPosition(AZStd::make_shared<AzFramework::InputChannel::PositionData2D>())
         , m_keyMappings(QtKeyMappings.begin(), QtKeyMappings.end())
@@ -181,145 +183,9 @@ namespace AzToolsFramework
             channel->SetUpdateEventsEnabled(false);
             m_channels.emplace(id, AZStd::move(channel));
         }
-    }
 
-    AZStd::vector<AzFramework::InputChannel*> QtEventToAzInputMapper::MapQtEventToAzInput(QEvent* event)
-    {
-        AZStd::vector<AzFramework::InputChannel*> mappedChannels;
-
-        // If our focus changes, go ahead and reset all input devices.
-        if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
-        {
-            for (auto& channelData : m_channels)
-            {
-                // If resetting the input device changed the channel state, submit it to the mapped channel list
-                // for processing.
-                if (channelData.second->UpdateState(false))
-                {
-                    mappedChannels.push_back(channelData.second.get());
-                }
-            }
-            m_mouseChannelsNeedUpdate = false;
-        }
-
-        // Update mouse movement channels based on the cursor delta (if 0, ProcessRawInputEvent will change state to Ended).
-        auto processMouseMoveChannels = [this, &mappedChannels]()
-        {
-            auto systemCursorChannel =
-                GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::SystemCursorPosition);
-            auto cursorXChannel =
-                GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::X);
-            auto cursorYChannel =
-                GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Y);
-            auto cursorZChannel =
-                GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
-
-            systemCursorChannel->ProcessRawInputEvent(m_cursorPosition->m_normalizedPositionDelta.GetLength());
-            cursorXChannel->ProcessRawInputEvent(
-                m_cursorPosition->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(m_sourceWidget->width()));
-            cursorYChannel->ProcessRawInputEvent(
-                m_cursorPosition->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(m_sourceWidget->height()));
-            cursorZChannel->ProcessRawInputEvent(0.f);
-
-            mappedChannels.push_back(systemCursorChannel);
-            mappedChannels.push_back(cursorXChannel);
-            mappedChannels.push_back(cursorYChannel);
-            mappedChannels.push_back(cursorZChannel);
-        };
-
-        // Because there's no "end" to mouse movement and wheel events, we reset mouse movement channels that have been opened
-        // during the next processed non-mouse event.
-        if (m_mouseChannelsNeedUpdate && event->type() != QEvent::Type::MouseMove && event->type() != QEvent::Type::Wheel)
-        {
-            m_cursorPosition->m_normalizedPositionDelta = AZ::Vector2::CreateZero();
-            processMouseMoveChannels();
-            m_mouseChannelsNeedUpdate = false;
-        }
-
-        // Map key events to input channels.
-        // ShortcutOverride is used in lieu of KeyPress for high priority input channels like Alt
-        // that need to be accepted and stopped before they bubble up and cause unintended behavior.
-        if (event->type() == QEvent::Type::KeyPress || event->type() == QEvent::Type::KeyRelease ||
-            event->type() == QEvent::Type::ShortcutOverride)
-        {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-            const Qt::Key key = static_cast<Qt::Key>(keyEvent->key());
-            const auto modifiers = keyEvent->modifiers();
-
-            // For ShortcutEvent, only continue processing if we're in the HighPriorityKeys set.
-            if (event->type() != QEvent::Type::ShortcutOverride ||
-                AZStd::find(HighPriorityKeys.begin(), HighPriorityKeys.end(), key) != HighPriorityKeys.end())
-            {
-                if (auto keyIt = m_keyMappings.find(key); keyIt != m_keyMappings.end())
-                {
-                    auto keyChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedModifierKeyStates>(keyIt->second);
-
-                    if (keyChannel)
-                    {
-                        if (event->type() == QEvent::Type::KeyPress || event->type() == QEvent::Type::ShortcutOverride)
-                        {
-                            keyChannel->UpdateState(true);
-                        }
-                        else
-                        {
-                            keyChannel->UpdateState(false);
-                        }
-                        mappedChannels.push_back(keyChannel);
-                    }
-                }
-            }
-        }
-        // Map mouse events to input channels.
-        else if (event->type() == QEvent::Type::MouseButtonPress || event->type() == QEvent::Type::MouseButtonRelease)
-        {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            const Qt::MouseButton button = mouseEvent->button();
-
-            if (auto buttonIt = m_mouseButtonMappings.find(button); buttonIt != m_mouseButtonMappings.end())
-            {
-                auto buttonChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedPosition2D>(buttonIt->second);
-
-                if (buttonChannel)
-                {
-                    if (event->type() == QEvent::Type::MouseButtonPress)
-                    {
-                        buttonChannel->UpdateState(true);
-                    }
-                    else
-                    {
-                        buttonChannel->UpdateState(false);
-                    }
-                    mappedChannels.push_back(buttonChannel);
-                }
-            }
-        }
-        // Map mouse movement to the movement input channels.
-        // This includes SystemCursorPosition alongside Movement::X and Movement::Y.
-        else if (event->type() == QEvent::Type::MouseMove)
-        {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            const QPoint mousePos = mouseEvent->pos();
-            const float normalizedX = aznumeric_cast<float>(mousePos.x()) / aznumeric_cast<float>(m_sourceWidget->width());
-            const float normalizedY = aznumeric_cast<float>(mousePos.y()) / aznumeric_cast<float>(m_sourceWidget->height());
-            const AZ::Vector2 normalizedPosition(normalizedX, normalizedY);
-            m_cursorPosition->m_normalizedPositionDelta = normalizedPosition - m_cursorPosition->m_normalizedPosition;
-            m_cursorPosition->m_normalizedPosition = normalizedPosition;
-            processMouseMoveChannels();
-            m_mouseChannelsNeedUpdate = true;
-        }
-        // Map wheel events to the mouse Z movement channel.
-        else if (event->type() == QEvent::Type::Wheel)
-        {
-            QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
-            auto cursorZChannel =
-                GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
-            const QPoint angleDelta = wheelEvent->angleDelta();
-            cursorZChannel->ProcessRawInputEvent(aznumeric_cast<float>(angleDelta.y()));
-            mappedChannels.push_back(cursorZChannel);
-            m_mouseChannelsNeedUpdate = true;
-        }
-
-        return mappedChannels;
+        // Install a global event filter to ensure we don't miss mouse and key release events.
+        QApplication::instance()->installEventFilter(this);
     }
 
     bool QtEventToAzInputMapper::HandlesInputEvent(const AzFramework::InputChannel& channel) const
@@ -328,5 +194,188 @@ namespace AzToolsFramework
         // as handled by our synthetic event system.
         const AzFramework::InputDeviceId& deviceId = channel.GetInputDevice().GetInputDeviceId();
         return deviceId == AzFramework::InputDeviceMouse::Id || deviceId == AzFramework::InputDeviceKeyboard::Id;
+    }
+
+    bool QtEventToAzInputMapper::eventFilter(QObject* object, QEvent* event)
+    {
+        // Because there's no "end" to mouse movement and wheel events, we reset mouse movement channels that have been opened
+        // during the next processed non-mouse event.
+        if (m_mouseChannelsNeedUpdate && event->type() != QEvent::Type::MouseMove && event->type() != QEvent::Type::Wheel)
+        {
+            m_cursorPosition->m_normalizedPositionDelta = AZ::Vector2::CreateZero();
+            ProcessPendingMouseEvents();
+            m_mouseChannelsNeedUpdate = false;
+        }
+
+        // Only accept mouse & key release events that originate from an object that is not our target widget,
+        // as we don't want to erroneously intercept user input meant for another component.
+        if (object != m_sourceWidget && event->type() != QEvent::Type::KeyRelease && event->type() != QEvent::Type::MouseButtonRelease)
+        {
+            return false;
+        }
+
+        // If our focus changes, go ahead and reset all input devices.
+        if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
+        {
+            HandleFocusChange(event);
+        }
+        // Map key events to input channels.
+        // ShortcutOverride is used in lieu of KeyPress for high priority input channels like Alt
+        // that need to be accepted and stopped before they bubble up and cause unintended behavior.
+        else if (event->type() == QEvent::Type::KeyPress || event->type() == QEvent::Type::KeyRelease ||
+            event->type() == QEvent::Type::ShortcutOverride)
+        {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            HandleKeyEvent(keyEvent);
+        }
+        // Map mouse events to input channels.
+        else if (event->type() == QEvent::Type::MouseButtonPress || event->type() == QEvent::Type::MouseButtonRelease)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            HandleMouseButtonEvent(mouseEvent);
+        }
+        // Map mouse movement to the movement input channels.
+        // This includes SystemCursorPosition alongside Movement::X and Movement::Y.
+        else if (event->type() == QEvent::Type::MouseMove)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            HandleMouseMoveEvent(mouseEvent);
+        }
+        // Map wheel events to the mouse Z movement channel.
+        else if (event->type() == QEvent::Type::Wheel)
+        {
+            QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+            HandleWheelEvent(wheelEvent);
+        }
+
+        return false;
+    }
+
+    void QtEventToAzInputMapper::NotifyUpdateChannelIfNotIdle(const AzFramework::InputChannel* channel, QEvent* event)
+    {
+        if (channel->GetState() != AzFramework::InputChannel::State::Idle)
+        {
+            emit InputChannelUpdated(channel, event);
+        }
+    }
+
+    void QtEventToAzInputMapper::ProcessPendingMouseEvents()
+    {
+        auto systemCursorChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::SystemCursorPosition);
+        auto cursorXChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::X);
+        auto cursorYChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Y);
+        auto cursorZChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
+
+        systemCursorChannel->ProcessRawInputEvent(m_cursorPosition->m_normalizedPositionDelta.GetLength());
+        cursorXChannel->ProcessRawInputEvent(
+            m_cursorPosition->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(m_sourceWidget->width()));
+        cursorYChannel->ProcessRawInputEvent(
+            m_cursorPosition->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(m_sourceWidget->height()));
+        cursorZChannel->ProcessRawInputEvent(0.f);
+
+        NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(cursorXChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(cursorYChannel, nullptr);
+        NotifyUpdateChannelIfNotIdle(cursorZChannel, nullptr);
+    }
+
+    void QtEventToAzInputMapper::HandleMouseButtonEvent(QMouseEvent* mouseEvent)
+    {
+        const Qt::MouseButton button = mouseEvent->button();
+
+        if (auto buttonIt = m_mouseButtonMappings.find(button); buttonIt != m_mouseButtonMappings.end())
+        {
+            auto buttonChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedPosition2D>(buttonIt->second);
+
+            if (buttonChannel)
+            {
+                if (mouseEvent->type() == QEvent::Type::MouseButtonPress)
+                {
+                    buttonChannel->UpdateState(true);
+                }
+                else
+                {
+                    buttonChannel->UpdateState(false);
+                }
+
+                NotifyUpdateChannelIfNotIdle(buttonChannel, mouseEvent);
+            }
+        }
+    }
+
+    void QtEventToAzInputMapper::HandleMouseMoveEvent(QMouseEvent* mouseEvent)
+    {
+        const QPoint mousePos = mouseEvent->pos();
+        const float normalizedX = aznumeric_cast<float>(mousePos.x()) / aznumeric_cast<float>(m_sourceWidget->width());
+        const float normalizedY = aznumeric_cast<float>(mousePos.y()) / aznumeric_cast<float>(m_sourceWidget->height());
+        const AZ::Vector2 normalizedPosition(normalizedX, normalizedY);
+        m_cursorPosition->m_normalizedPositionDelta = normalizedPosition - m_cursorPosition->m_normalizedPosition;
+        m_cursorPosition->m_normalizedPosition = normalizedPosition;
+        ProcessPendingMouseEvents();
+        m_mouseChannelsNeedUpdate = true;
+    }
+
+    void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)
+    {
+        const Qt::Key key = static_cast<Qt::Key>(keyEvent->key());
+
+        // For ShortcutEvent, only continue processing if we're in the HighPriorityKeys set.
+        if (keyEvent->type() != QEvent::Type::ShortcutOverride ||
+            AZStd::find(HighPriorityKeys.begin(), HighPriorityKeys.end(), key) != HighPriorityKeys.end())
+        {
+            if (auto keyIt = m_keyMappings.find(key); keyIt != m_keyMappings.end())
+            {
+                auto keyChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedModifierKeyStates>(keyIt->second);
+
+                if (keyChannel)
+                {
+                    if (keyEvent->type() == QEvent::Type::KeyPress || keyEvent->type() == QEvent::Type::ShortcutOverride)
+                    {
+                        keyChannel->UpdateState(true);
+                    }
+                    else
+                    {
+                        keyChannel->UpdateState(false);
+                    }
+
+                    NotifyUpdateChannelIfNotIdle(keyChannel, keyEvent);
+                }
+            }
+        }
+    }
+
+    void QtEventToAzInputMapper::HandleWheelEvent(QWheelEvent* wheelEvent)
+    {
+        auto cursorZChannel =
+            GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
+        const QPoint angleDelta = wheelEvent->angleDelta();
+        // Check both angles, as the alt modifier can change the wheel direction.
+        int wheelAngle = angleDelta.x();
+        if (wheelAngle == 0)
+        {
+            wheelAngle = angleDelta.y();
+        }
+        cursorZChannel->ProcessRawInputEvent(aznumeric_cast<float>(wheelAngle));
+        NotifyUpdateChannelIfNotIdle(cursorZChannel, wheelEvent);
+        m_mouseChannelsNeedUpdate = true;
+    }
+
+    void QtEventToAzInputMapper::HandleFocusChange(QEvent* event)
+    {
+        for (auto& channelData : m_channels)
+        {
+            // If resetting the input device changed the channel state, submit it to the mapped channel list
+            // for processing.
+            if (channelData.second->IsActive())
+            {
+                channelData.second->UpdateState(false);
+                NotifyUpdateChannelIfNotIdle(channelData.second.get(), event);
+            }
+        }
+        m_mouseChannelsNeedUpdate = false;
     }
 } // namespace AzToolsFramework

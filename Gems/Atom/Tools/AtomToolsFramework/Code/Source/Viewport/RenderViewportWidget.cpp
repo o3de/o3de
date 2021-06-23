@@ -38,6 +38,21 @@ namespace AtomToolsFramework
         setUpdatesEnabled(false);
         setFocusPolicy(Qt::FocusPolicy::WheelFocus);
         setMouseTracking(true);
+
+        // Forward input events to our controller list.
+        QObject::connect(&m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
+            [this](const AzFramework::InputChannel* inputChannel, QEvent* event)
+        {
+            AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *inputChannel}))
+            {
+                // If the controller handled the input event, mark the event as accepted so it doesn't continue to propagate.
+                if (event)
+                {
+                    event->setAccepted(true);
+                }
+            }
+        });
     }
 
     bool RenderViewportWidget::InitializeViewportContext(AzFramework::ViewportId id)
@@ -201,22 +216,7 @@ namespace AtomToolsFramework
             SendWindowResizeEvent();
         }
 
-        bool eventHandled = false;
-        for(AzFramework::InputChannel* mappedInputChannel : m_inputChannelMapper.MapQtEventToAzInput(event))
-        {
-            AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-            if (m_controllerList->HandleInputChannelEvent({GetId(), windowId, *mappedInputChannel}))
-            {
-                eventHandled = true;
-            }
-        }
-
-        if (eventHandled)
-        {
-            event->setAccepted(true);
-        }
-
-        return QWidget::event(event) || eventHandled;
+        return QWidget::event(event);
     }
 
     void RenderViewportWidget::enterEvent([[maybe_unused]] QEvent* event)
@@ -236,6 +236,9 @@ namespace AtomToolsFramework
         if (m_capturingCursor && m_lastCursorPosition.has_value())
         {
             AzQtComponents::SetCursorPos(m_lastCursorPosition.value());
+            // Even though we just set the cursor position, there are edge cases such as remote desktop that will leave
+            // the cursor position unchanged. For safety, we re-cache our last cursor position for delta generation.
+            m_lastCursorPosition = QCursor::pos();
         }
         else
         {
