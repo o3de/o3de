@@ -827,9 +827,6 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
     connect(helpMenu.Get(), &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
     helpMenu->addAction(lineEditSearchAction);
 
-    // Getting Started
-    helpMenu.AddAction(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE);
-
     // Tutorials
     helpMenu.AddAction(ID_DOCUMENTATION_TUTORIALS);
 
