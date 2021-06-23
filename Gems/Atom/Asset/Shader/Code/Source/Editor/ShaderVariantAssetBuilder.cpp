@@ -311,6 +311,9 @@ namespace AZ
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
+            
+            AZStd::string foundShaderFile;
+            LocateReferencedSourceFile(variantListFullPath, shaderVariantList.m_shaderFilePath, response.m_sourceFileDependencyList, foundShaderFile);
 
             if (loadResult.m_code == LoadResult::Code::DeferredError || shouldExitEarlyFromProcessJob)
             {
@@ -323,8 +326,16 @@ namespace AZ
                     jobDescriptor.m_critical = false;
                     jobDescriptor.m_jobKey = ShaderVariantAssetBuilderJobKey;
                     jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
-
-                    AddShaderAssetJobDependency(jobDescriptor, info, variantListFullPath, shaderVariantList.m_shaderFilePath);
+                    
+                    if (!foundShaderFile.empty())
+                    {
+                        AssetBuilderSDK::JobDependency jobDependency;
+                        jobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
+                        jobDependency.m_platformIdentifier = info.m_identifier;
+                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                        jobDependency.m_sourceFile.m_sourceFileDependencyPath = foundShaderFile;
+                        jobDescriptor.m_jobDependencyList.push_back(jobDependency);
+                    }
 
                     if (loadResult.m_code == LoadResult::Code::DeferredError)
                     {
@@ -345,9 +356,6 @@ namespace AZ
                 return;
             }
             
-            AZStd::string foundShaderFile;
-            LocateReferencedSourceFile(variantListFullPath, shaderVariantList.m_shaderFilePath, response.m_sourceFileDependencyList, foundShaderFile);
-
             for (const AssetBuilderSDK::PlatformInfo& info : request.m_enabledPlatforms)
             {
                 AZ_TraceContext("For platform", info.m_identifier.data());
