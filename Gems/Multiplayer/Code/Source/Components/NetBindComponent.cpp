@@ -623,12 +623,6 @@ namespace Multiplayer
 
     void NetBindComponent::HandleMarkedDirty()
     {
-        if (m_needsToBeStopped)
-        {
-            // Entity is about to deleted, it's not safe to proceed
-            return;
-        }
-
         m_dirtiedEvent.Signal();
         if (NetworkRoleHasController(GetNetEntityRole()))
         {
