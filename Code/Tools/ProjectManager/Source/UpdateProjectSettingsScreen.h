@@ -15,6 +15,8 @@
 #include <ProjectSettingsScreen.h>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLabel)
+
 namespace O3DE::ProjectManager
 {
     class UpdateProjectSettingsScreen
@@ -25,10 +27,26 @@ namespace O3DE::ProjectManager
         ~UpdateProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
+        ProjectInfo GetProjectInfo() override;
         void SetProjectInfo(const ProjectInfo& projectInfo);
+
+        bool Validate() override;
+
+        void ResetProjectPreviewPath();
+
+    public slots:
+        void UpdateProjectPreviewPath();
+        void PreviewPathChanged();
 
     protected:
         bool ValidateProjectPath() override;
+        virtual bool ValidateProjectPreview();
+
+        FormBrowseEditWidget* m_projectPreview;
+        QLabel* m_projectPreviewImage;
+
+        ProjectInfo m_projectInfo;
+        bool m_userChangedPreview; //! Did the user change the project preview path
     };
 
 } // namespace O3DE::ProjectManager
