@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
         explicit FormBrowseEditWidget(const QString& labelText, const QString& valueText = "", QWidget* parent = nullptr);
         ~FormBrowseEditWidget() = default;
 
-    private slots:
-        void HandleBrowseButton();
+    protected slots:
+        virtual void HandleBrowseButton() = 0;
     };
 } // namespace O3DE::ProjectManager

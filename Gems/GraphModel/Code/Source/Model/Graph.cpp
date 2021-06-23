@@ -37,7 +37,7 @@ namespace GraphModel
         if (serializeContext)
         {
             serializeContext->Class<Graph>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("m_nodes", &Graph::m_nodes)
                 ->Field("m_connections", &Graph::m_connections)
                 ->Field("m_uiMetadata", &Graph::m_uiMetadata)
@@ -312,19 +312,19 @@ namespace GraphModel
     }
 
 
-    void Graph::SetUiMetadata(const AZStd::any& uiMetadata)
+    void Graph::SetUiMetadata(const GraphModelIntegration::GraphCanvasMetadata& uiMetadata)
     {
         m_uiMetadata = uiMetadata;
     }
 
 
-    const AZStd::any& Graph::GetUiMetadata() const
+    const GraphModelIntegration::GraphCanvasMetadata& Graph::GetUiMetadata() const
     {
         return m_uiMetadata;
     }
 
 
-    AZStd::any& Graph::GetUiMetadata()
+    GraphModelIntegration::GraphCanvasMetadata& Graph::GetUiMetadata()
     {
         return m_uiMetadata;
     }

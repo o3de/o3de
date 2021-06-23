@@ -105,7 +105,6 @@ namespace AZ
             ChangeId GetCurrentChangeId() const;
 
             //! Return the set of shaders to be run by this material.
-            ShaderCollection& GetShaderCollection();
             const ShaderCollection& GetShaderCollection() const;
 
             //! Attempts to set the value of a system-level shader option that is controlled by this material.

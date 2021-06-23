@@ -40,7 +40,7 @@ namespace AZ
                 buffer->m_pendingResolves++;
 
                 uploadRequest.m_attachmentBuffer = buffer;
-                uploadRequest.m_byteOffset = buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
+                uploadRequest.m_byteOffset = request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
 
                 return stagingBuffer->GetMemoryView().GetCpuAddress();
@@ -51,6 +51,12 @@ namespace AZ
 
         void BufferPoolResolver::Compile()
         {
+            for (BufferUploadPacket& packet : m_uploadPackets)
+            {
+                Buffer* stagingBuffer = packet.m_stagingBuffer.get();
+                //Inform the GPU that the CPU has modified the staging buffer.
+                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
+            }
         }
 
         void BufferPoolResolver::Resolve(CommandList& commandList) const
@@ -62,15 +68,12 @@ namespace AZ
                 Buffer* destBuffer = packet.m_attachmentBuffer;
                 AZ_Assert(stagingBuffer, "Staging Buffer is null.");
                 AZ_Assert(destBuffer, "Attachment Buffer is null.");
-
-                //Inform the GPU that the CPU has modified the staging buffer.
-                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
                 
                 RHI::CopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
                 copyDescriptor.m_sourceOffset = stagingBuffer->GetMemoryView().GetOffset();
                 copyDescriptor.m_destinationBuffer = destBuffer;
-                copyDescriptor.m_destinationOffset = static_cast<uint32_t>(packet.m_byteOffset);
+                copyDescriptor.m_destinationOffset = destBuffer->GetMemoryView().GetOffset() + static_cast<uint32_t>(packet.m_byteOffset);
                 copyDescriptor.m_size = stagingBuffer->GetMemoryView().GetSize();
 
                 commandList.Submit(RHI::CopyItem(copyDescriptor));

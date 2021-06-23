@@ -49,6 +49,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
+        item->setData(gemInfo.m_requirement, RoleRequirement);
 
         appendRow(item);
 
@@ -183,6 +184,11 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RolePath).toString();
     }
 
+    QString GemModel::GetRequirement(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleRequirement).toString();
+    }
+
     bool GemModel::IsAdded(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleIsAdded).toBool();
@@ -206,6 +212,24 @@ namespace O3DE::ProjectManager
     bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex)
     {
         return (modelIndex.data(RoleWasPreviouslyAdded).toBool() && !modelIndex.data(RoleIsAdded).toBool());
+    }
+
+    bool GemModel::HasRequirement(const QModelIndex& modelIndex)
+    {
+        return !modelIndex.data(RoleRequirement).toString().isEmpty();
+    }
+
+    bool GemModel::DoGemsToBeAddedHaveRequirements() const
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (NeedsToBeAdded(modelIndex) && HasRequirement(modelIndex))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     QVector<QModelIndex> GemModel::GatherGemsToBeAdded() const

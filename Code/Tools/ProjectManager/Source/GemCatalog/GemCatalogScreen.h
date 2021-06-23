@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
         void ReinitForProject(const QString& projectPath, bool isNewProject);
-        void EnableDisableGemsForProject(const QString& projectPath);
+        bool EnableDisableGemsForProject(const QString& projectPath);
 
     private:
         void FillModel(const QString& projectPath, bool isNewProject);

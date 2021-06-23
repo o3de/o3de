@@ -73,6 +73,7 @@ namespace O3DE::ProjectManager
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool
         QStringList m_features;
+        QString m_requirement;
         QString m_directoryLink;
         QString m_documentationLink;
         QString m_version = "Unknown Version";

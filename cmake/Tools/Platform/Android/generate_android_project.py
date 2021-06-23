@@ -215,6 +215,11 @@ def main(args):
                         default=None,
                         required=False)
 
+    parser.add_argument('--native-build-path',
+                        help='Custom path to place native build artifacts.',
+                        default=None,
+                        required=False)
+
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
                         action='store_true',
@@ -257,6 +262,10 @@ def main(args):
     parser.add_argument('--overwrite-existing',
                         action='store_true',
                         help='Option to overwrite existing scripts in the target build folder if they exist already.')
+
+    parser.add_argument('--enable-unity-build',
+                        action='store_true',
+                        help='Enable unity build')
 
     parsed_args = parser.parse_args(args)
     wrap_parsed_args(parsed_args)
@@ -395,7 +404,9 @@ def main(args):
                                                         asset_type=parsed_args.get_argument(ASSET_TYPE_ARGUMENT_NAME),
                                                         signing_config=signing_config,
                                                         is_test_project=is_test_project,
-                                                        overwrite_existing=parsed_args.overwrite_existing)
+                                                        overwrite_existing=parsed_args.overwrite_existing,
+                                                        unity_build_enabled=parsed_args.enable_unity_build,
+                                                        native_build_path=parsed_args.native_build_path)
     generator.execute()
 
 

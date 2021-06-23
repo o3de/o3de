@@ -97,7 +97,15 @@ namespace AZ
             id<MTLBuffer> GetArgEncoderBuffer() const;
             size_t GetOffset() const;
             
-            void AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
+            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
+            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
+            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
+            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
+
+            void CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                           const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                           ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
+                                           GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
             
             void ClearResourceTracking();
             
@@ -120,11 +128,7 @@ namespace AZ
             ResourceBindingsMap m_resourceBindings;
             
             static const int MaxEntriesInArgTable = 31;
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
-            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
-            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
-            
+                        
             void CollectResourcesForCompute(id<MTLCommandEncoder> encoder,
                                             const ResourceBindingsSet& resourceBindingData,
                                             ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
@@ -153,9 +157,6 @@ namespace AZ
             MemoryView m_argumentBuffer;
             MemoryView m_constantBuffer;
 #endif
-            
-            ShaderResourceGroupPool* m_srgPool = nullptr;
-            NSCache* m_samplerCache;
         };
     }
 }
