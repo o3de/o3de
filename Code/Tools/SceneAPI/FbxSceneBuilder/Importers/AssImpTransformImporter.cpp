@@ -104,12 +104,18 @@ namespace AZ
 
                         iteratingNode = iteratingNode->mParent;
                     }
-                    
-                    localTransform =
-                        offsets.at(AZ::GetMin(offsets.size()-1, static_cast<decltype(offsets.size())>(1)))  // parent bone offset, or if there is no parent, then current node offset
-                        * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
-                        * offsets.at(offsets.size() - 1) // Root bone offset
-                        * inverseOffsets.at(0); // Inverse of current node offset
+
+                    if (inverseOffsets.size() == 1)
+                    {
+                        localTransform = inverseOffsets[0];
+                    }
+                    else
+                    {
+                        localTransform = offsets.at(1) // parent bone offset
+                            * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
+                            * offsets.at(offsets.size() - 1) // Root bone offset
+                            * inverseOffsets.at(0); // Inverse of current node offset
+                    }
                 }
                 else
                 {
