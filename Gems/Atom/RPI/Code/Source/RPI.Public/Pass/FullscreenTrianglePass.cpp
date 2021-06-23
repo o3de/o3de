@@ -182,13 +182,13 @@ namespace AZ
 
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-            m_viewportState.m_minX = 0.0f;
-            m_viewportState.m_minY = 0.0f;
+            m_viewportState.m_minX = params.m_viewportState.m_minX;
+            m_viewportState.m_minY = params.m_viewportState.m_minY;
             m_viewportState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width);
             m_viewportState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height);
 
-            m_scissorState.m_minX = 0.0f;
-            m_scissorState.m_minY = 0.0f;
+            m_scissorState.m_minX = params.m_scissorState.m_minX;
+            m_scissorState.m_minY = params.m_scissorState.m_minY;
             m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
             m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);
 
