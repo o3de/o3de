@@ -216,18 +216,24 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::Terminate()
     {
+        // Cleanup connections, fire events and uninitialize state
         auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
         m_networkInterface->GetConnectionSet().VisitConnections(visitor);
         if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
         {
             m_networkInterface->StopListening();
             m_shutdownEvent.Signal(m_networkInterface);
+        }
+        InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
+
+        // Signal session management, do this after uninitializing state
+        if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
+        {
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
             {
                 AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get()->HandleDestroySession();
             }
         }
-        InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
     }
 
     bool MultiplayerSystemComponent::RequestPlayerJoinSession(const AzFramework::SessionConnectionConfig& config)
@@ -281,14 +287,22 @@ namespace Multiplayer
 
     bool MultiplayerSystemComponent::OnDestroySessionBegin()
     {
-        bool disconnectSuccessful = true;
-        IConnectionSet& connectionSet = m_networkInterface->GetConnectionSet();
-        connectionSet.VisitConnections([&disconnectSuccessful](IConnection& connection)
+        // This can be triggered external from Multiplayer so only run if we are in an Initialized state
+        if (GetAgentType() == MultiplayerAgentType::Uninitialized)
         {
-            bool didDisconnect = connection.Disconnect(DisconnectReason::TerminatedByServer, TerminationEndpoint::Remote);
-            disconnectSuccessful = disconnectSuccessful && didDisconnect;
-        });
-        return disconnectSuccessful;
+            return true;
+        }
+
+        auto visitor = [](IConnection& connection) { connection.Disconnect(DisconnectReason::TerminatedByUser, TerminationEndpoint::Local); };
+        m_networkInterface->GetConnectionSet().VisitConnections(visitor);
+        if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
+        {
+            m_networkInterface->StopListening();
+            m_shutdownEvent.Signal(m_networkInterface);
+        }
+        InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
+
+        return true;
     }
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
