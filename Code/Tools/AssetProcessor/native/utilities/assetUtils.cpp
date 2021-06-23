@@ -73,7 +73,7 @@ namespace AssetUtilsInternal
     {
         if (waitTimeInSeconds < 0)
         {
-            AZ_Warning("Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
+            AZ_Warning("O3DE Asset Processor", waitTimeInSeconds >= 0, "Invalid timeout specified by the user");
             waitTimeInSeconds = 0;
         }
         bool failureOccurredOnce = false; // used for logging.
