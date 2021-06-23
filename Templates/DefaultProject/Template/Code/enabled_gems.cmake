@@ -24,6 +24,7 @@ set(ENABLED_GEMS
     LyShine
     Multiplayer
     PhysX
+    PrimitiveAssets
     SaveData
     ScriptCanvasPhysics
     ScriptEvents
