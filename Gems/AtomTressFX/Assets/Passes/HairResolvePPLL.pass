@@ -7,6 +7,7 @@
             "Name": "HairPPLLResolvePassTemplate",
             "PassClass": "HairPPLLResolvePass",
             "Slots": [
+                //------ General Input/Output resources and Render Target ------
                 {
                     "Name": "RenderTargetInputOutput",
                     "SlotType": "InputOutput",
@@ -32,10 +33,70 @@
                         "StoreAction": "Store"
                     }
                 },
+
+                //------------- Shadowing Resources -------------
+                {
+                    "Name": "DirectionalShadowmap",
+                    "ShaderInputName": "m_directionalLightShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "ShaderInputName": "m_directionalLightExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ProjectedShadowmap",
+                    "ShaderInputName": "m_projectedShadowmaps",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "ProjectedESM",
+                    "ShaderInputName": "m_projectedExponentialShadowmap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+
+                //------------- Lighting Resources -------------
+                {
+                    "Name": "BRDFTextureInput",
+                    "ShaderInputName": "m_brdfMap",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_tileLightData",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_lightListRemapped",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+
+                //---------- PPLL Resources -----------
                 {
                     "Name": "PerPixelListHead",
                     "ShaderInputName": "m_fragmentListHead",
-                    "SlotType": "Input", // Read only - the reset is done in a copy before the fill pass
+                    "SlotType": "Input", // Read only - the reset is done before the fill pass
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
@@ -46,11 +107,28 @@
                     "Name": "PerPixelLinkedList",
                     "ShaderInputName": "m_linkedListNodes",
                     "SlotType": "Input",
-//                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "Load",
                         "StoreAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "BRDFTexture",
+                    "Lifetime": "Imported",
+                    "AssetRef": {
+                        "FilePath": "Textures/BRDFTexture.attimage"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "BRDFTextureInput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "BRDFTexture"
                     }
                 }
             ],

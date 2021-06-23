@@ -161,8 +161,8 @@ void WriteFragmentAttributes(int nAddress, int nPreviousLink, float4 vData, floa
 
 struct PSOutput
 {
-    float4 m_color : SV_Target0;
-//    float m_depth : SV_Depth;
+//    float4 m_color : SV_Target0;
+    float m_depth : SV_Depth;
 };
 
 
@@ -174,7 +174,7 @@ struct PSOutput
 //PSOutput PPLLFillPS(PS_INPUT_HAIR input)
 void PPLLFillPS(PS_INPUT_HAIR input)
 {
-    PSOutput pixelOut;
+//    PSOutput pixelOut;
 
     // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture on vertex shader for base color;
     //along with modulation by the tip color  
