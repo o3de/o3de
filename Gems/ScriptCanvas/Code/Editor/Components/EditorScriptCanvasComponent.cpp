@@ -269,9 +269,11 @@ namespace ScriptCanvasEditor
             return;
         }
 
+        auto& variableOverrides = parseOutcome.GetValue();
+
         if (!m_variableOverrides.IsEmpty())
         {
-            parseOutcome.GetValue().CopyPreviousOverriddenValues(m_variableOverrides);
+            variableOverrides.CopyPreviousOverriddenValues(m_variableOverrides);
         }
 
         m_variableOverrides = parseOutcome.TakeValue();

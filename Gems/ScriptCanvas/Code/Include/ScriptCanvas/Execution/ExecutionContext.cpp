@@ -61,7 +61,7 @@ namespace ScriptCanvas
         {
             if (variableOverrides.m_variableIndices[index])
             {
-                return AZStd::any_cast<const void*>(variableOverrides.m_variables[overrideIndexTracker++]);
+                return AZStd::any_cast<void>(&variableOverrides.m_variables[overrideIndexTracker++]);
             }
             else
             {

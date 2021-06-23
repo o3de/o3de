@@ -76,8 +76,8 @@ namespace ScriptCanvasBuilder
             return AZ::Failure(AZStd::string("build entity did not have source graph components"));
         }
 
-        request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
-        request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
+        request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFileAtPrefabTime;
+        request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModelAtPrefabTime;
         request.name = fileNameOnly.empty() ? fileNameOnly : "BuilderGraph";
         request.addDebugInformation = false;
 
@@ -418,7 +418,7 @@ namespace ScriptCanvasBuilder
             ;
     }
 
-    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetFilterCB assetFilterCB)
+    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB)
     {
         AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
 
@@ -447,7 +447,7 @@ namespace ScriptCanvasBuilder
         AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+        asset.Create(assetId);
 
         if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
         {

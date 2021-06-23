@@ -104,6 +104,8 @@ namespace ScriptCanvasBuilder
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &BuildVariableOverrides::m_overrides, "Variables", "Array of Variables within Script Canvas Graph")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &BuildVariableOverrides::m_dependencies, "Dependencies", "Variables in Dependencies of the Script Canvas Graph")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }
@@ -292,7 +294,7 @@ namespace ScriptCanvasBuilder
             return true;
         };
 
-        auto loadAssetOutcome = ScriptCanvasBuilder::LoadEditorAsset(assetInfo.m_relativePath, filterCB);
+        auto loadAssetOutcome = ScriptCanvasBuilder::LoadEditorAsset(assetInfo.m_relativePath, editorAssetId, filterCB);
         if (!loadAssetOutcome.IsSuccess())
         {
             return AZ::Failure(AZStd::string::format("LoadEditorAssetTree failed to load graph from %s-%s: %s", editorAssetId.ToString<AZStd::string>().c_str(), assetHint.data(), loadAssetOutcome.GetError().c_str()));

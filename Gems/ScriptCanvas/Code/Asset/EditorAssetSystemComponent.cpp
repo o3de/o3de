@@ -124,7 +124,7 @@ namespace ScriptCanvasEditor
 
     AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> EditorAssetSystemComponent::LoadAsset(AZStd::string_view graphPath)
     {
-        auto outcome = ScriptCanvasBuilder::LoadEditorAsset(graphPath);
+        auto outcome = ScriptCanvasBuilder::LoadEditorAsset(graphPath, AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
         
         if (outcome.IsSuccess())
         {
