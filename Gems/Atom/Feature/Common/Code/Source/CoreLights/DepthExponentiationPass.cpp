@@ -42,9 +42,13 @@ namespace AZ
                 InitializeShaderOption();
                 m_shaderOptionInitialized = true;
             }
-
             m_shadowmapType = type;
-            const uint32_t typeIndex = aznumeric_cast<uint32_t>(type);
+            SetShaderVariantKeyFallbackValue();
+        }
+
+        void DepthExponentiationPass::SetShaderVariantKeyFallbackValue()
+        {
+            const uint32_t typeIndex = aznumeric_cast<uint32_t>(m_shadowmapType);
             RPI::ShaderOptionGroup shaderOption = m_shader->CreateShaderOptionGroup();
             shaderOption.SetValue(m_optionName, m_optionValues[typeIndex]);
 
@@ -57,6 +61,11 @@ namespace AZ
         Shadow::ShadowmapType DepthExponentiationPass::GetShadowmapType() const
         {
             return m_shadowmapType;
+        }
+
+        void DepthExponentiationPass::BuildInternal()
+        {
+            InitializeShaderOption();
         }
 
         void DepthExponentiationPass::FrameBeginInternal(FramePrepareParams params)

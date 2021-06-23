@@ -154,7 +154,7 @@ namespace AZ
 
             // --- Utility functions ---
             
-            //! Queues the pass to have Build() and Initilize() called by the PassSystem on frame update 
+            //! Queues the pass to have Build() and Initialize() called by the PassSystem on frame update 
             void QueueForBuildAndInitialization();
 
             //! Queues the pass to have RemoveFromParent() called by the PassSystem on frame update
