@@ -354,11 +354,8 @@ set(FILES
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
     Shaders/MotionVector/CameraMotionVector.shader
-    Shaders/MotionVector/MeshMotionVectorCommon.azsli
-    Shaders/MotionVector/SkinnedMeshMotionVector.azsl
-    Shaders/MotionVector/SkinnedMeshMotionVector.shader
-    Shaders/MotionVector/StaticMeshMotionVector.azsl
-    Shaders/MotionVector/StaticMeshMotionVector.shader
+    Shaders/MotionVector/MeshMotionVector.azsl
+    Shaders/MotionVector/MeshMotionVector.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl

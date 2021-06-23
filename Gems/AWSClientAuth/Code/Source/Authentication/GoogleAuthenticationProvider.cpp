@@ -39,7 +39,7 @@ namespace AWSClientAuth
     {
         if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), GoogleSettingsPath))
         {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get Google settings object for path %s", GoogleSettingsPath);
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to get Google settings object for path %s", GoogleSettingsPath);
             return false;
         }
         return true;
@@ -49,21 +49,21 @@ namespace AWSClientAuth
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void GoogleAuthenticationProvider::PasswordGrantMultiFactorSignInAsync(const AZStd::string& username, const AZStd::string& password)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void GoogleAuthenticationProvider::PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& username, const AZStd::string& confirmationCode)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(confirmationCode);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     // Call Google authentication provider device code end point.

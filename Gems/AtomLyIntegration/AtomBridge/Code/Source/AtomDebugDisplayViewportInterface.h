@@ -332,6 +332,15 @@ namespace AZ::AtomBridge
             p0 = p1;
             ++segmentIndex;
         }
+        // Complete the arc by drawing the last bit
+        sinCos.SetElement(circleAxis1, sinf(maxAngle));
+        sinCos.SetElement(circleAxis2, cosf(maxAngle));
+        p1 = position + radiusV3 * sinCos;
+        p1 = ToWorldSpacePosition(p1);
+        if (filterFunc(p0, p1, segmentIndex))
+        {
+            lines.AddLineSegment(p0, p1);
+        }
     }
 
     template<typename LineStorageType>
@@ -368,6 +377,14 @@ namespace AZ::AtomBridge
             }
             p0 = p1;
             ++segmentIndex;
+        }
+        // Complete the arc by drawing the last bit
+        AZ::SinCos(maxAngle, sinVF, cosVF);
+        p1 = position + radiusV3 * (cosVF * a + sinVF * b);
+        p1 = ToWorldSpacePosition(p1);
+        if (filterFunc(p0, p1, segmentIndex))
+        {
+            lines.AddLineSegment(p0, p1);
         }
     }
 } // namespace AZ::AtomBridge

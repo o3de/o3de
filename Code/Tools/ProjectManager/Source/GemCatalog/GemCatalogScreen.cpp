@@ -14,6 +14,7 @@
 #include <PythonBindingsInterface.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <GemCatalog/GemRequirementDialog.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -144,11 +145,22 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
+    bool GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
     {
         IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
         QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
         QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
+
+        if (m_gemModel->DoGemsToBeAddedHaveRequirements())
+        {
+            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, toBeAdded, this);
+            confirmRequirementsDialog->exec();
+
+            if (confirmRequirementsDialog->GetButtonResult() != QDialogButtonBox::ApplyRole)
+            {
+                return false;
+            }
+        }
 
         for (const QModelIndex& modelIndex : toBeAdded)
         {
@@ -158,6 +170,8 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(nullptr, "Operation failed",
                     QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
+
+                return false;
             }
         }
 
@@ -169,8 +183,12 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(nullptr, "Operation failed",
                     QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetName(modelIndex), result.GetError().c_str()));
+
+                return false;
             }
         }
+
+        return true;
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()

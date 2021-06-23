@@ -164,11 +164,6 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        ShaderCollection& Material::GetShaderCollection()
-        {
-            return m_shaderCollection;
-        }
-
         const ShaderCollection& Material::GetShaderCollection() const
         {
             return m_shaderCollection;

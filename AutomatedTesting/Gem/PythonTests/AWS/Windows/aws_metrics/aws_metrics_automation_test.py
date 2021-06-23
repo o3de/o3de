@@ -112,7 +112,7 @@ def remove_file(file_path: str) -> None:
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['AWS/Metrics'])
 @pytest.mark.parametrize('feature_name', [AWS_METRICS_FEATURE_NAME])
-@pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
+@pytest.mark.parametrize('resource_mappings_filename', ['default_aws_resource_mappings.json'])
 @pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
 @pytest.mark.parametrize('region_name', ['us-west-2'])
 @pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])

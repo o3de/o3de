@@ -10,11 +10,9 @@
 *
 */
 
-#include "GemListView.h"
-#include "GemItemDelegate.h"
+#include <GemCatalog/GemListView.h>
+#include <GemCatalog/GemItemDelegate.h>
 #include <QStandardItemModel>
-#include <QDateTime>
-#include <QPalette>
 
 namespace O3DE::ProjectManager
 {
