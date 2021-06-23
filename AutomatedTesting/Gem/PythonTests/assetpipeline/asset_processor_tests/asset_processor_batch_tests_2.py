@@ -218,7 +218,8 @@ class TestsAssetProcessorBatch_Windows(object):
 
         asset_processor.create_temp_asset_root()
         # Start the processor
-        asset_processor.gui_process(quitonidle=False, connect_to_ap=True)
+        # using -ap_disableAssetTreeView=true to skip the UI building of the Asset Tree for this test
+        asset_processor.gui_process(quitonidle=False, connect_to_ap=True, extra_params=[f'-ap_disableAssetTreeView=true'])
         asset_processor.stop()
 
         # fmt:off

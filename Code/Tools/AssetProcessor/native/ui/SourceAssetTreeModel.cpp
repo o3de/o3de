@@ -16,12 +16,13 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
-
+#include <AzCore/Console/IConsole.h>
 
 namespace AssetProcessor
 {
+    AZ_CVAR(bool, ap_disableAssetTreeView, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Disable asset tree for automated tests.");
 
-    SourceAssetTreeModel::SourceAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent) :
+    SourceAssetTreeModel::SourceAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject* parent) :
         AssetTreeModel(sharedDbConnection, parent)
     {
     }
@@ -32,15 +33,20 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::ResetModel()
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         m_sourceToTreeItem.clear();
         m_sourceIdToTreeItem.clear();
 
         m_sharedDbConnection->QuerySourceAndScanfolder(
             [&](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& sourceAndScanFolder)
-        {
-            AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
-            return true; // return true to continue iterating over additional results, we are populating a container
-        });
+            {
+                AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
     }
 
     void SourceAssetTreeModel::AddOrUpdateEntry(
@@ -133,16 +139,21 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::OnSourceFileChanged(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
-        {
-            m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
-                [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
             {
-                AddOrUpdateEntry(entry, scanFolder, false);
-                return true;
+                m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
+                    [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                    {
+                        AddOrUpdateEntry(entry, scanFolder, false);
+                        return true;
+                    });
             });
-        });
     }
 
     void SourceAssetTreeModel::RemoveFoldersIfEmpty(AssetTreeItem* itemToCheck)
@@ -187,22 +198,32 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::OnSourceFileRemoved(AZ::s64 sourceId)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, sourceId]()
-        {
-            auto existingSource = m_sourceIdToTreeItem.find(sourceId);
-            if (existingSource == m_sourceIdToTreeItem.end() || !existingSource->second)
             {
-                // If the asset being removed wasn't previously cached, then something has gone wrong. Reset the model.
-                Reset();
-                return;
-            }
-            RemoveAssetTreeItem(existingSource->second);
-        });
+                auto existingSource = m_sourceIdToTreeItem.find(sourceId);
+                if (existingSource == m_sourceIdToTreeItem.end() || !existingSource->second)
+                {
+                    // If the asset being removed wasn't previously cached, then something has gone wrong. Reset the model.
+                    Reset();
+                    return;
+                }
+                RemoveAssetTreeItem(existingSource->second);
+            });
     }
 
     QModelIndex SourceAssetTreeModel::GetIndexForSource(const AZStd::string& source)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return QModelIndex();
+        }
+
         auto sourceItem = m_sourceToTreeItem.find(source);
         if (sourceItem == m_sourceToTreeItem.end())
         {
