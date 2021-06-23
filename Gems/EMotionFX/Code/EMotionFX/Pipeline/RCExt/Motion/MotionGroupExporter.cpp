@@ -78,7 +78,7 @@ namespace EMotionFX
             result += SceneEvents::Process<MotionDataBuilderContext>(dataBuilderContext, AZ::RC::Phase::Filling);
             result += SceneEvents::Process<MotionDataBuilderContext>(dataBuilderContext, AZ::RC::Phase::Finalizing);
 
-            // Check if there is meta data and apply it to the motion.
+            // Legacy meta data: Check if there is legacy (XML) event data rule and apply it.
             AZStd::vector<MCore::Command*> metaDataCommands;
             if (Rule::MetaDataRule::LoadMetaData(motionGroup, metaDataCommands))
             {
@@ -88,16 +88,12 @@ namespace EMotionFX
                 }
             }
 
-            /*EMotionFX::MotionEventTable* eventTable = nullptr;
-            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::MotionEventTable*>(motionGroup, eventTable))
-            {
-                motion->SetEventTable(eventTable);
-            }*/
+            // Apply motion meta data.
             EMotionFX::Pipeline::Rule::MotionMetaData motionMetaData;
             if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::Pipeline::Rule::MotionMetaData>(motionGroup, motionMetaData))
             {
-                motion->SetEventTable(motionMetaData.m_motionEventTable);
-                motionMetaData.m_motionEventTable->InitAfterLoading(motion);
+                motion->SetEventTable(AZStd::unique_ptr<MotionEventTable>(motionMetaData.m_motionEventTable));
+                motion->GetEventTable()->InitAfterLoading(motion);
                 motion->SetMotionExtractionFlags(motionMetaData.m_motionExtractionFlags);
             }
 

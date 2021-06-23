@@ -18,24 +18,6 @@
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
 #include <SceneAPIExt/Rules/ExternalToolRule.h>
 
-
-namespace AZ
-{
-    class ReflectContext;
-    namespace SceneAPI
-    {
-        namespace Containers
-        {
-            class Scene;
-        }
-
-        namespace DataTypes
-        {
-            class IGroup;
-        }
-    }
-}
-
 namespace EMotionFX
 {
     namespace Pipeline
@@ -71,25 +53,6 @@ namespace EMotionFX
             private:
                 MotionMetaData m_data;
             };
-            /*
-            class MotionMetaDataRule
-                : public ExternalToolRuleNoRef<EMotionFX::MotionEventTable*>
-            {
-            public:
-                AZ_RTTI(MotionMetaDataRule, "{E68D0C3D-CBFF-4536-95C1-676474B351A5}", AZ::SceneAPI::DataTypes::IRule);
-                AZ_CLASS_ALLOCATOR(MotionMetaDataRule, AZ::SystemAllocator, 0)
-
-                MotionMetaDataRule();
-                MotionMetaDataRule(EMotionFX::MotionEventTable* data);
-
-                EMotionFX::MotionEventTable* GetData() const override      { return m_data; }
-                void SetData(EMotionFX::MotionEventTable* data) override   { m_data = data; }
-
-                static void Reflect(AZ::ReflectContext* context);
-
-            private:
-                EMotionFX::MotionEventTable* m_data = nullptr;
-            };*/
         } // Rule
     } // Pipeline
 } // EMotionFX

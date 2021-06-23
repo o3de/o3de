@@ -182,7 +182,6 @@ namespace EMotionFX
         void ReserveNumEvents(size_t numEvents);
 
     protected:
-        /// The collection of motion events.
         AZStd::vector<MotionEvent> m_events;
         AZStd::string m_name;
 

@@ -37,29 +37,6 @@ namespace EMotionFX
                     ;
             }
 
-            /*MotionMetaDataRule::MotionMetaDataRule()
-                : ExternalToolRuleNoRef<EMotionFX::MotionEventTable*>()
-            {
-            }
-
-            MotionMetaDataRule::MotionMetaDataRule(EMotionFX::MotionEventTable* data)
-                : MotionMetaDataRule()
-            {
-                m_data = data;
-            }
-
-            void MotionMetaDataRule::Reflect(AZ::ReflectContext* context)
-            {
-                AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-                if (serializeContext)
-                {
-                    serializeContext->Class<MotionMetaDataRule>()
-                        ->Version(1)
-                        ->Field("data", &MotionMetaDataRule::m_data)
-                        ;
-                }
-            }*/
-
             MotionMetaDataRule::MotionMetaDataRule()
                 : ExternalToolRule<MotionMetaData>()
             {
