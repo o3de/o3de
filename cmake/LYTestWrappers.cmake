@@ -113,9 +113,10 @@ function(ly_add_test)
     endif()
 
     # Set default test module timeout
+    set(suites_with_max_timeout smoke main)
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
-    elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
+    elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT AND ly_add_test_TEST_SUITE IN_LIST suites_with_max_timeout)
         message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
