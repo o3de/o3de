@@ -449,7 +449,6 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
 ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id , const QString& name)
 {
     AZ::u32 new_id = id;
-
     QAction* action = ActionIsWidget(new_id) ? new WidgetAction(new_id, m_mainWindow, name, this)
        : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compile
     AddAction(id, action);
