@@ -15,6 +15,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Color.h>
 
@@ -46,6 +47,11 @@ namespace AZ
             << ", Z: " << vec.GetZ()
             << ", W: " << vec.GetW()
             << ")";
+    }
+
+    std::ostream& operator<<(std::ostream& os, const Aabb& aabb)
+    {
+        return os << "(min: " << aabb.GetMin() << ", max: " << aabb.GetMax() << ")";
     }
 
     std::ostream& operator<<(std::ostream& os, const Quaternion& quat)

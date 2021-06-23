@@ -78,6 +78,8 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        // currently we don't have separate fields for changing the project name and display name 
+        projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();
         return projectInfo;
     }

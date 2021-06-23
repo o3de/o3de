@@ -34,6 +34,7 @@ def parse_args():
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--platform', dest="platform", help="Platform to gather metrics for")
+    parser.add_argument('-r', '--repository', dest="repository", help="Repository to gather metrics for")
     parser.add_argument('-a', '--jobname', dest="jobname", default="unknown", help="Name/tag of the job in the CI system (used to track where the report comes from, constant through multiple runs)")
     parser.add_argument('-u', '--jobnumber', dest="jobnumber", default=-1, help="Number of run in the CI system (used to track where the report comes from, variable through runs)")
     parser.add_argument('-o', '--jobnode', dest="jobnode", default="unknown", help="Build node name (used to track where the build happened in CI systems where the same jobs run in different hosts)")
@@ -207,6 +208,7 @@ def prepare_metrics(args, build_metrics):
         'changelist': args.changelist,
         'job': {'name': args.jobname, 'number': args.jobnumber, 'node': args.jobnode},
         'platform': args.platform,
+        'repository': args.repository,
         'build_types': build_metrics,
         'timestamp': timestamp.strftime("%Y-%m-%dT%H:%M:%S")
     }
@@ -236,6 +238,7 @@ def submit_report_document(report_file):
                 'changelist': report_json['changelist'],
                 'job': report_json['job'],
                 'platform': report_json['platform'],
+                'repository': report_json['repository'],
                 'type': build_type['build_type'],
                 'result': int(build_type['result']) or int(build_metric['result']),
                 'reason': build_type['reason'],
@@ -255,8 +258,9 @@ def submit_report_document(report_file):
 
 if __name__ == "__main__":
     args = parse_args()
-    print(f"[ci_build_metrics] Generatic build metrics for:"
+    print(f"[ci_build_metrics] Generating build metrics for:"
         f"\n\tPlatform: {args.platform}"
+        f"\n\tRepository: {args.repository}"
         f"\n\tJob Name: {args.jobname}"
         f"\n\tJob Number: {args.jobnumber}"
         f"\n\tJob Node: {args.jobnode}"

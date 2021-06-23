@@ -42,8 +42,12 @@ namespace AZ
                 m_updateSrg = true;
             }
 
-            params.m_viewportState = RHI::Viewport(0, static_cast<float>(m_imageSize.m_width), 0, static_cast<float>(m_imageSize.m_height));
-            params.m_scissorState = RHI::Scissor(0, 0, m_imageSize.m_width, m_imageSize.m_height);
+            float inverseScale = 1.0f / m_outputScale;
+            uint32_t outputWidth = m_imageSize.m_width * inverseScale;
+            uint32_t outputHeight = m_imageSize.m_height * inverseScale;
+
+            params.m_viewportState = RHI::Viewport(0, static_cast<float>(outputWidth), 0, static_cast<float>(outputHeight));
+            params.m_scissorState = RHI::Scissor(0, 0, outputWidth, outputHeight);
 
             FullscreenTrianglePass::FrameBeginInternal(params);
         }

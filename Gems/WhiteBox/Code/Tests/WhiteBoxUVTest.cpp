@@ -9,6 +9,7 @@
 
 #include "Util/WhiteBoxTextureUtil.h"
 #include "WhiteBoxTestFixtures.h"
+#include "Rendering/Atom/WhiteBoxMeshAtomData.h"
 
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Casting/numeric_cast.h>
@@ -279,5 +280,11 @@ namespace UnitTest
         ::testing::Combine(
             ::testing::ValuesIn(Noise), ::testing::ValuesIn(Source),
             ::testing::Values(Rotation::Identity, Rotation::XZAxis)));
+
+    TEST(WhiteBoxRenderTest, WhiteBoxMeshAtomDataAabbIsInitializedToNull)
+    {
+        WhiteBox::WhiteBoxMeshAtomData atomData(WhiteBox::WhiteBoxFaces{});
+        EXPECT_EQ(atomData.GetAabb(), AZ::Aabb::CreateNull());
+    }
 
 } // namespace UnitTest

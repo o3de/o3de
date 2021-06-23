@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- // {END_LICENSE}
+// {END_LICENSE}
 
 #pragma once
 
@@ -17,7 +17,7 @@ namespace ${SanitizedCppName}
     class ${SanitizedCppName}Requests
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Requests, "${Random_Uuid}");
+        AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
         virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };

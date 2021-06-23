@@ -168,6 +168,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     """
 
     @pytest.mark.test_case_id("C1591337")
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
@@ -212,6 +213,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         asset_processor.stop()
 
     @pytest.mark.test_case_id("C4874115")
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_AddScanFolder_AssetsProcessed(

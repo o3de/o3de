@@ -40,6 +40,6 @@ namespace WhiteBox
         AZStd::vector<AZ::PackedVector3f> m_bitangents;
         AZStd::vector<PackedFloat2> m_uvs;
         AZStd::vector<AZ::Vector4> m_colors;
-        AZ::Aabb m_aabb;
+        AZ::Aabb m_aabb = AZ::Aabb::CreateNull();
     };
 } // namespace WhiteBox
