@@ -461,12 +461,12 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://docs.aws.amazon.com/lumberyard/"));
+            QDesktopServices::openUrl(QUrl("https://docs.o3de.org/docs/"));
         });        
 
         menu->addAction("Forums", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://forums.awsgametech.com/"));
+            QDesktopServices::openUrl(QUrl("https://docs.o3de.org/community/"));
         });
 
         menu->addSeparator();

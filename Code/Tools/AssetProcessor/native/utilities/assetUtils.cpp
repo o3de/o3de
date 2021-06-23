@@ -83,6 +83,10 @@ namespace AssetUtilsInternal
         timer.start();
         do
         {
+            QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
+            AssetProcessor::ProcessingJobInfoBus::Broadcast(
+                &AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, normalized.toUtf8().constData());
+
             //Removing the old file if it exists
             if (outFile.exists())
             {
@@ -133,11 +137,19 @@ namespace AssetUtilsInternal
                 }
             }
         } while (!timer.hasExpired(waitTimeInSeconds * 1000)); //We will keep retrying until the timer has expired the inputted timeout
+        
+        // once we're done, regardless of success or failure, we 'unlock' those files for further process.
+        // if we failed, also re-trigger them to rebuild (the bool param at the end of the ebus call)
+        QString normalized = AssetUtilities::NormalizeFilePath(outputFile);
+        AssetProcessor::ProcessingJobInfoBus::Broadcast(
+            &AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, normalized.toUtf8().constData(), !operationSucceeded);
 
         if (!operationSucceeded)
         {
             //operation failed for the given timeout
-            AZ_Warning(AssetProcessor::ConsoleChannel, false, "WARNING: Could not copy/move source %s to %s, giving up\n", sourceFile.toUtf8().constData(), outputFile.toUtf8().constData());
+            AZ_Warning(AssetProcessor::ConsoleChannel, false, "WARNING: Could not %s source from %s to %s, giving up\n",
+                isCopy ? "copy" : "move (via rename)",
+                sourceFile.toUtf8().constData(), outputFile.toUtf8().constData());
             return false;
         }
         else if (failureOccurredOnce)

@@ -1391,12 +1391,12 @@ namespace Audio
                 else
                 {
                     implFileEntryData->nAKBankID = AK_INVALID_BANK_ID;
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Failed to load file %s\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to load bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to the Wwise implementation of RegisterInMemoryFile");
+                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to RegisterInMemoryFile");
             }
         }
 
@@ -1422,12 +1422,12 @@ namespace Audio
                 }
                 else
                 {
-                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise Failed to unregister in memory file %s\n", fileEntryInfo->sFileName);
+                    g_audioImplLogger_wwise.Log(eALT_ERROR, "Wwise failed to unload bank '%s'\n", fileEntryInfo->sFileName);
                 }
             }
             else
             {
-                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to the Wwise implementation of UnregisterInMemoryFile");
+                g_audioImplLogger_wwise.Log(eALT_ERROR, "Invalid AudioFileEntryData passed to UnregisterInMemoryFile");
             }
         }
 

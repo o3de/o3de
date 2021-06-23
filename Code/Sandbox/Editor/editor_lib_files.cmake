@@ -477,9 +477,6 @@ set(FILES
     Export/OBJExporter.h
     Export/OCMExporter.cpp
     Export/OCMExporter.h
-    FeedbackDialog/FeedbackDialog.h
-    FeedbackDialog/FeedbackDialog.cpp
-    FeedbackDialog/FeedbackDialog.ui
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h

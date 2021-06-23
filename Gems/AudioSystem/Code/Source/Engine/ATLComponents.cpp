@@ -59,7 +59,7 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioEventManager::CAudioEventManager()
-        : m_oAudioEventPool(g_audioCVars.m_nAudioEventPoolSize, 1)
+        : m_oAudioEventPool(Audio::CVars::s_AudioEventPoolSize, 1)
     #if !defined(AUDIO_RELEASE)
         , m_pDebugNameStore(nullptr)
     #endif // !AUDIO_RELEASE
@@ -284,7 +284,7 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     CAudioObjectManager::CAudioObjectManager(CAudioEventManager& refAudioEventManager)
-        : m_cObjectPool(g_audioCVars.m_nAudioObjectPoolSize, AudioObjectIDFactory::s_minValidAudioObjectID)
+        : m_cObjectPool(Audio::CVars::s_AudioObjectPoolSize, AudioObjectIDFactory::s_minValidAudioObjectID)
         , m_fTimeSinceLastVelocityUpdateMS(0.0f)
         , m_refAudioEventManager(refAudioEventManager)
     #if !defined(AUDIO_RELEASE)
@@ -1782,7 +1782,7 @@ namespace Audio
         fPosX += 20.0f;
         fPosY += 17.0f;
 
-        AZStd::string triggerFilter(g_audioCVars.m_pAudioTriggersDebugFilter->GetString());
+        auto triggerFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioTriggersDebugFilter);
         AZStd::to_lower(triggerFilter.begin(), triggerFilter.end());
 
         for (auto& audioEventPair : m_cActiveAudioEvents)
@@ -1882,7 +1882,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioObjectManager::DrawPerObjectDebugInfo(IRenderAuxGeom& rAuxGeom, const AZ::Vector3& rListenerPos) const
     {
-        AZStd::string audioObjectFilter(g_audioCVars.m_pAudioObjectsDebugFilter->GetString());
+        auto audioObjectFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioObjectsDebugFilter);
         AZStd::to_lower(audioObjectFilter.begin(), audioObjectFilter.end());
 
         for (auto& audioObjectPair : m_cAudioObjects)
@@ -1894,7 +1894,7 @@ namespace Audio
 
             bool bDraw = AudioDebugDrawFilter(audioObjectName, audioObjectFilter);
 
-            bDraw = bDraw && (g_audioCVars.m_nShowActiveAudioObjectsOnly == 0 || audioObject->HasActiveEvents());
+            bDraw = bDraw && (!Audio::CVars::s_ShowActiveAudioObjectsOnly || audioObject->HasActiveEvents());
 
             if (bDraw)
             {
@@ -1919,7 +1919,7 @@ namespace Audio
         fPosX += 20.0f;
         fPosY += 17.0f;
 
-        AZStd::string audioObjectFilter(g_audioCVars.m_pAudioObjectsDebugFilter->GetString());
+        auto audioObjectFilter = static_cast<AZ::CVarFixedString>(Audio::CVars::s_AudioObjectsDebugFilter);
         AZStd::to_lower(audioObjectFilter.begin(), audioObjectFilter.end());
 
         for (auto& audioObjectPair : m_cAudioObjects)
@@ -1931,7 +1931,7 @@ namespace Audio
 
             bool bDraw = AudioDebugDrawFilter(audioObjectName, audioObjectFilter);
             bool hasActiveEvents = audioObject->HasActiveEvents();
-            bDraw = bDraw && (g_audioCVars.m_nShowActiveAudioObjectsOnly == 0 || hasActiveEvents);
+            bDraw = bDraw && (!Audio::CVars::s_ShowActiveAudioObjectsOnly || hasActiveEvents);
 
             if (bDraw)
             {

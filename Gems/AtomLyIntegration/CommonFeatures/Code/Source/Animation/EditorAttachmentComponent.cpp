@@ -69,7 +69,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL,
-                            "https://docs.aws.amazon.com/lumberyard/latest/userguide/component-attachment.html")
+                            "https://docs.o3de.org/docs/user-guide/components/reference/attachment/")
                         ->DataElement(0, &EditorAttachmentComponent::m_targetId, "Target entity", "Attach to this entity.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetIdChanged)
                         ->DataElement(

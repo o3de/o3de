@@ -1022,13 +1022,9 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::RefreshStyle);
 
     // Help actions
-    am->AddAction(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, tr("Getting Started"))
-        .SetReserved();
     am->AddAction(ID_DOCUMENTATION_TUTORIALS, tr("Tutorials"))
         .SetReserved();
 
-    am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
-        .SetReserved();
     am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
@@ -1038,15 +1034,11 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_GAMEDEVBLOG, tr("GameDev Blog"))
         .SetReserved();
-    am->AddAction(ID_DOCUMENTATION_TWITCHCHANNEL, tr("GameDev Twitch Channel"))
-        .SetReserved();
     am->AddAction(ID_DOCUMENTATION_FORUMS, tr("Forums"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_AWSSUPPORT, tr("AWS Support"))
         .SetReserved();
 
-    am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
-        .SetReserved();
     am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();

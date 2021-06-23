@@ -458,22 +458,20 @@ namespace AZ
 
                 decltype(boneAnimations) fillerAnimations;
 
-                // Go through all the animations and make sure we create animations for bones who's parents don't have an animation
+                // Go through all the animations and make sure we create placeholder animations for any bones missing them
                 for (auto&& anim : boneAnimations)
                 {
-                    const aiNode* node = scene->mRootNode->FindNode(anim.first.c_str());
-                    const aiNode* parent = node->mParent;
-
-                    while (parent && parent != scene->mRootNode)
+                    for (auto boneName : boneList)
                     {
-                        if (!IsPivotNode(parent->mName))
+                        if (!IsPivotNode(aiString(boneName.c_str())))
                         {
-                            if (!boneAnimations.contains(parent->mName.C_Str()) &&
-                                !fillerAnimations.contains(parent->mName.C_Str()))
+                            if (!boneAnimations.contains(boneName) &&
+                                !fillerAnimations.contains(boneName))
                             {
                                 // Create 1 key for each type that just copies the current transform
                                 ConsolidatedNodeAnim emptyAnimation;
-                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(parent);
+                                auto node = scene->mRootNode->FindNode(boneName.c_str());
+                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
 
                                 aiVector3D position, scale;
                                 aiQuaternion rotation;
@@ -490,13 +488,11 @@ namespace AZ
 
                                 emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
                                 emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
-
-                                fillerAnimations.insert(AZStd::make_pair(
-                                    parent->mName.C_Str(), AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
+                                
+                                fillerAnimations.insert(
+                                    AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                             }
                         }
-
-                        parent = parent->mParent;
                     }
                 }
 

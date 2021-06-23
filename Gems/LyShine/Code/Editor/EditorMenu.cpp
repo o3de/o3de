@@ -882,9 +882,9 @@ void EditorWindow::AddMenu_PreviewView()
 
 void EditorWindow::AddMenu_Help()
 {
-    const char* documentationUrl = "http://docs.aws.amazon.com/lumberyard/latest/userguide/ui-editor-intro.html";
-    const char* tutorialsUrl = "https://www.youtube.com/amazonlumberyardtutorials";
-    const char* forumUrl = "https://gamedev.amazon.com/forums/spaces/141/ui-2d.html";
+    const char* documentationUrl = "https://docs.o3de.org/docs/user-guide/interactivity/user-interface/";
+    const char* tutorialsUrl = "https://docs.o3de.org/docs/learning-guide/tutorials/";
+    const char* forumUrl = "https://o3deorg.netlify.app/community/";
 
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);

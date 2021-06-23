@@ -32,13 +32,15 @@ namespace AudioSystemGem
     {
     public:
         AZ_COMPONENT(AudioSystemGemSystemComponent, "{55095EE9-38E6-485F-8314-DF35CDFECC6B}", AZ::Component);
-
         static void Reflect(AZ::ReflectContext* context);
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
+        AudioSystemGemSystemComponent();
+        ~AudioSystemGemSystemComponent() override;
 
     protected:
         ////////////////////////////////////////////////////////////////////////
