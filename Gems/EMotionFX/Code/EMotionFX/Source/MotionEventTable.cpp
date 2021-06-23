@@ -10,7 +10,6 @@
 *
 */
 
-// include the required headers
 #include "MotionEventTable.h"
 #include "MotionEvent.h"
 #include "MotionEventTrack.h"
@@ -24,21 +23,14 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(MotionEventTable, MotionEventAllocator, 0)
 
-
-    // constructor
     MotionEventTable::MotionEventTable()
-        : BaseObject()
-        , m_syncTrack(nullptr)
     {
     }
 
-
-    // destructor
     MotionEventTable::~MotionEventTable()
     {
         RemoveAllTracks();
     }
-
 
     void MotionEventTable::Reflect(AZ::ReflectContext* context)
     {
@@ -61,7 +53,6 @@ namespace EMotionFX
             track->SetMotion(motion);
         }
 
-        motion->SetEventTable(this);
         AutoCreateSyncTrack(motion);
     }
 
@@ -101,7 +92,7 @@ namespace EMotionFX
         {
             for (MotionEventTrack* track : m_tracks)
             {
-                track->Destroy();
+                delete track;
             }
         }
 
@@ -114,7 +105,7 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            m_tracks[index]->Destroy();
+            delete m_tracks[index];
         }
 
         m_tracks.erase(AZStd::next(m_tracks.begin(), index));
@@ -201,9 +192,8 @@ namespace EMotionFX
         AnimGraphSyncTrack* syncTrack;
         if (!track)
         {
-            // create and add the sync track
             syncTrack = aznew AnimGraphSyncTrack("Sync", motion);
-            AddTrack(syncTrack);
+            InsertTrack(0, syncTrack);
         }
         else
         {

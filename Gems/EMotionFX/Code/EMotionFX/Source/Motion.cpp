@@ -31,19 +31,17 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Motion, MotionAllocator, 0)
 
-
-    // constructor
     Motion::Motion(const char* name)
         : BaseObject()
     {
-        mCustomData             = nullptr;
-        mNameID                 = MCORE_INVALIDINDEX32;
-        mID                     = MCore::GetIDGenerator().GenerateID();
-        mEventTable             = aznew MotionEventTable();
-        mUnitType               = GetEMotionFX().GetUnitType();
-        mFileUnitType           = mUnitType;
-        mExtractionFlags        = static_cast<EMotionExtractionFlags>(0);
-        m_motionData            = nullptr;
+        mCustomData = nullptr;
+        mNameID = MCORE_INVALIDINDEX32;
+        mID = MCore::GetIDGenerator().GenerateID();
+        m_eventTable = AZStd::make_unique<MotionEventTable>();
+        mUnitType = GetEMotionFX().GetUnitType();
+        mFileUnitType = mUnitType;
+        mExtractionFlags = static_cast<EMotionExtractionFlags>(0);
+        m_motionData = nullptr;
 
         if (name)
         {
@@ -62,8 +60,6 @@ namespace EMotionFX
         GetMotionManager().AddMotion(this);
     }
 
-
-    // destructor
     Motion::~Motion()
     {
         // trigger the OnDeleteMotion event
@@ -73,11 +69,6 @@ namespace EMotionFX
         if (mAutoUnregister)
         {
             GetMotionManager().RemoveMotion(this, false);
-        }
-
-        if (mEventTable)
-        {
-            mEventTable->Destroy();
         }
 
         delete m_motionData;
@@ -213,18 +204,13 @@ namespace EMotionFX
 
     MotionEventTable* Motion::GetEventTable() const
     {
-        return mEventTable;
+        return m_eventTable.get();
     }
 
-    void Motion::SetEventTable(MotionEventTable* newTable)
+    void Motion::SetEventTable(AZStd::unique_ptr<MotionEventTable> eventTable)
     {
-        if (mEventTable && mEventTable != newTable)
-        {
-            mEventTable->Destroy();
-        }
-        mEventTable = newTable;
+        m_eventTable = AZStd::move(eventTable);
     }
-
 
     void Motion::SetID(uint32 id)
     {
