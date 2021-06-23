@@ -91,6 +91,7 @@ namespace UnitTest
     {
         // EditorActionRequestBus ...
         void AddActionViaBus(int id, QAction* action) override;
+        void AddActionViaBusCrc(AZ::Crc32 id, QAction* action) override;
         void RemoveActionViaBus(QAction* action) override;
         void EnableDefaultActions() override;
         void DisableDefaultActions() override;

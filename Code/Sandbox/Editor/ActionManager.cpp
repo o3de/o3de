@@ -390,6 +390,13 @@ void ActionManager::AddAction(int id, QAction* action)
     AddAction(action);
 }
 
+void ActionManager::AddAction(AZ::Crc32 id, QAction* action)
+{
+    AZ::u32 new_id = id;
+    action->setData(new_id);
+    AddAction(action);
+}
+
 void ActionManager::AddAction(QAction* action)
 {
     const int id = action->data().toInt();
@@ -438,6 +445,17 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
     AddAction(id, action);
     return ActionWrapper(action, this);
 }
+
+ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id , const QString& name)
+{
+    AZ::u32 new_id = id;
+
+    QAction* action = ActionIsWidget(new_id) ? new WidgetAction(new_id, m_mainWindow, name, this)
+       : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compile
+    AddAction(id, action);
+    return ActionWrapper(action, this);
+}
+
 
 bool ActionManager::HasAction(QAction* action) const
 {
@@ -602,6 +620,11 @@ void SetDefaultActionsEnabled(
 }
 
 void ActionManager::AddActionViaBus(int id, QAction* action)
+{
+    AddAction(id, action);
+}
+
+void ActionManager::AddActionViaBusCrc(AZ::Crc32 id, QAction* action)
 {
     AddAction(id, action);
 }
