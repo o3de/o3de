@@ -119,7 +119,7 @@ VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, f
     
     vertexData.m_normal = normalize(vertexData.m_normal);
     vertexData.m_tangent.xyz = normalize(vertexData.m_tangent.xyz);
-    vertexData.m_tangent.w = clamp(vertexData.m_tangent.w, -1.0f, 1.0f);
+    vertexData.m_tangent.w = sign(vertexData.m_tangent.w);
     vertexData.m_bitangent = normalize(vertexData.m_bitangent);
 
     return vertexData;
