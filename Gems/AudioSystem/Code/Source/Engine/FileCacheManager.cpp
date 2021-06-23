@@ -645,7 +645,7 @@ namespace Audio
     }
     
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    bool CFileCacheManager::AllocateMemoryBlockInternal([[maybe_unused]]CATLAudioFileEntry* const audioFileEntry)
+    bool CFileCacheManager::AllocateMemoryBlockInternal(CATLAudioFileEntry* const audioFileEntry)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
 
@@ -766,13 +766,20 @@ namespace Audio
 
         const char* fileLocation = nullptr;
         AudioSystemImplementationRequestBus::BroadcastResult(fileLocation, &AudioSystemImplementationRequestBus::Events::GetAudioFileLocation, &fileEntryInfo);
-        audioFileEntry->m_filePath = fileLocation;
-        audioFileEntry->m_filePath.append(fileName.data(), fileName.size());
+        if (fileLocation && fileLocation[0] != '\0')
+        {
+            audioFileEntry->m_filePath.assign(fileLocation);
+            audioFileEntry->m_filePath.append(fileName.data(), fileName.size());
+        }
+        else
+        {
+            AZ_WarningOnce("FileCacheManager", fileLocation != nullptr, "GetAudioFileLocation returned null when getting a localized file path!  Path will not be changed.");
+        }
         AZStd::to_lower(audioFileEntry->m_filePath.begin(), audioFileEntry->m_filePath.end());
 
         audioFileEntry->m_fileSize = gEnv->pCryPak->FGetSize(audioFileEntry->m_filePath.c_str());
 
-        AZ_Assert(audioFileEntry->m_fileSize > 0, "FileCacheManager UpdateLocalizedFileEntryData - Expected file size to be greater than zero!");
+        AZ_Assert(audioFileEntry->m_fileSize > 0, "FileCacheManager - UpdateLocalizedFileEntryData expected file size to be greater than zero!");
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -856,23 +863,23 @@ namespace Audio
             {
                 // Cannot have a valid memory block!
                 AZ_Assert(audioFileEntry->m_memoryBlock == nullptr,
-                    "FileCacheManager TryCacheFileCacheEntryInternal - Cannot have a valid memory block after memory allocation failure!");
+                    "FileCacheManager - Memory block should be null after memory allocation failure!");
 
                 // This unfortunately is a total memory allocation fail.
                 audioFileEntry->m_flags.AddFlags(eAFF_MEMALLOCFAIL);
 
                 // The user should be made aware of it.
-                g_audioLogger.Log(eALT_ERROR, "FileCacheManager: Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
+                g_audioLogger.Log(eALT_ERROR, "FileCacheManager - Could not cache '%s' - out of memory or fragmented memory!", audioFileEntry->m_filePath.c_str());
             }
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_CACHED | eAFF_LOADING))
         {
-            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager: Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
+            g_audioLogger.Log(eALT_COMMENT, "FileCacheManager - Skipping '%s' - it's either already loaded or currently loading!", audioFileEntry->m_filePath.c_str());
             success = true;
         }
         else if (audioFileEntry->m_flags.AreAnyFlagsActive(eAFF_NOTFOUND))
         {
-            g_audioLogger.Log(eALT_WARNING, "FileCacheManager: Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
+            g_audioLogger.Log(eALT_WARNING, "FileCacheManager - Could not cache '%s' - file was not found at that location!", audioFileEntry->m_filePath.c_str());
         }
 
         // Increment the used count on manually-loaded files.
