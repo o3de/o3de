@@ -149,46 +149,33 @@ namespace AZ
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const MaterialAssignmentMap& materials,
-            bool skinnedMeshWithMotion,
-            bool rayTracingEnabled,
-            RequiresCloneCallback requiresCloneCallback)
+            const MeshHandleDescriptor& descriptor,
+            const MaterialAssignmentMap& materials)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
             // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
             MeshHandle meshDataHandle = m_meshData.emplace();
 
-            // Mark skinned meshes to enable special processes to generate motion vector 
-            meshDataHandle->m_skinnedMeshWithMotion = skinnedMeshWithMotion;
-
-            // set ray tracing flag, but always disable on skinned meshes
-            // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
-            meshDataHandle->m_rayTracingEnabled = rayTracingEnabled && (skinnedMeshWithMotion == false);
-
+            meshDataHandle->m_descriptor = descriptor;
             meshDataHandle->m_scene = GetParentScene();
             meshDataHandle->m_materialAssignments = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
-            meshDataHandle->m_originalModelAsset = modelAsset;
-            meshDataHandle->m_requiresCloningCallback = requiresCloneCallback;
-            meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(modelAsset, &*meshDataHandle);
+            meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
+            meshDataHandle->m_meshLoader = AZStd::make_unique<MeshDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
 
             return meshDataHandle;
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const Data::Asset<RPI::ModelAsset>& modelAsset,
-            const Data::Instance<RPI::Material>& material,
-            bool skinnedMeshWithMotion,
-            bool rayTracingEnabled,
-            RequiresCloneCallback requiresCloneCallback)
+            const MeshHandleDescriptor& descriptor,
+            const Data::Instance<RPI::Material>& material)
         {
             Render::MaterialAssignmentMap materials;
             Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
             defaultMaterial.m_materialInstance = material;
 
-            return AcquireMesh(modelAsset, materials, skinnedMeshWithMotion, rayTracingEnabled, requiresCloneCallback);
+            return AcquireMesh(descriptor, materials);
         }
 
         bool MeshFeatureProcessor::ReleaseMesh(MeshHandle& meshHandle)
@@ -210,7 +197,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_originalModelAsset, meshHandle->m_materialAssignments);
+                MeshHandle clone = AcquireMesh(meshHandle->m_descriptor, meshHandle->m_materialAssignments);
                 return clone;
             }
             return MeshFeatureProcessor::MeshHandle();
@@ -377,6 +364,14 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                if (excludeFromReflectionCubeMaps)
+                {
+                    meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+                }
+                else
+                {
+                    meshHandle->m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
+                }
             }
         }
 
@@ -385,12 +380,12 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 // update the ray tracing data based on the current state and the new state
-                if (rayTracingEnabled && !meshHandle->m_rayTracingEnabled)
+                if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
                     meshHandle->SetRayTracingData();
                 }
-                else if (!rayTracingEnabled && meshHandle->m_rayTracingEnabled)
+                else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // remove from ray tracing
                     if (m_rayTracingFeatureProcessor)
@@ -400,7 +395,7 @@ namespace AZ
                 }
 
                 // set new state
-                meshHandle->m_rayTracingEnabled = rayTracingEnabled;
+                meshHandle->m_descriptor.m_isRayTracingEnabled = rayTracingEnabled;
             }
         }
 
@@ -416,7 +411,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_useForwardPassIblSpecular = useForwardPassIblSpecular;
+                meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
                 meshHandle->m_objectSrgNeedsUpdate = true;
 
                 if (meshHandle->m_model)
@@ -450,7 +445,7 @@ namespace AZ
             // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
             for (auto& meshInstance : m_meshData)
             {
-                if (meshInstance.m_useForwardPassIblSpecular)
+                if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
                     meshInstance.m_objectSrgNeedsUpdate = true;
                 }
@@ -507,8 +502,8 @@ namespace AZ
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
-            if (m_parent->m_requiresCloningCallback &&
-                m_parent->m_requiresCloningCallback(modelAsset))
+            if (m_parent->m_descriptor.m_requiresCloneCallback &&
+                m_parent->m_descriptor.m_requiresCloneCallback(modelAsset))
             {
                 // Clone the model asset to force create another model instance.
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
@@ -598,7 +593,7 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_rayTracingEnabled)
+            if (m_descriptor.m_isRayTracingEnabled)
             {
                 SetRayTracingData();
             }
@@ -665,13 +660,11 @@ namespace AZ
                     }
                 }
 
-                SelectMotionVectorShader(material);
-
                 // setup the mesh draw packet
                 RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, m_shaderResourceGroup, materialAssignment.m_matModUvOverrides);
 
                 // set the shader option to select forward pass IBL specular if necessary
-                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_useForwardPassIblSpecular }))
+                if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                 {
                     AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                 }
@@ -682,7 +675,7 @@ namespace AZ
                 m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
 
                 // stencil bits
-                uint8_t stencilRef = m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
+                uint8_t stencilRef = m_descriptor.m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
                 stencilRef |= Render::StencilRefs::UseDiffuseGIPass;
 
                 drawPacket.SetStencilRef(stencilRef);
@@ -1091,29 +1084,6 @@ namespace AZ
             m_cullBoundsNeedsUpdate = false;
         }
 
-        void MeshDataInstance::SelectMotionVectorShader(Data::Instance<RPI::Material> material)
-        {
-            // Two motion vector shaders are defined in the material for static mesh (only animated by transform matrix)
-            // and skinned mesh (per vertex animation) respectively, it's because they have different input signatures
-            // (skinned mesh needs two streaming channels while static mesh only needs one) that cannot be addressed by shader option
-            // itself. Therefore this function is used to pick one to use and disable the other one depending on the type of the mesh
-            // so it won't cause errors due to missing input streaming channel.
-
-            //[GFX TODO][ATOM-4726] Replace this with a "isSkinnedMesh" external material property and a functor that enables/disables the appropriate shader
-            for (auto& shaderItem : material->GetShaderCollection())
-            {
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "StaticMeshMotionVector" } && m_skinnedMeshWithMotion)
-                {
-                    shaderItem.SetEnabled(false);
-                }
-                 
-                if (shaderItem.GetShaderAsset()->GetName() == Name{ "SkinnedMeshMotionVector" } && (!m_skinnedMeshWithMotion))
-                {
-                    shaderItem.SetEnabled(false);
-                }
-            }
-        }
-
         void MeshDataInstance::UpdateObjectSrg()
         {
             if (!m_shaderResourceGroup)
@@ -1123,7 +1093,7 @@ namespace AZ
 
             ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
 
-            if (reflectionProbeFeatureProcessor && (m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
+            if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
             {
                 // retrieve probe constant indices
                 AZ::RHI::ShaderInputConstantIndex posConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_aabbPos"));

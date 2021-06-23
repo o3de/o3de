@@ -37,8 +37,8 @@ namespace UnitTest
         MOCK_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
         MOCK_METHOD2(SetLodOverride, void(const MeshHandle&, AZ::RPI::Cullable::LodOverride));
         MOCK_METHOD1(GetLodOverride, AZ::RPI::Cullable::LodOverride(const MeshHandle&));
-        MOCK_METHOD5(AcquireMesh, MeshHandle (const AZ::Data::Asset<AZ::RPI::ModelAsset>&, const AZ::Render::MaterialAssignmentMap&, bool, bool, AZ::Render::MeshFeatureProcessorInterface::RequiresCloneCallback));
-        MOCK_METHOD5(AcquireMesh, MeshHandle (const AZ::Data::Asset<AZ::RPI::ModelAsset>&, const AZ::Data::Instance<AZ::RPI::Material>&, bool, bool, AZ::Render::MeshFeatureProcessorInterface::RequiresCloneCallback));
+        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Render::MaterialAssignmentMap&));
+        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Data::Instance<AZ::RPI::Material>&));
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
         MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));

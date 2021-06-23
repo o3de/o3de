@@ -72,7 +72,6 @@ namespace AZ
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
-            void SelectMotionVectorShader(Data::Instance<RPI::Material> material);
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
 
@@ -82,11 +81,11 @@ namespace AZ
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
 
+            MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;
 
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
-            MeshFeatureProcessorInterface::RequiresCloneCallback m_requiresCloningCallback;
 
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
@@ -99,10 +98,7 @@ namespace AZ
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
-            bool m_skinnedMeshWithMotion = false;
-            bool m_rayTracingEnabled = true;
             bool m_visible = true;
-            bool m_useForwardPassIblSpecular = false;
             bool m_hasForwardPassIblSpecularMaterial = false;
         };
 
@@ -132,17 +128,11 @@ namespace AZ
             void OnEndPrepareRender() override;
 
             MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const MaterialAssignmentMap& materials = {},
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) override;
+                const MeshHandleDescriptor& descriptor,
+                const MaterialAssignmentMap& materials = {}) override;
             MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset> &modelAsset,
-                const Data::Instance<RPI::Material>& material,
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) override;
+                const MeshHandleDescriptor& descriptor,
+                const Data::Instance<RPI::Material>& material) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 

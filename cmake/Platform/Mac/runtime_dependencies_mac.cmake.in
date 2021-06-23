@@ -105,12 +105,10 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         endif()
     endif()
     if(anything_new)
+        unset(fixup_bundle_ignore)
         # LYN-4505: Patch dxc, is configured in the wrong folder in 3p
         if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
-            # we copy to not invalidate the copy check from above
-            file(COPY ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/lib/libdxcompiler.3.7.dylib
-                DESTINATION ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin
-            )
+            list(APPEND fixup_bundle_ignore dxc-3.7)
         endif()
         # Python.framework being copied by fixup_bundle
         #if(EXISTS ${bundle_path}/Contents/Frameworks/Python.framework)
@@ -139,8 +137,17 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         #endif()
         list(REMOVE_DUPLICATES plugin_libs)
         list(REMOVE_DUPLICATES plugin_dirs)
-        fixup_bundle("${bundle_path}" "${plugin_libs}" "${plugin_dirs}")
+        fixup_bundle("${bundle_path}" "${plugin_libs}" "${plugin_dirs}" IGNORE_ITEM ${fixup_bundle_ignore})
         file(TOUCH "${bundle_path}")
         file(TOUCH "${fixup_timestamp_file}")
+
+        # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
+        if(EXISTS ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+            find_program(LY_INSTALL_NAME_TOOL install_name_tool)
+            if (NOT LY_INSTALL_NAME_TOOL)
+                message(FATAL_ERROR "Unable to locate 'install_name_tool'")
+            endif()
+            execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -add_rpath @executable_path/../lib ${bundle_path}/Contents/MacOS/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+        endif()
     endif()
 endif()

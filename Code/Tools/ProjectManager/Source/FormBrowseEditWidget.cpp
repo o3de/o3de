@@ -11,13 +11,9 @@
 */
 
 #include <FormBrowseEditWidget.h>
-#include <AzQtComponents/Components/StyledLineEdit.h>
+
 #include <QPushButton>
 #include <QHBoxLayout>
-#include <QFileDialog>
-#include <QLineEdit>
-#include <QStandardPaths>
-#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -29,21 +25,5 @@ namespace O3DE::ProjectManager
         QPushButton* browseButton = new QPushButton(this);
         connect(browseButton, &QPushButton::pressed, this, &FormBrowseEditWidget::HandleBrowseButton);
         m_frameLayout->addWidget(browseButton); 
-    }
-
-    void FormBrowseEditWidget::HandleBrowseButton()
-    {
-        QString defaultPath = m_lineEdit->text();
-        if (defaultPath.isEmpty())
-        {
-            defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-        }
-
-        QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Browse"), defaultPath));
-        if (!directory.isEmpty())
-        {
-            m_lineEdit->setText(directory);
-        }
-
     }
 } // namespace O3DE::ProjectManager

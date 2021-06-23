@@ -28,5 +28,7 @@
         <file alias="script_canvas_editor.svg">Menu/script_canvas_editor.svg</file>
         <file alias="trackview_editor.svg">Menu/trackview_editor.svg</file>
         <file alias="ui_editor.svg">Menu/ui_editor.svg</file>
+        <file alias="menu.svg">Menu/menu.svg</file>
+        <file alias="helpers.svg">Menu/helpers.svg</file>
     </qresource>
 </RCC>

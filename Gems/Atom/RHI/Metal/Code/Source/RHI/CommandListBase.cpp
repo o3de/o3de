@@ -83,7 +83,7 @@ namespace AZ
                     for (id<MTLHeap> residentHeap : *m_residentHeaps)
                     {
                         [renderEncoder useHeap : residentHeap
-                                       stages  : MTLRenderStageFragment];
+                                       stages  : MTLRenderStageVertex | MTLRenderStageFragment];
                     }
                     break;
                 }
