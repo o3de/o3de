@@ -48,6 +48,10 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             verticalHeader()->hide();
+
+            horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+            horizontalHeader()->setStyleSheet("QHeaderView { font-weight: bold; }");
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
