@@ -94,7 +94,8 @@ namespace Multiplayer
         virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
 
         // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
-        virtual void Terminate() = 0;
+        //! @param reason The reason for terminating connections
+        virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
 
         //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
         //! @param handler The ClientDisconnectedEvent Handler to add
