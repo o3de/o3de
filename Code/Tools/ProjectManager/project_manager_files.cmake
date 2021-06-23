@@ -87,6 +87,14 @@ set(FILES
     Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemRequirementDialog.h
+    Source/GemCatalog/GemRequirementDialog.cpp
+    Source/GemCatalog/GemRequirementDelegate.h
+    Source/GemCatalog/GemRequirementDelegate.cpp
+    Source/GemCatalog/GemRequirementFilterProxyModel.h
+    Source/GemCatalog/GemRequirementFilterProxyModel.cpp
+    Source/GemCatalog/GemRequirementListView.h
+    Source/GemCatalog/GemRequirementListView.cpp
     Source/GemCatalog/GemSortFilterProxyModel.h
     Source/GemCatalog/GemSortFilterProxyModel.cpp
 )

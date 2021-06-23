@@ -10,21 +10,21 @@
 *
 */
 
-#include <GemCatalog/GemListView.h>
-#include <GemCatalog/GemItemDelegate.h>
+#include <GemCatalog/GemRequirementListView.h>
+#include <GemCatalog/GemRequirementDelegate.h>
 #include <QStandardItemModel>
 
 namespace O3DE::ProjectManager
 {
-    GemListView::GemListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
+    GemRequirementListView::GemRequirementListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
         : QListView(parent)
     {
         setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-        setStyleSheet("background-color: #333333;");
+        setStyleSheet("background-color: #444444;");
 
         setModel(model);
         setSelectionModel(selectionModel);
-        setItemDelegate(new GemItemDelegate(model, this));
+        setItemDelegate(new GemRequirementDelegate(model, this));
     }
 } // namespace O3DE::ProjectManager
