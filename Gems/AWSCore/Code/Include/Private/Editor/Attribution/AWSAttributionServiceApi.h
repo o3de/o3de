@@ -43,7 +43,7 @@ namespace AWSCore
 
             bool UseAWSCredentials()
             {
-                return false;
+                return true;
             }
 
             //! Request body for the service API request.

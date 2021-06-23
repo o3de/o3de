@@ -343,6 +343,11 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetPcfMethod, method);
         }
 
+        void DiskLightFeatureProcessor::SetEsmExponent(LightHandle handle, float exponent)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, exponent);
+        }
+
         void DiskLightFeatureProcessor::UpdateShadow(LightHandle handle)
         {
             const DiskLightData& diskLight = m_diskLightData.GetData(handle.GetIndex());

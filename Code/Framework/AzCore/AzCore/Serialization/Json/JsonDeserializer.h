@@ -58,8 +58,8 @@ namespace AZ
         JsonDeserializer(const JsonDeserializer& rhs) = delete;
         JsonDeserializer(JsonDeserializer&& rhs) = delete;
 
-        static JsonSerializationResult::ResultCode Load(void* object, const Uuid& typeId, const rapidjson::Value& value,
-            JsonDeserializerContext& context);
+        static JsonSerializationResult::ResultCode Load(
+            void* object, const Uuid& typeId, const rapidjson::Value& value, bool isNewInstance, JsonDeserializerContext& context);
 
         static JsonSerializationResult::ResultCode LoadToPointer(void* object, const Uuid& typeId, const rapidjson::Value& value,
             JsonDeserializerContext& context);
@@ -120,6 +120,7 @@ namespace AZ
             void* object,
             const Uuid& typeId,
             const rapidjson::Value& value,
+            bool isNewInstance,
             JsonDeserializerContext& context);
     };
 } // namespace AZ

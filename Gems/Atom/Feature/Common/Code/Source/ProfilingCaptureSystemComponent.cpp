@@ -458,9 +458,13 @@ namespace AZ
         bool ProfilingCaptureSystemComponent::CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
         {
             // Start the cpu profiling
-            RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            bool wasEnabled = RHI::CpuProfiler::Get()->IsProfilerEnabled();
+            if (!wasEnabled)
+            {
+                RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            }
 
-            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath]()
+            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
@@ -481,14 +485,22 @@ namespace AZ
                         saveResult.GetError().c_str());
                     AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
                 }
+                else
+                {
+                    AZ_Printf("ProfilingCaptureSystemComponent", "Cpu profiling statistics was saved to file [%s]\n", outputFilePath.c_str());
+                }
 
                 // Disable the profiler again
-                RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                if (!wasEnabled)
+                {
+                    RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                }
 
                 // Notify listeners that the pass' PipelineStatistics queries capture has finished.
                 ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuProfilingStatisticsFinished,
                     saveResult.IsSuccess(),
                     captureInfo);
+
             });
 
             // Start the TickBus.

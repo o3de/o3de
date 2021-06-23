@@ -684,7 +684,7 @@ namespace AZ
                 if (!m_shaderResourceGroup)
                 {
                     auto& shaderAsset = material->GetAsset()->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
-                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, RPI::DefaultSupervariantIndex, objectSrgLayout->GetName());
+                    m_shaderResourceGroup = RPI::ShaderResourceGroup::Create(shaderAsset, objectSrgLayout->GetName());
                     if (!m_shaderResourceGroup)
                     {
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");

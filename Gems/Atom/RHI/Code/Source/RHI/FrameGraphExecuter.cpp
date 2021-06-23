@@ -9,10 +9,11 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 *
 */
-#include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
+#include <Atom/RHI/FrameGraphExecuter.h>
+#include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/Image.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -80,7 +81,7 @@ namespace AZ
 
         void FrameGraphExecuter::End()
         {
-            AZ_TRACE_METHOD();
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "FrameGraphExecuter: End");
             AZ_Assert(m_pendingGroups.empty(), "Pending contexts in queue.");
             m_groups.clear();
             EndInternal();

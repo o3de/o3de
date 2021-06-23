@@ -214,7 +214,11 @@ namespace AzToolsFramework
         class ViewportSettingNotifications
         {
         public:
-            virtual void OnGridSnappingChanged(bool enabled) = 0;
+            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled) {}
+            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled) {}
+
+        protected:
+            ViewportSettingNotifications() = default;
         };
 
         using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;

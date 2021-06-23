@@ -28,6 +28,8 @@
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
 
+#include <Atom/RHI/RHIUtils.h>
+
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -469,7 +471,7 @@ namespace AZ
             if (m_skinnedMeshInputBuffers)
             {
                 m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-                AZ_Error("AtomActorInstance", m_boneTransforms, "Failed to create bone transform buffer.");
+                AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
 
                 // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
                 // Wait for them all to be ready before creating the instance
@@ -522,6 +524,20 @@ namespace AZ
                 m_skinnedMeshInstance.reset();
                 m_boneTransforms.reset();
             }
+        }
+
+        template<class X>
+        void swizzle_unique(AZStd::vector<X>& values, const AZStd::vector<size_t>& indices)
+        {
+            AZStd::vector<X> out;
+            out.reserve(indices.size());
+
+            for (size_t i : indices)
+            {
+                out.push_back(AZStd::move(values[i]));
+            }
+
+            values = AZStd::move(out);
         }
 
         void AtomActorInstance::OnUpdateSkinningMatrices()
@@ -582,6 +598,30 @@ namespace AZ
                                 }
                             }
                         }
+
+                        AZ_Assert(m_wrinkleMasks.size() == m_wrinkleMaskWeights.size(), "Must have equal # of masks and weights");
+
+                        // If there's too many masks, truncate
+                        if (m_wrinkleMasks.size() > s_maxActiveWrinkleMasks)
+                        {
+                            // Build a remapping of indices (because we want to sort two vectors)
+                            AZStd::vector<size_t> remapped;
+                            remapped.resize_no_construct(m_wrinkleMasks.size());
+                            std::iota(remapped.begin(), remapped.end(), 0);
+
+                            // Sort index remapping by weight (highest first)
+                            std::sort(remapped.begin(), remapped.end(), [&](size_t ia, size_t ib) {
+                                return m_wrinkleMaskWeights[ia] > m_wrinkleMaskWeights[ib];
+                            });
+
+                            // Truncate indices list
+                            remapped.resize(s_maxActiveWrinkleMasks);
+
+                            // Remap wrinkle masks list and weights list
+                            swizzle_unique(m_wrinkleMasks, remapped);
+                            swizzle_unique(m_wrinkleMaskWeights, remapped);
+                        }
+
                         m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
 
                         // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from

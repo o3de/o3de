@@ -162,9 +162,18 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::SetPcfMethod(ShadowId id, PcfMethod method)
     {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetPcfMethod().");
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
         shadowData.m_pcfMethod = method;
 
+        m_deviceBufferNeedsUpdate = true;
+    }
+
+    void ProjectedShadowFeatureProcessor::SetEsmExponent(ShadowId id, float exponent)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetEsmExponent().");
+        ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(id.GetIndex());
+        shadowData.m_esmExponent = exponent;
         m_deviceBufferNeedsUpdate = true;
     }
 

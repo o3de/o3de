@@ -407,6 +407,7 @@ namespace PhysX
             AzFramework::RagdollPhysicsRequestBus::Handler::BusDisconnect();
             AzFramework::RagdollPhysicsNotificationBus::Event(
                 GetEntityId(), &AzFramework::RagdollPhysicsNotifications::OnRagdollDeactivated);
+            AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
             {

@@ -14,4 +14,5 @@ set(FILES
     Source/AreaSystemComponent.h
     Source/VegetationModule.cpp
     Source/VegetationModule.h
+    Source/VegetationProfiler.h
 )

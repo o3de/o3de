@@ -216,9 +216,10 @@ namespace AZ
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueLoading(
         void* object, const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context, ContinuationFlags flags)
     {
+        bool loadAsNewInstance = (flags & ContinuationFlags::LoadAsNewInstance) == ContinuationFlags::LoadAsNewInstance;
         return (flags & ContinuationFlags::ResolvePointer) == ContinuationFlags::ResolvePointer
             ? JsonDeserializer::LoadToPointer(object, typeId, value, context)
-            : JsonDeserializer::Load(object, typeId, value, context);
+            : JsonDeserializer::Load(object, typeId, value, loadAsNewInstance, context);
     }
 
     JsonSerializationResult::ResultCode BaseJsonSerializer::ContinueStoring(

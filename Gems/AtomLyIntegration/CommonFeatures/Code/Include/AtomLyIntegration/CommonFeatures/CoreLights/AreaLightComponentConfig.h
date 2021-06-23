@@ -66,6 +66,7 @@ namespace AZ
             float m_boundaryWidthInDegrees = 0.25f;
             uint16_t m_predictionSampleCount = 4;
             uint16_t m_filteringSampleCount = 12;
+            float m_esmExponent = 87.0f;
 
             // The following functions provide information to an EditContext...
 
@@ -124,6 +125,8 @@ namespace AZ
             //! Returns true if pcf boundary search is disabled.
             bool IsPcfBoundarySearchDisabled() const;
 
+            //! Returns true if exponential shadow maps are disabled.
+            bool IsEsmDisabled() const;
         };
     }
 }

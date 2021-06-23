@@ -10,7 +10,6 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
 #include "MeshBlockerComponent.h"
 
 #include <AzCore/Debug/Profiler.h>

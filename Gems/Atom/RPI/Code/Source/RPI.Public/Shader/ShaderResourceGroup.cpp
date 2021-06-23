@@ -41,6 +41,19 @@ namespace AZ
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
+            const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& srgName)
+        {
+            // retrieve the supervariantIndex by searching for the default supervariant name, this will
+            // allow the shader asset to properly handle the RPI::ShaderSystem supervariant
+            SupervariantIndex supervariantIndex = shaderAsset->GetSupervariantIndex(AZ::Name(""));
+
+            SrgInitParams initParams{ supervariantIndex, srgName };
+            auto anyInitParams = AZStd::any(initParams);
+            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
+                Data::InstanceId::CreateRandom(), shaderAsset, &anyInitParams);
+        }
+
+        Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
             const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName)
         {
             SrgInitParams initParams{ supervariantIndex, srgName };

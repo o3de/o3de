@@ -466,10 +466,10 @@ namespace ImGui
         }
 
         //!Draw the UI and all the nodes.
-        void Paint()
+        void Paint(bool& draw)
         {
             ImGui::SetNextWindowSize(ImVec2((float)m_windowWidth, (float)m_windowHeight), ImGuiCond_FirstUseEver);
-            if (!ImGui::Begin(m_windowName.c_str(), &m_open))
+            if (!ImGui::Begin(m_windowName.c_str(), &draw)) 
             {
                 ImGui::End();
                 return;
@@ -572,7 +572,6 @@ namespace ImGui
         AZStd::string m_windowName;
         unsigned int m_windowWidth = 1;
         unsigned int m_windowHeight = 1;
-        bool m_open = false;
         bool m_frameCapture = false;
         bool m_showGrid = true;
     };
@@ -581,7 +580,7 @@ static ImGui::ImGuiFrameVisualizerWindow* visualizerWindow = nullptr;
 namespace AZ::Render
 {
     //! Draw the frame graph.
-    inline void ImGuiFrameVisualizer::Draw([[maybe_unused]] bool draw)
+    inline void ImGuiFrameVisualizer::Draw(bool& draw)
     {
         if (!visualizerWindow)
         {
@@ -595,7 +594,7 @@ namespace AZ::Render
                 visualizerWindow->CaptureFrame(this);
                 visualizerWindow->DisableCaptureFrame();
             }
-            visualizerWindow->Paint();
+            visualizerWindow->Paint(draw);
         }
     }
 

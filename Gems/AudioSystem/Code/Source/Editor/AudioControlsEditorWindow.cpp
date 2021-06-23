@@ -218,7 +218,7 @@ namespace AudioControls
         IAudioSystemEditor* pAudioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
         if (pAudioSystemImpl)
         {
-            StartWatchingFolder(pAudioSystemImpl->GetDataPath());
+            StartWatchingFolder(pAudioSystemImpl->GetDataPath().LexicallyNormal().Native());
             m_pMiddlewareDockWidget->setWindowTitle(QString(pAudioSystemImpl->GetName().c_str()) + " Controls");
         }
     }

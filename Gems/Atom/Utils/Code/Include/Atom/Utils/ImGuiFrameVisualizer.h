@@ -38,14 +38,13 @@ namespace AZ
             ~ImGuiFrameVisualizer() = default;
             AZStd::vector<FrameAttachmentVisualizeInfo>& GetFrameAttachments();
             void Init(RHI::Device* device);
-            void Draw(bool draw);
+            void Draw(bool& draw);
             void DrawTreeView();
             void Reset();
         protected:
             AZStd::vector<FrameAttachmentVisualizeInfo> m_framesAttachments;
             RHI::Device* m_device = nullptr;
             bool m_deviceInit = false;
-            bool m_draw = false;
             //////////////////////////////////////////////////////////////////////////
             // FrameEventBus::Handler
             void OnFrameCompileEnd(RHI::FrameGraph& frameGraph);

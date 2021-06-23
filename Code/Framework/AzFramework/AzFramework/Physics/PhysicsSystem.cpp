@@ -43,7 +43,7 @@ namespace AzPhysics
             const AZ::BehaviorAzEventDescription postsimulateEventDescription =
             {
                 "Postsimulate event",
-                {} // Parameters
+                {"Tick time"} // Parameters
             };
 
             behaviorContext->Class<SystemInterface>("System Interface")

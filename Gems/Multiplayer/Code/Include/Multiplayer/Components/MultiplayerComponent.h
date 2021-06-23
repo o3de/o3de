@@ -63,10 +63,10 @@ namespace Multiplayer
         //! @}
 
         NetEntityId GetNetEntityId() const;
-        bool IsAuthority() const;
-        bool IsAutonomous() const;
-        bool IsServer() const;
-        bool IsClient() const;
+        bool IsNetEntityRoleAuthority() const;
+        bool IsNetEntityRoleAutonomous() const;
+        bool IsNetEntityRoleServer() const;
+        bool IsNetEntityRoleClient() const;
         ConstNetworkEntityHandle GetEntityHandle() const;
         NetworkEntityHandle GetEntityHandle();
         void MarkDirty();

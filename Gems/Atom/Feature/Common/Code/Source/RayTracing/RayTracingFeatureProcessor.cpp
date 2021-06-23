@@ -74,12 +74,12 @@ namespace AZ
             }
 
             // create the RayTracingSceneSrg
-            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, RPI::DefaultSupervariantIndex, Name("RayTracingSceneSrg"));
+            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingSceneSrg"));
             AZ_Assert(m_rayTracingSceneSrg, "Failed to create RayTracingSceneSrg");
 
             // create the RayTracingMaterialSrg
             const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
-            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, RPI::DefaultSupervariantIndex, Name("RayTracingMaterialSrg"));
+            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
             AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 

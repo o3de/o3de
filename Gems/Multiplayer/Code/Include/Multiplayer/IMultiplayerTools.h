@@ -16,7 +16,11 @@
 
 namespace Multiplayer
 {
-    //! IMultiplayer provides insight into the Multiplayer session and its Agents
+    //! @class IMultiplayerTools
+    //! @brief IMultiplayerTools provides interfacing between the Editor and Multiplayer Gem.
+    //!
+    //! IMultiplayerTools is an AZ::Interface<T> that provides information about
+    //! O3DE Editor and Tools integrations with the Multiplayer Gem. 
     class IMultiplayerTools
     {
     public:
@@ -27,8 +31,8 @@ namespace Multiplayer
 
         virtual ~IMultiplayerTools() = default;
 
-        //! Returns if network prefab processing has created currently active or pending spawnables
-        //! @return If network prefab processing has created currently active or pending spawnables
+        //! @brief Whether or not network prefab processing has created active or pending spawnable prefabs.
+        //! @return `true` if network prefab processing has created currently active or pending spawnables.
         virtual bool DidProcessNetworkPrefabs() = 0;
 
     private:

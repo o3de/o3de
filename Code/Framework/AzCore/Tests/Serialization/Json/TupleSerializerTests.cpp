@@ -48,12 +48,12 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<Pair> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<Pair>(142, 242.0);
+            return AZStd::make_shared<Pair>(0, 0.0);
         }
 
         AZStd::shared_ptr<Pair> CreatePartialDefaultInstance() override
         {
-            return AZStd::make_shared<Pair>(142, 288.0);
+            return AZStd::make_shared<Pair>(0, 288.0);
         }
 
         AZStd::shared_ptr<Pair> CreateFullySetInstance() override
@@ -102,12 +102,12 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<Tuple> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<Tuple>(142, 242.0, 342.0f);
+            return AZStd::make_shared<Tuple>(0, 0.0, 0.0f);
         }
 
         AZStd::shared_ptr<Tuple> CreatePartialDefaultInstance() override
         {
-            return AZStd::make_shared<Tuple>(142, 288.0, 342.0f);
+            return AZStd::make_shared<Tuple>(0, 288.0, 0.0f);
         }
 
         AZStd::shared_ptr<Tuple> CreateFullySetInstance() override
@@ -345,6 +345,7 @@ namespace JsonSerializationTests
         {
             TupleSerializerTestsInternal::ConfigureFeatures(features);
             features.m_supportsPartialInitialization = true;
+            features.m_enableNewInstanceTests = false;
         }
 
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
@@ -447,14 +448,14 @@ namespace JsonSerializationTests
         {
             return AZStd::make_shared<Tuple>(
                 AZStd::vector<int>(), 
-                AZStd::make_pair(442, ""));
+                AZStd::make_pair(0, ""));
         }
 
         AZStd::shared_ptr<Tuple> CreatePartialDefaultInstance() override
         {
             return AZStd::make_shared<Tuple>(
                 AZStd::vector<int>(),
-                AZStd::make_pair(442, "hello"));
+                AZStd::make_pair(0, "hello"));
         }
 
         AZStd::shared_ptr<Tuple> CreateFullySetInstance() override

@@ -52,6 +52,7 @@ namespace AZ::Render
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetPcfMethod(ShadowId id, PcfMethod method);
+        void SetEsmExponent(ShadowId id, float exponent);
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
         void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) override;
         void SetPredictionSampleCount(ShadowId id, uint16_t count) override;
@@ -73,6 +74,8 @@ namespace AZ::Render
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
             float m_bias;
+            float m_esmExponent = 87.0f;
+            float m_padding[3];
         };
 
         // CPU data used for constructing & updating ShadowData
