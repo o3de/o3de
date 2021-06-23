@@ -28,6 +28,6 @@ namespace SurfaceData
         static constexpr const char* const s_componentDescription = "Enables a shape to emit surface tags";
         static constexpr const char* const s_icon = "Editor/Icons/Components/SurfaceData.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/SurfaceData.png";
-        static constexpr const char* const s_helpUrl = "https://docs.aws.amazon.com/console/lumberyard/surfacedata/shape-surface-tag-emitter";
+        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/reference/";
     };
 }

@@ -193,11 +193,8 @@ public:
     void OnDocumentationGamelift();
     void OnDocumentationReleaseNotes();
     void OnDocumentationGameDevBlog();
-    void OnDocumentationGettingStartedGuide();
-    void OnDocumentationTwitchChannel();
     void OnDocumentationForums();
     void OnDocumentationAWSSupport();
-    void OnDocumentationFeedback();
     void OnCommercePublish();
     void OnCommerceMerch();
     void SaveTagLocations();

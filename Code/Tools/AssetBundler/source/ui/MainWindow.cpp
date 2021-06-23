@@ -199,7 +199,7 @@ namespace AssetBundler
     void MainWindow::OnSupportClicked()
     {
         QDesktopServices::openUrl(
-            QStringLiteral("https://docs.aws.amazon.com/lumberyard/latest/userguide/asset-bundler-overview.html"));
+            QStringLiteral("https://docs.o3de.org/docs/user-guide/packaging/asset-bundler/"));
     }
 
     void MainWindow::ShowLogContextMenu(const QPoint& pos)

@@ -111,7 +111,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
-#include "FeedbackDialog/FeedbackDialog.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -355,17 +354,13 @@ void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
     ON_COMMAND(ID_APP_SHOW_WELCOME, OnAppShowWelcomeScreen)
-    ON_COMMAND(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, OnDocumentationGettingStartedGuide)
     ON_COMMAND(ID_DOCUMENTATION_TUTORIALS, OnDocumentationTutorials)
-    ON_COMMAND(ID_DOCUMENTATION_GLOSSARY, OnDocumentationGlossary)
     ON_COMMAND(ID_DOCUMENTATION_O3DE, OnDocumentationO3DE)
     ON_COMMAND(ID_DOCUMENTATION_GAMELIFT, OnDocumentationGamelift)
     ON_COMMAND(ID_DOCUMENTATION_RELEASENOTES, OnDocumentationReleaseNotes)
     ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
-    ON_COMMAND(ID_DOCUMENTATION_TWITCHCHANNEL, OnDocumentationTwitchChannel)
     ON_COMMAND(ID_DOCUMENTATION_FORUMS, OnDocumentationForums)
     ON_COMMAND(ID_DOCUMENTATION_AWSSUPPORT, OnDocumentationAWSSupport)
-    ON_COMMAND(ID_DOCUMENTATION_FEEDBACK, OnDocumentationFeedback)
     ON_COMMAND(ID_FILE_EXPORT_SELECTEDOBJECTS, OnExportSelectedObjects)
     ON_COMMAND(ID_EDIT_HOLD, OnEditHold)
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
@@ -2012,40 +2007,33 @@ void CCryEditApp::OnUpdateShowWelcomeScreen(QAction* action)
         && !m_savingLevel);
 }
 
-// App command to open online documentation page
-void CCryEditApp::OnDocumentationGettingStartedGuide()
-{
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/latest/gettingstartedguide");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationTutorials()
 {
-    QString webLink = tr("https://www.youtube.com/amazonlumberyardtutorials");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/learning-guide/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationGlossary()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide/glossary");
+    QString webLink = tr("https://docs.o3de.org/docs/user-guide/appendix/glossary/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationO3DE()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationGamelift()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/gamelift/developerguide");
+    QString webLink = tr("https://docs.aws.amazon.com/gamelift/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationReleaseNotes()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/releasenotes");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/release-notes/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2055,15 +2043,9 @@ void CCryEditApp::OnDocumentationGameDevBlog()
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
-void CCryEditApp::OnDocumentationTwitchChannel()
-{
-    QString webLink = tr("http://twitch.tv/amazongamedev");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationForums()
 {
-    QString webLink = tr("https://gamedev.amazon.com/forums");
+    QString webLink = tr("https://o3deorg.netlify.app/community/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2071,14 +2053,6 @@ void CCryEditApp::OnDocumentationAWSSupport()
 {
     QString webLink = tr("https://aws.amazon.com/contact-us");
     QDesktopServices::openUrl(QUrl(webLink));
-}
-
-void CCryEditApp::OnDocumentationFeedback()
-{
-    FeedbackDialog dialog;
-    dialog.show();
-    dialog.adjustSize();
-    dialog.exec();
 }
 
 bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
