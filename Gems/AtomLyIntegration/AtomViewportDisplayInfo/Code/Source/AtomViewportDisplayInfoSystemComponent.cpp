@@ -46,6 +46,10 @@ namespace AZ::Render
         "The time period over which to calculate the framerate for r_displayInfo."
     );
 
+    AZ_CVAR(
+        AZ::Vector2, r_topRightBorderPadding, AZ::Vector2(-40.0f, 22.0f), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The top right border padding for the viewport debug display text");
+
     void AtomViewportDisplayInfoSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -156,7 +160,7 @@ namespace AZ::Render
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.f, 1.f);
+        m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding);
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_scale = AZ::Vector2(0.7f);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
