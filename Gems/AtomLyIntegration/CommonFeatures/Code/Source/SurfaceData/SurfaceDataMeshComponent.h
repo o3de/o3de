@@ -14,6 +14,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -57,7 +58,7 @@ namespace SurfaceData
         static void Reflect(AZ::ReflectContext* context);
 
         SurfaceDataMeshComponent(const SurfaceDataMeshConfig& configuration);
-        SurfaceDataMeshComponent() = default;
+        SurfaceDataMeshComponent();
         ~SurfaceDataMeshComponent() = default;
 
         //////////////////////////////////////////////////////////////////////////
@@ -91,6 +92,8 @@ namespace SurfaceData
         AZ::Aabb GetSurfaceAabb() const;
         SurfaceTagVector GetSurfaceTags() const;
 
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
+
         SurfaceDataMeshConfig m_configuration;
 
         SurfaceDataRegistryHandle m_providerHandle = InvalidSurfaceDataRegistryHandle;
@@ -101,6 +104,7 @@ namespace SurfaceData
         AZ::Data::Asset<AZ::Data::AssetData> m_meshAssetData;
         AZ::Transform m_meshWorldTM = AZ::Transform::CreateIdentity();
         AZ::Transform m_meshWorldTMInverse = AZ::Transform::CreateIdentity();
+        AZ::Vector3 m_meshNonUniformScale = AZ::Vector3::CreateOne();
         AZ::Aabb m_meshBounds = AZ::Aabb::CreateNull();
     };
 }

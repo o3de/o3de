@@ -14,6 +14,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/MeshBlockerRequestBus.h>
@@ -67,7 +68,7 @@ namespace Vegetation
         static void Reflect(AZ::ReflectContext* context);
 
         MeshBlockerComponent(const MeshBlockerConfig& configuration);
-        MeshBlockerComponent() = default;
+        MeshBlockerComponent();
         ~MeshBlockerComponent() = default;
 
         //////////////////////////////////////////////////////////////////////////
@@ -127,6 +128,8 @@ namespace Vegetation
         MeshBlockerConfig m_configuration;
         AZStd::atomic_bool m_refresh{ false };
 
+        AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
+
         // cached data
         mutable AZStd::recursive_mutex m_cacheMutex;
         AZ::Data::Asset<AZ::Data::AssetData> m_meshAssetData;
@@ -134,9 +137,12 @@ namespace Vegetation
         AZ::Transform m_meshWorldTMInverse = AZ::Transform::CreateIdentity();
         AZ::Aabb m_meshBounds = AZ::Aabb::CreateNull();
         AZ::Aabb m_meshBoundsForIntersection = AZ::Aabb::CreateNull();
+        AZ::Vector3 m_meshNonUniformScale = AZ::Vector3::CreateOne();
         bool m_meshVisible = false;
 
         using CachedRayHits = AZStd::unordered_map<ClaimHandle, bool>;
         CachedRayHits m_cachedRayHits;
+
+        static constexpr float s_rayAABBHeightPadding = 0.1f;
     };
 }
