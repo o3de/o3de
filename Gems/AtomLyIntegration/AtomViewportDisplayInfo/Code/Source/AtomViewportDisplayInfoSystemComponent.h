@@ -65,9 +65,8 @@ namespace AZ
             AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
             float m_lineSpacing;
             AZStd::chrono::duration<double> m_fpsInterval = AZStd::chrono::seconds(1);
-            AZStd::deque<AZ::ScriptTimePoint> m_fpsHistory;
+            AZStd::deque<AZStd::chrono::system_clock::time_point> m_fpsHistory;
             AZStd::optional<AZStd::chrono::system_clock::time_point> m_lastMemoryUpdate;
-            AZ::TickRequests* m_tickRequests = nullptr;
             bool m_updateRootPassQuery = true;
         };
     } // namespace Render
