@@ -156,15 +156,15 @@ ShaderResourceGroup RayTracingSceneSrg : SRG_RayTracingScene
     #define MESH_INDEX_BUFFER_OFFSET        0
     #define MESH_POSITION_BUFFER_OFFSET     1
     #define MESH_NORMAL_BUFFER_OFFSET       2   
-    #define MESH_TANGENT_BUFFER_OFFSET      3   
-    #define MESH_BITANGENT_BUFFER_OFFSET    4   
 
     // buffer flag bits indicating if optional buffers are present
-    #define MESH_BUFFER_FLAG_UV             1
+    #define MESH_BUFFER_FLAG_TANGENT        1
+    #define MESH_BUFFER_FLAG_BITANGENT      2
+    #define MESH_BUFFER_FLAG_UV             3
 
     // Unbounded array of mesh stream buffers:
-    // - Index, Position, Normal, Tangent, and Bitangent stream buffers are always present
-    // - Optional stream buffers such as UV are indicated in the MeshInfo.m_bufferFlags field
+    // - Index, Position, Normal stream buffers are always present
+    // - Optional stream buffers such as Tangent, Bitangent, and UV are indicated in the MeshInfo.m_bufferFlags field
     // - Buffers for a particular mesh start at MeshInfo.m_bufferStartIndex
     ByteAddressBuffer m_meshBuffers[];
 }
