@@ -114,7 +114,7 @@ namespace Multiplayer
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
         bool StartHosting(uint16_t port, bool isDedicated = true) override;
         bool Connect(AZStd::string remoteAddress, uint16_t port) override;
-        void Terminate() override;
+        void Terminate(AzNetworking::DisconnectReason reason) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         INetworkTime* GetNetworkTime() override;
