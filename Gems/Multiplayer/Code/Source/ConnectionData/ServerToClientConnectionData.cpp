@@ -19,6 +19,7 @@ namespace Multiplayer
     AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCount, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we have sent to the client, but have not had a confirmation back from the client");
     AZ_CVAR(uint32_t, sv_ClientMaxRemoteEntitiesPendingCreationCountPostInit, AZStd::numeric_limits<uint32_t>::max(), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of entities that we will send to clients after gameplay has begun");
     AZ_CVAR(AZ::TimeMs, sv_ClientEntityReplicatorPendingRemovalTimeMs, AZ::TimeMs{ 10000 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "How long should wait prior to removing an entity for the client through a change in the replication window, entity deletes are still immediate");
+    AZ_CVAR(bool, sv_removeDefaultPlayerSpawnableOnDisconnect, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to remove player's default spawnable when a player disconnects");
 
     ServerToClientConnectionData::ServerToClientConnectionData
     (
@@ -45,7 +46,10 @@ namespace Multiplayer
 
     ServerToClientConnectionData::~ServerToClientConnectionData()
     {
-        AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(m_controlledEntity);
+        if (sv_removeDefaultPlayerSpawnableOnDisconnect)
+        {
+            AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(m_controlledEntity);
+        }
 
         m_entityReplicationManager.Clear(false);
         m_controlledEntityRemovedHandler.Disconnect();
