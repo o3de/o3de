@@ -190,8 +190,8 @@ namespace EMotionFX
                 }
                 
                 const bool hasAnimationData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, true);
-                // Skip adding the actor group if it's contain animation data. By default, actor and motion product are exclusive.
-                if (hasAnimationData)
+                // Skip adding the actor group if it's contain animation data but don't contain any skindata or blendshapedata.
+                if (hasAnimationData && !hasSkinData && !hasBlendShapeData)
                 {
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;
                 }
