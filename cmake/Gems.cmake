@@ -158,7 +158,10 @@ function(ly_enable_gems)
     if(NOT ly_enable_gems_PROJECT_NAME STREQUAL "__NOPROJECT__")
         set(replicated_project_name ${ly_enable_gems_PROJECT_NAME})
     endif()
-    string(REPLACE ";" " " enable_gems_args "${replicated_project_name},${ly_enable_gems_GEMS},${ly_enable_gems_GEM_FILE},${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
+    # The GEM_FILE argument is used to populate the GEMS argument which.
+    # Furthermore the GEM_FILE itself is not  copied over to the install layout, so make its argument entry blank and use the list of GEMS
+    # stored in ly_enable_gems_GEMS
+    string(REPLACE ";" " " enable_gems_args "${replicated_project_name},${ly_enable_gems_GEMS},,${ly_enable_gems_VARIANTS},${ly_enable_gems_TARGETS}")
     set_property(DIRECTORY APPEND PROPERTY LY_ENABLE_GEMS_ARGUMENTS "${enable_gems_args}")
 endfunction()
 
