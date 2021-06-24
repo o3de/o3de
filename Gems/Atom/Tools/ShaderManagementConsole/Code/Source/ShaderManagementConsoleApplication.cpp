@@ -70,6 +70,8 @@ namespace ShaderManagementConsole
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
     {
+        QApplication::setApplicationName("O3DE ShaderManagementConsole");
+
         // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());

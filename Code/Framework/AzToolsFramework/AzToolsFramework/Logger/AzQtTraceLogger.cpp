@@ -41,7 +41,7 @@ namespace AzToolsFramework
         return false;
     }
 
-    void AzQtTraceLogger::WriteStartupLog(char name[])
+    void AzQtTraceLogger::WriteStartupLog(const AZStd::string& logFileName)
     {    
         using namespace AzFramework;
         
@@ -62,7 +62,7 @@ namespace AzToolsFramework
         fileIO->CreatePath("@log@");
 
         AZStd::string logPath;
-        StringFunc::Path::Join(logDirectory.c_str(), name, logPath);
+        StringFunc::Path::Join(logDirectory.c_str(), logFileName.c_str(), logPath);
 
         m_logFile.reset(aznew LogFile(logPath.c_str()));
         if (m_logFile)

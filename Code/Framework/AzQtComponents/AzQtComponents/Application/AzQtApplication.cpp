@@ -22,24 +22,17 @@ namespace AzQtComponents
         : QApplication(argc, argv)
     {
          // Use a common Qt settings path for applications that don't register their own application name
-         if (QApplication::applicationName().isEmpty())
-         {
-            QApplication::setOrganizationName("Amazon");
-            QApplication::setOrganizationDomain("amazon.com");
-            QApplication::setApplicationName("O3DEToolsApplication");
-         }
+         QApplication::setOrganizationName("O3DE");
+         QApplication::setOrganizationDomain("o3de.com");
+         QApplication::setApplicationName("O3DEToolsApplication");
 
          AzQtComponents::PrepareQtPaths();
 
          QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-
     }
 
     void AzQtApplication::setDpiScaling()
-    {
-        // Must be set before QApplication is initialized, so that we support HighDpi monitors, like the Retina displays
-            // on Windows 10
-         
+    {    
          QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
          QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
          QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);

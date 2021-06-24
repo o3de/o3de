@@ -74,6 +74,8 @@ namespace MaterialEditor
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
     {
+        QApplication::setApplicationName("O3DE MaterialEditor");
+
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
 

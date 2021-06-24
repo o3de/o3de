@@ -17,12 +17,15 @@
 
 namespace AzToolsFramework
 {
+    // Connects and disconnects TraceMessageBus and allows for logging for O3DEToolsApplications
     class AzQtTraceLogger : public AZ::Debug::TraceMessageBus::Handler
     {
     public:
         AzQtTraceLogger();
         ~AzQtTraceLogger();
-        void WriteStartupLog(char name[]);
+
+        //! Intalize logging for O3DEToolsApplications
+        void WriteStartupLog(const AZStd::string& logFileName);
 
     protected:
         //////////////////////////////////////////////////////////////////////////

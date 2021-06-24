@@ -23,7 +23,10 @@ namespace AzQtComponents
     {
     public:       
         AzQtApplication(int& argc, char** argv);
-        void static setDpiScaling();
+
+        //! DPI Scaling so that we support HighDpi monitors, like the Retina displays on Windows 10
+            //! Must be set before QApplication is initialized, 
+        static void setDpiScaling();
 
     protected:
     };
