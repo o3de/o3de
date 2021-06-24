@@ -463,6 +463,16 @@ namespace ScriptCanvas
 
                         Slot* slot = GetSlot(slotId);
 
+                        //see if the slot's displaygroup already have assigned displaytype
+                        Node* node = slot->GetNode();
+                        if (node->GetDisplayType(slot->GetDisplayGroup()) != Data::Type::Invalid())
+                        {
+                            //use the displayGroup's type. Make sure to not let HandleExpressionNodeExtension to open up
+                            slot->SetDisplayType(node->GetDisplayType(slot->GetDisplayGroup()));
+
+                        }
+
+
                         if (slot && mappingIter != variableSlotMapping.end())
                         {
                             if (mappingIter->second.m_reference.IsValid())
