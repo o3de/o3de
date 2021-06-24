@@ -261,7 +261,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     palRm('commitid')
 }
 
-def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
+def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean mount = true, boolean disableSubmodules = false) {
     echo 'Starting pre-build common steps...'
 
     if (mount) {
@@ -275,7 +275,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String repositoryName, String projec
             palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
         }
         timeout(5) {
-            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
+            palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
         }
 
         if(env.IS_UNIX) {
@@ -394,10 +394,10 @@ def PostBuildCommonSteps(String workspace, boolean mount = true) {
     }
 }
 
-def CreateSetupStage(Map pipelineConfig, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars) {
+def CreateSetupStage(Map pipelineConfig, String snapshot, String repositoryName, String projectName, String pipelineName, String branchName, String platformName, String jobName, Map environmentVars) {
     return {
         stage('Setup') {
-            PreBuildCommonSteps(pipelineConfig, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
+            PreBuildCommonSteps(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platformName, jobName,  environmentVars['WORKSPACE'], environmentVars['MOUNT_VOLUME'])
         }
     }
 }
@@ -463,7 +463,7 @@ try {
                     if(env.CHANGE_TARGET) {
                         if(buildSnapshots.contains(env.CHANGE_TARGET)) {
                             snapshot = defaultBuildSnapshot
-                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" exists, using snapshot \"${snapshot}\""
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
                         } else { 
                             snapshot = env.CHANGE_TARGET
                             echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
