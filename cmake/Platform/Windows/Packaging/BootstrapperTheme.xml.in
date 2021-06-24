@@ -76,7 +76,7 @@
 
     <!-- final page (failure state) -->
     <Page Name="Failure">
-        <Image X="38" Y="132" Width="42" Height="42" ImageFile="@WIX_THEME_WARNING_IMAGE@"/>
+        <Image X="38" Y="132" Width="42" Height="42" ImageFile="warning.png"/>
         <Text Name="FailureHeader" X="86" Y="142" Width="-42" Height="34" FontId="0" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureHeader)</Text>
         <Text Name="FailureInstallHeader" X="86" Y="142" Width="-42" Height="34" FontId="0" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureInstallHeader)</Text>
         <Text Name="FailureUninstallHeader" X="86" Y="142" Width="-42" Height="34" FontId="0" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureUninstallHeader)</Text>

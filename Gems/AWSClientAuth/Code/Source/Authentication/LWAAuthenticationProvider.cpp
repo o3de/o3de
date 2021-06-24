@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Authentication/LWAAuthenticationProvider.h>
@@ -38,7 +33,7 @@ namespace AWSClientAuth
     {
         if (!settingsRegistry.lock()->GetObject(m_settings.get(), azrtti_typeid(m_settings.get()), LwaSettingsPath))
         {
-            AZ_Warning("AWSCognitoAuthenticationProvider", true, "Failed to get login with Amazon settings object for path %s", LwaSettingsPath);
+            AZ_Warning("AWSCognitoAuthenticationProvider", false, "Failed to get login with Amazon settings object for path %s", LwaSettingsPath);
             return false;
         }
         return true;
@@ -48,21 +43,21 @@ namespace AWSClientAuth
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void LWAAuthenticationProvider::PasswordGrantMultiFactorSignInAsync(const AZStd::string& username, const AZStd::string& password)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(password);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     void LWAAuthenticationProvider::PasswordGrantMultiFactorConfirmSignInAsync(const AZStd::string& username, const AZStd::string& confirmationCode)
     {
         AZ_UNUSED(username);
         AZ_UNUSED(confirmationCode);
-        AZ_Assert(true, "Not supported");
+        AZ_Assert(false, "Not supported");
     }
 
     // Call LWA authentication provider device code end point.

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/algorithm.h>
@@ -173,13 +168,25 @@ namespace EMotionFX
 
             AZ::SceneAPI::Events::ProcessingResult ActorGroupBehavior::BuildDefault(AZ::SceneAPI::Containers::Scene& scene) const
             {
+                // Skip adding the actor group if it's already exist.
+                if (SceneHasActorGroup(scene))
+                {
+                    return AZ::SceneAPI::Events::ProcessingResult::Ignored;
+                }
+
                 const bool hasBoneData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBoneData>(scene, true);
                 const bool hasSkinData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::ISkinWeightData>(scene, true);
-                const bool hasBlendShapeData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBlendShapeData>(scene, true);
-                // Skip building the default actor in case a valid actor group with overwritten settings exists, or
-                // in the most common case for animation files, that do contain an animated skeleton while not containing a skin or blend shapes.
-                if (SceneHasActorGroup(scene) ||
-                    (hasBoneData && (!hasSkinData && !hasBlendShapeData)))
+                const bool hasBlendShapeData =
+                    AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IBlendShapeData>(scene, true);
+                // Skip adding the actor group if it doesn't contain any bone, skin and blendshape data.
+                if (!hasBoneData && !hasSkinData && !hasBlendShapeData)
+                {
+                    return AZ::SceneAPI::Events::ProcessingResult::Ignored;
+                }
+                
+                const bool hasAnimationData = AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IAnimationData>(scene, true);
+                // Skip adding the actor group if it's contain animation data but don't contain any skindata or blendshapedata.
+                if (hasAnimationData && !hasSkinData && !hasBlendShapeData)
                 {
                     return AZ::SceneAPI::Events::ProcessingResult::Ignored;
                 }
