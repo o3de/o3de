@@ -11,6 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 UI Apps: AutomatedTesting.GameLauncher
 Launch AutomatedTesting.GameLauncher with Simple level
+Test should run in both gpu and non gpu
 """
 
 import pytest
