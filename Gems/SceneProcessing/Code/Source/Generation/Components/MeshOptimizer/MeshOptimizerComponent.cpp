@@ -442,19 +442,31 @@ namespace AZ::SceneGenerationComponents
             meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
-                // Round the vertex position so that a float comparison can be made with entires in the positionMap
-                AZ::Vector3 position = meshData->GetPosition(vertexIndex);
-                position *= positionToleranceReciprocal;
-                position += AZ::Vector3(0.5f);
-                position = AZ::Vector3(AZ::Simd::Vec3::Floor(position.GetSimdValue()));
-                position *= positionTolerance;
-
-                const auto& [iter, didInsert] = positionMap.try_emplace(position, currentOriginalVertexIndex);
-                if (didInsert)
+                const AZ::u32 orgVertexNumber = [&meshData, &hasBlendShapes, &vertexIndex, &positionMap, &currentOriginalVertexIndex, positionTolerance, positionToleranceReciprocal]() -> AZ::u32
                 {
-                    ++currentOriginalVertexIndex;
-                }
-                const AZ::u32 orgVertexNumber = iter->second;
+                    if (hasBlendShapes)
+                    {
+                        // Don't attempt to weld similar vertices if there's blendshapes
+                        // Welding the vertices here based on position could cause the vertices of a base shape to be
+                        // welded, and the vertices of the blendshape to not be welded, resulting in a vertex count
+                        // mismatch between the two
+                        return meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
+                    }
+
+                    // Round the vertex position so that a float comparison can be made with entires in the positionMap
+                    AZ::Vector3 position = meshData->GetPosition(vertexIndex);
+                    position *= positionToleranceReciprocal;
+                    position += AZ::Vector3(0.5f);
+                    position = AZ::Vector3(AZ::Simd::Vec3::Floor(position.GetSimdValue()));
+                    position *= positionTolerance;
+
+                    const auto& [iter, didInsert] = positionMap.try_emplace(position, currentOriginalVertexIndex);
+                    if (didInsert)
+                    {
+                        ++currentOriginalVertexIndex;
+                    }
+                    return iter->second;
+                }();
 
                 orgVtxLayer->SetCurrentVertexValue(orgVertexNumber);
 
