@@ -442,15 +442,11 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
 //==============================================================================
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 
-float3 ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
-{
-    float3 diffuseContribution = 0;
-    float3 specularContribution = 0;
-    
+void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
+{  
     float3 posToLight = light.m_position - surface.position;
     float d2 = dot(posToLight, posToLight); // light distance squared
     float falloff = d2 * light.m_invAttenuationRadiusSquared;
-
     
     // [To Do] Adi: this part can create a crash due to unbound iterator loop / list
     // Only calculate shading if light is in range
@@ -467,30 +463,17 @@ float3 ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, i
         float3 posToLightDir = normalize(posToLight);
 
         // Diffuse contribution
-        diffuseContribution += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
-//        lightingData.diffuseLighting = GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
 //        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+
+        lightingData.diffuseLighting += dot(surface.normal, posToLightDir);
 
         // Specular contribution
 //        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
-        specularContribution += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
     }
-    
-//    diffuseContribution = float3(0, 0.5, 0);
-//    specularContribution += float3(0, 0, 0);
-//    lightingData.diffuseLighting = float3(0, 1, 0);
-//    lightingData.diffuseLighting = float3(0, 0.333*dot(lightIntensity,float3(1,1,1)), 0);
-//    lightingData.specularLighting = float3(0, 1, 0);
-//    return float3(0, 1, 0);
-//    return float3(0, falloff, 0);
-//    return normalize(posToLight);
-    return diffuseContribution;
-    return diffuseContribution + specularContribution;
 }
 
-float3 ApplySimplePointLights(Surface surface, inout LightingData lightingData)
+void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
 {
-    float3 totalContribution = 0;
     lightingData.tileIterator.LoadAdvance();
 
     int lightCount = 0;
@@ -500,14 +483,22 @@ float3 ApplySimplePointLights(Surface surface, inout LightingData lightingData)
         lightingData.tileIterator.LoadAdvance();
 
         ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[currLightIndex];
-        totalContribution += ApplySimplePointLight(light, surface, lightingData);
+        ApplySimplePointLight(light, surface, lightingData);
         ++lightCount;
     }
-    return totalContribution;
 }
 
+void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
+{
+    for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
+    {
+        ViewSrg::SimplePointLight light = ViewSrg::m_simplePointLights[l];
+        ApplySimplePointLight(light, surface, lightingData);
+    }
+}
 
 //------------------------------------------------------------------------------
+#include <Atom/Features/PBR/Decals.azsli>
 //#include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
 //#include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
 //------------------------------------------------------------------------------
@@ -540,18 +531,46 @@ float3 CalculateDirectLighting(
 
     //------- LightingData init -------
     LightingData lightingData;
+
     float4 screenPositionForLighting = mul(ViewSrg::m_viewProjectionMatrix, float4(vPositionWS, 1.0));
+    uint2 dimensions;
+    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+    screenPositionForLighting.y = 1.0 - screenPositionForLighting.y;
+    screenPositionForLighting.xy = (screenPositionForLighting.xy * 0.5 + 0.5) * dimensions;
 //    screenPositionForLighting.xyz = screenPosNDC; // no go
 
     // Light iterator
     // screenPositionForLighting.xy in the iterator init should be in XY pixel location on screen (based on LightCullingShared)
     // screenPositionForLighting.z should be depth 0..1 (or reverse Z in our case).
-    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    // 
+    // void TestInit(
+    uint tileWidth, tileHeight;     // GOOD acording to RenderDoc dimensions
+    uint2 tileId;
+    uint bin;
+
+//    lightingData.tileIterator.TestInit(
+//        screenPositionForLighting, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData,
+//        tileWidth, tileHeight, tileId, bin
+//    );
+
+    lightingData.tileIterator.TestInit(
+        screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData,
+        tileWidth, tileHeight, tileId, bin
+    );
+//    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 //    lightingData.tileIterator.Init(screenPositionForLighting, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData); // DOES NOT work!! requires pixels coords
+
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
-    // [To Do] Adi: Ignore for now, but what do we do with this?
-    // Shadow, Occlusion
+//    return float3(tileWidth / 103.0, 0, 0);
+//    return float3(0, tileHeight/75.0, 0);
+//    return float3(float(tileId.x) / float(tileWidth), 0, 0);
+//    return float3(0, float(tileId.y) / float(tileHeight), 0);
+//    return float3(float(tileId.x) / float(tileWidth), float(tileId.y) / float(tileHeight), 0);
+//    return float3(0, float(bin), 0);
+//    return float3(0, float(bin) / NVLC_MAX_BINS, 0);
+
+    // [To Do] Adi: Ignore for now, possibly fill in later
 //    lightingData.shadowCoords = IN.m_shadowCoords;
 
     // Diffuse and Specular response
@@ -559,41 +578,34 @@ float3 CalculateDirectLighting(
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
     //-------------------------
-    // Applying the light loops
+    // Applying the light loops - we need to get rid of the first lists that are not used
+    ApplyDecals(lightingData.tileIterator, surface);
+
 //    ApplyDirectionalLights(surface, lightingData);
-    float3 totalContibution = 0;
     
-    totalContibution += ApplySimplePointLights(surface, lightingData);
+    ApplyAllSimplePointLights(surface, lightingData);
+//    ApplySimplePointLights(surface, lightingData);
 //    ApplySimpleSpotLights(surface, lightingData);
 
-
-//    return float3( 0.5 + 0.5 * screenCoords.xy, 0); // no go
-//    return float3(screenPosNDC.xy,0); // WORKS
-//    return float3(screenCoords.xy * 0.0005, 0); // WORKS
-//    return float3(0, 2.0 *vPositionWS.z, 0); // no go
-//    return float3(screenPositionForLighting.xy * 1000.0, 0); // no go
-    return totalContibution;
+//    return float3(screenPositionForLighting.xy, 0);
     return lightingData.diffuseLighting + lightingData.specularLighting;
 }
 
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, int shaderParamIndex)
 {
- //   float3 vNDC = ScreenPosToNDC(float3(pixelCoord, depth), g_vViewport);
-
     float3 vNDC;    // normalized device / screen coordinates: [-1..1, -1..1, 0..1]
     float3 vPositionWS = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, vNDC);
-//    float4 screenCoords = float4(vNDC, depth);   // screen space position - XY in pixels - ZW are depth 0..1
 
-    #define _BIG_HACK_FOR_TESTING_ 32
+    // [To Do] Adi: the follwing two lines are a hack to make the tile lighting work for now
+    #define _BIG_HACK_FOR_TESTING_ 1//32
     float4 screenCoords = float4( _BIG_HACK_FOR_TESTING_ * pixelCoord, depth, depth);   // screen space position - XY in pixels - ZW are depth 0..1
 
-    // [To Do] Adi: adibugbug - the following is a horrible hack because we don'e have the viewport 
-    // dimensions, inverse and ofset - how come this was never done / requested?
     float3 vViewDirWS = g_vEye - vPositionWS;
 
     // Need to expand the tangent that was compressed to store in the buffer
     float3 vTangent = normalize(vTangentCoverage.xyz * 2.f - 1.f);
 
+    //---- TressFX original lighting params setting ----
     HairShadeParams params;
     params.m_color = baseColor;
     params.m_hairShadowAlpha = HairParams[shaderParamIndex].m_shadowAlpha;
@@ -606,52 +618,8 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ex1 = HairParams[shaderParamIndex].m_matKValue.w;
     params.m_Ks2 = HairParams[shaderParamIndex].m_hairKs2;
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
+    //---------------------------------------------------
 
-    //------------------------------------------------------------------
-    // [To DO] Adi: this is where you need to plug in Arom lighting pass
-    // 
-    //                  Dummy Lighting BLock
-    // 
-    //------------------------------------------------------------------
-    
-    // Adi - Conclusion: vNDC is totally messed up because Atom never bothered to pass viewport
-    // corrections.    There must be a diferent way to approach it in Atom?  will check.
-//    return vPositionWS;
-//    vPositionWS = float3(0,0,0);
-//    return vNDC;
-//    return vPositionWS;
-//    return float3( float2(0, 1) + pixelCoord * float2(0.00071, -0.00081), depth);
-//    return vTangent;
-//    return baseColor;
-
-    //---------------------------------------------------------------
-    //                             WORKS
-    // This code works for both NDC and for restored world pos!!!!
-    // The conversion is in the range [-1..1] for screen space x and y 
-    // The Z represents depth in the range [Far Plane: 0 .. 1 : Near Plane] 
-    float3 screenPosNDC = ScreenPosToNDC(PassSrg::m_linearDepth, pixelCoord, depth);
-    float4 projectedPos = float4(screenPosNDC, 1.0f);    // warped projected space [0..1]
-
-    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
-    positionVS /= positionVS.w; // notice the normalization factor - crucial! 
-    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
-
-//    return float3(screenPosNDC.xy, 0);
-//    return float3(positionWS.xyz);  // WORKS!!!!
-    //---------------------------------------------------------------
-
-    float3 testNDC;
-    float3 screenPosToWorld = ScreenPosToWorldPos(PassSrg::m_linearDepth, pixelCoord, depth, testNDC);
-//    return float3(screenPosNDC.xy, 0);      // this WORKS!!!  
-//    return float3(testNDC.xy, 0);         // this DOES NOT work!!!
-//    return float3(vNDC.xy, 0);                // this DOES NOT work!!!
-
-//    return float3(0, depth, 0); // depth WORKS!!!
-//    return vPositionWS; // WORKS
-//    return float3(screenPosToWorld.xyz);  // DOES NOT work!!!
-
-//    return float3(0.5 + 0.5 * vNDC.xy, 0);// float3(0, vNDC.x, 0);
-//    return float3(0, vPositionWS.x, 0);
     return CalculateDirectLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, baseColor);
     return SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
