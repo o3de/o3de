@@ -16,7 +16,7 @@ from aws_cdk import core
 
 class SupportStack(core.Stack):
     """
-    The support stack
+    The Build support stack
 
     Defines AWS resources that help to create GameLift builds from local files
     """
