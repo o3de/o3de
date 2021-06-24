@@ -179,10 +179,11 @@ def list_cloudformation_stack_resources(stack_name, region=None) -> List[BasicRe
                 # iterate through page iterator to fetch all resources
                 resource: Dict[str, any]
                 for resource in page["StackResourceSummaries"]:
-                    resource_type_and_name.append(BasicResourceAttributesBuilder()
-                                                  .build_type(resource["ResourceType"])
-                                                  .build_name_id(resource["PhysicalResourceId"])
-                                                  .build())
+                    if "ResourceType" in resource.keys() and "PhysicalResourceId" in resource.keys():
+                        resource_type_and_name.append(BasicResourceAttributesBuilder()
+                                                      .build_type(resource["ResourceType"])
+                                                      .build_name_id(resource["PhysicalResourceId"])
+                                                      .build())
             if iterator.resume_token is None:
                 # when resume token is none, it means there is no more resources left
                 break
