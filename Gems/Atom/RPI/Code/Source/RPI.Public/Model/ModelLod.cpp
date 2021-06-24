@@ -288,7 +288,7 @@ namespace AZ
                         RHI::Format formatDoesntReallyMatter = RHI::Format::R8G8B8A8_UINT;
                         layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
                         // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
-                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 4, 4};
+                        RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
                         streamBufferViewsOut.push_back(dummyBuffer);
 
                         // Note that all of the below scenarios seem to work find on PC, for both dx12 and vulkan. If the above approach proves to be incompatible
