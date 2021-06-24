@@ -45,7 +45,6 @@ def pytest_addoption(parser):
                      help="An existing CMake binary output directory which contains the lumberyard executables,"
                           "such as: D:/ly/dev/windows_vs2017/bin/profile/")
 
-
 def pytest_configure(config):
     """
     Save custom CLI options during Pytest configuration, so they are later accessible without using fixtures
@@ -55,6 +54,13 @@ def pytest_configure(config):
     ly_test_tools._internal.pytest_plugin.build_directory = _get_build_directory(config)
     ly_test_tools._internal.pytest_plugin.output_path = _get_output_path(config)
 
+
+def pytest_pycollect_makeitem(collector, name, obj):
+    import inspect
+    if inspect.isclass(obj):
+        for base in obj.__bases__:
+            if hasattr(base, "pytest_custom_makeitem"):
+                return base.pytest_custom_makeitem(collector, name, obj)
 
 def _get_build_directory(config):
     """

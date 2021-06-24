@@ -1,6 +1,15 @@
-from base import TestAutomationBase
+"""
+All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
+its licensors.
+
+For complete copyright and license terms please see the LICENSE at the root of this
+distribution (the "License"). All use of this software is governed by the License,
+or, if provided, by the license below or the license accompanying this file. Do not
+remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+"""
+
 import pytest
-import logging
 import inspect
 from typing import List
 from abc import ABC
@@ -10,135 +19,183 @@ import math
 import json
 
 import ly_test_tools.environment.file_system as file_system
-import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.process_utils as process_utils
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.log.log_monitor import LogMonitor, LogMonitorException
+from .editor_test_utils import EditorUtils
 
-class EditorUtils():
 
-    @staticmethod
-    def kill_all_ly_processes(include_asset_processor=True):
-        LY_PROCESSES = [
-            'Editor', 'Profiler', 'RemoteConsole',
-        ]
-        AP_PROCESSES = [
-            'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder', 'CrySCompileServer',
-            'rc'  # Resource Compiler
-        ]
-        
-        if include_asset_processor:
-            process_utils.kill_processes_named(LY_PROCESSES+AP_PROCESSES, ignore_extensions=True)
-        else:
-            process_utils.kill_processes_named(LY_PROCESSES, ignore_extensions=True)
-
-    @staticmethod
-    def get_testcase_module_filepath(testcase_module):
-        # type: (Module) -> str
-        """
-        return the full path of the test module
-        :param testcase_module: The testcase python module being tested
-        :return str: The full path to the testcase module
-        """
-        return os.path.splitext(testcase_module.__file__)[0] + ".py"
-
-    @staticmethod
-    def get_testcase_module_name(testcase_module):
-        # type: (Module) -> str
-        """
-        return the full path of the test module
-        :param testcase_module: The testcase python module being tested
-        :return str: The full path to the testcase module
-        """
-        return os.path.basename(os.path.splitext(testcase_module.__file__)[0])
-
-    @staticmethod
-    def retrieve_user_path(run_id : int, workspace):
-        return os.path.join(workspace.paths.project(), f"user_test_{run_id}")
-    
-    @staticmethod
-    def retrieve_log_path(run_id : int, workspace):
-        return os.path.join(EditorUtils.retrieve_user_path(run_id, workspace), "log")
-    
-    @staticmethod
-    def retrieve_crash_output(run_id : int, workspace, timeout):
-        crash_info = "-- No crash log available --"
-        crash_log = os.path.join(EditorUtils.retrieve_log_path(run_id, workspace), 'error.log')
-        try:
-            waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
-        except AssertionError:                    
-            pass
-            
-        try:
-            with open(crash_log) as f:
-                crash_info = f.read()
-        except Exception as ex:
-            crash_info += f"\n{str(ex)}"
-        return crash_info
-
-    @staticmethod
-    def delete_crash_report(run_id : int, workspace):
-        crash_log = os.path.join(EditorUtils.retrieve_log_path(run_id, workspace), 'error.log')
-        if os.path.exists(crash_log):
-            os.remove(crash_log)
-
-    @staticmethod
-    def retrieve_editor_log_content(run_id : int, log_name : str, workspace, timeout=10):
-        editor_info = "-- No editor log available --"
-        editor_log = os.path.join(EditorUtils.retrieve_log_path(run_id, workspace), log_name)
-        try:
-            waiter.wait_for(lambda: os.path.exists(editor_log), timeout=timeout)
-        except AssertionError:              
-            pass
-            
-        try:
-            with open(editor_log) as f:
-                editor_info = ""
-                for line in f:
-                    editor_info += f"[editor.log]  {line}"
-        except Exception as ex:
-            editor_info = f"-- Error reading editor.log: {str(ex)} --"
-        return editor_info
-
-    @staticmethod
-    def retrieve_last_run_test_index_from_output(test_spec_list, output : str):
-        index = -1
-        find_pos = 0
-        for test_spec in test_spec_list:
-            find_pos = output.find(test_spec.__name__, find_pos)
-            if find_pos == -1:
-                index = max(index, 0) # <- if we didn't even find the first test, assume its been the first one that crashed
-                return index
-            else:
-                index += 1
-        return index
-
+# Abstract base class for an editor test
 class EditorTestBase(ABC):
     # Test file that this test will run
     test_module = None
     # Maximum time for run, in seconds
     timeout = 180
 
+
 # Test that will be run alone in one editor
 class EditorSingleTest(EditorTestBase):
     # Extra cmdline arguments to supply to the editor for the test
     extra_cmdline_args = []
 
+    # Custom setup function, will run before the test
+    def setup(self, *args):
+        pass
+
+    # Custom teardown function, will run after the test    
+    def teardown(self, *args):
+        pass
+
+
 # Test that will be run in parallel and/or batched with other in a single editor.
-# Does not support per test setup/teardown for avoiding race conditions
+# Does not support per test setup/teardown for avoiding any possible race conditions
 class EditorSharedTest(EditorTestBase):
     # Specifies if the test can be run in multiple editors in parallel
     is_parallelizable = True
     # Specifies if the test can be batched in the same editor
     is_batchable = True
 
+
+class Result:
+    class Base:
+        def get_output_str(self):
+            if hasattr(self, "output") and self.output is not None:
+                return self.output
+            else:
+                return "-- No output --"
+            
+        def get_editor_log_str(self):
+            if hasattr(self, "editor_log") and self.editor_log is not None:
+                return self.editor_log
+            else:
+                return "-- No editor log found --"
+
+    class Pass(Base):
+        @classmethod
+        def create(cls, output : str, editor_log : str):
+            r = cls()
+            r.output = output
+            r.editor_log = editor_log
+            return r
+
+        def __str__(self):
+            output = (
+                f"Test Passed\n"
+                f"------------\n"
+                f"|  Output  |\n"
+                f"------------\n"
+                f"{self.get_output_str()}\n"
+            )
+            return output
+
+    class Fail(Base):       
+        @classmethod
+        def create(cls, output, editor_log : str):
+            r = cls()
+            r.output = output
+            r.editor_log = editor_log
+            return r
+            
+        def __str__(self):
+            output = (
+                f"Test FAILED\n"
+                f"------------\n"
+                f"|  Output  |\n"
+                f"------------\n"
+                f"{self.get_output_str()}\n"
+                f"--------------\n"
+                f"| Editor log |\n"
+                f"--------------\n"
+                f"{self.get_editor_log_str()}\n"
+            )
+            return output
+
+    class Crash(Base):
+        @classmethod
+        def create(cls, output : str, ret_code : int, stacktrace : str, editor_log : str):
+            r = cls()
+            r.output = output
+            r.ret_code = ret_code
+            r.stacktrace = stacktrace
+            r.editor_log = editor_log
+            return r
+            
+        def __str__(self):
+            stacktrace_str = "-- No stacktrace data found --" if not self.stacktrace else self.stacktrace
+            output = (
+                f"Test CRASHED, return code {hex(self.ret_code)}\n"
+                f"---------------\n"
+                f"|  Stacktrace |\n"
+                f"---------------\n"
+                f"{stacktrace_str}"
+                f"------------\n"
+                f"|  Output  |\n"
+                f"------------\n"
+                f"{self.get_output_str()}\n"
+                f"--------------\n"
+                f"| Editor log |\n"
+                f"--------------\n"
+                f"{self.get_editor_log_str()}\n"
+            )
+            crash_str = "-- No crash information found --"
+            return output
+
+    class Timeout(Base):
+        @classmethod
+        def create(cls, output : str, time_secs : float, editor_log : str):
+            r = cls()
+            r.output = output
+            r.time_secs = time_secs
+            r.editor_log = editor_log
+            return r
+            
+        def __str__(self):
+            output = (
+                f"Test TIMED OUT after {self.time_secs} seconds\n"
+                f"------------\n"
+                f"|  Output  |\n"
+                f"------------\n"
+                f"{self.get_output_str()}\n"
+                f"--------------\n"
+                f"| Editor log |\n"
+                f"--------------\n"
+                f"{self.get_editor_log_str()}\n"
+            )
+            return output
+
+    class Unknown(Base):
+        @classmethod
+        def create(cls, output : str, extra_info : str, editor_log : str):
+            r = cls()
+            r.output = output
+            r.editor_log = editor_log
+            r.extra_info = extra_info
+            return r
+            
+        def __str__(self):
+            output = (
+                f"Unknown test result, possible cause: {self.extra_info}\n"
+                f"------------\n"
+                f"|  Output  |\n"
+                f"------------\n"
+                f"{self.get_output_str()}\n"
+                f"--------------\n"
+                f"| Editor log |\n"
+                f"--------------\n"
+                f"{self.get_editor_log_str()}\n"
+            )
+            return output
+
 @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
 class EditorTestSuite():
     #- Configurable params -#
+    
     # Extra cmdline arguments to supply for every editor instance for this test suite
-    global_extra_cmdline_args = ["-BatchMode", "-autotest_mode", "-rhi=null"]
+    global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
+    # Tests usually run with no renderer, however some tests require a renderer 
+    use_null_renderer = True
 
     # Function to calculate number of editors to run in parallel, this can be overriden by the user
     @staticmethod
@@ -146,144 +203,12 @@ class EditorTestSuite():
         return 8
 
     ## Internal ##
-    TIMEOUT_CRASH_LOG = 20 # Maximum time for waiting for a crash log, in secondss
-
+    _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in secondss
     _TEST_FAIL_RETCODE = 0xF # Return code for test failure 
     _asset_processor = None
     _results = {}
 
-    # Specifies a Test result
-    class Result:
-        class Base:
-            def get_output_str(self):
-                if hasattr(self, "output") and self.output is not None:
-                    return self.output
-                else:
-                    return "-- No output --"
-            
-            def get_editor_log_str(self):
-                if hasattr(self, "editor_log") and self.editor_log is not None:
-                    return self.editor_log
-                else:
-                    return "-- No editor log found --"
-
-        class Pass(Base):
-            @classmethod
-            def create(cls, output : str, editor_log : str):
-                r = cls()
-                r.output = output
-                r.editor_log = editor_log
-                return r
-
-            def __str__(self):
-                output = (
-                    f"Test Passed\n"
-                    f"------------\n"
-                    f"|  Output  |\n"
-                    f"------------\n"
-                    f"{self.get_output_str()}\n"
-                )
-                return output
-
-        class Fail(Base):       
-            @classmethod
-            def create(cls, output, editor_log : str):
-                r = cls()
-                r.output = output
-                r.editor_log = editor_log
-                return r
-            
-            def __str__(self):
-                output = (
-                    f"Test FAILED\n"
-                    f"------------\n"
-                    f"|  Output  |\n"
-                    f"------------\n"
-                    f"{self.get_output_str()}\n"
-                    f"--------------\n"
-                    f"| Editor log |\n"
-                    f"--------------\n"
-                    f"{self.get_editor_log_str()}\n"
-                )
-                return output
-
-        class Crash(Base):
-            @classmethod
-            def create(cls, output : str, ret_code : int, stacktrace : str, editor_log : str):
-                r = cls()
-                r.output = output
-                r.ret_code = ret_code
-                r.stacktrace = stacktrace
-                r.editor_log = editor_log
-                return r
-            
-            def __str__(self):
-                stacktrace_str = "-- No stacktrace data found --" if not self.stacktrace else self.stacktrace
-                output = (
-                    f"Test CRASHED, return code {hex(self.ret_code)}\n"
-                    f"---------------\n"
-                    f"|  Stacktrace |\n"
-                    f"---------------\n"
-                    f"{stacktrace_str}"
-                    f"------------\n"
-                    f"|  Output  |\n"
-                    f"------------\n"
-                    f"{self.get_output_str()}\n"
-                    f"--------------\n"
-                    f"| Editor log |\n"
-                    f"--------------\n"
-                    f"{self.get_editor_log_str()}\n"
-                )
-                crash_str = "-- No crash information found --"
-                return output
-
-        class Timeout(Base):
-            @classmethod
-            def create(cls, output : str, time_secs : float, editor_log : str):
-                r = cls()
-                r.output = output
-                r.time_secs = time_secs
-                r.editor_log = editor_log
-                return r
-            
-            def __str__(self):
-                output = (
-                    f"Test TIMED OUT after {self.time_secs} seconds\n"
-                    f"------------\n"
-                    f"|  Output  |\n"
-                    f"------------\n"
-                    f"{self.get_output_str()}\n"
-                    f"--------------\n"
-                    f"| Editor log |\n"
-                    f"--------------\n"
-                    f"{self.get_editor_log_str()}\n"
-                )
-                return output
-
-        class Unknown(Base):
-            @classmethod
-            def create(cls, output : str, extra_info : str, editor_log : str):
-                r = cls()
-                r.output = output
-                r.editor_log = editor_log
-                r.extra_info = extra_info
-                return r
-            
-            def __str__(self):
-                output = (
-                    f"Unknown test result, possible cause: {self.extra_info}\n"
-                    f"------------\n"
-                    f"|  Output  |\n"
-                    f"------------\n"
-                    f"{self.get_output_str()}\n"
-                    f"--------------\n"
-                    f"| Editor log |\n"
-                    f"--------------\n"
-                    f"{self.get_editor_log_str()}\n"
-                )
-                return output
-
-    # Custom collector class. This collector is where the magic happens, it programatically add the test functions
+    # Custom collector class. This collector is where the magic happens, it programatically adds the test functions
     # to the class based on the test specifications.
     class Collector(pytest.Class):
         def __init__(self, name, collector):
@@ -383,6 +308,8 @@ class EditorTestSuite():
             EditorUtils.kill_all_ly_processes(include_asset_processor=False)
 
     ### Utils ###
+
+    # Prepares the asset processor for the test
     def _prepare_asset_processor(self, workspace):
         try:
             # Start-up an asset processor if we are not running one
@@ -410,7 +337,6 @@ class EditorTestSuite():
     # It deserializes the JSON content printed in the output for every test and returns that information
     @staticmethod
     def _get_results_using_output(test_spec_list, editor_log_content, output):
-        Result = EditorTestSuite.Result
         START_TOKEN = "JSON_START("
         END_TOKEN = ")JSON_END"
         results = {}
@@ -447,7 +373,6 @@ class EditorTestSuite():
     # Fails the test if the test result is not a PASS, specifying the information
     @staticmethod
     def _report_result(name : str, result : Result.Base):
-        Result = EditorTestSuite.Result
         if isinstance(result, Result.Pass):
             output_str = f"Test {name}:\n{str(result)}"
             print(output_str)
@@ -457,16 +382,20 @@ class EditorTestSuite():
 
     ### Running tests ###
     # Starts the editor with the given test and retuns an result dict with a single element specifying the result
-    def _exec_editor_test(self, request, workspace, editor,
-        run_id : int, log_name : str, test_spec : EditorTestBase, cmdline_args : List[str] = []):
+    def _exec_editor_test(self, request, workspace, editor, run_id : int, log_name : str,
+                          test_spec : EditorTestBase, cmdline_args : List[str] = []):
 
+        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        if self.use_null_renderer:
+            test_cmdline_args += ["-rhi=null"]
+            
         test_result = None
         results = {}
         test_filename = EditorUtils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-user-path", EditorUtils.retrieve_user_path(run_id, workspace)] + self.global_extra_cmdline_args + cmdline_args
+            "-project-user-path", EditorUtils.retrieve_user_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -476,13 +405,12 @@ class EditorTestSuite():
             return_code = editor.get_returncode()
             editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
 
-            Result = EditorTestSuite.Result
             if return_code == 0:
                 test_result = Result.Pass.create(output, editor_log_content)
             else:
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
-                    test_result = Result.Crash.create(output, return_code, EditorUtils.retrieve_crash_output(run_id, workspace, self.TIMEOUT_CRASH_LOG), None)
+                    test_result = Result.Crash.create(output, return_code, EditorUtils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
                     EditorUtils.delete_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(output, editor_log_content)
@@ -498,15 +426,19 @@ class EditorTestSuite():
 
     # Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that editor
     # instance. In case of failure this function also parses the editor output to find out what specific tests that failed
-    def _exec_editor_multitest(self, request, workspace, editor,
-        run_id : int, log_name : str, test_spec_list : List[EditorTestBase], cmdline_args=[]):
+    def _exec_editor_multitest(self, request, workspace, editor, run_id : int, log_name : str,
+                               test_spec_list : List[EditorTestBase], cmdline_args=[]):
 
+        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        if self.use_null_renderer:
+            test_cmdline_args += ["-rhi=null"]
+            
         results = {}
         test_filenames_str = ";".join(EditorUtils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-user-path", EditorUtils.retrieve_user_path(run_id, workspace)] + self.global_extra_cmdline_args + cmdline_args
+            "-project-user-path", EditorUtils.retrieve_user_path(run_id, workspace)] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -519,7 +451,6 @@ class EditorTestSuite():
             return_code = editor.get_returncode()
             editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
 
-            Result = EditorTestSuite.Result
             if return_code == 0:
                 # No need to scrap the output, as all the tests have passed
                 for test_spec in test_spec_list:
@@ -532,7 +463,7 @@ class EditorTestSuite():
                     for key, result in results.items():
                         if isinstance(result, Result.Unknown):
                             if not crashed_test:
-                                crash_error = EditorUtils.retrieve_crash_output(run_id, workspace, self.TIMEOUT_CRASH_LOG)
+                                crash_error = EditorUtils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                                 EditorUtils.delete_crash_report(run_id, workspace)
                                 results[key] = Result.Crash.create(output, return_code, crash_error, editor_log_content)
                                 crashed_test = results[key]
@@ -638,6 +569,7 @@ class EditorTestSuite():
         for result in results_per_thread:
             EditorTestSuite._results.update(result)
 
+    # Retrieves the test specifications with the given properties
     @classmethod
     def _get_shared_tests(cls, properties={}):
         from inspect import getmembers, isclass
@@ -651,8 +583,9 @@ class EditorTestSuite():
         tests = [c for c in cls.__dict__.values() if isclass(c) and issubclass(c, EditorSharedTest)]
         return [test for test in tests if matches_properties(test)]
 
+    # Retrieves the number of parallel preference cmdline overrides
     def _get_number_parallel_editors(self, request):
-        parallel_editors_value = request.config.option.parallel_editors
+        parallel_editors_value = request.config.getoption("parallel_editors", None)
         if parallel_editors_value:
             return int(parallel_editors_value)
 
