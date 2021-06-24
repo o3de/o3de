@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
+#include <QGuiApplication>
 
 namespace O3DE::ProjectManager
 {
@@ -118,9 +119,10 @@ namespace O3DE::ProjectManager
                     return false;
                 }
 
-                // TODO: Block UX and Notify User they need to wait
-
+                QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
                 copyResult = CopyProject(origPath, newPath);
+                QGuiApplication::restoreOverrideCursor();
+
             }
 
             return copyResult;
