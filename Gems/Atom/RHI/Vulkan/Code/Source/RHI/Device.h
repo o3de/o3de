@@ -149,6 +149,8 @@ namespace AZ
             template <typename ObjectType, typename... Args>
             RHI::Ptr<ObjectType> AcquireObjectFromCache(ObjectCache<ObjectType>& cache, const size_t hash, Args... args);
 
+            VkBufferUsageFlags ValidateBufferUsageFlagsByFeatures(const VkBufferUsageFlags& bufferUsageFlags) const;
+
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = ~0;

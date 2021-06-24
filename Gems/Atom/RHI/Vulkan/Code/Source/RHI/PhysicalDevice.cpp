@@ -133,6 +133,11 @@ namespace AZ
             return m_descriptorIndexingFeatures;
         }
 
+        const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& PhysicalDevice::GetPhysicalDeviceBufferDeviceAddressFeatures() const
+        {
+            return m_bufferDeviceAddressFeatures;
+        }
+
         const VkPhysicalDeviceVulkan12Features& PhysicalDevice::GetPhysicalDeviceVulkan12Features() const
         {
             return m_vulkan12Features;
@@ -234,6 +239,48 @@ namespace AZ
                 (m_separateDepthStencilFeatures.separateDepthStencilLayouts && VK_DEVICE_EXTENSION_SUPPORTED(KHR_separate_depth_stencil_layouts)) ||
                 (m_vulkan12Features.separateDepthStencilLayouts));
             m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(EXT_descriptor_indexing));
+            m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(EXT_buffer_device_address));
+        }
+
+        RawStringList PhysicalDevice::FilterSupportedOptionalExtensions()
+        {
+            // The order must match the enum OptionalDeviceExtensions
+            RawStringList optionalExtensions = { {
+                VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME,
+                VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME,
+                VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+                VK_EXT_DEPTH_CLIP_ENABLE_EXTENSION_NAME,
+                VK_EXT_CONSERVATIVE_RASTERIZATION_EXTENSION_NAME,
+                VK_KHR_DRAW_INDIRECT_COUNT_EXTENSION_NAME,
+                VK_KHR_RELAXED_BLOCK_LAYOUT_EXTENSION_NAME,
+                VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+                VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME,
+
+                // ray tracing extensions
+                VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+                VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+                VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
+                VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+                VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+                VK_KHR_SPIRV_1_4_EXTENSION_NAME,
+                VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
+            } };
+
+            StringList deviceExtensions = GetDeviceExtensionNames();
+            RawStringList filteredOptionalExtensions = FilterList(optionalExtensions, deviceExtensions);
+
+            uint32_t originalIndex = 0;
+            for (const auto& extension : filteredOptionalExtensions)
+            {
+                while (strcmp(extension, optionalExtensions[originalIndex]) != 0)
+                {
+                    ++originalIndex;
+                }
+                m_optionalExtensions.set(originalIndex);
+                ++originalIndex;
+            }
+
+            return filteredOptionalExtensions;
         }
 
         void PhysicalDevice::CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const
@@ -271,10 +318,15 @@ namespace AZ
                 descriptorIndexingFeatures = {};
                 descriptorIndexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
 
+                VkPhysicalDeviceBufferDeviceAddressFeaturesEXT& bufferDeviceAddressFeatures = m_bufferDeviceAddressFeatures;
+                bufferDeviceAddressFeatures = {};
+                bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
+                descriptorIndexingFeatures.pNext = &bufferDeviceAddressFeatures;
+
                 VkPhysicalDeviceDepthClipEnableFeaturesEXT& dephClipEnableFeatures = m_dephClipEnableFeatures;
                 dephClipEnableFeatures = {};
                 dephClipEnableFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
-                descriptorIndexingFeatures.pNext = &dephClipEnableFeatures;
+                bufferDeviceAddressFeatures.pNext = &dephClipEnableFeatures;
 
                 VkPhysicalDeviceRobustness2FeaturesEXT& robustness2Feature = m_robutness2Features;
                 robustness2Feature = {};
@@ -402,5 +454,11 @@ namespace AZ
             return m_features.test(index);
         }
 
+        bool PhysicalDevice::IsOptionalDeviceExtensionSupported(OptionalDeviceExtension optionalDeviceExtension) const
+        {
+            uint32_t index = static_cast<uint32_t>(optionalDeviceExtension);
+            AZ_Assert(index < m_optionalExtensions.size(), "Invalid feature %d", index);
+            return m_optionalExtensions.test(index);
+        }
     }
 }
