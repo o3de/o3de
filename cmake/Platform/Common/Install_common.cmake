@@ -286,22 +286,12 @@ function(ly_setup_subdirectory absolute_target_source_dir)
 
     # Reproduce the ly_enable_gems() calls made in the the SOURCE_DIR for this target into the CMakeLists.txt that
     # is about to be generated
-    string(JOIN "\n" enable_gems_template
-        "   ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEM@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)"
-        "endif()"
-        ""
-    )
+    set(enable_gems_template "ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEMS@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)\n")
     get_property(enable_gems_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
     foreach(enable_gems_single_command_arg_list ${enable_gems_commands_arg_list})
         # Split the ly_enable_gems arguments back out based on commas
-        string(REPLACE "," ";" ly_enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_PROJECT_NAME)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM_FILE)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_VARIANTS)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_TARGETS)
-        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEM GEM_FILE GEM VARIANTS TARGETS)
+        string(REPLACE "," ";" enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
+        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEMS GEM_FILE VARIANTS TARGETS)
             list(POP_FRONT enable_gems_single_command_arg_list enable_gem_${enable_gem_arg_kw})
             if(enable_gem_${enable_gem_arg_kw})
                 # if the argument exist append to argument keyword to the front
