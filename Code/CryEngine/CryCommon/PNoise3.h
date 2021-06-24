@@ -1,4 +1,4 @@
-// Modifications copyright Amazon.com, Inc. or its affiliates.   
+// Modified from original
 
 /*
 Based in part on Perlin noise
