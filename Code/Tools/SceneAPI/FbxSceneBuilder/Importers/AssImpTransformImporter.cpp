@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpTransformImporter.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -104,12 +99,19 @@ namespace AZ
 
                         iteratingNode = iteratingNode->mParent;
                     }
-                    
-                    localTransform =
-                        offsets.at(AZ::GetMin(offsets.size()-1, static_cast<decltype(offsets.size())>(1)))  // parent bone offset, or if there is no parent, then current node offset
-                        * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
-                        * offsets.at(offsets.size() - 1) // Root bone offset
-                        * inverseOffsets.at(0); // Inverse of current node offset
+
+                    if (inverseOffsets.size() == 1)
+                    {
+                        // If this is the root bone, just use the inverseOffset, otherwise the equation below just results in the identity matrix
+                        localTransform = inverseOffsets[0];
+                    }
+                    else
+                    {
+                        localTransform = offsets.at(1) // parent bone offset
+                            * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
+                            * offsets.at(offsets.size() - 1) // Root bone offset
+                            * inverseOffsets.at(0); // Inverse of current node offset
+                    }
                 }
                 else
                 {

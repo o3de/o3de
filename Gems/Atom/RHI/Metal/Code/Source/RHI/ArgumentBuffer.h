@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
@@ -97,7 +92,15 @@ namespace AZ
             id<MTLBuffer> GetArgEncoderBuffer() const;
             size_t GetOffset() const;
             
-            void AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
+            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
+            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
+            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
+            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
+
+            void CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                           const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                           ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
+                                           GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
             
             void ClearResourceTracking();
             
@@ -120,11 +123,7 @@ namespace AZ
             ResourceBindingsMap m_resourceBindings;
             
             static const int MaxEntriesInArgTable = 31;
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage.
-            using ComputeResourcesToMakeResidentMap = AZStd::unordered_map<MTLResourceUsage, AZStd::unordered_set<id <MTLResource>>>;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage.
-            using GraphicsResourcesToMakeResidentMap = AZStd::unordered_map<AZStd::pair<MTLResourceUsage,MTLRenderStages>, AZStd::unordered_set<id <MTLResource>>>;
-            
+                        
             void CollectResourcesForCompute(id<MTLCommandEncoder> encoder,
                                             const ResourceBindingsSet& resourceBindingData,
                                             ComputeResourcesToMakeResidentMap& resourcesToMakeResidentMap) const;
@@ -153,9 +152,6 @@ namespace AZ
             MemoryView m_argumentBuffer;
             MemoryView m_constantBuffer;
 #endif
-            
-            ShaderResourceGroupPool* m_srgPool = nullptr;
-            NSCache* m_samplerCache;
         };
     }
 }
