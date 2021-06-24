@@ -11,9 +11,9 @@
  */
 
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Editor/MultiplayerEditorConnection.h>
-#include <Editor/MultiplayerEditorUtils.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AzCore/Asset/AssetManager.h>
@@ -56,16 +56,12 @@ namespace Multiplayer
     )
     {
         // Editor Server Init is intended for non-release targets
-        if (!packet.GetLastUpdate())
-        {
-            // More packets are expected, flush this to the buffer
-            m_byteStream.Write(GetMaxEditorServerInitSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
-        }
-        else
-        {
-            // This is the last expected packet, flush it to the buffer
-            m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
+        m_byteStream.Write(packet.GetAssetData().GetSize(), reinterpret_cast<void*>(packet.ModifyAssetData().GetBuffer()));
 
+        // In case if this is the last update, process the byteStream buffer. Otherwise more packets are expected
+        if (packet.GetLastUpdate())
+        {
+            // This is the last expected packet
             // Read all assets out of the buffer
             m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> assetData;
@@ -106,6 +102,9 @@ namespace Multiplayer
             // Now that we've deserialized, clear the byte stream
             m_byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
             m_byteStream.Truncate();
+
+            // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
             // Load the level via the root spawnable that was registered
             const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
