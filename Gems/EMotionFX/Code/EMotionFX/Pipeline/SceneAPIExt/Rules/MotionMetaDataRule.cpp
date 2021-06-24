@@ -16,49 +16,43 @@
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
 #include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 
-namespace EMotionFX
+namespace EMotionFX::Pipeline::Rule
 {
-    namespace Pipeline
+    void MotionMetaData::Reflect(AZ::ReflectContext* context)
     {
-        namespace Rule
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (!serializeContext)
         {
-            void MotionMetaData::Reflect(AZ::ReflectContext* context)
-            {
-                AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-                if (!serializeContext)
-                {
-                    return;
-                }
+            return;
+        }
 
-                serializeContext->Class<MotionMetaData>()
-                    ->Version(1)
-                    ->Field("motionEventTable", &MotionMetaData::m_motionEventTable)
-                    ->Field("motionExtractionFlags", &MotionMetaData::m_motionExtractionFlags)
-                    ;
-            }
+        serializeContext->Class<MotionMetaData>()
+            ->Version(1)
+            ->Field("motionEventTable", &MotionMetaData::m_motionEventTable)
+            ->Field("motionExtractionFlags", &MotionMetaData::m_motionExtractionFlags)
+            ;
+    }
 
-            MotionMetaDataRule::MotionMetaDataRule()
-                : ExternalToolRule<MotionMetaData>()
-            {
-            }
+    MotionMetaDataRule::MotionMetaDataRule()
+        : ExternalToolRule<MotionMetaData>()
+    {
+    }
 
-            MotionMetaDataRule::MotionMetaDataRule(const MotionMetaData& data)
-                : MotionMetaDataRule()
-            {
-                m_data = data;
-            }
+    MotionMetaDataRule::MotionMetaDataRule(const MotionMetaData& data)
+        : MotionMetaDataRule()
+    {
+        m_data = data;
+    }
 
-            void MotionMetaDataRule::Reflect(AZ::ReflectContext* context)
-            {
-                AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-                if (serializeContext)
-                {
-                    serializeContext->Class<MotionMetaDataRule>()
-                        ->Version(1)
-                        ->Field("data", &MotionMetaDataRule::m_data)
-                        ;
-                }
-            }
-        } // Rule
-    } // Pipeline
-} // EMotionFX
+    void MotionMetaDataRule::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<MotionMetaDataRule>()
+                ->Version(1)
+                ->Field("data", &MotionMetaDataRule::m_data)
+                ;
+        }
+    }
+} // EMotionFX::Pipeline::Rule

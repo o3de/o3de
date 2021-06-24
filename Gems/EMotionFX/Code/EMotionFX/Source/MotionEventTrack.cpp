@@ -92,7 +92,7 @@ namespace EMotionFX
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
         {
-            int nameElementIndex = classElement.FindElement(AZ_CRC("name"));
+            int nameElementIndex = classElement.FindElement(AZ_CRC_CE("name"));
             if (nameElementIndex < 0)
             {
                 return false;

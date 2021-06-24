@@ -1173,7 +1173,7 @@ namespace EMotionFX
         AZStd::vector<char> buffer(fileEventTable.m_size);
         file->Read(&buffer[0], fileEventTable.m_size);
 
-        AZStd::unique_ptr<MotionEventTable> motionEventTable = AZStd::unique_ptr<MotionEventTable>(AZ::Utils::LoadObjectFromBuffer<MotionEventTable>(&buffer[0], buffer.size(), context));
+        auto motionEventTable = AZStd::unique_ptr<MotionEventTable>(AZ::Utils::LoadObjectFromBuffer<MotionEventTable>(&buffer[0], buffer.size(), context));
         if (motionEventTable)
         {
             motion->SetEventTable(AZStd::move(motionEventTable));

@@ -13,8 +13,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/JSON/rapidjson.h>
 #include <AzCore/JSON/document.h>
-#include <AzCore/JSON/prettywriter.h>
-#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/Serialization/SerializeContext.h>

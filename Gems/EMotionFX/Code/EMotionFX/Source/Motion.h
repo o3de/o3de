@@ -254,19 +254,19 @@ namespace EMotionFX
         void SetMotionData(MotionData* motionData, bool delOldFromMem=true);
 
     protected:
-        MotionData*                 m_motionData;           /**< The motion data, which can in theory be any data representation/compression. */
+        MotionData*                 m_motionData = nullptr; /**< The motion data, which can in theory be any data representation/compression. */
         AZStd::string               mFileName;              /**< The filename of the motion. */
         PlayBackInfo                m_defaultPlayBackInfo;  /**< The default/fallback motion playback info which will be used when no playback info is passed to the Play() function. */
         AZStd::unique_ptr<MotionEventTable> m_eventTable;   /**< The event table, which contains all events, and will make sure events get executed. */
         MCore::Distance::EUnitType  mUnitType;              /**< The type of units used. */
         MCore::Distance::EUnitType  mFileUnitType;          /**< The type of units used, inside the file that got loaded. */
-        void*                       mCustomData;            /**< A pointer to custom user data that is linked with this motion object. */
-        float                       mMotionFPS;             /**< The number of keyframes per second. */
-        uint32                      mNameID;                /**< The ID represention the name or description of this motion. */
-        uint32                      mID;                    /**< The unique identification number for the motion. */
+        void*                       mCustomData = nullptr; /**< A pointer to custom user data that is linked with this motion object. */
+        float                       mMotionFPS = 30.0f; /**< The number of keyframes per second. */
+        uint32                      mNameID = MCORE_INVALIDINDEX32; /**< The ID represention the name or description of this motion. */
+        uint32                      mID = MCORE_INVALIDINDEX32; /**< The unique identification number for the motion. */
         EMotionExtractionFlags      mExtractionFlags;       /**< The motion extraction flags, which define behavior of the motion extraction system when applied to this motion. */
-        bool                        mDirtyFlag;             /**< The dirty flag which indicates whether the user has made changes to the motion since the last file save operation. */
-        bool                        mAutoUnregister;        /**< Automatically unregister the motion from the motion manager when this motion gets deleted? Default is true. */
+        bool                        mDirtyFlag = false; /**< The dirty flag which indicates whether the user has made changes to the motion since the last file save operation. */
+        bool                        mAutoUnregister = true; /**< Automatically unregister the motion from the motion manager when this motion gets deleted? Default is true. */
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
         bool                        mIsOwnedByRuntime;

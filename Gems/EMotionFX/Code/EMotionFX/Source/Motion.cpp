@@ -34,23 +34,16 @@ namespace EMotionFX
     Motion::Motion(const char* name)
         : BaseObject()
     {
-        mCustomData = nullptr;
-        mNameID = MCORE_INVALIDINDEX32;
         mID = MCore::GetIDGenerator().GenerateID();
         m_eventTable = AZStd::make_unique<MotionEventTable>();
         mUnitType = GetEMotionFX().GetUnitType();
         mFileUnitType = mUnitType;
         mExtractionFlags = static_cast<EMotionExtractionFlags>(0);
-        m_motionData = nullptr;
 
         if (name)
         {
             SetName(name);
         }
-
-        mMotionFPS              = 30.0f;
-        mDirtyFlag              = false;
-        mAutoUnregister         = true;
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
         mIsOwnedByRuntime       = false;
