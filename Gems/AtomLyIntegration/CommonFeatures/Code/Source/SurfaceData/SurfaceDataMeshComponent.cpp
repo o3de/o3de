@@ -80,6 +80,7 @@ namespace SurfaceData
 
     SurfaceDataMeshComponent::SurfaceDataMeshComponent(const SurfaceDataMeshConfig& configuration)
         : m_configuration(configuration)
+        , m_nonUniformScaleChangedHandler([this]([[maybe_unused]] const AZ::Vector3& scale) { this->OnCompositionChanged(); })
     {
     }
 

@@ -138,6 +138,7 @@ namespace Vegetation
     MeshBlockerComponent::MeshBlockerComponent(const MeshBlockerConfig& configuration)
         : AreaComponentBase(configuration)
         , m_configuration(configuration)
+        , m_nonUniformScaleChangedHandler([this]([[maybe_unused]] const AZ::Vector3& scale) { this->OnCompositionChanged(); })
     {
     }
 
