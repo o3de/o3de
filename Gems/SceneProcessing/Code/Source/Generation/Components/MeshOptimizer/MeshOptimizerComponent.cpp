@@ -107,7 +107,7 @@ namespace AZ::SceneGenerationComponents
         auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(2);
+            serializeContext->Class<MeshOptimizerComponent, GenerationComponent>()->Version(3);
         }
     }
 
@@ -434,6 +434,12 @@ namespace AZ::SceneGenerationComponents
         const float weightThreshold = skinRule ? skinRule->GetWeightThreshold() : 0.001f;
         meshBuilder.SetSkinningInfo(ExtractSkinningInfo(meshData, skinWeights, maxWeightsPerVertex, weightThreshold));
 
+        constexpr float positionTolerance = 0.0001f;
+        constexpr float positionToleranceReciprocal = 1.0f / positionTolerance;
+        AZStd::unordered_map<AZ::Vector3, AZ::u32> positionMap{};
+
+        AZ::u32 currentOriginalVertexIndex = 0;
+
         // Add the vertex data to all the layers
         const AZ::u32 faceCount = meshData->GetFaceCount();
         for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
@@ -441,8 +447,20 @@ namespace AZ::SceneGenerationComponents
             meshBuilder.BeginPolygon(baseMesh->GetFaceMaterialId(faceIndex));
             for (const AZ::u32 vertexIndex : meshData->GetFaceInfo(faceIndex).vertexIndex)
             {
-                const int orgVertexNumber = meshData->GetUsedPointIndexForControlPoint(meshData->GetControlPointIndex(vertexIndex));
-                AZ_Assert(orgVertexNumber >= 0, "Invalid vertex number");
+                // Round the vertex position so that a float comparison can be made with entires in the positionMap
+                AZ::Vector3 position = meshData->GetPosition(vertexIndex);
+                position *= positionToleranceReciprocal;
+                position += AZ::Vector3(0.5f);
+                position = AZ::Vector3(AZ::Simd::Vec3::Floor(position.GetSimdValue()));
+                position *= positionTolerance;
+
+                const auto& [iter, didInsert] = positionMap.try_emplace(position, currentOriginalVertexIndex);
+                if (didInsert)
+                {
+                    ++currentOriginalVertexIndex;
+                }
+                const AZ::u32 orgVertexNumber = iter->second;
+
                 orgVtxLayer->SetCurrentVertexValue(orgVertexNumber);
 
                 posLayer->SetCurrentVertexValue(meshData->GetPosition(vertexIndex));
