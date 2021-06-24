@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorDefs.h"
 
 #include "MainWindow.h"
@@ -1027,13 +1022,9 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::RefreshStyle);
 
     // Help actions
-    am->AddAction(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, tr("Getting Started"))
-        .SetReserved();
     am->AddAction(ID_DOCUMENTATION_TUTORIALS, tr("Tutorials"))
         .SetReserved();
 
-    am->AddAction(ID_DOCUMENTATION_GLOSSARY, tr("Glossary"))
-        .SetReserved();
     am->AddAction(ID_DOCUMENTATION_O3DE, tr("Open 3D Engine Documentation"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_GAMELIFT, tr("GameLift Documentation"))
@@ -1043,15 +1034,11 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_DOCUMENTATION_GAMEDEVBLOG, tr("GameDev Blog"))
         .SetReserved();
-    am->AddAction(ID_DOCUMENTATION_TWITCHCHANNEL, tr("GameDev Twitch Channel"))
-        .SetReserved();
     am->AddAction(ID_DOCUMENTATION_FORUMS, tr("Forums"))
         .SetReserved();
     am->AddAction(ID_DOCUMENTATION_AWSSUPPORT, tr("AWS Support"))
         .SetReserved();
 
-    am->AddAction(ID_DOCUMENTATION_FEEDBACK, tr("Give Us Feedback"))
-        .SetReserved();
     am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();

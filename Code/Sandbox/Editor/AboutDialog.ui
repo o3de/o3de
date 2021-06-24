@@ -154,7 +154,7 @@
        <item>
         <widget class="ClickableLabel" name="m_transparentAgreement">
          <property name="text">
-          <string>AWS Customer Agreement</string>
+          <string>Terms of Use</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
