@@ -93,14 +93,6 @@ AZ_POP_DISABLE_WARNING
 #include "AssetEditor/AssetEditorWindow.h"
 #include "ActionManager.h"
 
-// uncomment this to show thumbnail demo widget
-// #define ThumbnailDemo
-
-#ifdef ThumbnailDemo
-#include "Editor/Thumbnails/Example/ThumbnailsSampleWidget.h"
-#endif
-
-
 using namespace AZ;
 using namespace AzQtComponents;
 using namespace AzToolsFramework;
@@ -1357,10 +1349,6 @@ void MainWindow::RegisterStdViewClasses()
     CSettingsManagerDialog::RegisterViewClass();
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
-
-#ifdef ThumbnailDemo
-    ThumbnailsSampleWidget::RegisterViewClass();
-#endif
 
     //These view dialogs aren't used anymore so they became disabled.
     //CLightmapCompilerDialog::RegisterViewClass();
