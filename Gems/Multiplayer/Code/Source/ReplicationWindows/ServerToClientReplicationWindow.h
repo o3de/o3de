@@ -20,6 +20,8 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <Multiplayer/Components/FilteredReplicationInterface.h>
+#include <Multiplayer/Components/FilteredServerToClientBus.h>
 
 namespace Multiplayer
 {
@@ -78,7 +80,10 @@ namespace Multiplayer
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
-        //FilteredEntityComponent::Authority* m_controlledFilteredEntityComponent = nullptr;
+        FilteredReplicationInterface* m_controlledFilteredEntityInterface = nullptr;
+        FilteredReplicationHandlerChanged::Handler m_filteredHandlerChanged;
+        void OnFilteredHandlerChanged(FilteredReplicationInterface* newHandler);
+
         //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
         const AzNetworking::IConnection* m_connection = nullptr;

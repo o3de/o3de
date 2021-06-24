@@ -18,6 +18,7 @@
 #include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
+#include <Multiplayer/Components/FilteredServerToClientComponent.h>
 
 namespace Multiplayer
 {
@@ -30,6 +31,7 @@ namespace Multiplayer
             NetBindComponent::CreateDescriptor(),
             NetBindMarkerComponent::CreateDescriptor(),
             NetworkSpawnableHolderComponent::CreateDescriptor(),
+            FilteredServerToClientComponent::CreateDescriptor(),
         });
 
         CreateComponentDescriptors(m_descriptors);

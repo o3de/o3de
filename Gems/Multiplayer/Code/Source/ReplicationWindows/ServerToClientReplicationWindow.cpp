@@ -16,6 +16,9 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/std/sort.h>
+#include <Multiplayer/Components/FilteredServerToClientComponent.h>
+
+#pragma optimize("", off)
 
 namespace Multiplayer
 {
@@ -55,25 +58,27 @@ namespace Multiplayer
     }
 
     ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection)
-        : m_controlledEntity(controlledEntity)
+        : m_updateWindowEvent([this]() { UpdateWindow(); }, AZ::Name("Server to client replication window update event"))
+        , m_controlledEntity(controlledEntity)
         , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
         , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
+        , m_filteredHandlerChanged([this](FilteredReplicationInterface* newHandler){ OnFilteredHandlerChanged(newHandler); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
-        , m_updateWindowEvent([this]() { UpdateWindow(); }, AZ::Name("Server to client replication window update event"))
     {
         AZ::Entity* entity = m_controlledEntity.GetEntity();
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
         m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
         AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
 
-        //// this one is optional
-        //mp_ControlledFilteredEntityComponent = m_controlledEntity->FindController<FilteredEntityComponent::Authority>();
-        //if (mp_ControlledFilteredEntityComponent)
-        //{
-        //    mp_ControlledFilteredEntityComponent->AddFilteredEntityEventHandle(m_FilteredEntityAddedEventHandle);
-        //}
+        // this one is optional
+        if (auto* filteredComponent = m_controlledEntity.FindComponent<FilteredServerToClientComponent>())
+        {
+            m_controlledFilteredEntityInterface = filteredComponent->GetFilteredInterface();
+            // the filtered interface might not have been set yet, sign up for changes
+            filteredComponent->SetFilteredReplicationHandlerChanged(m_filteredHandlerChanged);
+        }
 
         m_updateWindowEvent.Enqueue(sv_ClientReplicationWindowUpdateMs, true);
 
@@ -155,13 +160,14 @@ namespace Multiplayer
         // Add all the neighbors
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
-            //if (mp_ControlledFilteredEntityComponent && mp_ControlledFilteredEntityComponent->IsEntityFiltered(iterator.Get()))
-            //{
-            //    continue;
-            //}
-
             // We want to find the closest extent to the player and prioritize using that distance
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+
+            if (m_controlledFilteredEntityInterface && m_controlledFilteredEntityInterface->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
+            {
+                return;
+            }
+
             NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
             if (entryNetBindComponent != nullptr)
             {
@@ -217,10 +223,10 @@ namespace Multiplayer
         {
             if (netBindComponent->HasController())
             {
-                //if (mp_ControlledFilteredEntityComponent && mp_ControlledFilteredEntityComponent->IsEntityFiltered(newEntity))
-                //{
-                //    return;
-                //}
+                if (m_controlledFilteredEntityInterface && m_controlledFilteredEntityInterface->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
+                {
+                    return;
+                }
 
                 AZ::TransformInterface* transformInterface = entity->GetTransform();
                 if (transformInterface != nullptr)
@@ -279,6 +285,8 @@ namespace Multiplayer
 
     void ServerToClientReplicationWindow::AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, [[maybe_unused]] float distanceSquared)
     {
+        // Assumption: the entity has been checked for filtering prior to this call.
+
         if (!sv_ReplicateServerProxies)
         {
             NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
@@ -305,6 +313,11 @@ namespace Multiplayer
         }
     }
 
+    void ServerToClientReplicationWindow::OnFilteredHandlerChanged(FilteredReplicationInterface* newHandler)
+    {
+        m_controlledFilteredEntityInterface = newHandler;
+    }
+
     //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController)
     //{
     //    auto controlledEnts = hierarchyController.GetChildrenRelatedEntities();
@@ -318,11 +331,5 @@ namespace Multiplayer
     //            CollectControlledEntitiesRecursive(replicationSet, *hierarchyController);
     //        }
     //    }
-    //}
-
-    //void ServerToClientReplicationWindow::OnAddFilteredEntity(NetEntityId filteredEntityId)
-    //{
-    //    ConstEntityPtr filteredEntity = gNovaGame->GetEntityManager().GetEntity(filteredEntityId);
-    //    m_replicationSet.erase(filteredEntityId);
     //}
 }
