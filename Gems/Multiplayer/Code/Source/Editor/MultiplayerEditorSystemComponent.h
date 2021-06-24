@@ -63,7 +63,8 @@ namespace Multiplayer
         
         //!  GameEntityContextEventBus::Handler overrides
         //! @{
-        void OnGameEntitiesStarted() override; 
+        void OnGameEntitiesStarted() override;
+        void OnGameEntitiesReset() override;
         //! @}
 
         IEditor* m_editor = nullptr;

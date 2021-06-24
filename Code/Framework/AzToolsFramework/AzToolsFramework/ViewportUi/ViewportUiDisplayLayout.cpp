@@ -20,13 +20,15 @@ namespace AzToolsFramework::ViewportUi::Internal
         : QGridLayout(parent)
     {
         // set margins and spacing for internal contents
-        setContentsMargins(0, 0, 0, 0);
+        setContentsMargins(
+            ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
+            ViewportUiOverlayMargin);
         setSpacing(ViewportUiDisplayLayoutSpacing);
 
         // create a 3x2 map of sub layouts which will stack widgets according to their mapped alignment
         m_internalLayouts = AZStd::unordered_map<Qt::Alignment, QBoxLayout*> {
             CreateSubLayout(new QVBoxLayout(), 0, 0, Qt::AlignTop | Qt::AlignLeft),
-            CreateSubLayout(new QHBoxLayout(), 1, 0, Qt::AlignBottom | Qt::AlignLeft),
+            CreateSubLayout(new QVBoxLayout(), 1, 0, Qt::AlignBottom | Qt::AlignLeft),
             CreateSubLayout(new QVBoxLayout(), 0, 1, Qt::AlignTop),
             CreateSubLayout(new QHBoxLayout(), 1, 1, Qt::AlignBottom),
             CreateSubLayout(new QVBoxLayout(), 0, 2, Qt::AlignTop | Qt::AlignRight),
@@ -45,9 +47,42 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto layoutForAlignment = m_internalLayouts.find(alignment);
             layoutForAlignment != m_internalLayouts.end())
         {
-            // place the widget before the invisible spacer
-            // spacer must be last item in layout to not interfere with positioning
-            int index = layoutForAlignment->second->count() - 1;
+            // place the widget before or after the invisible spacer
+            // depending on the layout alignment
+            int index = 0;
+            switch (alignment)
+            {
+            case Qt::AlignTop | Qt::AlignLeft:
+            case Qt::AlignTop:
+                index = layoutForAlignment->second->count() - 1;
+                break;
+            case Qt::AlignBottom | Qt::AlignRight:
+            case Qt::AlignBottom:
+                index = layoutForAlignment->second->count();
+                break;
+            // TopRight and BottomLeft are special cases
+            // place the spacer differently according to whether it's a vertical or horizontal layout
+            case Qt::AlignTop | Qt::AlignRight:
+                if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count() - 1;
+                }
+                else if (QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count();
+                }
+                break;
+            case Qt::AlignBottom | Qt::AlignLeft:
+                if (QVBoxLayout* vLayout = qobject_cast<QVBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count();
+                }
+                else if (QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(layoutForAlignment->second))
+                {
+                    index = layoutForAlignment->second->count() - 1;
+                }
+                break;
+            }
             layoutForAlignment->second->insertWidget(index, widget);
         }
     }
