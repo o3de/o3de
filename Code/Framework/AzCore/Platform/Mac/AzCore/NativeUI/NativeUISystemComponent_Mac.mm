@@ -28,6 +28,11 @@ namespace AZ
     {
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
+            if (m_mode == NativeUI::Mode::CONSOLE)
+            {
+                return {};
+            }
+
             __block NSModalResponse response = -1;
             
             auto showDialog = ^()

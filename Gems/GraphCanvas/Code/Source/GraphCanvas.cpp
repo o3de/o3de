@@ -190,12 +190,12 @@ namespace GraphCanvas
 
     void GraphCanvasSystemComponent::Init()
     {
-        RegisterAssetHandler();
         m_translationDatabase.Init();
     }
 
     void GraphCanvasSystemComponent::Activate()
     {
+        RegisterAssetHandler();
         RegisterTranslationBuilder();
 
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
@@ -233,6 +233,7 @@ namespace GraphCanvas
         GraphCanvasRequestBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
+        m_translationAssetWorker.Deactivate();
         UnregisterAssetHandler();
     }
 
