@@ -118,8 +118,7 @@ class GameLiftStack(core.Stack):
 
     def _get_gamelift_build_id(self, build_configuration: dict, identifier: int) -> str:
         """
-        Get the GameLift build id.
-        Create the GameLift build from the storage location information if the build doesn't exist.
+        Create a GameLift build using the storage location if the build doesn't exist and return the build id.
         :param build_configuration: Configuration of the GameLift build.
         :param identifier: Unique identifier of the build which will be included in the resource id.
         :return: Build id.
