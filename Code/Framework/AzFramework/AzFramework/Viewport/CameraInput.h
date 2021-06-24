@@ -23,10 +23,11 @@
 
 namespace AzFramework
 {
-    //! Updates camera key bindings that can be overridden with AZ console vars (invoke from console to update)
+    //! Updates camera key bindings that can be overridden with AZ console vars (invoke from console to update).
     void ReloadCameraKeyBindings();
 
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
+    //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
 
     //! A simple camera representation using spherical coordinates as input (pitch, yaw and look distance).
@@ -41,7 +42,7 @@ namespace AzFramework
         float m_pitch{ 0.0 }; //!< Pitch rotation of the camera (stored in radians) usually clamped to +/-90 degrees (-Pi/2 - Pi/2 radians).
         float m_lookDist{ 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
 
-        //! View camera transform (v in model-view-projection matrix (MVP)).
+        //! View camera transform (V in model-view-projection matrix (MVP)).
         AZ::Transform View() const;
         //! World camera transform.
         AZ::Transform Transform() const;
@@ -90,7 +91,7 @@ namespace AzFramework
         float m_delta;
     };
 
-    //! Represents an input event with a beginning and an end.
+    //! Represents an input event which occurs as a discrete change in state (e.g. button down, button up) rather than a continuous stream.
     //! @note Such as a key press with a down/up event as opposed to a continuous delta.
     struct DiscreteInputEvent
     {
@@ -203,7 +204,7 @@ namespace AzFramework
     //! @note The rate of interpolation can be customized with CameraProps.
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, float deltaTime);
 
-    //! Manage a list of camera inputs
+    //! Manages a list of camera inputs.
     //! By default all camera inputs are added to the idle list, when a camera activates it will be added to the active list, when it
     //! deactivates it will be returned to the idle list.
     class Cameras
@@ -259,7 +260,7 @@ namespace AzFramework
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.
-        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred to being the input.
+        ClickDetector m_clickDetector; //!< Used to determine when a sufficient motion delta has occurred to begin the input.
     };
 
     //! Axes to use while panning the camera.
@@ -414,7 +415,7 @@ namespace AzFramework
             return static_cast<TranslationType>(~static_cast<std::underlying_type_t<TranslationType>>(lhs));
         }
 
-        //! Converts from a generic input channel id to a concrete translation type (based on the users key mappings).
+        //! Converts from a generic input channel id to a concrete translation type (based on the user's key mappings).
         static TranslationType TranslationFromKey(InputChannelId channelId);
 
         TranslationType m_translation = TranslationType::Nil; //!< Types of translation the camera input is under.
