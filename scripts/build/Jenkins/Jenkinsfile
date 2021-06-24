@@ -18,8 +18,9 @@ EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
 
-def buildSnapshots = ['development', 'stabilization/2106']
-def defaultBuildSnapshot = buildSnapshots.get(0)
+BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+DEFAULT_BUILD_SNAPSHOT = BUILD_SNAPSHOTS.get(0)
+
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -28,8 +29,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directory before building. This will cause a \"clean\" build. NOTE: does not imply CLEAN_ASSETS', name: 'CLEAN_OUTPUT_DIRECTORY'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directories of the AssetProcessor before building.', name: 'CLEAN_ASSETS'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
-    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
-    choice(defaultValue: defaultBuildSnapshot, name: 'SNAPSHOT', choices: buildSnapshots, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.')
+    booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME')
 ]
 
 def palSh(cmd, lbl = '', winSlashReplacement = true) {
@@ -459,13 +459,14 @@ try {
                     } else {
                         branchName = scm.branches[0].name // for non-multibranch pipelines
                         env.BRANCH_NAME = branchName // so scripts that read this environment have it (e.g. incremental_build_util.py)
+                        choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.')
                     }
                     if(env.CHANGE_TARGET) {
-                        if(buildSnapshots.contains(env.CHANGE_TARGET)) {
-                            snapshot = defaultBuildSnapshot
+                        if(BUILD_SNAPSHOTS.contains(env.CHANGE_TARGET)) {
+                            snapshot = env.CHANGE_TARGET
                             echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" found."
                         } else { 
-                            snapshot = env.CHANGE_TARGET
+                            snapshot = DEFAULT_BUILD_SNAPSHOT
                             echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
                         }
                     } else {
