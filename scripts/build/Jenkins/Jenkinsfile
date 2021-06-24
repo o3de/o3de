@@ -459,6 +459,11 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
+                    echo "********************************************"
+                    echo "CHANGE_BRANCH: \"${env.CHANGE_BRANCH}\""
+                    echo "CHANGE_TARGET: \"${env.CHANGE_TARGET}\""
+                    echo "********************************************"
+                    
                     echo "Running \"${pipelineName}\" for \"${branchName}\"..."
 
                     CheckoutBootstrapScripts(branchName)
