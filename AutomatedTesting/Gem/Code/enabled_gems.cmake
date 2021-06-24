@@ -48,7 +48,12 @@ set(ENABLED_GEMS
     LyShine
     HttpRequestor
     Atom_AtomBridge
-    AWSCore
-    AWSClientAuth
-    AWSMetrics
 )
+
+if((NOT ${PAL_PLATFORM_NAME} STREQUAL "Linux" AND NOT ${PAL_PLATFORM_NAME} STREQUAL "Android") OR NOT LY_MONOLITHIC_GAME)
+    list(APPEND ENABLED_GEMS
+        AWSCore
+        AWSClientAuth
+        AWSMetrics
+    )
+endif()
