@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 
@@ -26,7 +22,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
         else()
             # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            file(READ "${project_real_path}/project.json" project_json)
+            ly_file_read("${project_real_path}/project.json" project_json)
             string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
             if(json_error)
                 message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")

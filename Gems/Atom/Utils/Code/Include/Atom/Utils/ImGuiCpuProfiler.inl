@@ -1,18 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
-#include <AzCore/IO/SystemFile.h> // For AZ_MAX_PATH_LEN
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/time.h>
 
 namespace AZ
@@ -48,10 +43,10 @@ namespace AZ
             if (ImGui::Begin("Cpu Profiler", &keepDrawing, ImGuiWindowFlags_None))
             {
                 m_paused = !AZ::RHI::CpuProfiler::Get()->IsProfilerEnabled();
-                if (ImGui::Button(m_paused?"Resume":"Pause"))
+                if (ImGui::Button(m_paused ? "Resume" : "Pause"))
                 {
                     m_paused = !m_paused;
-                    AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);                   
+                    AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(!m_paused);
                 }
 
                 // Update region map and cache the input cpu timing statistics when the profiling is not paused
@@ -194,8 +189,8 @@ namespace AZ
                 AZStd::to_string(timeString, timeNow);
                 u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
                 AZStd::string frameDataFilePath = AZStd::string::format("@user@/CpuProfiler/%s_%llu.json", timeString.c_str(), currentTick);
-                char resolvedPath[AZ_MAX_PATH_LEN];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ_MAX_PATH_LEN);
+                char resolvedPath[AZ::IO::MaxPathLength];
+                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
                 m_lastCapturedFilePath = resolvedPath;
                 AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics,
                     frameDataFilePath);

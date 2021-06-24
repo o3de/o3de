@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <SceneAPI/FbxSceneBuilder/Importers/AssImpTransformImporter.h>
 
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -46,8 +41,9 @@ namespace AZ
                     serializeContext->Class<AssImpTransformImporter, SceneCore::LoadingComponent>()->Version(1);
                 }
             }
-
-            void GetAllBones(const aiScene* scene, AZStd::unordered_map<AZStd::string, const aiBone*>& boneLookup)
+            
+            void GetAllBones(
+                const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneLookup)
             {
                 for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
@@ -57,7 +53,7 @@ namespace AZ
                     {
                         const aiBone* bone = mesh->mBones[boneIndex];
 
-                        boneLookup[bone->mName.C_Str()] = bone;
+                        boneLookup.emplace(bone->mName.C_Str(), bone);
                     }
                 }
             }
@@ -73,41 +69,60 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
-                AZStd::unordered_map<AZStd::string, const aiBone*> boneLookup;
+                AZStd::unordered_multimap<AZStd::string, const aiBone*> boneLookup;
                 GetAllBones(scene, boneLookup);
 
                 auto boneIterator = boneLookup.find(currentNode->mName.C_Str());
                 const bool isBone = boneIterator != boneLookup.end();
-
-                aiMatrix4x4 combinedTransform;
+                
+                DataTypes::MatrixType localTransform;
 
                 if (isBone)
                 {
-                    auto parentNode = currentNode->mParent;
+                    AZStd::vector<DataTypes::MatrixType> offsets, inverseOffsets;
+                    auto iteratingNode = currentNode;
 
-                    aiMatrix4x4 offsetMatrix = boneIterator->second->mOffsetMatrix;
-                    aiMatrix4x4 parentOffset {};
-
-                    auto parentBoneIterator = boneLookup.find(parentNode->mName.C_Str());
-
-                    if (parentNode && parentBoneIterator != boneLookup.end())
+                    while (iteratingNode && boneLookup.count(iteratingNode->mName.C_Str()))
                     {
-                        const auto& parentBone = parentBoneIterator->second;
+                        AZStd::string name = iteratingNode->mName.C_Str();
 
-                        parentOffset = parentBone->mOffsetMatrix;
+                        auto range = boneLookup.equal_range(name);
+
+                        if (range.first != range.second)
+                        {
+                            // There can be multiple offsetMatrices for a given bone, we're only interested in grabbing the first one
+                            auto boneFirstOffsetMatrix = range.first->second->mOffsetMatrix;
+                            auto azMat = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(boneFirstOffsetMatrix);
+                            offsets.push_back(azMat);
+                            inverseOffsets.push_back(azMat.GetInverseFull());
+                        }
+
+                        iteratingNode = iteratingNode->mParent;
                     }
 
-                    auto inverseOffset = offsetMatrix;
-                    inverseOffset.Inverse();
-
-                    combinedTransform = parentOffset * inverseOffset;
+                    if (inverseOffsets.size() == 1)
+                    {
+                        // If this is the root bone, just use the inverseOffset, otherwise the equation below just results in the identity matrix
+                        localTransform = inverseOffsets[0];
+                    }
+                    else
+                    {
+                        localTransform = offsets.at(1) // parent bone offset
+                            * inverseOffsets.at(inverseOffsets.size() - 1) // Inverse of root bone offset
+                            * offsets.at(offsets.size() - 1) // Root bone offset
+                            * inverseOffsets.at(0); // Inverse of current node offset
+                    }
                 }
                 else
                 {
-                    combinedTransform = GetConcatenatedLocalTransform(currentNode);
+                    localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(GetConcatenatedLocalTransform(currentNode));
                 }
 
-                DataTypes::MatrixType localTransform = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(combinedTransform);
+                // Don't bother adding a node with the identity matrix
+                if (localTransform == DataTypes::MatrixType::Identity())
+                {
+                    return Events::ProcessingResult::Ignored;
+                }
 
                 context.m_sourceSceneSystem.SwapTransformForUpAxis(localTransform);
                 context.m_sourceSceneSystem.ConvertUnit(localTransform);

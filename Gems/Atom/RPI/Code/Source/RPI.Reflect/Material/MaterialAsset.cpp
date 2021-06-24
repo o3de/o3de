@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -115,12 +110,19 @@ namespace AZ
             }
         }
 
-        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>&)
+        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset)
         {
-            // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
-            // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
-            // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
-            MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
+            // so we can reduce unnecessary reinitialization in that case.
+            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
+            {
+                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
+
+                // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
+                // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
+                // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
+                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            }
         }
         
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
