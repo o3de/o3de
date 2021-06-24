@@ -65,14 +65,14 @@ FLEET_CONFIGURATIONS = [
         'ec2_inbound_permissions': [
             {
                 # (Required) A starting value for a range of allowed port numbers.
-                # 30090 is the default server port defined by the Multiplayer Gem.
-                'from_port': 30090,
+                # 33450 is the default server port defined by the Multiplayer Gem.
+                'from_port': 33450,
                 # (Required) A range of allowed IP addresses.
                 'ip_range': '<ip range>',
                 # (Required) The network communication protocol used by the fleet.
                 'protocol': 'UDP',
                 # (Required) An ending value for a range of allowed port numbers.
-                'to_port': 30090
+                'to_port': 33450
             },
             {
                 # Open the debug port for remote into a Windows fleet.
@@ -134,7 +134,7 @@ FLEET_CONFIGURATIONS = [
                     # Linux: /local/game.
                     'launch_path': 'C:\\game\\bin\\server.exe',
                     # (Optional) An optional list of parameters to pass to the server executable on launch.
-                    'parameters': '--sv_port 30090 --project-path=C:\\game '
+                    'parameters': '--sv_port 33450 --project-path=C:\\game '
                                   '--project-cache-path=C:\\game\\assets --engine-path=C:\\game '
                                   '-bg_ConnectToAssetProcessor=0'
                 }
