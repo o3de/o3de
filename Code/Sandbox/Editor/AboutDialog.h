@@ -30,7 +30,6 @@ public:
 private:
 
     void OnCustomerAgreement();
-    void OnPrivacyNotice();
 
     void mouseReleaseEvent(QMouseEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
