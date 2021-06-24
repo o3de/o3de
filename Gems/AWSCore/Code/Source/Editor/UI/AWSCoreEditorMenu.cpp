@@ -131,9 +131,14 @@ namespace AWSCore
     {
         QMenu* globalDocsMenu = this->addMenu(QObject::tr(AWSAndO3DEGlobalDocsText));
 
-        globalDocsMenu->addAction(AddExternalLinkAction(AWSAndScriptCanvasActionText, AWSAndScriptCanvasUrl, ":/Notifications/link.svg"));
-        globalDocsMenu->addAction(AddExternalLinkAction(AWSAndComponentsActionText, AWSAndComponentsUrl, ":/Notifications/link.svg"));
-        globalDocsMenu->addAction(AddExternalLinkAction(CallAWSResourcesActionText, CallAWSResourcesUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEGettingStartedActionText, AWSAndGettingStartedUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEMappingsFileActionText, AWSAndResourceMappingsUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEResourceToolActionText, AWSAndResourceMappingToolUrl, ":/Notifications/link.svg"));
+        globalDocsMenu->addAction(
+            AddExternalLinkAction(AWSAndO3DEScriptingActionText, AWSAndScriptingUrl, ":/Notifications/link.svg"));
 
         AddSpaceForIcon(globalDocsMenu);
     }
@@ -159,6 +164,8 @@ namespace AWSCore
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthGemOverviewActionText, AWSClientAuthGemOverviewUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
+            AWSClientAuthGemSetupActionText, AWSClientAuthGemSetupUrl, ":/Notifications/link.svg"));
+        subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthCDKAndResourcesActionText, AWSClientAuthCDKAndResourcesUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthScriptCanvasAndLuaActionText, AWSClientAuthScriptCanvasAndLuaUrl, ":/Notifications/link.svg"));
@@ -166,8 +173,6 @@ namespace AWSCore
             AWSClientAuth3rdPartyAuthProviderActionText, AWSClientAuth3rdPartyAuthProviderUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthCustomAuthProviderActionText, AWSClientAuthCustomAuthProviderUrl, ":/Notifications/link.svg"));
-        subMenu->addAction(AddExternalLinkAction(
-            AWSClientAuthPlatformSpecificActionText, AWSClientAuthPlatformSpecificUrl, ":/Notifications/link.svg"));
         subMenu->addAction(AddExternalLinkAction(
             AWSClientAuthAPIReferenceActionText, AWSClientAuthAPIReferenceUrl, ":/Notifications/link.svg"));
 
