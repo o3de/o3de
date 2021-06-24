@@ -10,6 +10,7 @@
 #include <AzQtComponents/Components/StyleManager.h>
 
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/limits.h>
 
 #include <QLabel>
 #include <QStyleOptionSpinBox>
@@ -61,7 +62,7 @@ const QString& VectorElement::label() const
 void VectorElement::setValue(double newValue)
 {
     // Nothing to do if the value is not actually changed
-    if (AZ::IsClose(m_value, newValue, std::numeric_limits<double>::epsilon()))
+    if (AZ::IsCloseMag(m_value, newValue, AZStd::numeric_limits<double>::epsilon()))
     {
         return;
     }
@@ -92,7 +93,7 @@ void VectorElement::onSpinBoxEditingFinished()
 
         if (m_value == deferredValue.prevValue)
         {
-            AZ_Warning("VectorElement", !m_spinBox->hasFocus(), "Editing finished but the spinbox still has focus");
+            AZ_Assert(!m_spinBox->hasFocus(), "Editing finished but the spinbox still has focus");
             setValue(deferredValue.value);
         }
     }
