@@ -82,7 +82,7 @@ namespace EMotionFX
             ;
     }
 
-    bool MotionEventTrack::VersionConverter([[maybe_unused]] AZ::SerializeContext& context, [[maybe_unused]] AZ::SerializeContext::DataElementNode& classElement)
+    bool MotionEventTrack::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
