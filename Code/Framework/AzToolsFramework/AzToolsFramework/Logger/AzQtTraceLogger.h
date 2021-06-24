@@ -17,7 +17,7 @@
 
 namespace AzToolsFramework
 {
-    // Connects and disconnects TraceMessageBus and allows for logging for O3DEToolsApplications
+    //! Connects and disconnects TraceMessageBus and allows for logging for O3DE Tools Applications
     class AzQtTraceLogger : public AZ::Debug::TraceMessageBus::Handler
     {
     public:

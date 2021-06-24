@@ -31,7 +31,7 @@ namespace AzQtComponents
          QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     }
 
-    void AzQtApplication::setDpiScaling()
+    void AzQtApplication::SetDpiScaling()
     {    
          QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
          QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);

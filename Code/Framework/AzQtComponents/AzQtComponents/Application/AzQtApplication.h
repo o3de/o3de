@@ -18,6 +18,7 @@
 
 namespace AzQtComponents
 {
+    //! Base case for O3DE Tools Applications
     class AZ_QT_COMPONENTS_API AzQtApplication
         : public QApplication
     {
@@ -26,9 +27,7 @@ namespace AzQtComponents
 
         //! DPI Scaling so that we support HighDpi monitors, like the Retina displays on Windows 10
             //! Must be set before QApplication is initialized, 
-        static void setDpiScaling();
-
-    protected:
+        static void SetDpiScaling();
     };
 
 } // namespace AzQtComponents
