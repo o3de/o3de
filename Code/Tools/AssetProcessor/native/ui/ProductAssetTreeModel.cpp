@@ -11,9 +11,11 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/Console/IConsole.h>
 
 namespace AssetProcessor
 {
+    AZ_CVAR_EXTERNED(bool, ap_disableAssetTreeView);
 
     ProductAssetTreeModel::ProductAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent) :
         AssetTreeModel(sharedDbConnection, parent)
@@ -26,6 +28,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::ResetModel()
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         m_productToTreeItem.clear();
         m_productIdToTreeItem.clear();
         AZStd::string databaseLocation;
@@ -46,6 +53,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFileChanged(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
         {
@@ -107,6 +119,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFileRemoved(AZ::s64 productId)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, productId]()
         {
@@ -116,6 +133,11 @@ namespace AssetProcessor
 
     void ProductAssetTreeModel::OnProductFilesRemoved(const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& products)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, products]()
         {
@@ -128,6 +150,11 @@ namespace AssetProcessor
 
     QModelIndex ProductAssetTreeModel::GetIndexForProduct(const AZStd::string& product)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return QModelIndex();
+        }
+
         auto productItem = m_productToTreeItem.find(product);
         if (productItem == m_productToTreeItem.end())
         {
