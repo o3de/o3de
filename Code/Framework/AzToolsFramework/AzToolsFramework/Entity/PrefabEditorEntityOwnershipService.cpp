@@ -554,7 +554,7 @@ namespace AzToolsFramework
                         else
                         {
                             AZ_Error("Prefab", false,
-                                "Processing of the level prefab failed to produce a root spawnable while entering game mode."
+                                "Processing of the level prefab failed to produce a root spawnable while entering game mode. "
                                 "Unable to fully enter game mode.");
                             return;
                         }
