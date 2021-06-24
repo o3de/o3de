@@ -41,18 +41,27 @@ namespace AzFramework
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<GameEntityContextRequestBus>("GameEntityContextRequestBus")
-                ->Attribute(AZ::Script::Attributes::Module, "entity")
+            auto gameEntityContextEbusBuilder = behaviorContext->EBus<GameEntityContextRequestBus>("GameEntityContextRequestBus");
+            gameEntityContextEbusBuilder->Attribute(AZ::Script::Attributes::Module, "entity")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Event("CreateGameEntity", &GameEntityContextRequestBus::Events::CreateGameEntityForBehaviorContext)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("DestroyGameEntity", &GameEntityContextRequestBus::Events::DestroyGameEntity)
-                ->Event("DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants)
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Event("ActivateGameEntity", &GameEntityContextRequestBus::Events::ActivateGameEntity)
                 ->Event("DeactivateGameEntity", &GameEntityContextRequestBus::Events::DeactivateGameEntity)
-                    ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
-                ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName)
-                ;
+                ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
+                ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName);
+
+            bool prefabSystemEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+            if (!prefabSystemEnabled)
+            {
+                // Temporarily disable destroying game entities when prefabs are enabled until the spawnable system can support this.
+                gameEntityContextEbusBuilder->Event("DestroyGameEntity", &GameEntityContextRequestBus::Events::DestroyGameEntity)
+                    ->Event("DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants);
+            }
+            
         }
     }
 
