@@ -73,8 +73,14 @@ namespace SurfaceData
         }
     }
 
+    SurfaceDataMeshComponent::SurfaceDataMeshComponent()
+        : m_nonUniformScaleChangedHandler([this]([[maybe_unused]] const AZ::Vector3& scale) { this->OnCompositionChanged(); })
+    {
+    }
+
     SurfaceDataMeshComponent::SurfaceDataMeshComponent(const SurfaceDataMeshConfig& configuration)
         : m_configuration(configuration)
+        , m_nonUniformScaleChangedHandler([this]([[maybe_unused]] const AZ::Vector3& scale) { this->OnCompositionChanged(); })
     {
     }
 
@@ -82,6 +88,9 @@ namespace SurfaceData
     {
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
+
+        AZ::NonUniformScaleRequestBus::Event(
+            GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
 
         m_providerHandle = InvalidSurfaceDataRegistryHandle;
         m_refresh = false;
@@ -98,6 +107,7 @@ namespace SurfaceData
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
         }
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         SurfaceDataProviderRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -157,9 +167,10 @@ namespace SurfaceData
             return false;
         }
 
-        const AZ::Vector3 rayOrigin = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMax().GetZ() + s_rayAABBHeightPadding);
-        const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-        return GetMeshRayIntersection(*mesh, m_meshWorldTM, m_meshWorldTMInverse, rayOrigin, rayDirection, outPosition, outNormal);
+        const AZ::Vector3 rayStart = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMax().GetZ() + s_rayAABBHeightPadding);
+        const AZ::Vector3 rayEnd = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), m_meshBounds.GetMin().GetZ() - s_rayAABBHeightPadding);
+        return GetMeshRayIntersection(
+            *mesh, m_meshWorldTM, m_meshWorldTMInverse, m_meshNonUniformScale, rayStart, rayEnd, outPosition, outNormal);
     }
 
 
@@ -240,6 +251,9 @@ namespace SurfaceData
             m_meshWorldTM = AZ::Transform::CreateIdentity();
             AZ::TransformBus::EventResult(m_meshWorldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
             m_meshWorldTMInverse = m_meshWorldTM.GetInverse();
+
+            m_meshNonUniformScale = AZ::Vector3::CreateOne();
+            AZ::NonUniformScaleRequestBus::EventResult(m_meshNonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
             meshValidAfterUpdate = (m_meshAssetData.GetAs<AZ::RPI::ModelAsset>() != nullptr) && (m_meshBounds.IsValid());
         }

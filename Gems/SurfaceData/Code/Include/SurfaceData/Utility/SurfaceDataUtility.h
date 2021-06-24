@@ -83,9 +83,9 @@ namespace SurfaceData
 
     bool GetMeshRayIntersection(
         const AZ::RPI::ModelAsset& meshAsset, const AZ::Transform& meshTransform,
-        const AZ::Transform& meshTransformInverse, const AZ::Vector3& rayOrigin,
-        const AZ::Vector3& rayDirection, AZ::Vector3& outPosition,
-        AZ::Vector3& outNormal);
+        const AZ::Transform& meshTransformInverse, const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& rayStart, const AZ::Vector3& rayEnd,
+        AZ::Vector3& outPosition, AZ::Vector3& outNormal);
 
     AZ_INLINE void AddMaxValueForMasks(SurfaceTagWeightMap& masks, const AZ::Crc32 tag, const float value)
     {
