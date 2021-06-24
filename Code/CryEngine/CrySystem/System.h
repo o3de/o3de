@@ -431,7 +431,6 @@ private:
     bool InitFileSystem();
     bool InitFileSystem_LoadEngineFolders(const SSystemInitParams& initParams);
     bool InitAudioSystem(const SSystemInitParams& initParams);
-    bool InitShine(const SSystemInitParams& initParams);
 
     //@}
 
