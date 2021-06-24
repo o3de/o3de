@@ -99,8 +99,8 @@ def run():
     # Wait for Editor idle loop before executing Python hydra scripts.
     general.idle_enable(True)
 
-    # Create a new level.
-    new_level_name = "all_components_indepth_level"  # Specified in class TestAllComponentsIndepthTests()
+    # Open the auto_test level.
+    new_level_name = "auto_test"  # Specified in class TestAllComponentsIndepthTests()
     heightmap_resolution = 512
     heightmap_meters_per_pixel = 1
     terrain_texture_resolution = 412
