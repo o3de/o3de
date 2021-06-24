@@ -11,23 +11,29 @@
 namespace SurfaceData
 {
     bool GetMeshRayIntersection(
-        const AZ::RPI::ModelAsset& meshAsset, const AZ::Transform& meshTransform, const AZ::Transform& meshTransformInverse,
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, AZ::Vector3& outPosition, AZ::Vector3& outNormal)
+        const AZ::RPI::ModelAsset& meshAsset, const AZ::Transform& meshTransform,
+        const AZ::Transform& meshTransformInverse, const AZ::Vector3& nonUniformScale,
+        const AZ::Vector3& rayStart, const AZ::Vector3& rayEnd, 
+        AZ::Vector3& outPosition, AZ::Vector3& outNormal)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
 
+        const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
+
         // Transform everything into model space
-        const AZ::Vector3 rayOriginLocal = meshTransformInverse.TransformPoint(rayOrigin);
-        const AZ::Vector3 rayDirectionLocal = meshTransformInverse.TransformVector(rayDirection).GetNormalized();
-        float distance = FLT_MAX;
+        const AZ::Vector3 rayStartLocal = meshTransformInverse.TransformPoint(rayStart) / clampedScale;
+        const AZ::Vector3 rayEndLocal = meshTransformInverse.TransformPoint(rayEnd) / clampedScale;
+        const AZ::Vector3 rayDirectionLocal = (rayEndLocal - rayStartLocal).GetNormalized();
+        float distance = rayEndLocal.GetDistance(rayStartLocal);
 
         AZ::Vector3 normalLocal;
 
-        if (meshAsset.LocalRayIntersectionAgainstModel(rayOriginLocal, rayDirectionLocal, distance, normalLocal))
+        constexpr bool AllowBruteForce = true;
+        if (meshAsset.LocalRayIntersectionAgainstModel(rayStartLocal, rayDirectionLocal, AllowBruteForce, distance, normalLocal))
         {
             // Transform everything back to world space
-            outPosition = meshTransform.TransformPoint(rayOriginLocal + (rayDirectionLocal * distance));
-            outNormal = meshTransform.TransformVector(normalLocal);
+            outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * distance)) * clampedScale);
+            outNormal = meshTransform.TransformVector(normalLocal * clampedScale);
             return true;
         }
 

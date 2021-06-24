@@ -27,6 +27,9 @@ namespace Multiplayer
 
     void NetworkSpawnableLibrary::BuildSpawnablesList()
     {
+        m_spawnables.clear();
+        m_spawnablesReverseLookup.clear();
+
         auto enumerateCallback = [this](const AZ::Data::AssetId id, const AZ::Data::AssetInfo& info)
         {
             if (info.m_assetType == AZ::AzTypeInfo<AzFramework::Spawnable>::Uuid())

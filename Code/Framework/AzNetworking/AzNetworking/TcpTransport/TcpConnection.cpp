@@ -200,6 +200,7 @@ namespace AzNetworking
             NetworkInputSerializer serializer(buffer.GetBuffer(), buffer.GetCapacity());
             if (!const_cast<IPacket&>(packet).Serialize(serializer))
             {
+                AZ_Assert(false, "SendReliablePacket: Unable to serialize packet [Type: %d]", packet.GetPacketType());
                 return false;
             }
             buffer.Resize(serializer.GetSize());

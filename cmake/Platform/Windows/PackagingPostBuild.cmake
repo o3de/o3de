@@ -113,6 +113,7 @@ list(POP_FRONT _tokens _bucket)
 string(JOIN "/" _prefix ${_tokens})
 
 set(_file_regex ".*(cab|exe|msi)$")
+set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
 
 set(_upload_command
     ${_python_cmd} -s
@@ -121,6 +122,7 @@ set(_upload_command
     --file_regex="${_file_regex}"
     --bucket ${_bucket}
     --key_prefix ${_prefix}
+    --extra_args ${_extra_args}
 )
 
 if(CPACK_AWS_PROFILE)

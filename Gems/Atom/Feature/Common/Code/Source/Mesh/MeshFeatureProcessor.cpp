@@ -706,7 +706,7 @@ namespace AZ
             static const char* UVSemantic = "UV";
             static const RHI::Format PositionStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format NormalStreamFormat = RHI::Format::R32G32B32_FLOAT;
-            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
+            static const RHI::Format TangentStreamFormat = RHI::Format::R32G32B32A32_FLOAT;
             static const RHI::Format BitangentStreamFormat = RHI::Format::R32G32B32_FLOAT;
             static const RHI::Format UVStreamFormat = RHI::Format::R32G32_FLOAT;
 
@@ -729,10 +729,12 @@ namespace AZ
             RPI::ShaderInputContract::StreamChannelInfo tangentStreamChannelInfo;
             tangentStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(TangentSemantic));
             tangentStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(TangentStreamFormat);
+            tangentStreamChannelInfo.m_isOptional = true;
 
             RPI::ShaderInputContract::StreamChannelInfo bitangentStreamChannelInfo;
             bitangentStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(BitangentSemantic));
             bitangentStreamChannelInfo.m_componentCount = RHI::GetFormatComponentCount(BitangentStreamFormat);
+            bitangentStreamChannelInfo.m_isOptional = true;
 
             RPI::ShaderInputContract::StreamChannelInfo uvStreamChannelInfo;
             uvStreamChannelInfo.m_semantic = RHI::ShaderSemantic(AZ::Name(UVSemantic));
@@ -818,13 +820,21 @@ namespace AZ
                 subMesh.m_normalVertexBufferView = streamBufferViews[1];
                 subMesh.m_normalShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[1].GetBuffer())->GetBufferView(normalBufferDescriptor);
 
-                subMesh.m_tangentFormat = TangentStreamFormat;
-                subMesh.m_tangentVertexBufferView = streamBufferViews[2];
-                subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                if (tangentBufferByteCount > 0)
+                {
+                    subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Tangent;
+                    subMesh.m_tangentFormat = TangentStreamFormat;
+                    subMesh.m_tangentVertexBufferView = streamBufferViews[2];
+                    subMesh.m_tangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[2].GetBuffer())->GetBufferView(tangentBufferDescriptor);
+                }
 
-                subMesh.m_bitangentFormat = BitangentStreamFormat;
-                subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
-                subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                if (bitangentBufferByteCount > 0)
+                {
+                    subMesh.m_bufferFlags |= RayTracingSubMeshBufferFlags::Bitangent;
+                    subMesh.m_bitangentFormat = BitangentStreamFormat;
+                    subMesh.m_bitangentVertexBufferView = streamBufferViews[3];
+                    subMesh.m_bitangentShaderBufferView = const_cast<RHI::Buffer*>(streamBufferViews[3].GetBuffer())->GetBufferView(bitangentBufferDescriptor);
+                }
 
                 if (uvBufferByteCount > 0)
                 {
