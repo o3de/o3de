@@ -83,6 +83,7 @@ namespace AZ
             {
                 anyPBRInUse = true;
                 handleTexture("baseColor", SceneAPI::DataTypes::IMaterialData::TextureMapType::BaseColor);
+                sourceData.m_properties["baseColor"]["textureBlendMode"].m_value = AZStd::string("Lerp");
             }
             else
             {
