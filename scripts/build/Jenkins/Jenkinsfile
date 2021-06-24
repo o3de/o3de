@@ -18,6 +18,8 @@ EMPTY_JSON = readJSON text: '{}'
 
 ENGINE_REPOSITORY_NAME = 'o3de'
 
+def buildSnapshots = ['development', 'stabilization/2106']
+def defaultBuildSnapshot = buildSnapshots.get(0)
 def pipelineProperties = []
 
 def pipelineParameters = [
@@ -27,7 +29,7 @@ def pipelineParameters = [
     booleanParam(defaultValue: false, description: 'Deletes the contents of the output directories of the AssetProcessor before building.', name: 'CLEAN_ASSETS'),
     booleanParam(defaultValue: false, description: 'Deletes the contents of the workspace and forces a complete pull.', name: 'CLEAN_WORKSPACE'),
     booleanParam(defaultValue: false, description: 'Recreates the volume used for the workspace. The volume will be created out of a snapshot taken from main.', name: 'RECREATE_VOLUME'),
-    choice(defaultValue: 'development', name: 'SNAPSHOT', choices: ['development', 'stabilization/2106'], description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.')
+    choice(defaultValue: defaultBuildSnapshot, name: 'SNAPSHOT', choices: buildSnapshots, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.')
 ]
 
 def palSh(cmd, lbl = '', winSlashReplacement = true) {
@@ -459,9 +461,16 @@ try {
                         env.BRANCH_NAME = branchName // so scripts that read this environment have it (e.g. incremental_build_util.py)
                     }
                     if(env.CHANGE_TARGET) {
-                        snapshot = env.CHANGE_TARGET
+                        if(buildSnapshots.contains(env.CHANGE_TARGET)) {
+                            snapshot = env.CHANGE_TARGET
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
+                        } else { 
+                            snapshot = defaultBuildSnapshot
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" exists, using snapshot \"${snapshot}\""
+                        }
                     } else {
                         snapshot = env.SNAPSHOT
+                        echo "Snapshot \"${snapshot}\" selected."
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
