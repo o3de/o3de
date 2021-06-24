@@ -227,7 +227,7 @@ class TestEditorTest:
                     import EditorTest_That_PassesToo as test_module
             """
         )
-        # 2 Passes +1(parallel batch runner)
+        # 2 Passes +1(batched+parallel runner)
         result.assert_outcomes(passed=3)
     
     def test_parallel_batched_one_passing_one_failing_one_crashing(self, request, workspace, launcher_platform, testdir):
@@ -243,5 +243,5 @@ class TestEditorTest:
                     import EditorTest_That_Crashes as test_module
             """
         )
-        # 2 Fail, 1 Passes + 1(parallel runner)
+        # 2 Fail, 1 Passes + 1(batched+parallel runner)
         result.assert_outcomes(passed=2, failed=2)
