@@ -151,7 +151,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE target_include)
                 cmake_path(NORMAL_PATH target_include)
                 # Escape the LY_ROOT_FOLDER variable so that it isn't resolved during the install step
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${target_include}\n")
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${include_location}/${target_include}\n")
             endif()
         endforeach()
     endif()
