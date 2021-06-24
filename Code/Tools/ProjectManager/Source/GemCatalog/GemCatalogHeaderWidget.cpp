@@ -175,6 +175,14 @@ namespace O3DE::ProjectManager
         ShowOverlay();
     }
 
+    void CartButton::hideEvent(QHideEvent*)
+    {
+        if (m_cartOverlay)
+        {
+            m_cartOverlay->hide();
+        }
+    }
+
     void CartButton::ShowOverlay()
     {
         const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
