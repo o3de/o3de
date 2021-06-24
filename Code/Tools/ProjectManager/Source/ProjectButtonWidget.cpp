@@ -1,16 +1,12 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <ProjectButtonWidget.h>
+#include <ProjectManagerDefs.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
@@ -22,12 +18,11 @@
 #include <QMenu>
 #include <QSpacerItem>
 #include <QProgressBar>
+#include <QDir>
+#include <QFileInfo>
 
 namespace O3DE::ProjectManager
 {
-    inline constexpr static int s_projectImageWidth = 210;
-    inline constexpr static int s_projectImageHeight = 280;
-
     LabelButton::LabelButton(QWidget* parent)
         : QLabel(parent)
     {
@@ -92,11 +87,6 @@ namespace O3DE::ProjectManager
         : QFrame(parent)
         , m_projectInfo(projectInfo)
     {
-        if (m_projectInfo.m_imagePath.isEmpty())
-        {
-            m_projectInfo.m_imagePath = ":/DefaultProjectImage.png";
-        }
-
         BaseSetup();
         if (processing)
         {
@@ -118,20 +108,25 @@ namespace O3DE::ProjectManager
         setLayout(vLayout);
 
         m_projectImageLabel = new LabelButton(this);
-        m_projectImageLabel->setFixedSize(s_projectImageWidth, s_projectImageHeight);
+        m_projectImageLabel->setFixedSize(ProjectPreviewImageWidth, ProjectPreviewImageHeight);
         m_projectImageLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
         connect(m_projectImageLabel, &LabelButton::triggered, [this]() { emit OpenProject(m_projectInfo.m_path); });
         vLayout->addWidget(m_projectImageLabel);
 
-        m_projectImageLabel->setPixmap(
-            QPixmap(m_projectInfo.m_imagePath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
+        QString projectPreviewPath = QDir(m_projectInfo.m_path).filePath(m_projectInfo.m_iconPath);
+        QFileInfo doesPreviewExist(projectPreviewPath);
+        if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+        {
+            projectPreviewPath = ":/DefaultProjectImage.png";
+        }
+        m_projectImageLabel->setPixmap(QPixmap(projectPreviewPath).scaled(m_projectImageLabel->size(), Qt::KeepAspectRatioByExpanding));
 
         m_projectFooter = new QFrame(this);
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setContentsMargins(0, 0, 0, 0);
         m_projectFooter->setLayout(hLayout);
         {
-            QLabel* projectNameLabel = new QLabel(m_projectInfo.m_displayName, this);
+            QLabel* projectNameLabel = new QLabel(m_projectInfo.GetProjectDisplayName(), this);
             hLayout->addWidget(projectNameLabel);
         }
 

@@ -1,11 +1,7 @@
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import argparse
 import ast
@@ -178,7 +174,7 @@ def delete_volume(ec2_client, volume_id):
     print 'Volume {} deleted'.format(volume_id)
 
 def find_snapshot_id(ec2_client, repository_name, project, pipeline, platform, build_type, disk_size):
-    mount_name = get_mount_name(repository_name, project, pipeline, 'main', platform, build_type) # we take snapshots out of main
+    mount_name = get_mount_name(repository_name, project, pipeline, 'stabilization_2106', platform, build_type) # we take snapshots out of stabilization_2106
     response = ec2_client.describe_snapshots(Filters= [{
         'Name': 'tag:Name', 'Values': [mount_name]
     }])

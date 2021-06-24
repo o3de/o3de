@@ -1,12 +1,7 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import logging
@@ -112,7 +107,7 @@ def remove_file(file_path: str) -> None:
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
 @pytest.mark.parametrize('level', ['AWS/Metrics'])
 @pytest.mark.parametrize('feature_name', [AWS_METRICS_FEATURE_NAME])
-@pytest.mark.parametrize('resource_mappings_filename', ['aws_resource_mappings.json'])
+@pytest.mark.parametrize('resource_mappings_filename', ['default_aws_resource_mappings.json'])
 @pytest.mark.parametrize('profile_name', ['AWSAutomationTest'])
 @pytest.mark.parametrize('region_name', ['us-west-2'])
 @pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])

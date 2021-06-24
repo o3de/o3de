@@ -1,12 +1,7 @@
 """
- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project
 
- For complete copyright and license terms please see the LICENSE at the root of this
- distribution (the "License"). All use of this software is governed by the License,
- or, if provided, by the license below or the license accompanying this file. Do not
- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
@@ -32,12 +27,18 @@ class CognitoUserPoolSMSRole:
             name_utils.format_aws_resource_id(feature_name, project_name, env, iam.Role.__name__),
             description='Role permissions used by Cognito user pool to send sms',
             assumed_by=iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+            # Deny all others and then allow only for the current sms role.
             inline_policies={
                 'SNSRoleInlinePolicy':
                     iam.PolicyDocument(
                         statements=[
+                            # SMS role will be used by CognitoIDP tp allow to publish to SNS topic owned by CognitoIDP
+                            # team to push a sms.
+                            # Need to use * as the resource name used by CognitoIDP principal service is unknown.
                             iam.PolicyStatement(
-                                actions=["sns:Publish"], resources=["*"]
+                                effect=iam.Effect.ALLOW,
+                                actions=['sns:Publish'],
+                                resources=['*']
                             )
                         ]
                     )
