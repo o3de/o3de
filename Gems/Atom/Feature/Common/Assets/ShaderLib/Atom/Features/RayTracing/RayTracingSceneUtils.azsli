@@ -33,9 +33,9 @@ struct VertexData
 {
     float3 m_position;
     float3 m_normal;
-    float4 m_tangent;
-    float3 m_bitangent;
-    float2 m_uv;
+    float4 m_tangent;       // optional: use only if MESH_BUFFER_FLAG_TANGENT in MeshData.m_bufferFlags is set
+    float3 m_bitangent;     // optional: use only if MESH_BUFFER_FLAG_BITANGENT in MeshData.m_bufferFlags is set
+    float2 m_uv;            // optional: use only if MESH_BUFFER_FLAG_UV in MeshData.m_bufferFlags is set
 };
 
 VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, float2 builtInBarycentrics)
