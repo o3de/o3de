@@ -1244,11 +1244,30 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
     controller->SetCameraListBuilderCallback(
         [viewportId](AzFramework::Cameras& cameras)
         {
+            const auto restoreCursor = []
+            {
+                qApp->restoreOverrideCursor();
+            };
+            const auto openHandCursor = []
+            {
+                qApp->setOverrideCursor(Qt::OpenHandCursor);
+            };
+            const auto closedHandCursor = []
+            {
+                qApp->setOverrideCursor(Qt::ClosedHandCursor);
+            };
+            const auto crossCursor = []
+            {
+                qApp->setOverrideCursor(Qt::CrossCursor);
+            };
+
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraFreeLookButton);
             firstPersonRotateCamera->m_rotateSpeedFn = []
             {
                 return SandboxEditor::CameraRotateSpeed();
             };
+            firstPersonRotateCamera->SetActivationBeganFn(crossCursor);
+            firstPersonRotateCamera->SetActivationEndedFn(restoreCursor);
 
             auto firstPersonPanCamera =
                 AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraFreePanButton, AzFramework::LookPan);
@@ -1317,6 +1336,8 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                     // intersection)
                     return {};
                 });
+            orbitCamera->SetActivationBeganFn(openHandCursor);
+            orbitCamera->SetActivationEndedFn(restoreCursor);
 
             auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::CameraOrbitLookButton);
             orbitRotateCamera->m_rotateSpeedFn = []
@@ -1327,6 +1348,8 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             {
                 return SandboxEditor::CameraOrbitYawRotationInverted();
             };
+            orbitRotateCamera->SetActivationBeganFn(closedHandCursor);
+            orbitRotateCamera->SetActivationEndedFn(restoreCursor);
 
             auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation);
             orbitTranslateCamera->m_translateSpeedFn = []
@@ -1350,6 +1373,8 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             {
                 return SandboxEditor::CameraDollyMotionSpeed();
             };
+            orbitDollyMoveCamera->SetActivationBeganFn(closedHandCursor);
+            orbitDollyMoveCamera->SetActivationEndedFn(restoreCursor);
 
             auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(AzFramework::CameraOrbitPanButton, AzFramework::OrbitPan);
             orbitPanCamera->m_panSpeedFn = []
@@ -1364,6 +1389,8 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             {
                 return SandboxEditor::CameraPanInvertedY();
             };
+            orbitPanCamera->SetActivationBeganFn(closedHandCursor);
+            orbitPanCamera->SetActivationEndedFn(restoreCursor);
 
             orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
             orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
