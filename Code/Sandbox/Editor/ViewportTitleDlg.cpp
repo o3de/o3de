@@ -45,6 +45,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
@@ -57,13 +58,16 @@ inline namespace Helpers
 {
     void ToggleHelpers()
     {
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
+        const bool newValue = !GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
+        GetIEditor()->GetDisplaySettings()->DisplayHelpers(newValue);
         GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 
-        if (GetIEditor()->GetDisplaySettings()->IsDisplayHelpers() == false)
+        if (newValue == false)
         {
             GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
         }
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, newValue);
     }
 
     bool IsHelpersShown()
@@ -126,6 +130,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
+    SetupHelpersButton();
     SetupOverflowMenu();
 
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
@@ -208,15 +213,16 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
 
 }
 
+void CViewportTitleDlg::SetupHelpersButton()
+{
+    connect(m_ui->m_helpers, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
+    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
+}
+
 void CViewportTitleDlg::SetupOverflowMenu()
 {
     // Setup the overflow menu
     QMenu* overFlowMenu = new QMenu(this);
-    m_debugHelpersAction = new QAction("Debug Helpers", overFlowMenu);
-    m_debugHelpersAction->setCheckable(true);
-    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
-    connect(m_debugHelpersAction, &QAction::triggered, this, &CViewportTitleDlg::OnToggleHelpers);
-    overFlowMenu->addAction(m_debugHelpersAction);
 
     m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
@@ -330,7 +336,7 @@ void CViewportTitleDlg::OnMaximize()
 void CViewportTitleDlg::OnToggleHelpers()
 {
     Helpers::ToggleHelpers();
-    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
 }
 
 void CViewportTitleDlg::SetNoViewportInfo()
@@ -756,7 +762,7 @@ void CViewportTitleDlg::OnEditorNotifyEvent(EEditorNotifyEvent event)
     switch (event)
     {
     case eNotify_OnDisplayRenderUpdate:
-        m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+        m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
         break;
     case eNotify_OnBeginGameMode:
     case eNotify_OnEndGameMode:

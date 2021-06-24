@@ -42,7 +42,7 @@ namespace EMotionFX
                 static void Reflect(AZ::ReflectContext* context);
 
             protected:
-                size_t m_sampleFrameIndex;
+                AZ::u64 m_sampleFrameIndex;
             };
         } // Rule
     } // Pipeline

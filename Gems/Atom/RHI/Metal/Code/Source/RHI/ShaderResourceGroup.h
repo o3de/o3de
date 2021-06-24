@@ -47,7 +47,10 @@ namespace AZ
             const ImageView* GetImageView(const int index) const;
             void UpdateCompiledDataIndex();            
             const ArgumentBuffer& GetCompiledArgumentBuffer() const;            
-            void AddUntrackedResourcesToEncoder(id<MTLCommandEncoder> commandEncoder, const ShaderResourceGroupVisibility& srgResourcesVisInfo) const;
+            void CollectUntrackedResources(id<MTLCommandEncoder> commandEncoder,
+                                           const ShaderResourceGroupVisibility& srgResourcesVisInfo,
+                                            ArgumentBuffer::ComputeResourcesToMakeResidentMap& resourcesToMakeResidentCompute,
+                                            ArgumentBuffer::GraphicsResourcesToMakeResidentMap& resourcesToMakeResidentGraphics) const;
 
         private:
             ShaderResourceGroup() = default;

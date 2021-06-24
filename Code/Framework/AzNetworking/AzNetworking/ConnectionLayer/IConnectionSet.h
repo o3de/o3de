@@ -18,6 +18,11 @@ namespace AzNetworking
 {
     //! @class IConnectionSet
     //! @brief interface class for managing a set of connections.
+    //!
+    //! IConnectionSet defines a simple interface for working with an abstract set of IConnections bound to an
+    //! INetworkInterface.  Generally users of AzNetworking will not have reason to interact directly with the IConnectionSet,
+    //! as its interface is completely wrapped by INetworkInterface.
+
     class IConnectionSet
     {
     public:
@@ -47,5 +52,9 @@ namespace AzNetworking
         //! Returns the current total connection count for this connection set
         //! @return the current total connection count for this connection set
         virtual uint32_t GetConnectionCount() const = 0;
+
+        //! Returns the current total count of connections not pending disconnect for this connection set
+        //! @return the current total count of connections not pending disconnect for this connection set
+        virtual uint32_t GetActiveConnectionCount() const = 0;
     };
 }
