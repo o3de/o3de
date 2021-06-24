@@ -28,7 +28,8 @@ namespace SurfaceData
 
         AZ::Vector3 normalLocal;
 
-        if (meshAsset.LocalRayIntersectionAgainstModel(rayStartLocal, rayDirectionLocal, distance, normalLocal))
+        constexpr bool AllowBruteForce = true;
+        if (meshAsset.LocalRayIntersectionAgainstModel(rayStartLocal, rayDirectionLocal, AllowBruteForce, distance, normalLocal))
         {
             // Transform everything back to world space
             outPosition = meshTransform.TransformPoint((rayStartLocal + (rayDirectionLocal * distance)) * clampedScale);

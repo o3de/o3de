@@ -72,7 +72,8 @@ namespace AZ
         }
 
         bool ModelAsset::LocalRayIntersectionAgainstModel(
-            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
+            const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+            float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
 
@@ -90,7 +91,7 @@ namespace AZ
                     BuildKdTree();
 
                     AZ_WarningOnce("Model", false, "ray intersection against a model that is still creating spatial information");
-                    return false;
+                    return allowBruteForce ? BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal) : false;
                 }
                 else
                 {

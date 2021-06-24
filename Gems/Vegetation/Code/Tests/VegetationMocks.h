@@ -475,7 +475,8 @@ namespace UnitTest
         ~MockMeshAsset() override = default;
 
         bool LocalRayIntersectionAgainstModel(
-            [[maybe_unused]] const AZ::Vector3& rayStart, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] float& distance, [[maybe_unused]] AZ::Vector3& normal) const override
+            [[maybe_unused]] const AZ::Vector3& rayStart, [[maybe_unused]] const AZ::Vector3& dir, [[maybe_unused]] bool allowBruteForce,
+            [[maybe_unused]] float& distance, [[maybe_unused]] AZ::Vector3& normal) const override
         {
             distance = 0.1f;
             return true;
