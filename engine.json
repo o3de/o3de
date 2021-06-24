@@ -18,6 +18,7 @@
         "Gems/AutomatedLauncherTesting",
         "Gems/AWSClientAuth",
         "Gems/AWSCore",
+        "Gems/AWSGameLift",
         "Gems/AWSMetrics",
         "Gems/Blast",
         "Gems/Camera",
