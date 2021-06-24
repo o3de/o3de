@@ -24,11 +24,9 @@ namespace AzQtComponents
 
     class Style;
 
-    #pragma warning(push)
-
     // 'AzQtComponents::VectorElement::m_deferredExternalValue': class 'AZStd::optional<AzQtComponents::VectorElement::DeferredSetValue>' needs to
     // have dll-interface to be used by clients of class 'AzQtComponents::VectorElement' 
-    #pragma warning(disable:4251)
+    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     
     /*!
      * \class VectorElement
@@ -115,7 +113,8 @@ namespace AzQtComponents
     private:
         struct DeferredSetValue
         {
-            double prevValue, value;
+            double prevValue;
+            double value;
         };
 
         // m_labelText must be initialised before m_spinBox. It is used by editFieldRect, which gets
@@ -132,7 +131,7 @@ namespace AzQtComponents
         AZStd::optional<DeferredSetValue> m_deferredExternalValue;
     };
 
-    #pragma warning(pop)
+    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     //////////////////////////////////////////////////////////////////////////
 
