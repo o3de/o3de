@@ -817,7 +817,13 @@ namespace AZ
             createInfo.usage = GetBufferUsageFlagBits(descriptor.m_bindFlags);
             createInfo.usage = ValidateBufferUsageFlagsByFeatures(createInfo.usage);
             // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
-            createInfo.sharingMode = RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;            createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
+            createInfo.sharingMode =
+                RHI::CheckBitsAny(
+                    descriptor.m_bindFlags,
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect)
+                ? VK_SHARING_MODE_EXCLUSIVE
+                : VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 
             VkBuffer vkBuffer = VK_NULL_HANDLE;
