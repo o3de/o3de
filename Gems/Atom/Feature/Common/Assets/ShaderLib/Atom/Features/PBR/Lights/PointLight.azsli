@@ -97,7 +97,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
 
-        // Tranmission contribution
+        // Transmission contribution
         lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), backShadowRatio);
 
         // Adjust the light direcion for specular based on bulb size

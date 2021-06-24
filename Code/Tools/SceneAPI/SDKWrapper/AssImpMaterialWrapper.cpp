@@ -220,6 +220,10 @@ namespace AZ
                 {
                     m_assImpMaterial->GetTexture(aiTextureType_NORMALS, textureIndex, &absTexturePath);
                 }
+                else if (m_assImpMaterial->GetTextureCount(aiTextureType_NORMAL_CAMERA) > textureIndex)
+                {
+                    m_assImpMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, textureIndex, &absTexturePath);
+                }
                 break;
             case MaterialMapType::Metallic:
                 if (m_assImpMaterial->GetTextureCount(aiTextureType_METALNESS) > textureIndex)

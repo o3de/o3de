@@ -567,9 +567,11 @@ namespace MaterialEditor
     {
         if (m_compilePending)
         {
-            m_materialInstance->Compile();
-            m_compilePending = false;
-            AZ::TickBus::Handler::BusDisconnect();
+            if (m_materialInstance->Compile())
+            {
+                m_compilePending = false;
+                AZ::TickBus::Handler::BusDisconnect();
+            }
         }
     }
 

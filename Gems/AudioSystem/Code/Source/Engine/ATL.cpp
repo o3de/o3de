@@ -505,7 +505,7 @@ namespace Audio
                 case eAMRT_LOSE_FOCUS:
                 {
                 #if !defined(AUDIO_RELEASE)
-                    if (g_audioCVars.m_nIgnoreWindowFocus == 0 && (m_nFlags & eAIS_IS_MUTED) == 0)
+                    if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
                 #endif // !AUDIO_RELEASE
                     {
                         auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID);
@@ -525,7 +525,7 @@ namespace Audio
                 case eAMRT_GET_FOCUS:
                 {
                 #if !defined(AUDIO_RELEASE)
-                    if (g_audioCVars.m_nIgnoreWindowFocus == 0 && (m_nFlags & eAIS_IS_MUTED) == 0)
+                    if (!Audio::CVars::s_IgnoreWindowFocus && (m_nFlags & eAIS_IS_MUTED) == 0)
                 #endif // !AUDIO_RELEASE
                     {
                         AudioSystemImplementationNotificationBus::Broadcast(&AudioSystemImplementationNotificationBus::Events::OnAudioSystemGetFocus);

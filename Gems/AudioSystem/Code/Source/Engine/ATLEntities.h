@@ -385,7 +385,7 @@ namespace Audio
             , m_memoryBlockAlignment(AUDIO_MEMORY_ALIGNMENT)
             , m_flags(eAFF_NOTFOUND)
             , m_dataScope(eADS_ALL)
-            // , m_memoryBlock(nullptr) // ToDo: Update to use non-legacy memory: LYN-3792
+            , m_memoryBlock(nullptr)
             , m_implData(implData)
         {
         }
@@ -398,7 +398,7 @@ namespace Audio
         size_t m_memoryBlockAlignment;
         Flags<TATLEnumFlagsType> m_flags;
         EATLDataScope m_dataScope;
-        // AZStd::unique_ptr<???> m_memoryBlock; // ToDo: Update to use non-legacy memory: LYN-3792
+        void* m_memoryBlock;
 
         AZ::IO::FileRequestPtr m_asyncStreamRequest;
 
