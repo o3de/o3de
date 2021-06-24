@@ -81,7 +81,7 @@ void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
 
 void CAboutDialog::OnCustomerAgreement()
 {
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://lfprojects.org/policies/terms-of-use/")));
+    QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.o3debinaries.org/license")));
 }
 
 void CAboutDialog::OnPrivacyNotice()
