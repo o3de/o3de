@@ -923,9 +923,9 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Open 3D Engine and related materials Copyright %1 %2 Amazon Web Services, Inc., its affiliates or licensors.<br>By accessing or using these materials, you agree to the terms of the AWS Customer Agreement.");
+    QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
 
-    return copyrightString.arg(copyrightHtmlSymbol).arg(O3DE_COPYRIGHT_YEAR);
+    return copyrightString.arg(copyrightHtmlSymbol);
 }
 
 /////////////////////////////////////////////////////////////////////////////

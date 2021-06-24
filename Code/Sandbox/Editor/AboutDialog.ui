@@ -92,7 +92,7 @@
        <item>
         <widget class="QLabel" name="m_transparentVersion">
          <property name="text">
-          <string>Open 3D Engine Editor</string>
+          <string>O3DE Editor</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -102,7 +102,7 @@
        <item>
         <widget class="QLabel" name="m_transparentDevelopedBy">
          <property name="text">
-          <string>Development version</string>
+          <string>Developer Preview</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -155,19 +155,6 @@
         <widget class="ClickableLabel" name="m_transparentAgreement">
          <property name="text">
           <string>Terms of Use</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
-         <property name="showDecoration" stdset="0">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="ClickableLabel" name="m_transparentNotice">
-         <property name="text">
-          <string>Privacy Notice</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
