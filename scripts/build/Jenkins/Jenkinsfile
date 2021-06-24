@@ -462,11 +462,11 @@ try {
                     }
                     if(env.CHANGE_TARGET) {
                         if(buildSnapshots.contains(env.CHANGE_TARGET)) {
-                            snapshot = env.CHANGE_TARGET
-                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
-                        } else { 
                             snapshot = defaultBuildSnapshot
                             echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" exists, using snapshot \"${snapshot}\""
+                        } else { 
+                            snapshot = env.CHANGE_TARGET
+                            echo "Snapshot for destination branch \"${env.CHANGE_TARGET}\" does not exist, defaulting to snapshot \"${snapshot}\""
                         }
                     } else {
                         snapshot = env.SNAPSHOT
