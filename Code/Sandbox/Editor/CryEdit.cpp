@@ -1717,7 +1717,7 @@ BOOL CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle();
+    SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1839,7 +1839,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(0, 0, GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -4029,7 +4029,6 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 {
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-
         if (sTitleStr.isEmpty())
         {
             sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
@@ -4037,7 +4036,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 
         if (!sPreTitleStr.isEmpty())
         {
-            sTitleStr.insert(0, sPreTitleStr);
+            sTitleStr.insert(sTitleStr.length(), QStringLiteral(" - %1").arg(sPreTitleStr));
         }
 
         if (!sPostTitleStr.isEmpty())
