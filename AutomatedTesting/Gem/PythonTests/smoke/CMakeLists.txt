@@ -42,4 +42,40 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         COMPONENT
             Sandbox
     )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::SmokeTest
+        TEST_SUITE smoke
+        TEST_SERIAL
+        TEST_REQUIRES gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_Editor_NewExistingLevels_Works.py
+        PYTEST_MARKS "SUITE_smoke"
+        TIMEOUT 500
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            AZ::PythonBindingsExample
+            Legacy::Editor
+            AutomatedTesting.GameLauncher
+            AutomatedTesting.Assets
+        COMPONENT
+            Smoke
+    )
+
+    ly_add_pytest(
+        NAME AutomatedTesting::SmokeTest
+        TEST_SUITE smoke
+        TEST_SERIAL
+        TEST_REQUIRES gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_GameLauncher_EnterExitGameMode_Works.py
+        PYTEST_MARKS "SUITE_smoke"
+        TIMEOUT 500
+        RUNTIME_DEPENDENCIES
+            AZ::AssetProcessor
+            AZ::PythonBindingsExample
+            Legacy::Editor
+            AutomatedTesting.GameLauncher
+            AutomatedTesting.Assets
+        COMPONENT
+            Smoke
+    )
 endif()
