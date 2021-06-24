@@ -116,14 +116,6 @@ namespace AzFramework
             Ending //!< Camera input is ending and will return to idle.
         };
 
-        //! The type of response to input/event handling.
-        enum class Response
-        {
-            Nil, //!< Not handled, no response.
-            Unfocused, //!< Handles, focus is not obtained (primary input device can still be used).
-            Focused //!< Handled, focus is obtained/maintained (primary input device is captured).
-        };
-
         virtual ~CameraInput() = default;
 
         bool Beginning() const
@@ -173,7 +165,7 @@ namespace AzFramework
         }
 
         //! Respond to input events to transition a camera input to active, handle input while running, and restore to idle when input ends.
-        virtual Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
+        virtual bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) = 0;
         //! Use processed input events to update the state of the camera.
         //! @note targetCamera is the current target camera at the beginning of an update. The returned camera is the targetCamera + some
         //! delta to get to the next camera position and/or orientation.
@@ -217,7 +209,7 @@ namespace AzFramework
     class Cameras
     {
     public:
-        CameraInput::Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta);
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta);
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime);
 
         //! Add a camera input (behavior) to run in this set of camera inputs.
@@ -241,7 +233,7 @@ namespace AzFramework
     class CameraSystem
     {
     public:
-        CameraInput::Response HandleEvents(const InputEvent& event);
+        bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
 
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
@@ -258,7 +250,7 @@ namespace AzFramework
         explicit RotateCameraInput(InputChannelId rotateChannelId);
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_rotateSpeedFn;
@@ -309,7 +301,7 @@ namespace AzFramework
         PanCameraInput(InputChannelId panChannelId, PanAxesFn panAxesFn);
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_panSpeedFn;
@@ -359,7 +351,7 @@ namespace AzFramework
         explicit TranslateCameraInput(TranslationAxesFn translationAxesFn);
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
 
@@ -437,7 +429,7 @@ namespace AzFramework
         OrbitDollyScrollCameraInput();
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_scrollSpeedFn;
@@ -450,7 +442,7 @@ namespace AzFramework
         explicit OrbitDollyCursorMoveCameraInput(InputChannelId dollyChannelId);
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_cursorSpeedFn;
@@ -466,7 +458,7 @@ namespace AzFramework
         ScrollTranslationCameraInput();
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
         AZStd::function<float()> m_scrollSpeedFn;
@@ -480,7 +472,7 @@ namespace AzFramework
         using LookAtFn = AZStd::function<AZStd::optional<AZ::Vector3>(const AZ::Vector3& position, const AZ::Vector3& direction)>;
 
         // CameraInput overrides ...
-        Response HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
+        bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
 
