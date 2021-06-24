@@ -15,6 +15,7 @@
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/ParallaxMapping.azsli>
 #include <Atom/Features/MatrixUtility.azsli>
+#include <Atom/Features/Shadow/Shadow.azsli>
 
 #include "MaterialInputs/AlphaInput.azsli"
 #include "MaterialInputs/ParallaxInput.azsli"
@@ -78,9 +79,7 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
     OUT.m_depth = IN.m_position.z;
 
     if(ShouldHandleParallaxInDepthShaders())
-    {
-        static const float ShadowMapDepthBias = 0.000001;
-    
+    {  
         float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
         float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
         PrepareGeneratedTangent(IN.m_normal, IN.m_worldPosition, isFrontFace, IN.m_uv, UvSetCount, tangents, bitangents);
@@ -92,7 +91,7 @@ PSDepthOutput MainPS(VertexOutput IN, bool isFrontFace : SV_IsFrontFace)
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, OUT.m_depth);
 
-        OUT.m_depth += ShadowMapDepthBias;
+        OUT.m_depth += PdoShadowMapBias;
     }
     
     // Alpha

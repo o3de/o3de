@@ -126,7 +126,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
                          ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
                          IN.m_uv[MaterialSrg::m_parallaxUvIndex], IN.m_worldPosition, depthNDC, IN.m_position.w, displacementIsClipped);
 
-        // Adjust directional light shadow coorinates for parallax correction
+        // Adjust directional light shadow coordinates for parallax correction
         if(o_parallax_enablePixelDepthOffset)
         {
             const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
