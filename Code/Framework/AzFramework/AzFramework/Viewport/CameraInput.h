@@ -37,8 +37,8 @@ namespace AzFramework
         AZ::Vector3 m_lookAt = AZ::Vector3::CreateZero(); //!< Position of camera when m_lookDist is zero,
                                                           //!< or position of m_lookAt when m_lookDist is greater
                                                           //!< than zero.
-        float m_yaw{ 0.0 }; //!< Yaw rotation of camera (stored in radians) - usually clamped to 0-360 degrees.
-        float m_pitch{ 0.0 }; //!< Pitch rotation of the camera (stored in radians) - usually clamped to +/-90 degrees.
+        float m_yaw{ 0.0 }; //!< Yaw rotation of camera (stored in radians) usually clamped to 0-360 degrees (0-2Pi radians).
+        float m_pitch{ 0.0 }; //!< Pitch rotation of the camera (stored in radians) usually clamped to +/-90 degrees (-Pi/2 - Pi/2 radians).
         float m_lookDist{ 0.0 }; //!< Zero gives first person free look, otherwise orbit about m_lookAt
 
         //! View camera transform (v in model-view-projection matrix (MVP)).
@@ -199,7 +199,7 @@ namespace AzFramework
     };
 
     //! An interpolation function to smoothly interpolate all camera properties from currentCamera to targetCamera.
-    //! The camera returned will be some value between current and target camera
+    //! The camera returned will be some value between current and target camera.
     //! @note The rate of interpolation can be customized with CameraProps.
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, float deltaTime);
 
@@ -309,7 +309,7 @@ namespace AzFramework
         AZStd::function<bool()> m_invertPanYFn;
 
     private:
-        PanAxesFn m_panAxesFn; //!< Builder for the particular pan axes that it provided in the constructor.
+        PanAxesFn m_panAxesFn; //!< Builder for the particular pan axes (provided in the constructor).
         InputChannelId m_panChannelId; //!< Input channel to begin the pan camera input.
     };
 
