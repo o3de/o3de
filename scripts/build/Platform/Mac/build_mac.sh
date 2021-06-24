@@ -31,6 +31,11 @@ else
         RUN_CONFIGURE=1
     fi
 fi
+
+# temporarily enabling cmake regeneration for this platform
+# We have observed cases where continous integration has not regenerated but a regeneration was required, leaving the build in a bad state
+RUN_CONFIGURE=1
+
 if [[ ! -z "$RUN_CONFIGURE" ]]; then
     # have to use eval since $CMAKE_OPTIONS (${EXTRA_CMAKE_OPTIONS}) contains quotes that need to be processed
     echo [ci_build] ${CONFIGURE_CMD}
