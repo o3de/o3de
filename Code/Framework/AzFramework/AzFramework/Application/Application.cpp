@@ -255,7 +255,7 @@ namespace AzFramework
         systemEntity->Activate();
         AZ_Assert(systemEntity->GetState() == AZ::Entity::State::Active, "System Entity failed to activate.");
 
-        m_isStarted = true;
+        m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active);
     }
 
     void Application::PreModuleLoad()
