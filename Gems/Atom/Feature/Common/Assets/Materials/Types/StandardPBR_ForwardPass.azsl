@@ -251,7 +251,10 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // Finalize Lighting
     lightingData.FinalizeLighting();
 
-    float fresnelAlpha = alpha;
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+
+    // ------- Opacity -------
+
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
         // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
@@ -259,13 +262,9 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
         // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
         // not apply.
-        fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
-        fresnelAlpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
+        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x;
+        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
     }
-
-    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
-
-    // ------- Opacity -------
 
     if (o_opacity_mode == OpacityMode::Blended)
     {
@@ -283,7 +282,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
 
-        lightingOutput.m_diffuseColor.w = fresnelAlpha;
+        lightingOutput.m_diffuseColor.w = alpha;
     }
     else if (o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -306,7 +305,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
         lightingOutput.m_diffuseColor.rgb += specular;
 
-        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - fresnelAlpha); 
+        lightingOutput.m_specularColor.rgb = baseColor * (1.0 - alpha); 
     }
     else
     {
