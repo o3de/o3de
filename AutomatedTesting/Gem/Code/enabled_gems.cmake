@@ -48,7 +48,14 @@ set(ENABLED_GEMS
     LyShine
     HttpRequestor
     Atom_AtomBridge
-    AWSCore
-    AWSClientAuth
-    AWSMetrics
 )
+
+# TODO remove conditional add once AWSNativeSDK libs are fixed for Android and Linux Monolithic release.
+set(aws_excluded_platforms Linux Android)
+if (NOT (LY_MONOLITHIC_GAME AND ${PAL_PLATFORM_NAME} IN_LIST aws_excluded_platforms))
+    list(APPEND ENABLED_GEMS
+        AWSCore
+        AWSClientAuth
+        AWSMetrics
+    )
+endif()
