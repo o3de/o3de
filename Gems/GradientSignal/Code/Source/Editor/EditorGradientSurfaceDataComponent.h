@@ -32,7 +32,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Enables a gradient to emit surface tags";
         static constexpr const char* const s_icon = "Editor/Icons/Components/SurfaceData.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/SurfaceData.png";
-        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
         
     private:
         AZ::u32 ConfigurationChanged() override;

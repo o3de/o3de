@@ -798,7 +798,7 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
             auto text = lineEdit->text();
             if (text.isEmpty())
             {
-                QDesktopServices::openUrl(QUrl("https://docs.o3de.org/docs/"));
+                QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
             }
             else
             {
@@ -807,17 +807,10 @@ QMenu* LevelEditorMenuHandler::CreateHelpMenu()
                 const SFileVersion& productVersion = gEnv->pSystem->GetProductVersion();
                 productVersion.ToString(productVersionString, versionStringSize);
 
-                QUrl docSearchUrl("https://docs.aws.amazon.com/search/doc-search.html");
+                QUrl docSearchUrl("https://o3de.org/docs/");
                 QUrlQuery docSearchQuery;
-                QString o3deProductString = QUrl::toPercentEncoding("Open 3D Engine");
-                // The order of these QueryItems matters. wiki Search URL Formatting
-                docSearchQuery.addQueryItem("searchPath", "documentation-product");
-                docSearchQuery.addQueryItem("searchQuery", text);
-                docSearchQuery.addQueryItem("this_doc_product", o3deProductString);
-                docSearchQuery.addQueryItem("ref", "lye");
-                docSearchQuery.addQueryItem("ev", productVersionString);
+                docSearchQuery.addQueryItem("query", text);
                 docSearchUrl.setQuery(docSearchQuery);
-                docSearchUrl.setFragment(QString("facet_doc_product=%1").arg(o3deProductString));
                 QDesktopServices::openUrl(docSearchUrl);
             }
             lineEdit->clear();

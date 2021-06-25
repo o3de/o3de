@@ -25,6 +25,6 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient with fall off, which creates a smoother input gradient";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.png";
-        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
     };
 }
