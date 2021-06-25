@@ -87,6 +87,7 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::Deactivate()
     {
+        Data::AssetBus::Handler::BusDisconnect();
         Bootstrap::NotificationBus::Handler::BusDisconnect();
 
         auto perViewportDynamicDrawInterface = AtomBridge::PerViewportDynamicDraw::Get();
@@ -338,15 +339,33 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
-        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
-        {
-            auto shader = RPI::LoadShader(DrawContextShaderPath);
-            drawContext->InitShader(shader);
-            drawContext->InitVertexFormat(
-                {{"POSITION", RHI::Format::R32G32B32_FLOAT},
-                 {"COLOR", RHI::Format::R8G8B8A8_UNORM},
-                 {"TEXCOORD", RHI::Format::R32G32_FLOAT}});
-            drawContext->EndInit();
-        });
+        // Queue a load for the draw context shader, and wait for it to load
+        Data::AssetId shaderAssetId = RPI::GetShaderAssetId(DrawContextShaderPath);
+        Data::Asset<RPI::ShaderAsset> shaderAsset = Data::AssetManager::Instance().GetAsset<RPI::ShaderAsset>(shaderAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        shaderAsset.QueueLoad();
+        Data::AssetBus::Handler::BusConnect(shaderAssetId);
+    }
+
+    void AtomViewportDisplayIconsSystemComponent::OnAssetReady(Data::Asset<Data::AssetData> asset)
+    {
+        // Once the shader is loaded, register it with the dynamic draw context
+        Data::Asset<RPI::ShaderAsset> shaderAsset = asset;
+        AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(m_drawContextName, [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
+            {
+                AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomViewportDisplayIconsSystemComponent"
+                    " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
+                    " to avoid a blocking asset load and potentail deadlock, since the DynamicDrawContext lambda"
+                    " will be executed during scene processing and there may be multiple scenes executing in parallel.");
+
+                Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+                drawContext->InitShader(shader);
+                drawContext->InitVertexFormat(
+                    { {"POSITION", RHI::Format::R32G32B32_FLOAT},
+                     {"COLOR", RHI::Format::R8G8B8A8_UNORM},
+                     {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
+                drawContext->EndInit();
+            });
+
+        Data::AssetBus::Handler::BusDisconnect();
     }
 } // namespace AZ::Render
