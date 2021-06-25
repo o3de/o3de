@@ -40,6 +40,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
         COMPONENT
-            Smoke
+            Sandbox
     )
 endif()
