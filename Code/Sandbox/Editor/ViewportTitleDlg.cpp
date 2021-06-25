@@ -162,6 +162,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     m_cameraSpeed = new QComboBox(cameraMenu);
     m_cameraSpeed->setEditable(true);
     m_cameraSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, m_cameraSpeed));
+    m_cameraSpeed->installEventFilter(this);
 
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
@@ -814,6 +815,21 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
 
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
 {
+    if (object == m_cameraSpeed)
+    {
+        if (event->type() == QEvent::FocusIn)
+        {
+            QTimer::singleShot(
+                0, this,
+                [this]
+                {
+                    m_cameraSpeed->lineEdit()->selectAll();
+                });
+        }
+
+        return m_cameraSpeed->eventFilter(object, event);
+    }
+
     bool consumeEvent = false;
 
     // These events are forwarded from the toolbar that took ownership of our widgets
@@ -830,6 +846,8 @@ bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
     {
         parentWidget()->setFocus();
     }
+
+
 
     return QWidget::eventFilter(object, event) || consumeEvent;
 }
