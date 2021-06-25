@@ -27,16 +27,9 @@ namespace EMotionFX
         AZ_RTTI(Event, "{67549E9F-8E3F-4336-BDB8-716AFCBD4985}");
         AZ_CLASS_ALLOCATOR_DECL
 
-        Event(EventDataPtr&& data = nullptr)
-            : m_eventDatas{AZStd::move(data)}
-        {
-        }
-
-        Event(EventDataSet&& datas)
-            : m_eventDatas(AZStd::move(datas))
-        {
-        }
-
+        Event() = default;
+        explicit Event(EventDataPtr&& data);
+        explicit Event(EventDataSet&& datas);
         virtual ~Event() = default;
 
         static void Reflect(AZ::ReflectContext* context);
