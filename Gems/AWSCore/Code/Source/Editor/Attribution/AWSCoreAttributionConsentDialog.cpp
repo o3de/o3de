@@ -5,8 +5,6 @@
  *
  */
 
-#pragma once
-
 #include <Editor/Attribution/AWSCoreAttributionConsentDialog.h>
 
 #include <QCheckBox>
