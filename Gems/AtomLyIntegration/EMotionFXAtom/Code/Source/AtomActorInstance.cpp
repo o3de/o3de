@@ -239,13 +239,13 @@ namespace AZ
 
         void AtomActorInstance::SetIsVisible(bool isVisible)
         {
-            if (m_isVisible != isVisible)
+            if (IsVisible() != isVisible)
             {
+                RenderActorInstance::SetIsVisible(isVisible);
                 if (m_meshFeatureProcessor && m_meshHandle)
                 {
                     m_meshFeatureProcessor->SetVisible(*m_meshHandle, isVisible);
                 }
-                m_isVisible = isVisible;
             }
         }
 
