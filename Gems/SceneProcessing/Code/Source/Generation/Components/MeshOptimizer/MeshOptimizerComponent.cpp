@@ -283,6 +283,12 @@ namespace AZ::SceneGenerationComponents
 
                 auto [optimizedMesh, optimizedUVs, optimizedTangents, optimizedBitangents, optimizedVertexColors, optimizedSkinWeights] = OptimizeMesh(mesh, mesh, uvDatas, tangentDatas, bitangentDatas, colorDatas, skinWeightDatas, meshGroup, hasBlendShapes);
 
+                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Base mesh: %zu vertices, optimized mesh: %zu vertices, %0.02f%% of the original",
+                    mesh->GetUsedControlPointCount(),
+                    optimizedMesh->GetUsedControlPointCount(),
+                    ((float)optimizedMesh->GetUsedControlPointCount() / (float)mesh->GetUsedControlPointCount()) * 100.0f
+                );
+
                 const NodeIndex optimizedMeshNodeIndex = graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));
 
                 auto addOptimizedNodes = [&graph, &optimizedMeshNodeIndex](const auto& originalNodeIndexes, auto& optimizedNodes)
