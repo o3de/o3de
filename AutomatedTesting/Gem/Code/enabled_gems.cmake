@@ -50,7 +50,9 @@ set(ENABLED_GEMS
     Atom_AtomBridge
 )
 
-if((NOT ${PAL_PLATFORM_NAME} STREQUAL "Linux" AND NOT ${PAL_PLATFORM_NAME} STREQUAL "Android") OR NOT LY_MONOLITHIC_GAME)
+# TODO remove conditional add once AWSNativeSDK libs are fixed for Android and Linux Monolithic release.
+set(aws_excluded_platforms Linux Android)
+if (NOT (LY_MONOLITHIC_GAME AND ${PAL_PLATFORM_NAME} IN_LIST aws_excluded_platforms))
     list(APPEND ENABLED_GEMS
         AWSCore
         AWSClientAuth
