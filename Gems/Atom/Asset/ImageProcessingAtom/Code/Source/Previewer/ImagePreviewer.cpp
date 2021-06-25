@@ -46,6 +46,12 @@ namespace ImageProcessingAtom
 
     ImagePreviewer::~ImagePreviewer()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
+
+        if (m_createDisplayTextureResult.isRunning())
+        {
+            m_createDisplayTextureResult.waitForFinished();
+        }
     }
 
     void ImagePreviewer::Clear() const
@@ -209,21 +215,30 @@ namespace ImageProcessingAtom
         m_ui->m_fileInfoCtrl->show();
         m_fileinfo = QString::fromUtf8(product->GetName().c_str());
         m_fileinfo += GetFileSize(product->GetRelativePath().c_str());
-               
-        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = Utils::LoadImageAsset(product->GetAssetId());
-        IImageObjectPtr image = Utils::LoadImageFromImageAsset(imageAsset);
 
-        if (image)
+        CreateAndDisplayTextureItemAsync(
+        [assetId = product->GetAssetId()]
+        () -> CreateDisplayTextureResult
         {
-            // Add product image info
-            AZStd::string productInfo;
-            GetImageInfoString(imageAsset, productInfo);
+            AZ::Data::Asset<AZ::RPI::StreamingImageAsset> imageAsset = Utils::LoadImageAsset(assetId);
+            IImageObjectPtr image = Utils::LoadImageFromImageAsset(imageAsset);
 
-            m_fileinfo += QStringLiteral("\r\n");
-            m_fileinfo += productInfo.c_str();
+            if (image)
+            {
+                // Add product image info
+                AZStd::string productInfo;
+                GetImageInfoString(imageAsset, productInfo);
 
-            m_previewImageObject = ConvertImageForPreview(image);
-        }
+                QString fileInfo = QStringLiteral("\r\n");
+                fileInfo += productInfo.c_str();
+
+                return { ConvertImageForPreview(image), fileInfo };
+            }
+            else
+            {
+                return { nullptr, "" };
+            }
+        });
 
         DisplayTextureItem();
     }
@@ -234,19 +249,28 @@ namespace ImageProcessingAtom
         m_fileinfo = QString::fromUtf8(source->GetName().c_str());
         m_fileinfo += GetFileSize(source->GetFullPath().c_str());
 
-        IImageObjectPtr image = IImageObjectPtr(LoadImageFromFile(source->GetFullPath()));
-
-        if (image)
+        CreateAndDisplayTextureItemAsync(
+        [fullPath = source->GetFullPath()]
+        () -> CreateDisplayTextureResult
         {
-            // Add source image info
-            AZStd::string sourceInfo;
-            GetImageInfoString(image, sourceInfo);
+            IImageObjectPtr image = IImageObjectPtr(LoadImageFromFile(fullPath));
 
-            m_fileinfo += QStringLiteral("\r\n");
-            m_fileinfo += sourceInfo.c_str();
+            if (image)
+            {
+                // Add source image info
+                AZStd::string sourceInfo;
+                GetImageInfoString(image, sourceInfo);
 
-            m_previewImageObject = ConvertImageForPreview(image);
-        }
+                QString fileInfo = QStringLiteral("\r\n");
+                fileInfo += sourceInfo.c_str();
+
+                return { ConvertImageForPreview(image), fileInfo };
+            }
+            else
+            {
+                return { nullptr, "" };
+            }
+        });
 
         DisplayTextureItem();
     }
@@ -282,6 +306,27 @@ namespace ImageProcessingAtom
         m_ui->m_fileInfoCtrl->setText(WordWrap(m_fileinfo, m_ui->m_fileInfoCtrl->width() / IMAGE_PREVIEWER_CHAR_WIDTH));
 
         updateGeometry();
+    }
+
+    template<class CreateFn>
+    void ImagePreviewer::CreateAndDisplayTextureItemAsync(CreateFn create)
+    {
+        AZ::SystemTickBus::Handler::BusConnect();
+        m_createDisplayTextureResult = QtConcurrent::run(AZStd::move(create));
+    }
+
+    void ImagePreviewer::OnSystemTick()
+    {
+        if (m_createDisplayTextureResult.isFinished())
+        {
+            CreateDisplayTextureResult result = m_createDisplayTextureResult.result();
+            m_previewImageObject = AZStd::move(result.first);
+            m_fileinfo += result.second;
+
+            AZ::SystemTickBus::Handler::BusDisconnect();
+
+            DisplayTextureItem();
+        }
     }
 
     void ImagePreviewer::PreviewSubImage(uint32_t mip)
