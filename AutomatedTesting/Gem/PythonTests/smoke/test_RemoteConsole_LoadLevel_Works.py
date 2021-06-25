@@ -30,7 +30,7 @@ from ly_remote_console.remote_console_commands import (
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["Simple"])
 @pytest.mark.SUITE_smoke
-class TestGameLauncherEnterExitGameModeWorks(object):
+class TestRemoteConsoleLoadLevelWorks(object):
     @pytest.fixture
     def remote_console_instance(self, request):
         console = RemoteConsole()
@@ -43,7 +43,7 @@ class TestGameLauncherEnterExitGameModeWorks(object):
 
         return console
 
-    def test_CLITool_PythonBindingsExample_Works(self, launcher, level, remote_console_instance, launcher_platform):
+    def test_RemoteConsole_LoadLevel_Works(self, launcher, level, remote_console_instance, launcher_platform):
         expected_lines = ['Level system is loading "Simple"']
 
         self.launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines)
@@ -54,7 +54,7 @@ class TestGameLauncherEnterExitGameModeWorks(object):
         level,
         remote_console_instance,
         expected_lines,
-        null_renderer=True,
+        null_renderer=False,
         port_listener_timeout=120,
         log_monitor_timeout=300,
         remote_console_port=4600,
