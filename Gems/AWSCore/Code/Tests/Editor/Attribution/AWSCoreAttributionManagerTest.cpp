@@ -135,17 +135,14 @@ namespace AWSAttributionUnitTest
         using AWSAttributionManager::UpdateMetric;
         using AWSAttributionManager::SetApiEndpointAndRegion;
         using AWSAttributionManager::ShowConsentDialog;
-        //using AWSAttributionManager::CheckAWSCredentialsConfigured;
 
         AWSAttributionManagerMock()
         {
             ON_CALL(*this, SubmitMetric(testing::_)).WillByDefault(testing::Invoke(this, &AWSAttributionManagerMock::SubmitMetricMock));
-            //ON_CALL(*this, CheckAWSCredentialsConfigured()).WillByDefault(testing::Return(true));
         }
 
         MOCK_METHOD1(SubmitMetric, void(AttributionMetric& metric));
         MOCK_METHOD0(ShowConsentDialog, void());
-        //MOCK_METHOD0(CheckAWSCredentialsConfigured, bool());
 
         void SubmitMetricMock(AttributionMetric& metric)
         {
