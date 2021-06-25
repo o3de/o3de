@@ -787,21 +787,25 @@ namespace AZ
             return *m_nullDescriptorManager;
         }
 
-        VkBufferUsageFlags Device::ValidateBufferUsageFlagsByFeatures(const VkBufferUsageFlags& bufferUsageFlags) const
+        VkBufferUsageFlags Device::GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const
         {
+            VkBufferUsageFlags bufferUsageFlags = GetBufferUsageFlagBits(bindFlags);
+
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
 
-            VkBufferUsageFlags result = bufferUsageFlags;
+            // VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT require bufferDeviceAddress enabled.
             if (!physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
             {
-                result &= ~VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                bufferUsageFlags &= ~VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
+            // VK_KHR_acceleration_structure provides VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR
+            // Otherwise unrecognized flag.
             if (!physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::AccelerationStructure))
             {
-                result &= ~VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
+                bufferUsageFlags &= ~VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             }
 
-            return result;
+            return bufferUsageFlags;
         }
 
         VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const
@@ -814,8 +818,7 @@ namespace AZ
             createInfo.pNext = nullptr;
             createInfo.flags = 0;
             createInfo.size = descriptor.m_byteCount;
-            createInfo.usage = GetBufferUsageFlagBits(descriptor.m_bindFlags);
-            createInfo.usage = ValidateBufferUsageFlagsByFeatures(createInfo.usage);
+            createInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
             // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
             createInfo.sharingMode =
                 RHI::CheckBitsAny(

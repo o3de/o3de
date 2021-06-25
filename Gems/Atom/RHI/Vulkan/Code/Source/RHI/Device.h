@@ -149,7 +149,9 @@ namespace AZ
             template <typename ObjectType, typename... Args>
             RHI::Ptr<ObjectType> AcquireObjectFromCache(ObjectCache<ObjectType>& cache, const size_t hash, Args... args);
 
-            VkBufferUsageFlags ValidateBufferUsageFlagsByFeatures(const VkBufferUsageFlags& bufferUsageFlags) const;
+            //! Get the vulkan buffer usage flags from buffer bind flags.
+            //! Flags will be corrected if required features or extensions are not enabled.
+            VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
