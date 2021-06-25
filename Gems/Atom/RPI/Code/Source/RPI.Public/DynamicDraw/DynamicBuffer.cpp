@@ -12,7 +12,7 @@ namespace AZ
 {
     namespace RPI
     {
-        bool DynamicBuffer::Write(void* data, uint32_t size)
+        bool DynamicBuffer::Write(const void* data, uint32_t size)
         {
             if (m_size >= size)
             {
