@@ -41,9 +41,9 @@ namespace EMotionFX::Pipeline::Rule
 
     AZStd::unique_ptr<EMotionFX::MotionEventTable> MotionMetaData::GetClonedEventTable(EMotionFX::Motion* targetMotion) const
     {
-        AZStd::unique_ptr<EMotionFX::MotionEventTable> clonedEventTable = AZStd::move(CloneMotionEventTable(m_motionEventTable.get()));
+        AZStd::unique_ptr<EMotionFX::MotionEventTable> clonedEventTable = CloneMotionEventTable(m_motionEventTable.get());
         clonedEventTable->InitAfterLoading(targetMotion);
-        return AZStd::move(clonedEventTable);
+        return clonedEventTable;
     }
 
     AZStd::unique_ptr<EMotionFX::MotionEventTable> MotionMetaData::CloneMotionEventTable(EMotionFX::MotionEventTable* sourceEventTable)
@@ -57,7 +57,7 @@ namespace EMotionFX::Pipeline::Rule
         }
 
         AZStd::unique_ptr<EMotionFX::MotionEventTable> clonedEventTable(serializeContext->CloneObject<EMotionFX::MotionEventTable>(sourceEventTable));
-        return AZStd::move(clonedEventTable);
+        return clonedEventTable;
     }
 
     MotionMetaDataRule::MotionMetaDataRule()
@@ -66,9 +66,8 @@ namespace EMotionFX::Pipeline::Rule
     }
 
     MotionMetaDataRule::MotionMetaDataRule(const AZStd::shared_ptr<MotionMetaData>& data)
-        : MotionMetaDataRule()
+        : m_data(data)
     {
-        m_data = data;
     }
 
     void MotionMetaDataRule::Reflect(AZ::ReflectContext* context)

@@ -84,12 +84,11 @@ namespace EMotionFX
             }
 
             // Apply motion meta data.
-            EMotionFX::Pipeline::Rule::MotionMetaData motionMetaData;
-            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::Pipeline::Rule::MotionMetaData>(motionGroup, motionMetaData))
+            AZStd::shared_ptr<EMotionFX::Pipeline::Rule::MotionMetaData> motionMetaData;
+            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule>(motionGroup, motionMetaData))
             {
-                motion->SetEventTable(AZStd::unique_ptr<MotionEventTable>(motionMetaData.m_motionEventTable));
-                motion->GetEventTable()->InitAfterLoading(motion);
-                motion->SetMotionExtractionFlags(motionMetaData.m_motionExtractionFlags);
+                motion->SetEventTable(motionMetaData->GetClonedEventTable(motion));
+                motion->SetMotionExtractionFlags(motionMetaData->GetMotionExtractionFlags());
             }
 
             ExporterLib::SaveMotion(filename, motion, MCore::Endian::ENDIAN_LITTLE);
