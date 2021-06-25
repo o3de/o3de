@@ -7,6 +7,7 @@
 
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSCoreAttributionConsentDialog.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/IO/FileIO.h>
@@ -22,12 +23,7 @@
 #include <Credential/AWSCredentialBus.h>
 
 #include <QSysInfo>
-#include <QString>
 #include <QMessageBox>
-#include <QLayout>
-#include <QCheckBox>
-#include <QTimer>
-
 
 
 namespace AWSCore
@@ -53,8 +49,8 @@ namespace AWSCore
 
     AWSAttributionManager::~AWSAttributionManager()
     {
-        m_settingsRegistry.reset();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+        m_settingsRegistry.reset();
     }
 
     void AWSAttributionManager::Init()
@@ -160,29 +156,9 @@ namespace AWSCore
 
     void AWSAttributionManager::ShowConsentDialog()
     {
-        QMessageBox* msgBox = new QMessageBox();
-        msgBox->setWindowTitle("AWS Core Gem Usage Agreement");
-        QString message = "<nobr>The AWS Core Gem has detected credentials for an Amazon Web Services account for this</nobr><br>\
-                           <nobr>instance of O3DE. <a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials\">Click here</a> to learn more about AWS integration, including how to</nobr><br>\
-                           <nobr>manage your AWS credentials.</nobr><br><br>\
-                           <nobr>Please note: when credentials are detected, AWS Core Gem sends telemetry data to AWS,</nobr><br>\
-                           <nobr>which helps us improve AWS services for O3DE. You can change this setting below, and at</nobr><br>\
-                           <nobr>any time in Settings: Global Preferences. Data sent is subject to the <a href=\"https://aws.amazon.com/privacy\">AWS Privacy Policy</a>.</nobr><br>\
-                           <nobr><a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/telemetry-data-collection\">Click here</a> to learn more about what data is sent to AWS.</nobr>";
-        msgBox->setText(message);
-        QCheckBox* checkBox = new QCheckBox("Please share the information about my use of AWS Core Gem with AWS.");
-        checkBox->setChecked(true);        
-        msgBox->setCheckBox(checkBox);
-        msgBox->setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-        msgBox->setDefaultButton(QMessageBox::Save);
-        msgBox->button(QMessageBox::Cancel)->hide();
-        msgBox->setIcon(QMessageBox::Information);
-        QGridLayout* layout = (QGridLayout*)msgBox->layout();
-        layout->setVerticalSpacing(20);
-        layout->setHorizontalSpacing(10);
-
-        m_settingsRegistry->Set(AWSAttributionConsentShown, true);
+        AWSCoreAttributionConsentDialog* msgBox = aznew AWSCoreAttributionConsentDialog();
         int ret = msgBox->exec();
+        m_settingsRegistry->Set(AWSAttributionConsentShown, true);
         switch (ret)
         {
         case QMessageBox::Save:
@@ -198,6 +174,8 @@ namespace AWSCore
         delete msgBox;
     }
 
+    // Waiting on Editor QT main window to be initialized before showing consent window.
+    // This will have the Editor loading screen in the background when showing consent dialog.
     void AWSAttributionManager::NotifyMainWindowInitialized(QMainWindow* mainWindow)
     {
         AZ_UNUSED(mainWindow);

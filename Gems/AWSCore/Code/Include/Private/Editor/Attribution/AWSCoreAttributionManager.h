@@ -13,8 +13,6 @@
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <QMainWindow>
-
 namespace AWSCore
 {
     //! Manages operational metrics for AWS gems
