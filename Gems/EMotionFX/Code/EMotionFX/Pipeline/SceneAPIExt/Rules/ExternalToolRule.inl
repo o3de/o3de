@@ -35,7 +35,7 @@ namespace EMotionFX
                     return false;
                 }
 
-                outData = rule->GetData();
+                outData = AZStd::move(rule->GetData());
                 return true;
             }
 
