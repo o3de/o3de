@@ -10,7 +10,7 @@
 #include <AzCore/base.h>
 
 #include "CommonFiles/CommonTypes.h"
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include "ShaderBuilderUtility.h" 
 
 namespace AZ

@@ -31,7 +31,6 @@ set(FILES
     Include/Atom/RPI.Edit/Shader/ShaderSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantAssetCreator.h
-    Include/Atom/RPI.Edit/Shader/ShaderVariantAssetCreator2.h
     Include/Atom/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.h
     Source/RPI.Edit/Material/LuaMaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialTypeSourceData.cpp
@@ -49,7 +48,6 @@ set(FILES
     Source/RPI.Edit/Shader/ShaderSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantListSourceData.cpp
     Source/RPI.Edit/Shader/ShaderVariantAssetCreator.cpp
-    Source/RPI.Edit/Shader/ShaderVariantAssetCreator2.cpp
     Source/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.cpp
     Source/RPI.Edit/Common/AssetUtils.cpp
     Source/RPI.Edit/Common/AssetAliasesSourceData.cpp
