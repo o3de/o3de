@@ -4368,7 +4368,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
             {
                 if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
                 {
-                    nativeUI->SetMode(AZ::NativeUI::Mode::UI);
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
                 }
             }
         }

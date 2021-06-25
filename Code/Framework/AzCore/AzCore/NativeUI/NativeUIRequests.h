@@ -27,8 +27,8 @@ namespace AZ::NativeUI
 
     enum class Mode
     {
-        CONSOLE = 0,
-        UI,
+        DISABLED = 0,
+        ENABLED,
     };
 
     class NativeUIRequests
@@ -77,8 +77,8 @@ namespace AZ::NativeUI
             m_mode = mode;
         }
 
-        protected:
-        NativeUI::Mode m_mode = NativeUI::Mode::CONSOLE;
+    protected:
+        NativeUI::Mode m_mode = NativeUI::Mode::DISABLED;
     };
 
     class NativeUIEBusTraits
