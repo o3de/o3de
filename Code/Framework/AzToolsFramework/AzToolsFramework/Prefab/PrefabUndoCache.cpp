@@ -130,10 +130,7 @@ namespace AzToolsFramework
 
             if (!instanceOptionalReference.has_value())
             {
-                AZ_Warning(
-                    "Undo", false,
-                    "PrefabUndoCache was told to update the cache for entity of id %p (%s), but that entity does not have an owning instance.",
-                    entityId, entity->GetName().c_str());
+                // This is not an error, we just don't handle this entity.
                 return;
             }
 
