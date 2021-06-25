@@ -7,8 +7,6 @@ distribution (the "License"). All use of this software is governed by the Licens
 or, if provided, by the license below or the license accompanying this file. Do not
 remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-
-Test should run in both gpu and non gpu
 """
 
 import pytest
