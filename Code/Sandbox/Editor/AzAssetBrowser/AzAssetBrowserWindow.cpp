@@ -82,7 +82,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     if (ed_useNewAssetBrowserTableView)
     {
-        m_ui->m_viewSwitcherCheckBox->setVisible(true);
+        m_ui->m_viewSwitcherCheckBox->setVisible(false);
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());
         m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());

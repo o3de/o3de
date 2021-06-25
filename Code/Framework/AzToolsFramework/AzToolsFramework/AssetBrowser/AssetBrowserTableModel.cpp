@@ -153,16 +153,6 @@ namespace AzToolsFramework
                 endRemoveRows();
             }
 
-             AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome outcome;
-             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(outcome, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetValue,
-               "Settings|MaxDisplayedItemsNumInSearch");
-
-            AZStd::any outcomeValue = outcome.GetValue<AZStd::any>();
-            if (outcomeValue.is<int>() == true)
-            {
-                m_numberOfItemsDisplayed = AZStd::any_cast<int>(outcome.GetValue());
-            }
-
             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
                 m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
 
