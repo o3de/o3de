@@ -852,16 +852,6 @@ bool CSystem::InitVTuneProfiler()
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////////
-bool CSystem::InitShine([[maybe_unused]] const SSystemInitParams& initParams)
-{
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
-    EBUS_EVENT(UiSystemBus, InitializeSystem);
-
-    return true;
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CSystem::InitLocalization()
 {
@@ -1550,20 +1540,6 @@ AZ_POP_DISABLE_WARNING
         }
         m_Time.ResetTimer();
 
-        //////////////////////////////////////////////////////////////////////////
-        // UI. Should be after input and hardware mouse
-        //////////////////////////////////////////////////////////////////////////
-        if (!m_bDedicatedServer)
-        {
-            AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "UI system initialization");
-            INDENT_LOG_DURING_SCOPE();
-            if (!InitShine(startupParams))
-            {
-                return false;
-            }
-        }
-
-        InlineInitializationProcessing("CSystem::Init InitShine");
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
