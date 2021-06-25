@@ -655,6 +655,7 @@ float3 CalculateDirectLighting(
 //    ApplyDirectionalLights(surface, lightingData);
     
     ApplyAllSimplePointLights(surface, lightingData);
+    ApplyAllSimpleSpotLights(surface, lightingData);
 //    ApplySimplePointLights(surface, lightingData);
 //    ApplySimpleSpotLights(surface, lightingData);
 
