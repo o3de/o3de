@@ -146,7 +146,9 @@ namespace AZ
                     AZ::Debug::Timer timer;
                     timer.Stamp();
 #endif
-                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(rayStart, rayDir, distanceNormalized, normal);
+                    constexpr bool AllowBruteForce = false;
+                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(
+                        rayStart, rayDir, AllowBruteForce, distanceNormalized, normal);
 #if defined(AZ_RPI_PROFILE_RAYCASTING_AGAINST_MODELS)
                     if (hit)
                     {
