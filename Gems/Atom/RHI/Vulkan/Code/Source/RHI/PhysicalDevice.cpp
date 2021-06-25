@@ -266,12 +266,20 @@ namespace AZ
                 VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME
             } };
 
+            uint32_t optionalExtensionCount = sizeof(optionalExtensions) / sizeof(VK_EXT_SAMPLE_LOCATIONS_EXTENSION_NAME);
+
+            AZ_Assert(optionalExtensionCount == static_cast<uint32_t>(OptionalDeviceExtension::Count), "The order and size must match the enum OptionalDeviceExtensions.");
+
+            // Optional device extensions are filtered based on what the device support.
+            // It returns in the same order as in the original list.
             StringList deviceExtensions = GetDeviceExtensionNames();
             RawStringList filteredOptionalExtensions = FilterList(optionalExtensions, deviceExtensions);
 
+            // Mark the supported optional extensions in the bitset for faster look up compared to string search.
             uint32_t originalIndex = 0;
             for (const auto& extension : filteredOptionalExtensions)
             {
+                AZ_Assert(originalIndex < optionalExtensionCount, "Out of range index. Check FilterList algorithm if list is returned in the original order.");
                 while (strcmp(extension, optionalExtensions[originalIndex]) != 0)
                 {
                     ++originalIndex;

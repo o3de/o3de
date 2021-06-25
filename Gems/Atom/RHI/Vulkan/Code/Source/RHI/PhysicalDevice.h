@@ -92,6 +92,7 @@ namespace AZ
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
             bool IsFormatSupported(RHI::Format format, VkImageTiling tiling, VkFormatFeatureFlags features) const;
             void LoadSupportedFeatures();
+            //! Filter optional extensions based on what the physics device support.
             RawStringList FilterSupportedOptionalExtensions();
             void CompileMemoryStatistics(RHI::MemoryStatisticsBuilder& builder) const;
 
