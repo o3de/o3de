@@ -40,9 +40,9 @@ namespace AZ::NativeUI
         //! Waits for user to select an option before execution continues
         //! Returns the option string selected by the user
         virtual AZStd::string DisplayBlockingDialog(
-            [[maybe_unused]] const AZStd::string&,
-            [[maybe_unused]] const AZStd::string&,
-            [[maybe_unused]] const AZStd::vector<AZStd::string>&) const
+            [[maybe_unused]] const AZStd::string& title,
+            [[maybe_unused]] const AZStd::string& message,
+            [[maybe_unused]] const AZStd::vector<AZStd::string>& options) const
         {
             return {};
         }
@@ -50,8 +50,8 @@ namespace AZ::NativeUI
         //! Waits for user to select an option ('Ok' or optionally 'Cancel') before execution continues
         //! Returns the option string selected by the user
         virtual AZStd::string DisplayOkDialog(
-            [[maybe_unused]] const AZStd::string&,
-            [[maybe_unused]] const AZStd::string&,
+            [[maybe_unused]] const AZStd::string& title,
+            [[maybe_unused]] const AZStd::string& message,
             [[maybe_unused]] bool showCancel) const
         {
             return {};
@@ -60,8 +60,8 @@ namespace AZ::NativeUI
         //! Waits for user to select an option ('Yes', 'No' or optionally 'Cancel') before execution continues
         //! Returns the option string selected by the user
         virtual AZStd::string DisplayYesNoDialog(
-            [[maybe_unused]] const AZStd::string&,
-            [[maybe_unused]] const AZStd::string&,
+            [[maybe_unused]] const AZStd::string& title,
+            [[maybe_unused]] const AZStd::string& message,
             [[maybe_unused]] bool showCancel) const
         {
             return {};
@@ -69,7 +69,7 @@ namespace AZ::NativeUI
 
         //! Displays an assert dialog box
         //! Returns the action selected by the user
-        virtual AssertAction DisplayAssertDialog([[maybe_unused]] const AZStd::string&) const { return AssertAction::NONE; }
+        virtual AssertAction DisplayAssertDialog([[maybe_unused]] const AZStd::string& message) const { return AssertAction::NONE; }
 
         //! Set the operation mode of the native UI systen
         void SetMode(NativeUI::Mode mode)
