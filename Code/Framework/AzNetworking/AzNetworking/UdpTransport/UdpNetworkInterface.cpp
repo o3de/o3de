@@ -116,17 +116,29 @@ namespace AzNetworking
 
         m_port = port;
         m_allowIncomingConnections = true;
-        m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone);
-        m_readerThread.RegisterSocket(m_socket.get());
-        return true;
+        if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::True, m_trustZone))
+        {
+            m_readerThread.RegisterSocket(m_socket.get());
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     ConnectionId UdpNetworkInterface::Connect(const IpAddress& remoteAddress)
     {
         if (!m_socket->IsOpen())
         {
-            m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone);
-            m_readerThread.RegisterSocket(m_socket.get());
+            if (m_socket->Open(m_port, UdpSocket::CanAcceptConnections::False, m_trustZone))
+            {
+                m_readerThread.RegisterSocket(m_socket.get());
+            }
+            else
+            {
+                return InvalidConnectionId;
+            }
         }
 
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
@@ -357,6 +369,20 @@ namespace AzNetworking
             return false;
         }
         return connection->WasPacketAcked(packetId);
+    }
+
+    bool UdpNetworkInterface::StopListening()
+    {
+        if (!m_socket->IsOpen())
+        {
+            return false;
+        }
+
+        m_port = 0;
+        m_readerThread.UnregisterSocket(m_socket.get());
+        m_allowIncomingConnections = false;
+        m_socket->Close();
+        return true;
     }
 
     bool UdpNetworkInterface::Disconnect(ConnectionId connectionId, DisconnectReason reason)

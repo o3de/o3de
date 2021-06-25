@@ -514,6 +514,20 @@ namespace AzQtComponents
                         }
                     }
                 }
+                // Implement checkmark with icon in menu.
+                QStyleOptionMenuItem myOpt = *qstyleoption_cast<const QStyleOptionMenuItem*>(option);
+                bool checkable = myOpt.checkType != QStyleOptionMenuItem::NotCheckable;
+                bool checked = checkable ? myOpt.checked : false;
+
+                if (!myOpt.icon.isNull() && checked)
+                {
+                    const int iconSize{ 18 };
+                    int topPadding{ AZStd::max( 0 , (myOpt.rect.height() - iconSize) / 2) - 1};
+
+                    QProxyStyle::drawControl(element, &myOpt, painter, widget);
+                    myOpt.rect.adjust(0, topPadding, iconSize - myOpt.rect.width(), iconSize - myOpt.rect.height());
+                    return drawPrimitive(PE_IndicatorMenuCheckMark, &myOpt, painter, widget);
+                }
             }
             break;
         }

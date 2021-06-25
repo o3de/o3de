@@ -85,7 +85,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     ly_add_target(
-        NAME ${Name}.Editor MODULE
+        NAME ${Name}.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         OUTPUT_NAME Gem.${Name}.Editor

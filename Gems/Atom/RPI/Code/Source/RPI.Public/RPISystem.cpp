@@ -23,6 +23,7 @@
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -247,6 +248,8 @@ namespace AZ
             }
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: SimulationTick");
 
+            AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
+
             // Update tick time info
             FillTickTimeInfo();
 
@@ -286,24 +289,27 @@ namespace AZ
 
             m_rhiSystem.FrameUpdate(
                 [this](RHI::FrameGraphBuilder& frameGraphBuilder)
-            {
-                // Pass system's frame update, which includes the logic of adding scope producers, has to be added here since the scope producers only can be added to the frame
-                // when frame started which cleans up previous scope producers. 
-                m_passSystem.FrameUpdate(frameGraphBuilder);
+                {
+                    // Pass system's frame update, which includes the logic of adding scope producers, has to be added here since the
+                    // scope producers only can be added to the frame when frame started which cleans up previous scope producers.
+                    m_passSystem.FrameUpdate(frameGraphBuilder);
 
-                // Update View Srgs
+                    // Update View Srgs
+                    for (auto& scenePtr : m_scenes)
+                    {
+                        scenePtr->UpdateSrgs();
+                    }
+                });
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "RPISystem: FrameEnd");
+                m_dynamicDraw.FrameEnd();
+                m_passSystem.FrameEnd();
+
                 for (auto& scenePtr : m_scenes)
                 {
-                    scenePtr->UpdateSrgs();
+                    scenePtr->OnFrameEnd();
                 }
-            });
-           
-            m_dynamicDraw.FrameEnd();
-            m_passSystem.FrameEnd();
-
-            for (auto& scenePtr : m_scenes)
-            {
-                scenePtr->OnFrameEnd();
             }
 
             m_renderTick++;

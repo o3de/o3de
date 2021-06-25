@@ -15,6 +15,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/EBus/Event.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
@@ -57,6 +58,7 @@ namespace AZ
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
             , public Data::AssetBus::Handler
+            , public AssetInitBus::Handler
         {
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
@@ -103,6 +105,8 @@ namespace AZ
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
 
+            //! Returns the supervariant index from the specified name.
+            //! Note that this will append the system supervariant name from RPI::ShaderSystem when searching.
             SupervariantIndex GetSupervariantIndex(const AZ::Name& supervariantName) const;
 
             //! This function should be your one stop shop to get a ShaderVariantAsset.
@@ -139,22 +143,15 @@ namespace AZ
             Data::Asset<ShaderVariantAsset> GetRootVariant() const { return GetRootVariant(DefaultSupervariantIndex); }
 
 
-            //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was
-            //! found.
+            //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(
                 const Name& shaderResourceGroupName, SupervariantIndex supervariantIndex) const;
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const
-            {
-                return FindShaderResourceGroupLayout(shaderResourceGroupName, DefaultSupervariantIndex);
-            }
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const;
 
             //! Finds and returns the shader resource group layout associated with the requested binding slot. Returns an empty handle if no matching srg was found.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(
                 uint32_t bindingSlot, SupervariantIndex supervariantIndex) const;
-            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(uint32_t bindingSlot) const
-            {
-                return FindShaderResourceGroupLayout(bindingSlot, DefaultSupervariantIndex);
-            }
+            const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(uint32_t bindingSlot) const;
 
             //! Finds and returns the shader resource group layout designated as a ShaderVariantKey fallback.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindFallbackShaderResourceGroupLayout( SupervariantIndex supervariantIndex) const;
@@ -224,7 +221,10 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
             /// AssetBus overrides
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             ///////////////////////////////////////////////////////////////////
+
+            void ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset);
 
             ///////////////////////////////////////////////////////////////////
             /// ShaderVariantFinderNotificationBus overrides
@@ -267,8 +267,13 @@ namespace AZ
                 AZStd::vector<Supervariant> m_supervariants;
             };
 
-            bool FinalizeAfterLoad();
+            bool PostLoadInit() override;
             void SetReady();
+
+            //! SelectShaderApiData() must be called before most other ShaderAsset functions.
+            bool SelectShaderApiData();
+
+            //! Returns the active ShaderApiDataContainer which was selected in SelectShaderApiData().
             ShaderApiDataContainer& GetCurrentShaderApiData();
             const ShaderApiDataContainer& GetCurrentShaderApiData() const;
 
@@ -277,6 +282,8 @@ namespace AZ
             Supervariant* GetSupervariant(SupervariantIndex supervariantIndex);
             const Supervariant* GetSupervariant(SupervariantIndex supervariantIndex) const;
 
+            //! Search for a supervariant index by name.
+            SupervariantIndex GetSupervariantIndexInternal(AZ::Name supervariantName) const;
 
             //! The name is the stem of the source <name>.shader file.
             Name m_name;
@@ -330,7 +337,6 @@ namespace AZ
                 const Data::Asset<Data::AssetData>& asset,
                 AZStd::shared_ptr<Data::AssetDataStream> stream,
                 const Data::AssetFilterCB& assetLoadFilterCB) override;
-            Data::AssetHandler::LoadResult PostLoadInit(const Data::Asset<Data::AssetData>& asset);
         };
 
         //////////////////////////////////////////////////////////////////////////

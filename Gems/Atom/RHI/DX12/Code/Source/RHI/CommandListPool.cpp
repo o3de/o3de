@@ -14,6 +14,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/DescriptorContext.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
@@ -179,6 +180,7 @@ namespace AZ
 
         void CommandListAllocator::Collect()
         {
+            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandListAllocator: Collect");
             for (uint32_t queueIdx = 0; queueIdx < RHI::HardwareQueueClassCount; ++queueIdx)
             {
                 m_commandListSubAllocators[queueIdx].ForEach([](Internal::CommandListSubAllocator& commandListSubAllocator)

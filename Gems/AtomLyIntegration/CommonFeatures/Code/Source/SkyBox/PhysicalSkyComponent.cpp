@@ -34,7 +34,9 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
-                behaviorContext->Class<PhysicalSkyComponent>()->RequestBus("PhysicalSkyRequestBus");
+                behaviorContext->Class<PhysicalSkyComponent>()
+                    ->RequestBus("PhysicalSkyRequestBus")
+                    ->RequestBus("SkyBoxFogRequestBus");
 
                 behaviorContext->ConstantProperty("PhysicalSkyComponentTypeId", BehaviorConstant(Uuid(PhysicalSkyComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")

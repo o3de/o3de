@@ -12,6 +12,7 @@
 #pragma once
 
 #include <Atom/RPI.Public/Shader/ShaderVariant.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
@@ -57,6 +58,7 @@ namespace AZ
             : public Data::InstanceData
             , public Data::AssetBus::Handler
             , public ShaderVariantFinderNotificationBus::Handler
+            , public ShaderReloadNotificationBus::Handler
         {
             friend class ShaderSystem;
         public:
@@ -139,6 +141,11 @@ namespace AZ
             //! This tag corresponds to the ShaderAsset object's DrawListName.
             RHI::DrawListTag GetDrawListTag() const;
 
+            //! Changes the supervariant of the shader to the specified supervariantIndex.
+            //! [GFX TODO][ATOM-15813]: this can be removed when the shader InstanceDatabase can support multiple shader
+            //! instances with different supervariants.
+            void ChangeSupervariant(SupervariantIndex supervariantIndex);
+
         private:
             explicit Shader(const SupervariantIndex& supervariantIndex) : m_supervariantIndex(supervariantIndex){};
             Shader() = delete;
@@ -161,6 +168,15 @@ namespace AZ
             /// ShaderVariantFinderNotificationBus overrides
             void OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> /*shaderVariantTreeAsset*/, bool /*isError*/) override {};
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset> shaderVariantAsset, bool IsError) override;
+            ///////////////////////////////////////////////////////////////////
+            
+            ///////////////////////////////////////////////////////////////////
+            // ShaderReloadNotificationBus overrides...
+            void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
+            // Note we don't need OnShaderVariantReinitialized because the Shader class doesn't do anything with the data inside
+            // the ShaderVariant object. The only thing we might want to do is propagate the message upward, but that's unnecessary
+            // because the ShaderReloadNotificationBus uses the Shader's AssetId as the ID for all messages including those from the variants.
+            // And of course we don't need to handle OnShaderReinitialized because this *is* this Shader.
             ///////////////////////////////////////////////////////////////////
 
             //! Returns the path to the pipeline library cache file.

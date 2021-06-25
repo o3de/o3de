@@ -14,7 +14,7 @@
 
 #include <Multiplayer/MultiplayerTypes.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityHandle.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/map.h>
 
 namespace Multiplayer
 {
@@ -24,7 +24,7 @@ namespace Multiplayer
         NetEntityRole m_netEntityRole = NetEntityRole::InvalidRole;
         float m_priority = 0.0f;
     };
-    using ReplicationSet = AZStd::unordered_map<ConstNetworkEntityHandle, EntityReplicationData>;
+    using ReplicationSet = AZStd::map<ConstNetworkEntityHandle, EntityReplicationData>;
 
     class IReplicationWindow
     {

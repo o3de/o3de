@@ -9,6 +9,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-ly_associate_package(PACKAGE_NAME NvCloth-1.1.6-rev1-multiplatform TARGETS NvCloth PACKAGE_HASH 05fc62634ca28644e7659a89e97f4520d791e6ddf4b66f010ac669e4e2ed4454)
+ly_associate_package(PACKAGE_NAME NvCloth-1.1.6-rev2-multiplatform TARGETS NvCloth PACKAGE_HASH 535d927782fa5d3086c5f813c46392ee3c294fc117dcd87b055d469c3f034356)
 
 set(PAL_TRAIT_NVCLOTH_USE_STUB FALSE)

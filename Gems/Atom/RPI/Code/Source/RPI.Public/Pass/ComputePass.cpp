@@ -241,9 +241,8 @@ namespace AZ
             LoadShader();
         }
 
-        void ComputePass::OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& shaderVariantId, ShaderVariantStableId shaderVariantStableId)
+        void ComputePass::OnShaderVariantReinitialized(const ShaderVariant&)
         {
-            AZ_UNUSED(shader); AZ_UNUSED(shaderVariantId); AZ_UNUSED(shaderVariantStableId);
             LoadShader();
         }
 

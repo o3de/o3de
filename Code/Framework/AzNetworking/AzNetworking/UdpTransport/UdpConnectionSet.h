@@ -50,6 +50,7 @@ namespace AzNetworking
         IConnection* GetConnection(ConnectionId connectionId) const override;
         ConnectionId GetNextConnectionId() override;
         uint32_t GetConnectionCount() const override;
+        uint32_t GetActiveConnectionCount() const override;
         //! @}
 
         //! Retrieves a connection from this connection list instance by endpoint remote address

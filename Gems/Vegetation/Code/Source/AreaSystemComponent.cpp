@@ -10,7 +10,7 @@
 *
 */
 
-#include "Vegetation_precompiled.h"
+#include <VegetationProfiler.h>
 #include "AreaSystemComponent.h"
 
 #include <Vegetation/Ebuses/AreaNotificationBus.h>
