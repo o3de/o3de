@@ -16,8 +16,8 @@ import ly_test_tools.o3de.asset_processor_utils as asset_processor_utils
 
 from botocore.exceptions import ClientError
 from AWS.Windows.resource_mappings.resource_mappings import resource_mappings
-from AWS.Windows.cdk.cdk import cdk
-from AWS.common.aws_utils import aws_utils
+from AWS.Windows.cdk.cdk_utils import Cdk
+from AWS.common.aws_utils import Aws_Utils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_CORE_FEATURE_NAME = 'AWSCore'
