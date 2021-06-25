@@ -18,11 +18,6 @@ public:
 
     // Public functions
 
-    //! Initialize the UI system. This should be called when all other systems that the UI
-    //! system depends upon are initialized. Once the engine is fully modularized this
-    //! function will be unnecessary.
-    virtual void InitializeSystem() {}
-
     //! Register a component type with the UI system.
     //! The order in which component types are registered is the order that they show up in
     //! the add component and in the properties pane.

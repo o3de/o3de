@@ -15,6 +15,16 @@ namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Event, MotionEventAllocator, 0)
 
+    Event::Event(EventDataPtr&& data)
+        : m_eventDatas{ AZStd::move(data) }
+    {
+    }
+
+    Event::Event(EventDataSet&& datas)
+        : m_eventDatas(AZStd::move(datas))
+    {
+    }
+
     void Event::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

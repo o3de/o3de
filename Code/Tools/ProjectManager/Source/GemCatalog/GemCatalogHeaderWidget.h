@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QDialog>
 #include <QMoveEvent>
+#include <QHideEvent>
 #include <QVBoxLayout>
 #endif
 
@@ -59,6 +60,7 @@ namespace O3DE::ProjectManager
 
     private:
         void mousePressEvent(QMouseEvent* event) override;
+        void hideEvent(QHideEvent*) override;
 
         GemModel* m_gemModel = nullptr;
         QHBoxLayout* m_layout = nullptr;

@@ -60,7 +60,6 @@ namespace LyShine
 
         ////////////////////////////////////////////////////////////////////////
         // UiSystemBus interface implementation
-        void InitializeSystem() override;
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
         const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();

@@ -24,8 +24,8 @@
 
 namespace O3DE::ProjectManager
 {
-    // 10 Minutes
-    constexpr int MaxBuildTimeMSecs = 600000;
+    // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
+    constexpr int MaxBuildTimeMSecs = -1;
 
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
