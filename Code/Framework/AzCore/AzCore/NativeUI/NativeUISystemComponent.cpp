@@ -24,6 +24,11 @@ namespace AZ::NativeUI
 
     AssertAction NativeUISystem::DisplayAssertDialog(const AZStd::string& message) const
     {
+        if (m_mode == NativeUI::Mode::DISABLED)
+        {
+            return AssertAction::NONE;
+        }
+
         static const char* buttonNames[3] = { "Ignore", "Ignore All", "Break" };
         AZStd::vector<AZStd::string> options;
         options.push_back(buttonNames[0]);
@@ -31,8 +36,8 @@ namespace AZ::NativeUI
         options.push_back(buttonNames[1]);
 #endif
         options.push_back(buttonNames[2]);
-        AZStd::string result;
-        result = DisplayBlockingDialog("Assert Failed!", message, options);
+
+        AZStd::string result = DisplayBlockingDialog("Assert Failed!", message, options);
 
         if (result.compare(buttonNames[0]) == 0)
             return AssertAction::IGNORE_ASSERT;
@@ -46,9 +51,13 @@ namespace AZ::NativeUI
 
     AZStd::string NativeUISystem::DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
-        AZStd::vector<AZStd::string> options;
+        if (m_mode == NativeUI::Mode::DISABLED)
+        {
+            return {};
+        }
 
-        options.push_back("OK");
+        AZStd::vector<AZStd::string> options{ "OK" };
+
         if (showCancel)
         {
             options.push_back("Cancel");
@@ -59,10 +68,13 @@ namespace AZ::NativeUI
 
     AZStd::string NativeUISystem::DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
-        AZStd::vector<AZStd::string> options;
+        if (m_mode == NativeUI::Mode::DISABLED)
+        {
+            return {};
+        }
 
-        options.push_back("Yes");
-        options.push_back("No");
+        AZStd::vector<AZStd::string> options{ "Yes", "No" };
+
         if (showCancel)
         {
             options.push_back("Cancel");

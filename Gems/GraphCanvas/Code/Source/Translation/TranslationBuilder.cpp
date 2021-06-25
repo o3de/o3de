@@ -43,6 +43,14 @@ namespace GraphCanvas
         }
     }
 
+    void TranslationAssetWorker::Deactivate()
+    {
+        if (AZ::Data::AssetManager::Instance().GetHandler(AZ::Data::AssetType{ azrtti_typeid<TranslationAsset>() }))
+        {
+            AZ::Data::AssetManager::Instance().UnregisterHandler(m_assetHandler.get());
+        }
+    }
+
     void TranslationAssetWorker::ShutDown()
     {
         m_isShuttingDown = true;
