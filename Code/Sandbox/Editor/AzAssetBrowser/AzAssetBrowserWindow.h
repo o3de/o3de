@@ -52,11 +52,24 @@ public:
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
 private:
+    void OnInitViewToggleButton();
+    void UpdateDisplayInfo();
+protected slots:
+    void CreateSwitchViewMenu();
+    void SetNormalAssetBrowserMode();
+    void SetSearchViewAssetBrowserMode();
+    void UpdateTableModelAfterFilter();
+    void SetTableViewVisibleAfterFilter();
+
+private:
 
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
+    QMenu* m_viewSwitchMenu = nullptr;
+    QAction* m_standardAssetBrowserMode = nullptr;
+    QAction* m_searchViewAssetBrowserMode = nullptr;
     
     void UpdatePreview() const;
 

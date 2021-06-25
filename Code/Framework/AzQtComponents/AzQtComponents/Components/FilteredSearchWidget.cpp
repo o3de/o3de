@@ -685,11 +685,6 @@ namespace AzQtComponents
         m_ui->assetTypeSelector->setVisible(visible);
     }
 
-    void FilteredSearchWidget::SetViewSelectorVisible(bool visible)
-    {
-        m_ui->viewSelector->setVisible(visible);
-    }
-
     void FilteredSearchWidget::SetTypeFilters(const SearchTypeFilterList& typeFilters)
     {
         ClearTypeFilter();

@@ -225,7 +225,6 @@ namespace AzQtComponents
         ~FilteredSearchWidget() override;
 
         void SetTypeFilterVisible(bool visible);
-        void SetViewSelectorVisible(bool visible);
         void SetTypeFilters(const SearchTypeFilterList& typeFilters);
         void AddTypeFilter(const SearchTypeFilter& typeFilter);
         void SetupOwnSelector(SearchTypeSelector* selector);
