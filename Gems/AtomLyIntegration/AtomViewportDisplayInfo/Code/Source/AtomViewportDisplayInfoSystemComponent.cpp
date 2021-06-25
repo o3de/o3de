@@ -135,7 +135,7 @@ namespace AZ::Render
             return;
         }
 
-        m_fpsInterval = AZStd::chrono::seconds(r_fpsCalcInterval);
+        m_fpsInterval = AZStd::chrono::seconds(static_cast<AZStd::sys_time_t>(r_fpsCalcInterval));
 
         UpdateFramerate();
 

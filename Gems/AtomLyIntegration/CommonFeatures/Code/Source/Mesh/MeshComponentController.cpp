@@ -442,7 +442,7 @@ namespace AZ
 
         RPI::Cullable::LodOverride MeshComponentController::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
+            return static_cast<RPI::Cullable::LodOverride>(m_meshFeatureProcessor->GetSortKey(m_meshHandle));
         }
 
         void MeshComponentController::SetVisibility(bool visible)

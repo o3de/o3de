@@ -1070,7 +1070,7 @@ int AZ::FFont::CreateQuadsForText(const RHI::Viewport& viewport, float x, float 
             uint32_t packedColor = 0xffffffff;
             {
                 ColorB tempColor = color;
-                tempColor.a = ((uint32_t) tempColor.a * alphaBlend) >> 8;
+                tempColor.a = static_cast<uint8_t>(((uint32_t) tempColor.a * alphaBlend) >> 8);
                 packedColor = tempColor.pack_argb8888();                    //note: this ends up in r,g,b,a order on little-endian machines
             }
 
@@ -1220,7 +1220,7 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
         if (ctx.m_processSpecialChars && ch == '$')
         {
             ++pChar;
-            char nextChar = *pChar;
+            char nextChar = static_cast<char>(*pChar);
 
             if (isdigit(nextChar) || nextChar == 'O' || nextChar == 'o')
             {
@@ -1516,7 +1516,7 @@ bool AZ::FFont::InitCache()
     char* p = buf;
 
     // precache all [normal] printable characters to the string (missing ones are updated on demand)
-    for (int i = first; i <= last; ++i)
+    for (char i = first; i <= last; ++i)
     {
         *p++ = i;
     }
