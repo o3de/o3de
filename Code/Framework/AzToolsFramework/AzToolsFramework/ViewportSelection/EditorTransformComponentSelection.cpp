@@ -2023,7 +2023,7 @@ namespace AzToolsFramework
     static void AddAction(
         AZStd::vector<AZStd::unique_ptr<QAction>>& actions,
         const QList<QKeySequence>& keySequences,
-        int actionId,
+        AZ::Crc32 actionId,
         const QString& name,
         const QString& statusTip,
         const T& callback)
@@ -2038,7 +2038,7 @@ namespace AzToolsFramework
 
         QObject::connect(actions.back().get(), &QAction::triggered, actions.back().get(), callback);
 
-        EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBus, actionId, actions.back().get());
+        EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBusCrc, actionId, actions.back().get());
     }
 
     void EditorTransformComponentSelection::OnEscape()
@@ -2111,18 +2111,20 @@ namespace AzToolsFramework
         };
 
         // lock selection
+        static const AZ::Crc32 s_lockSelection = AZ_CRC_CE("com.amazon.action.editortransform.lockselect");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_L) },
-            /*ID_EDIT_FREEZE =*/32900, s_lockSelectionTitle, s_lockSelectionDesc,
+            s_lockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(true);
             });
 
         // unlock selection
+        static const AZ::Crc32 s_unlockSelection = AZ_CRC_CE("com.amazon.action.editortransform.unlockselect");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) },
-            /*ID_EDIT_UNFREEZE =*/32973, s_lockSelectionTitle, s_lockSelectionDesc,
+            s_unlockSelection, s_lockSelectionTitle, s_lockSelectionDesc,
             [lockUnlock]()
             {
                 lockUnlock(false);
@@ -2151,27 +2153,30 @@ namespace AzToolsFramework
         };
 
         // hide selection
+        static const AZ::Crc32 s_hideSelection = AZ_CRC_CE("com.amazon.action.editortransform.hideselect");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_H) },
-            /*ID_EDIT_HIDE =*/32898, s_hideSelectionTitle, s_hideSelectionDesc,
+            s_hideSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(false);
             });
 
         // show selection
+        static const AZ::Crc32 s_showSelection = AZ_CRC_CE("com.amazon.action.editortransform.showselect");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) },
-            /*ID_EDIT_UNHIDE =*/32974, s_hideSelectionTitle, s_hideSelectionDesc,
+            s_showSelection, s_hideSelectionTitle, s_hideSelectionDesc,
             [showHide]()
             {
                 showHide(true);
             });
 
         // unlock all entities in the level/scene
+        static const AZ::Crc32 s_unfreezeAll = AZ_CRC_CE("com.amazon.action.editortransform.unfreezeall");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) },
-            /*ID_EDIT_UNFREEZEALL =*/32901, s_unlockAllTitle, s_unlockAllDesc,
+            s_unfreezeAll, s_unlockAllTitle, s_unlockAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2187,9 +2192,10 @@ namespace AzToolsFramework
             });
 
         // show all entities in the level/scene
+        static const AZ::Crc32 s_unhideAll = AZ_CRC_CE("com.amazon.action.editortransform.unhideall");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) },
-            /*ID_EDIT_UNHIDEALL =*/32899, s_showAllTitle, s_showAllDesc,
+            s_unhideAll, s_showAllTitle, s_showAllDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2205,9 +2211,10 @@ namespace AzToolsFramework
             });
 
         // select all entities in the level/scene
+        static const AZ::Crc32 s_selectAll = AZ_CRC_CE("com.amazon.action.editortransform.selectall");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) },
-            /*ID_EDIT_SELECTALL =*/33376, s_selectAllTitle, s_selectAllDesc,
+            s_selectAll, s_selectAllTitle, s_selectAllDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2246,9 +2253,10 @@ namespace AzToolsFramework
             });
 
         // invert current selection
+        static const AZ::Crc32 s_invertSelect = AZ_CRC_CE("com.amazon.action.editortransform.invertselect");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) },
-            /*ID_EDIT_INVERTSELECTION =*/33692, s_invertSelectionTitle, s_invertSelectionDesc,
+            s_invertSelect, s_invertSelectionTitle, s_invertSelectionDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2294,9 +2302,10 @@ namespace AzToolsFramework
             });
 
         // duplicate selection
+        static const AZ::Crc32 s_duplicateSelect = AZ_CRC_CE("com.amazon.action.editortransform.duplicateselect");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
-            /*ID_EDIT_CLONE =*/33525, s_duplicateTitle, s_duplicateDesc,
+            s_duplicateSelect, s_duplicateTitle, s_duplicateDesc,
             []()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2320,9 +2329,10 @@ namespace AzToolsFramework
             });
 
         // delete selection
+        static const AZ::Crc32 s_deleteSelect = AZ_CRC_CE("com.amazon.action.editortransform.deleteselect");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_Delete) },
-            /*ID_EDIT_DELETE=*/33480, s_deleteTitle, s_deleteDesc,
+            s_deleteSelect, s_deleteTitle, s_deleteDesc,
             [this]()
             {
                 AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
@@ -2338,25 +2348,28 @@ namespace AzToolsFramework
                 m_pivotOverrideFrame.Reset();
             });
 
+        static const AZ::Crc32 s_editEscaspe = AZ_CRC_CE("com.amazon.action.editortransform.editescape");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_Space) },
-            /*ID_EDIT_ESCAPE=*/33513, "", "",
+            s_editEscaspe, "", "",
             [this]()
             {
                 DeselectEntities();
             });
 
+        static const AZ::Crc32 s_editPivot = AZ_CRC_CE("com.amazon.action.editortransform.editpivot");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_P) },
-            /*ID_EDIT_PIVOT=*/36203, s_togglePivotTitleEditMenu, s_togglePivotDesc,
+            s_editPivot, s_togglePivotTitleEditMenu, s_togglePivotDesc,
             [this]()
             {
                 ToggleCenterPivotSelection();
             });
 
+        static const AZ::Crc32 s_editReset = AZ_CRC_CE("com.amazon.action.editortransform.editreset");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_R) },
-            /*ID_EDIT_RESET=*/36204, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
+            s_editReset, s_resetEntityTransformTitle, s_resetEntityTransformDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2373,14 +2386,16 @@ namespace AzToolsFramework
                 }
             });
 
+        static const AZ::Crc32 s_editResetManipulator = AZ_CRC_CE("com.amazon.action.editortransform.editresetmanipulator");
         AddAction(
             m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) },
-            /*ID_EDIT_RESET_MANIPULATOR=*/36207, s_resetManipulatorTitle, s_resetManipulatorDesc,
+            s_editResetManipulator, s_resetManipulatorTitle, s_resetManipulatorDesc,
             AZStd::bind(AZStd::mem_fn(&EditorTransformComponentSelection::DelegateClearManipulatorOverride), this));
 
+        static const AZ::Crc32 s_editResetLocal = AZ_CRC_CE("com.amazon.action.editortransform.editresetlocal");
         AddAction(
             m_actions, { QKeySequence(Qt::ALT + Qt::Key_R) },
-            /*ID_EDIT_RESET_LOCAL=*/36205, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
+            s_editResetLocal, s_resetTransformLocalTitle, s_resetTransformLocalDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2397,9 +2412,10 @@ namespace AzToolsFramework
                 }
             });
 
+        static const AZ::Crc32 s_editResetWorld = AZ_CRC_CE("com.amazon.action.editortransform.editresetworld");
         AddAction(
             m_actions, { QKeySequence(Qt::SHIFT + Qt::Key_R) },
-            /*ID_EDIT_RESET_WORLD=*/36206, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
+            s_editResetWorld, s_resetTransformWorldTitle, s_resetTransformWorldDesc,
             [this]()
             {
                 switch (m_mode)
@@ -2419,9 +2435,10 @@ namespace AzToolsFramework
                 }
             });
 
+        static const AZ::Crc32 s_ViewportUiVisible = AZ_CRC_CE("com.amazon.action.editortransform.viewportuivisible");
         AddAction(
             m_actions, { QKeySequence(Qt::Key_U) },
-            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle Viewport UI", "Hide/Show Viewport UI",
+            s_ViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
             [this]()
             {
                 SetAllViewportUiVisible(!m_viewportUiVisible);

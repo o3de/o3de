@@ -115,8 +115,7 @@ namespace UnitTest
 
         if (action)
         {
-            AZ::u32 new_id = id;
-            action->setData(new_id);
+            action->setData(aznumeric_cast<AZ::u32>(id));
             action->setShortcutContext(Qt::ApplicationShortcut);
             m_defaultWidget.addAction(action);
         }

@@ -392,8 +392,7 @@ void ActionManager::AddAction(int id, QAction* action)
 
 void ActionManager::AddAction(AZ::Crc32 id, QAction* action)
 {
-    AZ::u32 new_id = id;
-    action->setData(new_id);
+    action->setData(aznumeric_cast<AZ::u32>(id));
     AddAction(action);
 }
 
@@ -448,9 +447,8 @@ ActionManager::ActionWrapper ActionManager::AddAction(int id, const QString& nam
 
 ActionManager::ActionWrapper ActionManager::AddAction(AZ::Crc32 id , const QString& name)
 {
-    AZ::u32 new_id = id;
-    QAction* action = ActionIsWidget(new_id) ? new WidgetAction(new_id, m_mainWindow, name, this)
-       : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compile
+    QAction* action = ActionIsWidget(aznumeric_cast<AZ::u32>(id)) ? new WidgetAction(aznumeric_cast<AZ::u32>(id), m_mainWindow, name, this)
+    : static_cast<QAction*>(new PatchedAction(name, this)); // static cast to base so ternary compile
     AddAction(id, action);
     return ActionWrapper(action, this);
 }
