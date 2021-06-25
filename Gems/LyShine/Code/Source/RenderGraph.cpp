@@ -386,7 +386,7 @@ namespace LyShine
             curBaseState.m_stencilState.m_backFace = stencilOpState;
 
             // set up for stencil write
-            dynamicDraw->SetStencilReference(uiRenderer->GetStencilRef());
+            dynamicDraw->SetStencilReference(static_cast<uint8_t>(uiRenderer->GetStencilRef()));
             curBaseState.m_stencilState.m_enable = true;
             curBaseState.m_stencilState.m_writeMask = 0xFF;
         }
@@ -420,7 +420,7 @@ namespace LyShine
                 uiRenderer->DecrementStencilRef();
             }
 
-            dynamicDraw->SetStencilReference(uiRenderer->GetStencilRef());
+            dynamicDraw->SetStencilReference(static_cast<uint8_t>(uiRenderer->GetStencilRef()));
 
             if (firstPass)
             {
@@ -790,7 +790,7 @@ namespace LyShine
             {
                 for (int i = 0; i < primitive->m_numVertices; ++i)
                 {
-                    primitive->m_vertices[i].texIndex = texUnit;
+                    primitive->m_vertices[i].texIndex = static_cast<uint8>(texUnit);
                 }
             }
 

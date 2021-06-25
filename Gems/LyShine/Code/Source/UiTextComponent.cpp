@@ -1096,7 +1096,7 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
         if (m_texture)
         {
             AZ::RHI::Size size = m_texture->GetDescriptor().m_size;
-            m_size = AZ::Vector2(size.m_width, size.m_height);
+            m_size = AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
         }
     }
 
