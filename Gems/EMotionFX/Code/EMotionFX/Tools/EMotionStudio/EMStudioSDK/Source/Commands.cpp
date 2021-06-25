@@ -315,10 +315,8 @@ namespace EMStudio
                 EMotionFX::Pipeline::Rule::RemoveRuleFromGroup<EMotionFX::Pipeline::Rule::MetaDataRule, const AZStd::vector<MCore::Command*>>(*scene, group);
 
                 // Add motion meta data.
-                EMotionFX::Pipeline::Rule::MotionMetaData motionMetaData;
-                motionMetaData.m_motionEventTable = motion->GetEventTable();
-                motionMetaData.m_motionExtractionFlags = motion->GetMotionExtractionFlags();
-                EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, EMotionFX::Pipeline::Rule::MotionMetaData>(*scene, group, motionMetaData);
+                auto motionMetaData = AZStd::make_shared<EMotionFX::Pipeline::Rule::MotionMetaData>(motion->GetMotionExtractionFlags(), motion->GetEventTable());
+                EMotionFX::Pipeline::Rule::SaveToGroup<EMotionFX::Pipeline::Rule::MotionMetaDataRule, AZStd::shared_ptr<EMotionFX::Pipeline::Rule::MotionMetaData>>(*scene, group, motionMetaData);
             }
         }
 
