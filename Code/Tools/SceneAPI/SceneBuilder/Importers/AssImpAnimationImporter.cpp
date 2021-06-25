@@ -445,11 +445,11 @@ namespace AZ
 
                 AZStd::unordered_set<AZStd::string> boneList;
 
-                for (int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[meshIndex];
 
-                    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
                         aiBone* bone = mesh->mBones[boneIndex];
 
