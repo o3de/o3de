@@ -11,6 +11,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 # Configurations for the fleets to deploy.
 # Modify the fleet configuration fields below before deploying the CDK application.
+# Customers can define multiple fleets by copying the existing configuration template below and
+# append the new fleet configuration to the FLEET_CONFIGURATIONS list. All the fleets in the list
+# will be deployed automatically by this CDK application.
 # To select the right combination of hosting resources and learn how to configure them to best suit to your application,
 # please check: https://docs.aws.amazon.com/gamelift/latest/developerguide/fleets-design.html
 FLEET_CONFIGURATIONS = [
@@ -29,7 +32,8 @@ FLEET_CONFIGURATIONS = [
                 # Required if specify TERMINAL for the Type property,
                 'message': '<routing strategy message>',
                 # (Required) A type of routing strategy.
-                'type': 'SIMPLE | TERMINAL'
+                # Choose from SIMPLE or TERMINAL.
+                'type': 'SIMPLE'
             }
         },
         # (Required) Information about a game server build that is installed and
@@ -39,17 +43,19 @@ FLEET_CONFIGURATIONS = [
             # This parameter is required unless the parameters build_path and operating_system are defined and
             # the conditional variable upload-with-support-stack is set to true
             'build_id': '<build id>',
-            # (Conditional) The disk location of the local build file(zip).
+            # (Conditional) The disk location of the local build file(.zip).
             # This parameter is required unless the parameter build_id is defined.
             'build_path': '<build path>',
             # (Conditional) The operating system that the game server binaries are built to run on.
             # This parameter is required if the parameter build_path is defined.
-            'operating_system': 'AMAZON_LINUX | AMAZON_LINUX_2 | WINDOWS_2012'
+            # Choose from AMAZON_LINUX, AMAZON_LINUX or WINDOWS_2012.
+            'operating_system': 'WINDOWS_2012'
         },
         # (Optional) Information about the use of a TLS/SSL certificate for a fleet.
         'certificate_configuration': {
             # (Required) Indicates whether a TLS/SSL certificate is generated for the fleet.
-            'certificate_type': 'DISABLED | GENERATED',
+            # Choose from DISABLED or GENERATED.
+            'certificate_type': 'DISABLED',
         },
         # A human-readable description of the fleet.
         'description': 'Amazon GameLift fleet to host game servers.',
@@ -59,14 +65,14 @@ FLEET_CONFIGURATIONS = [
         'ec2_inbound_permissions': [
             {
                 # (Required) A starting value for a range of allowed port numbers.
-                # 30090 is the default server port defined by the Multiplayer Gem.
-                'from_port': 30090,
+                # 33450 is the default server port defined by the Multiplayer Gem.
+                'from_port': 33450,
                 # (Required) A range of allowed IP addresses.
                 'ip_range': '<ip range>',
                 # (Required) The network communication protocol used by the fleet.
                 'protocol': 'UDP',
                 # (Required) An ending value for a range of allowed port numbers.
-                'to_port': 30090
+                'to_port': 33450
             },
             {
                 # Open the debug port for remote into a Windows fleet.
@@ -84,23 +90,14 @@ FLEET_CONFIGURATIONS = [
             }
         ],
         # (Optional) The GameLift-supported EC2 instance type to use for all fleet instances.
-        'ec2_instance_type': 'c3.2xlarge | c3.4xlarge | c3.8xlarge | c3.large | c3.xlarge | c4.2xlarge | c4.4xlarge |'
-                             ' c4.8xlarge | c4.large | c4.xlarge | c5.12xlarge | c5.18xlarge | c5.24xlarge |'
-                             ' c5.2xlarge | c5.4xlarge | c5.9xlarge | c5.large | c5.xlarge | c5a.12xlarge |'
-                             ' c5a.16xlarge | c5a.24xlarge | c5a.2xlarge | c5a.4xlarge | c5a.8xlarge | c5a.large |'
-                             ' c5a.xlarge | m3.2xlarge | m3.large | m3.medium | m3.xlarge | m4.10xlarge | m4.2xlarge |'
-                             ' m4.4xlarge | m4.large | m4.xlarge | m5.12xlarge | m5.16xlarge | m5.24xlarge |'
-                             ' m5.2xlarge | m5.4xlarge | m5.8xlarge | m5.large | m5.xlarge | m5a.12xlarge |'
-                             ' m5a.16xlarge | m5a.24xlarge | m5a.2xlarge | m5a.4xlarge | m5a.8xlarge | m5a.large |'
-                             ' m5a.xlarge | r3.2xlarge | r3.4xlarge | r3.8xlarge | r3.large | r3.xlarge | r4.16xlarge |'
-                             ' r4.2xlarge | r4.4xlarge | r4.8xlarge | r4.large | r4.xlarge | r5.12xlarge |'
-                             ' r5.16xlarge | r5.24xlarge | r5.2xlarge | r5.4xlarge | r5.8xlarge | r5.large |'
-                             ' r5.xlarge | r5a.12xlarge | r5a.16xlarge | r5a.24xlarge | r5a.2xlarge | r5a.4xlarge |'
-                             ' r5a.8xlarge | r5a.large | r5a.xlarge | t2.large | t2.medium | t2.micro | t2.small',
+        # Choose from the available EC2 instance type list: https://aws.amazon.com/ec2/instance-types/
+        'ec2_instance_type': 'c5.large',
         # (Optional) Indicates whether to use On-Demand or Spot instances for this fleet.
-        'fleet_type': 'ON_DEMAND | SPOT',
+        # Choose from ON_DEMAND or SPOT
+        'fleet_type': 'ON_DEMAND',
         # (Optional) A game session protection policy to apply to all game sessions hosted on instances in this fleet.
-        'new_game_session_protection_policy': 'FullProtection | NoProtection',
+        # Choose from FullProtection or NoProtection
+        'new_game_session_protection_policy': 'NoProtection',
         # (Optional) A policy that limits the number of game sessions that an individual player
         # can create on instances in this fleet within a specified span of time.
         'resource_creation_limit_policy': {
@@ -131,17 +128,19 @@ FLEET_CONFIGURATIONS = [
                     # run concurrently on each instance.
                     # Provide any integer not less than 1.
                     'concurrent_executions': 1,
-                    # (Required) The location of a game build executable or the Realtime script file that
-                    # contains the Init() function.
-                    'launch_path': '(Windows) <C:\\game\\<executable or script> | '
-                                   '(Linux) /local/game/MyGame/<executable or script>',
-                    # (Optional) An optional list of parameters to pass to the server executable
-                    # or Realtime script on launch.
-                    'parameters': '<launch parameters>'
+                    # (Required) The location of a game build executable that contains the Init() function.
+                    # Game builds are installed on instances at the root:
+                    # Windows (custom game builds only): C:\game.
+                    # Linux: /local/game.
+                    'launch_path': 'C:\\game\\bin\\server.exe',
+                    # (Optional) An optional list of parameters to pass to the server executable on launch.
+                    'parameters': '--sv_port 33450 --project-path=C:\\game '
+                                  '--project-cache-path=C:\\game\\assets --engine-path=C:\\game '
+                                  '-bg_ConnectToAssetProcessor=0'
                 }
             ]
         }
         # For additional fleet configurations, please check:
-        # # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_GameLift.html
+        # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_GameLift.html
     }
 ]

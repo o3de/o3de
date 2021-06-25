@@ -20,7 +20,10 @@ from aws_gamelift.support_stack import SupportStack
 
 class AWSGameLift(core.Construct):
     """
-    Orchestrates setting up the AWS GameLift Stack(s)
+    Orchestrates setting up the AWS GameLift Stack(s).
+
+    This construct uses the fleet configurations defined in
+    aws_gamelift/fleet_configurations.py to set up the GameLift stacks.
     """
     def __init__(self,
                  scope: core.Construct,
@@ -41,7 +44,7 @@ class AWSGameLift(core.Construct):
                 f'{stack_name}-Support',
                 stack_name=stack_name,
                 fleet_configurations=fleet_configurations,
-                description='(Optional) Contains resources for creating GameLift builds with local files',
+                description='Contains resources for creating GameLift builds with local files',
                 tags=tags,
                 env=env
             )
