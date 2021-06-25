@@ -19,9 +19,14 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <ResourceMapping/AWSResourceMappingUtils.h>
+#include <Credential/AWSCredentialBus.h>
 
 #include <QSysInfo>
 #include <QString>
+#include <QMessageBox>
+#include <QLayout>
+#include <QCheckBox>
+#include <QTimer>
 
 
 
@@ -34,6 +39,7 @@ namespace AWSCore
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
+    constexpr char AWSAttributionConsentShown[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
     constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
     constexpr char AWSAttributionChinaApiId[] = "";
     constexpr char AWSAttributionApiStage[] = "prod";
@@ -42,19 +48,49 @@ namespace AWSCore
     AWSAttributionManager::AWSAttributionManager()
     {
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     AWSAttributionManager::~AWSAttributionManager()
     {
         m_settingsRegistry.reset();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
 
     void AWSAttributionManager::Init()
     {
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "File IO is not initialized.");
+
+        // Resolve path to editor_aws_preferences.setreg
+        AZStd::string editorAWSPreferencesFilePath =
+            AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
+        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
+        {
+            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
+            return;
+        }
+
+        if (fileIO->Exists(resolvedPathAWSPreference.data()))
+        {
+            m_settingsRegistry->MergeSettingsFile(
+                resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+        }
     }
 
     void AWSAttributionManager::MetricCheck()
     {
+        if (!CheckAWSCredentialsConfigured())
+        {
+            return;
+        }
+
+        if (!CheckConsentShown())
+        {
+            ShowConsentDialog();
+        }
+        
         if (ShouldGenerateMetric())
         {
             // Gather metadata and assemble metric
@@ -67,30 +103,12 @@ namespace AWSCore
     }
 
     bool AWSAttributionManager::ShouldGenerateMetric() const
-    {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO, "File IO is not initialized.");
-
-        // Resolve path to editor_aws_preferences.setreg
-        AZStd::string editorAWSPreferencesFilePath =
-            AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
-        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
-        {
-            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
-            return false;
-        }
-
-        if (fileIO->Exists(resolvedPathAWSPreference.data()))
-        {
-            m_settingsRegistry->MergeSettingsFile(resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
-        }
-
+    {   
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
-            // If not found default to sending the metric.
-            awsAttributionEnabled = true;
+            AZ_Warning("AWSAttributionManager", false, "Key %s should be set by consent window", AWSAttributionEnabledKey);
+            return false;
         }
 
         if (!awsAttributionEnabled)
@@ -122,6 +140,68 @@ namespace AWSCore
         }
 
         return false;
+    }
+
+    bool AWSAttributionManager::CheckAWSCredentialsConfigured()
+    {
+        AWSCore::AWSCredentialResult credentialResult;
+        AWSCore::AWSCredentialRequestBus::BroadcastResult(credentialResult, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
+        if (credentialResult.result)
+        {
+            std::shared_ptr<Aws::Auth::AWSCredentialsProvider> provider = credentialResult.result;
+            auto creds = provider->GetAWSCredentials();
+            if (!creds.IsEmpty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void AWSAttributionManager::ShowConsentDialog()
+    {
+        QMessageBox* msgBox = new QMessageBox();
+        msgBox->setWindowTitle("AWS Core Gem Usage Agreement");
+        QString message = "<nobr>The AWS Core Gem has detected credentials for an Amazon Web Services account for this</nobr><br>\
+                           <nobr>instance of O3DE. <a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials\">Click here</a> to learn more about AWS integration, including how to</nobr><br>\
+                           <nobr>manage your AWS credentials.</nobr><br><br>\
+                           <nobr>Please note: when credentials are detected, AWS Core Gem sends telemetry data to AWS,</nobr><br>\
+                           <nobr>which helps us improve AWS services for O3DE. You can change this setting below, and at</nobr><br>\
+                           <nobr>any time in Settings: Global Preferences. Data sent is subject to the <a href=\"https://aws.amazon.com/privacy\">AWS Privacy Policy</a>.</nobr><br>\
+                           <nobr><a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/telemetry-data-collection\">Click here</a> to learn more about what data is sent to AWS.</nobr>";
+        msgBox->setText(message);
+        QCheckBox* checkBox = new QCheckBox("Please share the information about my use of AWS Core Gem with AWS.");
+        checkBox->setChecked(true);        
+        msgBox->setCheckBox(checkBox);
+        msgBox->setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+        msgBox->setDefaultButton(QMessageBox::Save);
+        msgBox->button(QMessageBox::Cancel)->hide();
+        msgBox->setIcon(QMessageBox::Information);
+        QGridLayout* layout = (QGridLayout*)msgBox->layout();
+        layout->setVerticalSpacing(20);
+        layout->setHorizontalSpacing(10);
+
+        m_settingsRegistry->Set(AWSAttributionConsentShown, true);
+        int ret = msgBox->exec();
+        switch (ret)
+        {
+        case QMessageBox::Save:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox());
+            break;
+        case QMessageBox::Cancel:
+        default:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, false);
+            break;
+        }
+
+        SaveSettingsRegistryFile();
+        delete msgBox;
+    }
+
+    void AWSAttributionManager::NotifyMainWindowInitialized(QMainWindow* mainWindow)
+    {
+        AZ_UNUSED(mainWindow);
+        MetricCheck();
     }
 
     void AWSAttributionManager::SaveSettingsRegistryFile()
@@ -197,6 +277,13 @@ namespace AWSCore
         config->region = Aws::Region::US_WEST_2;
         config->endpointOverride =
             AWSResourceMappingUtils::FormatRESTApiUrl(apiId, config->region.value().c_str(), AWSAttributionApiStage).c_str();
+    }
+
+    bool AWSAttributionManager::CheckConsentShown()
+    {
+        bool consentShown = false;
+        m_settingsRegistry->Get(consentShown, AWSAttributionConsentShown);
+        return consentShown;
     }
 
     AZStd::string AWSAttributionManager::GetEngineVersion() const
