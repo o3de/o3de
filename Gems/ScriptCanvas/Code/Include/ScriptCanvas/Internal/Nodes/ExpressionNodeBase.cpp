@@ -465,11 +465,12 @@ namespace ScriptCanvas
 
                         //see if the slot's displaygroup already have assigned displaytype
                         Node* node = slot->GetNode();
-                        if (node->GetDisplayType(slot->GetDisplayGroup()) != Data::Type::Invalid())
+                        Data::Type nodeDataType = node->GetNodeDataType();
+                        if (nodeDataType != Data::Type::Invalid())
                         {
                             //use the displayGroup's type. Make sure to not let HandleExpressionNodeExtension to open up
-                            slot->SetDisplayType(node->GetDisplayType(slot->GetDisplayGroup()));
-
+                            slot->SetDisplayType(nodeDataType);
+                            node->isDisplayTypeInitialized = true;
                         }
 
 
