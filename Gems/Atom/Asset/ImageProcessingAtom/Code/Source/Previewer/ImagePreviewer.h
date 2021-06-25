@@ -13,12 +13,15 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/Previewer.h>
 
 #include <Atom/ImageProcessing/ImageObject.h>
 
 #include <QWidget>
 #include <QScopedPointer>
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
 #endif
 
 namespace Ui
@@ -42,6 +45,7 @@ namespace ImageProcessingAtom
 {
     class ImagePreviewer
         : public AzToolsFramework::AssetBrowser::Previewer
+        , private AZ::SystemTickBus::Handler
     {
         Q_OBJECT
     public:
@@ -65,10 +69,16 @@ namespace ImageProcessingAtom
         QString GetFileSize(const char* path);
 
         void DisplayTextureItem();
+        template<class CreateFn>
+        void CreateAndDisplayTextureItemAsync(CreateFn create);
+
         void PreviewSubImage(uint32_t mip);
 
         // QLabel word wrap does not break long words such as filenames, so manual word wrap needed
         static QString WordWrap(const QString& string, int maxLength);
+
+        // SystemTickBus
+        void OnSystemTick() override;
 
         QScopedPointer<Ui::ImagePreviewerClass> m_ui;
         QString m_fileinfo;
@@ -76,5 +86,10 @@ namespace ImageProcessingAtom
 
         // Decompressed image in preview. Cache it so we can preview its sub images
         IImageObjectPtr m_previewImageObject;
+
+        // Properties for tracking the status of an asynchronous request to display an asset browser entry
+        using CreateDisplayTextureResult = AZStd::pair<IImageObjectPtr, QString>;
+
+        QFuture<CreateDisplayTextureResult> m_createDisplayTextureResult;
     };
 }//namespace ImageProcessingAtom

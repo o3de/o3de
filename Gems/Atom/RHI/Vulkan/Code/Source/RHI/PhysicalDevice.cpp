@@ -62,12 +62,7 @@ namespace AZ
             {
                 RHI::Ptr<PhysicalDevice> physicalDevice = aznew PhysicalDevice;
                 physicalDevice->Init(device);
-                size_t gpuMemSize =  physicalDevice->GetDescriptor().m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Device)];
-                AZ_Warning("Vulkan", gpuMemSize >= MinGPUMemSize, "Rejecting GPU %s as it's gpu mem size of %zu bytes is less than min required size of %zu bytes for Vulkan API", physicalDevice->GetDescriptor().m_description.c_str(), gpuMemSize, MinGPUMemSize);
-                if (gpuMemSize >= MinGPUMemSize)
-                {
-                    physicalDeviceList.emplace_back(physicalDevice);
-                }
+                physicalDeviceList.emplace_back(physicalDevice);
             }
 
             return physicalDeviceList;

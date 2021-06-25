@@ -29,12 +29,12 @@ namespace Multiplayer
 
     bool MultiplayerController::IsAuthority() const
     {
-        return GetNetBindComponent() ? GetNetBindComponent()->IsAuthority() : false;
+        return GetNetBindComponent() ? GetNetBindComponent()->IsNetEntityRoleAuthority() : false;
     }
 
     bool MultiplayerController::IsAutonomous() const
     {
-        return GetNetBindComponent() ? GetNetBindComponent()->IsAutonomous() : false;
+        return GetNetBindComponent() ? GetNetBindComponent()->IsNetEntityRoleAutonomous() : false;
     }
 
     AZ::Entity* MultiplayerController::GetEntity() const

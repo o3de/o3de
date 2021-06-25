@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string.h>
 

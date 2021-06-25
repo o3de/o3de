@@ -16,6 +16,7 @@
 
 // Editor
 #include "EditorViewportCamera.h"
+#include "EditorViewportSettings.h"
 #include "GameEngine.h"
 #include "ViewManager.h"
 
@@ -111,12 +112,24 @@ void GotoPositionDialog::OnUpdateNumbers()
 
 void GotoPositionDialog::accept()
 {
-    SandboxEditor::SetDefaultViewportCameraPosition(AZ::Vector3(
-        aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
-        aznumeric_cast<float>(m_ui->m_dymZ->value())));
-    SandboxEditor::SetDefaultViewportCameraRotation(
-        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())),
-        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value())));
+    if (SandboxEditor::UsingNewCameraSystem())
+    {
+        SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+            AZ::Vector3(
+                aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
+                aznumeric_cast<float>(m_ui->m_dymZ->value())),
+            AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())),
+            AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value())));
+    }
+    else
+    {
+        SandboxEditor::SetDefaultViewportCameraPosition(AZ::Vector3(
+            aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
+            aznumeric_cast<float>(m_ui->m_dymZ->value())));
+        SandboxEditor::SetDefaultViewportCameraRotation(
+            AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())),
+            AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value())));
+    }
 
     QDialog::accept();
 }
