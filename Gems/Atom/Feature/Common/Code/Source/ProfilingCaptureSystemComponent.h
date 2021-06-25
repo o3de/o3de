@@ -69,6 +69,7 @@ namespace AZ
             bool CapturePassTimestamp(const AZStd::string& outputFilePath) override;
             bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) override;
             bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
+            bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) override;
 
         private:
             void OnTick(float deltaTime, ScriptTimePoint time) override;
@@ -81,6 +82,7 @@ namespace AZ
             DelayedQueryCaptureHelper m_timestampCapture;
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;
             DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
+            DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
         };
     }
 }
