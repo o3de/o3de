@@ -82,12 +82,12 @@ namespace ScriptCanvas
 
             void DelayNodeable::Reset(Data::NumberType countdownSeconds, Data::BooleanType looping, Data::NumberType holdTime)
             {
-                InitiateCountdown(true, countdownSeconds, looping, holdTime);
+                InitiateCountdown(true, static_cast<float>(countdownSeconds), looping, static_cast<float>(holdTime));
             }
 
             void DelayNodeable::Start(Data::NumberType countdownSeconds, Data::BooleanType looping, Data::NumberType holdTime)
             {
-                InitiateCountdown(false, countdownSeconds, looping, holdTime);
+                InitiateCountdown(false, static_cast<float>(countdownSeconds), looping, static_cast<float>(holdTime));
             }
         }
     }
