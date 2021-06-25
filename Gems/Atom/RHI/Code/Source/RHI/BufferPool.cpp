@@ -6,6 +6,7 @@
  */
 
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -160,7 +161,8 @@ namespace AZ
             {
                 return ResultCode::InvalidArgument;
             }
-
+            
+            AZ_ATOM_PROFILE_FUNCTION("RHI", "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 
