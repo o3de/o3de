@@ -203,12 +203,6 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::InitializeSystem()
-    {
-        BroadcastCursorImagePathname();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid)
     {
         m_componentTypes.push_back(typeUuid);
@@ -379,6 +373,8 @@ namespace LyShine
 #endif
         m_pLyShine = new CLyShine(gEnv->pSystem);
         gEnv->pLyShine = m_pLyShine;
+
+        BroadcastCursorImagePathname();
     }
 
     void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
