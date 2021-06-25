@@ -847,8 +847,6 @@ bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
         parentWidget()->setFocus();
     }
 
-
-
     return QWidget::eventFilter(object, event) || consumeEvent;
 }
 
