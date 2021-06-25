@@ -59,7 +59,7 @@ namespace AZ
 
             if (viewSrgShaderAsset.IsReady())
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgShaderAsset, DefaultSupervariantIndex, RPISystemInterface::Get()->GetViewSrgLayout()->GetName());
+                m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgShaderAsset, RPISystemInterface::Get()->GetViewSrgLayout()->GetName());
             }
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();

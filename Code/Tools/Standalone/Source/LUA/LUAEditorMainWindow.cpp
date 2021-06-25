@@ -1765,16 +1765,8 @@ namespace LUAEditor
             return false;
         }
 
-        //name has the full path in it, we need to convert it to an asset name
-        AZStd::string projectRoot, databaseRoot, databasePath, databaseFile, fileExtension;
-        if (!AzFramework::StringFunc::AssetDatabasePath::Split(name.toUtf8().data(), &projectRoot, &databaseRoot, &databasePath, &databaseFile, &fileExtension))
-        {
-            AZ_Warning("LUAEditorMainWindow", false, AZStd::string::format("<span severity=\"err\">Path is invalid: '%s'</span>", name.toUtf8().data()).c_str());
-            return false;
-        }
-
         AzFramework::StringFunc::Path::Split(name.toUtf8().data(), nullptr, &m_lastOpenFilePath);
-        AzFramework::StringFunc::AssetDatabasePath::Join(databasePath.c_str(), databaseFile.c_str(), newAssetName);
+        newAssetName = name.toUtf8().data();
 
         return true;
     }

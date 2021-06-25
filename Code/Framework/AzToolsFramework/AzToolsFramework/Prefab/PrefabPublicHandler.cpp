@@ -922,8 +922,8 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Failed to duplicate : Couldn't get a valid owning instance for the common root entity of the entities provided."));
             }
 
-            // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
-            // cannot duplicate an instance from itself.
+            // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance
+            // This is because containers, despite representing the nested instance in the parent, are owned by the child.
             if (commonOwningInstance->get().GetContainerEntityId() == firstEntityIdToDuplicate)
             {
                 commonOwningInstance = commonOwningInstance->get().GetParentInstance();
@@ -967,16 +967,17 @@ namespace AzToolsFramework
 
                 // Duplicate any nested entities and instances as requested
                 AZStd::unordered_map<InstanceAlias, Instance*> newInstanceAliasToOldInstanceMap;
+                AZStd::unordered_map<EntityAlias, EntityAlias> duplicateEntityAliasMap;
                 DuplicateNestedEntitiesInInstance(commonOwningInstance->get(),
-                    entities, instanceDomAfter, duplicatedEntityAndInstanceIds);
-                DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
-                    instances, instanceDomAfter, duplicatedEntityAndInstanceIds,
-                    newInstanceAliasToOldInstanceMap);
+                    entities, instanceDomAfter, duplicatedEntityAndInstanceIds, duplicateEntityAliasMap);
 
                 PrefabUndoInstance* command = aznew PrefabUndoInstance("Entity/Instance duplication");
                 command->SetParent(undoBatch.GetUndoBatch());
                 command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
                 command->Redo();
+
+                DuplicateNestedInstancesInInstance(commonOwningInstance->get(),
+                    instances, instanceDomAfter, duplicatedEntityAndInstanceIds, newInstanceAliasToOldInstanceMap);
 
                 // Create links for our duplicated instances (if any were duplicated)
                 for (auto [newInstanceAlias, oldInstance] : newInstanceAliasToOldInstanceMap)
@@ -995,8 +996,35 @@ namespace AzToolsFramework
                     PrefabDom linkPatchesCopy;
                     linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
 
-                    m_prefabSystemComponentInterface->CreateLink(
-                        commonOwningInstance->get().GetTemplateId(), oldInstance->GetTemplateId(), newInstanceAlias, linkPatchesCopy);
+                    // If the instance was duplicated as part of an ancestor's nested hierarchy, the container's parent patch
+                    // will need to be refreshed to point to the new duplicated parent entity
+                    auto oldInstanceContainerEntityId = oldInstance->GetContainerEntityId();
+                    AZ_Assert(oldInstanceContainerEntityId.IsValid(), "Instance returned invalid Container Entity Id");
+
+                    AZ::EntityId previousParentEntityId;
+                    AZ::TransformBus::EventResult(previousParentEntityId, oldInstanceContainerEntityId, &AZ::TransformBus::Events::GetParentId);
+
+                    if (previousParentEntityId.IsValid() && AZStd::find(duplicatedEntityAndInstanceIds.begin(), duplicatedEntityAndInstanceIds.end(), previousParentEntityId))
+                    {
+                        auto oldParentAlias = commonOwningInstance->get().GetEntityAlias(previousParentEntityId);
+                        if (oldParentAlias.has_value() && duplicateEntityAliasMap.contains(oldParentAlias->get()))
+                        {
+                            // Get the dom into a QString for search/replace purposes
+                            rapidjson::StringBuffer buffer;
+                            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+                            linkPatchesCopy.Accept(writer);
+
+                            QString linkPatchesString(buffer.GetString());
+
+                            ReplaceOldAliases(linkPatchesString, oldParentAlias->get(), duplicateEntityAliasMap[oldParentAlias->get()]);
+
+                            linkPatchesCopy.Parse(linkPatchesString.toUtf8().constData());
+                        }
+                    }
+
+                    PrefabUndoHelpers::CreateLink(
+                        oldInstance->GetTemplateId(), commonOwningInstance->get().GetTemplateId(),
+                        AZStd::move(linkPatchesCopy), newInstanceAlias, undoBatch.GetUndoBatch());
                 }
 
                 // Select the duplicated entities/instances
@@ -1211,25 +1239,23 @@ namespace AzToolsFramework
 
                     const auto instanceTemplateId = instancePtr->GetTemplateId();
                     auto parentContainerEntityId = parentInstance.GetContainerEntityId();
-                    instancePtr->GetNestedInstances(
-                        [&](AZStd::unique_ptr<Instance>& nestedInstancePtr)
+
+                    instancePtr->DetachNestedInstances(
+                        [&](AZStd::unique_ptr<Instance> detachedNestedInstance)
                     {
-                        //get previous link patch
-                        auto linkRef = m_prefabSystemComponentInterface->FindLink(nestedInstancePtr->GetLinkId());
-                        PrefabDomValueReference linkPatches = linkRef->get().GetLinkPatches();
-                        AZ_Assert(
-                            linkPatches.has_value(), "Unable to get patches on link with id '%llu' during prefab creation.",
-                            nestedInstancePtr->GetLinkId());
+                        PrefabDom& nestedInstanceTemplateDom =
+                            m_prefabSystemComponentInterface->FindTemplateDom(detachedNestedInstance->GetTemplateId());
 
-                        PrefabDom linkPatchesCopy;
-                        linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
-
-                        RemoveLink(nestedInstancePtr, instanceTemplateId, undoBatch.GetUndoBatch());
-
-                        UpdateLinkPatchesWithNewEntityAliases(linkPatchesCopy, oldEntityAliases, parentInstance);
+                        Instance& nestedInstanceUnderNewParent = parentInstance.AddInstance(AZStd::move(detachedNestedInstance));
                         
-                        CreateLink(*nestedInstancePtr, parentTemplateId, undoBatch.GetUndoBatch(),
-                            AZStd::move(linkPatchesCopy), true);
+                        PrefabDom nestedInstanceDomUnderNewParent;
+                        m_instanceToTemplateInterface->GenerateDomForInstance(
+                            nestedInstanceDomUnderNewParent, nestedInstanceUnderNewParent);
+                        PrefabDom reparentPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(
+                            reparentPatch, nestedInstanceTemplateDom, nestedInstanceDomUnderNewParent);
+                        
+                        CreateLink(nestedInstanceUnderNewParent, parentTemplateId, undoBatch.GetUndoBatch(), AZStd::move(reparentPatch), true);
                     });
                 }
 
@@ -1509,14 +1535,13 @@ namespace AzToolsFramework
 
         void PrefabPublicHandler::DuplicateNestedEntitiesInInstance(Instance& commonOwningInstance,
             const AZStd::vector<AZ::Entity*>& entities, PrefabDom& domToAddDuplicatedEntitiesUnder,
-            EntityIdList& duplicatedEntityIds)
+            EntityIdList& duplicatedEntityIds, AZStd::unordered_map<EntityAlias, EntityAlias>& oldAliasToNewAliasMap)
         {
             if (entities.empty())
             {
                 return;
             }
 
-            AZStd::unordered_map<EntityAlias, EntityAlias> oldAliasToNewAliasMap;
             AZStd::unordered_map<EntityAlias, QString> aliasToEntityDomMap;
 
             for (AZ::Entity* entity : entities)

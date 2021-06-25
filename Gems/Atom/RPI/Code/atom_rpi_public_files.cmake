@@ -79,6 +79,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h
     Include/Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h
     Include/Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h
+    Include/Atom/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.h
     Include/Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h
     Include/Atom/RPI.Public/Pass/Specific/SelectorPass.h
     Include/Atom/RPI.Public/Pass/Specific/SwapChainPass.h
@@ -154,6 +155,7 @@ set(FILES
     Source/RPI.Public/Pass/Specific/DownsampleMipChainPass.cpp
     Source/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.cpp
     Source/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.cpp
+    Source/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.cpp
     Source/RPI.Public/Pass/Specific/RenderToTexturePass.cpp
     Source/RPI.Public/Pass/Specific/SelectorPass.cpp
     Source/RPI.Public/Pass/Specific/SwapChainPass.cpp

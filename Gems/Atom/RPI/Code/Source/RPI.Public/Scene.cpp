@@ -46,7 +46,7 @@ namespace AZ
             if (sceneSrgLayout)
             {
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
-                scene->m_srg = ShaderResourceGroup::Create(shaderAsset, DefaultSupervariantIndex, sceneSrgLayout->GetName());
+                scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
             
             return ScenePtr(scene);

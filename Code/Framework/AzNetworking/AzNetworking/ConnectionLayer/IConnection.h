@@ -44,6 +44,11 @@ namespace AzNetworking
 
     //! @class IConnection
     //! @brief interface class for network connections.
+    //!
+    //! IConnection provides a pure-virtual interface for all network connection types. IConnections provide access to
+    //! a ConnectionMetrics object which provides a variety of metrics on the connection itself such as data rate, RTT and
+    //! packet statistics. 
+
     class IConnection
     {
     public:

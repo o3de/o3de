@@ -1,0 +1,14 @@
+{
+    "gem_name": "AWSGameLift",
+    "origin": "The primary repo for AWSGameLift goes here: i.e. http://www.mydomain.com",
+    "license": "What license AWSGameLift uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "AWSGameLift",
+    "summary": "The AWSGameLift Gem provides a framework to extend O3DE networking layer to work with GameLift resources via GameLift server and client SDK.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AWSGameLift"
+    ],
+    "icon_path": "preview.png"
+}

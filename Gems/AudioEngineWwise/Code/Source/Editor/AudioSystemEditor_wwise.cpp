@@ -17,6 +17,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <ACETypes.h>
 #include <AudioSystemControl_wwise.h>
@@ -540,11 +541,10 @@ namespace AudioControls
     }
 
     //-------------------------------------------------------------------------------------------//
-    AZStd::string CAudioSystemEditor_wwise::GetDataPath() const
+    AZ::IO::FixedMaxPath CAudioSystemEditor_wwise::GetDataPath() const
     {
-        AZStd::string path(Path::GetEditingGameDataFolder());
-        AZ::StringFunc::Path::Join(path.c_str(), "sounds/wwise_project/", path);
-        return path;
+        auto projectPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetProjectPath() };
+        return (projectPath / "sounds" / "wwise_project");
     }
 
 } // namespace AudioControls
