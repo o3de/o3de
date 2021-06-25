@@ -30,14 +30,10 @@ set(FILES
     Source/Editor/AzslCompiler.h
     Source/Editor/ShaderVariantAssetBuilder.cpp
     Source/Editor/ShaderVariantAssetBuilder.h
-    Source/Editor/ShaderVariantAssetBuilder2.cpp
-    Source/Editor/ShaderVariantAssetBuilder2.h
     Source/Editor/AtomShaderConfig.cpp
     Source/Editor/AtomShaderConfig.h
     Source/Editor/PrecompiledShaderBuilder.cpp
     Source/Editor/PrecompiledShaderBuilder.h
-    Source/Editor/ShaderAssetBuilder2.cpp
-    Source/Editor/ShaderAssetBuilder2.h
     Source/Editor/SrgLayoutUtility.cpp
     Source/Editor/SrgLayoutUtility.h
 )
