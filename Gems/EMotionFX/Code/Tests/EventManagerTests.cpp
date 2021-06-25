@@ -31,8 +31,8 @@ TEST_F(SystemComponentFixture, DISABLED_EventDataFactoryMakesUniqueData)
     EXPECT_EQ(loadedTrack->GetEvent(0).GetEventDatas()[0], track->GetEvent(0).GetEventDatas()[0]);
     EXPECT_EQ(loadedTrack->GetEvent(0).GetEventDatas()[0].use_count(), 2);
 
-    track->Destroy();
-    loadedTrack->Destroy();
+    delete track;
+    delete loadedTrack;
 }
 
 } // end namespace EMotionFX
