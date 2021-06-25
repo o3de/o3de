@@ -509,7 +509,7 @@ void MainWindow::OnRescanButtonClicked()
 void MainWindow::OnSupportClicked(bool /*checked*/)
 {
     QDesktopServices::openUrl(
-        QStringLiteral("https://docs.o3de.org/docs/user-guide/assets/pipeline/"));
+        QStringLiteral("https://o3de.org/docs/user-guide/assets/pipeline/"));
 }
 
 void MainWindow::EditConnection(const QModelIndex& index)

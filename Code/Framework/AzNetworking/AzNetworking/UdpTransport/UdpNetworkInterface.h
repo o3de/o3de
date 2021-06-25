@@ -43,7 +43,7 @@ namespace AzNetworking
     //! * Header - Details the type of packet and other information related to reliability
     //! * Payload - The actual serialized content of the packet
     //! 
-    //! For more information, read [Networking Packets](http://docs.o3de.org/docs/user-guide/networking/packets) in the O3DE documentation.
+    //! For more information, read [Networking Packets](http://o3de.org/docs/user-guide/networking/packets) in the O3DE documentation.
     //! 
     //! ### Reliability
     //! 
@@ -72,7 +72,7 @@ namespace AzNetworking
     //! ### Encryption
     //! 
     //! AzNetworking uses the [OpenSSL](https://www.openssl.org/) library to implement Datagram Layer Transport Security (DTLS) encryption
-    //! on UDP traffic. Encryption operates as described in [O3DE Networking Encryption](http://docs.o3de.org/docs/user-guide/networking/encryption)
+    //! on UDP traffic. Encryption operates as described in [O3DE Networking Encryption](http://o3de.org/docs/user-guide/networking/encryption)
     //! on the documentation website. Once both endpoints have completed their handshake, all traffic is expected to be fully encrypted.
     class UdpNetworkInterface final
         : public INetworkInterface
