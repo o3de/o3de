@@ -832,18 +832,18 @@ namespace AZ::IO::ZipDir
     // conversion routines for the date/time fields used in Zip
     uint16_t DOSDate(tm* t)
     {
-        return
+        return static_cast<uint16_t>(
             ((t->tm_year - 80) << 9)
             | (t->tm_mon << 5)
-            | t->tm_mday;
+            | t->tm_mday);
     }
 
     uint16_t DOSTime(tm* t)
     {
-        return
+        return static_cast<uint16_t>(
             ((t->tm_hour) << 11)
             | ((t->tm_min) << 5)
-            | ((t->tm_sec) >> 1);
+            | ((t->tm_sec) >> 1));
     }
 
     // sets the current time to modification time
@@ -872,7 +872,7 @@ namespace AZ::IO::ZipDir
         // we'll need CRC32 of the file to pack it
         this->desc.lCRC32 = AZ::Crc32(pUncompressed, nSize);
 
-        this->nMethod = nCompressionMethod;
+        this->nMethod = static_cast<uint16_t>(nCompressionMethod);
     }
 
     uint64_t FileEntry::GetModificationTime()

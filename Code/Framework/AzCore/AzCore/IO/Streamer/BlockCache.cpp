@@ -38,7 +38,7 @@ namespace AZ
                 break;
             }
 
-            u32 cacheSize = m_cacheSizeMib * 1_mib;
+            u32 cacheSize = static_cast<AZ::u32>(m_cacheSizeMib * 1_mib);
             if (blockSize * 2 > cacheSize)
             {
                 AZ_Warning("Streamer", false, "Size (%u) for BlockCache isn't big enough to hold at least two cache blocks of size (%zu). "

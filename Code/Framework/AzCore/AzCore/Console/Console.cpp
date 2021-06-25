@@ -182,7 +182,7 @@ namespace AZ
     ConsoleFunctorBase* Console::FindCommand(const char* command)
     {
         CVarFixedString lowerName(command);
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
 
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
@@ -270,7 +270,7 @@ namespace AZ
         }
 
         CVarFixedString lowerName = functor->GetName();
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
         {
@@ -313,7 +313,7 @@ namespace AZ
         }
 
         CVarFixedString lowerName = functor->GetName();
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
         {
@@ -389,7 +389,7 @@ namespace AZ
         ConsoleFunctorFlags flags = ConsoleFunctorFlags::Null;
 
         CVarFixedString lowerName(command);
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
 
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
