@@ -394,7 +394,7 @@ namespace AZ
             m_currentShaderVariantId = shaderVariantId;
         }
 
-        void DynamicDrawContext::DrawIndexed(void* vertexData, uint32_t vertexCount, void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
+        void DynamicDrawContext::DrawIndexed(const void* vertexData, uint32_t vertexCount, const void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
         {
             if (!m_initialized)
             {
@@ -487,7 +487,7 @@ namespace AZ
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
                 
-        void DynamicDrawContext::DrawLinear(void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
+        void DynamicDrawContext::DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
         {
             if (!m_initialized)
             {

@@ -564,6 +564,7 @@ namespace AZ
 
         AuxGeomBufferData* AuxGeomDrawQueue::Commit()
         {
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: Commit");
             // get a mutually exclusive lock and then switch to the next buffer, returning a pointer to the current buffer (before the switch)
 
             // grab the lock
@@ -583,6 +584,7 @@ namespace AZ
 
         void AuxGeomDrawQueue::ClearCurrentBufferData()
         {
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: ClearCurrentBufferData");
             // no need for mutex here, this function is only called from a function holding a lock
             AuxGeomBufferData& data = m_buffers[m_currentBufferIndex];
 
