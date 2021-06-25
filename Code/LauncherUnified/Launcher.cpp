@@ -650,11 +650,6 @@ namespace O3DELauncher
 
         ReturnCode status = ReturnCode::Success;
 
-        if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
-        {
-            nativeUI->DisplayOkDialog("Test", "Test", false);
-        }
-
         if (systemInitParams.pSystem)
         {
             // Process queued events before main loop.
