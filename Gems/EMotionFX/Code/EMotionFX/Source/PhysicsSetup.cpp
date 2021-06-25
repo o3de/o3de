@@ -298,14 +298,20 @@ namespace EMotionFX
         {
             Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
             capsule->m_height = boneDirection.GetLength();
-            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            {
+                collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            }
             capsule->m_height = boneLength;
             const float radius = AZ::GetMin(rootMeanSquareDistanceFromBone, minRadiusRatio * boneLength);
             capsule->m_radius = radius;
         }
         else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
         {
-            collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            if (AZ::IsClose(localBoneDirection.GetLength(), 1.0f))
+            {
+                collider.first->m_rotation = AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), localBoneDirection.GetNormalized());
+            }
             Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
             box->m_dimensions = AZ::Vector3(2.0f * rootMeanSquareDistanceFromBone, 2.0f * rootMeanSquareDistanceFromBone, boneLength);
         }
