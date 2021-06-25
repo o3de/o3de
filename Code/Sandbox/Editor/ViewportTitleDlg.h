@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #ifndef CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
 #define CRYINCLUDE_EDITOR_VIEWPORTTITLEDLG_H
@@ -102,6 +97,7 @@ protected:
     void SetupResolutionDropdownMenu();
     void SetupViewportInformationMenu();
     void SetupOverflowMenu();
+    void SetupHelpersButton();
 
     QString m_title;
 
@@ -115,10 +111,10 @@ protected:
     float m_prevMoveSpeed;
 
     // Speed combobox/lineEdit settings
-    double m_minSpeed = 0.1;
+    double m_minSpeed = 0.01;
     double m_maxSpeed = 100.0;
-    double m_speedStep = 0.1;
-    int m_numDecimals = 1;
+    double m_speedStep = 0.01;
+    int m_numDecimals = 3;
 
     // Speed presets
     float m_speedPresetValues[3] = { 0.1f, 1.0f, 10.0f };
@@ -143,7 +139,6 @@ protected:
     void SetFullViewportInfo();
     void SetCompactViewportInfo();
 
-    void OnBnClickedSyncplayer();
     void OnBnClickedGotoPosition();
     void OnBnClickedMuteAudio();
     void OnBnClickedEnableVR();
@@ -173,8 +168,6 @@ protected:
     QAction* m_normalInformationAction = nullptr;
     QAction* m_fullInformationAction = nullptr;
     QAction* m_compactInformationAction = nullptr;
-    QAction* m_debugHelpersAction = nullptr;
-    QAction* m_syncPlayerToCameraAction = nullptr;
     QAction* m_audioMuteAction = nullptr;
     QAction* m_enableVRAction = nullptr;
     QAction* m_enableGridSnappingAction = nullptr;

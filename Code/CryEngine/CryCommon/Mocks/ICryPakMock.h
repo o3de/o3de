@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -67,7 +62,7 @@ struct CryPakMock
     MOCK_METHOD1(PoolMalloc, void*(size_t size));
     MOCK_METHOD1(PoolFree, void(void* p));
     MOCK_METHOD3(PoolAllocMemoryBlock, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> (size_t nSize, const char* sUsage, size_t nAlign));
-    MOCK_METHOD3(FindFirst, AZ::IO::ArchiveFileIterator(AZStd::string_view pDir, uint32_t nFlags, bool bAllOwUseFileSystem));
+    MOCK_METHOD2(FindFirst, AZ::IO::ArchiveFileIterator(AZStd::string_view pDir, AZ::IO::IArchive::EFileSearchType));
     MOCK_METHOD1(FindNext, AZ::IO::ArchiveFileIterator(AZ::IO::ArchiveFileIterator handle));
     MOCK_METHOD1(FindClose, bool(AZ::IO::ArchiveFileIterator));
     MOCK_METHOD1(GetModificationTime, AZ::IO::IArchive::FileTime(AZ::IO::HandleType f));

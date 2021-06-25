@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -29,11 +24,8 @@ namespace O3DE::ProjectManager
             if (!QDir(path).isEmpty())
             {
                 QMessageBox::StandardButton warningResult = QMessageBox::warning(
-                    parent,
-                    QObject::tr("Overwrite Directory"),
-                    QObject::tr("Directory is not empty! Are you sure you want to overwrite it?"),
-                    QMessageBox::No | QMessageBox::Yes
-                );
+                    parent, QObject::tr("Overwrite Directory"),
+                    QObject::tr("Directory is not empty! Are you sure you want to overwrite it?"), QMessageBox::No | QMessageBox::Yes);
 
                 if (warningResult != QMessageBox::Yes)
                 {
@@ -53,14 +45,13 @@ namespace O3DE::ProjectManager
             {
                 if (ancestor == descendent)
                 {
-                    return false;
+                    return true;
                 }
 
                 descendent.cdUp();
-            }
-            while (!descendent.isRoot());
+            } while (!descendent.isRoot());
 
-            return true;
+            return false;
         }
 
         static bool CopyDirectory(const QString& origPath, const QString& newPath)
@@ -138,7 +129,7 @@ namespace O3DE::ProjectManager
         bool CopyProject(const QString& origPath, const QString& newPath)
         {
             // Disallow copying from or into subdirectory
-            if (!IsDirectoryDescedent(origPath, newPath) || !IsDirectoryDescedent(newPath, origPath))
+            if (IsDirectoryDescedent(origPath, newPath) || IsDirectoryDescedent(newPath, origPath))
             {
                 return false;
             }
@@ -173,20 +164,66 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool MoveProject(const QString& origPath, const QString& newPath, QWidget* parent)
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool ignoreRegister)
         {
-            if (!WarnDirectoryOverwrite(newPath, parent) || !UnregisterProject(origPath))
+            origPath = QDir::toNativeSeparators(origPath);
+            newPath = QDir::toNativeSeparators(newPath);
+
+            if (!WarnDirectoryOverwrite(newPath, parent) || (!ignoreRegister && !UnregisterProject(origPath)))
             {
                 return false;
             }
 
-            QDir directory;
-            if (directory.rename(origPath, newPath))
+            QDir newDirectory(newPath);
+            if (!newDirectory.removeRecursively())
             {
-                return directory.rename(origPath, newPath);
+                return false;
+            }
+            if (!newDirectory.rename(origPath, newPath))
+            {
+                // Likely failed because trying to move to another partition, try copying
+                if (!CopyProject(origPath, newPath))
+                {
+                    return false;
+                }
+
+                DeleteProjectFiles(origPath, true);
             }
 
-            if (!RegisterProject(newPath))
+            if (!ignoreRegister && !RegisterProject(newPath))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
+        {
+            QFileInfo original(origFile);
+            if (original.exists())
+            {
+                if (interactive)
+                {
+                    QMessageBox::StandardButton warningResult = QMessageBox::warning(
+                        parent,
+                        QObject::tr("Overwrite File?"),
+                        QObject::tr("Replacing this will overwrite the current file on disk. Are you sure?"),
+                        QMessageBox::No | QMessageBox::Yes);
+
+                    if (warningResult == QMessageBox::No)
+                    {
+                        return false;
+                    }
+                }
+
+                if (!QFile::remove(origFile))
+                {
+                    return false;
+                }
+            }
+
+            if (!QFile::copy(newFile, origFile))
             {
                 return false;
             }

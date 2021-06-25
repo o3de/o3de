@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "ComponentEntityEditorPlugin_precompiled.h"
 
 #include "SandboxIntegration.h"
@@ -154,11 +149,23 @@ SandboxIntegrationManager::SandboxIntegrationManager()
 {
     // Required to receive events from the Cry Engine undo system
     GetIEditor()->GetUndoManager()->AddListener(this);
+
+    // Only create the PrefabIntegrationManager if prefabs are enabled
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    if (prefabSystemEnabled)
+    {
+        m_prefabIntegrationManager = aznew AzToolsFramework::Prefab::PrefabIntegrationManager();
+    }
 }
 
 SandboxIntegrationManager::~SandboxIntegrationManager()
 {
     GetIEditor()->GetUndoManager()->RemoveListener(this);
+
+    delete m_prefabIntegrationManager;
+    m_prefabIntegrationManager = nullptr;
 }
 
 void SandboxIntegrationManager::Setup()
@@ -167,7 +174,7 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusConnect();
-    AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+    AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
@@ -187,11 +194,16 @@ void SandboxIntegrationManager::Setup()
     AZ_Assert((m_editorEntityUiInterface != nullptr),
         "SandboxIntegrationManager requires a EditorEntityUiInterface instance to be present on Setup().");
 
-    m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
-
-    AZ_Assert(
-        (m_prefabIntegrationInterface != nullptr),
-        "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(
+        prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+    if (prefabSystemEnabled)
+    {
+        m_prefabIntegrationInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabIntegrationInterface>::Get();
+        AZ_Assert(
+            (m_prefabIntegrationInterface != nullptr),
+            "SandboxIntegrationManager requires a PrefabIntegrationInterface instance to be present on Setup().");
+    }
 
     m_editorEntityAPI = AZ::Interface<AzToolsFramework::EditorEntityAPI>::Get();
     AZ_Assert(m_editorEntityAPI, "SandboxIntegrationManager requires an EditorEntityAPI instance to be present on Setup().");
@@ -384,7 +396,7 @@ void SandboxIntegrationManager::Teardown()
     AzFramework::DisplayContextRequestBus::Handler::BusDisconnect();
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
     AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
-    AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
+    AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
     AzToolsFramework::EditorWindowRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
@@ -589,6 +601,11 @@ void SandboxIntegrationManager::OnSaveLevel()
     m_unsavedEntities.clear();
 }
 
+int SandboxIntegrationManager::GetMenuPosition() const
+{
+    return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+}
+
 void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags)
 {
     if (!IsLevelDocumentOpen())
@@ -662,26 +679,12 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
 
         SetupSliceContextMenu(menu);
     }
-    else
+
+    action = menu->addAction(QObject::tr("Duplicate"));
+    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
+    if (selected.size() == 0)
     {
-        menu->addSeparator();
-
-        // Allow handlers to append menu items to the context menu
-        AzToolsFramework::EditorContextMenuBus::Broadcast(&AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu, menu);
-    }
-
-    bool prefabWipFeaturesEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-    if (!prefabSystemEnabled || (prefabSystemEnabled && prefabWipFeaturesEnabled))
-    {
-        action = menu->addAction(QObject::tr("Duplicate"));
-        QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_Duplicate(); });
-        if (selected.size() == 0)
-        {
-            action->setDisabled(true);
-        }
+        action->setDisabled(true);
     }
 
     if (!prefabSystemEnabled)

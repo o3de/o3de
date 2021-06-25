@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GemCatalog/GemItemDelegate.h>
-#include "GemModel.h"
+#include <GemCatalog/GemModel.h>
 #include <QEvent>
 #include <QPainter>
 #include <QMouseEvent>
@@ -204,7 +199,6 @@ namespace O3DE::ProjectManager
         painter->save();
         const QRect buttonRect = CalcButtonRect(contentRect);
         QPoint circleCenter;
-        QString buttonText;
 
         const bool isAdded = GemModel::IsAdded(modelIndex);
         if (isAdded)
@@ -213,33 +207,14 @@ namespace O3DE::ProjectManager
             painter->setPen(m_buttonEnabledColor);
 
             circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
-            buttonText = "Added";
         }
         else
         {
             circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius, 1);
-            buttonText = "Get";
         }
 
         // Rounded rect
         painter->drawRoundedRect(buttonRect, s_buttonBorderRadius, s_buttonBorderRadius);
-
-        // Text
-        QFont font;
-        QRect textRect = GetTextRect(font, buttonText, s_buttonFontSize);
-        if (isAdded)
-        {
-            textRect = QRect(buttonRect.left(), buttonRect.top(), buttonRect.width() - s_buttonCircleRadius * 2.0, buttonRect.height());
-        }
-        else
-        {
-            textRect = QRect(buttonRect.left() + s_buttonCircleRadius * 2.0, buttonRect.top(), buttonRect.width() - s_buttonCircleRadius * 2.0, buttonRect.height());
-        }
-
-        font.setPixelSize(s_buttonFontSize);
-        painter->setFont(font);
-        painter->setPen(m_textColor);
-        painter->drawText(textRect, Qt::AlignCenter, buttonText);
 
         // Circle
         painter->setBrush(m_textColor);

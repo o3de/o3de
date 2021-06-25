@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -729,6 +724,9 @@ bool CCryEditDoc::SaveModified()
 void CCryEditDoc::OnFileSaveAs()
 {
     CLevelFileDialog levelFileDialog(false);
+    levelFileDialog.show();
+    levelFileDialog.adjustSize();
+
     if (levelFileDialog.exec() == QDialog::Accepted)
     {
         if (OnSaveDocument(levelFileDialog.GetFileName()))
@@ -1136,7 +1134,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         const QString oldLevelPattern = QDir(oldLevelFolder).absoluteFilePath("*.*");
         const QString oldLevelName = Path::GetFile(GetLevelPathName());
         const QString oldLevelXml = Path::ReplaceExtension(oldLevelName, "xml");
-        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), 0, true);
+        AZ::IO::ArchiveFileIterator findHandle = pIPak->FindFirst(oldLevelPattern.toUtf8().data(), AZ::IO::IArchive::eFileSearchType_AllowOnDiskAndInZips);
         if (findHandle)
         {
             do

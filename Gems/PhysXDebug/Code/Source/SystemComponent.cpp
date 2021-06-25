@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "PhysXDebug_precompiled.h"
 #include "SystemComponent.h"
 
@@ -42,7 +37,7 @@ namespace PhysXDebug
     const float SystemComponent::m_maxCullingBoxSize = 150.0f;
     namespace Internal
     {
-        const AZ::Crc32 VewportId = 0; // was AzFramework::g_defaultSceneEntityDebugDisplayId but it didn't render to the viewport.
+        const AZ::Crc32 VewportId = AzFramework::g_defaultSceneEntityDebugDisplayId;
     }
 
     bool UseEditorPhysicsScene()
@@ -565,9 +560,9 @@ namespace PhysXDebug
     static void physx_CullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
         const int argumentCount = arguments.size();
-        if (argumentCount == 2)
+        if (argumentCount == 1)
         {
-            float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[1]).c_str(), nullptr, 10);
+            float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[0]).c_str(), nullptr, 10);
             PhysXDebug::PhysXDebugRequestBus::Broadcast(&PhysXDebug::PhysXDebugRequestBus::Events::SetCullingBoxSize, newCullingBoxSize);
         }
         else
@@ -584,9 +579,9 @@ namespace PhysXDebug
 
         const int argumentCount = arguments.size();
 
-        if (argumentCount == 2)
+        if (argumentCount == 1)
         {
-            const auto userPreference = static_cast<DebugCVarValues>(strtol(AZ::CVarFixedString(arguments[1]).c_str(), nullptr, 10));
+            const auto userPreference = static_cast<DebugCVarValues>(strtol(AZ::CVarFixedString(arguments[0]).c_str(), nullptr, 10));
 
             switch (userPreference)
             {

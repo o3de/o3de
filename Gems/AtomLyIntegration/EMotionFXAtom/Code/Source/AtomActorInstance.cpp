@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AtomActorInstance.h>
 #include <AtomActor.h>
@@ -18,6 +13,7 @@
 #include <Integration/System/SystemCommon.h>
 #include <Integration/System/SystemComponent.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/MorphSetup.h>
 #include <EMotionFX/Source/MorphSetupInstance.h>
 #include <EMotionFX/Source/MorphTargetStandard.h>
@@ -27,6 +23,10 @@
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
 
+#include <Atom/RHI/RHIUtils.h>
+
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
@@ -57,6 +57,8 @@ namespace AZ
                 Activate();
                 AzFramework::BoundsRequestBus::Handler::BusConnect(m_entityId);
             }
+
+            m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
         }
 
         AtomActorInstance::~AtomActorInstance()
@@ -88,7 +90,119 @@ namespace AZ
             AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
 
-        AZ::Aabb AtomActorInstance:: GetWorldBounds()
+        void AtomActorInstance::DebugDraw(const DebugOptions& debugOptions)
+        {
+            if (m_auxGeomFeatureProcessor)
+            {
+                if (RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue())
+                {
+                    if (debugOptions.m_drawAABB)
+                    {
+                        const MCore::AABB emfxAabb = m_actorInstance->GetAABB();
+                        const AZ::Aabb azAabb = AZ::Aabb::CreateFromMinMax(emfxAabb.GetMin(), emfxAabb.GetMax());
+                        auxGeom->DrawAabb(azAabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+                    }
+
+                    if (debugOptions.m_drawSkeleton)
+                    {
+                        RenderSkeleton(auxGeom.get());
+                    }
+
+                    if (debugOptions.m_emfxDebugDraw)
+                    {
+                        RenderEMFXDebugDraw(auxGeom.get());
+                    }
+                }
+            }
+        }
+
+        void AtomActorInstance::RenderSkeleton(RPI::AuxGeomDraw* auxGeom)
+        {
+            AZ_Assert(m_actorInstance, "Valid actor instance required.");
+            const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
+            const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
+            const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+
+            const AZ::u32 transformCount = transformData->GetNumTransforms();
+            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
+            const AZ::u32 numJoints = skeleton->GetNumNodes();
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(numJoints * 2);
+
+            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            {
+                const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
+                if (!joint->GetSkeletalLODStatus(lodLevel))
+                {
+                    continue;
+                }
+
+                const AZ::u32 parentIndex = joint->GetParentIndex();
+                if (parentIndex == InvalidIndex32)
+                {
+                    continue;
+                }
+
+                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                m_auxVertices.emplace_back(parentPos);
+
+                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                m_auxVertices.emplace_back(bonePos);
+            }
+
+            const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_colors = &skeletonColor;
+            lineArgs.m_colorCount = 1;
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
+
+        void AtomActorInstance::RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom)
+        {
+            EMotionFX::DebugDraw& debugDraw = EMotionFX::GetDebugDraw();
+            debugDraw.Lock();
+            EMotionFX::DebugDraw::ActorInstanceData* actorInstanceData = debugDraw.GetActorInstanceData(m_actorInstance);
+            actorInstanceData->Lock();
+            const AZStd::vector<EMotionFX::DebugDraw::Line>& lines = actorInstanceData->GetLines();
+            if (lines.empty())
+            {
+                actorInstanceData->Unlock();
+                debugDraw.Unlock();
+                return;
+            }
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(lines.size() * 2);
+            m_auxColors.clear();
+            m_auxColors.reserve(m_auxVertices.size());
+
+            for (const EMotionFX::DebugDraw::Line& line : actorInstanceData->GetLines())
+            {
+                m_auxVertices.emplace_back(line.m_start);
+                m_auxColors.emplace_back(line.m_startColor);
+                m_auxVertices.emplace_back(line.m_end);
+                m_auxColors.emplace_back(line.m_endColor);
+            }
+
+            AZ_Assert(m_auxVertices.size() == m_auxColors.size(),
+                "Number of vertices and number of colors need to match.");
+            actorInstanceData->Unlock();
+            debugDraw.Unlock();
+
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_colors = m_auxColors.data();
+            lineArgs.m_colorCount = m_auxColors.size();
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
+
+        AZ::Aabb AtomActorInstance::GetWorldBounds()
         {
             return m_worldAABB;
         }
@@ -339,13 +453,12 @@ namespace AZ
         void AtomActorInstance::Create()
         {
             Destroy();
-
             m_skinnedMeshInputBuffers = GetRenderActor()->FindOrCreateSkinnedMeshInputBuffers();
-            AZ_Error("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to get SkinnedMeshInputBuffers from Actor.");
+            AZ_Warning("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to create SkinnedMeshInputBuffers from Actor. It is likely that this actor doesn't have any meshes");
             if (m_skinnedMeshInputBuffers)
             {
                 m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-                AZ_Error("AtomActorInstance", m_boneTransforms, "Failed to create bone transform buffer.");
+                AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
 
                 // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
                 // Wait for them all to be ready before creating the instance
@@ -508,9 +621,14 @@ namespace AZ
             AZ_Error("ActorComponentController", meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
             if (meshFeatureProcessor)
             {
-                // Last boolean parameter indicates if motion vector is enabled
+                MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
+
+                // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
+                meshDescriptor.m_isRayTracingEnabled = false;
+
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
+                    m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
             }
 
             // If render proxies already exist, they will be auto-freed
