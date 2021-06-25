@@ -460,11 +460,12 @@ namespace AZ::SceneGenerationComponents
                     }
 
                     // Round the vertex position so that a float comparison can be made with entires in the positionMap
-                    AZ::Vector3 position = meshData->GetPosition(vertexIndex);
-                    position *= positionToleranceReciprocal;
-                    position += AZ::Vector3(0.5f);
-                    position = AZ::Vector3(AZ::Simd::Vec3::Floor(position.GetSimdValue()));
-                    position *= positionTolerance;
+                    // pos = floor( x * 10 + 0.5) * 0.1
+                    const AZ::Vector3 position = AZ::Vector3(
+                        AZ::Simd::Vec3::Floor(
+                            (meshData->GetPosition(vertexIndex) * positionToleranceReciprocal + AZ::Vector3(0.5f)).GetSimdValue()
+                        )
+                    ) * positionTolerance;
 
                     const auto& [iter, didInsert] = positionMap.try_emplace(position, currentOriginalVertexIndex);
                     if (didInsert)
