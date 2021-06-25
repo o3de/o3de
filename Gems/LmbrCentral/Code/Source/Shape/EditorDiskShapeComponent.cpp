@@ -34,7 +34,7 @@ namespace LmbrCentral
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Disk_Shape.png")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/shape/disk-shape/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/disk-shape/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorDiskShapeComponent::m_diskShape, "Disk Shape", "Disk Shape Configuration")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiskShapeComponent::ConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
