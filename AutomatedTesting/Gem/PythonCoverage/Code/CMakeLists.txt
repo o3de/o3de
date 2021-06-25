@@ -28,14 +28,16 @@ if(PAL_TRAIT_PYTHONCOVERAGE_SUPPORTED)
                 PUBLIC
                     PYTHON_COVERAGE_EDITOR
                 PRIVATE
-                    LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"\"
+                    ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
             BUILD_DEPENDENCIES
                 PUBLIC
                     AZ::AzToolsFramework
+            RUNTIME_DEPENDENCIES
+                Gem::EditorPythonBindings.Editor
         )
 
         ly_add_target(
-            NAME PythonCoverage.Editor MODULE
+            NAME PythonCoverage.Editor GEM_MODULE
             NAMESPACE Gem
             AUTOMOC
             OUTPUT_NAME Gem.PythonCoverage.Editor
@@ -54,33 +56,7 @@ if(PAL_TRAIT_PYTHONCOVERAGE_SUPPORTED)
                     Gem::PythonCoverage.Editor.Static
         )
 
-        # By default, we will specify that the above target PythonCoverage would be used by
-        # Tool and Builder type targets when this gem is enabled.  If you don't want it
-        # active in Tools or Builders by default, delete one of both of the following lines:
         ly_create_alias(NAME PythonCoverage.Tools    NAMESPACE Gem TARGETS Gem::PythonCoverage.Editor)
         ly_create_alias(NAME PythonCoverage.Builders NAMESPACE Gem TARGETS Gem::PythonCoverage.Editor)
-    endif()
-endif()
-
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        ly_add_target(
-            NAME PythonCoverage.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                pythoncoverage_editor_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    Tests
-                    Source
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzTest
-                    Gem::PythonCoverage.Editor
-        )
-
-        ly_add_googletest(
-            NAME Gem::PythonCoverage.Editor.Tests
-        )
     endif()
 endif()

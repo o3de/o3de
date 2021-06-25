@@ -211,8 +211,6 @@ void CryEngineSignalHandler(int signal)
 extern HMODULE gDLLHandle;
 #endif
 
-#pragma optimize("", off)
-
 namespace
 {
 #if defined(AZ_PLATFORM_WINDOWS)
@@ -1806,10 +1804,7 @@ void CSystem::CreateSystemVars()
         "Quit/Shutdown the engine",
         AZ::ConsoleFunctorFlags::AllowClientSet | AZ::ConsoleFunctorFlags::DontReplicate,
         AZ::TypeId::CreateNull(),
-        []([[maybe_unused]] const AZ::ConsoleCommandContainer& params)
-        {
-            GetISystem()->Quit();
-        }
+        []([[maybe_unused]] const AZ::ConsoleCommandContainer& params) { GetISystem()->Quit(); }
     );
 
     m_sys_load_files_to_memory = REGISTER_STRING("sys_load_files_to_memory", "shadercache.pak", 0,

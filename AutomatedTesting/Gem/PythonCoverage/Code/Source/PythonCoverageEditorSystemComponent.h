@@ -39,15 +39,15 @@ namespace PythonCoverage
         PythonCoverageEditorSystemComponent() = default;
 
     private:
-        // AZ::Component
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
 
-        // AZ::EntitySystemBus ...
+        // AZ::EntitySystemBus overrides...
         void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // AZ::EditorPythonScriptNotificationsBus ...
-        void OnExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
+        void OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
 
         //! Attempts to parse the test impact analysis framework configuration file.
         //! If either the test impact analysis framework is disabled or the configuration file cannot be parsed, python coverage
@@ -66,7 +66,7 @@ namespace PythonCoverage
         AZStd::unordered_set<AZStd::string> GetParentComponentModulesForAllActivatedEntities(
             const AZStd::unordered_map<AZ::Uuid, AZ::ComponentDescriptor*>& entityComponents) const;
 
-        //!
+        //! Writes the current coverage data snapshot to disk.
         void WriteCoverageFile();
 
         enum class CoverageState : AZ::u8

@@ -581,7 +581,7 @@ namespace EditorPythonBindings
         if (!script.empty())
         {
             AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
-                &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnExecuteByString, script);
+                &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByString, script);
 
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
@@ -644,14 +644,14 @@ namespace EditorPythonBindings
     {
         AZStd::vector<AZStd::string_view> args;
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
-            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnExecuteByFilename, filename);
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilename, filename);
         ExecuteByFilenameWithArgs(filename, args);
     }
 
     void PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
     {
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
-            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnExecuteByFilenameAsTest, filename, testCase, args);
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameAsTest, filename, testCase, args);
         const Result evalResult = EvaluateFile(filename, args);
         if (evalResult == Result::Okay)
         {
@@ -668,7 +668,7 @@ namespace EditorPythonBindings
     void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
-            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnExecuteByFilenameWithArgs, filename, args);
+            &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameWithArgs, filename, args);
         EvaluateFile(filename, args);
     }
 

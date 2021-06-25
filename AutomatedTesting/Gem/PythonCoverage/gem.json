@@ -1,9 +1,7 @@
 {
     "gem_name": "PythonCoverage",
-    "origin": "The primary repo for PythonCoverage goes here: i.e. http://www.mydomain.com",
-    "license": "What license PythonCoverage uses goes here: i.e. https://opensource.org/licenses/MIT",
     "display_name": "PythonCoverage",
-    "summary": "A short description of PythonCoverage.",
+    "summary": "A tool for generating gem coverage for Python tests.",
     "canonical_tags": [
         "Gem"
     ],

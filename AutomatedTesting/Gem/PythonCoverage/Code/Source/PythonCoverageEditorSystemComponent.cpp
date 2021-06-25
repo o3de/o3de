@@ -10,16 +10,14 @@
  *
  */
 
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/JSON/document.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/JSON/document.h>
 
 #include <PythonCoverageEditorSystemComponent.h>
-
-#pragma optimize("", off)
 
 namespace PythonCoverage
 {
@@ -41,6 +39,7 @@ namespace PythonCoverage
         // Attempt to discover the output directory for the test coverage files
         ParseCoverageOutputDirectory();
 
+        // If no output directory discovered, coverage gathering will be disabled
         if (m_coverageState == CoverageState::Disabled)
         {
             return;
@@ -81,15 +80,14 @@ namespace PythonCoverage
 
         if (configFilePath.empty())
         {
-            // Config file path will be empty if test impact analysis framework is disabled
-            AZ_Warning(Caller, false, "No test impact analysis framework config found.");
+            AZ_Warning(Caller, false, "No test impact analysis framework config file specified.");
             return;
         }
 
         const auto fileSize = AZ::IO::SystemFile::Length(configFilePath.c_str());
         if(!fileSize)
         {
-            AZ_Error(Caller, false, "File %s does not exist", configFilePath.c_str());
+            AZ_Error(Caller, false, "Test impact analysis framework config file '%s' does not exist", configFilePath.c_str());
             return;
         }
 
@@ -97,7 +95,7 @@ namespace PythonCoverage
         buffer[fileSize] = '\0';
         if (!AZ::IO::SystemFile::Read(configFilePath.c_str(), buffer.data()))
         {
-            AZ_Error(Caller, false, "Could not read contents of file %s", configFilePath.c_str());
+            AZ_Error(Caller, false, "Could not read contents of test impact analysis framework config file '%s'", configFilePath.c_str());
             return;
         }
         
@@ -105,20 +103,28 @@ namespace PythonCoverage
         rapidjson::Document configurationFile;
         if (configurationFile.Parse(configurationData.c_str()).HasParseError())
         {
-            AZ_Error(Caller, false, "Could not parse runtimeConfig data, JSON has errors");
+            AZ_Error(Caller, false, "Could not parse test impact analysis framework config file data, JSON has errors");
             return;
         }
 
         const auto& tempConfig = configurationFile["workspace"]["temp"];
+
+        // Temp directory root path is absolute
         const AZ::IO::Path tempWorkspaceRootDir = tempConfig["root"].GetString();
+
+        // Artifact directory is relative to temp directory root
         const AZ::IO::Path artifactRelativeDir = tempConfig["relative_paths"]["artifact_dir"].GetString();
         m_coverageDir = tempWorkspaceRootDir / artifactRelativeDir;
+
+        // Everything is good to go, await the first python test case
         m_coverageState = CoverageState::Idle;
     }
     
     void PythonCoverageEditorSystemComponent::WriteCoverageFile()
     {
         AZStd::string contents;
+
+        // Compile the coverage for all test cases in this script
         for (const auto& [testCase, entityComponents] : m_entityComponentMap)
         {
             const auto coveringModules = GetParentComponentModulesForAllActivatedEntities(entityComponents);
@@ -140,17 +146,13 @@ namespace PythonCoverage
                 m_coverageFile.c_str(),
                 AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
         {
-            AZ_Error(
-                Caller, false,
-                "Couldn't open file %s for writing", m_coverageFile.c_str());
+            AZ_Error(Caller, false, "Couldn't open file '%s' for writing", m_coverageFile.c_str());
             return;
         }
     
         if (!file.Write(bytes.data(), bytes.size()))
         {
-            AZ_Error(
-                Caller, false,
-                "Couldn't write contents for file %s", m_coverageFile.c_str());
+            AZ_Error(Caller, false, "Couldn't write contents for file '%s'", m_coverageFile.c_str());
             return;
         }
     }
@@ -208,7 +210,7 @@ namespace PythonCoverage
         return coveringModuleOutputNames;
     }
     
-    void PythonCoverageEditorSystemComponent::OnExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
+    void PythonCoverageEditorSystemComponent::OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args)
     {
         if (m_coverageState == CoverageState::Disabled)
         {

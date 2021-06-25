@@ -27,18 +27,18 @@ namespace AzToolsFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
-        //! Notifies the execution of a Python script using a string.
-        virtual void OnExecuteByString([[maybe_unused]] AZStd::string_view script) {}
+        //! Notifies the start of execution of a Python script using a string.
+        virtual void OnStartExecuteByString([[maybe_unused]] AZStd::string_view script) {}
 
-        //! Notifies the execution of a Python script using a filename.
-        virtual void OnExecuteByFilename([[maybe_unused]] AZStd::string_view filename) {}
+        //! Notifies the start of execution of a Python script using a filename.
+        virtual void OnStartExecuteByFilename([[maybe_unused]] AZStd::string_view filename) {}
 
-        //! Notifies the execution of a Python script using a filename and args.
-        virtual void OnExecuteByFilenameWithArgs(
+        //! Notifies the start of execution of a Python script using a filename and args.
+        virtual void OnStartExecuteByFilenameWithArgs(
             [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args) {}
 
-        //! Notifies the execution of a Python script as a test.
-        virtual void OnExecuteByFilenameAsTest(
+        //! Notifies the start of execution of a Python script as a test.
+        virtual void OnStartExecuteByFilenameAsTest(
             [[maybe_unused]] AZStd::string_view filename, [[maybe_unused]] AZStd::string_view testCase, [[maybe_unused]] const AZStd::vector<AZStd::string_view>& args) {}
     };
     using EditorPythonScriptNotificationsBus = AZ::EBus<EditorPythonScriptNotifications>;

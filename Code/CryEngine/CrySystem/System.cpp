@@ -57,8 +57,6 @@
 // If app hasn't chosen, set to work with Windows 98, Windows Me, Windows 2000, Windows XP and beyond
 #include <windows.h>
 
-#pragma optimize("", off)
-
 LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     CSystem* pSystem = 0;
@@ -179,10 +177,6 @@ SSystemCVars g_cvars;
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
-
-#include <iostream>
-
-#pragma optimize("", off)
 
 #if defined(ANDROID)
 namespace
@@ -602,7 +596,6 @@ void CSystem::ShutDown()
 /////////////////////////////////////////////////////////////////////////////////
 void CSystem::Quit()
 {
-    std::cout << "----------------------------------------------------------------------------------------------------------------------------------------\n";
     CryLogAlways("CSystem::Quit invoked from thread %" PRI_THREADID " (main is %" PRI_THREADID ")", GetCurrentThreadId(), gEnv->mMainThreadId);
 
     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
