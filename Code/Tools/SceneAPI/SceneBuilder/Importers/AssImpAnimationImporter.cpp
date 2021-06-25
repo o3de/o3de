@@ -49,7 +49,7 @@ namespace AZ
                 double totalFramesAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames + 1;
                 if (!AZ::IsClose(totalFramesAtDefaultTimeStep, numKeys, 1))
                 {
-                    numKeys = AZStd::ceilf(totalFramesAtDefaultTimeStep);
+                    numKeys = AZStd::ceilf(static_cast<float>(totalFramesAtDefaultTimeStep));
                 }
                 return numKeys;
             }
@@ -620,7 +620,7 @@ namespace AZ
                     for (unsigned int valIdx = 0; valIdx < key.mNumValuesAndWeights; ++valIdx)
                     {
                         int currentValue = key.mValues[valIdx];
-                        KeyData thisKey(key.mWeights[valIdx], key.mTime);
+                        KeyData thisKey(static_cast<float>(key.mWeights[valIdx]), key.mTime);
                         valueToKeyDataMap[currentValue].insert(
                         AZStd::upper_bound(valueToKeyDataMap[currentValue].begin(), valueToKeyDataMap[currentValue].end(),thisKey),
                             thisKey);

@@ -17,6 +17,7 @@
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Math/Sfmt.h>
+#include <AzCore/Casting/lossy_cast.h>
 
 
 namespace Internal
@@ -297,7 +298,7 @@ AZ_POP_DISABLE_WARNING
         // the overflow guard is generated out of rand, so we set a fixed seed before doing the allocation
         // to get a deterministic guard
         srand(0);
-        const unsigned char expectedInitialGuard = rand();
+        const unsigned char expectedInitialGuard = azlossy_cast<unsigned char>(rand());
 
         srand(0);
         TestClass<16>* someObject = aznew TestClass<16>();
