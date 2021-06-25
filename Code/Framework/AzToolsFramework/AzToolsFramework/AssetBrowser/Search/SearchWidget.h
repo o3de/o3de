@@ -30,7 +30,7 @@ namespace AzToolsFramework
         public:
             explicit SearchWidget(QWidget* parent = nullptr);
 
-            void Setup(bool stringFilter, bool assetTypeFilter, bool viewSelector = false);
+            void Setup(bool stringFilter, bool assetTypeFilter);
 
             QSharedPointer<CompositeFilter> GetFilter() const;
 

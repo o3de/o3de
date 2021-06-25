@@ -127,7 +127,7 @@ namespace AzToolsFramework
             });
         }
 
-        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter, bool viewSelector)
+        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter)
         {
             ClearTextFilter();
             ClearTypeFilter();
@@ -136,7 +136,6 @@ namespace AzToolsFramework
 
             SetTextFilterVisible(stringFilter);
             SetTypeFilterVisible(assetTypeFilter);
-            SetViewSelectorVisible(viewSelector);
 
             if (stringFilter)
             {
