@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Utils/TypeHash.h>
 
@@ -382,6 +377,16 @@ namespace AZ
             m_useViewport = false;
         }
 
+        void DynamicDrawContext::SetStencilReference(uint8_t stencilRef)
+        {
+            m_stencilRef = stencilRef;
+        }
+
+        uint8_t DynamicDrawContext::GetStencilReference() const
+        {
+            return m_stencilRef;
+        }
+
         void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
         {
             AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
@@ -474,6 +479,9 @@ namespace AZ
                 drawItem.m_viewportsCount = 1;
                 drawItem.m_viewports = &m_viewport;
             }
+
+            // Set stencil reference. Used when stencil is enabled.
+            drawItem.m_stencilRef = m_stencilRef;
 
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);

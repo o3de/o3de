@@ -1,15 +1,10 @@
 
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorDefs.h"
 
@@ -56,7 +51,8 @@ namespace AzAssetBrowserRequestHandlerPrivate
     using namespace AzToolsFramework;
     using namespace AzToolsFramework::AssetBrowser;
     // return true ONLY if we can handle the drop request in the viewport.
-    bool CanSpawnEntityForProduct(const ProductAssetBrowserEntry* product)
+    bool CanSpawnEntityForProduct(const ProductAssetBrowserEntry* product,
+        AZStd::optional<const AZStd::vector<AZ::Data::AssetType>> optionalProductAssetTypes = AZStd::nullopt)
     {
         if (!product)
         {
@@ -70,7 +66,6 @@ namespace AzAssetBrowserRequestHandlerPrivate
 
         bool canCreateComponent = false;
         AZ::AssetTypeInfoBus::EventResult(canCreateComponent, product->GetAssetType(), &AZ::AssetTypeInfo::CanCreateComponent, product->GetAssetId());
-
         if (!canCreateComponent)
         {
             return false;
@@ -78,16 +73,25 @@ namespace AzAssetBrowserRequestHandlerPrivate
 
         AZ::Uuid componentTypeId = AZ::Uuid::CreateNull();
         AZ::AssetTypeInfoBus::EventResult(componentTypeId, product->GetAssetType(), &AZ::AssetTypeInfo::GetComponentTypeId);
-
-        if (!componentTypeId.IsNull())
+        if (componentTypeId.IsNull())
         {
             // we have a component type that handles this asset.
-            return true;
+            return false;
+        }
+
+        if (optionalProductAssetTypes.has_value())
+        {
+            bool hasConflictingProducts = false;
+            AZ::AssetTypeInfoBus::EventResult(hasConflictingProducts, product->GetAssetType(), &AZ::AssetTypeInfo::HasConflictingProducts, optionalProductAssetTypes.value());
+            if (hasConflictingProducts)
+            {
+                return false;
+            }
         }
 
         // additional operations can be added here.
 
-        return false;
+        return true;
     }
 
     void SpawnEntityAtPoint(const ProductAssetBrowserEntry* product, AzQtComponents::ViewportDragContext* viewportDragContext, EntityIdList& spawnList, AzFramework::SliceInstantiationTicket& spawnTicket)
@@ -511,9 +515,16 @@ void AzAssetBrowserRequestHandler::Drop(QDropEvent* event, AzQtComponents::DragA
     }
 
     // Handle products
+    AZStd::vector<AZ::Data::AssetType> productAssetTypes;
+    productAssetTypes.reserve(products.size());
+    for (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* entry : products)
+    {
+        productAssetTypes.emplace_back(entry->GetAssetType());
+    }
+
     for (const ProductAssetBrowserEntry* product : products)
     {
-        if (CanSpawnEntityForProduct(product))
+        if (CanSpawnEntityForProduct(product, productAssetTypes))
         {
             SpawnEntityAtPoint(product, viewportDragContext, spawnedEntities, spawnTicket);
         }

@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -2177,7 +2172,10 @@ namespace ScriptCanvas
             {
                 for (auto& latent : nodeableParse.second->m_latents)
                 {
-                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(latent.second));
+                    if (latent.second)
+                    {
+                        roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(latent.second));
+                    }
                 }
             }
 
@@ -2185,23 +2183,35 @@ namespace ScriptCanvas
             {
                 for (auto& event : eventHandlerParse.second->m_events)
                 {
-                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(event.second));
+                    if (event.second)
+                    {
+                        roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(event.second));
+                    }
                 }
             }
 
             for (auto& eventHandlerParse : m_eventHandlingByNode)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(eventHandlerParse.second->m_eventHandlerFunction));
+                if (eventHandlerParse.second->m_eventHandlerFunction)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(eventHandlerParse.second->m_eventHandlerFunction));
+                }
             }
 
             for (auto variableWriteHandling : m_variableWriteHandlingBySlot)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(variableWriteHandling.second->m_function));
+                if (variableWriteHandling.second->m_function)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(variableWriteHandling.second->m_function));
+                }
             }
 
             for (auto function : m_functions)
             {
-                roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(function));
+                if (function)
+                {
+                    roots.push_back(AZStd::const_pointer_cast<ExecutionTree>(function));
+                }
             }
 
             return roots;
@@ -3356,22 +3366,26 @@ namespace ScriptCanvas
 
             if (executionIf->GetId().m_node->IsIfBranchPrefacedWithBooleanExpression())
             {
-                auto removeChildOutcome = RemoveChild(executionIf->ModParent(), executionIf);
-                if (!removeChildOutcome.IsSuccess())
+                ExecutionTreePtr booleanExpression;
+
                 {
-                    AddError(executionIf->GetNodeId(), executionIf, ScriptCanvas::ParseErrors::FailedToRemoveChild);
+                    auto removeChildOutcome = RemoveChild(executionIf->ModParent(), executionIf);
+                    if (!removeChildOutcome.IsSuccess())
+                    {
+                        AddError(executionIf->GetNodeId(), executionIf, ScriptCanvas::ParseErrors::FailedToRemoveChild);
+                    }
+
+                    if (!IsErrorFree())
+                    {
+                        return;
+                    }
+
+                    const auto indexAndChild = removeChildOutcome.TakeValue();
+
+                    booleanExpression = CreateChild(executionIf->ModParent(), executionIf->GetId().m_node, executionIf->GetId().m_slot);
+                    executionIf->ModParent()->InsertChild(indexAndChild.first, { indexAndChild.second.m_slot, indexAndChild.second.m_output, booleanExpression });
+                    executionIf->SetParent(booleanExpression);
                 }
-
-                if (!IsErrorFree())
-                {
-                    return;
-                }
-
-                const auto indexAndChild = removeChildOutcome.TakeValue();
-
-                ExecutionTreePtr booleanExpression = CreateChild(executionIf->ModParent(), executionIf->GetId().m_node, executionIf->GetId().m_slot);
-                executionIf->ModParent()->InsertChild(indexAndChild.first, { indexAndChild.second.m_slot, indexAndChild.second.m_output, booleanExpression });
-                executionIf->SetParent(booleanExpression);
 
                 // make a condition here
                 auto symbol = CheckLogicalExpressionSymbol(booleanExpression);
@@ -3402,7 +3416,7 @@ namespace ScriptCanvas
                                 return;
                             }
 
-                            const auto indexAndChild2 = removeChildOutcome.TakeValue();
+                            const auto indexAndChild2 = removeChildOutcome2.TakeValue();
 
                             // parse if statement internal function
                             ExecutionTreePtr internalFunction = CreateChild(booleanExpression->ModParent(), booleanExpression->GetId().m_node, booleanExpression->GetId().m_slot);
@@ -3758,6 +3772,12 @@ namespace ScriptCanvas
 
                 nextParse = onReset;
                 nextSlot = onceResetSlot;
+            }
+
+            if (!nextSlot)
+            {
+                AddError(ID.m_node->GetEntityId(), once, "Once node missing next slot, likely needs replacement");
+                return;
             }
 
             ParseExecutionTreeBody(nextParse, *nextSlot);
@@ -4782,7 +4802,7 @@ namespace ScriptCanvas
                 {
                     PropertyExtractionPtr extraction = AZStd::make_shared<PropertyExtraction>();
                     extraction->m_slot = slot;
-                    extraction->m_name = propertyField.first;
+                    extraction->m_name = AZ::ReplaceCppArtifacts(propertyField.first);
                     execution->AddPropertyExtractionSource(slot, extraction);
                 }
                 else

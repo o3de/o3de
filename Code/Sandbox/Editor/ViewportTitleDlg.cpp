@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : CViewportTitleDlg implementation file
 
@@ -45,6 +40,7 @@
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
@@ -57,13 +53,16 @@ inline namespace Helpers
 {
     void ToggleHelpers()
     {
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
+        const bool newValue = !GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
+        GetIEditor()->GetDisplaySettings()->DisplayHelpers(newValue);
         GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
 
-        if (GetIEditor()->GetDisplaySettings()->IsDisplayHelpers() == false)
+        if (newValue == false)
         {
             GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
         }
+        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
+            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, newValue);
     }
 
     bool IsHelpersShown()
@@ -126,6 +125,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
+    SetupHelpersButton();
     SetupOverflowMenu();
 
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
@@ -154,11 +154,6 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
-    m_syncPlayerToCameraAction = new QAction("Sync camera to player", cameraMenu);
-    m_syncPlayerToCameraAction->setCheckable(true);
-    connect(m_syncPlayerToCameraAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedSyncplayer);
-    cameraMenu->addAction(m_syncPlayerToCameraAction);
-
     cameraMenu->addSeparator();
 
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
@@ -212,15 +207,16 @@ void CViewportTitleDlg::SetupViewportInformationMenu()
 
 }
 
+void CViewportTitleDlg::SetupHelpersButton()
+{
+    connect(m_ui->m_helpers, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
+    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
+}
+
 void CViewportTitleDlg::SetupOverflowMenu()
 {
     // Setup the overflow menu
     QMenu* overFlowMenu = new QMenu(this);
-    m_debugHelpersAction = new QAction("Debug Helpers", overFlowMenu);
-    m_debugHelpersAction->setCheckable(true);
-    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
-    connect(m_debugHelpersAction, &QAction::triggered, this, &CViewportTitleDlg::OnToggleHelpers);
-    overFlowMenu->addAction(m_debugHelpersAction);
 
     m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
@@ -238,47 +234,35 @@ void CViewportTitleDlg::SetupOverflowMenu()
     overFlowMenu->addAction(m_enableGridSnappingAction);
 
     m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
-    auto gridSizeContainer = new QWidget(overFlowMenu);
-    auto gridSizeLabel = new QLabel(tr("Grid Size"), overFlowMenu);
-
     m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
     m_gridSpinBox->setMinimum(1e-2f);
+    m_gridSpinBox->setToolTip(tr("Grid size"));
 
     QObject::connect(
         m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
 
-    QHBoxLayout* gridSizeLayout = new QHBoxLayout;
-    gridSizeLayout->addWidget(gridSizeLabel);
-    gridSizeLayout->addWidget(m_gridSpinBox);
-    gridSizeContainer->setLayout(gridSizeLayout);
-    m_gridSizeActionWidget->setDefaultWidget(gridSizeContainer);
+    m_gridSizeActionWidget->setDefaultWidget(m_gridSpinBox);
     overFlowMenu->addAction(m_gridSizeActionWidget);
 
     overFlowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
+    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
     connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
     m_enableAngleSnappingAction->setCheckable(true);
     overFlowMenu->addAction(m_enableAngleSnappingAction);
 
     m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
-    auto angleSizeContainer = new QWidget(overFlowMenu);
-    auto angleSizeLabel = new QLabel(tr("Angle Snapping"), overFlowMenu);
-
     m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
     m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
     m_angleSpinBox->setMinimum(1e-2f);
+    m_angleSpinBox->setToolTip(tr("Angle Snapping"));
 
     QObject::connect(
         m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
         &CViewportTitleDlg::OnAngleSpinBoxChanged);
 
-    QHBoxLayout* angleSizeLayout = new QHBoxLayout;
-    angleSizeLayout->addWidget(angleSizeLabel);
-    angleSizeLayout->addWidget(m_angleSpinBox);
-    angleSizeContainer->setLayout(angleSizeLayout);
-    m_angleSizeActionWidget->setDefaultWidget(angleSizeContainer);
+    m_angleSizeActionWidget->setDefaultWidget(m_angleSpinBox);
     overFlowMenu->addAction(m_angleSizeActionWidget);
 
     m_ui->m_overflowBtn->setMenu(overFlowMenu);
@@ -346,7 +330,7 @@ void CViewportTitleDlg::OnMaximize()
 void CViewportTitleDlg::OnToggleHelpers()
 {
     Helpers::ToggleHelpers();
-    m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
 }
 
 void CViewportTitleDlg::SetNoViewportInfo()
@@ -772,7 +756,7 @@ void CViewportTitleDlg::OnEditorNotifyEvent(EEditorNotifyEvent event)
     switch (event)
     {
     case eNotify_OnDisplayRenderUpdate:
-        m_debugHelpersAction->setChecked(Helpers::IsHelpersShown());
+        m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
         break;
     case eNotify_OnBeginGameMode:
     case eNotify_OnEndGameMode:
@@ -848,14 +832,6 @@ bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
     }
 
     return QWidget::eventFilter(object, event) || consumeEvent;
-}
-
-void CViewportTitleDlg::OnBnClickedSyncplayer()
-{
-    emit ActionTriggered(ID_GAME_SYNCPLAYER);
-
-    bool bSyncPlayer = GetIEditor()->GetGameEngine()->IsSyncPlayerPosition();
-    m_syncPlayerToCameraAction->setChecked(!bSyncPlayer);
 }
 
 void CViewportTitleDlg::OnBnClickedGotoPosition()

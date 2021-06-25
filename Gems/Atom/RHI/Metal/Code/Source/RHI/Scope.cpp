@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "Atom_RHI_Metal_precompiled.h"
@@ -106,11 +101,11 @@ namespace AZ
             
             for (const RHI::ImageScopeAttachment* scopeAttachment : GetImageAttachments())
             {
-                m_isSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
-                if(m_isSwapChainScope)
+                m_isWritingToSwapChainScope = scopeAttachment->IsSwapChainAttachment() && scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::RenderTarget);
+                if(m_isWritingToSwapChainScope)
                 {
-                    //Check if the scope attachment for the next scope if to capture a frame.
-                    //We can use this information during the call to nextdrawable.
+                    //Check if the scope attachment for the next scope is going to capture the frame.
+                    //We can use this information to cache the swapchain texture for reading purposes.
                     const RHI::ScopeAttachment* frameCaptureScopeAttachment = scopeAttachment->GetNext();
                     if(frameCaptureScopeAttachment)
                     {
@@ -183,7 +178,7 @@ namespace AZ
                             id<MTLTexture> renderTargetTexture = imageViewMtlTexture;
                             m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].texture = renderTargetTexture;
                             
-                            if(!m_isSwapChainScope)
+                            if(!m_isWritingToSwapChainScope)
                             {
                                 if(renderTargetTexture.textureType == MTLTextureType3D)
                                 {
@@ -285,7 +280,7 @@ namespace AZ
         {
             AZ_TRACE_METHOD();
 
-            if(m_isSwapChainScope)
+            if(m_isWritingToSwapChainScope)
             {
                 //Metal requires you to request for swapchain drawable as late as possible in the frame. Hence we call for the drawable
                 //here and attach it directly to the colorAttachment. The assumption here is that this scope should be the
@@ -299,7 +294,6 @@ namespace AZ
             const bool isPrologue = commandListIndex == 0;
             commandList.SetName(GetId());
             commandList.SetRenderPassInfo(m_renderPassDescriptor, m_scopeMultisampleState, m_residentHeaps);
-
             
             if (isPrologue)
             {

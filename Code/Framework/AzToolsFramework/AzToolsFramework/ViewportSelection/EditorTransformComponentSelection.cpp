@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -999,7 +994,6 @@ namespace AzToolsFramework
     static void RefreshUiAfterChange(const EntityIdList& entitiyIds)
     {
         EditorTransformChangeNotificationBus::Broadcast(&EditorTransformChangeNotifications::OnEntityTransformChanged, entitiyIds);
-
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
     }
 
@@ -1018,6 +1012,7 @@ namespace AzToolsFramework
         EditorEntityVisibilityNotificationBus::Router::BusRouterConnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
+        EditorContextMenuBus::Handler::BusConnect();
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1038,6 +1033,7 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
+        EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
         EditorEntityVisibilityNotificationBus::Router::BusRouterDisconnect();
@@ -1063,7 +1059,7 @@ namespace AzToolsFramework
         auto entityBoxSelectData = AZStd::make_shared<EntityBoxSelectData>();
 
         m_boxSelect.InstallLeftMouseDown(
-            [this, entityBoxSelectData](const ViewportInteraction::MouseInteractionEvent& /*mouseInteraction*/)
+            [this, entityBoxSelectData]([[maybe_unused]] const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
             {
                 // begin selection undo/redo command
                 entityBoxSelectData->m_boxSelectSelectionCommand =
@@ -1261,8 +1257,12 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallLinearManipulatorMouseUpCallback(
-            [this]([[maybe_unused]] const LinearManipulator::Action& action) mutable
+            [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action) mutable
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1291,8 +1291,12 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
-            [this, manipulatorEntityIds](const PlanarManipulator::Action& /*action*/)
+            [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1320,8 +1324,12 @@ namespace AzToolsFramework
             });
 
         translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
-            [this, manipulatorEntityIds](const SurfaceManipulator::Action& /*action*/)
+            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    manipulatorEntityIds->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1358,7 +1366,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<SharedRotationState> sharedRotationState = AZStd::make_shared<SharedRotationState>();
 
         rotationManipulators->InstallLeftMouseDownCallback(
-            [this, sharedRotationState](const AngularManipulator::Action& /*action*/) mutable -> void
+            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action) mutable -> void
             {
                 sharedRotationState->m_savedOrientation = AZ::Quaternion::CreateIdentity();
                 sharedRotationState->m_referenceFrameAtMouseDown = m_referenceFrame;
@@ -1484,8 +1492,12 @@ namespace AzToolsFramework
             });
 
         rotationManipulators->InstallLeftMouseUpCallback(
-            [this](const AngularManipulator::Action& /*action*/)
+            [this, sharedRotationState]([[maybe_unused]] const AngularManipulator::Action& action)
             {
+                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                    sharedRotationState->m_entityIds);
+
                 EndRecordManipulatorCommand();
             });
 
@@ -1531,6 +1543,10 @@ namespace AzToolsFramework
 
         auto uniformLeftMouseUpCallback = [this, manipulatorEntityIds]([[maybe_unused]] const LinearManipulator::Action& action)
         {
+            AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
+                &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
+                manipulatorEntityIds->m_entityIds);
+
             m_entityIdManipulators.m_manipulators->SetLocalTransform(RecalculateAverageManipulatorTransform(
                 m_entityIdManipulators.m_lookups, m_pivotOverrideFrame, m_pivotMode, m_referenceFrame));
         };
@@ -2240,42 +2256,31 @@ namespace AzToolsFramework
                 RegenerateManipulators();
             });
 
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        // duplicate selection
+        AddAction(
+            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
+            /*ID_EDIT_CLONE =*/33525, s_duplicateTitle, s_duplicateDesc,
+            []()
+            {
+                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-        if (!isPrefabSystemEnabled || (isPrefabSystemEnabled && prefabWipFeaturesEnabled))
-        {
-            // duplicate selection
-            AddAction(
-                m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) },
-                /*ID_EDIT_CLONE =*/33525, s_duplicateTitle, s_duplicateDesc,
-                []()
+                // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor
+                // is being edited.
+                if (QApplication::focusWidget())
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+                    QApplication::focusWidget()->clearFocus();
+                }
 
-                    // Clear Widget selection - Prevents issues caused by cloning entities while a property in the Reflected Property Editor
-                    // is being edited.
-                    if (QApplication::focusWidget())
-                    {
-                        QApplication::focusWidget()->clearFocus();
-                    }
+                ScopedUndoBatch undoBatch(s_duplicateUndoRedoDesc);
+                auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_duplicateUndoRedoDesc);
+                selectionCommand->SetParent(undoBatch.GetUndoBatch());
+                selectionCommand.release();
 
-                    ScopedUndoBatch undoBatch(s_duplicateUndoRedoDesc);
-                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), s_duplicateUndoRedoDesc);
-                    selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                    selectionCommand.release();
+                bool handled = false;
+                EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
 
-                    bool handled = false;
-                    EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
-
-                    // selection update handled in AfterEntitySelectionChanged
-                });
-        }
+                // selection update handled in AfterEntitySelectionChanged
+            });
 
         // delete selection
         AddAction(
@@ -2379,7 +2384,7 @@ namespace AzToolsFramework
 
         AddAction(
             m_actions, { QKeySequence(Qt::Key_U) },
-            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle ViewportUI", "Hide/Unhide Viewport UI",
+            /*ID_VIEWPORTUI_VISIBLE=*/50040, "Toggle Viewport UI", "Hide/Show Viewport UI",
             [this]()
             {
                 SetViewportUiClusterVisible(m_transformModeClusterId, !m_viewportUiVisible);
@@ -3108,15 +3113,25 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& /*point*/, const int /*flags*/)
+    int EditorTransformComponentSelection::GetMenuPosition() const
     {
-        QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [this]()
-            {
-                ToggleCenterPivotSelection();
-            });
+        return aznumeric_cast<int>(EditorContextMenuOrdering::BOTTOM);
+    }
+
+    AZStd::string EditorTransformComponentSelection::GetMenuIdentifier() const
+    {
+        return "Transform Component";
+    }
+
+    void EditorTransformComponentSelection::PopulateEditorGlobalContextMenu(QMenu* menu, [[maybe_unused]] const AZ::Vector2& point, [[maybe_unused]] int flags)
+    {
+         QAction* action = menu->addAction(QObject::tr(s_togglePivotTitleRightClick));
+         QObject::connect(
+             action, &QAction::triggered, action,
+             [this]()
+             {
+                 ToggleCenterPivotSelection();
+             });
     }
 
     void EditorTransformComponentSelection::BeforeEntitySelectionChanged()
@@ -3138,7 +3153,7 @@ namespace AzToolsFramework
     }
 
     void EditorTransformComponentSelection::AfterEntitySelectionChanged(
-        const EntityIdList& /*newlySelectedEntities*/, const EntityIdList& /*newlyDeselectedEntities*/)
+        [[maybe_unused]] const EntityIdList& newlySelectedEntities, [[maybe_unused]] const EntityIdList& newlyDeselectedEntities)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -3533,17 +3548,17 @@ namespace AzToolsFramework
         RegenerateManipulators();
     }
 
-    void EditorTransformComponentSelection::OnEntityVisibilityChanged(const bool /*visibility*/)
+    void EditorTransformComponentSelection::OnEntityVisibilityChanged([[maybe_unused]] const bool visibility)
     {
         m_selectedEntityIdsAndManipulatorsDirty = true;
     }
 
-    void EditorTransformComponentSelection::OnEntityLockChanged(const bool /*locked*/)
+    void EditorTransformComponentSelection::OnEntityLockChanged([[maybe_unused]] const bool locked)
     {
         m_selectedEntityIdsAndManipulatorsDirty = true;
     }
 
-    void EditorTransformComponentSelection::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+    void EditorTransformComponentSelection::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
         SetViewportUiClusterVisible(m_transformModeClusterId, false);
 
@@ -3552,7 +3567,7 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
     }
 
-    void EditorTransformComponentSelection::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
+    void EditorTransformComponentSelection::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
         SetViewportUiClusterVisible(m_transformModeClusterId, true);
 
