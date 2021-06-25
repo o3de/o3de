@@ -126,8 +126,8 @@ namespace EMotionFX
             blendNNode->SetName(blendNNodeName);
             blendTree->AddChildNode(blendNNode);
 
-            const int motionNodeCount = 5;
-            for (AZ::u32 i = 0; i < motionNodeCount; ++i)
+            const uint16 motionNodeCount = 5;
+            for (uint16 i = 0; i < motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 motionNode->SetName(AZStd::string::format("Motion %i (%s)", i, blendNNodeName).c_str());
@@ -172,7 +172,7 @@ namespace EMotionFX
             finalNode->AddConnection(blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
             // Creates 5x blend N nodes as input for the blend N node created here. Each of these five blend N nodes have 5x input motions.
-            for (AZ::u32 i = 0; i < 5; ++i)
+            for (uint16 i = 0; i < 5; ++i)
             {
                 BlendTreeBlendNNode* inputNode = CreateBlendNNode(testBlendTree, parameterNode, AZStd::string::format("InputBlendNode%i", i).c_str());
                 blendNNode->AddConnection(inputNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, i);
