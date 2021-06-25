@@ -23,16 +23,9 @@
 // THE SOFTWARE.
 //
 
-// This is code decoration for our sample.  
-// Remove this and the EndHLSL at the end of this file 
-// to turn this into valid HLSL
-
 #pragma once
 
 #include <HairUtilities.azsli>
-
-//#include <Atom/Features/PBR/LightingModel.azsli>
-
 //------------------------------------------------------------------------------
 struct HairShadeParams
 {
@@ -375,23 +368,26 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
 
     float3 accumulatedHairColor = float3(0.0, 0.0, 0.0);
 
-    float4 lightPosWSVec[3] = {
-        float4(4, -1, 2, 0.435),
-        float4(-4, -.7, 1, 0.32),
-        float4(g_vEye.xyz, 0.75) // + float3(0,0,0.2)    // camera light located a bit above the camera.
+    float4 lightPosWSVec[2] = {
+        float4(-0.5, 0, 1, 1.5),
+        float4(0.5, 0, 1, 1.5),
+    };
+
+    float3 lightColorVec[2] = {
+        float3(1,0,0),
+        float3(0,1,0)
     };
 
     // Right now we fake two lights - one is fixed and the other one 
     // is at to the camera and moving with it.
-    for (int l = 0; l < 3; l++)
+    for (int l = 0; l < 2; l++)
     {
         float3 lightPosWS = lightPosWSVec[l].xyz;
         float3 LightVector = normalize( vPositionWS - lightPosWS );
-        float3 lightColor = float3(1.0, 1.0, 1.0);
         float lightIntensity = lightPosWSVec[l].w;
+        float3 LightColor = lightColorVec[l]; 
 
         float3 L = LightVector;
-        float3 LightColor = lightColor; 
 
         float3 lightSurfaceCoeffs = ComputeDiffuseSpecFactors(V, L, T, params);
         float3 diffuseCompoenent = lightSurfaceCoeffs.x * params.m_color;
@@ -404,29 +400,50 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
     return accumulatedHairColor;
 }
 
-//------------------------------------------------------------------------------
+//==============================================================================
+//                             Atom Lighting
+//==============================================================================
+#include <HairLightTypes.azsli>
+/*
 // Include options first
 #include <Atom/Features/PBR/LightingOptions.azsli>
+
+//#include <Atom/Features/PBR/LightingModel.azsli>
 
 // Then include custom surface and lighting data types
 #include <Atom/Features/PBR/Lighting/LightingData.azsli>
 #include <Atom/Features/PBR/Surfaces/StandardSurface.azsli>
 
+
 //#include <Atom/Features/PBR/Microfacet/Fresnel.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
+
 //------------------------------------------------------------------------------
-//! Simple Lambertian BRDF. 
-float3 DiffuseLambert(float3 albedo, float3 normal, float3 dirToLight)
+#include <Atom/Features/PBR/Decals.azsli>
+
+//------------------------------------------------------------------------------
+//#include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
+//#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+//#include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
+// StandardLighting (and any of the lights directly cannot be included as they 
+// will bring many conflicting structures including the duplicate PerPass srg 
+// that cannot be overriden
+//------------------------------------------------------------------------------
+
+//==============================================================================
+//! Simple Lambertian BRDF
+float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 {
     float NdotL = saturate(dot(normal, dirToLight));
     return albedo * NdotL * INV_PI;
 } 
 
-// Then define the Diffuse and Specular lighting functions
+// Replacing the generic Diffuse and Specular methods in StandardLighting.azsli 
+// and removing the regular usage of clear coat second lobe energy distribution.
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
-    float3 diffuse = DiffuseLambert(surface.albedo, surface.normal, dirToLight);
+    float3 diffuse = HairDiffuseLambertian(surface.albedo, surface.normal, dirToLight);
     diffuse *= lightIntensity;
     return diffuse;
 }
@@ -453,6 +470,8 @@ void UpdateLightingParameters(
     lightingData.brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
 }
 
+#define _USE_SPLIT_NORMALS_
+
 void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
 {  
     float3 posToLight = light.m_position - surface.position;
@@ -474,23 +493,32 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
 
 
         float3 orgTangent = surface.normal;
+        float diffuseRatio = 1.0;
         //---------------------------------------------------
+#ifdef _USE_SPLIT_NORMALS_
         // surface.normal is the hair tangent
-        float3 biNormal = cross(orgTangent, lightingData.dirToCamera);
-//        float3 biNormal = cross(orgTangent, posToLightDir);
+        float3 biNormal = cross(orgTangent, posToLightDir);
         float3 projectedNormal = cross(biNormal, orgTangent);
         surface.normal = normalize(projectedNormal);
+
+        // Next I add refraction scaling - while not fully physically based, it reduces 
+        // energy due to increased angle loss within the hair when refraction angle increases
+        float3 halfDir = normalize(posToLightDir + lightingData.dirToCamera);
+        diffuseRatio = abs(dot(posToLightDir, halfDir));
 
         // Next is important in order to set NdotV and other PBR settings - needs ot be set once per light
         UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
 
+        lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+        lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+#endif // _USE_SPLIT_NORMALS_
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += diffuseRatio * lightingData.diffuseResponse * GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+//        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
 
         //---------------------------------------------------
-        float3 halfDir = normalize(posToLightDir + lightingData.dirToCamera);
-        biNormal = cross(orgTangent, lightingData.dirToCamera);
-//        biNormal = cross(orgTangent, halfDir);
+#ifdef _USE_SPLIT_NORMALS_ 
+        biNormal = cross(orgTangent, halfDir);
         projectedNormal = cross(biNormal, orgTangent);
         surface.normal = normalize(projectedNormal);
 
@@ -500,6 +528,7 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         // Diffuse and Specular response
         lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
         lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+#endif // _USE_SPLIT_NORMALS_
 
         // Specular contribution
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
@@ -507,7 +536,7 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         surface.normal = orgTangent;
     }
 }
-
+////////////////////////////////
 void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
 {
     lightingData.tileIterator.LoadAdvance();
@@ -523,7 +552,7 @@ void ApplySimplePointLights(Surface surface, inout LightingData lightingData)
         ++lightCount;
     }
 }
-
+////////////////////////////////
 void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 {
     for (int l = 0; l < ViewSrg::m_simplePointLightCount; ++l)
@@ -532,11 +561,8 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
         ApplySimplePointLight(light, surface, lightingData);
     }
 }
+*/
 
-//------------------------------------------------------------------------------
-#include <Atom/Features/PBR/Decals.azsli>
-//#include <Atom/Features/PBR/Lights/SimplePointLight.azsli>
-//#include <Atom/Features/PBR/Lights/SimpleSpotLight.azsli>
 //------------------------------------------------------------------------------
 
 float3 CalculateDirectLighting( 
@@ -549,15 +575,17 @@ float3 CalculateDirectLighting(
 
     surface.position = vPositionWS;
 
-    // Calculate the normal along the view-tangent plane in order to
-    // get the best fitting normal from the normal disk around the hair cylinder.
-//    float3 biNormal = cross(vTangent, vViewDirWS);
-//    float3 projectedNormal = cross(biNormal, vTangent);
-//    surface.normal = normalize(projectedNormal);
-
+#ifdef _USE_SPLIT_NORMALS_
     // normal will need to be calculated per light based on location, and best 
     // projected direction for specular and diffuse
-    surface.normal = normalize(vTangent);   
+    surface.normal = normalize(vTangent); 
+#else
+    // Calculate the normal along the view-tangent plane in order to
+    // get the best fitting normal from the normal disk around the hair cylinder.
+    float3 biNormal = cross(vTangent, vViewDirWS);
+    float3 projectedNormal = cross(biNormal, vTangent);
+    surface.normal = normalize(projectedNormal);
+#endif // _USE_SPLIT_NORMALS_
 
     surface.roughnessLinear = 0.51f;
     surface.CalculateRoughnessA();
@@ -602,6 +630,9 @@ float3 CalculateDirectLighting(
 
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
+    // Remark: all indices were checked out ok with the exception of the bin 
+    // that seems to always be 0.  Need to verify that we are running on the correct 
+    // light array.
 //    return float3(tileWidth / 103.0, 0, 0);
 //    return float3(0, tileHeight/75.0, 0);
 //    return float3(float(tileId.x) / float(tileWidth), 0, 0);

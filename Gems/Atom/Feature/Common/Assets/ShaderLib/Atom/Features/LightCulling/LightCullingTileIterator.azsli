@@ -35,6 +35,23 @@ class LightCullingTileIterator
         m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN; 
         m_value = 0;               
     }
+
+    void TestInit(
+        float4 svPosition, StructuredBuffer<uint> lightListRemapped, Texture2D<uint4> tileLightDataTex,
+        inout uint tileWidth, inout uint tileHeight, 
+        inout uint2 tileId, inout uint bin )
+    {
+        m_lightListRemapped = lightListRemapped;
+        tileId = ComputeTileId(svPosition.xy);
+        float viewz = abs(svPosition.w);
+
+        tileLightDataTex.GetDimensions(tileWidth, tileHeight);
+
+        TileLightData tileLightData = Tile_UnpackData(tileLightDataTex[tileId]);
+        bin = NVLC_GetBin(viewz, tileLightData); 
+        m_readIndex = ((tileId.y * tileWidth + tileId.x) * NVLC_MAX_BINS + bin) * NVLC_MAX_POSSIBLE_LIGHTS_PER_BIN; 
+        m_value = 0;               
+    }
             
     uint LoadAdvance()
     {
