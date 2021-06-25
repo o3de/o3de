@@ -99,13 +99,11 @@ namespace AZ
             {
                 // Update the buffers for all dynamic primitives in this frame's data
                 // There is just one index buffer and one vertex buffer for all dynamic primitives
-                bool bufferUpdated = true;
-                bufferUpdated &= UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_primitiveBuffers);
-                bufferUpdated &= UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_primitiveBuffers);
-                // Skip adding render data if failed to update buffers
-                // Note, the error would be already reported inside the Update* functions
-                if (!bufferUpdated)
+                if (!UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_primitiveBuffers)
+                    || !UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_primitiveBuffers))
                 {
+                    // Skip adding render data if failed to update buffers
+                    // Note, the error would be already reported inside the Update* functions
                     return;
                 }
 
@@ -200,7 +198,7 @@ namespace AZ
             RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
             if (!dynamicBuffer)
             {
-                AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer with size %d.", sourceByteSize);
+                AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
                 return false;
             }            
             dynamicBuffer->Write(source.data(), sourceByteSize);
@@ -215,7 +213,7 @@ namespace AZ
             RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
             if (!dynamicBuffer)
             {
-                AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer with size %d.", sourceByteSize);
+                AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
                 return false;
             }            
             dynamicBuffer->Write(source.data(), sourceByteSize);
