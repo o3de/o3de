@@ -14,8 +14,10 @@
 
         <Package InstallerVersion="301" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine"/>
 
-        <!-- auto distribute the installable files across N cab files -->
-        <MediaTemplate EmbedCab="$(var.CPACK_EMBED_ARTIFACTS)"/>
+        <!-- auto distribute the install-able files across N cab files that are at most 350 MB in size -->
+        <MediaTemplate EmbedCab="$(var.CPACK_EMBED_ARTIFACTS)"
+            MaximumUncompressedMediaSize="350"
+            CompressionLevel="high"/>
 
         <MajorUpgrade Schedule="afterInstallInitialize"
             AllowSameVersionUpgrades="yes"

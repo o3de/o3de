@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include "Atom_RHI_Metal_precompiled.h"
@@ -195,35 +190,43 @@ namespace AZ
             AZ_ATOM_PROFILE_FUNCTION("RHI", "SwapChain::RequestDrawable");
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
-            m_drawables[currentImageIndex] = [m_metalView.metalLayer nextDrawable];
-            AZ_Assert(m_drawables[currentImageIndex], "Drawable can not be null");
-            
-            //Need this to make sure the drawable is alive for Present call
-            [m_drawables[currentImageIndex] retain];
-            
-            id<MTLTexture> mtlDrawableTexture =  m_drawables[currentImageIndex].texture;
-            
-            if(isFrameCaptureEnabled)
+            if(m_drawables[currentImageIndex])
             {
-                //If the swapchainimage's m_memoryView does not exist create one and if it already exists override the
-                //native texture pointer with the one received from the driver (i.e nextDrawable call).
-                Image* swapChainImage = static_cast<Image*>(GetCurrentImage());
-                if( swapChainImage->GetMemoryView().GetMemory())
-                {
-                    swapChainImage->GetMemoryView().GetMemory()->OverrideResource(mtlDrawableTexture);
-                }
-                else
-                {
-                    RHI::ImageDescriptor imgDescriptor = swapChainImage->GetDescriptor();
-                    imgDescriptor.m_size.m_width = mtlDrawableTexture.width;
-                    imgDescriptor.m_size.m_height = mtlDrawableTexture.height;
-                    swapChainImage->SetDescriptor(imgDescriptor);
-                    
-                    RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlDrawableTexture, ResourceType::MtlTextureType, swapChainImage->m_isSwapChainImage});
-                    swapChainImage->m_memoryView = MemoryView(resc, 0, mtlDrawableTexture.allocatedSize, 0);                    
-                }
+                //We already have a drawable for this frame. Lets return that
+                //This can happen if a pass comes after Swapchain and wants to write to the swapchain texture
+                return m_drawables[currentImageIndex].texture;
             }
-            return mtlDrawableTexture;
+            else
+            {
+                m_drawables[currentImageIndex] = [m_metalView.metalLayer nextDrawable];
+                AZ_Assert(m_drawables[currentImageIndex], "Drawable can not be null");
+                
+                //Need this to make sure the drawable is alive for Present call
+                [m_drawables[currentImageIndex] retain];
+                
+                id<MTLTexture> mtlDrawableTexture =  m_drawables[currentImageIndex].texture;
+                if(isFrameCaptureEnabled)
+                {
+                    //If the swapchainimage's m_memoryView does not exist create one and if it already exists override the
+                    //native texture pointer with the one received from the driver (i.e nextDrawable call).
+                    Image* swapChainImage = static_cast<Image*>(GetCurrentImage());
+                    if( swapChainImage->GetMemoryView().GetMemory())
+                    {
+                        swapChainImage->GetMemoryView().GetMemory()->OverrideResource(mtlDrawableTexture);
+                    }
+                    else
+                    {
+                        RHI::ImageDescriptor imgDescriptor = swapChainImage->GetDescriptor();
+                        imgDescriptor.m_size.m_width = mtlDrawableTexture.width;
+                        imgDescriptor.m_size.m_height = mtlDrawableTexture.height;
+                        swapChainImage->SetDescriptor(imgDescriptor);
+                        
+                        RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlDrawableTexture, ResourceType::MtlTextureType, swapChainImage->m_isSwapChainImage});
+                        swapChainImage->m_memoryView = MemoryView(resc, 0, mtlDrawableTexture.allocatedSize, 0);
+                    }
+                }
+                return mtlDrawableTexture;
+            }
         }
     }
 }
