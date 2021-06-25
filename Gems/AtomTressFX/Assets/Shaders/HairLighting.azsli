@@ -376,9 +376,9 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
     float3 accumulatedHairColor = float3(0.0, 0.0, 0.0);
 
     float4 lightPosWSVec[3] = {
-        float4(4, -1, 2, 0.835),
-        float4(-4, -.7, 1, 0.52),
-        float4(g_vEye.xyz, 1.5) // + float3(0,0,0.2)    // camera light located a bit above the camera.
+        float4(4, -1, 2, 0.435),
+        float4(-4, -.7, 1, 0.32),
+        float4(g_vEye.xyz, 0.75) // + float3(0,0,0.2)    // camera light located a bit above the camera.
     };
 
     // Right now we fake two lights - one is fixed and the other one 
@@ -442,6 +442,17 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
 //==============================================================================
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 
+void UpdateLightingParameters(
+    inout LightingData lightingData, 
+    float3 positionWS, float3 normal, float roughnessLinear)
+{
+    lightingData.dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
+    // sample BRDF map (indexed by smoothness values rather than roughness)
+    lightingData.NdotV = saturate(dot(normal, lightingData.dirToCamera));
+    float2 brdfUV = float2(lightingData.NdotV, (1.0f - roughnessLinear));
+    lightingData.brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
+}
+
 void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, inout LightingData lightingData)
 {  
     float3 posToLight = light.m_position - surface.position;
@@ -452,7 +463,6 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
     // Only calculate shading if light is in range
     if (falloff < 1.0f)
     {
-        
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
         float radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
@@ -462,13 +472,39 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
         float3 posToLightDir = normalize(posToLight);
 
-        // Diffuse contribution
-//        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
 
-        lightingData.diffuseLighting += dot(surface.normal, posToLightDir);
+        float3 orgTangent = surface.normal;
+        //---------------------------------------------------
+        // surface.normal is the hair tangent
+        float3 biNormal = cross(orgTangent, lightingData.dirToCamera);
+//        float3 biNormal = cross(orgTangent, posToLightDir);
+        float3 projectedNormal = cross(biNormal, orgTangent);
+        surface.normal = normalize(projectedNormal);
+
+        // Next is important in order to set NdotV and other PBR settings - needs ot be set once per light
+        UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
+
+        // Diffuse contribution
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+
+        //---------------------------------------------------
+        float3 halfDir = normalize(posToLightDir + lightingData.dirToCamera);
+        biNormal = cross(orgTangent, lightingData.dirToCamera);
+//        biNormal = cross(orgTangent, halfDir);
+        projectedNormal = cross(biNormal, orgTangent);
+        surface.normal = normalize(projectedNormal);
+
+        // Next is important in order to set NdotV and other PBR settings - needs ot be set once per light
+        UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
+
+        // Diffuse and Specular response
+        lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+        lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
         // Specular contribution
-//        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        //---------------------------------------------------
+        surface.normal = orgTangent;
     }
 }
 
@@ -515,9 +551,13 @@ float3 CalculateDirectLighting(
 
     // Calculate the normal along the view-tangent plane in order to
     // get the best fitting normal from the normal disk around the hair cylinder.
-    float3 biNormal = cross(vTangent, vViewDirWS);
-    float3 projectedNormal = cross(biNormal, vTangent);
-    surface.normal = normalize(projectedNormal);
+//    float3 biNormal = cross(vTangent, vViewDirWS);
+//    float3 projectedNormal = cross(biNormal, vTangent);
+//    surface.normal = normalize(projectedNormal);
+
+    // normal will need to be calculated per light based on location, and best 
+    // projected direction for specular and diffuse
+    surface.normal = normalize(vTangent);   
 
     surface.roughnessLinear = 0.51f;
     surface.CalculateRoughnessA();
