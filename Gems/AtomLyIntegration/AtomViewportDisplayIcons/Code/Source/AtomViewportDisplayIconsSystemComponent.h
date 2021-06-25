@@ -27,6 +27,7 @@ namespace AZ
             : public AZ::Component
             , public AzToolsFramework::EditorViewportIconDisplayInterface
             , public AZ::Render::Bootstrap::NotificationBus::Handler
+            , private Data::AssetBus::Handler
         {
         public:
             AZ_COMPONENT(AtomViewportDisplayIconsSystemComponent, "{AEC1D3E1-1D9A-437A-B4C6-CFAEE620C160}");
@@ -50,6 +51,9 @@ namespace AZ
 
             // AZ::Render::Bootstrap::NotificationBus::Handler overrides...
             void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
+
+            // Data::AssetBus::Handler overrides...
+            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
 
         private:
             static constexpr const char* DrawContextShaderPath = "Shaders/TexturedIcon.azshader";
