@@ -24,7 +24,7 @@ namespace AZ::NativeUI
 
     AssertAction NativeUISystem::DisplayAssertDialog(const AZStd::string& message) const
     {
-        if (m_mode == NativeUI::Mode::CONSOLE)
+        if (m_mode == NativeUI::Mode::DISABLED)
         {
             return AssertAction::NONE;
         }
@@ -51,7 +51,7 @@ namespace AZ::NativeUI
 
     AZStd::string NativeUISystem::DisplayOkDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
-        if (m_mode == NativeUI::Mode::CONSOLE)
+        if (m_mode == NativeUI::Mode::DISABLED)
         {
             return {};
         }
@@ -68,7 +68,7 @@ namespace AZ::NativeUI
 
     AZStd::string NativeUISystem::DisplayYesNoDialog(const AZStd::string& title, const AZStd::string& message, bool showCancel) const
     {
-        if (m_mode == NativeUI::Mode::CONSOLE)
+        if (m_mode == NativeUI::Mode::DISABLED)
         {
             return {};
         }
