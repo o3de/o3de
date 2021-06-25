@@ -120,7 +120,7 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE BehaviorContextObject() = default;
 
         BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
-        BehaviorContextObject(const BehaviorContextObject&) = default;
+        BehaviorContextObject(const BehaviorContextObject&) = delete;
 
         // copy ctor
         AZ_FORCE_INLINE BehaviorContextObject(const void* source, const AnyTypeInfo& typeInfo, AZ::u32 flags);
