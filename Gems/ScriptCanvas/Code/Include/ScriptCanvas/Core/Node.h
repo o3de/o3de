@@ -513,6 +513,11 @@ namespace ScriptCanvas
         virtual bool IsEntryPoint() const;
         virtual bool RequiresDynamicSlotOrdering() const;
 
+        Data::Type GetNodeDataType();
+        void SetNodeDataType(Data::Type dataType);
+        Data::Type m_nodeDataType = Data::Type::Invalid();
+        bool isDisplayTypeInitialized = false;
+
 
         //! Node internal initialization, for custom init, use OnInit
         void Init() override final;

@@ -74,8 +74,6 @@ namespace ScriptCanvas
                 bool OnValidateNode(ValidationResults& validationResults) override;
 
                 void fixDynamicGroupDataType(const SlotId& slotId,Data::Type displayType);
-
-                //Data::Type GetDisplayGroupType
                 ////
 
                 void ParseFormat(bool signalError = true);
