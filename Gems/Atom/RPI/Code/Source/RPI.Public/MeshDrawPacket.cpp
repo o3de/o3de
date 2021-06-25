@@ -161,29 +161,26 @@ namespace AZ
                 RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
                 RHI::DrawListTagRegistry* drawListTagRegistry = rhiSystem->GetDrawListTagRegistry();
 
-                Data::Asset<RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
-                if (!shaderAsset.IsReady())
-                {
-                    // The shader asset needs to be loaded before we can check the draw tag.
-                    // If it's not loaded yet, the instance database will do a blocking load
-                    // when we create the instance below, so might as well load it now.
-                    shaderAsset.QueueLoad();
-
-                    if (shaderAsset.IsLoading())
-                    {
-                        shaderAsset.BlockUntilLoadComplete();
-                    }
-                }
-
-                // Use the default draw list tag from the shader variant.
-                RHI::DrawListTag drawListTag = drawListTagRegistry->FindTag(shaderAsset->GetDrawListName());
-
                 // Use the explicit draw list override if exists.
-                RHI::DrawListTag runtimeTag = shaderItem.GetDrawListTagOverride();
+                RHI::DrawListTag drawListTag = shaderItem.GetDrawListTagOverride();
 
-                if (!runtimeTag.IsNull())
+                if (drawListTag.IsNull())
                 {
-                    drawListTag = runtimeTag;
+                    Data::Asset<RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
+                    if (!shaderAsset.IsReady())
+                    {
+                        // The shader asset needs to be loaded before we can check the draw tag.
+                        // If it's not loaded yet, the instance database will do a blocking load
+                        // when we create the instance below, so might as well load it now.
+                        shaderAsset.QueueLoad();
+
+                        if (shaderAsset.IsLoading())
+                        {
+                            shaderAsset.BlockUntilLoadComplete();
+                        }
+                    }
+
+                    drawListTag = drawListTagRegistry->FindTag(shaderAsset->GetDrawListName());
                 }
 
                 if (!parentScene.HasOutputForPipelineState(drawListTag))
