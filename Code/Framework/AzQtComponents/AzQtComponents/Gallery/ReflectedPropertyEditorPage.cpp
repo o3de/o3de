@@ -316,7 +316,7 @@ See the documentation linked above for more details.
 )";
 
     ui->exampleText->setHtml(exampleText);
-    ui->hyperlinkLabel->setText(QStringLiteral(R"(<a href="https://docs.o3de.org/docs/user-guide/components/development/reflection/">Reflected Property Editor docs</a>)"));
+    ui->hyperlinkLabel->setText(QStringLiteral(R"(<a href="https://o3de.org/docs/user-guide/components/development/reflection/">Reflected Property Editor docs</a>)"));
 }
 
 ReflectedPropertyEditorPage::~ReflectedPropertyEditorPage()
