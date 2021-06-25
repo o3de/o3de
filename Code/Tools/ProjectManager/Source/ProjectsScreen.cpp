@@ -41,6 +41,7 @@
 #include <QTimer>
 #include <QQueue>
 #include <QDir>
+#include <QGuiApplication>
 
 //#define DISPLAY_PROJECT_DEV_DATA true 
 
@@ -403,9 +404,11 @@ namespace O3DE::ProjectManager
 
             if (warningResult == QMessageBox::Yes)
             {
+                QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
                 // Remove project from O3DE and delete from disk
                 HandleRemoveProject(projectPath);
                 ProjectUtils::DeleteProjectFiles(projectPath);
+                QGuiApplication::restoreOverrideCursor();
             }
         }
     }
