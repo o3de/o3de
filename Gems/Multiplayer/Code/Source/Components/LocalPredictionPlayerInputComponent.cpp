@@ -464,7 +464,7 @@ namespace Multiplayer
             {
                 // Clamp to oldest element if history is too small
                 const int64_t historyIndex = AZStd::max<int64_t>(inputHistorySize - 1 - i, 0);
-                inputArray[i] = m_inputHistory[historyIndex];
+                inputArray[static_cast<uint32_t>(i)] = m_inputHistory[historyIndex];
             }
 
 #ifndef AZ_RELEASE_BUILD
