@@ -55,7 +55,6 @@ namespace AZ
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(resourceBase);
             for (size_t i = 0; i < RHI::Limits::Device::FrameCountMax; ++i)
             {
-                group.m_compiledArgBuffers[i]->Shutdown();
                 group.m_compiledArgBuffers[i] = nullptr;
             }
             Base::ShutdownResourceInternal(resourceBase);
