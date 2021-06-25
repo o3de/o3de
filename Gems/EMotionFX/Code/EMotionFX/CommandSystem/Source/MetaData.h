@@ -31,13 +31,6 @@ namespace CommandSystem
     {
     public:
         /**
-         * Constructs a list of commands representing the changes the user did on the source asset and returns it as a string.
-         * @param motion The motion to read the changes from.
-         * @result A string containing a list of commands.
-         */
-        static AZStd::vector<MCore::Command*> GenerateMotionMetaData(EMotionFX::Motion* motion);
-
-        /**
          * Use the given list , prepare it for the given motion and apply the meta data.
          * @param motion The motion to apply the meta data on.
          * @result True in case the meta data got applied correctly, false if something failed.

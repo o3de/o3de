@@ -261,6 +261,25 @@ class TestAWSUtils(TestCase):
         mocked_paginator.paginate.assert_called_once_with(StackName=TestAWSUtils._expected_stack, PaginationConfig=ANY)
         assert not actual_stack_resources
 
+    def test_list_cloudformation_stack_resources_return_empty_list_when_resource_has_invalid_attributes(self) -> None:
+        mocked_cloudformation_client: MagicMock = self._mock_client.return_value
+        mocked_paginator: MagicMock = MagicMock()
+        mocked_cloudformation_client.get_paginator.return_value = mocked_paginator
+        mocked_iterator: MagicMock = MagicMock()
+        mocked_iterator.resume_token = None
+        mocked_paginator.paginate.return_value = mocked_iterator
+        mocked_iterator.__iter__.return_value = [{"StackResourceSummaries": [
+            {"DummyAttribute": "DummyValue"}]}]
+
+        actual_stack_resources: List[BasicResourceAttributes] = \
+            aws_utils.list_cloudformation_stack_resources(TestAWSUtils._expected_stack, TestAWSUtils._expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.CLOUDFORMATION_SERVICE_NAME,
+                                                  region_name=TestAWSUtils._expected_region)
+        mocked_cloudformation_client.get_paginator.assert_called_once_with(
+            aws_utils.AWSConstants.CLOUDFORMATION_LIST_STACK_RESOURCES_API_NAME)
+        mocked_paginator.paginate.assert_called_once_with(StackName=TestAWSUtils._expected_stack, PaginationConfig=ANY)
+        assert not actual_stack_resources
+
     def test_list_cloudformation_stack_resources_return_expected_stack_resources(self) -> None:
         mocked_cloudformation_client: MagicMock = self._mock_client.return_value
         mocked_paginator: MagicMock = MagicMock()

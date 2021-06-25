@@ -45,6 +45,7 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
     float4 m_pad2; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
 
     float m_opacityFactor;
+    float m_opacityAffectsSpecularFactor;
     Texture2D m_opacityMap;
     uint m_opacityMapUvIndex;
 

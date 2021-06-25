@@ -20,6 +20,7 @@
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;
+    static constexpr const char AudioControlsBasePath[]{ "libs/gameaudio/" };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     // CAudioThread
@@ -77,6 +78,7 @@ namespace Audio
     {
         m_apAudioProxies.reserve(Audio::CVars::s_AudioObjectPoolSize);
         m_apAudioProxiesToBeFreed.reserve(16);
+        m_controlsPath.assign(Audio::AudioControlsBasePath);
 
         AudioSystemRequestBus::Handler::BusConnect();
         AudioSystemThreadSafeRequestBus::Handler::BusConnect();
@@ -354,23 +356,27 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     const char* CAudioSystem::GetControlsPath() const
     {
-        // this shouldn't get called before UpdateControlsPath has been called.
-        AZ_WarningOnce("AudioSystem", !m_controlsPath.empty(), "AudioSystem::GetControlsPath - controls path has been requested before it has been set!");
         return m_controlsPath.c_str();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystem::UpdateControlsPath()
     {
-        AZStd::string controlsPath("libs/gameaudio/");
-        controlsPath += m_oATL.GetControlsImplSubPath();
+        AZStd::string controlsPath{ Audio::AudioControlsBasePath };
+        const AZStd::string& subPath = m_oATL.GetControlsImplSubPath();
+        if (!subPath.empty())
+        {
+            controlsPath.append(subPath);
+        }
+
         if (AZ::StringFunc::RelativePath::Normalize(controlsPath))
         {
-            m_controlsPath = controlsPath.c_str();
+            m_controlsPath = controlsPath;
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
+            g_audioLogger.Log(
+                eALT_ERROR, "AudioSystem::UpdateControlsPath - failed to normalize the controls path '%s'!", controlsPath.c_str());
         }
     }
 
