@@ -155,7 +155,7 @@ namespace AZ
 
             m_item.m_arguments = RHI::DrawArguments(draw);
             m_item.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_item.m_stencilRef = m_stencilRef;
+            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
         }
 
         void FullscreenTrianglePass::FrameBeginInternal(FramePrepareParams params)

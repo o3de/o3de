@@ -320,7 +320,7 @@ namespace AZ
                 m_cachedTimeRegions.clear();
             }
 
-            timeRegion.m_stackDepth = m_stackLevel;
+            timeRegion.m_stackDepth = static_cast<uint16_t>(m_stackLevel);
 
             AZ_Assert(m_timeRegionStack.size() < TimeRegionStackSize, "Adding too many time regions to the stack. Increase the size of TimeRegionStackSize.");
             m_timeRegionStack.push_back(&timeRegion);

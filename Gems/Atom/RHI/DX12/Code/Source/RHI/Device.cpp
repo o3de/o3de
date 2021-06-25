@@ -80,8 +80,8 @@ namespace AZ
                 StagingMemoryAllocator::Descriptor allocatorDesc;
                 allocatorDesc.m_device = this;
 
-                allocatorDesc.m_mediumPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
-                allocatorDesc.m_largePageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
+                allocatorDesc.m_mediumPageSizeInBytes = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes);
+                allocatorDesc.m_largePageSizeInBytes = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes);
                 allocatorDesc.m_collectLatency = descriptor.m_frameCountMax;
                 m_stagingMemoryAllocator.Init(allocatorDesc);
             }

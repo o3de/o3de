@@ -129,7 +129,7 @@ namespace AZ
             residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
             residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
             residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - residentMipLevel;
+            residentImageDescriptor.m_mipLevels = static_cast<uint16_t>(imageDescriptor.m_mipLevels - residentMipLevel);
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetDevice().GetImageAllocationInfo(residentImageDescriptor, allocationInfo);

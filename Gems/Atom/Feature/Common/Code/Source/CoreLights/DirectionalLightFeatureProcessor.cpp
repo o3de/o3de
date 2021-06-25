@@ -225,7 +225,7 @@ namespace AZ
                 }
                 if (segmentsNeedUpdate)
                 {
-                    UpdateViewsOfCascadeSegments(m_shadowingLightHandle, cascadeCount);
+                    UpdateViewsOfCascadeSegments(m_shadowingLightHandle, static_cast<uint16_t>(cascadeCount));
                     SetShadowmapImageSizeArraySize(m_shadowingLightHandle);
                 }
 
@@ -1216,7 +1216,7 @@ namespace AZ
             else
             {
                 // If ESM is not used, set filter offsets and filter counts zero in ESM data.
-                for (uint32_t index = 0; index < GetCascadeCount(handle); ++index)
+                for (uint16_t index = 0; index < GetCascadeCount(handle); ++index)
                 {
                     EsmShadowmapsPass::FilterParameter& filterParameter = m_esmParameterData.at(cameraView).GetData(index);
                     filterParameter.m_isEnabled = false;
