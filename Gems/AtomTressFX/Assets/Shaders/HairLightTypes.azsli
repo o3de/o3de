@@ -38,7 +38,6 @@
 
 #include <Atom/Features/PBR/LightingUtils.azsli>
 #include <Atom/Features/PBR/Microfacet/Brdf.azsli>
-
 //------------------------------------------------------------------------------
 #include <Atom/Features/PBR/Decals.azsli>
 //==============================================================================
@@ -54,7 +53,7 @@ float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
     float3 diffuse = HairDiffuseLambertian(surface.albedo, surface.normal, dirToLight);
-    diffuse *= lightIntensity;
+    diffuse *= lightIntensity;// *lightingData.diffuseResponse;   // Notice that addition of the response (1-F) here
     return diffuse;
 }
 
@@ -77,6 +76,8 @@ void UpdateLightingParameters(
 }
 
 //==============================================================================
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
 #define _USE_SPLIT_NORMALS_
 //==============================================================================
 
@@ -125,7 +126,7 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 #endif // _USE_SPLIT_NORMALS_
         // Diffuse contribution
-        lightingData.diffuseLighting += diffuseRatio * lightingData.diffuseResponse * GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += diffuseRatio * GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
         //        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
 
         //---------------------------------------------------
@@ -230,6 +231,60 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
     {
         ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[l];
         ApplySimpleSpotLight(light, surface, lightingData);
+    }
+}
+//==============================================================================
+//                              Point Light 
+//==============================================================================
+
+void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
+{
+    float3 posToLight = light.m_position - surface.position;
+    float d2 = dot(posToLight, posToLight); // light distance squared
+    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+
+    // Only calculate shading if light is in range
+    if (falloff < 1.0f)
+    {
+        // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
+        float radiusAttenuation = 1.0 - (falloff * falloff);
+        radiusAttenuation = radiusAttenuation * radiusAttenuation;
+
+        // Standard quadratic falloff
+        d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
+        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
+
+        // Diffuse contribution
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+
+        // Tranmission contribution
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
+
+        // Adjust the light direcion for specular based on bulb size
+
+        // Calculate the reflection off the normal from the view direction
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+
+        // Calculate a vector from the reflection vector to the light
+        float3 reflectionPosToLight = posToLight - dot(posToLight, reflectionDir) * reflectionDir;
+
+        // Adjust the direction to light based on the bulb size
+        posToLight -= reflectionPosToLight * saturate(light.m_bulbRadius / length(reflectionPosToLight));
+
+        // Adjust the intensity of the light based on the bulb size to conserve energy
+        float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_bulbRadius, d2);
+
+        // Specular contribution
+        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+    }
+}
+
+void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
+{
+    for (int l = 0; l < ViewSrg::m_pointLightCount; ++l)
+    {
+        ViewSrg::PointLight light = ViewSrg::m_pointLights[l];
+        ApplyPointLight(light, surface, lightingData);
     }
 }
 //==============================================================================
