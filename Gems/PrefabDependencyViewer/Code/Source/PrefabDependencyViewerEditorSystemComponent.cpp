@@ -1,6 +1,8 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <PrefabDependencyViewerEditorSystemComponent.h>
+#include <PrefabDependencyViewerWidget.h>
 #include <QMenu>
 
 namespace PrefabDependencyViewer
@@ -148,5 +150,13 @@ namespace PrefabDependencyViewer
         AZ_TracePrintf("Prefab Dependency Viewer", "%d\n", entities.size());
         */
     }
+
+    void PrefabDependencyViewerEditorSystemComponent::NotifyRegisterViews()
+    {
+        AzToolsFramework::RegisterViewPane<PrefabDependencyViewerWidget>(
+            s_prefabViewerTitle, "Tools", AzToolsFramework::ViewPaneOptions());
+        // Refactor later on. Look in PhysX Gem CollisionGroupWidget. It include LyViewPaneOptions directly
+    }
+
 
 } // namespace PrefabDependencyViewer

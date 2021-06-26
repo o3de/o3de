@@ -39,6 +39,9 @@ namespace PrefabDependencyViewer
         AZStd::string GetMenuIdentifier() const override;
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
+        // Opening a View Pane
+        void NotifyRegisterViews() override;
+
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
