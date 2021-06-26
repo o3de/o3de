@@ -462,6 +462,13 @@ namespace LandscapeCanvasEditor
         CrySystemEventBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
+        // Listen for Entity notifications if a level is already loaded
+        // Otherwise, we will connect/disconnect from this bus when levels are loaded/closed
+        if (GetLegacyEditor()->IsLevelLoaded())
+        {
+            AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        }
+
         // Create our temporary Node Inspector using a Pinned Inspector
         m_customNodeInspector = aznew CustomNodeInspectorDockWidget(this);
 

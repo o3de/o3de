@@ -312,6 +312,7 @@ namespace EMotionFX
     // shared file format chunk processors
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionEventTrackTable,   FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE,      1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionEventTrackTable2,  FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE,      2)
+    EMFX_CHUNKPROCESSOR(ChunkProcessorMotionEventTrackTable3,  FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE,      3)
 
     // Actor file format chunk processors
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorInfo,                 FileFormat::ACTOR_CHUNK_INFO,                 1)

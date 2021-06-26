@@ -64,7 +64,6 @@ namespace AWSCore
 
     void AWSAttributionSystemComponent::Activate()
     {
-        m_manager->MetricCheck();
     }
 
     void AWSAttributionSystemComponent::Deactivate()

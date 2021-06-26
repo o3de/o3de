@@ -547,7 +547,6 @@ public:
     {
         bool dummy;
         QCommandLineParser parser;
-        QString appRootOverride;
         parser.addHelpOption();
         parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
         parser.setApplicationDescription(QObject::tr("Open 3D Engine"));
@@ -633,7 +632,7 @@ public:
             option.second = parser.value(option.first.valueName);
         }
 
-        m_bExport = m_bExport | m_bExportTexture;
+        m_bExport = m_bExport || m_bExportTexture;
 
         const QStringList positionalArgs = parser.positionalArguments();
 
@@ -923,9 +922,9 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Open 3D Engine and related materials Copyright %1 %2 Amazon Web Services, Inc., its affiliates or licensors.<br>By accessing or using these materials, you agree to the terms of the AWS Customer Agreement.");
+    QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
 
-    return copyrightString.arg(copyrightHtmlSymbol).arg(O3DE_COPYRIGHT_YEAR);
+    return copyrightString.arg(copyrightHtmlSymbol);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1717,7 +1716,7 @@ BOOL CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle();
+    SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1839,7 +1838,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(0, 0, GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -4029,7 +4028,6 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 {
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-
         if (sTitleStr.isEmpty())
         {
             sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
@@ -4037,7 +4035,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 
         if (!sPreTitleStr.isEmpty())
         {
-            sTitleStr.insert(0, sPreTitleStr);
+            sTitleStr.insert(sTitleStr.length(), QStringLiteral(" - %1").arg(sPreTitleStr));
         }
 
         if (!sPostTitleStr.isEmpty())
@@ -4330,6 +4328,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     // open a scope to contain the AZToolsApp instance;
     {
         EditorInternal::EditorToolsApplication AZToolsApp(&argc, &argv);
+
+        {
+            CEditCommandLineInfo cmdInfo;
+            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExport && !cmdInfo.m_bExportTexture &&
+                !cmdInfo.m_bNullRenderer && !cmdInfo.m_bMatEditMode && !cmdInfo.m_bTest)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
+        }
 
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();

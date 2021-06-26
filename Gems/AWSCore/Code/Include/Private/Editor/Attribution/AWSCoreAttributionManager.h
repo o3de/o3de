@@ -11,11 +11,13 @@
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <Editor/Attribution/AWSAttributionServiceApi.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AWSCore
 {
     //! Manages operational metrics for AWS gems
     class AWSAttributionManager
+        : private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
         AWSAttributionManager();
@@ -32,15 +34,20 @@ namespace AWSCore
         virtual void UpdateMetric(AttributionMetric& metric);
         void UpdateLastSend();
         void SetApiEndpointAndRegion(ServiceAPI::AWSAttributionRequestJob::Config* config);
+        virtual void ShowConsentDialog();
 
     private:
         bool ShouldGenerateMetric() const;
-
+        bool CheckAWSCredentialsConfigured();
+        bool CheckConsentShown();
         AZStd::string GetEngineVersion() const;
         AZStd::string GetPlatform() const;
         void GetActiveAWSGems(AZStd::vector<AZStd::string>& gemNames);
 
         void SaveSettingsRegistryFile();
+
+        // AzToolsFramework::EditorEvents interface implementation
+        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
     };

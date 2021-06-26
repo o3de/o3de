@@ -27,7 +27,7 @@ namespace AzNetworking
     //! ISerializer to move data between hosts safely and efficiently.
     //!
     //! For more information on the packet format and best practices for extending the packet system, read
-    //! [Networking Packets](http://docs.o3de.org/docs/user-guide/networking/packets) on the O3DE documentation site.
+    //! [Networking Packets](http://o3de.org/docs/user-guide/networking/packets) on the O3DE documentation site.
     class IPacket
     {
     public:

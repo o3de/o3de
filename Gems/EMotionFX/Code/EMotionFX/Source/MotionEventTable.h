@@ -7,9 +7,7 @@
 
 #pragma once
 
-// include the required headers
 #include "EMotionFXConfig.h"
-#include "BaseObject.h"
 #include "AnimGraphSyncTrack.h"
 
 #include <AzCore/std/containers/vector.h>
@@ -40,17 +38,15 @@ namespace EMotionFX
      * The handling of those events is done by the MotionEventHandler class that you specify to the MotionEventManager singleton.
      */
     class EMFX_API MotionEventTable
-        : public BaseObject
     {
         friend class MotionEvent;
 
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(MotionEventTable, "{DB5BF142-99BE-4026-8D3E-3E5B30C14714}", BaseObject)
+        AZ_RTTI(MotionEventTable, "{DB5BF142-99BE-4026-8D3E-3E5B30C14714}")
 
-        MotionEventTable();
-
-        ~MotionEventTable();
+        MotionEventTable() = default;
+        virtual ~MotionEventTable();
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -100,7 +96,6 @@ namespace EMotionFX
         AZStd::vector<MotionEventTrack*> m_tracks;
 
         /// A shortcut to the track containing sync events.
-        AnimGraphSyncTrack* m_syncTrack;
-
+        AnimGraphSyncTrack* m_syncTrack = nullptr;
     };
 } // namespace EMotionFX

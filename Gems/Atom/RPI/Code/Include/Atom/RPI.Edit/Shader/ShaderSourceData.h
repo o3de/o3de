@@ -34,7 +34,6 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ShaderSourceData, AZ::SystemAllocator, 0);
 
             static constexpr char Extension[] = "shader";
-            static constexpr char Extension2[] = "shader2";
 
             static void Reflect(ReflectContext* context);
 

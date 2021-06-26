@@ -31,7 +31,7 @@ namespace Vegetation
         static constexpr const char* const s_componentDescription = "Provides a set of vegetation descriptors";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Vegetation.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.png";
-        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
 
     private:
         void ForceOneEntry();

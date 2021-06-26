@@ -7,18 +7,15 @@
 
 #include <Atom/RPI.Public/Shader/ShaderSystem.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
-#include <Atom/RPI.Public/Shader/Shader2.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderVariantAsset2.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/PrecompiledShaderAssetSourceData.h>
 
@@ -40,11 +37,9 @@ namespace AZ
             ShaderVariantId::Reflect(context);
             ShaderVariantStableId::Reflect(context);
             ShaderAsset::Reflect(context);
-            ShaderAsset2::Reflect(context);
             ShaderInputContract::Reflect(context);
             ShaderOutputContract::Reflect(context);
             ShaderVariantAsset::Reflect(context);
-            ShaderVariantAsset2::Reflect(context);
             ShaderVariantTreeAsset::Reflect(context);
             ReflectShaderStageType(context);
             PrecompiledShaderAssetSourceData::Reflect(context);
@@ -58,10 +53,8 @@ namespace AZ
         void ShaderSystem::GetAssetHandlers(AssetHandlerPtrList& assetHandlers)
         {
             assetHandlers.emplace_back(MakeAssetHandler<ShaderAssetHandler>());
-            assetHandlers.emplace_back(MakeAssetHandler<ShaderAssetHandler2>());
             assetHandlers.emplace_back(MakeAssetHandler<ShaderResourceGroupAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantAssetHandler>());
-            assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantAssetHandler2>());
             assetHandlers.emplace_back(MakeAssetHandler<ShaderVariantTreeAssetHandler>());
         }
 
@@ -78,14 +71,6 @@ namespace AZ
                     return Shader::CreateInternal(*(azrtti_cast<ShaderAsset*>(shaderAsset)));
                 };
                 Data::InstanceDatabase<Shader>::Create(azrtti_typeid<ShaderAsset>(), handler);
-            }
-
-            {
-                Data::InstanceHandler<Shader2> handler;
-                handler.m_createFunction = [](Data::AssetData* shaderAsset) {
-                    return Shader2::CreateInternal(*(azrtti_cast<ShaderAsset2*>(shaderAsset)));
-                };
-                Data::InstanceDatabase<Shader2>::Create(azrtti_typeid<ShaderAsset2>(), handler);
             }
 
             {
@@ -110,7 +95,6 @@ namespace AZ
         void ShaderSystem::Shutdown()
         {
             Data::InstanceDatabase<Shader>::Destroy();
-            Data::InstanceDatabase<Shader2>::Destroy();
             Data::InstanceDatabase<ShaderResourceGroup>::Destroy();
             Data::InstanceDatabase<ShaderResourceGroupPool>::Destroy();
             Interface<ShaderSystemInterface>::Unregister(this);

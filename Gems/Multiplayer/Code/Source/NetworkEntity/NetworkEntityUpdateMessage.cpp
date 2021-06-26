@@ -59,10 +59,11 @@ namespace Multiplayer
 
     NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityId entityId, bool wasMigrated, bool takeOwnership)
         : m_entityId(entityId)
+        , m_isDelete(true)
         , m_wasMigrated(wasMigrated)
         , m_takeOwnership(takeOwnership)
     {
-        ;
+        // this is a delete entity message c-tor
     }
 
     NetworkEntityUpdateMessage& NetworkEntityUpdateMessage::operator =(NetworkEntityUpdateMessage&& rhs)

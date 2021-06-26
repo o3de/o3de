@@ -30,6 +30,11 @@
 #include <QPainter>
 #include <QMessageBox>
 
+void InitACEResources()
+{
+    Q_INIT_RESOURCE(AudioControlsEditorUI);
+}
+
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
@@ -40,6 +45,8 @@ namespace AudioControls
     CAudioControlsEditorWindow::CAudioControlsEditorWindow(QWidget* parent)
         : QMainWindow(parent)
     {
+        InitACEResources();
+
         setupUi(this);
 
         m_pATLModel = CAudioControlsEditorPlugin::GetATLModel();
@@ -290,6 +297,12 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioControlsEditorWindow::UpdateAudioSystemData()
     {
+        IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetAudioSystemEditorImpl();
+        if (!audioSystemImpl)
+        {
+            return;
+        }
+
         Audio::SAudioRequest oConfigDataRequest;
         oConfigDataRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
 
@@ -310,17 +323,17 @@ namespace AudioControls
         oConfigDataRequest.pData = &oParseGlobalRequestData;
         Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
 
-        //parse the AudioSystem level-specific config data
-        const char* levelName = GetIEditor()->GetLevelName().toUtf8().data();
+        // parse the AudioSystem level-specific config data
+        AZStd::string levelName{ GetIEditor()->GetLevelName().toUtf8().data() };
         AZ::StringFunc::Path::Join(sControlsPath.c_str(), "levels", sControlsPath);
-        AZ::StringFunc::Path::Join(sControlsPath.c_str(), levelName, sControlsPath);
+        AZ::StringFunc::Path::Join(sControlsPath.c_str(), levelName.c_str(), sControlsPath);
         Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oParseLevelRequestData(sControlsPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
         oConfigDataRequest.pData = &oParseLevelRequestData;
         Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oConfigDataRequest);
 
         // inform the middleware specific plugin that the data has been saved
         // to disk (in case it needs to update something)
-        CAudioControlsEditorPlugin::GetAudioSystemEditorImpl()->DataSaved();
+        audioSystemImpl->DataSaved();
     }
 
     //-------------------------------------------------------------------------------------------//
