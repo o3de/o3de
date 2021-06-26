@@ -37,9 +37,6 @@ ly_append_configurations_options(
         # Disabling some warnings
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
 
-        # Disabling these warnings while they get fixed
-        /wd4245 # conversion, signed/unsigned mismatch
-
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
         # /we4296 # 'operator': expression is always false
