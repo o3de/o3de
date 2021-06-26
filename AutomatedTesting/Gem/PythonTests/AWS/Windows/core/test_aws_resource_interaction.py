@@ -21,7 +21,7 @@ from AWS.common.aws_utils import AwsUtils
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 
 AWS_CORE_FEATURE_NAME = 'AWSCore'
-AWS_RESOURCE_MAPPING_FILE_NAME = 'aws_resource_mappings.json'
+AWS_RESOURCE_MAPPING_FILE_NAME = 'default_aws_resource_mappings.json'
 
 process_utils.kill_processes_named("o3de", ignore_extensions=True)  # Kill ProjectManager windows
 
