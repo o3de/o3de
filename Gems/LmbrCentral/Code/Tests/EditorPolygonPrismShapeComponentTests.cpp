@@ -14,7 +14,6 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
 #include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
