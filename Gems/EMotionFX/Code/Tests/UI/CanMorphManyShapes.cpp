@@ -99,7 +99,7 @@ namespace EMotionFX
             // InitAfterLoading() is called
             morphTargetNode->AddConnection(
                 parameterNode,
-                parameterNode->FindOutputPortIndex("FloatParam"),
+                aznumeric_caster(parameterNode->FindOutputPortIndex("FloatParam")),
                 BlendTreeMorphTargetNode::PORTID_INPUT_WEIGHT
             );
             finalNode->AddConnection(
