@@ -50,7 +50,7 @@ def setup(launcher: pytest.fixture, cdk: pytest.fixture, resource_mappings: pyte
 @pytest.mark.usefixtures('cdk')
 @pytest.mark.parametrize('feature_name', [AWS_CORE_FEATURE_NAME])
 @pytest.mark.parametrize('region_name', ['us-west-2'])
-@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::179802234733:role/o3de-automation-tests'])
+@pytest.mark.parametrize('assume_role_arn', ['arn:aws:iam::645075835648:role/o3de-automation-tests'])
 @pytest.mark.parametrize('session_name', ['o3de-Automation-session'])
 @pytest.mark.usefixtures('workspace')
 @pytest.mark.parametrize('project', ['AutomatedTesting'])
