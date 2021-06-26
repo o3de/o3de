@@ -525,7 +525,7 @@ namespace NvCloth
 
             const int numVertices = subMeshInfo.m_numVertices;
             const int firstVertex = subMeshInfo.m_verticesFirstIndex;
-            if (subMesh.GetVertexCount() != numVertices)
+            if (subMesh.GetVertexCount() != static_cast<uint32_t>(numVertices))
             {
                 AZ_Error("ClothComponentMesh", false,
                     "Render mesh to be modified doesn't have the same number of vertices (%d) as the cloth's submesh (%d).",

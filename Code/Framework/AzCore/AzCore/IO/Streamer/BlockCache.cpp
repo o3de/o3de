@@ -188,7 +188,7 @@ namespace AZ
             s32 numAvailableSlots = CalculateAvailableRequestSlots();
             status.m_numAvailableSlots = AZStd::min(status.m_numAvailableSlots, numAvailableSlots);
             status.m_isIdle = status.m_isIdle &&
-                numAvailableSlots == m_numBlocks &&
+                static_cast<u32>(numAvailableSlots) == m_numBlocks &&
                 m_delayedSections.empty();
         }
 

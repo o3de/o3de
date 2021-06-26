@@ -1559,7 +1559,7 @@ void CTrackViewDialog::OnAddSelectedNode()
             selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
         // check to make sure all nodes were added and notify user if they weren't
-        if (addedNodes.GetCount() != selectedEntitiesCount)
+        if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
         {
             IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 

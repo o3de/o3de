@@ -353,7 +353,7 @@ namespace AZ
                             }
 
                             // If the number of source LUTs have changed, the shader variant will need to be updated
-                            if (m_numSourceLuts != current)
+                            if (m_numSourceLuts != static_cast<unsigned int>(current))
                             {
                                 m_numSourceLuts = current;
                                 m_needToUpdateShaderVariant = true;

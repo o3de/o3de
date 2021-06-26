@@ -39,7 +39,6 @@ ly_append_configurations_options(
 
         # Disabling these warnings while they get fixed
         /wd4245 # conversion, signed/unsigned mismatch
-        /wd4389 # comparison, signed/unsigned mismatch
 
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019

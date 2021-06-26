@@ -235,7 +235,7 @@ namespace AZ::IO::ArchiveInternal
             return 0;
         }
 
-        if (nReadBytes != nTotal)
+        if (static_cast<size_t>(nReadBytes) != nTotal)
         {
             AZ_Warning("Archive", false, "FRead did not read expected number of byte from file, only %zu of %lld bytes read", nTotal, nReadBytes);
             nTotal = (size_t)nReadBytes;
@@ -1791,11 +1791,11 @@ namespace AZ::IO
         AZ_Assert(m_pZip, "ZipFile is nullptr");
         AZ_Assert(m_pFileEntry && m_pZip->IsOwnerOf(m_pFileEntry), "ZipFile is not owner of m_pFileEntry");
 
-        if (nDataSize != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
+        if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeUncompressed && bDecompress)
         {
             return false;
         }
-        else if (nDataSize != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
+        else if (static_cast<uint32_t>(nDataSize) != m_pFileEntry->desc.lSizeCompressed && !bDecompress)
         {
             return false;
         }

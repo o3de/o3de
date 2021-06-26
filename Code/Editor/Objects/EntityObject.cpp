@@ -1283,7 +1283,7 @@ void CEntityObject::UpdateVisibility(bool bVisible)
     CBaseObject::UpdateVisibility(bVisible);
 
     bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
-    if (bVisibleWithSpec != m_bVisible)
+    if (bVisibleWithSpec != static_cast<bool>(m_bVisible))
     {
         m_bVisible = bVisibleWithSpec;
     }

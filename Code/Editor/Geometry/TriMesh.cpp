@@ -677,11 +677,11 @@ void CTriMesh::GetEdgesByVertex(MeshElementsArray& inVertices, MeshElementsArray
     std::sort(inVertices.begin(), inVertices.end());
     for (int i = 0; i < GetEdgeCount(); i++)
     {
-        if (stl::binary_find(inVertices.begin(), inVertices.end(), pEdges[i].v[0]) != inVertices.end())
+        if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pEdges[i].v[0])) != inVertices.end())
         {
             outEdges.push_back(i);
         }
-        else if (stl::binary_find(inVertices.begin(), inVertices.end(), pEdges[i].v[1]) != inVertices.end())
+        else if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pEdges[i].v[1])) != inVertices.end())
         {
             outEdges.push_back(i);
         }
@@ -696,15 +696,15 @@ void CTriMesh::GetFacesByVertex(MeshElementsArray& inVertices, MeshElementsArray
     std::sort(inVertices.begin(), inVertices.end());
     for (int i = 0; i < GetFacesCount(); i++)
     {
-        if (stl::binary_find(inVertices.begin(), inVertices.end(), pFaces[i].v[0]) != inVertices.end())
+        if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pFaces[i].v[0])) != inVertices.end())
         {
             outFaces.push_back(i);
         }
-        else if (stl::binary_find(inVertices.begin(), inVertices.end(), pFaces[i].v[1]) != inVertices.end())
+        else if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pFaces[i].v[1])) != inVertices.end())
         {
             outFaces.push_back(i);
         }
-        else if (stl::binary_find(inVertices.begin(), inVertices.end(), pFaces[i].v[2]) != inVertices.end())
+        else if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pFaces[i].v[2])) != inVertices.end())
         {
             outFaces.push_back(i);
         }

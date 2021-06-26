@@ -1480,7 +1480,7 @@ bool AZ::FFont::UpdateTexture()
         return false;
     }
 
-    if (m_fontTexture->GetWidth() != m_fontImage->GetDescriptor().m_size.m_width || m_fontTexture->GetHeight() != m_fontImage->GetDescriptor().m_size.m_height)
+    if (m_fontTexture->GetWidth() != static_cast<int>(m_fontImage->GetDescriptor().m_size.m_width) || m_fontTexture->GetHeight() != static_cast<int>(m_fontImage->GetDescriptor().m_size.m_height))
     {
         AZ_Assert(false, "AtomFont::FFont:::UpdateTexture size mismatch between texture and image!");
         return false;

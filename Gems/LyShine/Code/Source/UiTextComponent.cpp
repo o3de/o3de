@@ -2068,7 +2068,7 @@ int UiTextComponent::GetFontEffect()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextComponent::SetFontEffect(int effectIndex)
 {
-    if (m_fontEffectIndex != effectIndex)
+    if (m_fontEffectIndex != static_cast<unsigned int>(effectIndex))
     {
         m_fontEffectIndex = effectIndex;
 

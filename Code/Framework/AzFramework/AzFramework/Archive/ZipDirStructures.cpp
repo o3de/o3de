@@ -104,7 +104,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
             if (*pReturnCode == Z_BUF_ERROR)
             {
                 // As long as we consumed something, keep going. Only fail permanently if we've stalled.
-                if (nAvailIn != pZStream->avail_in || nAvailOut != pZStream->avail_out)
+                if (nAvailIn != static_cast<int>(pZStream->avail_in) || nAvailOut != static_cast<int>(pZStream->avail_out))
                 {
                     *pReturnCode = Z_OK;
                 }
