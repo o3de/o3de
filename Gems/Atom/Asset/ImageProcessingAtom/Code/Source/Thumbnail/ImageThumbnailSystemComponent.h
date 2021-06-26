@@ -47,8 +47,9 @@ namespace ImageProcessingAtom
             bool Installed() const override;
             void RenderThumbnail(AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize) override;
 
-            bool RenderThumbnailFromImage(
-                AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, IImageObjectPtr previewImage) const;
+            template<class MkImageFn>
+            void RenderThumbnailFromImage(
+                AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, MkImageFn mkPreviewImage) const;
         };
     } // namespace Thumbnails
 } // namespace ImageProcessingAtom
