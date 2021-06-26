@@ -1,13 +1,31 @@
 
 #pragma once
 
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
+#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+
+#include <AzCore/Math/Vector2.h>
 
 namespace PrefabDependencyViewer
 {
+    using InstanceEntityMapperInterface  = AzToolsFramework::Prefab::InstanceEntityMapperInterface;
+    using PrefabSystemComponentInterface = AzToolsFramework::Prefab::PrefabSystemComponentInterface;
+    using InstanceOptionalReference      = AzToolsFramework::Prefab::InstanceOptionalReference;
+    using Instance                       = AzToolsFramework::Prefab::Instance;
+    using TemplateId                     = AzToolsFramework::Prefab::TemplateId;
+    using PrefabDom                      = AzToolsFramework::Prefab::PrefabDom;
+
     /// System component for PrefabDependencyViewer editor
     class PrefabDependencyViewerEditorSystemComponent
         : public AZ::Component
+        , public AzToolsFramework::EditorContextMenuBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
@@ -15,6 +33,11 @@ namespace PrefabDependencyViewer
         static void Reflect(AZ::ReflectContext* context);
 
         PrefabDependencyViewerEditorSystemComponent();
+
+        // EditorContextMenuBus...
+        int GetMenuPosition() const override;
+        AZStd::string GetMenuIdentifier() const override;
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -25,5 +48,12 @@ namespace PrefabDependencyViewer
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
+
+        static void ContextMenu_DisplayAssetDependencies(PrefabDom& templateJSON);
+
+        static InstanceEntityMapperInterface* s_prefabEntityMapperInterface;
+        static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
+
+        static const char* s_prefabViewerTitle;
     };
 } // namespace PrefabDependencyViewer
