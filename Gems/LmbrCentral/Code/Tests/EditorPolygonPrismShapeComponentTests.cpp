@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LmbrCentral_precompiled.h"
+
 #include "LmbrCentralReflectionTest.h"
+#include "LmbrCentral_precompiled.h"
 #include "Shape/EditorPolygonPrismShapeComponent.h"
 #include "Shape/EditorSphereShapeComponent.h"
-
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
@@ -17,10 +19,8 @@
 #include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
 #include <AzManipulatorTestFramework/ViewportInteraction.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
-#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
-#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace LmbrCentral
 {
@@ -96,8 +96,6 @@ namespace LmbrCentral
         EXPECT_EQ(polygonPrism->m_vertexContainer.GetVertices(), sourceVertices);
     }
 
-    using EditorPolygonPrismShapeComponentManipulatorTestFixture = UnitTest::IndirectCallManipulatorViewportInteractionFixture;
-
     class EditorPolygonPrismShapeComponentFixture : public UnitTest::ToolsApplicationFixture
     {
     public:
@@ -113,12 +111,10 @@ namespace LmbrCentral
     void EditorPolygonPrismShapeComponentFixture::SetUpEditorFixtureImpl()
     {
         AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(
-            serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
         // need to reflect EditorSphereShapeComponent in order for EditorBaseShapeComponent to be reflected
-        m_editorSphereShapeComponentDescriptor =
-            AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorSphereShapeComponent::CreateDescriptor());
+        m_editorSphereShapeComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorSphereShapeComponent::CreateDescriptor());
 
         m_editorPolygonPrismShapeComponentDescriptor =
             AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorPolygonPrismShapeComponent::CreateDescriptor());
@@ -206,8 +202,7 @@ namespace LmbrCentral
 
         // now check the manipulator is still in the correct position relative to the vertex
         // by starting a drag from the new vertex world position
-        m_actionDispatcher
-            ->CameraState(m_cameraState)
+        m_actionDispatcher->CameraState(m_cameraState)
             ->MousePosition(screenEnd + offset)
             ->MouseLButtonDown()
             ->MousePosition(screenStart + offset)
