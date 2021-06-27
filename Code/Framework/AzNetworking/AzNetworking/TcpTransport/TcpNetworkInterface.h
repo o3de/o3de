@@ -34,7 +34,7 @@ namespace AzNetworking
     //! * Header - Details the type of packet and other information related to reliability
     //! * Payload - The actual serialized content of the packet
     //! 
-    //! For more information, read [Networking Packets](http://docs.o3de.org/docs/user-guide/networking/packets) in the O3DE documentation.
+    //! For more information, read [Networking Packets](http://o3de.org/docs/user-guide/networking/packets) in the O3DE documentation.
     //! 
     //! ## Reliability
     //! 

@@ -119,8 +119,8 @@ namespace AZ
 
             AZStd::vector<QueryPoolAttachment> m_queryPoolAttachments;
             
-            /// Used to check if the current scope is a swapchain scope
-            bool m_isSwapChainScope = false;
+            /// Used to check if the current scope is writing to a swapchain texture
+            bool m_isWritingToSwapChainScope = false;
             
             /// Used to check if the current scope is a swapchain scope and the next scope will be used to capture the current frame
             bool m_isSwapChainAndFrameCaptureEnabled = false;

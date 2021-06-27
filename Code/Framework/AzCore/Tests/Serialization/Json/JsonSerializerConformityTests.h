@@ -1201,8 +1201,10 @@ namespace JsonSerializationTests
         if (this->m_features.m_enableInitializationTest)
         {
             auto instance = this->m_description.CreateDefaultInstance();
-            AZStd::remove_cvref_t<typename TypeParam::Type> compare;
+            AZ_PUSH_DISABLE_WARNING(4701, "-Wuninitialized-const-reference")
+            typename TypeParam::Type compare;
             if (!this->m_description.AreEqual(*instance, compare))
+            AZ_POP_DISABLE_WARNING
             {
                 auto serializer = this->m_description.CreateSerializer();
                 BaseJsonSerializer::OperationFlags flags = serializer->GetOperationsFlags();

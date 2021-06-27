@@ -60,12 +60,14 @@ namespace AZ
             //!
             //! @param rayStart  The starting point of the ray.
             //! @param rayDir  The direction and length of the ray (magnitude is encoded in the direction).
+            //! @param allowBruteForce  Allow for brute force queries while the mesh is baking (remove when ATOM-4343 is complete)
             //! @param[out] distanceNormalized  If an intersection is found, will be set to the normalized distance of the intersection
             //! (in the range 0.0-1.0) - to calculate the actual distance, multiply distanceNormalized by the magnitude of rayDir.
             //! @param[out] normal If an intersection is found, will be set to the normal at the point of collision.
             //! @return  True if the ray intersects the mesh.
             virtual bool LocalRayIntersectionAgainstModel(
-                const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
+                const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
+                float& distanceNormalized, AZ::Vector3& normal) const;
 
         private:
             void SetReady();

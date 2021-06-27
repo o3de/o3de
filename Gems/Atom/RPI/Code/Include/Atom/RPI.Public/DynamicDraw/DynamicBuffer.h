@@ -41,7 +41,7 @@ namespace AZ
 
         public:
             //! Write data to the DyanmicBuffer. The write size can't be larger than this buffer's size
-            bool Write(void* data, uint32_t size);
+            bool Write(const void* data, uint32_t size);
 
             //! Get the buffer's size
             uint32_t GetSize();

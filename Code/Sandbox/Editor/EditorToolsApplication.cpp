@@ -86,10 +86,12 @@ namespace EditorInternal
     void EditorToolsApplication::StartCommon(AZ::Entity* systemEntity)
     {
         AzToolsFramework::ToolsApplication::StartCommon(systemEntity);
+
+        m_StartupAborted = m_moduleManager->m_quitRequested;
+
         if (systemEntity->GetState() != AZ::Entity::State::Active)
         {
             m_StartupAborted = true;
-            return;
         }
     }
 
@@ -101,6 +103,7 @@ namespace EditorInternal
         AzToolsFramework::ToolsApplication::Start({}, params);
         if (IsStartupAborted() || !m_systemEntity)
         {
+            AzToolsFramework::ToolsApplication::Stop();
             return false;
         }
         return true;

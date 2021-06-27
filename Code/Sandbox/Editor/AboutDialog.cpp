@@ -32,7 +32,6 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     connect(m_ui->m_transparentAgreement, &QLabel::linkActivated, this, &CAboutDialog::OnCustomerAgreement);
-    connect(m_ui->m_transparentNotice, &QLabel::linkActivated, this, &CAboutDialog::OnPrivacyNotice);
 
     m_ui->m_transparentTrademarks->setText(versionText);
 
@@ -41,7 +40,6 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
     m_ui->m_transparentAllRightReserved->setText(richTextCopyrightNotice);
 
     m_ui->m_transparentAgreement->setObjectName("link");
-    m_ui->m_transparentNotice->setObjectName("link");
 
     setStyleSheet( "CAboutDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; }\
                     CAboutDialog > QLabel#link { text-decoration: underline; color: #00A1C9; }");
@@ -81,12 +79,7 @@ void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
 
 void CAboutDialog::OnCustomerAgreement()
 {
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://lfprojects.org/policies/terms-of-use/")));
-}
-
-void CAboutDialog::OnPrivacyNotice()
-{
-    QDesktopServices::openUrl(QUrl(QStringLiteral("https://lfprojects.org/policies/privacy-policy/")));
+    QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.o3debinaries.org/license")));
 }
 
 #include <moc_AboutDialog.cpp>

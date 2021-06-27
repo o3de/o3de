@@ -414,7 +414,6 @@ namespace AzToolsFramework
             }
 
             m_templateFilePathToIdMap.emplace(AZStd::make_pair(filePath, newTemplateId));
-            newTemplate.MarkAsDirty(true);
             
             return newTemplateId;
         }

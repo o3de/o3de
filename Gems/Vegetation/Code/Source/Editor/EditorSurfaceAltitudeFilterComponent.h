@@ -26,7 +26,7 @@ namespace Vegetation
         static constexpr const char* const s_componentDescription = "Limits vegetation to only place within the specified height range";
         static constexpr const char* const s_icon = "Editor/Icons/Components/VegetationFilter.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/VegetationFilter.png";
-        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
 
         AZ::u32 ConfigurationChanged() override;
     };

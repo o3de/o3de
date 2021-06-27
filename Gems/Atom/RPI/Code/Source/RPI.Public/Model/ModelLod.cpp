@@ -280,8 +280,9 @@ namespace AZ
                 {
                     if (contractStreamChannel.m_isOptional)
                     {
-                        RHI::Format formatDoesntReallyMatter = RHI::Format::R8G8B8A8_UINT;
-                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, formatDoesntReallyMatter);
+                        //We are using R8G8B8A8_UINT as on Metal mesh stream formats need to be atleast 4 byte aligned.
+                        RHI::Format dummyStreamFormat = RHI::Format::R8G8B8A8_UINT;
+                        layoutBuilder.AddBuffer()->Channel(contractStreamChannel.m_semantic, dummyStreamFormat);
                         // We can't just use a null buffer pointer here because vulkan will occasionally crash. So we bind some valid non-null buffer and view it with length 0.
                         RHI::StreamBufferView dummyBuffer{*mesh.m_indexBufferView.GetBuffer(), 0, 0, 4};
                         streamBufferViewsOut.push_back(dummyBuffer);
