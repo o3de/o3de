@@ -173,6 +173,8 @@ namespace Platform
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.
-        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), buffer.GetMemoryView().GetOffset() + buffer.GetMapRequestOffset(), buffer.GetMemoryView().GetSize());
+        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(),
+                               buffer.GetMemoryView().GetOffset() + buffer.GetMapRequestOffset(),
+                               buffer.GetMemoryView().GetSize());
     }
 }
