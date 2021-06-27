@@ -13,8 +13,6 @@
 #include <AzCore/std/sort.h>
 #include <Multiplayer/Components/FilteredServerToClientComponent.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     AZ_CVAR(bool, sv_ReplicateServerProxies, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable sending of ServerProxy entities to clients");
@@ -57,7 +55,7 @@ namespace Multiplayer
         , m_controlledEntity(controlledEntity)
         , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
         , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
-        , m_filteredHandlerChanged([this](FilteredReplicationInterface* newHandler){ OnFilteredHandlerChanged(newHandler); })
+        , m_filteredHandlerChanged([this](FilteredReplicationInterface* newHandler) { OnFilteredHandlerChanged(newHandler); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
@@ -155,17 +153,17 @@ namespace Multiplayer
         // Add all the neighbors
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
-            // We want to find the closest extent to the player and prioritize using that distance
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
 
             if (m_controlledFilteredEntityInterface && m_controlledFilteredEntityInterface->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
             {
-                return;
+                continue;
             }
 
             NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
             if (entryNetBindComponent != nullptr)
             {
+                // We want to find the closest extent to the player and prioritize using that distance
                 const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
                 const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
                 const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
