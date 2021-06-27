@@ -53,9 +53,10 @@ to use for environment variables.
 
 ## Edit the sample fleet configurations
 
-Before deploy the CDK application, please update the sample fleet configurations defined in the
-[sample fleet configurations](aws_gamelift/fleet_configurations.py)
- with project specific settings.
+Before deploy the CDK application, please update the fleet configurations defined in the
+[sample fleet configurations](aws_gamelift/fleet_configurations.py) with project specific settings. 
+You can either use an existing GameLift build id for creating a fleet or provide the local server package path 
+for creating a new GameLift build.
 
 ## Synthesize the project
 
@@ -74,7 +75,9 @@ $ cdk deploy -c create_game_session_queue=true
 ```
 
 You can also deploy a support stack which is used to upload local build files to S3 and provide GameLift access 
-to the S3 objects when create GameLift builds:
+to the S3 objects when create GameLift builds. The local build path needs to be specified in the
+[sample fleet configurations](aws_gamelift/fleet_configurations.py) if the feature is enabled. Otherwise an existing
+build id is required.
 
 ```
 $ cdk deploy -c upload-with-support-stack=true --all

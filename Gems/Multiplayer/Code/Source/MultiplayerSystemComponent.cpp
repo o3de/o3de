@@ -214,7 +214,8 @@ namespace Multiplayer
         // Cleanup connections, fire events and uninitialize state
         auto visitor = [reason](IConnection& connection) { connection.Disconnect(reason, TerminationEndpoint::Local); };
         m_networkInterface->GetConnectionSet().VisitConnections(visitor);
-        if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
+        MultiplayerAgentType agentType = GetAgentType();
+        if (agentType == MultiplayerAgentType::DedicatedServer || agentType == MultiplayerAgentType::ClientServer)
         {
             m_networkInterface->StopListening();
             m_shutdownEvent.Signal(m_networkInterface);
@@ -222,7 +223,7 @@ namespace Multiplayer
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
 
         // Signal session management, do this after uninitializing state
-        if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
+        if (agentType == MultiplayerAgentType::DedicatedServer || agentType == MultiplayerAgentType::ClientServer)
         {
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr)
             {
