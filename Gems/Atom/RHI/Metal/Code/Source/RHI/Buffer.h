@@ -61,6 +61,7 @@ namespace AZ
             // The number of resolve operations pending for this buffer.
             AZStd::atomic<uint32_t> m_pendingResolves = 0;
             
+            // Offset related to the Map request. We need to cache it for cpu/gpu synchronization.
             uint32_t m_mapRequestOffset = 0;
 
         };

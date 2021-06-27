@@ -46,9 +46,8 @@ namespace Platform
 
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
     {
-        //AZ_UNUSED(syncInterval);
-        [mtlCommandBuffer presentDrawable:drawable];
-        /*
+#if defined(__MAC_10_15_4)
+        if(@available(macOS 10.15.4, *))
 		bool hasPresentAfterMinimumDuration = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
                 
         if (hasPresentAfterMinimumDuration && syncInterval > 0.0f)
@@ -56,9 +55,12 @@ namespace Platform
             [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:syncInterval];
         }
         else
+#else
         {
+            AZ_UNUSED(syncInterval);
             [mtlCommandBuffer presentDrawable:drawable];
-        }*/
+        }
+#endif
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)
@@ -155,7 +157,7 @@ namespace Platform
                 }
                 mappedData += request.m_byteOffset;                
                 response.m_data = mappedData;
-                //buffer.SetMapRequestOffset(request.m_byteOffset);
+                buffer.SetMapRequestOffset(request.m_byteOffset);
                 break;
             }
             default:

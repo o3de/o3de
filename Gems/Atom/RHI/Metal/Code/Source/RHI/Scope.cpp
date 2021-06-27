@@ -188,7 +188,7 @@ namespace AZ
                                 {
                                     m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].slice = imgViewDescriptor.m_arraySliceMin;
                                 }
-                                //m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].level = imgViewDescriptor.m_mipSliceMin;
+                                m_renderPassDescriptor.colorAttachments[colorAttachmentIndex].level = imgViewDescriptor.m_mipSliceMin;
                             }
                             
                             MTLRenderPassColorAttachmentDescriptor* colorAttachment = m_renderPassDescriptor.colorAttachments[colorAttachmentIndex];
