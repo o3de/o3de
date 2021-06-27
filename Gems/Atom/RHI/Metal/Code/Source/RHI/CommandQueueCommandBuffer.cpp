@@ -24,8 +24,29 @@ namespace AZ
         id <MTLCommandBuffer> CommandQueueCommandBuffer::AcquireMTLCommandBuffer()
         {
             AZ_Assert(m_mtlCommandBuffer==nil, "Previous command buffer was not commited");
+            
             //Create a new command buffer
+#if defined(__IPHONE_14_0) || defined(__MAC_11_0)
+            if(@available(iOS 14.0, macOS 11.0, *))
+            {
+                MTLCommandBufferDescriptor* mtlCommandBufferDesc = [[MTLCommandBufferDescriptor alloc] init];
+                mtlCommandBufferDesc.errorOptions = MTLCommandBufferErrorOptionEncoderExecutionStatus;
+                m_mtlCommandBuffer = [m_hwQueue commandBufferWithDescriptor:mtlCommandBufferDesc];
+
+                [m_mtlCommandBuffer addCompletedHandler:^(id<MTLCommandBuffer> buffer)
+                 {
+                    // check command buffer's status for errors, print out all of its contents
+                    MTLCommandBufferStatus stat = buffer.status;
+                    if (stat == MTLCommandBufferStatusError)
+                    {
+                        NSLog(@"%@",buffer.error);
+                        abort();
+                    }
+                }];
+            }
+#else
             m_mtlCommandBuffer = [m_hwQueue commandBuffer];
+#endif
             
             //we call retain here as this CB is active across the autoreleasepools of multiple threads. Calling
             //retain here means that if the current thread's autoreleasepool gets drained this CB will not die.
@@ -91,7 +112,7 @@ namespace AZ
                         AZ_Assert(false,"Insufficient memory");
                         break;
                     case MTLCommandBufferErrorInvalidResource:
-                        AZ_Assert(false,"The command buffer referenced an invlid resource. This error is most commonly caused when caller deletes a resource before executing a command buffer that refers to it");
+                        AZ_Assert(false,"The command buffer referenced an invalid resource. This error is most commonly caused when caller deletes a resource before executing a command buffer that refers to it");
                         break;
                     default:
                         break;
