@@ -46,8 +46,19 @@ namespace Platform
 
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
     {
-        AZ_UNUSED(syncInterval);
+        //AZ_UNUSED(syncInterval);
         [mtlCommandBuffer presentDrawable:drawable];
+        /*
+		bool hasPresentAfterMinimumDuration = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
+                
+        if (hasPresentAfterMinimumDuration && syncInterval > 0.0f)
+        {
+            [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:syncInterval];
+        }
+        else
+        {
+            [mtlCommandBuffer presentDrawable:drawable];
+        }*/
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)
@@ -144,6 +155,7 @@ namespace Platform
                 }
                 mappedData += request.m_byteOffset;                
                 response.m_data = mappedData;
+                //buffer.SetMapRequestOffset(request.m_byteOffset);
                 break;
             }
             default:
@@ -159,6 +171,6 @@ namespace Platform
     {
         AZ::Metal::Buffer& buffer = static_cast<AZ::Metal::Buffer&>(bufferBase);
         //Ony need to handle MTLStorageModeManaged memory.
-        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), buffer.GetMemoryView().GetOffset(), buffer.GetMemoryView().GetSize());
+        SynchronizeBufferOnCPU(buffer.GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), buffer.GetMemoryView().GetOffset() + buffer.GetMapRequestOffset(), buffer.GetMemoryView().GetSize());
     }
 }
