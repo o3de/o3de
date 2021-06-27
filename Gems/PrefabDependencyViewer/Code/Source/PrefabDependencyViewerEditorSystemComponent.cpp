@@ -4,6 +4,7 @@
 #include <PrefabDependencyViewerEditorSystemComponent.h>
 #include <PrefabDependencyViewerWidget.h>
 #include <QMenu>
+#include <LyViewPaneNames.h>
 
 namespace PrefabDependencyViewer
 {
@@ -154,8 +155,7 @@ namespace PrefabDependencyViewer
     void PrefabDependencyViewerEditorSystemComponent::NotifyRegisterViews()
     {
         AzToolsFramework::RegisterViewPane<PrefabDependencyViewerWidget>(
-            s_prefabViewerTitle, "Tools", AzToolsFramework::ViewPaneOptions());
-        // Refactor later on. Look in PhysX Gem CollisionGroupWidget. It include LyViewPaneOptions directly
+            s_prefabViewerTitle, LyViewPane::CategoryTools, AzToolsFramework::ViewPaneOptions());
     }
 
 
