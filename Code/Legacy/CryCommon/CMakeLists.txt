@@ -13,7 +13,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PUBLIC
             .         # Lots of code without CryCommon/
-            ..        # Dangerous since exports CryEngine's path (client code can do CrySystem/ without depending on that target)
+            ..        # Dangerous since exports Legacy's path (client code can do CrySystem/ without depending on that target)
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
