@@ -23,10 +23,11 @@ namespace Multiplayer
     //! "out of line of sight" anti-cheating mechanic by omitting information clients should not have access to.
     //!
     //! By implementing IFilterEntityManager interface and setting it on GetMultiplayer()->SetFilterEntityManager()
-    //! entities will be filtered if IsEntityFiltered(...) returns true.
+    //! entities can be filtered by IsEntityFiltered(...) returning true.
     //!
     //! Note: one cannot filter out entities in Level prefab (spawned by LoadLevel console command). Level prefabs are fully
-    //! spawned on each client. Filtering of entities is applied to any dynamically spawned prefabs.
+    //! spawned on each client. Filtering of entities is applied to dynamically spawned prefabs, and specifically
+    //! entities must have NetBindComponent on them.
     class IFilterEntityManager
     {
     public:
