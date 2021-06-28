@@ -16,7 +16,7 @@
 namespace CrashHandler
 {
     static const char* defaultCrashFolder = "CrashDB/";
-    static const char* O3DEProductName = "Open 3D Engine";
+    static const char* O3DEProductName = "O3DE";
 
     using CrashHandlerAnnotations = std::map<std::string, std::string>;
     using CrashHandlerArguments = std::vector<std::string>;

@@ -205,7 +205,7 @@ int main(int argc, char **argv)
     action->setMenu(fileMenu);
     auto openDock = fileMenu->addAction("Open dockwidget");
     QObject::connect(openDock, &QAction::triggered, w, [&w] {
-        auto dock = new AzQtComponents::StyledDockWidget(QLatin1String("Open 3D Engine"), w);
+        auto dock = new AzQtComponents::StyledDockWidget(QLatin1String("O3DE"), w);
         auto button = new QPushButton("Click to dock");
         auto wid = new QWidget();
         auto widLayout = new QVBoxLayout(wid);
