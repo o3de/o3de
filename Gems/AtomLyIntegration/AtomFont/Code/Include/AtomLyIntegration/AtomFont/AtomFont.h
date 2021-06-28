@@ -16,7 +16,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/parallel/shared_mutex.h>
-#include <Azcore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <map>
 
 #include <AzFramework/Font/FontInterface.h>
