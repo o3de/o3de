@@ -24,7 +24,7 @@ from ly_remote_console.remote_console_commands import (
 @pytest.mark.parametrize("launcher_platform", ["windows"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["Simple"])
-@pytest.mark.SUITE_smoke
+@pytest.mark.SUITE_sandbox
 class TestRemoteConsoleLoadLevelWorks(object):
     @pytest.fixture
     def remote_console_instance(self, request):
