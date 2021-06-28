@@ -65,6 +65,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
+    , m_assetBrowserDisplayState(AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::StandardMode)
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
@@ -168,7 +169,7 @@ void AzAssetBrowserWindow::OnInitViewToggleButton()
     m_ui->m_toggleDisplayViewBtn->setMenu(m_viewSwitchMenu);
     m_ui->m_toggleDisplayViewBtn->setPopupMode(QToolButton::InstantPopup);
 
-    //connect(m_viewSwitchMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::UpdateDisplayInfo);
+    connect(m_viewSwitchMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::UpdateDisplayInfo);
 
     m_ui->m_toggleDisplayViewBtn->setProperty("class", "big");
 }
@@ -181,7 +182,7 @@ void AzAssetBrowserWindow::CreateSwitchViewMenu()
 
         m_standardAssetBrowserMode = new QAction(tr("Standard Mode"), m_viewSwitchMenu);
         m_standardAssetBrowserMode->setCheckable(true);
-        connect(m_standardAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetNormalAssetBrowserMode);
+        connect(m_standardAssetBrowserMode, &QAction::triggered, this, &AzAssetBrowserWindow::SetStandardAssetBrowserMode);
         m_viewSwitchMenu->addAction(m_standardAssetBrowserMode);
 
         m_searchViewAssetBrowserMode = new QAction(tr("Search View Mode"), m_viewSwitchMenu);
@@ -196,28 +197,36 @@ void AzAssetBrowserWindow::CreateSwitchViewMenu()
 
 void AzAssetBrowserWindow::UpdateDisplayInfo()
 {
+    namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
+
     if (m_viewSwitchMenu == nullptr)
     {
         return;
     }
 
-    bool isNormalModeChecked = m_standardAssetBrowserMode->isChecked();
-    bool isSearchViewModeChecked = m_searchViewAssetBrowserMode->isChecked();
+    m_standardAssetBrowserMode->setChecked(false);
+    m_searchViewAssetBrowserMode->setChecked(false);
 
-    if (isSearchViewModeChecked)
+    switch (m_assetBrowserDisplayState)
     {
-        m_standardAssetBrowserMode->setChecked(!isSearchViewModeChecked);
-    }
-    if (isNormalModeChecked)
-    {
-        m_searchViewAssetBrowserMode->setChecked(!isNormalModeChecked);
+    case AzAssetBrowser::AssetBrowserDisplayState::StandardMode:
+        {
+            m_standardAssetBrowserMode->setChecked(true);
+            break;
+        }
+    case AzAssetBrowser::AssetBrowserDisplayState::SearchViewMode:
+        {
+            m_searchViewAssetBrowserMode->setChecked(true);
+            break;
+        }
     }
 }
 
-void AzAssetBrowserWindow::SetNormalAssetBrowserMode()
+void AzAssetBrowserWindow::SetStandardAssetBrowserMode()
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
-    m_searchViewAssetBrowserMode->setChecked(false);
+
+    m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::StandardMode;
 
     disconnect(
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
@@ -247,7 +256,9 @@ void AzAssetBrowserWindow::SetNormalAssetBrowserMode()
 void AzAssetBrowserWindow::SetSearchViewAssetBrowserMode()
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
-    m_standardAssetBrowserMode->setChecked(false);
+
+    m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::SearchViewMode;
+
     connect(
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
         &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
