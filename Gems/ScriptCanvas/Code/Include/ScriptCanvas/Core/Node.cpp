@@ -1981,7 +1981,7 @@ namespace ScriptCanvas
 
         if (slotIter == m_slots.end())
         {
-            retVal = -1;
+            retVal = std::numeric_limits<size_t>::max();
         }
 
         return retVal;
