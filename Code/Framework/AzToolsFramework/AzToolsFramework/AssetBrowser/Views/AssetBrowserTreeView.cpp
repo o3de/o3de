@@ -199,6 +199,9 @@ namespace AzToolsFramework
             QTreeView::rowsAboutToBeRemoved(parent, start, end);
         }
 
+        // Item data for hidden columns normally isn't copied by Qt during drag-and-drop (see QTBUG-30242).
+        // However, for the AssetBrowser, the hidden columns should get copied. By overriding selectedIndexes() to
+        // include all selected indices, not just the visible ones, we can get the behavior we're looking for.
         QModelIndexList AssetBrowserTreeView::selectedIndexes() const
         {
             return selectionModel()->selectedIndexes();
