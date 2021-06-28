@@ -303,11 +303,8 @@ namespace AZ
 
         void CpuTimingLocalStorage::ClearCachedMap()
         {
-            if (m_cachedTimeRegionMutex.try_lock())
-            {
-                m_cachedTimeRegionMap.clear();
-                m_cachedTimeRegionMutex.unlock();
-            }
+            AZStd::unique_lock<AZStd::mutex> lock(m_cachedTimeRegionMutex);
+            m_cachedTimeRegionMap.clear();
         }
         void CpuTimingLocalStorage::TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedTimeRegionMap)
         {

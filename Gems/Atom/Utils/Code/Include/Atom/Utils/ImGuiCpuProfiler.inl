@@ -11,8 +11,6 @@
 #include <AzCore/std/time.h>
 #include <AzCore/std/containers/set.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 namespace AZ
 {
     namespace Render
@@ -125,7 +123,7 @@ namespace AZ
                     // Draw the thread count label
                     AZStd::sys_time_t totalTime = 0;
                     AZStd::set<AZStd::thread_id> threads;
-                    for (ThreadRegionEntry& entry : regions) // Find the overall thread count and accumulated execution time
+                    for (ThreadRegionEntry& entry : regions) // Find the thread count and total execution time for all threads
                     {
                         threads.insert(entry.m_threadId);
                         totalTime += entry.m_endTick - entry.m_startTick;
@@ -152,7 +150,7 @@ namespace AZ
 
                 // Set column settings.
                 ImGui::Columns(2, "view", false);
-                ImGui::SetColumnWidth(0, 630.0f);
+                ImGui::SetColumnWidth(0, 660.0f);
                 ImGui::SetColumnWidth(1, 100.0f);
 
                 ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
