@@ -6,7 +6,7 @@
 #
 
 set(FILES
-    Tests/LmbrCentralTest.cpp
+    Tests/LmbrCentralEditorTest.cpp
     Tests/LmbrCentralReflectionTest.h
     Tests/LmbrCentralReflectionTest.cpp
     Tests/EditorBoxShapeComponentTests.cpp

@@ -325,12 +325,10 @@ namespace AZ
                                 {
                                     Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
 
-                                    // reset visibility flag to false, update to true if all culling checks pass
-                                    c->m_isVisible = false;
-
                                     if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
                                         c->m_cullData.m_hideFlags & viewFlags ||
-                                        c->m_cullData.m_scene != m_jobData->m_scene)       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
+                                        c->m_cullData.m_scene != m_jobData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
+                                        c->m_isHidden)
                                     {
                                         continue;
                                     }
@@ -341,7 +339,6 @@ namespace AZ
                                     {
                                         numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
                                         ++numVisibleCullables;
-                                        c->m_isVisible = true;
                                     }
                                 }
                             }
@@ -356,12 +353,10 @@ namespace AZ
                             {
                                 Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
 
-                                // reset visibility flag to false, update to true if all culling checks pass
-                                c->m_isVisible = false;
-
                                 if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
                                     c->m_cullData.m_hideFlags & viewFlags ||
-                                    c->m_cullData.m_scene != m_jobData->m_scene)       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
+                                    c->m_cullData.m_scene != m_jobData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
+                                    c->m_isHidden)
                                 {
                                     continue;
                                 }
@@ -379,7 +374,6 @@ namespace AZ
                                     {
                                         numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *m_jobData->m_view);
                                         ++numVisibleCullables;
-                                        c->m_isVisible = true;
                                     }
                                 }
                             }

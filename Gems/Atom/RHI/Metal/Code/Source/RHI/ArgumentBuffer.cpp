@@ -334,9 +334,8 @@ namespace AZ
             if(m_argumentBuffer.IsValid())
             {
                 m_device->GetArgumentBufferAllocator().DeAllocate(m_argumentBuffer);
-            }
-#endif
-            
+            }            
+#else
             if(m_argumentBuffer.IsValid())
             {
                 m_device->QueueForRelease(m_argumentBuffer);
@@ -346,7 +345,11 @@ namespace AZ
             {
                 m_device->QueueForRelease(m_constantBuffer);
             }
+#endif
 
+            m_argumentBuffer = {};
+            m_constantBuffer = {};
+            
             [m_argumentEncoder release];
             m_argumentEncoder = nil;
              

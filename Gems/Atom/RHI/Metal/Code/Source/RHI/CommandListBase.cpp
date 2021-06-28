@@ -78,8 +78,9 @@ namespace AZ
                     id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                     for (id<MTLHeap> residentHeap : *m_residentHeaps)
                     {
+                        //MTLRenderStageVertex is not added to this as it was causing an immediate gpu crash on ios (first buffer commit)
                         [renderEncoder useHeap : residentHeap
-                                       stages  : MTLRenderStageVertex | MTLRenderStageFragment];
+                                       stages  : MTLRenderStageFragment];
                     }
                     break;
                 }
