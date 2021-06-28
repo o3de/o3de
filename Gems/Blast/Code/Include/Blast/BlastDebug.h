@@ -8,7 +8,7 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <IRenderAuxGeom.h>
-#include <Azcore/Math/Color.h>
+#include <AzCore/Math/Color.h>
 
 namespace Blast
 {
