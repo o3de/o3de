@@ -1,4 +1,4 @@
-*/Code/CryEngine/*
+*/Code/Legacy/*
 */Code/Deprecated/Sandbox/*
 */Code/Framework/AzCore/AzCore/Math/Aabb.h
 */Code/Framework/AzCore/AzCore/Math/Color.h
