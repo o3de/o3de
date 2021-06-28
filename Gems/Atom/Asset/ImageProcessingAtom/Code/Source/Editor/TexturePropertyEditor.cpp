@@ -168,7 +168,7 @@ namespace ImageProcessingAtomEditor
     
     void TexturePropertyEditor::OnHelp()
     {
-        QString webLink = tr("https://docs.o3de.org/docs/");
+        QString webLink = tr("https://o3de.org/docs/");
         QDesktopServices::openUrl(QUrl(webLink));
     }
 

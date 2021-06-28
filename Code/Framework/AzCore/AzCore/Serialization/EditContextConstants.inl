@@ -181,7 +181,7 @@ namespace AZ
             //! @code{.cpp}
             //! editContext->Class<ScriptEditorComponent>("Lua Script", "The Lua Script component allows you to add arbitrary Lua logic to an entity in the form of a Lua script")
             //!   ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            //!   ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://docs.o3de.org/docs/user-guide/components/reference/lua-script/")
+            //!   ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/lua-script/")
             //! @endcode
             const static AZ::Crc32 HelpPageURL = AZ_CRC("HelpPageURL", 0xa344d681);
 

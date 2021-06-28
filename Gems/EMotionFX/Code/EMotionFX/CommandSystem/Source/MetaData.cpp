@@ -24,48 +24,6 @@
 
 namespace CommandSystem
 {
-
-    AZStd::vector<MCore::Command*> MetaData::GenerateMotionMetaData(EMotionFX::Motion* motion)
-    {
-        AZStd::vector<MCore::Command*> commands;
-
-        if (!motion)
-        {
-            AZ_Error("EMotionFX", false, "Cannot generate meta data for motion. Motion invalid.");
-            return commands;
-        }
-
-        // Save event tracks including motion events.
-        CommandAdjustMotion* adjustMotionCommand = aznew CommandAdjustMotion();
-        adjustMotionCommand->SetMotionExtractionFlags(motion->GetMotionExtractionFlags());
-        commands.emplace_back(adjustMotionCommand);
-
-        const size_t eventTrackCount = motion->GetEventTable()->GetNumTracks();
-        for (size_t trackIndex = 0; trackIndex < eventTrackCount; ++trackIndex)
-        {
-            const EMotionFX::MotionEventTrack* track = motion->GetEventTable()->GetTrack(trackIndex);
-
-            CommandCreateMotionEventTrack* createMotionEventTrackCommand = aznew CommandCreateMotionEventTrack();
-            createMotionEventTrackCommand->SetEventTrackName(track->GetName());
-            commands.emplace_back(createMotionEventTrackCommand);
-
-            const size_t eventCount = track->GetNumEvents();
-            for (size_t eventIndex = 0; eventIndex < eventCount; ++eventIndex)
-            {
-                const EMotionFX::MotionEvent& event = track->GetEvent(eventIndex);
-                CommandCreateMotionEvent* createMotionEventCommand = aznew CommandCreateMotionEvent();
-                commands.emplace_back(createMotionEventCommand);
-                createMotionEventCommand->SetEventTrackName(track->GetName());
-                createMotionEventCommand->SetStartTime(event.GetStartTime());
-                createMotionEventCommand->SetEndTime(event.GetEndTime());
-                createMotionEventCommand->SetEventDatas(event.GetEventDatas());
-            }
-        }
-
-        return commands;
-    }
-
-
     bool MetaData::ApplyMetaDataOnMotion(EMotionFX::Motion* motion, const AZStd::vector<MCore::Command*>& metaDataCommands)
     {
         for (MCore::Command* command : metaDataCommands)

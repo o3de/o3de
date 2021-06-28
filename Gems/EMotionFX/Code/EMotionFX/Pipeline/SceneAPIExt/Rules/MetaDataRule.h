@@ -57,7 +57,7 @@ namespace EMotionFX
 
                 /**
                  * Set the meta data string which contains a list of commands representing the changes the user did on the source asset.
-                 * This string can be constructed using CommandSystem::GenerateMotionMetaData() and CommandSystem::GenerateActorMetaData().
+                 * This string can be constructed using CommandSystem::GenerateActorMetaData().
                  * @param metaData The meta data string containing a list of commands to be applied on the source asset.
                  */
                 void SetMetaData(const AZStd::string& metaData);

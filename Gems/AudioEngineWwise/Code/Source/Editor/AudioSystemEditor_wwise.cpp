@@ -23,6 +23,11 @@
 #include <CryPath.h>
 #include <Util/PathUtil.h>
 
+void InitWwiseResources()
+{
+    Q_INIT_RESOURCE(EditorWwise);
+}
+
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
@@ -78,6 +83,12 @@ namespace AudioControls
             return Audio::WwiseXmlTags::WwiseStateTag;
         }
         return "";
+    }
+
+    //-------------------------------------------------------------------------------------------//
+    CAudioSystemEditor_wwise::CAudioSystemEditor_wwise()
+    {
+        InitWwiseResources();
     }
 
     //-------------------------------------------------------------------------------------------//

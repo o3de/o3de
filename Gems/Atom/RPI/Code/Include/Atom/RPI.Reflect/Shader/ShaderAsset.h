@@ -32,6 +32,8 @@ namespace AZ
 {
     namespace RPI
     {
+        using ShaderResourceGroupLayoutList = AZStd::fixed_vector<RHI::Ptr<RHI::ShaderResourceGroupLayout>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
+
         class ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler

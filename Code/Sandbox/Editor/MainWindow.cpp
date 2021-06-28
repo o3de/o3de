@@ -1350,10 +1350,6 @@ void MainWindow::RegisterStdViewClasses()
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
 
-    //These view dialogs aren't used anymore so they became disabled.
-    //CLightmapCompilerDialog::RegisterViewClass();
-    //CLightmapCompilerDialog::RegisterViewClass();
-
     // Notify that views can now be registered
     AzToolsFramework::EditorEvents::Bus::Broadcast(
         &AzToolsFramework::EditorEvents::Bus::Events::NotifyRegisterViews);

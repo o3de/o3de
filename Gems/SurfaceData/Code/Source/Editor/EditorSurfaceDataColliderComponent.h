@@ -28,6 +28,6 @@ namespace SurfaceData
         static constexpr const char* const s_componentDescription = "Enables a physics collider to emit surface tags";
         static constexpr const char* const s_icon = "Editor/Icons/Components/SurfaceData.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/SurfaceData.png";
-        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
     };
 }
