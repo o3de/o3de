@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzCore/Debug/Timer.h>
+#include <Atom/RHI/RHIUtils.h>
 
 namespace AZ
 {
@@ -78,6 +79,8 @@ namespace AZ
         {
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
+            AZ::RHI::Device* rhiDevice = RHI::GetRHIDevice().get();
+            FrameEventBus::Handler::BusConnect(rhiDevice);
         }
 
         void CpuProfilerImpl::Shutdown()
@@ -98,6 +101,7 @@ namespace AZ
             m_registeredThreads.clear();
             m_timeRegionMap.clear();
             m_initialized = false;
+            FrameEventBus::Handler::BusDisconnect();
         }
 
         void CpuProfilerImpl::BeginTimeRegion(TimeRegion& timeRegion)
@@ -184,6 +188,15 @@ namespace AZ
         bool CpuProfilerImpl::IsProfilerEnabled() const
         {
             return m_enabled;
+        }
+
+        void CpuProfilerImpl::OnFrameBegin()
+        {
+            AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
+            for (auto& threadLocal : m_registeredThreads)
+            {
+                threadLocal->ClearCachedMap();
+            }
         }
 
 
@@ -276,7 +289,9 @@ namespace AZ
                 // Add the cached regions to the map
                 for (auto& cachedTimeRegion : m_cachedTimeRegions)
                 {
-                    m_cachedTimeRegionMap[cachedTimeRegion.m_groupRegionName->m_regionName] = cachedTimeRegion;
+                    const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+                    AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
+                    m_cachedTimeRegionMap[regionName].push_back(cachedTimeRegion);
                 }
 
                 // Clear the cached regions
@@ -284,6 +299,14 @@ namespace AZ
             }
         }
 
+        void CpuTimingLocalStorage::ClearCachedMap()
+        {
+            if (m_cachedTimeRegionMutex.try_lock())
+            {
+                m_cachedTimeRegionMap.clear();
+                m_cachedTimeRegionMutex.unlock();
+            }
+        }
         void CpuTimingLocalStorage::TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedTimeRegionMap)
         {
             // Try to lock, if it's already in use (the cached regions in the array are being copied to the map)

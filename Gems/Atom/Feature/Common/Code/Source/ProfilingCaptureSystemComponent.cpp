@@ -258,7 +258,11 @@ namespace AZ
             {
                 for (auto& cachedRegionEntry : treadEntry.second)
                 {
-                    m_cpuProfilingStatisticsSerializerEntries.emplace_back(cachedRegionEntry.second);
+                    // Copy the CachedTimeRegion since it may get deleted from frame to frame
+                    for (auto cachedRegion : cachedRegionEntry.second) 
+                    {
+                        m_cpuProfilingStatisticsSerializerEntries.emplace_back(cachedRegion);
+                    }
                 }
             }
         }

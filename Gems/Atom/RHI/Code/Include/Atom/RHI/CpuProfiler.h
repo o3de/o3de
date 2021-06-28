@@ -60,7 +60,7 @@ namespace AZ
         class CpuProfiler
         {
         public:
-            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, CachedTimeRegion>;
+            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
             using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
 
             AZ_RTTI(CpuProfiler, "{127C1D0B-BE05-4E18-A8F6-24F3EED2ECA6}");

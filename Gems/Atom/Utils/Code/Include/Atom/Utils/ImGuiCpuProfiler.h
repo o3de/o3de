@@ -62,6 +62,8 @@ namespace AZ
             AZ::RHI::CpuTimingStatistics m_cpuTimingStatisticsWhenPause;
 
             AZStd::string m_lastCapturedFilePath;
+
+            void LongFunction();
         };
     } // namespace Render
 }

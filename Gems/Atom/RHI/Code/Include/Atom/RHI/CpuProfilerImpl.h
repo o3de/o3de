@@ -14,6 +14,8 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
 
+#include <Atom/RHI/FrameEventBus.h>
+
 namespace AZ
 {
     namespace RHI
@@ -48,6 +50,8 @@ namespace AZ
             // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
             void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
 
+            void ClearCachedMap();
+
             AZStd::thread_id m_executingThreadId;
             // Keeps track of the current thread's stack depth
             uint32_t m_stackLevel = 0u;
@@ -77,6 +81,7 @@ namespace AZ
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
             : public CpuProfiler
+            , public FrameEventBus::Handler
         {
             friend class CpuTimingLocalStorage;
 
@@ -91,6 +96,8 @@ namespace AZ
             void Init();
             //! Unregisters the CpuProfilerImpl instance from the interface 
             void Shutdown();
+
+            void OnFrameBegin();
 
             //! CpuProfiler overrides...
             void BeginTimeRegion(TimeRegion& timeRegion) final;

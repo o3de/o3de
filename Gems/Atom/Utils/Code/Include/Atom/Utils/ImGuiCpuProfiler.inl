@@ -10,6 +10,9 @@
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/time.h>
 
+#pragma optimize("", off)
+#include <Atom/RHI/CpuProfiler.h>
+
 namespace AZ
 {
     namespace Render
@@ -34,6 +37,11 @@ namespace AZ
 
         inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
         {
+            LongFunction();
+            LongFunction();
+            LongFunction();
+
+
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;
 
@@ -213,17 +221,27 @@ namespace AZ
             RHI::CpuProfiler::Get()->FlushTimeRegionMap(timeRegionMap);
 
             // Iterate through all the cached regions from all threads, and add the entries to this map
-            for (auto& treadEntry : timeRegionMap)
+            for (auto& threadEntry : timeRegionMap)
             {
-                for (auto& cachedRegionEntry : treadEntry.second)
+                for (auto& cachedRegionEntry : threadEntry.second)
                 {
-                    RegionEntryMap& groupRegionEntry = m_groupRegionMap[cachedRegionEntry.second.m_groupRegionName->m_groupName];
-                    AZStd::vector<ThreadRegionEntry>& regionArray = groupRegionEntry[cachedRegionEntry.second.m_groupRegionName->m_regionName];
-                    RHI::CachedTimeRegion& cachedRegion = cachedRegionEntry.second;
+                    const AZStd::string& regionName = cachedRegionEntry.first;
+                    for (auto& cachedRegion : cachedRegionEntry.second)
+                    {
+                        const AZStd::string& groupName = cachedRegion.m_groupRegionName->m_groupName;
 
-                    regionArray.push_back({ treadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
+                        RegionEntryMap& groupRegionEntry = m_groupRegionMap[groupName];
+                        AZStd::vector<ThreadRegionEntry>& regionArray = groupRegionEntry[regionName];
+                        regionArray.push_back({ threadEntry.first, cachedRegion.m_startTick, cachedRegion.m_endTick });
+
+                    }
                 }
             }
+        }
+
+        inline void ImGuiCpuProfiler::LongFunction()
+        {
+            AZ_ATOM_PROFILE_TIME_GROUP_REGION("Testing Group", "Long Function");
         }
     }
 }
