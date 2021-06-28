@@ -46,21 +46,8 @@ namespace Platform
 
     void PresentInternal(id <MTLCommandBuffer> mtlCommandBuffer, id<CAMetalDrawable> drawable, float syncInterval)
     {
-#if defined(__MAC_10_15_4)
-        if(@available(macOS 10.15.4, *))
-		bool hasPresentAfterMinimumDuration = [drawable respondsToSelector:@selector(presentAfterMinimumDuration:)];
-                
-        if (hasPresentAfterMinimumDuration && syncInterval > 0.0f)
-        {
-            [mtlCommandBuffer presentDrawable:drawable afterMinimumDuration:syncInterval];
-        }
-        else
-#else
-        {
-            AZ_UNUSED(syncInterval);
-            [mtlCommandBuffer presentDrawable:drawable];
-        }
-#endif
+        AZ_UNUSED(syncInterval);
+        [mtlCommandBuffer presentDrawable:drawable];
     }
 
     CGRect GetScreenBounds(NativeWindowType* nativeWindow)
