@@ -32,6 +32,13 @@ namespace AzToolsFramework
         class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
+
+        enum class AssetBrowserDisplayState : int
+        {
+            StandardMode,
+            SearchViewMode,
+            Invalid
+        };
     }
 }
 
@@ -56,7 +63,7 @@ private:
     void UpdateDisplayInfo();
 protected slots:
     void CreateSwitchViewMenu();
-    void SetNormalAssetBrowserMode();
+    void SetStandardAssetBrowserMode();
     void SetSearchViewAssetBrowserMode();
     void UpdateTableModelAfterFilter();
     void SetTableViewVisibleAfterFilter();
@@ -70,6 +77,7 @@ private:
     QMenu* m_viewSwitchMenu = nullptr;
     QAction* m_standardAssetBrowserMode = nullptr;
     QAction* m_searchViewAssetBrowserMode = nullptr;
+    AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState;
     
     void UpdatePreview() const;
 

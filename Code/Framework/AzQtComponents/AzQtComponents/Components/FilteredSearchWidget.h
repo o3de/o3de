@@ -99,6 +99,7 @@ namespace AzQtComponents
     using SearchTypeFilterList = QVector<SearchTypeFilter>;
 
     class SearchTypeSelectorTreeView;
+
     class AZ_QT_COMPONENTS_API SearchTypeSelector : public QMenu
     {
         Q_OBJECT
@@ -196,7 +197,6 @@ namespace AzQtComponents
         int m_searchLayoutMargin = 4;
         bool m_lineEditSearchVisible = true;
     };
-
 
     class AZ_QT_COMPONENTS_API FilteredSearchWidget
         : public QFrame
