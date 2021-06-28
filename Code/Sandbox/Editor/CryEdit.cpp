@@ -2337,12 +2337,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
 
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
 
-            IEditor* pEditor = GetIEditor();
-            if (!pEditor->GetGameEngine()->IsLevelLoaded() && pEditor->GetSystem()->NeedDoWorkDuringOcclusionChecks())
-            {
-                pEditor->GetSystem()->DoWorkDuringOcclusionChecks();
-            }
-
             // Since the rendering is done based on the eNotify_OnIdleUpdate, we should trigger a TickSystem as well.
             // To ensure that there's a system tick for every render done in Idle
             AZ::ComponentApplication* componentApplication = nullptr;
