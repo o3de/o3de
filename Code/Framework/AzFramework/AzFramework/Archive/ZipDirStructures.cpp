@@ -338,14 +338,13 @@ namespace AZ::IO::ZipDir
             else
             {
                 AZ::IO::HandleType realFileHandle = m_fileHandle;
-                size_t nFileSize = ~0;
 
                 AZ::u64 fileSize = 0;
                 if (!m_fileIOBase->Size(realFileHandle, fileSize))
                 {
                     goto error;
                 }
-                nFileSize = static_cast<size_t>(fileSize);
+                const size_t nFileSize = static_cast<size_t>(fileSize);
 
                 m_pInMemoryData = ZipDirStructuresInternal::CreateMemoryBlock(nFileSize, szUsage);
 
