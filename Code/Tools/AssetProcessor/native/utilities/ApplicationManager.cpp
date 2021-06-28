@@ -644,7 +644,7 @@ QString ApplicationManager::GetOrganizationName() const
 
 QString ApplicationManager::GetApplicationName() const
 {
-    return "Asset Processor";
+    return "O3DE Asset Processor";
 }
 
 bool ApplicationManager::PostActivate()

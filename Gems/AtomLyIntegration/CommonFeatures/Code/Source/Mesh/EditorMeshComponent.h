@@ -58,6 +58,12 @@ namespace AZ
             // MeshComponentNotificationBus overrides ...
             void OnModelReady(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model) override;
 
+            // AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler overrides
+            void OnEntityVisibilityChanged(bool visibility) override;
+
+            // AzToolsFramework::Components::EditorComponentAdapter overrides
+            bool ShouldActivateController() const override;
+
             AZ::u32 OnConfigurationChanged() override;
 
             AZ::Crc32 AddEditorMaterialComponent();
