@@ -62,6 +62,7 @@ namespace AZ
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &BloomComponentConfig::m_intensity, "Intensity", "Brightness of bloom")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->Attribute(Edit::Attributes::ReadOnly, &BloomComponentConfig::ArePropertiesReadOnly)
 
