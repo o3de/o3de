@@ -369,13 +369,13 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
     float3 accumulatedHairColor = float3(0.0, 0.0, 0.0);
 
     float4 lightPosWSVec[2] = {
-        float4(-0.5, 0, 1, 1.5),
-        float4(0.5, 0, 1, 1.5),
+        float4(-.5, 0, 0.5, .75),
+        float4(.5, 0, 0.5, .75),
     };
 
     float3 lightColorVec[2] = {
-        float3(1,0,0),
-        float3(0,1,0)
+        float3(1,1,1),
+        float3(1,1,1)
     };
 
     // Right now we fake two lights - one is fixed and the other one 
@@ -403,7 +403,10 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
 //==============================================================================
 //                             Atom Lighting
 //==============================================================================
+//#define _USE_SPLIT_NORMALS_
+
 #include <HairLightTypes.azsli>
+//#include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
 //------------------------------------------------------------------------------
 
 float3 CalculateDirectLighting( 
@@ -414,29 +417,16 @@ float3 CalculateDirectLighting(
     //-------- Surface init --------
     Surface surface;
 
-    surface.position = vPositionWS;
-
-#ifdef _USE_SPLIT_NORMALS_
-    // normal will need to be calculated per light based on location, and best 
-    // projected direction for specular and diffuse
-    surface.normal = normalize(vTangent); 
-#else
-    // Calculate the normal along the view-tangent plane in order to
-    // get the best fitting normal from the normal disk around the hair cylinder.
-    float3 biNormal = cross(vTangent, vViewDirWS);
-    float3 projectedNormal = cross(biNormal, vTangent);
-    surface.normal = normalize(projectedNormal);
-#endif // _USE_SPLIT_NORMALS_
-
-    surface.roughnessLinear = 0.51f;
-    surface.CalculateRoughnessA();
-
     const float specularF0Factor = 0.04f; // set this to 0.04?!
     const float metallic = 0.05;
+
+    surface.position = vPositionWS;
+    surface.normal = normalize(vTangent); 
+    surface.roughnessLinear = 0.51f;
+    surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
     surface.clearCoat.InitializeToZero();
     surface.transmission.InitializeToZero();
-
 
     //------- LightingData init -------
     LightingData lightingData;
@@ -493,8 +483,8 @@ float3 CalculateDirectLighting(
     // Applying the light loops - we need to get rid of the first lists that are not used
     ApplyDecals(lightingData.tileIterator, surface);
 
-//    ApplyDirectionalLights(surface, lightingData);
-    
+    ApplyDirectionalLights(surface, lightingData);
+
     ApplyAllSimplePointLights(surface, lightingData);
     ApplyAllSimpleSpotLights(surface, lightingData);
     ApplyAllPointLights(surface, lightingData);
