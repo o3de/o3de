@@ -24,6 +24,9 @@ namespace Multiplayer
     //!
     //! By implementing IFilterEntityManager interface and setting it on GetMultiplayer()->SetFilterEntityManager()
     //! entities will be filtered if IsEntityFiltered(...) returns true.
+    //!
+    //! Note: one cannot filter out entities in Level prefab (spawned by LoadLevel console command). Level prefabs are fully
+    //! spawned on each client. Filtering of entities is applied to any dynamically spawned prefabs.
     class IFilterEntityManager
     {
     public:
