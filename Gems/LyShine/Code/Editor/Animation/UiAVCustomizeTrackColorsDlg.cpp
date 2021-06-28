@@ -325,7 +325,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
         {
             continue;
         }
-        COLORREF color = -1;
+        COLORREF color = std::numeric_limits<COLORREF>::max();
         childNode->getAttr("color", color);
         m_colorButtons[entryIndex]->SetColor(color);
     }
@@ -333,7 +333,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     XmlNodeRef othersNode = customTrackColorsNode->findChild("others");
     if (othersNode)
     {
-        COLORREF color = -1;
+        COLORREF color = std::numeric_limits<COLORREF>::max();
         othersNode->getAttr("color", color);
         m_colorButtons[kOthersEntryIndex]->SetColor(color);
     }
@@ -341,7 +341,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     XmlNodeRef disabledNode = customTrackColorsNode->findChild("disabled");
     if (disabledNode)
     {
-        COLORREF color = -1;
+        COLORREF color = std::numeric_limits<COLORREF>::max();
         disabledNode->getAttr("color", color);
         m_colorButtons[kDisabledEntryIndex]->SetColor(color);
     }
@@ -349,7 +349,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
     XmlNodeRef mutedNode = customTrackColorsNode->findChild("muted");
     if (mutedNode)
     {
-        COLORREF color = -1;
+        COLORREF color = std::numeric_limits<COLORREF>::max();
         mutedNode->getAttr("color", color);
         m_colorButtons[kMutedEntryIndex]->SetColor(color);
     }

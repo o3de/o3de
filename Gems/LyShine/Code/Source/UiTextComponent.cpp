@@ -4149,7 +4149,7 @@ void UiTextComponent::RenderDrawBatchLines(
                     imageQuad[i] = transformToViewport * imageQuad[i];
                 }
 
-                static const uint32 packedColor = (255 << 24) | (255 << 16) | (255 << 8) | 255;
+                static const uint32 packedColor = (255u << 24) | (255u << 16) | (255u << 8) | 255u;
 
                 RenderCacheImageBatch* cacheImageBatch = new RenderCacheImageBatch;
 

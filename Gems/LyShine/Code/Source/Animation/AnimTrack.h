@@ -521,7 +521,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
     if (nkeys == 0)
     {
         m_lastTime = time;
-        m_currKey = -1;
+        m_currKey = std::numeric_limits<unsigned int>::max();
         return m_currKey;
     }
 
@@ -554,7 +554,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
         }
         else
         {
-            m_currKey = -1;
+            m_currKey = std::numeric_limits<unsigned int>::max();
         }
         return m_currKey;
     }
@@ -600,6 +600,6 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
             break;
         }
     }
-    m_currKey = -1;
+    m_currKey = std::numeric_limits<unsigned int>::max();
     return m_currKey;
 }
