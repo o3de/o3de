@@ -39,6 +39,14 @@ namespace PythonCoverage
         PythonCoverageEditorSystemComponent() = default;
 
     private:
+        //! The coverage state for Python tests.
+        enum class CoverageState : AZ::u8
+        {
+            Disabled, //!< Python coverage is disabled.
+            Idle, //!< Python coverage is enabled but not actively gathering coverage data.
+            Gathering //!< Python coverage is enabled and actively gathering coverage data.
+        };
+
         // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
@@ -49,16 +57,16 @@ namespace PythonCoverage
         // AZ::EditorPythonScriptNotificationsBus ...
         void OnStartExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
 
-        //! Attempts to parse the test impact analysis framework configuration file.
-        //! If either the test impact analysis framework is disabled or the configuration file cannot be parsed, python coverage
-        //! is disabled.
-        void ParseCoverageOutputDirectory();
-
         //! Enumerates all of the loaded shared library modules and the component descriptors that belong to them.
         void EnumerateAllModuleComponents();
 
         //! Enumerates all of the component descriptors for the specified entity.
         void EnumerateComponentsForEntity(const AZ::EntityId& entityId);
+
+        //! Attempts to parse the test impact analysis framework configuration file.
+        //! If either the test impact analysis framework is disabled or the configuration file cannot be parsed, python coverage is disabled.
+        //! @returns The coverage state after the parsing attempt.
+        CoverageState ParseCoverageOutputDirectory();
 
         //! Returns all of the shared library modules that parent the component descriptors of the specified set of activated entities.
         //! @note Entity component descriptors are still retrieved even if the entity in question has since been deactivated.
@@ -68,13 +76,6 @@ namespace PythonCoverage
 
         //! Writes the current coverage data snapshot to disk.
         void WriteCoverageFile();
-
-        enum class CoverageState : AZ::u8
-        {
-            Disabled, //!< Python coverage is disabled.
-            Idle, //!< Python coverage is enabled but not actively gathering coverage data.
-            Gathering //!< Python coverage is enabled and actively gathering coverage data.
-        };
 
         CoverageState m_coverageState = CoverageState::Disabled; //!< Current coverage state.
         AZStd::unordered_map<AZStd::string, AZStd::unordered_map<AZ::Uuid, AZ::ComponentDescriptor*>> m_entityComponentMap; //!< Map of

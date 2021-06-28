@@ -21,7 +21,7 @@
 
 namespace PythonCoverage
 {
-    constexpr char* const Caller = "PythonCoverageEditorSystemComponent";
+    static constexpr char* const LogCallSite = "PythonCoverageEditorSystemComponent";
 
     void PythonCoverageEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -36,11 +36,8 @@ namespace PythonCoverage
         AzToolsFramework::EditorPythonScriptNotificationsBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
 
-        // Attempt to discover the output directory for the test coverage files
-        ParseCoverageOutputDirectory();
-
         // If no output directory discovered, coverage gathering will be disabled
-        if (m_coverageState == CoverageState::Disabled)
+        if (ParseCoverageOutputDirectory() == CoverageState::Disabled)
         {
             return;
         }
@@ -73,38 +70,38 @@ namespace PythonCoverage
         }
     }
 
-    void PythonCoverageEditorSystemComponent::ParseCoverageOutputDirectory()
+    PythonCoverageEditorSystemComponent::CoverageState PythonCoverageEditorSystemComponent::ParseCoverageOutputDirectory()
     {
         m_coverageState = CoverageState::Disabled;
         const AZStd::string configFilePath = LY_TEST_IMPACT_DEFAULT_CONFIG_FILE;
 
         if (configFilePath.empty())
         {
-            AZ_Warning(Caller, false, "No test impact analysis framework config file specified.");
-            return;
+            AZ_Warning(LogCallSite, false, "No test impact analysis framework config file specified.");
+            return m_coverageState;
         }
 
         const auto fileSize = AZ::IO::SystemFile::Length(configFilePath.c_str());
         if(!fileSize)
         {
-            AZ_Error(Caller, false, "Test impact analysis framework config file '%s' does not exist", configFilePath.c_str());
-            return;
+            AZ_Error(LogCallSite, false, "Test impact analysis framework config file '%s' does not exist", configFilePath.c_str());
+            return m_coverageState;
         }
 
         AZStd::vector<char> buffer(fileSize + 1);
         buffer[fileSize] = '\0';
         if (!AZ::IO::SystemFile::Read(configFilePath.c_str(), buffer.data()))
         {
-            AZ_Error(Caller, false, "Could not read contents of test impact analysis framework config file '%s'", configFilePath.c_str());
-            return;
+            AZ_Error(LogCallSite, false, "Could not read contents of test impact analysis framework config file '%s'", configFilePath.c_str());
+            return m_coverageState;
         }
         
         const AZStd::string configurationData = AZStd::string(buffer.begin(), buffer.end());
         rapidjson::Document configurationFile;
         if (configurationFile.Parse(configurationData.c_str()).HasParseError())
         {
-            AZ_Error(Caller, false, "Could not parse test impact analysis framework config file data, JSON has errors");
-            return;
+            AZ_Error(LogCallSite, false, "Could not parse test impact analysis framework config file data, JSON has errors");
+            return m_coverageState;
         }
 
         const auto& tempConfig = configurationFile["workspace"]["temp"];
@@ -118,6 +115,7 @@ namespace PythonCoverage
 
         // Everything is good to go, await the first python test case
         m_coverageState = CoverageState::Idle;
+        return m_coverageState;
     }
     
     void PythonCoverageEditorSystemComponent::WriteCoverageFile()
@@ -146,13 +144,13 @@ namespace PythonCoverage
                 m_coverageFile.c_str(),
                 AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
         {
-            AZ_Error(Caller, false, "Couldn't open file '%s' for writing", m_coverageFile.c_str());
+            AZ_Error(LogCallSite, false, "Couldn't open file '%s' for writing", m_coverageFile.c_str());
             return;
         }
     
         if (!file.Write(bytes.data(), bytes.size()))
         {
-            AZ_Error(Caller, false, "Couldn't write contents for file '%s'", m_coverageFile.c_str());
+            AZ_Error(LogCallSite, false, "Couldn't write contents for file '%s'", m_coverageFile.c_str());
             return;
         }
     }
@@ -228,7 +226,7 @@ namespace PythonCoverage
         {
             // We need to be able to pinpoint the coverage data to the specific test case names otherwise we will not be able
             // to specify which specific tests should be run in the future (filename does not necessarily equate to test case name)
-            AZ_Error(Caller, false, "No test case specified, coverage data gathering will be disabled for this test");
+            AZ_Error(LogCallSite, false, "No test case specified, coverage data gathering will be disabled for this test");
             return;
         }
 

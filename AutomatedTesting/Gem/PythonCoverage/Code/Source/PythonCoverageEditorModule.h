@@ -22,7 +22,7 @@ namespace PythonCoverage
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        AZ_RTTI(PythonCoverageEditorModule, "{32C0FFEA-09A7-460F-9257-5BDEF74FCD5B}");
+        AZ_RTTI(PythonCoverageEditorModule, "{32C0FFEA-09A7-460F-9257-5BDEF74FCD5B}", AZ::Module);
 
         PythonCoverageEditorModule();
         ~PythonCoverageEditorModule();
