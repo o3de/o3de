@@ -20,6 +20,6 @@ namespace Common
         FILE_TYPE_ANIMATION
     };
 
-    bool   Exists(const QString& strPath, bool boDirectory, IFileUtil::FileDesc* pDesc = nullptr);
-    bool   PathExists(const QString& strPath);
+    bool Exists(const QString& strPath, bool boDirectory, IFileUtil::FileDesc* pDesc = nullptr);
+    bool PathExists(const QString& strPath);
 }

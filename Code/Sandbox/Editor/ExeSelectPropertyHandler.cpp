@@ -38,7 +38,7 @@
      connect(m_browseEdit, &AzQtComponents::BrowseEdit::textChanged, this, &ExeSelectPropertyCtrl::ValueChangedByUser);
      connect(m_browseEdit, &AzQtComponents::BrowseEdit::textChanged, this, [this](const QString& /*text*/)
          {
-             EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestWrite, this);
          });
  
      connect(m_browseEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &ExeSelectPropertyCtrl::SelectExe);
