@@ -15,6 +15,11 @@ namespace AZ
     {
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
+            if (m_mode == NativeUI::Mode::DISABLED)
+            {
+                return {};
+            }
+
             __block AZStd::string userSelection = "";
             
             NSString* nsTitle = [NSString stringWithUTF8String:title.c_str()];

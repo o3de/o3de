@@ -547,10 +547,9 @@ public:
     {
         bool dummy;
         QCommandLineParser parser;
-        QString appRootOverride;
         parser.addHelpOption();
         parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-        parser.setApplicationDescription(QObject::tr("Open 3D Engine"));
+        parser.setApplicationDescription(QObject::tr("O3DE Editor"));
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
@@ -633,7 +632,7 @@ public:
             option.second = parser.value(option.first.valueName);
         }
 
-        m_bExport = m_bExport | m_bExportTexture;
+        m_bExport = m_bExport || m_bExportTexture;
 
         const QStringList positionalArgs = parser.positionalArguments();
 
@@ -4329,6 +4328,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     // open a scope to contain the AZToolsApp instance;
     {
         EditorInternal::EditorToolsApplication AZToolsApp(&argc, &argv);
+
+        {
+            CEditCommandLineInfo cmdInfo;
+            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExport && !cmdInfo.m_bExportTexture &&
+                !cmdInfo.m_bNullRenderer && !cmdInfo.m_bMatEditMode && !cmdInfo.m_bTest)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
+        }
 
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();

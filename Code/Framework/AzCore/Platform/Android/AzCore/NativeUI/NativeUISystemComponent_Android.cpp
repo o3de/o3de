@@ -19,6 +19,11 @@ namespace AZ
     {
         AZStd::string NativeUISystem::DisplayBlockingDialog(const AZStd::string& title, const AZStd::string& message, const AZStd::vector<AZStd::string>& options) const
         {
+            if (m_mode == NativeUI::Mode::DISABLED)
+            {
+                return {};
+            }
+
             AZ::Android::JNI::Object object("com/amazon/lumberyard/NativeUI/LumberyardNativeUI");
             object.RegisterStaticMethod("DisplayDialog", "(Landroid/app/Activity;Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;)V");
             object.RegisterStaticMethod("GetUserSelection", "()Ljava/lang/String;");

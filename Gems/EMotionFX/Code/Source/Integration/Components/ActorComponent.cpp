@@ -477,7 +477,7 @@ namespace EMotionFX
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
                     const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
                 }
 
                 RenderActorInstance::DebugOptions debugOptions;
