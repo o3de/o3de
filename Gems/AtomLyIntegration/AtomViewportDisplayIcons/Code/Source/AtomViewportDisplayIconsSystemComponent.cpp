@@ -27,6 +27,7 @@
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 
 #include <AtomBridge/PerViewportDynamicDrawInterface.h>
@@ -340,10 +341,9 @@ namespace AZ::Render
     void AtomViewportDisplayIconsSystemComponent::OnBootstrapSceneReady([[maybe_unused]]AZ::RPI::Scene* bootstrapScene)
     {
         // Queue a load for the draw context shader, and wait for it to load
-        Data::AssetId shaderAssetId = RPI::GetShaderAssetId(DrawContextShaderPath);
-        Data::Asset<RPI::ShaderAsset> shaderAsset = Data::AssetManager::Instance().GetAsset<RPI::ShaderAsset>(shaderAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+        Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(DrawContextShaderPath, RPI::AssetUtils::TraceLevel::Assert);
         shaderAsset.QueueLoad();
-        Data::AssetBus::Handler::BusConnect(shaderAssetId);
+        Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
     }
 
     void AtomViewportDisplayIconsSystemComponent::OnAssetReady(Data::Asset<Data::AssetData> asset)
