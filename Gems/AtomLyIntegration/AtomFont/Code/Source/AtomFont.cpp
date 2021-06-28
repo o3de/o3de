@@ -29,6 +29,7 @@
 
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 // Static member definitions
 const AZ::AtomFont::GlyphSize AZ::AtomFont::defaultGlyphSize = AZ::AtomFont::GlyphSize(ICryFont::defaultGlyphSizeX, ICryFont::defaultGlyphSizeY);
@@ -351,10 +352,9 @@ AZ::AtomFont::AtomFont(ISystem* system)
 
     // Queue a load for the font per viewport dynamic draw context shader, and wait for it to load
     static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-    Data::AssetId shaderAssetId = RPI::GetShaderAssetId(shaderFilepath);
-    Data::Asset<RPI::ShaderAsset> shaderAsset = Data::AssetManager::Instance().GetAsset<RPI::ShaderAsset>(shaderAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
     shaderAsset.QueueLoad();
-    Data::AssetBus::Handler::BusConnect(shaderAssetId);   
+    Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
 
 }
 
