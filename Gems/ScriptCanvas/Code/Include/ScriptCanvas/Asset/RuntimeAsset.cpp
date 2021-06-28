@@ -138,6 +138,8 @@ namespace ScriptCanvas
 
     void RuntimeDataOverrides::Reflect(AZ::ReflectContext* context)
     {
+        RuntimeVariable::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeDataOverrides>()
@@ -148,6 +150,36 @@ namespace ScriptCanvas
                 ->Field("entityIds", &RuntimeDataOverrides::m_entityIds)
                 ->Field("dependencies", &RuntimeDataOverrides::m_dependencies)
                 ;
+        }
+    }
+
+    RuntimeVariable::RuntimeVariable(const AZStd::any& source)
+        : value(source)
+    {
+    }
+
+    RuntimeVariable::RuntimeVariable(AZStd::any&& source)
+        : value(AZStd::move(source))
+    {
+    }
+
+    void RuntimeVariable::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<RuntimeVariable>()
+                ->Field("value", &RuntimeVariable::value)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<RuntimeVariable>("RuntimeVariable", "RuntimeVariable")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RuntimeVariable::value, "value", "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                        ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ;
+            }
         }
     }
 

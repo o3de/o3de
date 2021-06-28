@@ -46,7 +46,7 @@ namespace ScriptCanvas
         // Lua: graph_VM, graph_VM['new'], userdata<ExecutionState>
         Execution::ActivationInputArray storage;
         Execution::ActivationData data(m_component->GetRuntimeDataOverrides(), storage);
-        Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
+        Execution::ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, m_component->GetEntityId());
 
         if (range.requiresDependencyConstructionParameters)
         {

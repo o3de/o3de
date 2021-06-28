@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Component/NamedEntityId.h>
@@ -204,7 +205,26 @@ namespace ScriptCanvas
     using EBusBusId = AZ::Crc32;
     using ScriptCanvasId = AZ::EntityId;
     enum class AzEventIdentifier : size_t {};
-    
+
+    struct RuntimeVariable
+    {
+        AZ_TYPE_INFO(RuntimeVariable, "{6E969359-5AF5-4ECA-BE89-A96AB30A624E}");
+        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator, 0);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        AZStd::any value;
+
+        RuntimeVariable() = default;
+        RuntimeVariable(const RuntimeVariable&) = default;
+        RuntimeVariable(RuntimeVariable&&) = default;
+        explicit RuntimeVariable(const AZStd::any& source);
+        explicit RuntimeVariable(AZStd::any&& source);
+
+        RuntimeVariable& operator=(const RuntimeVariable&) = default;
+        RuntimeVariable& operator=(RuntimeVariable&&) = default;
+    };
+
     struct NamespacePathHasher
     {
         AZ_FORCE_INLINE size_t operator()(const NamespacePath& path) const

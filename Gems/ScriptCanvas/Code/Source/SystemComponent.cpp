@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
 #include <Libraries/Libraries.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Contract.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -86,7 +87,7 @@ namespace ScriptCanvas
         if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
         {
             jsonContext->Serializer<AZ::ScriptUserDataSerializer>()
-                ->HandlesType<AZStd::any>();
+                ->HandlesType<RuntimeVariable>();
         }
 
 #if defined(SC_EXECUTION_TRACE_ENABLED)

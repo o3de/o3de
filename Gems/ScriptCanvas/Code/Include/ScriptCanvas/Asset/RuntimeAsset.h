@@ -10,6 +10,7 @@
 #include <AzCore/Script/ScriptAsset.h>
 
 #include <ScriptCanvas/Asset/AssetDescription.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Core/GraphData.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
@@ -21,6 +22,7 @@
 namespace ScriptCanvas
 {
     class RuntimeAsset;
+    struct RuntimeVariable;
 
     class RuntimeAssetDescription : public AssetDescription
     {
@@ -92,7 +94,7 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         AZ::Data::Asset<RuntimeAsset> m_runtimeAsset;
-        AZStd::vector<AZStd::any> m_variables;
+        AZStd::vector<RuntimeVariable> m_variables;
         AZStd::vector<bool> m_variableIndices;
         AZStd::vector<AZ::EntityId> m_entityIds;
         AZStd::vector<RuntimeDataOverrides> m_dependencies;

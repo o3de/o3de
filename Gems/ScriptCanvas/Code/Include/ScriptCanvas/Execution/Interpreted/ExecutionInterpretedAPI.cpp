@@ -700,7 +700,7 @@ namespace ScriptCanvas
         {
             ActivationInputArray storage;
             ActivationData data(args.runtimeOverrides, storage);
-            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return range.totalCount;
         }

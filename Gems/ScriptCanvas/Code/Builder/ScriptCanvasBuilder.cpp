@@ -205,7 +205,7 @@ namespace ScriptCanvasBuilder
             {
                 if (iter->GetDatum())
                 {
-                    runtimeOverrides.m_variables.push_back(iter->GetDatum()->ToAny());
+                    runtimeOverrides.m_variables.push_back(ScriptCanvas::RuntimeVariable(iter->GetDatum()->ToAny()));
                     runtimeOverrides.m_variableIndices[index] = true;
                 }
                 else

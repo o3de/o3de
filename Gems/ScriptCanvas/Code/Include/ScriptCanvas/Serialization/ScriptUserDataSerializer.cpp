@@ -8,70 +8,104 @@
 #include "ScriptUserDataSerializer.h"
 
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+
+using namespace ScriptCanvas;
 
 namespace AZ
 {
     AZ_CLASS_ALLOCATOR_IMPL(ScriptUserDataSerializer, SystemAllocator, 0);
 
-    //ScriptUserDataSerializer::TypeOptions ScriptUserDataSerializer::GetVariantTypeOptions(AZ::SerializeContext::IDataContainer& container)
-    //{
-    //    TypeOptions ret;
-    //    container.EnumTypes([&ret](const AZ::Uuid& typ, const AZ::SerializeContext::ClassElement* ce)
-    //    {
-    //        ret.emplace_back(typ, ce);
-    //        return true;
-    //    });
-    //    return ret;
-    //}
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    // JsonMaterialAssignmentSerializer as an example!!! 
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-    //AZStd::optional<ScriptUserDataSerializer::TypeOption> ScriptUserDataSerializer::GetVariantTypeOptionAtIndex(AZ::SerializeContext::IDataContainer& container, size_t index)
-    //{
-    //    AZStd::optional<TypeOption> ret;
-    //    size_t curIndex = 0;
-
-    //    container.EnumTypes([&](const AZ::Uuid& typ, const AZ::SerializeContext::ClassElement* ce)
-    //    {
-    //        const bool found = curIndex == index;
-    //        if (found)
-    //        {
-    //            ret.emplace(typ, ce);
-    //        }
-    //        curIndex++;
-    //        return !found;
-    //    });
-    //    return ret;
-    //}
-
-    const char* ScriptUserDataSerializer::IndexMemberName()
+    JsonSerializationResult::Result ScriptUserDataSerializer::Load
+        ( void* outputValue
+        , const Uuid& outputValueTypeId
+        , const rapidjson::Value& inputValue
+        , JsonDeserializerContext& context)
     {
-        return "type";
-    };
+        namespace JSR = JsonSerializationResult;
 
-    const char* ScriptUserDataSerializer::ValueMemberName()
-    {
-        return "value";
-    };
+        AZ_UNUSED(outputValueTypeId);
+        AZ_Assert(outputValueTypeId == azrtti_typeid<RuntimeVariable>(), "ScriptUserDataSerializer Load against output typeID that was not RuntimeVariable");
+        AZ_Assert(outputValue, "ScriptUserDataSerializer Load against null output");
 
-    const char* ScriptUserDataSerializer::PrettyTypeName()
-    {
-        return "any";
+        auto outputVariable = reinterpret_cast<RuntimeVariable*>(outputValue);
+        JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
+        AZ::Uuid typeId = AZ::Uuid::CreateNull();
+
+        result.Combine(LoadTypeId(typeId, inputValue, context));
+        if (typeId.IsNull())
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load the AZ TypeId of the value");
+        }
+
+        outputVariable->value = context.GetSerializeContext()->CreateAny(typeId);
+        if (outputVariable->value.empty() || outputVariable->value.type() != typeId)
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load a value matched the reported AZ TypeId. The C++ declaration may have been deleted or changed.");
+        }
+
+        result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&outputVariable->value) , typeId, inputValue, "value", context));
+        return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
+            ? "ScriptUserDataSerializer Store finished loading RuntimeVariable"
+            : "ScriptUserDataSerializer Store failed to load RuntimeVariable");
     }
 
-    AZStd::optional<ScriptUserDataSerializer::TypeOption> ScriptUserDataSerializer::GetIndexTypeFromIndex(IDataContainer&, const AZStd::optional<IndexMemberType>& mbIndex)
+    JsonSerializationResult::Result ScriptUserDataSerializer::Store
+        ( rapidjson::Value& outputValue
+        , const void* inputValue
+        , const void* defaultValue
+        , [[maybe_unused]] const Uuid& valueTypeId
+        , JsonSerializerContext& context)
     {
-        if (mbIndex)
-        {
-            return { TypeOption(*mbIndex, nullptr) };
-        }
-        else
-        {
-            return {};
-        }
-    };
+        namespace JSR = JsonSerializationResult;
 
-    // Given the type of the stored second component, retrieves the value of the correspond index
-    AZStd::optional<ScriptUserDataSerializer::IndexMemberType> ScriptUserDataSerializer::GetIndexFromIndexType(IDataContainer&, const TypeOption& type)
-    {
-        return { type.first };
-    };
+        AZ_Assert(valueTypeId == azrtti_typeid<RuntimeVariable>(), "RuntimeVariable Store against value typeID that was not RuntimeVariable");
+        AZ_Assert(inputValue, "RuntimeVariable Store against null inputValue pointer ");
+
+        auto inputScriptDataPtr = reinterpret_cast<const RuntimeVariable*>(inputValue);
+        auto defaultScriptDataPtr = reinterpret_cast<const RuntimeVariable*>(defaultValue);
+        auto inputAnyPtr = &inputScriptDataPtr->value;
+        auto defaultAnyPtr = defaultScriptDataPtr ? &defaultScriptDataPtr->value : nullptr;
+
+        if (defaultAnyPtr)
+        {
+            ScriptCanvas::Datum inputDatum(ScriptCanvas::Data::FromAZType(inputAnyPtr->type()), ScriptCanvas::Datum::eOriginality::Copy, AZStd::any_cast<void>(inputAnyPtr), inputAnyPtr->type());
+            ScriptCanvas::Datum defaultDatum(ScriptCanvas::Data::FromAZType(defaultAnyPtr->type()), ScriptCanvas::Datum::eOriginality::Copy, AZStd::any_cast<void>(defaultAnyPtr), defaultAnyPtr->type());
+
+            if (inputDatum == defaultDatum)
+            {
+                return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "ScriptUserDataSerializer Store used defaults for RuntimeVariable");
+            }
+        }
+        
+        outputValue.SetObject();
+        JSR::ResultCode result(JSR::Tasks::WriteValue);
+
+        {
+            rapidjson::Value typeValue;
+            result.Combine(StoreTypeId(typeValue, inputAnyPtr->type(), context));
+            outputValue.AddMember("$type", typeValue, context.GetJsonAllocator());
+        }
+
+        {
+            rapidjson::Value valueValue;
+            valueValue.SetObject();
+            result.Combine(ContinueStoringToJsonObjectField(valueValue, "value", AZStd::any_cast<void>(inputAnyPtr), AZStd::any_cast<void>(defaultAnyPtr), inputAnyPtr->type(), context));
+        }
+
+        return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
+            ? "ScriptUserDataSerializer Store finished saving RuntimeVariable"
+            : "ScriptUserDataSerializer Store failed to save RuntimeVariable");
+    }
+
 }
