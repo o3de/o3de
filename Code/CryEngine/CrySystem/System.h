@@ -225,8 +225,6 @@ struct SSystemCVars
 
     int sys_FilesystemCaseSensitivity;
 
-    int sys_deferAudioUpdateOptim;
-
     AZ::IO::ArchiveVars archiveVars;
 
 #if defined(WIN32)
@@ -305,8 +303,6 @@ public:
     virtual bool UpdatePreTickBus(int updateFlags = 0, int nPauseMode = 0);
     virtual bool UpdatePostTickBus(int updateFlags = 0, int nPauseMode = 0);
     virtual bool UpdateLoadtime();
-    virtual void DoWorkDuringOcclusionChecks();
-    virtual bool NeedDoWorkDuringOcclusionChecks() { return m_bNeedDoWorkDuringOcclusionChecks; }
 
     ////////////////////////////////////////////////////////////////////////
     // CrySystemRequestBus interface implementation
@@ -737,7 +733,6 @@ protected: // -------------------------------------------------------------
     typedef std::list<SErrorMessage> TErrorMessages;
     TErrorMessages m_ErrorMessages;
     bool m_bHasRenderedErrorMessage;
-    bool m_bNeedDoWorkDuringOcclusionChecks;
 
     ESystemEvent m_eRuntimeState;
     bool m_bIsAsserting;
