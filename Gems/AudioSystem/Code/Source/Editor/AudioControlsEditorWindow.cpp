@@ -30,6 +30,11 @@
 #include <QPainter>
 #include <QMessageBox>
 
+void InitACEResources()
+{
+    Q_INIT_RESOURCE(AudioControlsEditorUI);
+}
+
 namespace AudioControls
 {
     //-------------------------------------------------------------------------------------------//
@@ -40,6 +45,8 @@ namespace AudioControls
     CAudioControlsEditorWindow::CAudioControlsEditorWindow(QWidget* parent)
         : QMainWindow(parent)
     {
+        InitACEResources();
+
         setupUi(this);
 
         m_pATLModel = CAudioControlsEditorPlugin::GetATLModel();

@@ -63,7 +63,7 @@ namespace AudioControls
         friend class CAudioWwiseLoader;
 
     public:
-        CAudioSystemEditor_wwise() = default;
+        CAudioSystemEditor_wwise();
         ~CAudioSystemEditor_wwise() override = default;
 
         //////////////////////////////////////////////////////////

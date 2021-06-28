@@ -568,6 +568,14 @@ namespace O3DELauncher
             AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
+
+            if (!IsDedicatedServer() && !systemInitParams.bToolMode && !systemInitParams.bTestMode)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
         }
 
         if (mainInfo.m_onPostAppStart)

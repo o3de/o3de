@@ -7,6 +7,7 @@
 
 #include <Editor/Attribution/AWSCoreAttributionMetric.h>
 #include <Editor/Attribution/AWSCoreAttributionManager.h>
+#include <Editor/Attribution/AWSCoreAttributionConsentDialog.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/IO/FileIO.h>
@@ -19,10 +20,10 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <ResourceMapping/AWSResourceMappingUtils.h>
+#include <Credential/AWSCredentialBus.h>
 
 #include <QSysInfo>
-#include <QString>
-
+#include <QMessageBox>
 
 
 namespace AWSCore
@@ -34,6 +35,7 @@ namespace AWSCore
     constexpr char AWSAttributionEnabledKey[] = "/Amazon/AWS/Preferences/AWSAttributionEnabled";
     constexpr char AWSAttributionDelaySecondsKey[] = "/Amazon/AWS/Preferences/AWSAttributionDelaySeconds";
     constexpr char AWSAttributionLastTimeStampKey[] = "/Amazon/AWS/Preferences/AWSAttributionLastTimeStamp";
+    constexpr char AWSAttributionConsentShown[] = "/Amazon/AWS/Preferences/AWSAttributionConsentShown";
     constexpr char AWSAttributionApiId[] = "2zxvvmv8d7";
     constexpr char AWSAttributionChinaApiId[] = "";
     constexpr char AWSAttributionApiStage[] = "prod";
@@ -42,19 +44,49 @@ namespace AWSCore
     AWSAttributionManager::AWSAttributionManager()
     {
         m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     AWSAttributionManager::~AWSAttributionManager()
     {
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         m_settingsRegistry.reset();
     }
 
     void AWSAttributionManager::Init()
     {
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "File IO is not initialized.");
+
+        // Resolve path to editor_aws_preferences.setreg
+        AZStd::string editorAWSPreferencesFilePath =
+            AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
+        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
+        {
+            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
+            return;
+        }
+
+        if (fileIO->Exists(resolvedPathAWSPreference.data()))
+        {
+            m_settingsRegistry->MergeSettingsFile(
+                resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+        }
     }
 
     void AWSAttributionManager::MetricCheck()
     {
+        if (!CheckAWSCredentialsConfigured())
+        {
+            return;
+        }
+
+        if (!CheckConsentShown())
+        {
+            ShowConsentDialog();
+        }
+        
         if (ShouldGenerateMetric())
         {
             // Gather metadata and assemble metric
@@ -67,30 +99,12 @@ namespace AWSCore
     }
 
     bool AWSAttributionManager::ShouldGenerateMetric() const
-    {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-        AZ_Assert(fileIO, "File IO is not initialized.");
-
-        // Resolve path to editor_aws_preferences.setreg
-        AZStd::string editorAWSPreferencesFilePath =
-            AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
-        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
-        {
-            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
-            return false;
-        }
-
-        if (fileIO->Exists(resolvedPathAWSPreference.data()))
-        {
-            m_settingsRegistry->MergeSettingsFile(resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
-        }
-
+    {   
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
-            // If not found default to sending the metric.
-            awsAttributionEnabled = true;
+            AZ_Warning("AWSAttributionManager", false, "Key %s should be set by consent window", AWSAttributionEnabledKey);
+            return false;
         }
 
         if (!awsAttributionEnabled)
@@ -122,6 +136,50 @@ namespace AWSCore
         }
 
         return false;
+    }
+
+    bool AWSAttributionManager::CheckAWSCredentialsConfigured()
+    {
+        AWSCore::AWSCredentialResult credentialResult;
+        AWSCore::AWSCredentialRequestBus::BroadcastResult(credentialResult, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
+        if (credentialResult.result)
+        {
+            std::shared_ptr<Aws::Auth::AWSCredentialsProvider> provider = credentialResult.result;
+            auto creds = provider->GetAWSCredentials();
+            if (!creds.IsEmpty())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void AWSAttributionManager::ShowConsentDialog()
+    {
+        AWSCoreAttributionConsentDialog* msgBox = aznew AWSCoreAttributionConsentDialog();
+        int ret = msgBox->exec();
+        m_settingsRegistry->Set(AWSAttributionConsentShown, true);
+        switch (ret)
+        {
+        case QMessageBox::Save:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, msgBox->checkBox());
+            break;
+        case QMessageBox::Cancel:
+        default:
+            m_settingsRegistry->Set(AWSAttributionEnabledKey, false);
+            break;
+        }
+
+        SaveSettingsRegistryFile();
+        delete msgBox;
+    }
+
+    // Waiting on Editor QT main window to be initialized before showing consent window.
+    // This will have the Editor loading screen in the background when showing consent dialog.
+    void AWSAttributionManager::NotifyMainWindowInitialized(QMainWindow* mainWindow)
+    {
+        AZ_UNUSED(mainWindow);
+        MetricCheck();
     }
 
     void AWSAttributionManager::SaveSettingsRegistryFile()
@@ -197,6 +255,13 @@ namespace AWSCore
         config->region = Aws::Region::US_WEST_2;
         config->endpointOverride =
             AWSResourceMappingUtils::FormatRESTApiUrl(apiId, config->region.value().c_str(), AWSAttributionApiStage).c_str();
+    }
+
+    bool AWSAttributionManager::CheckConsentShown()
+    {
+        bool consentShown = false;
+        m_settingsRegistry->Get(consentShown, AWSAttributionConsentShown);
+        return consentShown;
     }
 
     AZStd::string AWSAttributionManager::GetEngineVersion() const

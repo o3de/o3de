@@ -121,9 +121,9 @@ namespace AzToolsFramework
             {
                 return 0;
             }
-            bool thumbnailLoading;
-            ThumbnailerRequestsBus::BroadcastResult(thumbnailLoading, &ThumbnailerRequests::IsLoading, thumbnailKey, m_thumbnailContext.c_str());
-            if (thumbnailLoading)
+
+            const Thumbnail::State thumbnailState = thumbnail->GetState();
+            if (thumbnailState == Thumbnail::State::Loading)
             {
                 AzQtComponents::StyledBusyLabel* busyLabel;
                 AssetBrowserComponentRequestBus::BroadcastResult(busyLabel , &AssetBrowserComponentRequests::GetStyledBusyLabel);
@@ -132,13 +132,17 @@ namespace AzToolsFramework
                     busyLabel->DrawTo(painter, QRectF(point.x(), point.y(), size.width(), size.height()));
                 }
             }
-            else
+            else if (thumbnailState == Thumbnail::State::Ready)
             {
                 // Scaling and centering pixmap within bounds to preserve aspect ratio
                 const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
                 const QSize sizeDelta = size - pixmap.size();
                 const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
                 painter->drawPixmap(point + pointDelta, pixmap);
+            }
+            else
+            {
+                AZ_Assert(false, "Thumbnail state %d unexpected here", int(thumbnailState));
             }
             return m_iconSize;
         }
