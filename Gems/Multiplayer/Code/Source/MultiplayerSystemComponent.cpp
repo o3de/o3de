@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -475,7 +475,7 @@ namespace Multiplayer
             {
                 controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
             }
-            
+
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
             {
                 connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
@@ -557,7 +557,7 @@ namespace Multiplayer
                 controlledEntityNetBindComponent->SetAllowAutonomy(true);
             }
         }
-        
+
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
@@ -605,6 +605,16 @@ namespace Multiplayer
     INetworkEntityManager* MultiplayerSystemComponent::GetNetworkEntityManager()
     {
         return &m_networkEntityManager;
+    }
+
+    void MultiplayerSystemComponent::SetFilterEntityManager(IFilterEntityManager* entityFilter)
+    {
+        m_filterEntityManager = entityFilter;
+    }
+
+    IFilterEntityManager* MultiplayerSystemComponent::GetFilterEntityManager()
+    {
+        return m_filterEntityManager;
     }
 
     void MultiplayerSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

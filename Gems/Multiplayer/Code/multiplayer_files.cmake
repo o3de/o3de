@@ -1,6 +1,6 @@
 #
 # Copyright (c) Contributors to the Open 3D Engine Project
-# 
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -11,9 +11,6 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
-    Include/Multiplayer/Components/FilteredReplicationInterface.h
-    Include/Multiplayer/Components/FilteredServerToClientBus.h
-    Include/Multiplayer/Components/FilteredServerToClientComponent.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerController.h
@@ -22,6 +19,7 @@ set(FILES
     Include/Multiplayer/Components/NetworkTransformComponent.h
     Include/Multiplayer/ConnectionData/IConnectionData.h
     Include/Multiplayer/EntityDomains/IEntityDomain.h
+    Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
     Include/Multiplayer/INetworkSpawnableLibrary.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
@@ -53,7 +51,6 @@ set(FILES
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
-    Source/Components/FilteredServerToClientComponent.cpp
     Source/Components/LocalPredictionPlayerInputComponent.cpp
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerController.cpp

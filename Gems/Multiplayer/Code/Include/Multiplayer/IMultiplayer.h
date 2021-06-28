@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -10,6 +10,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 #include <Multiplayer/NetworkTime/INetworkTime.h>
@@ -53,7 +54,7 @@ namespace Multiplayer
     //! the type of session and the role held by the current agent. An Agent is defined
     //! here as an actor in a session. Types of Agents included by default are a Client,
     //! a Client Server and a Dedicated Server.
-    //! 
+    //!
     //! IMultiplayer also provides events to allow developers to receive and respond to
     //! notifications relating to the session. These include Session Init and Shutdown
     //! and on acquisition of a new connection. These events are only fired on Client
@@ -106,6 +107,15 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
+
+        //! Sets user-defined filtering manager for entities.
+        //! This allows selectively choosing which entities to replicate on a per client connection.
+        //! See IFilterEntityManager for details.
+        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
+        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
+
+        //! @return pointer to the user-defined filtering manager of entities. By default, this isn't set and returns nullptr.
+        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -11,7 +11,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/std/sort.h>
-#include <Multiplayer/Components/FilteredServerToClientComponent.h>
 
 namespace Multiplayer
 {
@@ -55,7 +54,6 @@ namespace Multiplayer
         , m_controlledEntity(controlledEntity)
         , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
         , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
-        , m_filteredHandlerChanged([this](FilteredReplicationInterface* newHandler) { OnFilteredHandlerChanged(newHandler); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
@@ -64,14 +62,6 @@ namespace Multiplayer
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
         m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
         AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
-
-        // this one is optional
-        if (auto* filteredComponent = m_controlledEntity.FindComponent<FilteredServerToClientComponent>())
-        {
-            m_controlledFilteredEntityInterface = filteredComponent->GetFilteredInterface();
-            // the filtered interface might not have been set yet, sign up for changes
-            filteredComponent->SetFilteredReplicationHandlerChanged(m_filteredHandlerChanged);
-        }
 
         m_updateWindowEvent.Enqueue(sv_ClientReplicationWindowUpdateMs, true);
 
@@ -149,13 +139,14 @@ namespace Multiplayer
         );
 
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();
+        IFilterEntityManager* filterEntityManager = GetMultiplayer()->GetFilterEntityManager();
 
         // Add all the neighbors
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
 
-            if (m_controlledFilteredEntityInterface && m_controlledFilteredEntityInterface->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
+            if (filterEntityManager && filterEntityManager->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
             {
                 continue;
             }
@@ -216,9 +207,12 @@ namespace Multiplayer
         {
             if (netBindComponent->HasController())
             {
-                if (m_controlledFilteredEntityInterface && m_controlledFilteredEntityInterface->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
+                if (IFilterEntityManager* filter = GetMultiplayer()->GetFilterEntityManager())
                 {
-                    return;
+                    if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
+                    {
+                        return;
+                    }
                 }
 
                 AZ::TransformInterface* transformInterface = entity->GetTransform();
@@ -304,11 +298,6 @@ namespace Multiplayer
             m_candidateQueue.push(PrioritizedReplicationCandidate(entityHandle, priority));
             m_replicationSet[entityHandle] = { NetEntityRole::Client, priority };
         }
-    }
-
-    void ServerToClientReplicationWindow::OnFilteredHandlerChanged(FilteredReplicationInterface* newHandler)
-    {
-        m_controlledFilteredEntityInterface = newHandler;
     }
 
     //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController)

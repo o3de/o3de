@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -67,7 +67,7 @@ namespace Multiplayer
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityUpdates& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::EntityRpcs& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ClientMigration& packet);
-    
+
         //! IConnectionListener interface
         //! @{
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
@@ -88,6 +88,8 @@ namespace Multiplayer
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         INetworkTime* GetNetworkTime() override;
         INetworkEntityManager* GetNetworkEntityManager() override;
+        void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
+        IFilterEntityManager* GetFilterEntityManager() override;
         //! @}
 
         //! Console commands.
@@ -101,7 +103,7 @@ namespace Multiplayer
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
         NetworkEntityHandle SpawnDefaultPlayerPrefab();
-        
+
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
@@ -112,6 +114,8 @@ namespace Multiplayer
         NetworkEntityManager m_networkEntityManager;
         NetworkTime m_networkTime;
         MultiplayerAgentType m_agentType = MultiplayerAgentType::Uninitialized;
+
+        IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
