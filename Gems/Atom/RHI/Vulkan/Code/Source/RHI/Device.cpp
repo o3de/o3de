@@ -69,7 +69,7 @@ namespace AZ
 
             BuildDeviceQueueInfo(physicalDevice);
 
-            m_supportedPipelineStageFlagsMask = ~0;
+            m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
             const auto& deviceFeatures = physicalDevice.GetPhysicalDeviceFeatures();
             m_enabledDeviceFeatures.samplerAnisotropy = deviceFeatures.samplerAnisotropy;

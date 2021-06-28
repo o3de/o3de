@@ -353,7 +353,7 @@ namespace AZ
 
                 if (imageViewDescriptor.m_depthSliceMax == RHI::ImageViewDescriptor::HighestSliceIndex)
                 {
-                    renderTargetView.Texture3D.WSize = -1;
+                    renderTargetView.Texture3D.WSize = std::numeric_limits<UINT>::max();
                 }
                 else
                 {
@@ -578,7 +578,7 @@ namespace AZ
 
                 if (imageViewDescriptor.m_depthSliceMax == RHI::ImageViewDescriptor::HighestSliceIndex)
                 {
-                    unorderedAccessView.Texture3D.WSize = -1;
+                    unorderedAccessView.Texture3D.WSize = std::numeric_limits<UINT>::max();
                 }
                 else
                 {

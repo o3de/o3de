@@ -82,7 +82,7 @@ namespace ImageProcessingAtom
             }
             else                        // The value is zero
             {
-                Exponent = -112;
+                Exponent = static_cast<AZ::u32>(-112);
             }
 
             Result = ((h & 0x8000) << 16) | // Sign
