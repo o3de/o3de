@@ -16,33 +16,33 @@ namespace AZ
 {
     AZ_CLASS_ALLOCATOR_IMPL(ScriptUserDataSerializer, SystemAllocator, 0);
 
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    // JsonMaterialAssignmentSerializer as an example!!! 
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////////////
-
     JsonSerializationResult::Result ScriptUserDataSerializer::Load
         ( void* outputValue
-        , const Uuid& outputValueTypeId
+        , [[maybe_unused]] const Uuid& outputValueTypeId
         , const rapidjson::Value& inputValue
         , JsonDeserializerContext& context)
     {
         namespace JSR = JsonSerializationResult;
 
-        AZ_UNUSED(outputValueTypeId);
         AZ_Assert(outputValueTypeId == azrtti_typeid<RuntimeVariable>(), "ScriptUserDataSerializer Load against output typeID that was not RuntimeVariable");
         AZ_Assert(outputValue, "ScriptUserDataSerializer Load against null output");
+
+        if (!(inputValue.IsObject() && inputValue.HasMember("value") && inputValue.HasMember("$type")))
+        {
+            AZ_TracePrintf("SC", "This will not be correct");
+        }
 
         auto outputVariable = reinterpret_cast<RuntimeVariable*>(outputValue);
         JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
         AZ::Uuid typeId = AZ::Uuid::CreateNull();
 
-        result.Combine(LoadTypeId(typeId, inputValue, context));
+        auto typeIdMember = inputValue.FindMember("$type");
+        if (typeIdMember == inputValue.MemberEnd())
+        {
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load the $type member");
+        }
+
+        result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
         if (typeId.IsNull())
         {
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load the AZ TypeId of the value");
@@ -54,7 +54,7 @@ namespace AZ
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic, "ScriptUserDataSerializer::Load failed to load a value matched the reported AZ TypeId. The C++ declaration may have been deleted or changed.");
         }
 
-        result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&outputVariable->value) , typeId, inputValue, "value", context));
+        result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&outputVariable->value), typeId, inputValue, "value", context));
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "ScriptUserDataSerializer Store finished loading RuntimeVariable"
             : "ScriptUserDataSerializer Store failed to load RuntimeVariable");
@@ -88,20 +88,18 @@ namespace AZ
             }
         }
         
-        outputValue.SetObject();
         JSR::ResultCode result(JSR::Tasks::WriteValue);
+        outputValue.SetObject();
 
         {
+            auto azTypeString = inputAnyPtr->type().ToString<AZStd::string>();
             rapidjson::Value typeValue;
+            typeValue.SetString(azTypeString.begin(), azTypeString.length(), context.GetJsonAllocator());
             result.Combine(StoreTypeId(typeValue, inputAnyPtr->type(), context));
             outputValue.AddMember("$type", typeValue, context.GetJsonAllocator());
         }
 
-        {
-            rapidjson::Value valueValue;
-            valueValue.SetObject();
-            result.Combine(ContinueStoringToJsonObjectField(valueValue, "value", AZStd::any_cast<void>(inputAnyPtr), AZStd::any_cast<void>(defaultAnyPtr), inputAnyPtr->type(), context));
-        }
+        result.Combine(ContinueStoringToJsonObjectField(outputValue, "value", AZStd::any_cast<void>(inputAnyPtr), AZStd::any_cast<void>(defaultAnyPtr), inputAnyPtr->type(), context));
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "ScriptUserDataSerializer Store finished saving RuntimeVariable"
