@@ -12,6 +12,8 @@
 #include <QThread>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QProcess)
+
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(ProjectButton)
@@ -34,9 +36,11 @@ namespace O3DE::ProjectManager
         void Done(QString result);
 
     private:
-        void WriteErrorLog(const QString& log);
-
+        QProcess* m_configProjectProcess = nullptr;
+        QProcess* m_buildProjectProcess = nullptr;
         ProjectInfo m_projectInfo;
+
+        int m_progressEstimate;
     };
 
     class ProjectBuilderController : public QObject
@@ -48,15 +52,16 @@ namespace O3DE::ProjectManager
         ~ProjectBuilderController();
 
         void SetProjectButton(ProjectButton* projectButton);
-        QString GetProjectPath() const;
+        const ProjectInfo& GetProjectInfo() const;
 
     public slots:
         void Start();
         void UpdateUIProgress(int progress);
         void HandleResults(const QString& result);
+        void HandleCancel();
 
     signals:
-        void Done();
+        void Done(bool = true);
 
     private:
         ProjectInfo m_projectInfo;
@@ -64,5 +69,7 @@ namespace O3DE::ProjectManager
         QThread m_workerThread;
         ProjectButton* m_projectButton;
         QWidget* m_parent;
+
+        int m_lastProgress;
     };
 } // namespace O3DE::ProjectManager

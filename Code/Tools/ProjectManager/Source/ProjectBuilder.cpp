@@ -30,6 +30,7 @@ namespace O3DE::ProjectManager
     ProjectBuilderWorker::ProjectBuilderWorker(const ProjectInfo& projectInfo)
         : QObject()
         , m_projectInfo(projectInfo)
+        , m_progressEstimate(0)
     {
     }
 
@@ -43,6 +44,21 @@ namespace O3DE::ProjectManager
         }
         Done(m_projectPath);
 #else
+        // Check if we are trying to cancel task
+        if (QThread::currentThread()->isInterruptionRequested())
+        {
+            emit Done(tr("Build Cancelled."));
+            return;
+        }
+
+        QFile logFile(LogFilePath());
+        if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+        {
+            emit Done(tr("Failed to open log file."));
+            return;
+        }
+
+        QTextStream logStream(&logFile);
         EngineInfo engineInfo;
 
         AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
@@ -56,8 +72,15 @@ namespace O3DE::ProjectManager
             return;
         }
 
+        if (QThread::currentThread()->isInterruptionRequested())
+        {
+            logFile.close();
+            emit Done(tr("Build Cancelled."));
+            return;
+        }
+
         // Show some kind of progress with very approximate estimates
-        UpdateProgress(1);
+        UpdateProgress(m_progressEstimate = 1);
 
         QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
         // Append cmake path to PATH incase it is missing
@@ -67,12 +90,12 @@ namespace O3DE::ProjectManager
         pathValue += ";" + cmakePath.path();
         currentEnvironment.insert("PATH", pathValue);
 
-        QProcess configProjectProcess;
-        configProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
-        configProjectProcess.setWorkingDirectory(m_projectInfo.m_path);
-        configProjectProcess.setProcessEnvironment(currentEnvironment);
+        m_configProjectProcess = new QProcess(this);
+        m_configProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
+        m_configProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
+        m_configProjectProcess->setProcessEnvironment(currentEnvironment);
 
-        configProjectProcess.start(
+        m_configProjectProcess->start(
             "cmake",
             QStringList
             {
@@ -85,34 +108,49 @@ namespace O3DE::ProjectManager
                 "-DLY_3RDPARTY_PATH=" + engineInfo.m_thirdPartyPath
             });
 
-        if (!configProjectProcess.waitForStarted())
+        if (!m_configProjectProcess->waitForStarted())
         {
             emit Done(tr("Configuring project failed to start."));
             return;
         }
-        if (!configProjectProcess.waitForFinished(MaxBuildTimeMSecs))
+        bool containsGeneratingDone = false;
+        while (m_configProjectProcess->waitForReadyRead(MaxBuildTimeMSecs))
         {
-            WriteErrorLog(configProjectProcess.readAllStandardOutput());
-            emit Done(tr("Configuring project timed out. See log for details"));
-            return;
+            QString configOutput = m_configProjectProcess->readAllStandardOutput();
+
+            if (configOutput.contains("Generating done"))
+            {
+                containsGeneratingDone = true;
+            }
+
+            logStream << configOutput;
+            logStream.flush();
+
+            UpdateProgress(qMin(++m_progressEstimate, 19));
+
+            if (QThread::currentThread()->isInterruptionRequested())
+            {
+                logFile.close();
+                m_configProjectProcess->close();
+                emit Done(tr("Build Cancelled."));
+                return;
+            }
         }
 
-        QString configProjectOutput(configProjectProcess.readAllStandardOutput());
-        if (configProjectProcess.exitCode() != 0 || !configProjectOutput.contains("Generating done"))
+        if (m_configProjectProcess->exitCode() != 0 || !containsGeneratingDone)
         {
-            WriteErrorLog(configProjectOutput);
             emit Done(tr("Configuring project failed. See log for details."));
             return;
         }
 
-        UpdateProgress(20);
+        UpdateProgress(m_progressEstimate = 20);
 
-        QProcess buildProjectProcess;
-        buildProjectProcess.setProcessChannelMode(QProcess::MergedChannels);
-        buildProjectProcess.setWorkingDirectory(m_projectInfo.m_path);
-        buildProjectProcess.setProcessEnvironment(currentEnvironment);
+        m_buildProjectProcess = new QProcess(this);
+        m_buildProjectProcess->setProcessChannelMode(QProcess::MergedChannels);
+        m_buildProjectProcess->setWorkingDirectory(m_projectInfo.m_path);
+        m_buildProjectProcess->setProcessEnvironment(currentEnvironment);
 
-        buildProjectProcess.start(
+        m_buildProjectProcess->start(
             "cmake",
             QStringList
             {
@@ -125,22 +163,38 @@ namespace O3DE::ProjectManager
                 "profile"
             });
 
-        if (!buildProjectProcess.waitForStarted())
+        if (!m_buildProjectProcess->waitForStarted())
         {
             emit Done(tr("Building project failed to start."));
             return;
         }
-        if (!buildProjectProcess.waitForFinished(MaxBuildTimeMSecs))
+
+        // There are a lot of steps when building so estimate around 800 more steps (80 * 10) remaining
+        m_progressEstimate = 200;
+        while (m_buildProjectProcess->waitForReadyRead(MaxBuildTimeMSecs))
         {
-            WriteErrorLog(configProjectProcess.readAllStandardOutput());
-            emit Done(tr("Building project timed out. See log for details"));
-            return;
+            logStream << m_buildProjectProcess->readAllStandardOutput();
+            logStream.flush();
+
+            UpdateProgress(qMin(++m_progressEstimate / 10, 100));
+
+            if (QThread::currentThread()->isInterruptionRequested())
+            {
+                logFile.close();
+                char ctrlC = 0x03;
+                m_buildProjectProcess->write(&ctrlC);
+                m_buildProjectProcess->waitForBytesWritten();
+                m_buildProjectProcess->kill();
+                QThread::sleep(20);
+                logStream << m_buildProjectProcess->readAllStandardOutput();
+                logStream.flush();
+                emit Done(tr("Build Cancelled."));
+                return;
+            }
         }
 
-        QString buildProjectOutput(buildProjectProcess.readAllStandardOutput());
-        if (configProjectProcess.exitCode() != 0)
+        if (m_configProjectProcess->exitCode() != 0)
         {
-            WriteErrorLog(buildProjectOutput);
             emit Done(tr("Building project failed. See log for details."));
         }
         else
@@ -153,26 +207,25 @@ namespace O3DE::ProjectManager
     QString ProjectBuilderWorker::LogFilePath() const
     {
         QDir logFilePath(m_projectInfo.m_path);
-        logFilePath.cd(ProjectBuildPathPostfix);
-        return logFilePath.filePath(ProjectBuildErrorLogPathPostfix);
-    }
-
-    void ProjectBuilderWorker::WriteErrorLog(const QString& log)
-    {
-        QFile logFile(LogFilePath());
-        // Overwrite file with truncate
-        if (logFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
+        if (!logFilePath.cd(ProjectBuildPathPostfix))
         {
-            QTextStream output(&logFile);
-            output << log;
-            logFile.close();
+            logFilePath.mkpath(ProjectBuildPathPostfix);
+            logFilePath.cd(ProjectBuildPathPostfix);
+
         }
+        if (!logFilePath.cd(ProjectBuildPathCmakeFiles))
+        {
+            logFilePath.mkpath(ProjectBuildPathCmakeFiles);
+            logFilePath.cd(ProjectBuildPathCmakeFiles);
+        }
+        return logFilePath.filePath(ProjectBuildErrorLogName);
     }
 
     ProjectBuilderController::ProjectBuilderController(const ProjectInfo& projectInfo, ProjectButton* projectButton, QWidget* parent)
         : QObject()
         , m_projectInfo(projectInfo)
         , m_projectButton(projectButton)
+        , m_lastProgress(0)
         , m_parent(parent)
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
@@ -186,6 +239,7 @@ namespace O3DE::ProjectManager
 
     ProjectBuilderController::~ProjectBuilderController()
     {
+        m_workerThread.requestInterruption();
         m_workerThread.quit();
         m_workerThread.wait();
     }
@@ -199,15 +253,26 @@ namespace O3DE::ProjectManager
     void ProjectBuilderController::SetProjectButton(ProjectButton* projectButton)
     {
         m_projectButton = projectButton;
+
+        if (projectButton)
+        {
+            projectButton->SetProjectButtonAction(tr("Cancel Build"), [this] { HandleCancel(); });
+
+            if (m_lastProgress != 0)
+            {
+                UpdateUIProgress(m_lastProgress);
+            }
+        }
     }
 
-    QString ProjectBuilderController::GetProjectPath() const
+    const ProjectInfo& ProjectBuilderController::GetProjectInfo() const
     {
-        return m_projectInfo.m_path;
+        return m_projectInfo;
     }
 
     void ProjectBuilderController::UpdateUIProgress(int progress)
     {
+        m_lastProgress = progress;
         if (m_projectButton)
         {
             m_projectButton->SetButtonOverlayText(QString("%1 (%2%)\n\n").arg(tr("Building Project..."), QString::number(progress)));
@@ -237,8 +302,16 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
             }
+
+            emit Done(false);
         }
 
-        emit Done();
+        emit Done(true);
+    }
+
+    void ProjectBuilderController::HandleCancel()
+    {
+        m_workerThread.quit();
+        emit Done(false);
     }
 } // namespace O3DE::ProjectManager

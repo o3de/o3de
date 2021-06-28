@@ -11,10 +11,12 @@
 #include <ProjectInfo.h>
 
 #include <QLabel>
+#include <QPushButton>
+#include <QSpacerItem>
+#include <QLayout>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPixmap)
-QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QProgressBar)
 
@@ -34,7 +36,7 @@ namespace O3DE::ProjectManager
 
         QLabel* GetOverlayLabel();
         QProgressBar* GetProgressBar();
-        QPushButton* GetBuildButton();
+        QPushButton* GetActionButton();
 
     signals:
         void triggered();
@@ -45,7 +47,7 @@ namespace O3DE::ProjectManager
     private:
         QLabel* m_overlayLabel;
         QProgressBar* m_progressBar;
-        QPushButton* m_buildButton;
+        QPushButton* m_actionButton;
         bool m_enabled = true;
     };
 
@@ -58,10 +60,32 @@ namespace O3DE::ProjectManager
         explicit ProjectButton(const ProjectInfo& m_projectInfo, QWidget* parent = nullptr, bool processing = false);
         ~ProjectButton() = default;
 
+        template<typename F>
+        void SetProjectButtonAction(const QString& text, F lambda)
+        {
+            QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+            if (!m_buttonConnection)
+            {
+                QSpacerItem* buttonSpacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+                m_projectImageLabel->layout()->addItem(buttonSpacer);
+                m_projectImageLabel->layout()->addWidget(projectActionButton);
+                projectActionButton->setVisible(true);
+            }
+            else
+            {
+                disconnect(m_buttonConnection);
+            }
+
+            projectActionButton->setText(text);
+            m_buttonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
+        }
+
+        void SetProjectBuildButtonAction();
+
         void SetLaunchButtonEnabled(bool enabled);
-        void ShowBuildButton(bool show);
         void SetButtonOverlayText(const QString& text);
         void SetProgressBarValue(int progress);
+        LabelButton* GetLabelButton();
 
     signals:
         void OpenProject(const QString& projectName);
@@ -75,9 +99,12 @@ namespace O3DE::ProjectManager
         void BaseSetup();
         void ProcessingSetup();
         void ReadySetup();
+        void BuildThisProject();
 
         ProjectInfo m_projectInfo;
         LabelButton* m_projectImageLabel;
         QFrame* m_projectFooter;
+
+        QMetaObject::Connection m_buttonConnection;
     };
 } // namespace O3DE::ProjectManager
