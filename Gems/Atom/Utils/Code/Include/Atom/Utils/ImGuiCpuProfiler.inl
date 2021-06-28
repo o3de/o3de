@@ -9,8 +9,8 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/time.h>
+#include <AzCore/std/containers/set.h>
 
-#pragma optimize("", off)
 #include <Atom/RHI/CpuProfiler.h>
 
 namespace AZ
@@ -33,15 +33,15 @@ namespace AZ
                 const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
                 ImGui::Text(threadIdText.c_str());
             }
+            inline float TicksToMs(AZStd::sys_time_t duration)
+            {
+                const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
+                return static_cast<float>((duration * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
+            }
         }
 
         inline void ImGuiCpuProfiler::Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& currentCpuTimingStatistics)
         {
-            LongFunction();
-            LongFunction();
-            LongFunction();
-
-
             // Cache the value to detect if it was changed by ImGui(user pressed 'x')
             const bool cachedShowCpuProfiler = keepDrawing;
 
@@ -81,9 +81,7 @@ namespace AZ
 
                 const auto ShowTimeInMs = [ticksPerSecond](AZStd::sys_time_t duration)
                 {
-                    // Note: converting to microseconds integer before converting to milliseconds float
-                    const float timeInMs = static_cast<float>((duration * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
-                    ImGui::Text("%.2f ms", timeInMs);
+                    ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
                 };
 
                 const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
@@ -125,19 +123,36 @@ namespace AZ
                     ImGui::NextColumn();
 
                     // Draw the thread count label
-                    const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(regions.size()));
+                    AZStd::sys_time_t totalTime = 0;
+                    AZStd::set<AZStd::thread_id> threads;
+                    for (ThreadRegionEntry& entry : regions) // Find the overall thread count and accumulated execution time
+                    {
+                        threads.insert(entry.m_threadId);
+                        totalTime += entry.m_endTick - entry.m_startTick;
+                    }
+                    const AZStd::string threadLabel = AZStd::string::format("Threads: %u", static_cast<uint32_t>(threads.size()));
                     ImGui::Text(threadLabel.c_str());
                     DrawRegionHoverMarker(regions);
                     ImGui::NextColumn();
 
-                    // Draw the region time label
-                    ShowTimeInMs(duration);
+                    // Draw the overall invocation count
+                    const AZStd::string invocationLabel = AZStd::string::format("Total calls: %u", static_cast<uint32_t>(regions.size()));
+                    ImGui::Text(invocationLabel.c_str());
+                    DrawRegionHoverMarker(regions);
+                    ImGui::NextColumn();
+
+                    // Draw the time labels (max and then total)
+                    const AZStd::string timeLabel =
+                        AZStd::string::format("%.2f ms max, %.2f ms total",
+                        CpuProfilerImGuiHelper::TicksToMs(duration),
+                        CpuProfilerImGuiHelper::TicksToMs(totalTime));
+                    ImGui::Text(timeLabel.c_str());
                     ImGui::NextColumn();
                 };
 
                 // Set column settings.
                 ImGui::Columns(2, "view", false);
-                ImGui::SetColumnWidth(0, 540.0f);
+                ImGui::SetColumnWidth(0, 630.0f);
                 ImGui::SetColumnWidth(1, 100.0f);
 
                 ShowRow("Frame to Frame Time", cpuTimingStatistics.m_frameToFrameTime);
@@ -160,14 +175,15 @@ namespace AZ
                         // Draw the regions
                         if (ImGui::TreeNodeEx(timeRegionMapEntry.first.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
                         {
-                            ImGui::Columns(3, "view", false);
+                            ImGui::Columns(4, "view", false);
                             ImGui::SetColumnWidth(0, 400.0f);
                             ImGui::SetColumnWidth(1, 100.0f);
-                            ImGui::SetColumnWidth(2, 80.0f);
+                            ImGui::SetColumnWidth(2, 130.0f);
+                            ImGui::SetColumnWidth(3, 240.0f);
 
                             for (auto& reigon : timeRegionMapEntry.second)
                             {
-                                // Calculate the thread with the longest execution time
+                                // Calculate the region with the longest execution time
                                 AZStd::sys_time_t threadExecutionElapsed = 0;
                                 for (ThreadRegionEntry& entry : reigon.second)
                                 {
@@ -237,11 +253,6 @@ namespace AZ
                     }
                 }
             }
-        }
-
-        inline void ImGuiCpuProfiler::LongFunction()
-        {
-            AZ_ATOM_PROFILE_TIME_GROUP_REGION("Testing Group", "Long Function");
         }
     }
 }

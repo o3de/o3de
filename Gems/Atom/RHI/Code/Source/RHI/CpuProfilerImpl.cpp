@@ -192,6 +192,8 @@ namespace AZ
 
         void CpuProfilerImpl::OnFrameBegin()
         {
+            // Clear each thread's cached time region map at the start of the frame
+            // to avoid multiple frames worth of data accumulating in each thread's map if FlushTimeRegionMap isn't called
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
             for (auto& threadLocal : m_registeredThreads)
             {
@@ -291,7 +293,7 @@ namespace AZ
                 {
                     const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
                     AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
-                    m_cachedTimeRegionMap[regionName].push_back(cachedTimeRegion);
+                    regionVec.push_back(cachedTimeRegion);
                 }
 
                 // Clear the cached regions
