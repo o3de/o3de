@@ -733,6 +733,7 @@ namespace ScriptCanvasEditor
                             if (displayType.IsValid())
                             {
                                 slot->SetDisplayType(displayType);
+                                node->SetNodeDataType(displayType);
                             }
 
                             if (!selectedSlotSetup.m_name.empty())
@@ -2536,7 +2537,7 @@ namespace ScriptCanvasEditor
                         {
                             HandleFunctionDefinitionExtension(canvasNode, graphCanvasSlotId, nodeId);
                         }
-                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode))
+                        else if (azrtti_cast<ScriptCanvas::Nodes::Math::MathExpression*>(canvasNode)&&!canvasNode->isDisplayTypeInitialized)
                         {
                             HandleExpressionNodeExtension(canvasNode, graphCanvasSlotId, nodeId);
                         }

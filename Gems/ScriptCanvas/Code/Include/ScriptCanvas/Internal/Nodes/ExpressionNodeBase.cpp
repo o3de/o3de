@@ -434,6 +434,7 @@ namespace ScriptCanvas
                         {
                             DynamicDataSlotConfiguration dynamicSlotConfiguration;
 
+                            //configure stuff such as displayGroup
                             ConfigureSlot(variableName, dynamicSlotConfiguration);
 
                             dynamicSlotConfiguration.m_dynamicDataType = DynamicDataType::Any;
