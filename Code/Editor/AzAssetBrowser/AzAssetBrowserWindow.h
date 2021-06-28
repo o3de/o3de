@@ -69,9 +69,9 @@ private:
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
-    QMenu* m_viewSwitchMenu = nullptr;
-    QAction* m_standardAssetBrowserMode = nullptr;
-    QAction* m_searchViewAssetBrowserMode = nullptr;
+    AZStd::unique_ptr<QMenu> m_viewSwitchMenu = nullptr;
+    AZStd::unique_ptr <QAction> m_standardAssetBrowserMode = nullptr;
+    AZStd::unique_ptr <QAction> m_searchViewAssetBrowserMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState;
     
     void UpdatePreview() const;
