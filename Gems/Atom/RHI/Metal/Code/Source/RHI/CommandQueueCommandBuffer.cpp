@@ -48,14 +48,12 @@ namespace AZ
                         }
                     }];
                 }
-                else
-                {
-                    m_mtlCommandBuffer = [m_hwQueue commandBuffer];
-                }
             }
-#else
-            m_mtlCommandBuffer = [m_hwQueue commandBuffer];
 #endif
+            if(m_mtlCommandBuffer == nil)
+            {
+                m_mtlCommandBuffer = [m_hwQueue commandBuffer];
+            }
             
             //we call retain here as this CB is active across the autoreleasepools of multiple threads. Calling
             //retain here means that if the current thread's autoreleasepool gets drained this CB will not die.
