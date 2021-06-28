@@ -21,6 +21,7 @@ namespace AWSGameLift
             {
                 request.SetGameSessionName(createSessionOnQueueRequest.m_sessionName.c_str());
             }
+            AZStd::string propertiesOutput = "";
             for (auto iter = createSessionOnQueueRequest.m_sessionProperties.begin();
                  iter != createSessionOnQueueRequest.m_sessionProperties.end(); iter++)
             {
@@ -28,12 +29,25 @@ namespace AWSGameLift
                 sessionProperty.SetKey(iter->first.c_str());
                 sessionProperty.SetValue(iter->second.c_str());
                 request.AddGameProperties(sessionProperty);
+                propertiesOutput += AZStd::string::format("{Key=%s,Value=%s},", iter->first.c_str(), iter->second.c_str());
+            }
+            if (!propertiesOutput.empty())
+            {
+                propertiesOutput = propertiesOutput.substr(0, propertiesOutput.size() - 1); // Trim last comma to fit array format
             }
 
             // Required attributes
             request.SetGameSessionQueueName(createSessionOnQueueRequest.m_queueName.c_str());
             request.SetMaximumPlayerSessionCount(createSessionOnQueueRequest.m_maxPlayer);
             request.SetPlacementId(createSessionOnQueueRequest.m_placementId.c_str());
+
+            AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
+                "Built StartGameSessionPlacementRequest with GameSessionName=%s, GameProperties=%s, GameSessionQueueName=%s, MaximumPlayerSessionCount=%d and PlacementId=%s",
+                request.GetGameSessionName().c_str(),
+                AZStd::string::format("[%s]", propertiesOutput.c_str()).c_str(),
+                request.GetGameSessionQueueName().c_str(),
+                request.GetMaximumPlayerSessionCount(),
+                request.GetPlacementId().c_str());
 
             return request;
         }
@@ -49,6 +63,8 @@ namespace AWSGameLift
             Aws::GameLift::Model::StartGameSessionPlacementRequest request =
                 BuildAWSGameLiftStartGameSessionPlacementRequest(createSessionOnQueueRequest);
             auto createSessionOnQueueOutcome = gameliftClient.StartGameSessionPlacement(request);
+            AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
+                "StartGameSessionPlacement request against Amazon GameLift service is complete.");
 
             if (createSessionOnQueueOutcome.IsSuccess())
             {

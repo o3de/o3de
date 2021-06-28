@@ -29,6 +29,7 @@ namespace AWSGameLift
             {
                 request.SetIdempotencyToken(createSessionRequest.m_idempotencyToken.c_str());
             }
+            AZStd::string propertiesOutput = "";
             for (auto iter = createSessionRequest.m_sessionProperties.begin();
                  iter != createSessionRequest.m_sessionProperties.end(); iter++)
             {
@@ -36,6 +37,11 @@ namespace AWSGameLift
                 sessionProperty.SetKey(iter->first.c_str());
                 sessionProperty.SetValue(iter->second.c_str());
                 request.AddGameProperties(sessionProperty);
+                propertiesOutput += AZStd::string::format("{Key=%s,Value=%s},", iter->first.c_str(), iter->second.c_str());
+            }
+            if (!propertiesOutput.empty())
+            {
+                propertiesOutput = propertiesOutput.substr(0, propertiesOutput.size() - 1); // Trim last comma to fit array format
             }
 
             // Required attributes
@@ -49,6 +55,16 @@ namespace AWSGameLift
             }
             request.SetMaximumPlayerSessionCount(createSessionRequest.m_maxPlayer);
 
+            AZ_TracePrintf(AWSGameLiftCreateSessionActivityName,
+                "Built CreateGameSessionRequest with CreatorId=%s, Name=%s, IdempotencyToken=%s, GameProperties=%s, AliasId=%s, FleetId=%s and MaximumPlayerSessionCount=%d",
+                request.GetCreatorId().c_str(),
+                request.GetName().c_str(),
+                request.GetIdempotencyToken().c_str(),
+                AZStd::string::format("[%s]", propertiesOutput.c_str()).c_str(),
+                request.GetAliasId().c_str(),
+                request.GetFleetId().c_str(),
+                request.GetMaximumPlayerSessionCount());
+
             return request;
         }
 
@@ -61,6 +77,7 @@ namespace AWSGameLift
             AZStd::string result = "";
             Aws::GameLift::Model::CreateGameSessionRequest request = BuildAWSGameLiftCreateGameSessionRequest(createSessionRequest);
             auto createSessionOutcome = gameliftClient.CreateGameSession(request);
+            AZ_TracePrintf(AWSGameLiftCreateSessionActivityName, "CreateGameSession request against Amazon GameLift service is complete");
 
             if (createSessionOutcome.IsSuccess())
             {
