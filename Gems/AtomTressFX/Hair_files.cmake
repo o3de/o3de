@@ -87,7 +87,7 @@ set(FILES
     Assets/Shaders/HairStrands.azsli
     Assets/Shaders/HairUtilities.azsli
     Assets/Shaders/HairLighting.azsli    
-    /Shaders/HairLightTypes.azsli
+    Assets/Shaders/HairLightTypes.azsli
 
     # Simulation Compute shaders
     Assets/Shaders/HairSimulation.azsl

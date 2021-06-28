@@ -53,7 +53,7 @@ float3 HairDiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight)
 float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
 {
     float3 diffuse = HairDiffuseLambertian(surface.albedo, surface.normal, dirToLight);
-    diffuse *= lightIntensity;// *lightingData.diffuseResponse;   // Notice that addition of the response (1-F) here
+    diffuse *= lightIntensity * lightingData.diffuseResponse;   // Notice that addition of the response (1-F) here
     return diffuse;
 }
 
@@ -76,9 +76,28 @@ void UpdateLightingParameters(
 }
 
 //==============================================================================
+void SetNormal(in float3 tangent, in float3 dirToLight, 
+    inout Surface surface, inout LightingData lightingData)
+{
+    // Direct towards close to half vector by never cross fully (more weight to camera direction)
+    float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
+    float3 biNormal = cross(tangent, halfDir);
+//    float3 biNormal = cross(tangent, lightingData.dirToCamera);   // Original - simple face forward
+    float3 projectedNormal = cross(biNormal, tangent);
+    surface.normal = normalize(projectedNormal);
+
+    // Next is important in order to set NdotV and other PBR settings - needs ot be set once per light
+    UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+}
+
+//==============================================================================
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
-#define _USE_SPLIT_NORMALS_
+//#define _USE_SPLIT_NORMALS_
 //==============================================================================
 
 
@@ -102,51 +121,16 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-        float3 posToLightDir = normalize(posToLight);
 
+        float3 dirToLight = normalize(posToLight);
+        SetNormal(surface.normal, dirToLight, surface, lightingData);
 
-        float3 orgTangent = surface.normal;
-        float diffuseRatio = 1.0;
-        //---------------------------------------------------
-#ifdef _USE_SPLIT_NORMALS_
-        // surface.normal is the hair tangent
-        float3 biNormal = cross(orgTangent, posToLightDir);
-        float3 projectedNormal = cross(biNormal, orgTangent);
-        surface.normal = normalize(projectedNormal);
-
-        // Next I add refraction scaling - while not fully physically based, it reduces 
-        // energy due to increased angle loss within the hair when refraction angle increases
-        float3 halfDir = normalize(posToLightDir + lightingData.dirToCamera);
-        diffuseRatio = abs(dot(posToLightDir, halfDir));
-
-        // Next is important in order to set NdotV and other PBR settings - needs ot be set once per light
-        UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
-
-        lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-        lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-#endif // _USE_SPLIT_NORMALS_
         // Diffuse contribution
-        lightingData.diffuseLighting += diffuseRatio * GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
-        //        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
-
-        //---------------------------------------------------
-#ifdef _USE_SPLIT_NORMALS_ 
-        biNormal = cross(orgTangent, halfDir);
-        projectedNormal = cross(biNormal, orgTangent);
-        surface.normal = normalize(projectedNormal);
-
-        // Next is important in order to set NdotV and other PBR settings - needs ot be set once per light
-        UpdateLightingParameters(lightingData, surface.position, surface.normal, surface.roughnessLinear);
-
-        // Diffuse and Specular response
-        lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-        lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-#endif // _USE_SPLIT_NORMALS_
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight);
         //---------------------------------------------------
-        surface.normal = orgTangent;
     }
 }
 
@@ -181,9 +165,8 @@ void ApplyAllSimplePointLights(Surface surface, inout LightingData lightingData)
 void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
-
     float3 dirToLight = normalize(posToLight);
-    float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
+   float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
 
     // If outside the outer cone angle return.
     if (dotWithDirection < light.m_cosOuterConeAngle)
@@ -204,7 +187,6 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-        float3 posToLightDir = normalize(posToLight);
 
         if (dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
         {   
@@ -217,11 +199,13 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
             lightIntensity *= penumbraMask;
         }
 
+        SetNormal(surface.normal, dirToLight, surface, lightingData);
+
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Specular contribution
-        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, posToLightDir);
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight);
     }
 }
 
@@ -236,7 +220,6 @@ void ApplyAllSimpleSpotLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                              Point Light 
 //==============================================================================
-
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -254,11 +237,14 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
+        float3 dirToLight = normalize(posToLight);
+        SetNormal(surface.normal, dirToLight, surface, lightingData);
+
         // Diffuse contribution
-        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Tranmission contribution
-        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, normalize(posToLight), 0.0);
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, lightIntensity, dirToLight, 0.0);
 
         // Adjust the light direcion for specular based on bulb size
 
@@ -288,3 +274,77 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
     }
 }
 //==============================================================================
+
+
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
+{
+    DirectionalLightShadow::DebugInfo debugInfo = {0, false};
+
+    // Shadowed check
+    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+    float litRatio = 1.0f;
+    float backShadowRatio = 0.0f;
+    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
+    {
+        litRatio = DirectionalLightShadow::GetVisibility(
+            shadowIndex,
+            lightingData.shadowCoords,
+            surface.normal,
+            debugInfo);
+
+        if (o_transmission_mode == TransmissionMode::ThickObject)
+        {
+            backShadowRatio = DirectionalLightShadow::GetThickness(shadowIndex, lightingData.shadowCoords);
+        }
+    }
+
+    // Add the lighting contribution for each directional light
+    for (int index = 0; index < SceneSrg::m_directionalLightCount; index++)
+    {
+        SceneSrg::DirectionalLight light = SceneSrg::m_directionalLights[index];
+        float3 dirToLight = normalize(-light.m_direction);
+
+        // Adjust the direction of the light based on its angular diameter.
+        float3 reflectionDir = reflect(-lightingData.dirToCamera, surface.normal);
+        float3 lightDirToReflectionDir = reflectionDir - dirToLight;
+        float lightDirToReflectionDirLen = length(lightDirToReflectionDir);
+        lightDirToReflectionDir = lightDirToReflectionDir / lightDirToReflectionDirLen; // normalize the length
+        lightDirToReflectionDirLen = min(light.m_angularRadius, lightDirToReflectionDirLen);
+        dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
+        dirToLight = normalize(dirToLight);
+
+        SetNormal(surface.normal, dirToLight, surface, lightingData);
+
+
+        // [GFX TODO][ATOM-2012] care of multiple directional light
+        // Currently shadow check is done only for index == shadowIndex.
+        float currentLitRatio = 1.0f;
+        float currentBackShadowRatio = 1.0f;
+        if (o_enableShadows)
+        {
+            currentLitRatio = (index == shadowIndex) ? litRatio : 1.;
+
+            currentBackShadowRatio = 1.0 - currentLitRatio;
+            if (o_transmission_mode == TransmissionMode::ThickObject)
+            {
+                currentBackShadowRatio = (index == shadowIndex) ?  backShadowRatio : 0.;
+            }
+        }
+
+        lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
+        lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
+        lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
+    }
+
+    // Add debug coloring for directional light shadow
+    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
+    {
+        lightingData.specularLighting = DirectionalLightShadow::AddDebugColoring(
+            lightingData.specularLighting,
+            ViewSrg::m_shadowIndexDirectionalLight,
+            debugInfo);
+    }
+
+}
