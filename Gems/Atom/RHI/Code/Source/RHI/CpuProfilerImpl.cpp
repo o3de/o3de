@@ -79,7 +79,7 @@ namespace AZ
         {
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
-            AZ::RHI::Device* rhiDevice = RHI::GetRHIDevice().get();
+            Device* rhiDevice = GetRHIDevice().get();
             FrameEventBus::Handler::BusConnect(rhiDevice);
         }
 
@@ -293,6 +293,7 @@ namespace AZ
                 {
                     const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
                     AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
+
                     regionVec.push_back(cachedTimeRegion);
                 }
 
@@ -306,6 +307,7 @@ namespace AZ
             AZStd::unique_lock<AZStd::mutex> lock(m_cachedTimeRegionMutex);
             m_cachedTimeRegionMap.clear();
         }
+
         void CpuTimingLocalStorage::TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedTimeRegionMap)
         {
             // Try to lock, if it's already in use (the cached regions in the array are being copied to the map)

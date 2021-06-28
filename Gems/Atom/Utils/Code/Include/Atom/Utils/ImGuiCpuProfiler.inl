@@ -33,6 +33,7 @@ namespace AZ
             }
             inline float TicksToMs(AZStd::sys_time_t duration)
             {
+                // Note: converting to microseconds integer before converting to milliseconds float 
                 const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
                 return static_cast<float>((duration * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
             }
