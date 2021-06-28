@@ -403,10 +403,9 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
 //==============================================================================
 //                             Atom Lighting
 //==============================================================================
-//#define _USE_SPLIT_NORMALS_
-
 #include <HairLightTypes.azsli>
-//#include <Atom/Features/PBR/Lights/DirectionalLight.azsli>
+//#include <Atom/Features/PBR/Lights/Ibl.azsli>
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 //------------------------------------------------------------------------------
 
 float3 CalculateDirectLighting( 
@@ -441,8 +440,6 @@ float3 CalculateDirectLighting(
     // Light iterator
     // screenPositionForLighting.xy in the iterator init should be in XY pixel location on screen (based on LightCullingShared)
     // screenPositionForLighting.z should be depth 0..1 (or reverse Z in our case).
-    // 
-    // void TestInit(
     uint tileWidth, tileHeight;     // GOOD acording to RenderDoc dimensions
     uint2 tileId;
     uint bin;
@@ -473,6 +470,14 @@ float3 CalculateDirectLighting(
 //    return float3(0, float(bin) / NVLC_MAX_BINS, 0);
 
     // [To Do] Adi: Ignore for now, possibly fill in later
+    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+    if (shadowIndex < SceneSrg::m_directionalLightCount)
+    {
+        DirectionalLightShadow::GetShadowCoords(
+            shadowIndex,
+            vPositionWS,
+            lightingData.shadowCoords);
+    }
 //    lightingData.shadowCoords = IN.m_shadowCoords;
 
     // Diffuse and Specular response
@@ -480,7 +485,8 @@ float3 CalculateDirectLighting(
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
     //-------------------------
-    // Applying the light loops - we need to get rid of the first lists that are not used
+    // Applying the light loops - if culling is used, the order of the 
+    // calls must match the light types list order 
     ApplyDecals(lightingData.tileIterator, surface);
 
     ApplyDirectionalLights(surface, lightingData);
@@ -488,10 +494,10 @@ float3 CalculateDirectLighting(
     ApplyAllSimplePointLights(surface, lightingData);
     ApplyAllSimpleSpotLights(surface, lightingData);
     ApplyAllPointLights(surface, lightingData);
-//    ApplySimplePointLights(surface, lightingData);
-//    ApplySimpleSpotLights(surface, lightingData);
 
-//    return float3(screenPositionForLighting.xy, 0);
+//    ApplyIBL(); // this cannot be applied at current stage due to lack of probe in the ObjectSrg
+    //--------------------------
+
 //    return lightingData.specularLighting;
 //    return lightingData.diffuseLighting;
     return lightingData.diffuseLighting + lightingData.specularLighting;
