@@ -345,55 +345,34 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                         IBL - GI and Reflections
 //==============================================================================
-void ApplyIblDiffuse(
-    float3 normal, 
-    float3 albedo, 
-    float3 diffuseResponse, 
-    out float3 outDiffuse)
+float3 ApplyIblDiffuse(Surface surface, LightingData lightingData)
 {
-    float3 irradianceDir = MultiplyVectorQuaternion(normal, SceneSrg::m_iblOrientation);
+    float3 irradianceDir = MultiplyVectorQuaternion(surface.normal, SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
-    outDiffuse = diffuseResponse * albedo * diffuseSample;
+    return lightingData.diffuseResponse * surface.albedo * diffuseSample;
 }
 
-void ApplyIblSpecular(
-    float3 position, 
-    float3 normal, 
-    float3 specularF0, 
-    float roughnessLinear, 
-    float3 dirToCamera, 
-    float2 brdf, 
-    out float3 outSpecular)
+float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
 {
-    float3 reflectDir = reflect(-dirToCamera, normal);
+    float3 reflectDir = reflect(-lightingData.dirToCamera, surface.normal);
     reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
 
     // global
-    outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
-    outSpecular *= (specularF0 * brdf.x + brdf.y);
+    float3 outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(
+        SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), 
+        GetRoughnessMip(surface.roughnessLinear)).rgb;
+    outSpecular *= (surface.specularF0 * lightingData.brdf.x + lightingData.brdf.y);
+
+    return outSpecular
 }
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
 {
     SetNormal(surface.clearCoat.normal, lightingData.dirToCamera, surface, lightingData);
 
-    float3 iblDiffuse = 0.0f;
-    ApplyIblDiffuse(
-        surface.normal, 
-        surface.albedo, 
-        lightingData.diffuseResponse, 
-        iblDiffuse);
-
-    float3 iblSpecular = 0.0f;
-    ApplyIblSpecular(
-        surface.position, 
-        surface.normal, 
-        surface.specularF0, 
-        surface.roughnessLinear, 
-        lightingData.dirToCamera, 
-        lightingData.brdf, 
-        iblSpecular);
+    float3 iblDiffuse = ApplyIblDiffuse(surface, lightingData);
+    float3 iblSpecular = ApplyIblSpecular(surface, lightingData);
 
     // Adjust IBL lighting by exposure.
     float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
