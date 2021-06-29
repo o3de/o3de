@@ -99,7 +99,6 @@ namespace PhysX
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
         gameEntity->CreateComponent<BallJointComponent>(
             m_config.ToGameTimeConfig(), 
-            m_config.ToGenericProperties(),
             m_swingLimit.ToGameTimeConfig());
     }
 

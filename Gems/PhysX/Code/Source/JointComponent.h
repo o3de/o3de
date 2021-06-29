@@ -18,7 +18,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TransformBus.h>
 
-#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <Source/Joint.h>
 
 namespace AzPhysics
 {
@@ -27,24 +27,6 @@ namespace AzPhysics
 
 namespace PhysX
 {
-    class JointComponentConfiguration
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(JointComponentConfiguration, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(JointComponentConfiguration, "{1454F33F-AA6E-424B-A70C-9E463FBDEA19}");
-        static void Reflect(AZ::ReflectContext* context);
-
-        JointComponentConfiguration() = default;
-        JointComponentConfiguration(
-            AZ::Transform localTransformFromFollower,
-            AZ::EntityId leadEntity,
-            AZ::EntityId followerEntity);
-
-        AZ::EntityId m_leadEntity; ///< EntityID for entity containing body that is lead to this joint constraint.
-        AZ::EntityId m_followerEntity; ///< EntityID for entity containing body that is follower to this joint constraint.
-        AZ::Transform m_localTransformFromFollower; ///< Joint's location and orientation in the frame (coordinate system) of the follower entity.
-    };
-
     /// Base class for game-time generic joint components.
     class JointComponent: public AZ::Component
         , protected AZ::EntityBus::Handler
@@ -54,13 +36,9 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         JointComponent() = default;
-        JointComponent(
-            const JointComponentConfiguration& configuration, 
-            const JointGenericProperties& genericProperties);
-        JointComponent(
-            const JointComponentConfiguration& configuration, 
-            const JointGenericProperties& genericProperties,
-            const JointLimitProperties& limitProperties);
+        explicit JointComponent(const GenericJointConfiguration& config);
+        JointComponent(const GenericJointConfiguration& config
+            , const GenericJointLimitsConfiguration& limits);
 
     protected:
         /// Struct to provide subclasses with native pointers during joint initialization.
@@ -69,8 +47,8 @@ namespace PhysX
         {
             physx::PxRigidActor* m_leadActor = nullptr;
             physx::PxRigidActor* m_followerActor = nullptr;
-            AZ::Transform m_leadLocal = AZ::Transform::CreateIdentity();
-            AZ::Transform m_followerLocal = AZ::Transform::CreateIdentity();
+            physx::PxTransform m_leadLocal = physx::PxTransform(physx::PxIdentity);
+            physx::PxTransform m_followerLocal = physx::PxTransform(physx::PxIdentity);
             AzPhysics::SimulatedBody* m_leadBody = nullptr;
             AzPhysics::SimulatedBody* m_followerBody = nullptr;
         };
@@ -85,10 +63,14 @@ namespace PhysX
         /// Invoked in JointComponent::OnEntityActivated for specific joint types to instantiate native joint pointer.
         virtual void InitNativeJoint() {};
 
-        AZ::Transform GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose);
+        physx::PxTransform GetJointLocalPose(const physx::PxRigidActor* actor,
+            const physx::PxTransform& jointPose);
 
         AZ::Transform GetJointTransform(AZ::EntityId entityId,
-            const JointComponentConfiguration& jointConfig);
+            const GenericJointConfiguration& jointConfig);
+
+        /// Initializes joint properties common to all native joint types after native joint creation.
+        void InitGenericProperties();
 
         /// Used on initialization by sub-classes to get native pointers from entity IDs.
         /// This allows sub-classes to instantiate specific native types. This base class does not need knowledge of any specific joint type.
@@ -97,11 +79,8 @@ namespace PhysX
         /// Issues warnings for invalid scenarios when initializing a joint from entity IDs.
         void WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message);
 
-
-        JointComponentConfiguration m_configuration;
-        JointGenericProperties m_genericProperties;
-        JointLimitProperties m_limits;
-        AzPhysics::JointHandle m_jointHandle = AzPhysics::InvalidJointHandle;
-        AzPhysics::SceneHandle m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
+        GenericJointConfiguration m_configuration;
+        GenericJointLimitsConfiguration m_limits;
+        AZStd::shared_ptr<PhysX::Joint> m_joint = nullptr;
     };
 } // namespace PhysX

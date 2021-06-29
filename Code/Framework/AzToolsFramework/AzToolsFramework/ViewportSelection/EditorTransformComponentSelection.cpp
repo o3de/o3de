@@ -489,16 +489,6 @@ namespace AzToolsFramework
         return buttonId;
     }
 
-    void SnappingCluster::TrySetVisible(const bool visible)
-    {
-        bool snapping = false;
-        ViewportInteraction::ViewportInteractionRequestBus::EventResult(
-            snapping, ViewportUi::DefaultViewportId, &ViewportInteraction::ViewportInteractionRequestBus::Events::GridSnappingEnabled);
-
-        // show snapping viewport ui only if there are entities selected and snapping is enabled
-        SetViewportUiClusterVisible(m_clusterId, visible && snapping);
-    }
-
     // return either center or entity pivot
     static AZ::Vector3 CalculatePivotTranslation(const AZ::EntityId entityId, const EditorTransformComponentSelectionRequests::Pivot pivot)
     {
@@ -1044,7 +1034,6 @@ namespace AzToolsFramework
         EditorEntityLockComponentNotificationBus::Router::BusRouterConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusConnect(entityContextId);
         EditorContextMenuBus::Handler::BusConnect();
-        ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusConnect(ViewportUi::DefaultViewportId);
 
         CreateTransformModeSelectionCluster();
         CreateSpaceSelectionCluster();
@@ -1068,7 +1057,6 @@ namespace AzToolsFramework
 
         m_pivotOverrideFrame.Reset();
 
-        ViewportInteraction::ViewportSettingsNotificationBus::Handler::BusDisconnect();
         EditorContextMenuBus::Handler::BusConnect();
         EditorManipulatorCommandUndoRedoRequestBus::Handler::BusDisconnect();
         EditorEntityLockComponentNotificationBus::Router::BusRouterDisconnect();
@@ -3284,7 +3272,7 @@ namespace AzToolsFramework
             m_didSetSelectedEntities = false;
         }
 
-        m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
+        SetViewportUiClusterVisible(m_snappingCluster.m_clusterId, m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
     }
@@ -3746,11 +3734,6 @@ namespace AzToolsFramework
     void EditorTransformComponentSelection::OnStopPlayInEditor()
     {
         SetAllViewportUiVisible(true);
-    }
-
-    void EditorTransformComponentSelection::OnGridSnappingChanged([[maybe_unused]] const bool enabled)
-    {
-        m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
     }
 
     namespace ETCS

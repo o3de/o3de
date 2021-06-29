@@ -45,6 +45,7 @@ namespace TestImpact
             "target_dependency_file",
             "target_vertex",
             "file",
+            "file",
             "test_runner",
             "instrumentation",
             "bin",
@@ -69,7 +70,8 @@ namespace TestImpact
             "dependency_graph_data",
             "test_target_meta",
             "test_engine",
-            "target"
+            "target",
+            "gem_target"
         };
 
         enum
@@ -94,6 +96,7 @@ namespace TestImpact
             TargetDependencyFileMatcher,
             TargetVertexMatcher,
             TestTargetMetaFile,
+            GemTargetFile,
             TestRunner,
             TestInstrumentation,
             BinaryFile,
@@ -118,7 +121,8 @@ namespace TestImpact
             DependencyGraphData,
             TestTargetMeta,
             TestEngine,
-            TargetConfig
+            TargetConfig,
+            GemTarget
         };
     }
 
@@ -229,6 +233,13 @@ namespace TestImpact
         return testTargetMetaConfig;
     }
 
+    GemTargetConfig ParseGemTargetConfig(const rapidjson::Value& gemTarget)
+    {
+        GemTargetConfig gemTargetConfig;
+        gemTargetConfig.m_metaFile = gemTarget[Config::Keys[Config::GemTargetFile]].GetString();
+        return gemTargetConfig;
+    }
+
     TestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
     {
         TestEngineConfig testEngineConfig;
@@ -326,6 +337,7 @@ namespace TestImpact
         runtimeConfig.m_buildTargetDescriptor = ParseBuildTargetDescriptorConfig(staticArtifacts[Config::Keys[Config::BuildTargetDescriptor]]);
         runtimeConfig.m_dependencyGraphData = ParseDependencyGraphDataConfig(staticArtifacts[Config::Keys[Config::DependencyGraphData]]);
         runtimeConfig.m_testTargetMeta = ParseTestTargetMetaConfig(staticArtifacts[Config::Keys[Config::TestTargetMeta]]);
+        runtimeConfig.m_gemTarget = ParseGemTargetConfig(staticArtifacts[Config::Keys[Config::GemTarget]]);
         runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::TestEngine]]);
         runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::TargetConfig]]);
 

@@ -94,6 +94,6 @@ namespace PhysX
     void EditorFixedJointComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
-        gameEntity->CreateComponent<FixedJointComponent>(m_config.ToGameTimeConfig(), m_config.ToGenericProperties());
+        gameEntity->CreateComponent<FixedJointComponent>(m_config.ToGameTimeConfig());
     }
 }

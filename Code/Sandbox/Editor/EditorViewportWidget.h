@@ -24,7 +24,6 @@
 #include "Objects/DisplayContext.h"
 #include "Undo/Undo.h"
 #include "Util/PredefinedAspectRatios.h"
-#include "EditorViewportSettings.h"
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/optional.h>
@@ -571,9 +570,6 @@ private:
     void UpdateScene();
 
     AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
-
-    SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
-    AZStd::unique_ptr<SandboxEditor::EditorViewportSettingsCallbacks> m_editorViewportSettingsCallbacks;
 
     QSet<int> m_keyDown;
 

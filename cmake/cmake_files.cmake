@@ -35,6 +35,7 @@ set(FILES
     PAL.cmake
     PALTools.cmake
     Projects.cmake
+    run_epbtest.cmake
     RuntimeDependencies.cmake
     SettingsRegistry.cmake
     UnitTest.cmake

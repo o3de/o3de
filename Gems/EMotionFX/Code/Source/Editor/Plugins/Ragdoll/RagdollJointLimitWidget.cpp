@@ -90,15 +90,12 @@ namespace EMotionFX
 
         if (serializeContext)
         {
-            //D6 joint is the only currently supported joint for ragdoll
-            if (auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
+            AZStd::vector<AZ::TypeId> supportedJointLimitTypes;
+            Physics::SystemRequestBus::BroadcastResult(supportedJointLimitTypes, &Physics::SystemRequests::GetSupportedJointTypes);
+            for (const AZ::TypeId& jointLimitType : supportedJointLimitTypes)
             {
-                if (AZStd::optional<const AZ::TypeId> d6jointTypeId = jointHelpers->GetSupportedJointTypeId(AzPhysics::JointType::D6Joint);
-                    d6jointTypeId.has_value())
-                {
-                    const char* jointLimitName = serializeContext->FindClassData(*d6jointTypeId)->m_editData->m_name;
-                    m_typeComboBox->addItem(jointLimitName, (*d6jointTypeId).ToString<AZStd::string>().c_str());
-                }
+                const char* jointLimitName = serializeContext->FindClassData(jointLimitType)->m_editData->m_name;
+                m_typeComboBox->addItem(jointLimitName, jointLimitType.ToString<AZStd::string>().c_str());
             }
 
             // Reflected property editor for joint limit
@@ -137,7 +134,7 @@ namespace EMotionFX
         Physics::RagdollNodeConfiguration* ragdollNodeConfig = GetRagdollNodeConfig();
         if (ragdollNodeConfig)
         {
-            AzPhysics::JointConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointConfig.get();
+            Physics::JointLimitConfiguration* jointLimitConfig = ragdollNodeConfig->m_jointLimit.get();
             if (jointLimitConfig)
             {
                 const AZ::TypeId& jointTypeId = jointLimitConfig->RTTI_GetType();
@@ -265,14 +262,13 @@ namespace EMotionFX
         {
             if (type.IsNull())
             {
-                ragdollNodeConfig->m_jointConfig = nullptr;
+                ragdollNodeConfig->m_jointLimit = nullptr;
             }
             else
             {
                 const Node* node = m_nodeIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
                 const Skeleton* skeleton = m_nodeIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>()->GetSkeleton();
-                ragdollNodeConfig->m_jointConfig =
-                    CommandRagdollHelpers::CreateJointLimitByType(AzPhysics::JointType::D6Joint, skeleton, node);
+                ragdollNodeConfig->m_jointLimit = CommandRagdollHelpers::CreateJointLimitByType(type, skeleton, node);
             }
 
             Update();

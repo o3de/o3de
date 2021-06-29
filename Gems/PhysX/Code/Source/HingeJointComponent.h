@@ -25,14 +25,15 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         HingeJointComponent() = default;
-        HingeJointComponent(
-            const JointComponentConfiguration& configuration, 
-            const JointGenericProperties& genericProperties,
-            const JointLimitProperties& limitProperties);
+        explicit HingeJointComponent(const GenericJointConfiguration& config
+            , const GenericJointLimitsConfiguration& angularLimit);
         ~HingeJointComponent() = default;
 
     protected:
         // JointComponent
         void InitNativeJoint() override;
+
+    private:
+        void InitAngularLimits();
     };
 } // namespace PhysX

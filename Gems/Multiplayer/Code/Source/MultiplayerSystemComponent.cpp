@@ -180,10 +180,7 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusConnect();
         AzFramework::SessionNotificationBus::Handler::BusConnect();
         m_networkInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(AZ::Name(MPNetworkInterfaceName), sv_protocol, TrustZone::ExternalClientToServer, *this);
-        if (AZ::Interface<AZ::IConsole>::Get())
-        {
-            m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
-        }
+        m_consoleCommandHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         AZ::Interface<IMultiplayer>::Register(this);
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Register(this);
 
@@ -195,8 +192,6 @@ namespace Multiplayer
     {
         AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
         AZ::Interface<IMultiplayer>::Unregister(this);
-        m_consoleCommandHandler.Disconnect();
-        AZ::Interface<INetworking>::Get()->DestroyNetworkInterface(AZ::Name(MPNetworkInterfaceName));
         AzFramework::SessionNotificationBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
     }
@@ -616,16 +611,15 @@ namespace Multiplayer
         datum.m_isInvited = false;
         datum.m_agentType = MultiplayerAgentType::Client;
 
-        AZStd::string providerTicket;
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
             AZLOG_INFO("New outgoing connection to remote address: %s", connection->GetRemoteAddress().GetString().c_str());
-            if (!m_pendingConnectionTickets.empty())
+            AZ::CVarFixedString providerTicket;
+            if (connection->GetUserData() != nullptr)
             {
-                providerTicket = m_pendingConnectionTickets.front();
-                m_pendingConnectionTickets.pop();
+                providerTicket = reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->GetProviderTicket();
             }
-            connection->SendReliablePacket(MultiplayerPackets::Connect(0, providerTicket.c_str()));
+            connection->SendReliablePacket(MultiplayerPackets::Connect(0, providerTicket));
         }
         else
         {
@@ -655,11 +649,7 @@ namespace Multiplayer
         {
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
             {
-                connection->SetUserData(new ClientToServerConnectionData(connection, *this, providerTicket));
-            }
-            else
-            {
-                reinterpret_cast<ClientToServerConnectionData*>(connection->GetUserData())->SetProviderTicket(providerTicket);
+                connection->SetUserData(new ClientToServerConnectionData(connection, *this));
             }
 
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<NullReplicationWindow>();
@@ -683,10 +673,14 @@ namespace Multiplayer
         AZStd::string reasonString = ToString(reason);
         AZLOG_INFO("%s due to %s from remote address: %s", endpointString, reasonString.c_str(), connection->GetRemoteAddress().GetString().c_str());
 
-        // The client is disconnecting
-        if (GetAgentType() == MultiplayerAgentType::Client)
+        if (connection->GetConnectionRole() == ConnectionRole::Acceptor)
         {
-            AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
+            // The authority is shutting down its connection
+            m_shutdownEvent.Signal(m_networkInterface);
+        }
+        else if (GetAgentType() == MultiplayerAgentType::Client && connection->GetConnectionRole() == ConnectionRole::Connector)
+        {
+            // The client is disconnecting
             m_clientDisconnectedEvent.Signal();
         }
 
@@ -694,7 +688,7 @@ namespace Multiplayer
         if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
-                connection->GetConnectionRole() == ConnectionRole::Acceptor)
+                connection->GetConnectionRole() == ConnectionRole::Connector)
             {
                 AzFramework::PlayerConnectionConfig config;
                 config.m_playerConnectionId = aznumeric_cast<uint32_t>(connection->GetConnectionId());

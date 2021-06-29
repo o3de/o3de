@@ -60,16 +60,14 @@ namespace EMotionFX
 
         void Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
         void RenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
-        void RenderJointLimit(
-            const AzPhysics::JointConfiguration& jointConfiguration,
+        void RenderJointLimit(const Physics::JointLimitConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
             const Node* parentNode,
             EMStudio::RenderPlugin* renderPlugin,
             EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
             const MCore::RGBAColor& color);
-        void RenderJointFrame(
-            const AzPhysics::JointConfiguration& jointConfiguration,
+        void RenderJointFrame(const Physics::JointLimitConfiguration& jointConfiguration,
             const ActorInstance* actorInstance,
             const Node* node,
             const Node* parentNode,

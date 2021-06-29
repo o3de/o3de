@@ -13,6 +13,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <QModelIndex>

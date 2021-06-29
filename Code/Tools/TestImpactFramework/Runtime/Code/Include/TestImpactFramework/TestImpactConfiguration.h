@@ -78,6 +78,12 @@ namespace TestImpact
         RepoPath m_metaFile; //!< Path to the test target meta file.
     };
 
+    //! Gem target configuration.
+    struct GemTargetConfig
+    {
+        RepoPath m_metaFile; //!< Path to the gem target file.
+    };
+
     //! Test engine configuration.
     struct TestEngineConfig
     {
@@ -128,6 +134,7 @@ namespace TestImpact
         BuildTargetDescriptorConfig m_buildTargetDescriptor;
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;
+        GemTargetConfig m_gemTarget;
         TestEngineConfig m_testEngine;
         TargetConfig m_target;
     };

@@ -31,8 +31,6 @@
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <System/PhysXSystem.h>
-#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
-#include <Joint/PhysXJoint.h>
 
 namespace PhysX
 {
@@ -232,18 +230,6 @@ namespace PhysX
         {
             return Utils::Characters::CreateRagdoll(const_cast<Physics::RagdollConfiguration&>(*ragdollConfig),
                 scene->GetSceneHandle());
-        }
-
-        template<class JointType, class ConfigurationType>
-        AzPhysics::Joint* CreateJoint(const ConfigurationType* configuration, 
-            AzPhysics::SceneHandle sceneHandle,
-            AzPhysics::SimulatedBodyHandle parentBodyHandle,
-            AzPhysics::SimulatedBodyHandle childBodyHandle, 
-            AZ::Crc32& crc)
-        {
-            JointType* newBody = aznew JointType(*configuration, sceneHandle, parentBodyHandle, childBodyHandle);
-            crc = AZ::Crc32(newBody, sizeof(*newBody));
-            return newBody;
         }
 
         //helper to perform a ray cast
@@ -827,90 +813,6 @@ namespace PhysX
         }
     }
 
-    AzPhysics::JointHandle PhysXScene::AddJoint(const AzPhysics::JointConfiguration* jointConfig, 
-        AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody) 
-    {
-        AzPhysics::Joint* newJoint = nullptr;
-        AZ::Crc32 newJointCrc;
-        if (azrtti_istypeof<PhysX::D6JointLimitConfiguration>(jointConfig))
-        {
-            newJoint = Internal::CreateJoint<PhysXD6Joint, D6JointLimitConfiguration>(
-                azdynamic_cast<const D6JointLimitConfiguration*>(jointConfig),
-                m_sceneHandle, parentBody, childBody, newJointCrc);
-        }
-        else if (azrtti_istypeof<PhysX::FixedJointConfiguration*>(jointConfig))
-        {
-            newJoint = Internal::CreateJoint<PhysXFixedJoint, FixedJointConfiguration>(
-                azdynamic_cast<const FixedJointConfiguration*>(jointConfig),
-                m_sceneHandle, parentBody, childBody, newJointCrc);
-        }
-        else if (azrtti_istypeof<PhysX::BallJointConfiguration*>(jointConfig))
-        {
-            newJoint = Internal::CreateJoint<PhysXBallJoint, BallJointConfiguration>(
-                azdynamic_cast<const BallJointConfiguration*>(jointConfig),
-                m_sceneHandle, parentBody, childBody, newJointCrc);
-        }
-        else if (azrtti_istypeof<PhysX::HingeJointConfiguration*>(jointConfig))
-        {
-            newJoint = Internal::CreateJoint<PhysXHingeJoint, HingeJointConfiguration>(
-                azdynamic_cast<const HingeJointConfiguration*>(jointConfig),
-                m_sceneHandle, parentBody, childBody, newJointCrc);
-        }
-        else
-        {
-            AZ_Warning("PhysXScene", false, "Unknown JointConfiguration.");
-            return AzPhysics::InvalidJointHandle;
-        }
-
-        if (newJoint != nullptr)
-        {
-            AzPhysics::JointIndex index = index = m_joints.size();
-            m_joints.emplace_back(newJointCrc, newJoint);
-
-            const AzPhysics::JointHandle newJointHandle(newJointCrc, index);
-            newJoint->m_sceneOwner = m_sceneHandle;
-            newJoint->m_jointHandle = newJointHandle;
-
-            return newJointHandle;
-        }
-
-        return AzPhysics::InvalidJointHandle;
-    }
-
-    AzPhysics::Joint* PhysXScene::GetJointFromHandle(AzPhysics::JointHandle jointHandle) 
-    {
-        if (jointHandle == AzPhysics::InvalidJointHandle)
-        {
-            return nullptr;
-        }
-
-        AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
-        if (index < m_joints.size()
-            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
-        {
-            return m_joints[index].second;
-        }
-        return nullptr;
-    }
-
-    void PhysXScene::RemoveJoint(AzPhysics::JointHandle jointHandle) 
-    {
-        if (jointHandle == AzPhysics::InvalidJointHandle)
-        {
-            return;
-        }
-        
-        AzPhysics::JointIndex index = AZStd::get<AzPhysics::HandleTypeIndex::Index>(jointHandle);
-        if (index < m_joints.size()
-            && m_joints[index].first == AZStd::get<AzPhysics::HandleTypeIndex::Crc>(jointHandle))
-        {
-            m_deferredDeletionsJoints.push_back(m_joints[index].second);
-            m_joints[index] = AZStd::make_pair(AZ::Crc32(), nullptr);
-            m_freeJointSlots.push(index);
-            jointHandle = AzPhysics::InvalidJointHandle;
-        }
-    }
-
     AzPhysics::SceneQueryHits PhysXScene::QueryScene(const AzPhysics::SceneQueryRequest* request)
     {
         if (request == nullptr)
@@ -1093,13 +995,6 @@ namespace PhysX
         for (auto* simulatedBody : deletions)
         {
             delete simulatedBody;
-        }
-
-        AZStd::vector<AzPhysics::Joint*> jointDeletions;
-        jointDeletions.swap(m_deferredDeletionsJoints);
-        for (auto* joint : jointDeletions)
-        {
-            delete joint;
         }
     }
 

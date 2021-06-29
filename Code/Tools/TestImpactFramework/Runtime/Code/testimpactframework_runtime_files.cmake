@@ -35,6 +35,8 @@ set(FILES
     Source/Artifact/Factory/TestImpactTestTargetMetaMapFactory.h
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.h
+    Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.cpp
+    Source/Artifact/Factory/TestImpactDependencyGraphDataFactory.h
     Source/Artifact/Static/TestImpactBuildTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactBuildTargetDescriptor.h
     Source/Artifact/Static/TestImpactTargetDescriptorCompiler.cpp

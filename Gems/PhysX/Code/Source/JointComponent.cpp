@@ -18,65 +18,33 @@
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <Source/Joint.h>
 #include <Source/JointComponent.h>
 #include <Source/Utils.h>
-#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace PhysX
 {
-    JointComponentConfiguration::JointComponentConfiguration(
-        AZ::Transform localTransformFromFollower,
-        AZ::EntityId leadEntity,
-        AZ::EntityId followerEntity)
-        : m_localTransformFromFollower(localTransformFromFollower)
-        , m_leadEntity(leadEntity)
-        , m_followerEntity(followerEntity)
-    {
-    }
-
-    void JointComponentConfiguration::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<JointComponentConfiguration>()
-                ->Version(2)
-                ->Field("Follower Local Transform", &JointComponentConfiguration::m_localTransformFromFollower)
-                ->Field("Lead Entity", &JointComponentConfiguration::m_leadEntity)
-                ->Field("Follower Entity", &JointComponentConfiguration::m_followerEntity)
-                ;
-        }
-    }
-
     void JointComponent::Reflect(AZ::ReflectContext* context)
     {
-        JointComponentConfiguration::Reflect(context);
-
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JointComponent, AZ::Component>()
-                ->Version(2)
+                ->Version(1)
                 ->Field("Joint Configuration", &JointComponent::m_configuration)
-                ->Field("Joint Generic Properties", &JointComponent::m_genericProperties)
                 ->Field("Joint Limits", &JointComponent::m_limits)
                 ;
         }
     }
 
-    JointComponent::JointComponent(
-        const JointComponentConfiguration& configuration, 
-        const JointGenericProperties& genericProperties)
-        : m_configuration(configuration)
-        , m_genericProperties(genericProperties)
+    JointComponent::JointComponent(const GenericJointConfiguration& config)
+        : m_configuration(config)
     {
     }
 
-    JointComponent::JointComponent(
-        const JointComponentConfiguration& configuration, 
-        const JointGenericProperties& genericProperties,
-        const JointLimitProperties& limitProperties)
-        : m_configuration(configuration)
-        , m_genericProperties(genericProperties)
-        , m_limits(limitProperties)
+    JointComponent::JointComponent(const GenericJointConfiguration& config
+        , const GenericJointLimitsConfiguration& limits)
+            : m_configuration(AZStd::move(config))
+            , m_limits(limits)
     {
     }
 
@@ -99,22 +67,16 @@ namespace PhysX
     void JointComponent::Deactivate()
     {
         AZ::EntityBus::Handler::BusDisconnect();
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            if (auto* scene = physicsSystem->GetScene(m_jointSceneOwner))
-            {
-                scene->RemoveJoint(m_jointHandle);
-                m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
-            }
-        }
+        m_joint.reset();
     }
 
-    AZ::Transform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose)
+    physx::PxTransform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor
+        , const physx::PxTransform& jointPose)
     {
         if (!actor)
         {
             AZ_Error("JointComponent::GetJointLocalPose", false, "Can't get pose for invalid actor pointer.");
-            return AZ::Transform::CreateIdentity();
+            return physx::PxTransform();
         }
 
         PHYSX_SCENE_READ_LOCK(actor->getScene());
@@ -122,15 +84,39 @@ namespace PhysX
         physx::PxTransform actorTranslateInv(-actorPose.p);
         physx::PxTransform actorRotateInv(actorPose.q);
         actorRotateInv = actorRotateInv.getInverse();
-        return PxMathConvert(actorRotateInv * actorTranslateInv) * jointPose;
+        return actorRotateInv * actorTranslateInv * jointPose;
     }
 
     AZ::Transform JointComponent::GetJointTransform(AZ::EntityId entityId
-        , const JointComponentConfiguration& jointConfig)
+        , const GenericJointConfiguration& jointConfig)
     {
         AZ::Transform jointTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
         jointTransform = jointTransform * jointConfig.m_localTransformFromFollower;
         return jointTransform;
+    }
+
+    void JointComponent::InitGenericProperties()
+    {
+        if (!m_joint)
+        {
+            return;
+        }
+
+        physx::PxJoint* jointNative = static_cast<physx::PxJoint*>(m_joint->GetNativePointer());
+        if (!jointNative)
+        {
+            return;
+        }
+        PHYSX_SCENE_WRITE_LOCK(jointNative->getScene());
+        jointNative->setConstraintFlag(
+            physx::PxConstraintFlag::eCOLLISION_ENABLED,
+            m_configuration.GetFlag(GenericJointConfiguration::GenericJointFlag::SelfCollide));
+
+        if (m_configuration.GetFlag(GenericJointConfiguration::GenericJointFlag::Breakable))
+        {
+            jointNative->setBreakForce(m_configuration.m_forceMax
+                , m_configuration.m_torqueMax);
+        }
     }
 
     void JointComponent::ObtainLeadFollowerInfo(JointComponent::LeadFollowerInfo& info)
@@ -174,15 +160,16 @@ namespace PhysX
 
         const AZ::Transform jointTransform = GetJointTransform(GetEntityId(), m_configuration);
 
+        physx::PxTransform jointPose = PxMathConvert(jointTransform);
         if (info.m_leadActor)
         {
-            info.m_leadLocal = GetJointLocalPose(info.m_leadActor, jointTransform); // joint position & orientation in lead actor's frame.
+            info.m_leadLocal = GetJointLocalPose(info.m_leadActor, jointPose); // joint position & orientation in lead actor's frame.
         }
         else
         {
-            info.m_leadLocal = jointTransform; // lead is null, attaching follower to global position of joint.
+            info.m_leadLocal = jointPose; // lead is null, attaching follower to global position of joint.
         }
-        info.m_followerLocal = m_configuration.m_localTransformFromFollower;// joint position & orientation in follower actor's frame.
+        info.m_followerLocal = PxMathConvert(m_configuration.m_localTransformFromFollower);// joint position & orientation in follower actor's frame.
     }
 
     void JointComponent::WarnInvalidJointSetup(AZ::EntityId entityId, const AZStd::string& message)
@@ -202,6 +189,7 @@ namespace PhysX
         if (!m_configuration.m_leadEntity.IsValid() || entityId == m_configuration.m_leadEntity)
         {
             InitNativeJoint(); // Invoke overriden specific joint type instantiation
+            InitGenericProperties();
         }
         // Else, follower entity is activated, subscribe to be notified that lead entity is activated.
         else

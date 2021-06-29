@@ -25,13 +25,9 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         FixedJointComponent() = default;
-        FixedJointComponent(
-            const JointComponentConfiguration& configuration, 
-            const JointGenericProperties& genericProperties);
-        FixedJointComponent(
-            const JointComponentConfiguration& configuration, 
-            const JointGenericProperties& genericProperties,
-            const JointLimitProperties& limitProperties);
+        explicit FixedJointComponent(const GenericJointConfiguration& config);
+        FixedJointComponent(const GenericJointConfiguration& config, 
+            const GenericJointLimitsConfiguration& limitConfig);
         ~FixedJointComponent() = default;
 
     protected:

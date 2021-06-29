@@ -46,7 +46,6 @@ namespace AWSCore
         void InitializeAWSDocActions();
         void InitializeAWSGlobalDocsSubMenu();
         void InitializeAWSFeatureGemActions();
-        void AddSpaceForIcon(QMenu* menu);
 
         // AWSCoreEditorRequestBus interface implementation
         void SetAWSClientAuthEnabled() override;

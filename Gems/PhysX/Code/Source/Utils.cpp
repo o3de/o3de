@@ -40,9 +40,9 @@
 #include <Source/Shape.h>
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
+#include <Source/Joint.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
-#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 
 namespace PhysX
 {
@@ -1394,12 +1394,8 @@ namespace PhysX
 
             ForceRegionBusBehaviorHandler::Reflect(context);
 
-            D6JointLimitConfiguration::Reflect(context);
-            JointGenericProperties::Reflect(context);
-            JointLimitProperties::Reflect(context);
-            FixedJointConfiguration::Reflect(context);
-            BallJointConfiguration::Reflect(context);
-            HingeJointConfiguration::Reflect(context);
+            GenericJointConfiguration::Reflect(context);
+            GenericJointLimitsConfiguration::Reflect(context);
         }
 
         void ForceRegionBusBehaviorHandler::Reflect(AZ::ReflectContext* context)

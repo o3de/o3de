@@ -70,6 +70,9 @@
       },
       "test_target_meta": {
         "file": "${test_target_type_file}"
+      },
+      "gem_target": {
+        "file": "${gem_target_file}"
       }
     }
   },

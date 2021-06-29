@@ -189,8 +189,7 @@
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
       "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
       "TEST_METRICS": "True",
-      "TEST_RESULTS": "True",
-      "TEST_SCREENSHOTS": "True"
+      "TEST_RESULTS": "True"
     }
   },
   "asset_profile_vs2019": {

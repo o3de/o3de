@@ -111,7 +111,7 @@ namespace PhysX
     };
 
     class GenericPhysicsInterfaceTest
-        : public GenericPhysicsFixture
+        : protected GenericPhysicsFixture
         , public testing::Test
     {
     public:

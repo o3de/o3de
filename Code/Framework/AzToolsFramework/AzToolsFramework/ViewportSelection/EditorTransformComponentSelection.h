@@ -131,9 +131,6 @@ namespace AzToolsFramework
         SnappingCluster(const SnappingCluster&) = delete;
         SnappingCluster& operator=(const SnappingCluster&) = delete;
 
-        //! Attempt to show the snapping cluster (will only succeed if snapping is enabled).
-        void TrySetVisible(bool visible);
-
         ViewportUi::ClusterId m_clusterId; //!< The cluster id for all snapping buttons.
         ViewportUi::ButtonId m_snapToWorldButtonId; //!< The button id for snapping all axes to the world.
         AZ::Event<ViewportUi::ButtonId>::Handler m_snappingHandler; //!< Callback for when a snapping cluster button is pressed.
@@ -154,7 +151,6 @@ namespace AzToolsFramework
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
-        , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -292,9 +288,6 @@ namespace AzToolsFramework
         // EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
-
-        // ViewportSettingsNotificationBus overrides ...
-        void OnGridSnappingChanged(bool enabled) override;
 
         // Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);

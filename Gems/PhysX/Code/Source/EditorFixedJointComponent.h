@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>

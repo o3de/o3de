@@ -514,7 +514,7 @@ namespace EMotionFX
 
             if (renderJointLimits && jointSelected)
             {
-                const AZStd::shared_ptr<AzPhysics::JointConfiguration>& jointLimitConfig = ragdollNode.m_jointConfig;
+                const AZStd::shared_ptr<Physics::JointLimitConfiguration>& jointLimitConfig = ragdollNode.m_jointLimit;
                 if (jointLimitConfig)
                 {
                     const Node* ragdollParentNode = physicsSetup->FindRagdollParentNode(joint);
@@ -528,8 +528,7 @@ namespace EMotionFX
         }
     }
 
-    void RagdollNodeInspectorPlugin::RenderJointLimit(
-        const AzPhysics::JointConfiguration& configuration,
+    void RagdollNodeInspectorPlugin::RenderJointLimit(const Physics::JointLimitConfiguration& configuration,
         const ActorInstance* actorInstance,
         const Node* node,
         const Node* parentNode,
@@ -550,12 +549,9 @@ namespace EMotionFX
         m_indexBuffer.clear();
         m_lineBuffer.clear();
         m_lineValidityBuffer.clear();
-        if(auto* jointHelpers = AZ::Interface<AzPhysics::JointHelpersInterface>::Get())
-        {
-            jointHelpers->GenerateJointLimitVisualizationData(
-                configuration, parentOrientation, childOrientation, s_scale, s_angularSubdivisions, s_radialSubdivisions, m_vertexBuffer,
-                m_indexBuffer, m_lineBuffer, m_lineValidityBuffer);
-        }           
+        Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::GenerateJointLimitVisualizationData,
+            configuration, parentOrientation, childOrientation, s_scale, s_angularSubdivisions, s_radialSubdivisions,
+            m_vertexBuffer, m_indexBuffer, m_lineBuffer, m_lineValidityBuffer);
 
         Transform jointModelSpaceTransform = currentPose->GetModelSpaceTransform(parentNodeIndex);
         jointModelSpaceTransform.mPosition = currentPose->GetModelSpaceTransform(nodeIndex).mPosition;
@@ -576,8 +572,7 @@ namespace EMotionFX
         }
     }
 
-    void RagdollNodeInspectorPlugin::RenderJointFrame(
-        const AzPhysics::JointConfiguration& configuration,
+    void RagdollNodeInspectorPlugin::RenderJointFrame(const Physics::JointLimitConfiguration& configuration,
         const ActorInstance* actorInstance,
         const Node* node,
         const Node* parentNode,

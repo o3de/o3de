@@ -32,11 +32,11 @@ namespace PhysX
         explicit RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig);
         ~RagdollNode();
 
-        void SetJoint(AzPhysics::Joint* joint);
+        void SetJoint(const AZStd::shared_ptr<Physics::Joint>& joint);
 
         // Physics::RagdollNode
         AzPhysics::RigidBody& GetRigidBody() override;
-        AzPhysics::Joint* GetJoint() override;
+        const AZStd::shared_ptr<Physics::Joint>& GetJoint() const override;
         bool IsSimulating() const override;
 
         // AzPhysics::SimulatedBody
@@ -60,10 +60,9 @@ namespace PhysX
     private:
         void CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig);
         void DestroyPhysicsBody();
-        void DestroyJoint();
 
-        AzPhysics::Joint* m_joint = nullptr;
-        AzPhysics::RigidBody* m_rigidBody = nullptr;
+        AZStd::shared_ptr<Physics::Joint> m_joint;
+        AzPhysics::RigidBody* m_rigidBody;
         AzPhysics::SimulatedBodyHandle m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_sceneOwner = AzPhysics::InvalidSceneHandle;
         PhysX::ActorData m_actorUserData;
