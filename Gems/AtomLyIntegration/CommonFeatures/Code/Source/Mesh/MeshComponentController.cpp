@@ -1,14 +1,9 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Mesh/MeshComponentController.h>
 
@@ -330,6 +325,7 @@ namespace AZ
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
 
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.
@@ -433,13 +429,9 @@ namespace AZ
         {
             if (m_isVisible != visible)
             {
-                if (m_isVisible)
+                if (m_meshFeatureProcessor)
                 {
-                    UnregisterModel();
-                }
-                else
-                {
-                    RegisterModel();
+                    m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
                 }
                 m_isVisible = visible;
             }

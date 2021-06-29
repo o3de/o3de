@@ -1,12 +1,8 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
@@ -155,7 +151,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE target_include)
                 cmake_path(NORMAL_PATH target_include)
                 # Escape the LY_ROOT_FOLDER variable so that it isn't resolved during the install step
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${target_include}\n")
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${include_location}/${target_include}\n")
             endif()
         endforeach()
     endif()
@@ -290,22 +286,12 @@ function(ly_setup_subdirectory absolute_target_source_dir)
 
     # Reproduce the ly_enable_gems() calls made in the the SOURCE_DIR for this target into the CMakeLists.txt that
     # is about to be generated
-    string(JOIN "\n" enable_gems_template
-        "   ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEM@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)"
-        "endif()"
-        ""
-    )
+    set(enable_gems_template "ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEMS@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)\n")
     get_property(enable_gems_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
     foreach(enable_gems_single_command_arg_list ${enable_gems_commands_arg_list})
         # Split the ly_enable_gems arguments back out based on commas
-        string(REPLACE "," ";" ly_enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_PROJECT_NAME)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM_FILE)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_GEM)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_VARIANTS)
-        list(POP_FRONT enable_gems_single_command_arg_list enable_gem_TARGETS)
-        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEM GEM_FILE GEM VARIANTS TARGETS)
+        string(REPLACE "," ";" enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
+        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEMS GEM_FILE VARIANTS TARGETS)
             list(POP_FRONT enable_gems_single_command_arg_list enable_gem_${enable_gem_arg_kw})
             if(enable_gem_${enable_gem_arg_kw})
                 # if the argument exist append to argument keyword to the front

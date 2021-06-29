@@ -1,12 +1,7 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
- *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -295,9 +290,12 @@ namespace Multiplayer
                 AZ_Assert(netBindComponent != nullptr, "NetBindComponent not found on networked entity");
                 netBindComponent->StopEntity();
 
+                // At the moment, we spawn one entity at a time and avoid Prefab API calls and never get a spawn ticket,
+                // so this is the right way for now. Once we support prefabs we can use AzFramework::SpawnableEntitiesContainer
+                // Additionally, prefabs spawning is async! Whereas we currently create entities immediately, see:
+                // @NetworkEntityManager::CreateEntitiesImmediate
                 AzFramework::GameEntityContextRequestBus::Broadcast(
                     &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, netBindComponent->GetEntityId());
-
             }
 
             m_networkEntityTracker.erase(entityId);
