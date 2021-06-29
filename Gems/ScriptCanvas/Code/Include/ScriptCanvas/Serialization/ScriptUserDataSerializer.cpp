@@ -27,11 +27,6 @@ namespace AZ
         AZ_Assert(outputValueTypeId == azrtti_typeid<RuntimeVariable>(), "ScriptUserDataSerializer Load against output typeID that was not RuntimeVariable");
         AZ_Assert(outputValue, "ScriptUserDataSerializer Load against null output");
 
-        if (!(inputValue.IsObject() && inputValue.HasMember("value") && inputValue.HasMember("$type")))
-        {
-            AZ_TracePrintf("SC", "This will not be correct");
-        }
-
         auto outputVariable = reinterpret_cast<RuntimeVariable*>(outputValue);
         JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
         AZ::Uuid typeId = AZ::Uuid::CreateNull();
