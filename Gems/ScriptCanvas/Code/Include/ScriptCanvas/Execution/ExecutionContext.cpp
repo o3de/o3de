@@ -92,60 +92,19 @@ namespace ScriptCanvas
 
             // (always overridden) EntityIds
             {
-                bool prefabSystemEnabled = false;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+                AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
+                    + runtimeData.m_activationInputRange.nodeableCount
+                    + runtimeData.m_activationInputRange.variableCount;
 
-                if (prefabSystemEnabled)
+                const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
+
+                for (auto& entityId : activationData.variableOverrides.m_entityIds)
                 {
-                    AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
-                        + runtimeData.m_activationInputRange.nodeableCount
-                        + runtimeData.m_activationInputRange.variableCount;
-
-                    const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
-
-                    for (auto& entityId : activationData.variableOverrides.m_entityIds)
-                    {
-                        destVariableIter->m_typeId = entityIdTypeId;
-                        destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
-                        auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
-                        *entityIdValuePtr = entityId;
-                        ++destVariableIter;
-                    }
-                }
-                else
-                {
-                    AZ::SliceComponent::EntityIdToEntityIdMap loadedEntityIdMap;
-                    AzFramework::EntityContextId owningContextId = AzFramework::EntityContextId::CreateNull();
-                    AzFramework::EntityIdContextQueryBus::EventResult(owningContextId, forSliceSupportOnly, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-                    if (!owningContextId.IsNull())
-                    {
-                        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(loadedEntityIdMap, owningContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetLoadedEntityIdMap);
-                    }
-
-                    AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
-                        + runtimeData.m_activationInputRange.nodeableCount
-                        + runtimeData.m_activationInputRange.variableCount;
-
-                    const auto entityIdTypeId = azrtti_typeid<Data::EntityIDType>();
-                    for (auto& entityId : activationData.variableOverrides.m_entityIds)
-                    {
-                        destVariableIter->m_typeId = entityIdTypeId;
-                        destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
-                        auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
-
-                        auto iter = loadedEntityIdMap.find(entityId);
-                        if (iter != loadedEntityIdMap.end())
-                        {
-                            *entityIdValuePtr = iter->second;
-                        }
-                        else
-                        {
-                            *entityIdValuePtr = Data::EntityIDType();
-                        }
-
-                        *entityIdValuePtr = entityId;
-                        ++destVariableIter;
-                    }
+                    destVariableIter->m_typeId = entityIdTypeId;
+                    destVariableIter->m_value = destVariableIter->m_tempData.allocate(sizeof(Data::EntityIDType), AZStd::alignment_of<Data::EntityIDType>::value, 0);
+                    auto entityIdValuePtr = reinterpret_cast<AZStd::decay_t<Data::EntityIDType>*>(destVariableIter->m_value);
+                    *entityIdValuePtr = entityId;
+                    ++destVariableIter;
                 }
             }
 
