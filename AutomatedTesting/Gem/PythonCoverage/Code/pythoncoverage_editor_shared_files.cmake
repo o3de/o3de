@@ -9,6 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 
-add_subdirectory(Code)
-add_subdirectory(PythonTests)
-add_subdirectory(PythonCoverage)
+set(FILES
+    Source/PythonCoverageEditorModule.cpp
+    Source/PythonCoverageEditorModule.h
+)

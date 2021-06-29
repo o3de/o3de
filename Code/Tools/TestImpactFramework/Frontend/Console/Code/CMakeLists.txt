@@ -19,6 +19,9 @@ ly_add_target(
             Include
         PRIVATE
             Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ${LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::TestImpact.Runtime.Static
