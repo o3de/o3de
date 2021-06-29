@@ -104,7 +104,7 @@ void KeyboardCustomizationSettings::LoadDefaults()
 
 void KeyboardCustomizationSettings::Load()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
+    QSettings settings(QStringLiteral("O3DE"), QStringLiteral("O3DE"));
     settings.beginGroup(QStringLiteral("Keyboard Shortcuts"));
     settings.beginGroup(m_group);
 
@@ -151,7 +151,7 @@ void KeyboardCustomizationSettings::LoadFromSnapshot(const Snapshot& snapshot)
 
 void KeyboardCustomizationSettings::Save()
 {
-    QSettings settings(QStringLiteral("Amazon"), QStringLiteral("O3DE"));
+    QSettings settings(QStringLiteral("O3DE"), QStringLiteral("O3DE"));
     settings.beginGroup(QStringLiteral("Keyboard Shortcuts"));
     settings.beginGroup(m_group);
 

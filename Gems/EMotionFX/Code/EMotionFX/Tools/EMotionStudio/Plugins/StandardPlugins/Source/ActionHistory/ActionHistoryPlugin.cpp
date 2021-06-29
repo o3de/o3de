@@ -54,7 +54,7 @@ namespace EMStudio
 
     const char* ActionHistoryPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
 

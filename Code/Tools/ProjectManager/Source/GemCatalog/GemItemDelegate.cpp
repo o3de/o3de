@@ -77,14 +77,14 @@ namespace O3DE::ProjectManager
         QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
-        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         gemNameFont.setPixelSize(s_gemNameFontSize);
         gemNameFont.setBold(true);
+        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
         gemNameRect.moveTo(contentRect.left(), contentRect.top());
-
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
+        gemNameRect = painter->boundingRect(gemNameRect, Qt::TextSingleLine, gemName);
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem creator
@@ -95,6 +95,7 @@ namespace O3DE::ProjectManager
 
         painter->setFont(standardFont);
         painter->setPen(m_linkColor);
+        gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary

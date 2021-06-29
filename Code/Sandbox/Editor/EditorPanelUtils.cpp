@@ -240,7 +240,7 @@ public:
 
     virtual bool HotKey_LoadExisting() override
     {
-        QSettings settings("Amazon", "O3DE");
+        QSettings settings("O3DE", "O3DE");
         QString group = "Hotkeys/";
 
         HotKey_BuildDefaults();
@@ -276,7 +276,7 @@ public:
 
     virtual void HotKey_SaveCurrent() override
     {
-        QSettings settings("Amazon", "O3DE");
+        QSettings settings("O3DE", "O3DE");
         QString group = "Hotkeys/";
         settings.remove("Hotkeys/");
         settings.sync();

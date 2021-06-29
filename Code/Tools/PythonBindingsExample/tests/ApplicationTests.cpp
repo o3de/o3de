@@ -58,9 +58,9 @@ namespace PythonBindingsExample
 
     AZStd::unique_ptr<PythonBindingsExample::Application> PythonBindingsExampleTest::s_application;
 
-    TEST_F(PythonBindingsExampleTest, Application_Run_Fails)
+    TEST_F(PythonBindingsExampleTest, Application_Run_Works)
     {
-        EXPECT_FALSE(s_application->Run());
+        EXPECT_TRUE(s_application->Run());
     }
 
     TEST_F(PythonBindingsExampleTest, Application_RunWithParameters_Works)
@@ -90,4 +90,37 @@ namespace PythonBindingsExample
         EXPECT_TRUE(s_application->RunWithParameters(params));
     }
 
+    TEST_F(PythonBindingsExampleTest, Application_SystemExit_Blocked)
+    {
+        int exceptions = 0;
+        int errors = 0;
+
+        s_application->GetErrorCount(exceptions, errors);
+        ASSERT_EQ(exceptions, 0);
+        ASSERT_EQ(errors, 0);
+
+        // expects a clean "error" from this statement
+        // the whole program should not exit()
+        {
+            ApplicationParameters params;
+            params.m_pythonStatement = "import sys; sys.exit(0)";
+            EXPECT_FALSE(s_application->RunWithParameters(params));
+
+            s_application->GetErrorCount(exceptions, errors);
+            EXPECT_EQ(exceptions, 0);
+            EXPECT_GE(errors, 1);
+        }
+        s_application->ResetErrorCount();
+
+        // should be able to run more statements
+        {
+            ApplicationParameters params;
+            params.m_pythonStatement = "import sys";
+            EXPECT_TRUE(s_application->RunWithParameters(params));
+
+            s_application->GetErrorCount(exceptions, errors);
+            EXPECT_EQ(exceptions, 0);
+            EXPECT_EQ(errors, 0);
+        }
+    }
 }

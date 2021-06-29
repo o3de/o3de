@@ -24,8 +24,8 @@
 
 int main(int argc, char** argv)
 {
-    QApplication::setOrganizationName("Amazon");
-    QApplication::setOrganizationDomain("amazon.com");
+    QApplication::setOrganizationName("O3DE");
+    QApplication::setOrganizationDomain("o3de.org");
     QApplication::setApplicationName("O3DE Material Editor");
 
     AzQtComponents::PrepareQtPaths();

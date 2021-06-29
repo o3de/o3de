@@ -299,7 +299,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("amazon", "O3DE") // TODO_KDAB: Replace with a central settings class
+    , m_settings("O3DE", "O3DE") 
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))
@@ -1032,11 +1032,11 @@ void MainWindow::InitActions()
     am->AddAction(ID_DOCUMENTATION_AWSSUPPORT, tr("AWS Support"))
         .SetReserved();
 
-    am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
+    am->AddAction(ID_APP_ABOUT, tr("&About O3DE"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
+        .SetStatusTip(tr("Show the Welcome to O3DE dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions

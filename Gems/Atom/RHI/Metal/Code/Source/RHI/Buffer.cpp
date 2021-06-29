@@ -35,6 +35,16 @@ namespace AZ
             }
         }
 
+        void Buffer::SetMapRequestOffset(const uint32_t mapRequestOffset)
+        {
+            m_mapRequestOffset = mapRequestOffset;
+        }
+    
+        const uint32_t Buffer::GetMapRequestOffset() const
+        {
+            return m_mapRequestOffset;
+        }
+    
         void Buffer::ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const
         {
             //[GFX TODO][ATOM-493] - Report memory usage support

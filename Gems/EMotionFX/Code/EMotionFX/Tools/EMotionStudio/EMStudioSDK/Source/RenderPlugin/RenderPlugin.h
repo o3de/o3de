@@ -226,6 +226,7 @@ namespace EMStudio
         QWidget*                            mInnerWidget;
         CommandSystem::SelectionList*       mCurrentSelection;
         bool                                mFirstFrameAfterReInit;
+        bool                                m_reinitRequested = false;
 
         // command callbacks
         MCORE_DEFINECOMMANDCALLBACK(UpdateRenderActorsCallback);

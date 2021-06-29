@@ -639,12 +639,12 @@ bool ApplicationManager::Activate()
 
 QString ApplicationManager::GetOrganizationName() const
 {
-    return "Amazon";
+    return "O3DE";
 }
 
 QString ApplicationManager::GetApplicationName() const
 {
-    return "Asset Processor";
+    return "O3DE Asset Processor";
 }
 
 bool ApplicationManager::PostActivate()

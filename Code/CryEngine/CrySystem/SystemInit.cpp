@@ -1823,11 +1823,6 @@ void CSystem::CreateSystemVars()
         "1 - CryPak preserves file name casing\n"
         "Default is 1");
 
-    REGISTER_CVAR2("sys_deferAudioUpdateOptim", &g_cvars.sys_deferAudioUpdateOptim, 1, VF_NULL,
-        "0 - disable optimisation\n"
-        "1 - enable optimisation\n"
-        "Default is 1");
-
     m_sysNoUpdate = REGISTER_INT("sys_noupdate", 0, VF_CHEAT,
             "Toggles updating of system with sys_script_debugger.\n"
             "Usage: sys_noupdate [0/1]\n"
