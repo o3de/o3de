@@ -136,26 +136,14 @@ namespace AZ
             }
         }
 
-        void CpuProfilerImpl::FlushTimeRegionMap(TimeRegionMap& timeRegionMap)
+        CpuProfiler::TimeRegionMap CpuProfilerImpl::GetTimeRegionMap() const 
         {
-            AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
+            return m_timeRegionMap;
+        }
 
-            // Iterate through all the threads, and collect the thread's cached time regions
-            for (auto& threadLocal : m_registeredThreads)
-            {
-                CpuProfiler::ThreadTimeRegionMap& threadMapEntry = m_timeRegionMap[threadLocal->m_executingThreadId];
-                threadLocal->TryFlushCachedMap(threadMapEntry);
-            }
-
-            // Clear all TLS that flagged themselves to be deleted, meaning that the thread is already terminated
-            AZStd::remove_if(m_registeredThreads.begin(), m_registeredThreads.end(), [](const RHI::Ptr<CpuTimingLocalStorage>& thread)
-            {
-                return thread->m_deleteFlag.load();
-            });
-
-            // Flush all the cached time regions to the provided map
-            timeRegionMap = AZStd::move(m_timeRegionMap);
-            m_timeRegionMap.clear();
+        const CpuProfiler::TimeRegionMap& CpuProfilerImpl::GetTimeRegionMapRef() const 
+        {
+            return m_timeRegionMap;
         }
 
         void CpuProfilerImpl::SetProfilerEnabled(bool enabled)
@@ -192,13 +180,24 @@ namespace AZ
 
         void CpuProfilerImpl::OnFrameBegin()
         {
-            // Clear each thread's cached time region map at the start of the frame
-            // to avoid multiple frames worth of data accumulating in each thread's map if FlushTimeRegionMap isn't called
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
+
+            // Iterate through all the threads, and collect the thread's cached time regions
+            TimeRegionMap newMap;
             for (auto& threadLocal : m_registeredThreads)
             {
-                threadLocal->ClearCachedMap();
+                ThreadTimeRegionMap& threadMapEntry = newMap[threadLocal->m_executingThreadId];
+                threadLocal->TryFlushCachedMap(threadMapEntry);
             }
+
+            // Clear all TLS that flagged themselves to be deleted, meaning that the thread is already terminated
+            AZStd::remove_if(m_registeredThreads.begin(), m_registeredThreads.end(), [](const RHI::Ptr<CpuTimingLocalStorage>& thread)
+            {
+                return thread->m_deleteFlag.load();
+            });
+
+            // Update our saved time regions to the last frame's collected data
+            m_timeRegionMap = AZStd::move(newMap);
         }
 
 
@@ -300,12 +299,6 @@ namespace AZ
                 // Clear the cached regions
                 m_cachedTimeRegions.clear();
             }
-        }
-
-        void CpuTimingLocalStorage::ClearCachedMap()
-        {
-            AZStd::unique_lock<AZStd::mutex> lock(m_cachedTimeRegionMutex);
-            m_cachedTimeRegionMap.clear();
         }
 
         void CpuTimingLocalStorage::TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedTimeRegionMap)

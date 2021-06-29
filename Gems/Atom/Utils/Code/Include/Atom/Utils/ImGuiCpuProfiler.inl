@@ -177,7 +177,7 @@ namespace AZ
                             ImGui::Columns(4, "view", false);
                             ImGui::SetColumnWidth(0, 400.0f);
                             ImGui::SetColumnWidth(1, 100.0f);
-                            ImGui::SetColumnWidth(2, 130.0f);
+                            ImGui::SetColumnWidth(2, 150.0f);
                             ImGui::SetColumnWidth(3, 240.0f);
 
                             for (auto& reigon : timeRegionMapEntry.second)
@@ -232,8 +232,7 @@ namespace AZ
             m_groupRegionMap.clear();
 
             // Get the latest TimeRegionMap
-            RHI::CpuProfiler::TimeRegionMap timeRegionMap;
-            RHI::CpuProfiler::Get()->FlushTimeRegionMap(timeRegionMap);
+            const RHI::CpuProfiler::TimeRegionMap& timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMapRef();
 
             // Iterate through all the cached regions from all threads, and add the entries to this map
             for (auto& threadEntry : timeRegionMap)

@@ -78,8 +78,9 @@ namespace AZ
             //! Ends a time region
             virtual void EndTimeRegion() = 0;
 
-            //! Flush cached regions from all threads to the passed parameter
-            virtual void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) = 0;
+            //! Get the last frame's TimeRegionMap
+            virtual TimeRegionMap GetTimeRegionMap() const  = 0;
+            virtual const TimeRegionMap& GetTimeRegionMapRef() const = 0;
 
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;

@@ -50,8 +50,6 @@ namespace AZ
             // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
             void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
 
-            void ClearCachedMap();
-
             AZStd::thread_id m_executingThreadId;
             // Keeps track of the current thread's stack depth
             uint32_t m_stackLevel = 0u;
@@ -102,7 +100,8 @@ namespace AZ
             //! CpuProfiler overrides...
             void BeginTimeRegion(TimeRegion& timeRegion) final;
             void EndTimeRegion() final;
-            void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) final;
+            TimeRegionMap GetTimeRegionMap() const final;
+            const TimeRegionMap& GetTimeRegionMapRef() const final;
             void SetProfilerEnabled(bool enabled) final;
             bool IsProfilerEnabled() const final;
 
@@ -111,8 +110,7 @@ namespace AZ
             void RegisterThreadStorage();
 
             // ThreadId -> ThreadTimeRegionMap
-            // When the user requests the cached time regions from the system, it will use this map as an intermediate
-            // storage point to flush each thread's cached regions into this map.
+            // On the start of each frame, this map will be updated with the last frame's profiling data. 
             TimeRegionMap m_timeRegionMap;
 
             // Set of registered threads when created

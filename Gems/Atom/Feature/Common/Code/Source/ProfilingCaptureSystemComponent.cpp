@@ -258,11 +258,10 @@ namespace AZ
             {
                 for (auto& cachedRegionEntry : treadEntry.second)
                 {
-                    // Copy the CachedTimeRegion since it may get deleted from frame to frame
-                    for (auto cachedRegion : cachedRegionEntry.second) 
-                    {
-                        m_cpuProfilingStatisticsSerializerEntries.emplace_back(cachedRegion);
-                    }
+                    m_cpuProfilingStatisticsSerializerEntries.insert(
+                        m_cpuProfilingStatisticsSerializerEntries.end(),
+                        cachedRegionEntry.second.begin(),
+                        cachedRegionEntry.second.end());
                 }
             }
         }
@@ -469,8 +468,7 @@ namespace AZ
                 serializationSettings.m_keepDefaults = true;
 
                 // Get time Cpu profiled time regions
-                RHI::CpuProfiler::TimeRegionMap timeRegionMap;
-                RHI::CpuProfiler::Get()->FlushTimeRegionMap(timeRegionMap);
+                RHI::CpuProfiler::TimeRegionMap timeRegionMap = RHI::CpuProfiler::Get()->GetTimeRegionMap();
 
                 CpuProfilingStatisticsSerializer serializer(timeRegionMap);
                 const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
