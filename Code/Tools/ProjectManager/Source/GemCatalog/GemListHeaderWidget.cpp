@@ -31,7 +31,7 @@ namespace O3DE::ProjectManager
         topLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
         QLabel* showCountLabel = new QLabel();
-        showCountLabel->setStyleSheet("font-size: 12px; font: italic;");
+        showCountLabel->setStyleSheet("font-size: 12px; font: italic; color: #FFFFFF;");
         topLayout->addWidget(showCountLabel);
         connect(proxyModel, &GemSortFilterProxyModel::OnInvalidated, this, [=]
             {
@@ -61,20 +61,20 @@ namespace O3DE::ProjectManager
         columnHeaderLayout->addSpacing(gemNameStartX);
 
         QLabel* gemNameLabel = new QLabel(tr("Gem Name"));
-        gemNameLabel->setStyleSheet("font-size: 12px;");
+        gemNameLabel->setStyleSheet("font-size: 12px; color: #FFFFFF;");
         columnHeaderLayout->addWidget(gemNameLabel);
 
         columnHeaderLayout->addSpacing(77);
 
         QLabel* gemSummaryLabel = new QLabel(tr("Gem Summary"));
-        gemSummaryLabel->setStyleSheet("font-size: 12px;");
+        gemSummaryLabel->setStyleSheet("font-size: 12px; color: #FFFFFF;");
         columnHeaderLayout->addWidget(gemSummaryLabel);
 
         QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
         columnHeaderLayout->addSpacerItem(horizontalSpacer);
 
         QLabel* gemSelectedLabel = new QLabel(tr("Selected"));
-        gemSelectedLabel->setStyleSheet("font-size: 12px;");
+        gemSelectedLabel->setStyleSheet("font-size: 12px; color: #FFFFFF;");
         columnHeaderLayout->addWidget(gemSelectedLabel);
 
         columnHeaderLayout->addSpacing(60);
