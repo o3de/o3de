@@ -1,14 +1,7 @@
-# Project Spectra Private Preview
-
-## Confidentiality; Pre-Release Access  
-
-Welcome to the Project Spectra Private Preview.  This is a confidential pre-release project; your use is subject to the nondisclosure agreement between you (or your organization) and Amazon.  Do not disclose the existence of this project, your participation in it, or any of the  materials provided, to any unauthorized third party.  To request access for a third party, please contact [Royal O'Brien, obriroya@amazon.com](mailto:obriroya@amazon.com).
-
-## Full instructions can be found here: 
-### https://docs.o3de.org/docs/welcome-guide/setup/setup-from-github/ 
-(Note: Contact Royal or [Doug Erickson, dougeric@amazon.com](mailto:dougeric@amazon.com) for access)
-
 ## Updates to this readme
+July 06, 2021
+- Switch licenses to APACHE-2.0 OR MIT
+
 May 14, 2021 
 - Removed instructions for the 3rdParty zip file and downloader URL. This is no longer a requirement. 
 - Updated instructions for dependencies
@@ -59,7 +52,7 @@ git config --global credential.helper osxkeychain
 ### Clone the repository 
 
 ```shell
-> git clone https://github.com/aws-lumberyard/o3de.git
+> git clone https://github.com/o3de/o3de.git
 Cloning into 'o3de'...
 
 # initial prompt for credentials to download the repository code
