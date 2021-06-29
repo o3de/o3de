@@ -364,7 +364,7 @@ float3 ApplyIblSpecular(Surface surface, LightingData lightingData)
         GetRoughnessMip(surface.roughnessLinear)).rgb;
     outSpecular *= (surface.specularF0 * lightingData.brdf.x + lightingData.brdf.y);
 
-    return outSpecular
+    return outSpecular;
 }
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
