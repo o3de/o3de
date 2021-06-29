@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project
- * 
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -30,7 +30,6 @@ namespace TranslationCPP
     AZ::Outcome<AZStd::pair<AZStd::string, AZStd::string>, AZStd::pair<AZStd::string, AZStd::string>> ToCPlusPlus(const Grammar::AbstractCodeModel& model, bool rawSave = false)
     {
         AZStd::string dotH, dotCPP;
-
         auto outcome = GraphToCPlusPlus::Translate(model, dotH, dotCPP);
         if (outcome.IsSuccess())
         {
@@ -48,13 +47,11 @@ namespace TranslationCPP
                 {
                     saveOutcome = SaveDotCPP(model.GetSource(), dotCPP);
                 }
-
                 if (!saveOutcome.IsSuccess())
                 {
                     AZ_TracePrintf("Save failed %s", saveOutcome.GetError().data());
                 }
             }
-
             return AZ::Success(AZStd::make_pair(AZStd::move(dotH), AZStd::move(dotCPP)));
         }
         else
@@ -96,16 +93,28 @@ namespace ScriptCanvas
 {
     namespace Translation
     {
-        Result ParseGraph(const Grammar::Request& request)
+        AZ::Outcome<Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(const Grammar::Request& request)
         {
             AZ::Outcome<Grammar::Source, AZStd::string> sourceOutcome = Grammar::Source::Construct(request);
 
             if (!sourceOutcome.IsSuccess())
             {
-                return Result(sourceOutcome.TakeError());
+                return AZ::Failure(sourceOutcome.TakeError());
             }
-            
+
             Grammar::AbstractCodeModelConstPtr model = Grammar::AbstractCodeModel::Parse(sourceOutcome.TakeValue());
+            return AZ::Success(model);
+        }
+
+        Result ParseAndTranslateGraph(const Grammar::Request& request)
+        {
+            auto parseOutcome = ParseGraph(request);
+            if (!parseOutcome.IsSuccess())
+            {
+                return Result(parseOutcome.TakeError());
+            }
+
+            Grammar::AbstractCodeModelConstPtr model = parseOutcome.TakeValue();
             Translations translations;
             Errors errors;
 
@@ -124,61 +133,52 @@ namespace ScriptCanvas
                     }
                 }
 
-//                 if (targetFlags & (TargetFlags::Cpp | TargetFlags::Hpp))
-//                 {
-//                     auto outcomeCPP = TranslationCPP::ToCPlusPlus(*model.get(), rawSave);
-//                     if (outcomeCPP.IsSuccess())
-//                     {
-//                         auto hppAndCpp = outcomeCPP.TakeValue();
-//                         
-//                         TargetResult cppResult;
-//                         cppResult.m_text = AZStd::move(hppAndCpp.first);
-//                         translations.emplace(TargetFlags::Hpp, AZStd::move(cppResult));
-//                         TargetResult hppResult;
-//                         hppResult.m_text = AZStd::move(hppAndCpp.second);
-//                         translations.emplace(TargetFlags::Cpp, AZStd::move(hppResult));
-//                     }
-//                     else
-//                     {
-//                         auto hppAndCpp = outcomeCPP.TakeError();
-//                         errors.emplace(TargetFlags::Hpp, AZStd::move(hppAndCpp.first));
-//                         errors.emplace(TargetFlags::Cpp, AZStd::move(hppAndCpp.second));
-//                     }
-//                 }
+                //                 if (targetFlags & (TargetFlags::Cpp | TargetFlags::Hpp))
+                //                 {
+                //                     auto outcomeCPP = TranslationCPP::ToCPlusPlus(*model.get(), rawSave);
+                //                     if (outcomeCPP.IsSuccess())
+                //                     {
+                //                         auto hppAndCpp = outcomeCPP.TakeValue();
+                //                         
+                //                         TargetResult cppResult;
+                //                         cppResult.m_text = AZStd::move(hppAndCpp.first);
+                //                         translations.emplace(TargetFlags::Hpp, AZStd::move(cppResult));
+                //                         TargetResult hppResult;
+                //                         hppResult.m_text = AZStd::move(hppAndCpp.second);
+                //                         translations.emplace(TargetFlags::Cpp, AZStd::move(hppResult));
+                //                     }
+                //                     else
+                //                     {
+                //                         auto hppAndCpp = outcomeCPP.TakeError();
+                //                         errors.emplace(TargetFlags::Hpp, AZStd::move(hppAndCpp.first));
+                //                         errors.emplace(TargetFlags::Cpp, AZStd::move(hppAndCpp.second));
+                //                     }
+                //                 }
 
-            }
-            else
-            {
-                ValidationResults results;
-                for (auto& test : model->GetValidationEvents())
-                {
-                    results.AddValidationEvent(test.get());
-                }
             }
 
             return Result(model, AZStd::move(translations), AZStd::move(errors));
-        }  
+        }
 
         Result ToCPlusPlusAndLua(const Grammar::Request& request)
         {
             Grammar::Request toBoth = request;
             toBoth.translationTargetFlags = TargetFlags::Lua | TargetFlags::Cpp;
-            return ParseGraph(toBoth);
+            return ParseAndTranslateGraph(toBoth);
         }
 
         Result ToCPlusPlus(const Grammar::Request& request)
         {
             Grammar::Request toCpp = request;
             toCpp.translationTargetFlags = TargetFlags::Cpp;
-            return ParseGraph(toCpp);
+            return ParseAndTranslateGraph(toCpp);
         }
 
         Result ToLua(const Grammar::Request& request)
         {
             Grammar::Request toLua = request;
             toLua.translationTargetFlags = TargetFlags::Lua;
-            return ParseGraph(toLua);
+            return ParseAndTranslateGraph(toLua);
         }
-        
-    } 
-} 
+    }
+}

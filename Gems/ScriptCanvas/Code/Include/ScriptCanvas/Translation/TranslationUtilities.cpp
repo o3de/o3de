@@ -166,7 +166,7 @@ namespace ScriptCanvas
             return TranslationUtilitiesCPP::k_namespaceNameNative;
         }
 
-        AZStd::string_view GetAmazonCopyright()
+        AZStd::string_view GetCopyright()
         {
             return
                 "* Copyright (c) Contributors to the Open 3D Engine Project\n"

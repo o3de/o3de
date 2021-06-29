@@ -34,7 +34,7 @@ namespace ScriptCanvas
 
         AZStd::string EntityIdValueToString(const AZ::EntityId& entityId, const Configuration& config);
 
-        AZStd::string_view GetAmazonCopyright();
+        AZStd::string_view GetCopyright();
 
         AZStd::string_view GetAutoNativeNamespace();
 
