@@ -286,9 +286,15 @@ void MainCS(
 
     float2 minmaxDepth_transparent = ReadTransparentMinMaxMSAA(dispatchThreadID.xy);
 
-    if (o_msaaMode == MsaaMode::Msaa2x)
+    if (o_msaaMode == MsaaMode::None || o_msaaMode == MsaaMode::Msaa2x)
     {
-        float2 opaqueDepthSamples = ReadOpaqueDepthSamples2xMSAA(dispatchThreadID.xy);    
+        float2 opaqueDepthSamples;
+        if (o_msaaMode == MsaaMode::None)
+        {
+            float depth = PassSrg::m_depthBuffer.Load(uint3(dispatchThreadID.xy, 0)).x;
+            opaqueDepthSamples = float2(depth, depth);
+        }
+        opaqueDepthSamples = ReadOpaqueDepthSamples2xMSAA(dispatchThreadID.xy);
         // Transparent geometry can't be behind opaque geometry. Just pick the first MSAA sample since we are trying to reduce reading from MSAA buffer
         minmaxDepth_transparent = DEPTH_MIN(minmaxDepth_transparent, opaqueDepthSamples.x);
         opaqueDepthSamples = ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects2x(opaqueDepthSamples, minmaxDepth_transparent);
