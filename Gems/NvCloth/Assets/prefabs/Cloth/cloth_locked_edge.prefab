@@ -1,0 +1,237 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "cloth_locked_edge",
+        "Components": {
+            "Component_[1235323850699490217]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 1235323850699490217
+            },
+            "Component_[15881575175154249216]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 15881575175154249216
+            },
+            "Component_[17600849902539154435]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 17600849902539154435
+            },
+            "Component_[17642993831427457865]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 17642993831427457865,
+                "Parent Entity": "",
+                "Cached World Transform Parent": ""
+            },
+            "Component_[1978132613175166397]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 1978132613175166397
+            },
+            "Component_[3665335443055612027]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 3665335443055612027
+            },
+            "Component_[4340499892108035209]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 4340499892108035209
+            },
+            "Component_[5740495422195339981]": {
+                "$type": "SelectionComponent",
+                "Id": 5740495422195339981
+            },
+            "Component_[5916084327473082953]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 5916084327473082953
+            },
+            "Component_[6149161397236330762]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 6149161397236330762
+            },
+            "Component_[8815189893920523789]": {
+                "$type": "EditorLockComponent",
+                "Id": 8815189893920523789
+            }
+        },
+        "IsDependencyReady": true
+    },
+    "Entities": {
+        "Entity_[24657000194934]": {
+            "Id": "Entity_[24657000194934]",
+            "Name": "cloth_locked_edge",
+            "Components": {
+                "Component_[12570923873370995388]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 12570923873370995388
+                },
+                "Component_[15695175229307539942]": {
+                    "$type": "EditorClothComponent",
+                    "Id": 15695175229307539942,
+                    "Configuration": {
+                        "Mesh Node": "pPlane1",
+                        "Damping": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Linear Drag": [
+                            0.5,
+                            0.5,
+                            0.5
+                        ],
+                        "Angular Drag": [
+                            0.5,
+                            0.5,
+                            0.5
+                        ],
+                        "Wind Velocity": [
+                            20.0,
+                            0.0,
+                            0.0
+                        ],
+                        "Update Normals of Static Particles": true,
+                        "Air Drag Coefficient": 0.5,
+                        "Air Lift Coefficient": 0.10000000149011612
+                    }
+                },
+                "Component_[1702552432011529292]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 1702552432011529292
+                },
+                "Component_[3257580479102403174]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 3257580479102403174
+                },
+                "Component_[4004895580151009916]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 4004895580151009916,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialAssetId": {
+                                            "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
+                                            "subId": 902256226
+                                        }
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
+                                            },
+                                            "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialAssetId": {
+                                    "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
+                                    "subId": 902256226
+                                }
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialAssetId": {
+                                        "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
+                                        "subId": 902256226
+                                    }
+                                }
+                            }
+                        ]
+                    ]
+                },
+                "Component_[4551907993575066613]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 4551907993575066613
+                },
+                "Component_[4676074866703387598]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 4676074866703387598
+                },
+                "Component_[5370716247379084795]": {
+                    "$type": "SelectionComponent",
+                    "Id": 5370716247379084795
+                },
+                "Component_[5949160048738230993]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 5949160048738230993
+                },
+                "Component_[7069757442037403546]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 7069757442037403546,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 8406078395808436009
+                        },
+                        {
+                            "ComponentId": 9469271735758494477,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 4004895580151009916,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 15695175229307539942,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[8406078395808436009]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 8406078395808436009,
+                    "Parent Entity": "ContainerEntity",
+                    "Cached World Transform": {
+                        "Translation": [
+                            -0.9528284072875977,
+                            -3.110790252685547,
+                            1.4851393699645997
+                        ]
+                    },
+                    "Cached World Transform Parent": "ContainerEntity",
+                    "Transform Data": {
+                        "Translate": [
+                            0.013340950012207032,
+                            -0.012479305267333985,
+                            0.0
+                        ]
+                    }
+                },
+                "Component_[94124159756316305]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 94124159756316305
+                },
+                "Component_[9469271735758494477]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 9469271735758494477,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
+                                    "subId": 272561654
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_locked_edge.azmodel"
+                            }
+                        }
+                    }
+                }
+            },
+            "IsDependencyReady": true
+        }
+    }
+}
