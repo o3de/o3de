@@ -7,6 +7,8 @@
                     "engine-path",
                     "project-cache-path",
                     "project-build-path",
+                    "project-user-path",
+                    "project-log-path",
                     "regset",
                     "regremove",
                     "regdump",

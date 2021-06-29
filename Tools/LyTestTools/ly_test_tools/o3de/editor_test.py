@@ -1,13 +1,6 @@
-"""
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
-
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
+# Copyright (c) Contributors to the Open 3D Engine Project
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 import inspect
@@ -17,6 +10,7 @@ import os, sys
 import threading
 import math
 import json
+import logging
 
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.waiter as waiter
@@ -24,8 +18,7 @@ import ly_test_tools.environment.process_utils as process_utils
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from .editor_test_utils import EditorUtils
-
+from . import editor_test_utils as editor_utils
 
 # Abstract base class for an editor test
 class EditorTestBase(ABC):
@@ -303,9 +296,9 @@ class EditorTestSuite():
             cls._asset_processor.stop(1)
             cls._asset_processor.teardown()
             cls._asset_processor = None
-            EditorUtils.kill_all_ly_processes(include_asset_processor=True)
+            editor_utils.kill_all_ly_processes(include_asset_processor=True)
         else:
-            EditorUtils.kill_all_ly_processes(include_asset_processor=False)
+            editor_utils.kill_all_ly_processes(include_asset_processor=False)
 
     ### Utils ###
 
@@ -316,11 +309,11 @@ class EditorTestSuite():
             # If another AP process exist, don't kill it, as we don't own it
             if EditorTestSuite._asset_processor is None:
                 if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
-                    EditorUtils.kill_all_ly_processes()
+                    editor_utils.kill_all_ly_processes()
                     EditorTestSuite._asset_processor = AssetProcessor(workspace)
                     EditorTestSuite._asset_processor.start()
                 else:
-                    EditorUtils.kill_all_ly_processes(include_asset_processor=False)
+                    editor_utils.kill_all_ly_processes(include_asset_processor=False)
             else:
                 # Make sure the asset processor from before wasn't closed by accident
                 EditorTestSuite._asset_processor.start()
@@ -330,7 +323,7 @@ class EditorTestSuite():
 
     def _setup_editor_test(self, editor, workspace):
         self._prepare_asset_processor(workspace)
-        EditorUtils.kill_all_ly_processes(include_asset_processor=False)
+        editor_utils.kill_all_ly_processes(include_asset_processor=False)
         editor.configure_settings()
 
     # Utility function for parsing the output information from the editor.
@@ -355,7 +348,7 @@ class EditorTestSuite():
                         continue
 
         for test_spec in test_spec_list:
-            name = EditorUtils.get_testcase_module_name(test_spec.test_module)
+            name = test_spec.test_module.__name__
             if name not in found_jsons.keys():
                 results[test_spec.__name__] = Result.Unknown.create(output, "??", editor_log_content)
             else:
@@ -389,13 +382,16 @@ class EditorTestSuite():
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
             
+        # Cycle any old crash report in case it wasn't cycled properly
+        editor_utils.cycle_crash_report(run_id, workspace)
+
         test_result = None
         results = {}
-        test_filename = EditorUtils.get_testcase_module_filepath(test_spec.test_module)
+        test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
-            "-project-user-path", EditorUtils.retrieve_user_path(run_id, workspace)] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -403,23 +399,23 @@ class EditorTestSuite():
             editor.wait(test_spec.timeout)
             output = editor.get_output()
             return_code = editor.get_returncode()
-            editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 
             if return_code == 0:
                 test_result = Result.Pass.create(output, editor_log_content)
             else:
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
-                    test_result = Result.Crash.create(output, return_code, EditorUtils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
-                    EditorUtils.delete_crash_report(run_id, workspace)
+                    test_result = Result.Crash.create(output, return_code, editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
+                    editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(output, editor_log_content)
         except WaitTimeoutError:
             editor.kill()            
-            editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(output, test_spec.timeout, editor_log_content)
     
-        editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
+        editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], editor_log_content, output)
         results[test_spec.__name__] = test_result
         return results
@@ -433,12 +429,15 @@ class EditorTestSuite():
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
             
+        # Cycle any old crash report in case it wasn't cycled properly
+        editor_utils.cycle_crash_report(run_id, workspace)
+
         results = {}
-        test_filenames_str = ";".join(EditorUtils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
+        test_filenames_str = ";".join(editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
         cmdline = [
             "--runpythontest", test_filenames_str,
             "-logfile", f"@log@/{log_name}",
-            "-project-user-path", EditorUtils.retrieve_user_path(run_id, workspace)] + test_cmdline_args
+            "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
 
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
@@ -449,7 +448,7 @@ class EditorTestSuite():
             editor.wait(total_timeout)
             output = editor.get_output()
             return_code = editor.get_returncode()
-            editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 
             if return_code == 0:
                 # No need to scrap the output, as all the tests have passed
@@ -463,8 +462,8 @@ class EditorTestSuite():
                     for key, result in results.items():
                         if isinstance(result, Result.Unknown):
                             if not crashed_test:
-                                crash_error = EditorUtils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
-                                EditorUtils.delete_crash_report(run_id, workspace)
+                                crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
+                                editor_utils.cycle_crash_report(run_id, workspace)
                                 results[key] = Result.Crash.create(output, return_code, crash_error, editor_log_content)
                                 crashed_test = results[key]
                             else:
@@ -472,7 +471,7 @@ class EditorTestSuite():
 
         except WaitTimeoutError:
             results = self._get_results_using_output(test_spec_list, editor_log_content, output)
-            editor_log_content = EditorUtils.retrieve_editor_log_content(run_id, log_name, workspace)
+            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             editor.kill()
             for key, result in results.items():
                 if isinstance(result, Result.Unknown):
@@ -488,8 +487,8 @@ class EditorTestSuite():
             extra_cmdline_args = test_spec.extra_cmdline_args
 
         results = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
-        if not hasattr(EditorTestSuite, "results"):
-            EditorTestSuite.results = {}
+        if not hasattr(EditorTestSuite, "_results"):
+            EditorTestSuite._results = {}
 
         EditorTestSuite._results.update(results)
         test_name, test_result = next(iter(results.items()))
@@ -499,8 +498,9 @@ class EditorTestSuite():
     def _run_batched_tests(self, request, workspace, editor, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         self._setup_editor_test(editor, workspace)
         results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list, extra_cmdline_args)
-        if not hasattr(EditorTestSuite, "results"):
-            EditorTestSuite.results = {}
+        assert results is not None
+        if not hasattr(EditorTestSuite, "_results"):
+            EditorTestSuite._results = {}
             
         EditorTestSuite._results.update(results)
 
@@ -521,6 +521,7 @@ class EditorTestSuite():
                 def make_func(test_spec, index, my_editor):
                     def run(request, workspace, extra_cmdline_args):
                         results = self._exec_editor_test(request, workspace, my_editor, index+1, f"editor_test.log", test_spec, extra_cmdline_args)
+                        assert results is not None
                         results_per_thread[index] = results
                     return run
 
@@ -549,8 +550,10 @@ class EditorTestSuite():
             tests_for_thread = test_spec_list[i*tests_per_editor:(i+1)*tests_per_editor]
             def make_func(test_spec_list_for_editor, index, my_editor):
                 def run(request, workspace, extra_cmdline_args):
+                    results = None
                     if len(test_spec_list_for_editor) > 0:
                         results = self._exec_editor_multitest(request, workspace, my_editor, index+1, f"editor_test.log", test_spec_list_for_editor, extra_cmdline_args)
+                        assert results is not None
                     else:
                         results = {}
                     results_per_thread[index] = results
