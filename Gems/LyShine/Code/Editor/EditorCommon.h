@@ -161,7 +161,7 @@ enum class FusibleCommand
 
 // IMPORTANT: This is NOT the permanent location for these values.
 #define AZ_QCOREAPPLICATION_SETTINGS_ORGANIZATION_NAME "Amazon"
-#define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME "Open 3D Engine"
+#define AZ_QCOREAPPLICATION_SETTINGS_APPLICATION_NAME "O3DE"
 
 // See: http://en.wikipedia.org/wiki/Internet_media_type#Prefix_x
 #define UICANVASEDITOR_MIMETYPE "application/x-amazon-o3de-uicanvaseditor"
