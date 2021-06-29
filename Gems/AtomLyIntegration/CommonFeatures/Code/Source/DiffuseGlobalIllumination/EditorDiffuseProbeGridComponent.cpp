@@ -147,6 +147,9 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+
+            AZ::u64 entityId = (AZ::u64)GetEntityId();
+            m_controller.m_configuration.m_entityId = entityId;
         }
 
         void EditorDiffuseProbeGridComponent::Deactivate()
