@@ -325,6 +325,7 @@ namespace AZ
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
+                m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
 
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
                 // If the model instance or asset already exists, announce a model change to let others know it's loaded.
@@ -428,13 +429,9 @@ namespace AZ
         {
             if (m_isVisible != visible)
             {
-                if (m_isVisible)
+                if (m_meshFeatureProcessor)
                 {
-                    UnregisterModel();
-                }
-                else
-                {
-                    RegisterModel();
+                    m_meshFeatureProcessor->SetVisible(m_meshHandle, visible);
                 }
                 m_isVisible = visible;
             }

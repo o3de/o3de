@@ -496,6 +496,7 @@ namespace EditorPythonBindings
             // ignore system location for sites site-packages
             Py_IsolatedFlag = 1; // -I - Also sets Py_NoUserSiteDirectory.  If removed PyNoUserSiteDirectory should be set.
             Py_IgnoreEnvironmentFlag = 1; // -E
+            Py_InspectFlag = 1; // unhandled SystemExit will terminate the process unless Py_InspectFlag is set
 
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);

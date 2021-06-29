@@ -23,9 +23,9 @@
 
 int main(int argc, char** argv)
 {
-    QApplication::setOrganizationName("Amazon");
-    QApplication::setOrganizationDomain("amazon.com");
-    QApplication::setApplicationName("ShaderManagementConsole");
+    QApplication::setOrganizationName("O3DE");
+    QApplication::setOrganizationDomain("o3de.com");
+    QApplication::setApplicationName("O3DE Shader Management Console");
 
     AzQtComponents::PrepareQtPaths();
 

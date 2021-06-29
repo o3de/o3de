@@ -1854,7 +1854,7 @@ void CTrackViewDialog::ReadMiscSettings()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::SaveLayouts()
 {
-    QSettings settings("Amazon", "O3DE");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("TrackView");
     QByteArray stateData = this->saveState();
     settings.setValue("layout", stateData);
@@ -1870,7 +1870,7 @@ void CTrackViewDialog::SaveLayouts()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDialog::ReadLayouts()
 {
-    QSettings settings("Amazon", "O3DE");
+    QSettings settings("O3DE", "O3DE");
     settings.beginGroup("TrackView");
 
     setViewMode(static_cast<ViewMode>(settings.value("lastViewMode").toInt()));

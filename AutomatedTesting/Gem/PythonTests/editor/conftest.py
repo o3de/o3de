@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 layout = {
-    'path': r'Software\Amazon\O3DE\Editor\fancyWindowLayouts',
+    'path': r'Software\O3DE\O3DE\Editor\fancyWindowLayouts',
     'value': 'last'
 }
 restore_camera = {
     'new': 16384,
-    'path': r'Software\Amazon\Lumberyard\Editor\AutoHide',
+    'path': r'Software\O3DE\O3DE\Editor\AutoHide',
     'value': 'ViewportCameraRestoreOnExitGameMode'
 }
 

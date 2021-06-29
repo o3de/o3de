@@ -549,7 +549,7 @@ public:
         QCommandLineParser parser;
         parser.addHelpOption();
         parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-        parser.setApplicationDescription(QObject::tr("Open 3D Engine"));
+        parser.setApplicationDescription(QObject::tr("O3DE Editor"));
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
@@ -1654,7 +1654,7 @@ BOOL CCryEditApp::InitInstance()
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
     GetIEditor()->AddUIEnums();
 
-    mainWindowWrapper->enableSaveRestoreGeometry("amazon", "O3DE", "mainWindowGeometry");
+    mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
 
     if (IsInRegularEditorMode())
@@ -2335,12 +2335,6 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             }
 
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
-
-            IEditor* pEditor = GetIEditor();
-            if (!pEditor->GetGameEngine()->IsLevelLoaded() && pEditor->GetSystem()->NeedDoWorkDuringOcclusionChecks())
-            {
-                pEditor->GetSystem()->DoWorkDuringOcclusionChecks();
-            }
 
             // Since the rendering is done based on the eNotify_OnIdleUpdate, we should trigger a TickSystem as well.
             // To ensure that there's a system tick for every render done in Idle

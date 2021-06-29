@@ -63,7 +63,7 @@ namespace MaterialEditor
         auto mainWindowWrapper =
             new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
         mainWindowWrapper->setGuest(this);
-        mainWindowWrapper->enableSaveRestoreGeometry("amazon", "MaterialEditor", "mainWindowGeometry");
+        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "MaterialEditor", "mainWindowGeometry");
 
         // set the style sheet for RPE highlighting and other styling
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));

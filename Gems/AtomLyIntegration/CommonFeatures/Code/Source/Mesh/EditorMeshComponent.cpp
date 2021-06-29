@@ -204,6 +204,7 @@ namespace AZ
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
                 AzToolsFramework::Refresh_EntireTree);
         }
+
         AZ::u32 EditorMeshComponent::OnConfigurationChanged()
         {
             // temp variable is needed to hold reference to m_modelAsset while it's being loaded.
@@ -212,6 +213,19 @@ namespace AZ
             // This is a bug with AssetManager [LYN-2249]
             auto temp = m_controller.m_configuration.m_modelAsset;
             return BaseClass::OnConfigurationChanged();
+        }
+
+        void EditorMeshComponent::OnEntityVisibilityChanged(bool visibility)
+        {
+            m_controller.SetVisibility(visibility);
+        }
+
+        bool EditorMeshComponent::ShouldActivateController() const
+        {
+            // By default, components using the EditorRenderComponentAdapter will only activate if the component is visible
+            // Since the mesh component handles visibility changes by not rendering the mesh, rather than deactivating the component entirely,
+            // it can be activated even if it is not visible
+            return true;
         }
     } // namespace Render
 } // namespace AZ
