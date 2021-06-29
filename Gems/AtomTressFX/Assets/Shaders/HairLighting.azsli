@@ -403,12 +403,11 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
 //==============================================================================
 //                             Atom Lighting
 //==============================================================================
-#include <HairLightTypes.azsli>
-//#include <Atom/Features/PBR/Lights/Ibl.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+#include <HairLightTypes.azsli>
 //------------------------------------------------------------------------------
 
-float3 CalculateDirectLighting( 
+float3 CalculateLighting( 
     float4 screenCoords,    // XY - screen coords 0..max pix res, Z - depth 0..1
     float3 vPositionWS, float3 vViewDirWS, float3 vTangent, 
     float3 baseColor)
@@ -420,12 +419,13 @@ float3 CalculateDirectLighting(
     const float metallic = 0.05;
 
     surface.position = vPositionWS;
-    surface.normal = normalize(vTangent); 
+    surface.normal = vTangent;              // Somewhat redundant - it will be recalculated per light
     surface.roughnessLinear = 0.51f;
     surface.CalculateRoughnessA();
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
     surface.clearCoat.InitializeToZero();
     surface.transmission.InitializeToZero();
+    surface.clearCoat.normal = vTangent;    // Will be used as our tangent per hair per fragment
 
     //------- LightingData init -------
     LightingData lightingData;
@@ -469,24 +469,16 @@ float3 CalculateDirectLighting(
 //    return float3(0, float(bin), 0);
 //    return float3(0, float(bin) / NVLC_MAX_BINS, 0);
 
-    // [To Do] Adi: Ignore for now, possibly fill in later
+    // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     if (shadowIndex < SceneSrg::m_directionalLightCount)
     {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            vPositionWS,
-            lightingData.shadowCoords);
+        DirectionalLightShadow::GetShadowCoords(shadowIndex, vPositionWS, lightingData.shadowCoords);
     }
-//    lightingData.shadowCoords = IN.m_shadowCoords;
-
-    // Diffuse and Specular response
-    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
-    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
 
     //-------------------------
-    // Applying the light loops - if culling is used, the order of the 
-    // calls must match the light types list order 
+    // Light loops application.
+    // If culling is used, the order of the calls must match the light types list order 
     ApplyDecals(lightingData.tileIterator, surface);
 
     ApplyDirectionalLights(surface, lightingData);
@@ -495,11 +487,9 @@ float3 CalculateDirectLighting(
     ApplyAllSimpleSpotLights(surface, lightingData);
     ApplyAllPointLights(surface, lightingData);
 
-//    ApplyIBL(); // this cannot be applied at current stage due to lack of probe in the ObjectSrg
+    ApplyIBL(surface, lightingData); 
     //--------------------------
 
-//    return lightingData.specularLighting;
-//    return lightingData.diffuseLighting;
     return lightingData.diffuseLighting + lightingData.specularLighting;
 }
 
@@ -532,7 +522,7 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     params.m_Ex2 = HairParams[shaderParamIndex].m_hairEx2;
     //---------------------------------------------------
 
-    return CalculateDirectLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, baseColor);
+    return CalculateLighting(screenCoords, vPositionWS, vViewDirWS, vTangent, baseColor);
     return SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
     return AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
 }

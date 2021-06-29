@@ -69,15 +69,20 @@ void UpdateLightingParameters(
     float3 positionWS, float3 normal, float roughnessLinear)
 {
     lightingData.dirToCamera = normalize(ViewSrg::m_worldPosition.xyz - positionWS);
+
     // sample BRDF map (indexed by smoothness values rather than roughness)
     lightingData.NdotV = saturate(dot(normal, lightingData.dirToCamera));
+
     float2 brdfUV = float2(lightingData.NdotV, (1.0f - roughnessLinear));
+
     lightingData.brdf = PassSrg::m_brdfMap.Sample(PassSrg::LinearSampler, brdfUV).rg;
 }
 
 //==============================================================================
-void SetNormal(in float3 tangent, in float3 dirToLight, 
-    inout Surface surface, inout LightingData lightingData)
+void SetNormal(
+    in float3 tangent, in float3 dirToLight, 
+    inout Surface surface, 
+    inout LightingData lightingData)
 {
     // Direct towards close to half vector by never cross fully (more weight to camera direction)
     float3 halfDir = normalize( dirToLight + 1.2 * lightingData.dirToCamera);
@@ -123,14 +128,13 @@ void ApplySimplePointLight(ViewSrg::SimplePointLight light, Surface surface, ino
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         float3 dirToLight = normalize(posToLight);
-        SetNormal(surface.normal, dirToLight, surface, lightingData);
+        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
 
         // Specular contribution
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight);
-        //---------------------------------------------------
     }
 }
 
@@ -199,7 +203,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
             lightIntensity *= penumbraMask;
         }
 
-        SetNormal(surface.normal, dirToLight, surface, lightingData);
+        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
@@ -238,7 +242,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
 
         float3 dirToLight = normalize(posToLight);
-        SetNormal(surface.normal, dirToLight, surface, lightingData);
+        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight);
@@ -274,10 +278,8 @@ void ApplyAllPointLights(Surface surface, inout LightingData lightingData)
     }
 }
 //==============================================================================
-
-
-#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
-
+//                            Directional Light 
+//==============================================================================
 void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 {
     DirectionalLightShadow::DebugInfo debugInfo = {0, false};
@@ -317,8 +319,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         dirToLight += lightDirToReflectionDir * lightDirToReflectionDirLen;
         dirToLight = normalize(dirToLight);
 
-        SetNormal(surface.normal, dirToLight, surface, lightingData);
-
+        SetNormal(surface.clearCoat.normal, dirToLight, surface, lightingData);
 
         // [GFX TODO][ATOM-2012] care of multiple directional light
         // Currently shadow check is done only for index == shadowIndex.
@@ -339,4 +340,63 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
         lightingData.specularLighting += GetSpecularLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight) * currentLitRatio;
         lightingData.translucentBackLighting += GetBackLighting(surface, lightingData, light.m_rgbIntensityLux, dirToLight, currentBackShadowRatio);
     }
+}
+
+//==============================================================================
+//                         IBL - GI and Reflections
+//==============================================================================
+void ApplyIblDiffuse(
+    float3 normal, 
+    float3 albedo, 
+    float3 diffuseResponse, 
+    out float3 outDiffuse)
+{
+    float3 irradianceDir = MultiplyVectorQuaternion(normal, SceneSrg::m_iblOrientation);
+    float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
+
+    outDiffuse = diffuseResponse * albedo * diffuseSample;
+}
+
+void ApplyIblSpecular(
+    float3 position, 
+    float3 normal, 
+    float3 specularF0, 
+    float roughnessLinear, 
+    float3 dirToCamera, 
+    float2 brdf, 
+    out float3 outSpecular)
+{
+    float3 reflectDir = reflect(-dirToCamera, normal);
+    reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
+
+    // global
+    outSpecular = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+    outSpecular *= (specularF0 * brdf.x + brdf.y);
+}
+
+void ApplyIBL(Surface surface, inout LightingData lightingData)
+{
+    SetNormal(surface.clearCoat.normal, lightingData.dirToCamera, surface, lightingData);
+
+    float3 iblDiffuse = 0.0f;
+    ApplyIblDiffuse(
+        surface.normal, 
+        surface.albedo, 
+        lightingData.diffuseResponse, 
+        iblDiffuse);
+
+    float3 iblSpecular = 0.0f;
+    ApplyIblSpecular(
+        surface.position, 
+        surface.normal, 
+        surface.specularF0, 
+        surface.roughnessLinear, 
+        lightingData.dirToCamera, 
+        lightingData.brdf, 
+        iblSpecular);
+
+    // Adjust IBL lighting by exposure.
+    float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
+    lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
+    lightingData.specularLighting += (iblSpecular * iblExposureFactor);
 }
