@@ -37,6 +37,7 @@ set(FILES
     API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
+    API/EditorPythonScriptNotificationsBus.h
     API/EntityPropertyEditorRequestsBus.h
     API/EditorWindowRequestBus.h
     API/EntityCompositionRequestBus.h

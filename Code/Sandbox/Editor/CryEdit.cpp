@@ -532,6 +532,7 @@ public:
     QString m_appRoot;
     QString m_logFile;
     QString m_pythonArgs;
+    QString m_pythontTestCase;
     QString m_execFile;
     QString m_execLineCmd;
 
@@ -578,6 +579,7 @@ public:
         const std::vector<std::pair<CommandLineStringOption, QString&> > stringOptions = {
             {{"logfile", "File name of the log file to write out to.", "logfile"}, m_logFile},
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
+            {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythontTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
             {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
             {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
@@ -1516,7 +1518,13 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
             std::transform(tokens.begin(), tokens.end(), std::back_inserter(pythonArgs), [](auto& tokenData) { return tokenData.c_str(); });
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                AZStd::string pythonTestCase;
+                if (!cmdInfo.m_pythontTestCase.isEmpty())
+                {
+                    pythonTestCase = cmdInfo.m_pythontTestCase.toUtf8().constData();
+                }
+
+                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonTestCase, pythonArgs);
 
                 // Close the editor gracefully as the test has completed
                 GetIEditor()->GetDocument()->SetModifiedFlag(false);

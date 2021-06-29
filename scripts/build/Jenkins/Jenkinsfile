@@ -476,7 +476,7 @@ try {
                         }
                     } else {
                         // Non-PR builds
-                        choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.')
+                        pipelineParameters.add(choice(defaultValue: DEFAULT_BUILD_SNAPSHOT, name: 'SNAPSHOT', choices: BUILD_SNAPSHOTS, description: 'Selects the build snapshot to use. A more diverted snapshot will cause longer build times, but will not cause build failures.'))
                         snapshot = env.SNAPSHOT
                         echo "Snapshot \"${snapshot}\" selected."
                     }

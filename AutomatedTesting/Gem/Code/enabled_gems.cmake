@@ -48,6 +48,7 @@ set(ENABLED_GEMS
     LyShine
     HttpRequestor
     Atom_AtomBridge
+    PythonCoverage
 )
 
 # TODO remove conditional add once AWSNativeSDK libs are fixed for Android and Linux Monolithic release.
