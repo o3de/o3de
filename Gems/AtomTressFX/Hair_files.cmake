@@ -102,9 +102,9 @@ set(FILES
     Assets/Shaders/HairRenderingFillPPLL.azsl
     Assets/Shaders/HairRenderingResolvePPLL.azsl
 
-    # Collision shaders
-    Assets/Shaders/HairCollisionPrepareSDF.azsl
-    Assets/Shaders/HairCollisionWithSDF.azsl
+    # Collision shaders - to be included soon
+#    Assets/Shaders/HairCollisionPrepareSDF.azsl
+#    Assets/Shaders/HairCollisionWithSDF.azsl
     
 
     # Simulation .shader files
@@ -120,11 +120,11 @@ set(FILES
     Assets/Shaders/HairRenderingFillPPLL.shader
     Assets/Shaders/HairRenderingResolvePPLL.shader
     
-    # Colisions .shader files
-    Assets/Shaders/HairCollisionInitializeSDF.shader 
-    Assets/Shaders/HairCollisionConstructSDF.shader
-    Assets/Shaders/HairCollisionFinalizeSDF.shader
-    Assets/Shaders/HairCollisionWithSDF.shader 
+    # Colisions .shader files - to be included soon
+#    Assets/Shaders/HairCollisionInitializeSDF.shader 
+#    Assets/Shaders/HairCollisionConstructSDF.shader
+#    Assets/Shaders/HairCollisionFinalizeSDF.shader
+#    Assets/Shaders/HairCollisionWithSDF.shader 
 #)
 #
 #set(atom_hair_passes
