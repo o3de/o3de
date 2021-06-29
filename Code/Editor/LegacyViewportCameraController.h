@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <AzCore/EBus/EBus.h>
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
 #include <AzCore/Math/Vector3.h>
@@ -23,18 +24,36 @@ namespace AzFramework
 
 namespace SandboxEditor
 {
+    class OrbitCameraControls
+    : public AZ::EBusTraits
+    {
+        //////////////////////////////////////////////////////////////////////////
+        // EBusTraits overrides
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AzFramework::ViewportId;
+        //////////////////////////////////////////////////////////////////////////
+
+        virtual void SetOrbitDistance(float orbitDistance) {;}
+    }
+    using OrbitCameraControlsBus = AZ::Ebus<OrbitCameraControls>;
+
     class LegacyViewportCameraControllerInstance;
     using LegacyViewportCameraController = AzFramework::MultiViewportController<LegacyViewportCameraControllerInstance>;
 
     class LegacyViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<LegacyViewportCameraController>
+        , public OrbitCameraControlsBus::Handler
     {
     public:
         LegacyViewportCameraControllerInstance(AzFramework::ViewportId viewport, LegacyViewportCameraController* controller);
+        ~LegacyViewportCameraControllerInstance();
 
         bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         void ResetInputChannels() override;
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
+
+        void SetOrbitDistance(float orbitDistance) override;
 
     private:
         bool JustAltHeld() const;
