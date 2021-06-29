@@ -832,8 +832,6 @@ set(FILES
     IEditorPanelUtils.h
     EditorPanelUtils.h
     EditorPanelUtils.cpp
-    ExeSelectPropertyHandler.cpp
-    ExeSelectPropertyHandler.h
 )
 
 

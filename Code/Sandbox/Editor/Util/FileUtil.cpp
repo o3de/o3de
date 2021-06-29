@@ -251,9 +251,7 @@ void CFileUtil::HandlePrefsDialogForFileType(const Common::EditFileType fileType
     }
 
     // Wait for the dialog to complete.
-    QEventLoop loop;
-    QObject::connect(&dlg, SIGNAL(finished(int)), &loop, SLOT(quit()));
-    loop.exec();
+    dlg.exec();
 }
 
 AZStd::string CFileUtil::GetSettingsKeyForFileType(const Common::EditFileType fileType)
