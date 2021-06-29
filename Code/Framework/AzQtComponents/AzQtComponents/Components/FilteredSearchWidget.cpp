@@ -319,7 +319,7 @@ namespace AzQtComponents
 
         // add a special row that indicates that no categories (other than the fixed ones) match the filter
         // this row itself will be filtered out when there are other matching categories
-        m_filterModel->setNoResultsMessageRow(m_model->rowCount()); // <apm> this shit gets called multiple times.
+        m_filterModel->setNoResultsMessageRow(m_model->rowCount());
         QStandardItem* noResultsMessage = new QStandardItem(QObject::tr("<i>No result found.</i>"));
         noResultsMessage->setEditable(false);
         m_model->appendRow(new QStandardItem(QObject::tr("<i>No result found.</i>")));
@@ -551,23 +551,21 @@ namespace AzQtComponents
 
     void SearchTypeSelectorFilterModel::onRowCountChanged()
     {
-        if (m_showingNoResultsMessage == false)
+        // see if we need to hide or show the "no results" message item
+        const int numLeafNodes = getNumLeafNodes();
+
+        // check if we're down to the (never filtered) fixed items, and should show the "no results" message,
+        // or if we were already showing that message, check if we have more than the fixed items plus the message itself
+        const bool hasResultsChanged = (m_showingNoResultsMessage ? numLeafNodes > m_searchTypeSelector->GetNumFixedItems() + 1
+                                                                  : numLeafNodes <= m_searchTypeSelector->GetNumFixedItems());
+
+        if (hasResultsChanged)
         {
-            // check if we're down to the (never filtered) fixed items, and show the "no results" message
-            if (getNumLeafNodes() == m_searchTypeSelector->GetNumFixedItems())
-            {
-                m_showingNoResultsMessage = true;
-                QModelIndex noResultsMessageIndex = sourceModel()->index(m_noResultsRow, 0);
-                sourceModel()->dataChanged(noResultsMessageIndex, noResultsMessageIndex);
-            }
-        }
-        else if (getNumLeafNodes() > m_searchTypeSelector->GetNumFixedItems() + 1)
-        {
-            // we were showing only the fixed items + the one "no results" item,
-            // but now there's more. Turn off the "no results message"
-            m_showingNoResultsMessage = false;
+            m_showingNoResultsMessage = !m_showingNoResultsMessage;
             QModelIndex noResultsMessageIndex = sourceModel()->index(m_noResultsRow, 0);
-            sourceModel()->dataChanged(noResultsMessageIndex, noResultsMessageIndex);
+
+            // The no results row is in the source model, so trigger dataChanged to allow us to re-filter it
+            emit sourceModel()->dataChanged(noResultsMessageIndex, noResultsMessageIndex);
         }
     }
 
