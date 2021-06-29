@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include "EditorDefs.h"
 
@@ -117,7 +112,6 @@ AZ_POP_DISABLE_WARNING
 #include "LevelInfo.h"
 #include "EditorPreferencesDialog.h"
 #include "GraphicsSettingsDialog.h"
-#include "FeedbackDialog/FeedbackDialog.h"
 #include "AnimationContext.h"
 
 #include "GotoPositionDlg.h"
@@ -363,17 +357,13 @@ void CCryEditApp::RegisterActionHandlers()
 {
     ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
     ON_COMMAND(ID_APP_SHOW_WELCOME, OnAppShowWelcomeScreen)
-    ON_COMMAND(ID_DOCUMENTATION_GETTINGSTARTEDGUIDE, OnDocumentationGettingStartedGuide)
     ON_COMMAND(ID_DOCUMENTATION_TUTORIALS, OnDocumentationTutorials)
-    ON_COMMAND(ID_DOCUMENTATION_GLOSSARY, OnDocumentationGlossary)
     ON_COMMAND(ID_DOCUMENTATION_O3DE, OnDocumentationO3DE)
     ON_COMMAND(ID_DOCUMENTATION_GAMELIFT, OnDocumentationGamelift)
     ON_COMMAND(ID_DOCUMENTATION_RELEASENOTES, OnDocumentationReleaseNotes)
     ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
-    ON_COMMAND(ID_DOCUMENTATION_TWITCHCHANNEL, OnDocumentationTwitchChannel)
     ON_COMMAND(ID_DOCUMENTATION_FORUMS, OnDocumentationForums)
     ON_COMMAND(ID_DOCUMENTATION_AWSSUPPORT, OnDocumentationAWSSupport)
-    ON_COMMAND(ID_DOCUMENTATION_FEEDBACK, OnDocumentationFeedback)
     ON_COMMAND(ID_FILE_EXPORT_SELECTEDOBJECTS, OnExportSelectedObjects)
     ON_COMMAND(ID_EDIT_HOLD, OnEditHold)
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
@@ -559,10 +549,9 @@ public:
     {
         bool dummy;
         QCommandLineParser parser;
-        QString appRootOverride;
         parser.addHelpOption();
         parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-        parser.setApplicationDescription(QObject::tr("Open 3D Engine"));
+        parser.setApplicationDescription(QObject::tr("O3DE Editor"));
         // nsDocumentRevisionDebugMode is an argument that the macOS system passed into an App bundle that is being debugged.
         // Need to include it here so that Qt argument parser does not error out.
         bool nsDocumentRevisionsDebugMode = false;
@@ -645,7 +634,7 @@ public:
             option.second = parser.value(option.first.valueName);
         }
 
-        m_bExport = m_bExport | m_bExportTexture;
+        m_bExport = m_bExport || m_bExportTexture;
 
         const QStringList positionalArgs = parser.positionalArguments();
 
@@ -935,9 +924,9 @@ QString FormatRichTextCopyrightNotice()
 {
     // copyright symbol is HTML Entity = &#xA9;
     QString copyrightHtmlSymbol = "&#xA9;";
-    QString copyrightString = QObject::tr("Open 3D Engine and related materials Copyright %1 %2 Amazon Web Services, Inc., its affiliates or licensors.<br>By accessing or using these materials, you agree to the terms of the AWS Customer Agreement.");
+    QString copyrightString = QObject::tr("Copyright %1 Contributors to the Open 3D Engine Project");
 
-    return copyrightString.arg(copyrightHtmlSymbol).arg(O3DE_COPYRIGHT_YEAR);
+    return copyrightString.arg(copyrightHtmlSymbol);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1729,7 +1718,7 @@ BOOL CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle();
+    SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1851,7 +1840,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(0, 0, GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -2019,40 +2008,33 @@ void CCryEditApp::OnUpdateShowWelcomeScreen(QAction* action)
         && !m_savingLevel);
 }
 
-// App command to open online documentation page
-void CCryEditApp::OnDocumentationGettingStartedGuide()
-{
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/latest/gettingstartedguide");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationTutorials()
 {
-    QString webLink = tr("https://www.youtube.com/amazonlumberyardtutorials");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/learning-guide/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationGlossary()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide/glossary");
+    QString webLink = tr("https://docs.o3de.org/docs/user-guide/appendix/glossary/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationO3DE()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/userguide");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationGamelift()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/gamelift/developerguide");
+    QString webLink = tr("https://docs.aws.amazon.com/gamelift/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
 void CCryEditApp::OnDocumentationReleaseNotes()
 {
-    QString webLink = tr("https://docs.aws.amazon.com/lumberyard/releasenotes");
+    QString webLink = tr("https://o3deorg.netlify.app/docs/release-notes/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2062,15 +2044,9 @@ void CCryEditApp::OnDocumentationGameDevBlog()
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
-void CCryEditApp::OnDocumentationTwitchChannel()
-{
-    QString webLink = tr("http://twitch.tv/amazongamedev");
-    QDesktopServices::openUrl(QUrl(webLink));
-}
-
 void CCryEditApp::OnDocumentationForums()
 {
-    QString webLink = tr("https://gamedev.amazon.com/forums");
+    QString webLink = tr("https://o3deorg.netlify.app/community/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2078,14 +2054,6 @@ void CCryEditApp::OnDocumentationAWSSupport()
 {
     QString webLink = tr("https://aws.amazon.com/contact-us");
     QDesktopServices::openUrl(QUrl(webLink));
-}
-
-void CCryEditApp::OnDocumentationFeedback()
-{
-    FeedbackDialog dialog;
-    dialog.show();
-    dialog.adjustSize();
-    dialog.exec();
 }
 
 bool CCryEditApp::FixDanglingSharedMemory(const QString& sharedMemName) const
@@ -4005,7 +3973,6 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 {
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-
         if (sTitleStr.isEmpty())
         {
             sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
@@ -4013,7 +3980,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
 
         if (!sPreTitleStr.isEmpty())
         {
-            sTitleStr.insert(0, sPreTitleStr);
+            sTitleStr.insert(sTitleStr.length(), QStringLiteral(" - %1").arg(sPreTitleStr));
         }
 
         if (!sPostTitleStr.isEmpty())
@@ -4306,6 +4273,18 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     // open a scope to contain the AZToolsApp instance;
     {
         EditorInternal::EditorToolsApplication AZToolsApp(&argc, &argv);
+
+        {
+            CEditCommandLineInfo cmdInfo;
+            if (!cmdInfo.m_bAutotestMode && !cmdInfo.m_bConsoleMode && !cmdInfo.m_bExport && !cmdInfo.m_bExportTexture &&
+                !cmdInfo.m_bNullRenderer && !cmdInfo.m_bMatEditMode && !cmdInfo.m_bTest)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
+        }
 
         // The settings registry has been created by the AZ::ComponentApplication constructor at this point
         AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();
