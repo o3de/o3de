@@ -452,8 +452,19 @@ void EditorViewportWidget::Update()
         return;
     }
 
-    m_updatingCameraPosition = true;
-    if (!ed_useNewCameraSystem)
+    if (m_updateCameraPositionNextTick)
+    {
+        auto cameraState = m_renderViewport->GetCameraState();
+        AZ::Matrix3x4 matrix;
+        matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
+        auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
+
+        SetViewTM(m);
+        SetFOV(cameraState.m_fovOrZoom);
+        m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
+        m_updateCameraPositionNextTick = false;
+    }
+    else if (!ed_useNewCameraSystem)
     {
         m_renderViewport->GetViewportContext()->SetCameraTransform(LYTransformToAZTransform(m_Camera.GetMatrix()));
     }
@@ -472,8 +483,6 @@ void EditorViewportWidget::Update()
         );
         m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
     }
-    m_updatingCameraPosition = false;
-
 
     // Don't wait for changes to update the focused viewport.
     if (CheckRespondToInput())
@@ -2894,22 +2903,8 @@ void EditorViewportWidget::UpdateScene()
 
 void EditorViewportWidget::UpdateCameraFromViewportContext()
 {
-    // If we're not updating because the cry camera position changed, we should make sure our position gets copied back to the Cry Camera
-    if (m_updatingCameraPosition)
-    {
-        return;
-    }
-
-    auto cameraState = m_renderViewport->GetCameraState();
-    AZ::Matrix3x4 matrix;
-    matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
-    auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
-
-    m_updatingCameraPosition = true;
-    SetViewTM(m);
-    SetFOV(cameraState.m_fovOrZoom);
-    m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
-    m_updatingCameraPosition = false;
+   // Queue a sync for the next tick, to ensure the latest version of the viewport context transform is used
+    m_updateCameraPositionNextTick = true;
 }
 
 void EditorViewportWidget::SetAsActiveViewport()
