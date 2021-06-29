@@ -1654,7 +1654,7 @@ BOOL CCryEditApp::InitInstance()
     GetIEditor()->GetCommandManager()->RegisterAutoCommands();
     GetIEditor()->AddUIEnums();
 
-    mainWindowWrapper->enableSaveRestoreGeometry("amazon", "O3DE", "mainWindowGeometry");
+    mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "O3DE", "mainWindowGeometry");
     m_pDocManager->OnFileNew();
 
     if (IsInRegularEditorMode())

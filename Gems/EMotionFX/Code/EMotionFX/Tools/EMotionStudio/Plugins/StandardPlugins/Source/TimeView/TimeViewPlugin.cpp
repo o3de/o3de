@@ -138,7 +138,7 @@ namespace EMStudio
     // get the creator name
     const char* TimeViewPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
 

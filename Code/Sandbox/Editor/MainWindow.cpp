@@ -299,7 +299,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
-    , m_settings("amazon", "O3DE") // TODO_KDAB: Replace with a central settings class
+    , m_settings("O3DE", "O3DE") 
     , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
     , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager, m_settings))

@@ -63,7 +63,7 @@ namespace EMStudio
 
     const char* CommandBarPlugin::GetCreatorName() const
     {
-        return "Amazon";
+        return "O3DE";
     }
 
     float CommandBarPlugin::GetVersion() const
