@@ -43,7 +43,7 @@ namespace EMStudio
         const char* GetCompileDate() const override     { return MCORE_DATE; }
         const char* GetName() const override            { return "Motion Events"; }
         uint32 GetClassID() const override              { return MotionEventsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override     { return "Amazon"; }
+        const char* GetCreatorName() const override     { return "O3DE"; }
         float GetVersion() const override               { return 1.0f;  }
         bool GetIsClosable() const override             { return true;  }
         bool GetIsFloatable() const override            { return true;  }
