@@ -92,8 +92,7 @@ namespace O3DE::ProjectManager
 
             QLabel* introLabel = new QLabel(this);
             introLabel->setObjectName("introLabel");
-            introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project. Not sure what to create? \nExplore what's "
-                                   "available by downloading our sample project."));
+            introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project."));
             layout->addWidget(introLabel);
 
             QHBoxLayout* buttonLayout = new QHBoxLayout();
