@@ -36,11 +36,11 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
  
     s_pLogoWindow = this;
 
-    m_backgroundImage = QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_1_27.png"));
+    m_backgroundImage = QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));
     setFixedSize(QSize(600, 300));
 
     // Prepare background image
-    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_1_27.png"));
+    QImage backgroundImage(QStringLiteral(":/StartupLogoDialog/splashscreen_background_gradient.jpg"));
     m_backgroundImage = QPixmap::fromImage(backgroundImage.scaled(m_enforcedWidth, m_enforcedHeight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     // Draw the Open 3D Engine logo from svg
@@ -55,7 +55,7 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     setStyleSheet( "CStartupLogoDialog > QLabel { background: transparent; color: 'white' }\
                     CStartupLogoDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");
 
-    m_ui->m_TransparentVersion->setText(QString("BETA - ") + versionText);
+    m_ui->m_TransparentVersion->setText(versionText);
 }
 
 CStartupLogoDialog::~CStartupLogoDialog()

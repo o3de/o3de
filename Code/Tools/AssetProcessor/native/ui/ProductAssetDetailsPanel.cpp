@@ -438,7 +438,7 @@ namespace AssetProcessor
     void ProductAssetDetailsPanel::OnSupportClicked(bool /*checked*/)
     {
         QDesktopServices::openUrl(
-            QStringLiteral("https://docs.o3de.org/docs/user-guide/packaging/asset-bundler/assets-resolving/"));
+            QStringLiteral("https://o3de.org/docs/user-guide/packaging/asset-bundler/assets-resolving/"));
     }
 
 

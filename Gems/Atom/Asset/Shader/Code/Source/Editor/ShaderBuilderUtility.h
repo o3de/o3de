@@ -13,7 +13,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 #include "AzslData.h"
@@ -178,11 +178,6 @@ namespace AZ
 
             //! Job products sub id generation helper for AzslBuilder
             uint32_t MakeAzslBuildProductSubId(RPI::ShaderAssetSubId subId, RHI::APIType apiType);
-
-            //! Returns the asset path of a product artifact produced by ShaderAssetBuilder2.
-            Outcome<AZStd::string, AZStd::string> ObtainBuildArtifactPathFromShaderAssetBuilder2(
-                const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
-                const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId);
 
             //! Reconstructs the expected output product paths of the AzslBuilder (from the 2 arguments @azslSourceFullPath and @apiType)
             Outcome<AzslSubProducts::Paths> ObtainBuildArtifactsFromAzslBuilder(const char* builderName, const AZStd::string& azslSourceFullPath, RHI::APIType apiType, const AZStd::string& platform);

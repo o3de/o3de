@@ -808,11 +808,6 @@ struct ISystem
     virtual bool UpdateLoadtime() = 0;
 
     // Summary:
-    //   Optimisation: do part of the update while waiting for occlusion queries to complete
-    virtual void DoWorkDuringOcclusionChecks() = 0;
-    virtual bool NeedDoWorkDuringOcclusionChecks() = 0;
-
-    // Summary:
     //   Retrieve the name of the user currently logged in to the computer.
     virtual const char* GetUserName() = 0;
 

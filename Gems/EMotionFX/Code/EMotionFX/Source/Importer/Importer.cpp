@@ -1061,6 +1061,7 @@ namespace EMotionFX
         // shared processors
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable());
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable2());
+        RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable3());
 
         // Actor file format
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo());

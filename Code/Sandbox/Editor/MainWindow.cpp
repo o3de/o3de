@@ -1032,11 +1032,11 @@ void MainWindow::InitActions()
     am->AddAction(ID_DOCUMENTATION_AWSSUPPORT, tr("AWS Support"))
         .SetReserved();
 
-    am->AddAction(ID_APP_ABOUT, tr("&About Open 3D Engine"))
+    am->AddAction(ID_APP_ABOUT, tr("&About O3DE"))
         .SetStatusTip(tr("Display program information, version number and copyright"))
         .SetReserved();
     am->AddAction(ID_APP_SHOW_WELCOME, tr("&Welcome"))
-        .SetStatusTip(tr("Show the Welcome to Open 3D Engine dialog box"))
+        .SetStatusTip(tr("Show the Welcome to O3DE dialog box"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateShowWelcomeScreen);
 
     // Editors Toolbar actions
@@ -1349,10 +1349,6 @@ void MainWindow::RegisterStdViewClasses()
     CSettingsManagerDialog::RegisterViewClass();
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
-
-    //These view dialogs aren't used anymore so they became disabled.
-    //CLightmapCompilerDialog::RegisterViewClass();
-    //CLightmapCompilerDialog::RegisterViewClass();
 
     // Notify that views can now be registered
     AzToolsFramework::EditorEvents::Bus::Broadcast(

@@ -107,7 +107,8 @@ namespace AZ
         }
 
         void FixedShapeProcessor::PrepareFrame()
-        {
+        {            
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: PrepareFrame");
             m_processSrgs.clear();
             m_drawPackets.clear();
 

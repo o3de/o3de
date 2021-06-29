@@ -5,7 +5,6 @@
  *
  */
 
-// include the required headers
 #include "MotionEventTrack.h"
 #include "MotionEvent.h"
 #include "EventManager.h"
@@ -20,30 +19,19 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
-
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(MotionEventTrack, MotionEventAllocator, 0)
 
-    // constructor
     MotionEventTrack::MotionEventTrack(Motion* motion)
-        : BaseObject()
-        , mMotion(motion)
-        , mNameID(MCORE_INVALIDINDEX32)
-        , mEnabled(true)
-        , mDeletable(true)
+        : mMotion(motion)
     {
     }
 
-
-    // extended constructor
     MotionEventTrack::MotionEventTrack(const char* name, Motion* motion)
-        : BaseObject()
-        , mMotion(motion)
-        , mEnabled(true)
-        , mDeletable(true)
+        : mMotion(motion)
+        , m_name(name)
     {
-        SetName(name);
     }
 
     MotionEventTrack::MotionEventTrack(const MotionEventTrack& other)
@@ -59,7 +47,7 @@ namespace EMotionFX
         }
         m_events = other.m_events;
         mMotion = other.mMotion;
-        mNameID = other.mNameID;
+        m_name = other.m_name;
         return *this;
     }
 
@@ -72,8 +60,8 @@ namespace EMotionFX
         }
 
         serializeContext->Class<MotionEventTrack>()
-            ->Version(1)
-            ->Field("name", &MotionEventTrack::mNameID)
+            ->Version(2, VersionConverter)
+            ->Field("name", &MotionEventTrack::m_name)
             ->Field("enabled", &MotionEventTrack::mEnabled)
             ->Field("deletable", &MotionEventTrack::mDeletable)
             ->Field("events", &MotionEventTrack::m_events)
@@ -94,6 +82,31 @@ namespace EMotionFX
             ;
     }
 
+    bool MotionEventTrack::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    {
+        const unsigned int version = classElement.GetVersion();
+        if (version < 2)
+        {
+            int nameElementIndex = classElement.FindElement(AZ_CRC_CE("name"));
+            if (nameElementIndex < 0)
+            {
+                return false;
+            }
+            AZ::SerializeContext::DataElementNode& nameElement = classElement.GetSubElement(nameElementIndex);
+
+            MCore::StringIdPoolIndex oldName;
+            const bool result = nameElement.GetData<MCore::StringIdPoolIndex>(oldName);
+
+            classElement.RemoveElement(nameElementIndex);
+            if (result)
+            {
+                AZStd::string newName = MCore::GetStringIdPool().GetName(oldName.m_index);
+                classElement.AddElementWithData(context, "name", newName);
+            }
+        }
+        return true;
+    }
+
 
     // creation
     MotionEventTrack* MotionEventTrack::Create(Motion* motion)
@@ -112,7 +125,7 @@ namespace EMotionFX
     // set the name of the motion event track
     void MotionEventTrack::SetName(const char* name)
     {
-        mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_name = name;
     }
 
 
@@ -362,59 +375,30 @@ namespace EMotionFX
         RemoveAllEvents();
     }
 
-
-    // get the name
     const char* MotionEventTrack::GetName() const
     {
-        if (mNameID == MCORE_INVALIDINDEX32)
-        {
-            return "";
-        }
-
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return m_name.c_str();
     }
 
-
-    // get the name as string object
     const AZStd::string& MotionEventTrack::GetNameString() const
     {
-        if (mNameID == MCORE_INVALIDINDEX32)
-        {
-            return MCore::GetStringIdPool().GetName(0);
-        }
-
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return m_name;
     }
-
 
     // copy the track contents to a target track
     // this overwrites all existing contents of the target track
     void MotionEventTrack::CopyTo(MotionEventTrack* targetTrack) const
     {
-        targetTrack->mNameID = mNameID;
+        targetTrack->m_name = m_name;
         targetTrack->m_events = m_events;
         targetTrack->mEnabled = mEnabled;
     }
-
 
     // reserve memory for a given amount of events
     void MotionEventTrack::ReserveNumEvents(size_t numEvents)
     {
         m_events.reserve(numEvents);
     }
-
-
-    uint32 MotionEventTrack::GetNameID() const
-    {
-        return mNameID;
-    }
-
-
-    void MotionEventTrack::SetNameID(uint32 id)
-    {
-        mNameID = id;
-    }
-
 
     void MotionEventTrack::SetIsEnabled(bool enabled)
     {

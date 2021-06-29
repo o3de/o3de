@@ -60,6 +60,10 @@ PythonBindingsExample.exe --file path/to/file.py --arg one --arg two
             {
                 m_interactiveMode = true;
             }
+            else if (switchItem.m_option.starts_with("regset"))
+            {
+                // skip
+            }
             else
             {
                 AZ_Warning("python_app", false, "Unknown switch %s \n", switchItem.m_option.c_str());

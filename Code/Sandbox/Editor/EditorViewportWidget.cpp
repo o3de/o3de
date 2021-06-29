@@ -2839,7 +2839,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     if (restoreOnExitGameModePopupDisabledRegValue.isNull())
     {
         // No, ask them now
-        QMessageBox messageBox(QMessageBox::Question, "Lumberyard", text, QMessageBox::StandardButtons(QMessageBox::No | QMessageBox::Yes), this);
+        QMessageBox messageBox(QMessageBox::Question, "O3DE", text, QMessageBox::StandardButtons(QMessageBox::No | QMessageBox::Yes), this);
         messageBox.setDefaultButton(QMessageBox::Yes);
 
         QCheckBox* checkBox = new QCheckBox(QStringLiteral("Do not show this message again"));

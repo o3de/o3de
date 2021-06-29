@@ -25,7 +25,7 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Generates a gradient based on height within a range";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Gradient.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Gradient.png";
-        static constexpr const char* const s_helpUrl = "https://docs.o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
 
         // AZ::Component interface
         void Activate() override;

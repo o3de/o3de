@@ -61,16 +61,8 @@ namespace AZ
             //! Cache a pointer to the AuxGeom draw queue for our scene
             RPI::AuxGeomDrawPtr m_sceneDrawQueue = nullptr;
 
-            //! Map used to store the AuxGeomDrawQueue & DynamicPrimitiveProcessor for each view
-            // [GFX TODO][ATOM-4435] remove DynamicPrimitiveProcessor per view if we can get orphan buffers to support multiple
-            // orphanings per frame. 
-            // Only the DPP suffers from the issue so no need for a per view FixedShapeProcessor. 
-            struct ViewDrawData
-            {
-                RPI::AuxGeomDrawPtr m_drawQueue;
-                AZStd::unique_ptr<DynamicPrimitiveProcessor> m_dynPrimProc;
-            };
-            AZStd::map<const RPI::View*, ViewDrawData> m_viewDrawDataMap; // using View* as key to not hold a reference to the view
+            //! Map used to store the AuxGeomDrawQueue for each view
+            AZStd::map<const RPI::View*, RPI::AuxGeomDrawPtr> m_viewDrawDataMap; // using View* as key to not hold a reference to the view
 
             //! The object that handles the dynamic primitive geometry data
             AZStd::unique_ptr<DynamicPrimitiveProcessor> m_dynamicPrimitiveProcessor;

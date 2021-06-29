@@ -37,6 +37,8 @@ set(FILES
     Rules/IMotionCompressionSettingsRule.h
     Rules/MotionCompressionSettingsRule.h
     Rules/MotionCompressionSettingsRule.cpp
+    Rules/MotionMetaDataRule.h
+    Rules/MotionMetaDataRule.cpp
     Rules/IMotionScaleRule.h
     Rules/MotionScaleRule.h
     Rules/MotionScaleRule.cpp

@@ -38,6 +38,6 @@ private:
     QPixmap                             m_backgroundImage;
 
     int m_enforcedWidth = 600;
-    int m_enforcedHeight = 360;
+    int m_enforcedHeight = 400;
 };
 

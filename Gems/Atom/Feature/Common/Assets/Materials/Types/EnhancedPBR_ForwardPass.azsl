@@ -326,7 +326,8 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     if (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent)
     {
-        alpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x; // Increase opacity at grazing angles.
+        float fresnelAlpha = FresnelSchlickWithRoughness(lightingData.NdotV, alpha, surface.roughnessLinear).x; // Increase opacity at grazing angles.
+        alpha = lerp(fresnelAlpha, alpha, MaterialSrg::m_opacityAffectsSpecularFactor);
     }
 
     PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
@@ -344,8 +345,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // For blended mode, we do (dest * alpha) + (source * 1.0). This allows the specular
         // to be added on top of the diffuse, but then the diffuse must be pre-multiplied.
         // It's done this way because surface transparency doesn't really change specular response (eg, glass).
+
         lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
-        lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
+
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
     }
     else if (o_opacity_mode == OpacityMode::TintedTransparent)
     {
@@ -362,7 +368,12 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
         // m_diffuseColor.rgb (source) is added to that, and the final result is stored in render target 0.
 
         lightingOutput.m_diffuseColor.rgb *= lightingOutput.m_diffuseColor.w; // pre-multiply diffuse
-        lightingOutput.m_diffuseColor.rgb += lightingOutput.m_specularColor.rgb; // add specular
+
+        // Add specular. m_opacityAffectsSpecularFactor controls how much the alpha masks out specular contribution.
+        float3 specular = lightingOutput.m_specularColor.rgb;
+        specular = lerp(specular, specular * lightingOutput.m_diffuseColor.w, MaterialSrg::m_opacityAffectsSpecularFactor);
+        lightingOutput.m_diffuseColor.rgb += specular;
+
         lightingOutput.m_specularColor.rgb = baseColor * (1.0 - lightingOutput.m_diffuseColor.w); 
     }
     else
@@ -410,4 +421,3 @@ ForwardPassOutput EnhancedPbr_ForwardPassPS_EDS(VSOutput IN, bool isFrontFace : 
 
     return OUT;
 }
-
