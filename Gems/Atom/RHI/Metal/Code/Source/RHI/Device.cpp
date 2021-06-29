@@ -46,7 +46,7 @@ namespace AZ
         {
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
              
