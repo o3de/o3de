@@ -42,9 +42,29 @@ namespace AZ
                 }
             }
             
-            void GetAllBones(
-                const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneLookup)
+            void GetAllBones(const aiScene* scene, AZStd::unordered_multimap<AZStd::string, const aiBone*>& boneLookup)
             {
+                AZStd::queue<const aiNode*> queue;
+                AZStd::unordered_set<AZStd::string> nodesWithNoMesh;
+
+                queue.push(scene->mRootNode);
+
+                while (!queue.empty())
+                {
+                    const aiNode* currentNode = queue.front();
+                    queue.pop();
+
+                    if (currentNode->mNumMeshes == 0)
+                    {
+                        nodesWithNoMesh.emplace(currentNode->mName.C_Str());
+                    }
+
+                    for (int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
+                    {
+                        queue.push(currentNode->mChildren[childIndex]);
+                    }
+                }
+
                 for (unsigned meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
                     const aiMesh* mesh = scene->mMeshes[meshIndex];
@@ -53,7 +73,10 @@ namespace AZ
                     {
                         const aiBone* bone = mesh->mBones[boneIndex];
 
-                        boneLookup.emplace(bone->mName.C_Str(), bone);
+                        if (nodesWithNoMesh.contains(bone->mName.C_Str()))
+                        {
+                            boneLookup.emplace(bone->mName.C_Str(), bone);
+                        }
                     }
                 }
             }
