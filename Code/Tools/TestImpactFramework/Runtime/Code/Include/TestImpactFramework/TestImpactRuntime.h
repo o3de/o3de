@@ -36,6 +36,7 @@ namespace TestImpact
     class TestTarget;
     class SourceCoveringTestsList;
     class TestEngineInstrumentedRun;
+    class TestTargetExclusionList;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @param tests The tests that will be run for this sequence.
@@ -196,12 +197,6 @@ namespace TestImpact
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 
-        //! Selects the test targets from the specified list of test targets that are not on the test target exclusion list.
-        //! @param testTargets The list of test targets to select from.
-        //! @returns The subset of test targets in the specified list that are not on the target exclude list.
-        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectTestTargetsByExcludeList(
-            AZStd::vector<const TestTarget*> testTargets) const;
-
         //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
         //! test engine instrumented run jobs.
         SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
@@ -225,7 +220,8 @@ namespace TestImpact
         AZStd::unique_ptr<DynamicDependencyMap> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<TestEngine> m_testEngine;
-        AZStd::unordered_set<const TestTarget*> m_testTargetExcludeList;
+        AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
+        AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;
         AZStd::unordered_set<const TestTarget*> m_testTargetShardList;
         bool m_hasImpactAnalysisData = false;
     };

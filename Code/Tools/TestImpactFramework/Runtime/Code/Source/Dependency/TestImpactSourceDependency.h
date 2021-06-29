@@ -48,7 +48,7 @@ namespace TestImpact
 
 namespace AZStd
 {
-    //! Hash function for ParentTarget types for use in maps and sets
+    //! Hash function for ParentTarget types for use in maps and sets.
     template<> struct hash<TestImpact::ParentTarget>
     {
         size_t operator()(const TestImpact::ParentTarget& parentTarget) const noexcept

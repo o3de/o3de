@@ -45,7 +45,7 @@ namespace TestImpact
         //! Returns true if the specified target is in the list, otherwise false.
         bool HasTarget(const AZStd::string& name) const;
 
-        // Returns the number of targets in the list.
+        //! Returns the number of targets in the list.
         size_t GetNumTargets() const;
 
     private:

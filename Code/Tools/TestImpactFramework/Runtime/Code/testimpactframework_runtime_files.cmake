@@ -124,6 +124,8 @@ set(FILES
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp
     Source/TestImpactRuntimeUtils.h
+    Source/TestImpactTestTargetExclusionList.h
+    Source/TestImpactTestTargetExclusionList.cpp
     Source/TestImpactClientTestSelection.cpp
     Source/TestImpactClientTestRun.cpp
     Source/TestImpactClientFailureReport.cpp

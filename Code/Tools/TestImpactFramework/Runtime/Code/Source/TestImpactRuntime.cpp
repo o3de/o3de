@@ -108,7 +108,11 @@ namespace TestImpact
         m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the target configuration data
-        m_testTargetExcludeList = ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
+        const auto& testTargetList = m_dynamicDependencyMap->GetTestTargetList();
+        m_regularTestTargetExcludeList =
+            ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedRegularTestTargets));
+        m_instrumentedTestTargetExcludeList =
+            ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedInstrumentedTestTargets));
 
         // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<TestEngine>(
@@ -228,32 +232,6 @@ namespace TestImpact
         return { selectedTestTargets, discardedTestTargets };
     }
 
-    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectTestTargetsByExcludeList(
-        AZStd::vector<const TestTarget*> testTargets) const
-    {
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
-
-        if (m_testTargetExcludeList.empty())
-        {
-            return { testTargets, {} };
-        }
-
-        for (const auto& testTarget : testTargets)
-        {
-            if (!m_testTargetExcludeList.contains(testTarget))
-            {
-                includedTestTargets.push_back(testTarget);
-            }
-            else
-            {
-                excludedTestTargets.push_back(testTarget);
-            }
-        }
-
-        return { includedTestTargets, excludedTestTargets };
-    }
-
     void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
         m_dynamicDependencyMap->ClearAllSourceCoverage();
@@ -354,14 +332,15 @@ namespace TestImpact
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
         {
-            if (!m_testTargetExcludeList.contains(&testTarget))
-            {
-                includedTestTargets.push_back(&testTarget);
-            }
-            else
+            if (m_regularTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
                 // Test targets on the exclude list are excluded
                 excludedTestTargets.push_back(&testTarget);
+            }
+            else
+            {
+                includedTestTargets.push_back(&testTarget);
+                
             }
         }
 
@@ -408,7 +387,8 @@ namespace TestImpact
         auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndUpdateEnumerationCache(changeList, testPrioritizationPolicy);
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
-        auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+        auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_instrumentedTestTargetExcludeList, selectedTestTargets);
 
         // We present to the client the included selected test targets and the drafted test targets as distinct sets but internally
         // we consider the concatenated set of the two the actual set of tests to run
@@ -483,10 +463,12 @@ namespace TestImpact
         auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndUpdateEnumerationCache(changeList, testPrioritizationPolicy);
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
-        auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+        auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_instrumentedTestTargetExcludeList, selectedTestTargets);
 
         // The subset of discarded test targets that are not on the configuration's exclude list and those that are
-        auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] = SelectTestTargetsByExcludeList(discardedTestTargets);
+        auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_regularTestTargetExcludeList, discardedTestTargets);
 
         // We present to the client the included selected test targets and the drafted test targets as distinct sets but internally
         // we consider the concatenated set of the two the actual set of tests to run
@@ -560,13 +542,13 @@ namespace TestImpact
 
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
         {
-            if (!m_testTargetExcludeList.contains(&testTarget))
+            if (m_instrumentedTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
-                includedTestTargets.push_back(&testTarget);
+                excludedTestTargets.push_back(&testTarget);
             }
             else
             {
-                excludedTestTargets.push_back(&testTarget);
+                includedTestTargets.push_back(&testTarget);
             }
         }
 
