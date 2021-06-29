@@ -180,6 +180,10 @@ namespace AZ
 
         void CpuProfilerImpl::OnFrameBegin()
         {
+            if (!m_enabled)
+            {
+                return;
+            }
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
 
             // Iterate through all the threads, and collect the thread's cached time regions
@@ -275,6 +279,10 @@ namespace AZ
         // Gets called when region ends and all data is set
         void CpuTimingLocalStorage::AddCachedRegion(CachedTimeRegion&& timeRegionCached)
         {
+            if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName->m_regionName])
+            {
+                return;
+            }
             // Add an entry to the cached region
             m_cachedTimeRegions.push_back(timeRegionCached);
 
@@ -292,8 +300,11 @@ namespace AZ
                 {
                     const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
                     AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
-
                     regionVec.push_back(cachedTimeRegion);
+                    if (regionVec.size() >= TimeRegionStackSize)
+                    {
+                        m_hitSizeLimitMap[cachedTimeRegion.m_groupRegionName->m_regionName] = true;
+                    }
                 }
 
                 // Clear the cached regions
@@ -312,6 +323,7 @@ namespace AZ
                 {
                     cachedTimeRegionMap = AZStd::move(m_cachedTimeRegionMap);
                     m_cachedTimeRegionMap.clear();
+                    m_hitSizeLimitMap.clear();
                 }
                 m_cachedTimeRegionMutex.unlock();
             }
